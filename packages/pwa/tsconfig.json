@@ -1,0 +1,25 @@
+{
+  "include": ["src"],
+  "extends": "../../tsconfig.json",
+
+  // This package consumes the shared package.
+  "references": [{"path": "../shared"}],
+
+  "compilerOptions": {
+    // Override to include DOM.
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+
+    // React JSX requires this.
+    "jsx": "react-jsx",
+
+    // Build is handled by Vite.
+    "moduleResolution": "bundler",
+    "noEmit": true,
+
+    // Import aliases.
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["../shared/src/*"]
+    }
+  }
+}

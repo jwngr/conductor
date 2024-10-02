@@ -1,0 +1,21 @@
+name: Run PWA CI on PR
+on: [push]
+jobs:
+  frontend-ci:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Yarn
+        run: npm install --global yarn
+      - name: Install dependencies
+        run: yarn install
+      - name: Lint PWA
+        run: yarn run lint:pwa
+      - name: Build PWA
+        run: yarn run build:pwa
