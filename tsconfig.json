@@ -5,8 +5,7 @@
     "lib": ["ESNext"],
     "module": "ESNext",
 
-    // TODO: Should I fully specify this in each sub-package?
-    // Target Node compatibility. Some sub-packages override
+    // Default to Node compatibility and override in each sub-package as needed.
     "moduleResolution": "node",
     "esModuleInterop": true,
     "isolatedModules": true,
@@ -20,6 +19,5 @@
     "paths": {
       "@conductor/*": ["packages/*/src"]
     }
-  },
-  "exclude": ["node_modules"]
+  }
 }
