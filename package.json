@@ -1,0 +1,44 @@
+{
+  "name": "conductor",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "start:pwa": "yarn workspace @conductor/pwa start",
+    "start:server": "yarn workspace @conductor/webServer start",
+    "lint": "yarn workspaces run lint",
+    "lint:shared": "yarn workspace @conductor/shared lint",
+    "lint:pwa": "yarn workspace @conductor/pwa lint",
+    "lint:scripts": "yarn workspace @conductor/scripts lint",
+    "lint:server": "yarn workspace @conductor/webServer lint",
+    "format": "yarn workspaces run format",
+    "clean": "yarn workspaces run clean",
+    "clean:shared": "yarn workspace @conductor/shared clean",
+    "clean:pwa": "yarn workspace @conductor/pwa clean",
+    "clean:scripts": "yarn workspace @conductor/scripts clean",
+    "clean:server": "yarn workspace @conductor/webServer clean",
+    "ci": "yarn install --force",
+    "build:shared": "yarn workspace @conductor/shared build",
+    "build:pwa": "yarn run build:shared && yarn workspace @conductor/pwa build",
+    "build:scripts": "yarn run build:shared && yarn workspace @conductor/scripts build",
+    "build:server": "yarn run build:shared && yarn workspace @conductor/webServer build"
+  },
+  "dependencies": {
+    "firebase": "^10.14.0",
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.9.0",
+    "@ianvs/prettier-plugin-sort-imports": "^4.2.1",
+    "@types/eslint__js": "^8.42.3",
+    "@types/lodash": "^4.17.5",
+    "@types/node": "^22.5.0",
+    "eslint": "^9.9.0",
+    "eslint-plugin-react-hooks": "^5.1.0-rc-3edc000d-20240926",
+    "globals": "^15.9.0",
+    "prettier": "^3.3.2",
+    "typescript": "^5.6.2",
+    "typescript-eslint": "^8.0.1"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    // Target latest ECMAScript.
+    "target": "ESNext",
+    "lib": ["ESNext"],
+    "module": "ESNext",
+
+    // TODO: Should I fully specify this in each sub-package?
+    // Target Node compatibility. Some sub-packages override
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "isolatedModules": true,
+
+    // Miscellaneous configuration.
+    "strict": true, // Enable strict type checking.
+    "noEmit": true, // Don't emit JS files - build step only for type checking.
+    "resolveJsonModule": true, // Allow importing JSON files.
+
+    "baseUrl": ".",
+    "paths": {
+      "@conductor/*": ["packages/*/src"]
+    }
+  },
+  "exclude": ["node_modules"]
+}

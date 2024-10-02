@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    // TODO: Cleanup.
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "noEmit": false,
+    "allowSyntheticDefaultImports": true, // TODO?
+    "baseUrl": ".",
+    "paths": {
+      "@conductor/shared/*": ["./src/*"]
+    }
+  },
+  // Why is this necessary?
+  "include": ["src/**/*", "src/**/*.json"],
+  "exclude": ["node_modules"]
+}
