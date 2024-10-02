@@ -4,22 +4,22 @@ import {getFirestore} from 'firebase/firestore/lite';
 
 function getFirebaseConfig(): FirebaseConfig {
   if (!import.meta.env.VITE_FIREBASE_API_KEY) {
-    throw new Error('FIREBASE_API_KEY is not set');
+    throw new Error('VITE_FIREBASE_API_KEY is not set');
   }
   if (!import.meta.env.VITE_FIREBASE_AUTH_DOMAIN) {
-    throw new Error('FIREBASE_AUTH_DOMAIN is not set');
+    throw new Error('VITE_FIREBASE_AUTH_DOMAIN is not set');
   }
   if (!import.meta.env.VITE_FIREBASE_PROJECT_ID) {
-    throw new Error('FIREBASE_PROJECT_ID is not set');
+    throw new Error('VITE_FIREBASE_PROJECT_ID is not set');
   }
   if (!import.meta.env.VITE_FIREBASE_STORAGE_BUCKET) {
-    throw new Error('FIREBASE_STORAGE_BUCKET is not set');
+    throw new Error('VITE_FIREBASE_STORAGE_BUCKET is not set');
   }
   if (!import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID) {
-    throw new Error('FIREBASE_MESSAGING_SENDER_ID is not set');
+    throw new Error('VITE_FIREBASE_MESSAGING_SENDER_ID is not set');
   }
   if (!import.meta.env.VITE_FIREBASE_APP_ID) {
-    throw new Error('FIREBASE_APP_ID is not set');
+    throw new Error('VITE_FIREBASE_APP_ID is not set');
   }
 
   return {
