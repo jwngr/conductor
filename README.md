@@ -13,12 +13,29 @@ Conductor is a combined RSS feed and read-it-later service. It is still a work-i
 
 ## Initial setup
 
+1. Clone the repo
+
 ```bash
-$ npm install --global yarn
 $ git clone git@github.com:jwngr/conductor.git
 $ cd conductor
+```
+
+1. Add `.env` file in `src/packages/pwa` and populate it with info from a Firebase project that you'll use for local development:
+
+```bash
+$ cp packages/pwa/.env.example packages/pwa/.env
+```
+
+1. Install Yarn (this repo uses Yarn workspaces to share code across all client and server code):
+
+```bash
+$ npm install --global yarn
+```
+
+1. Install all dependencies:
+
+```bash
 $ yarn install
-$ yarn build
 ```
 
 ## Start PWA
