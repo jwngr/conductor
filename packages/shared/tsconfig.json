@@ -2,24 +2,11 @@
   "include": ["src"],
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    // TODO: Cleanup.
-    "rootDir": "./src",
+    // Required since this is a TypeScript referenced project.
     "composite": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "allowSyntheticDefaultImports": true, // TODO?
 
-    // Bulid output.
-    "noEmit": false,
-    "outDir": "./dist",
-
-    "baseUrl": ".",
-
-    // Import aliases.
-    "paths": {
-      // TOOD: Why?
-      "@shared/*": ["./src/*"]
-    }
+    // Build output.
+    "rootDir": "./src",
+    "outDir": "./dist"
   }
 }

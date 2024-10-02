@@ -6,12 +6,11 @@
   "references": [{"path": "../shared"}],
 
   "compilerOptions": {
-    "baseUrl": ".",
-
     // Scripts are run via tsx, not compiled.
     "noEmit": true,
 
     // Import aliases.
+    "baseUrl": ".",
     "paths": {
       "@shared/*": ["../shared/src/*"]
     }
