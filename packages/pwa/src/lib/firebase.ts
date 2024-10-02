@@ -1,15 +1,6 @@
+import {FirebaseConfig} from '@conductor/shared/types';
 import {initializeApp} from 'firebase/app';
 import {getFirestore} from 'firebase/firestore/lite';
-
-interface FirebaseConfig {
-  readonly apiKey: string;
-  readonly authDomain: string;
-  readonly projectId: string;
-  readonly storageBucket: string;
-  readonly messagingSenderId: string;
-  readonly appId: string;
-  readonly measurementId?: string;
-}
 
 function getFirebaseConfig(): FirebaseConfig {
   if (!import.meta.env.VITE_FIREBASE_API_KEY) {
