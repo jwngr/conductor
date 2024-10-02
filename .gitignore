@@ -1,6 +1,6 @@
 .env
 dist/
-resources/
+packages/scripts/src/resources/
 node_modules/
 tsconfig.tsbuildinfo
 .DS_Store
