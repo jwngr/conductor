@@ -1,7 +1,9 @@
-import {readFromImportQueue} from '@conductor/shared/lib/importQueue';
+import {collection} from 'firebase/firestore/lite';
 import React, {useEffect} from 'react';
 import {ThemeProvider} from 'styled-components';
 
+import {firestore} from '../lib/firebase';
+import {initImportQueue} from '../lib/importQueue';
 import theme from '../resources/theme.json';
 
 // import {SavedItem, SavedItemId} from '../types/savedItems';
@@ -9,7 +11,8 @@ import theme from '../resources/theme.json';
 export const App: React.FC = () => {
   useEffect(() => {
     const go = async () => {
-      const item = await readFromImportQueue('7Rt9MCx0DquHmoJ1AUv8');
+      const importQueue = initImportQueue(collection(firestore, 'importQueue'));
+      const item = await importQueue.read('7Rt9MCx0DquHmoJ1AUv8');
       // eslint-disable-next-line no-console
       console.log('ITEM:', item);
     };

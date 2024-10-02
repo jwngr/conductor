@@ -21,9 +21,6 @@ function getFirebaseConfig(): FirebaseConfig {
   if (!import.meta.env.VITE_FIREBASE_APP_ID) {
     throw new Error('FIREBASE_APP_ID is not set');
   }
-  if (!import.meta.env.VITE_FIREBASE_MEASUREMENT_ID) {
-    throw new Error('FIREBASE_MEASUREMENT_ID is not set');
-  }
 
   return {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,

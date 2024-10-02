@@ -1,15 +1,18 @@
-import {firestore} from '@conductor/shared/lib/firebase';
-import {ImportQueueItem} from '@conductor/shared/types';
-import {addDoc, collection, doc, getDoc} from 'firebase/firestore/lite';
+import {addDoc, CollectionReference, doc, getDoc} from 'firebase/firestore/lite';
 
-export async function addToImportQueue(item: ImportQueueItem): Promise<string> {
-  const importQueueRef = collection(firestore, 'importQueue');
-  const docRef = await addDoc(importQueueRef, item);
-  return docRef.id;
-}
+import {ImportQueueItem} from '../types';
 
-export async function readFromImportQueue(id: string): Promise<ImportQueueItem | null> {
-  const docRef = doc(firestore, 'importQueue', id);
-  const docSnap = await getDoc(docRef);
-  return docSnap.data() as ImportQueueItem | null;
+export class ImportQueue {
+  constructor(private readonly collectionRef: CollectionReference) {}
+
+  async add(item: ImportQueueItem): Promise<string> {
+    const docRef = await addDoc(this.collectionRef, item);
+    return docRef.id;
+  }
+
+  async read(id: string): Promise<ImportQueueItem | null> {
+    const docRef = doc(this.collectionRef, id);
+    const docSnap = await getDoc(docRef);
+    return docSnap.data() as ImportQueueItem | null;
+  }
 }
