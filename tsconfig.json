@@ -5,19 +5,13 @@
     "lib": ["ESNext"],
     "module": "ESNext",
 
+    // Enable strict type checking.
+    "strict": true,
+
     // Default to Node compatibility and override in each sub-package as needed.
     "moduleResolution": "node",
-    "esModuleInterop": true,
-    "isolatedModules": true,
-
-    // Miscellaneous configuration.
-    "strict": true, // Enable strict type checking.
-    "noEmit": true, // Don't emit JS files - build step only for type checking.
-    "resolveJsonModule": true, // Allow importing JSON files.
-
-    "baseUrl": ".",
-    "paths": {
-      "@conductor/*": ["packages/*/src"]
-    }
+    "esModuleInterop": true, // Allow importing CommonJS modules.
+    "isolatedModules": true, // Ensure each file is its own module.
+    "resolveJsonModule": true // Allow importing JSON files.
   }
 }

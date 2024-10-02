@@ -1,21 +1,25 @@
 {
+  "include": ["src"],
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     // TODO: Cleanup.
-    "outDir": "./dist",
     "rootDir": "./src",
     "composite": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "noEmit": false,
     "allowSyntheticDefaultImports": true, // TODO?
+
+    // Bulid output.
+    "noEmit": false,
+    "outDir": "./dist",
+
     "baseUrl": ".",
+
+    // Import aliases.
     "paths": {
-      "@conductor/shared/*": ["./src/*"]
+      // TOOD: Why?
+      "@shared/*": ["./src/*"]
     }
-  },
-  // Why is this necessary?
-  "include": ["src/**/*", "src/**/*.json"],
-  "exclude": ["node_modules"]
+  }
 }

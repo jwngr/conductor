@@ -1,12 +1,19 @@
 {
+  "include": ["src"],
   "extends": "../../tsconfig.json",
+
+  // This package consumes the shared package.
+  "references": [{"path": "../shared"}],
+
   "compilerOptions": {
     "baseUrl": ".",
+
+    // Scripts are run via tsx, not compiled.
+    "noEmit": true,
+
+    // Import aliases.
     "paths": {
-      "@/*": ["src/*"],
-      "@conductor/shared/*": ["../shared/src/*"]
+      "@shared/*": ["../shared/src/*"]
     }
-  },
-  "include": ["src"],
-  "references": [{"path": "../shared"}]
+  }
 }

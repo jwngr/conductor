@@ -1,4 +1,4 @@
-import {FirebaseConfig} from '@conductor/shared/types';
+import {FirebaseConfig} from '@shared/types';
 import {initializeApp} from 'firebase/app';
 import {getFirestore} from 'firebase/firestore/lite';
 
