@@ -21,7 +21,12 @@ $ git clone git@github.com:jwngr/conductor.git
 $ cd conductor
 ```
 
-1. Add `.env` file in `src/packages/pwa` and populate it with info from a Firebase project that you'll use for local development:
+1. Create a Firebase project for loca and enable the following:
+1. Firestore
+1. Email authentication + passwordless auth
+1. No need to enable Auth for these non-prod projects.
+
+1. Add a Firebase config to a `.env` file at the root of the repo:
 
 ```bash
 $ cp packages/pwa/.env.example packages/pwa/.env

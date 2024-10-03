@@ -1,4 +1,4 @@
-import {addDoc, CollectionReference, doc, getDoc} from 'firebase/firestore/lite';
+import {addDoc, CollectionReference, doc, getDoc} from 'firebase/firestore';
 
 import {ImportQueueItem} from '../types';
 
