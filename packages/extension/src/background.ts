@@ -2,6 +2,8 @@ import {addDoc, collection} from 'firebase/firestore';
 
 import {firestore} from './lib/firebase';
 
+console.log('Background script loaded');
+
 chrome.action.onClicked.addListener(async (tab) => {
   console.log('Extension icon clicked');
   if (tab.url) {
