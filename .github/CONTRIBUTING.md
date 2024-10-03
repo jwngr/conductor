@@ -9,7 +9,7 @@ The packages are:
 
 - `/shared` - Common models and libraries shared across all packages
 - `/pwa` - Progressive Web App
-- `/extension` - Browser extension [TODO]
+- `/extension` - Browser extension
 - `/scripts` - Helpful scripts for maintaining this repo
 
 ## Initial setup
@@ -29,7 +29,7 @@ $ cd conductor
 1. Add a Firebase config to a `.env` file at the root of the repo:
 
 ```bash
-$ cp packages/pwa/.env.example packages/pwa/.env
+$ cp .env.example .env
 # Open .env and add your Firebase config.
 ```
 
@@ -50,5 +50,27 @@ $ yarn install
 ```bash
 $ yarn run start:pwa
 ```
+
+Opens at http://localhost:5173/.
+
+## Open browser extension locally
+
+1. Build the extension:
+
+```bash
+$ yarn run build:extension
+```
+
+1. Go to [`chrome://extensions`](chrome://extensions).
+
+1. Enable "Developer mode"
+
+1. Click "Load unpacked"
+
+1. Select the `packages/extension/dist` folder.
+
+The extension will now be available from your browser toolbar, although it may be hidden in a dropdown.
+
+The extension works in Chromium-based browsers.
 
 Opens at http://localhost:5173/.
