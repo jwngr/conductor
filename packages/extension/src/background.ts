@@ -3,6 +3,7 @@ import {addDoc, collection} from 'firebase/firestore';
 import {firestore} from './lib/firebase';
 
 chrome.action.onClicked.addListener(async (tab) => {
+  console.log('Extension icon clicked');
   if (tab.url) {
     try {
       await addDoc(collection(firestore, 'importQueue'), {
@@ -14,4 +15,5 @@ chrome.action.onClicked.addListener(async (tab) => {
       console.error('Error saving URL:', error);
     }
   }
+  console.log('Extension action done');
 });
