@@ -1,4 +1,4 @@
-import {collection} from 'firebase/firestore/lite';
+import {collection} from 'firebase/firestore';
 import React, {useEffect} from 'react';
 import {ThemeProvider} from 'styled-components';
 

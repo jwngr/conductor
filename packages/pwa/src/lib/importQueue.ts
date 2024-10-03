@@ -1,5 +1,5 @@
 import {ImportQueue} from '@shared/lib/importQueue';
-import {CollectionReference} from 'firebase/firestore/lite';
+import {CollectionReference} from 'firebase/firestore';
 
 let importQueueSingleton: ImportQueue | null = null;
 

@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Conductor capture extension",
+  "version": "1.0",
+  "description": "Save current URL to Firestore",
+  "permissions": ["activeTab", "scripting"],
+  "action": {
+    "default_title": "Conductor"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  }
+}
