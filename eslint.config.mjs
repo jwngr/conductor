@@ -49,5 +49,21 @@ export default tseslint.config(
     files: ['packages/scripts/**/*.ts'],
     languageOptions: sharedLanguageOptions,
     rules: sharedRules,
+  },
+
+  // Extension package config.
+  {
+    files: ['packages/extension/**/*.{ts,tsx}'],
+    languageOptions: {
+      ...sharedLanguageOptions,
+      globals: globals.browser,
+    },
+    plugins: {
+      'react-hooks': reactHooks,
+    },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      ...sharedRules,
+    },
   }
 );
