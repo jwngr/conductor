@@ -65,5 +65,12 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       ...sharedRules,
     },
+  },
+
+  // Functions package config.
+  {
+    files: ['packages/functions/**/*.{ts}'],
+    languageOptions: sharedLanguageOptions,
+    rules: sharedRules,
   }
 );

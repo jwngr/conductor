@@ -13,6 +13,7 @@
     "lint:scripts": "yarn workspace @conductor/scripts lint",
     "lint:server": "yarn workspace @conductor/webServer lint",
     "lint:extension": "yarn workspace @conductor/extension lint",
+    "lint:functions": "yarn workspace @conductor/functions lint",
     "format": "yarn workspaces run format",
     "clean": "yarn workspaces run clean",
     "clean:shared": "yarn workspace @conductor/shared clean",
@@ -20,12 +21,16 @@
     "clean:scripts": "yarn workspace @conductor/scripts clean",
     "clean:server": "yarn workspace @conductor/webServer clean",
     "clean:extension": "yarn workspace @conductor/extension clean",
+    "clean:functions": "yarn workspace @conductor/functions clean",
     "ci": "yarn install --force",
     "build:shared": "yarn workspace @conductor/shared build",
     "build:pwa": "yarn run build:shared && yarn workspace @conductor/pwa build",
     "build:scripts": "yarn run build:shared && yarn workspace @conductor/scripts build",
     "build:server": "yarn run build:shared && yarn workspace @conductor/webServer build",
-    "build:extension": "yarn run build:shared && yarn workspace @conductor/extension build"
+    "build:extension": "yarn run build:shared && yarn workspace @conductor/extension build",
+    "build:functions": "yarn run build:shared && yarn workspace @conductor/functions build",
+    "deploy:pwa": "yarn run build:shared && yarn workspace @conductor/pwa deploy",
+    "deploy:functions": "yarn run build:shared && yarn workspace @conductor/functions deploy"
   },
   "dependencies": {
     "firebase": "^10.14.0",

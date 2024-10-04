@@ -1,6 +1,8 @@
 export interface ImportQueueItem {
   readonly url: string;
   readonly timestamp: number;
+  readonly createdAt: number;
+  readonly lastUpdatedAt: number;
 }
 
 export interface FirebaseConfig {

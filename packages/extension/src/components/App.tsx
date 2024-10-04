@@ -1,4 +1,4 @@
-import {addDoc, collection} from 'firebase/firestore';
+import {addDoc, collection, serverTimestamp} from 'firebase/firestore';
 import {useState} from 'react';
 
 import {firestore} from '../lib/firebase';
@@ -15,6 +15,8 @@ function App() {
       await addDoc(collection(firestore, 'importQueue'), {
         url: tab.url,
         type: 'url',
+        createdAt: serverTimestamp(),
+        lastUpdatedAt: serverTimestamp(),
       });
       setStatus('URL saved successfully');
     } catch (error) {

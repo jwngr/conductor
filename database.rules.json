@@ -1,0 +1,14 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "importQueue": {
+      ".read": true,
+      ".write": true
+    },
+    "items": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}
