@@ -1,26 +1,24 @@
-import {SavedItem} from '@shared/types';
 import {Link} from 'react-router-dom';
 
-import {useFirestoreCollection} from '../lib/firebase';
+import {useItems} from '../lib/items';
 
 export const HomeScreen: React.FC = () => {
-  const {data: itemDocs, isLoading} = useFirestoreCollection('items');
+  const {items, isLoading} = useItems();
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  if (itemDocs.length === 0) {
+  if (items.length === 0) {
     return <div>No items</div>;
   }
 
   return (
     <ul>
-      {itemDocs.map((itemDoc) => {
-        const item = itemDoc.data() as SavedItem;
+      {items.map((item) => {
         return (
-          <li key={itemDoc.id}>
-            <Link key={itemDoc.id} to={`/items/${itemDoc.id}`}>
+          <li key={item.id}>
+            <Link to={`/items/${item.id}`}>
               <p>{item.url}</p>
             </Link>
           </li>

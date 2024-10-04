@@ -1,4 +1,4 @@
-import {ImportQueueItem} from '@shared/types';
+import {ImportQueueItem, SavedItem} from '@shared/types';
 import admin from 'firebase-admin';
 import logger from 'firebase-functions/logger';
 import {onDocumentCreated} from 'firebase-functions/v2/firestore';
@@ -21,18 +21,19 @@ export const processImportQueue = onDocumentCreated('/importQueue/{pushId}', asy
   logger.log(`URL received: ${importItem.url}`);
 
   try {
+    // Process the item.
     await processItem(importItem);
 
-    await admin.firestore().collection('items').add({
-      url: importItem.url,
-      isSaved: true,
-      source: 'extension',
-      savedAt: importItem.createdAt,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    // Update the item with the new import status.
+    const update: Partial<SavedItem> = {
+      isImporting: false,
+      lastImportedAt: admin.firestore.FieldValue.serverTimestamp(),
       lastUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
+    };
 
-    // Remove the processed item from the queue
+    await admin.firestore().collection('items').doc(importItem.itemId).update(update);
+
+    // Remove the processed item from the queue.
     await admin.firestore().collection('importQueue').doc(pushId).delete();
 
     logger.log(`Successfully processed and removed item ${pushId}`);
