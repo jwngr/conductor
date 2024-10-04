@@ -1,0 +1,15 @@
+name: Deploy prod Firebase Functions on merge
+on:
+  push:
+    branches:
+      - master
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+      - name: Deploy Firebase Functions
+        run: yarn run deploy:functions
