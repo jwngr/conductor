@@ -1,5 +1,6 @@
 import {Link} from 'react-router-dom';
 
+import {Text} from '../components/atoms/Text';
 import {useItems} from '../lib/items';
 
 export const HomeScreen: React.FC = () => {
@@ -19,7 +20,9 @@ export const HomeScreen: React.FC = () => {
         return (
           <li key={item.id}>
             <Link to={`/items/${item.id}`}>
-              <p>{item.url}</p>
+              <Text as="p" color="red" bold>
+                {item.url}
+              </Text>
             </Link>
           </li>
         );
