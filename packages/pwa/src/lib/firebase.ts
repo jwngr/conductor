@@ -1,6 +1,14 @@
 import {FirebaseConfig} from '@shared/types';
 import {initializeApp} from 'firebase/app';
-import {getFirestore} from 'firebase/firestore';
+import {
+  doc,
+  DocumentSnapshot,
+  getFirestore,
+  onSnapshot,
+  Query,
+  QueryDocumentSnapshot,
+} from 'firebase/firestore';
+import {useEffect, useState} from 'react';
 
 function validateEnvVar(name: string) {
   if (!import.meta.env[name]) {
@@ -30,3 +38,45 @@ function getFirebaseConfig(): FirebaseConfig {
 const firebaseConfig = getFirebaseConfig();
 const firebaseApp = initializeApp(firebaseConfig);
 export const firestore = getFirestore(firebaseApp);
+
+export function useFirestoreQuery(collectionQuery: Query): {
+  readonly data: QueryDocumentSnapshot[];
+  readonly isLoading: boolean;
+} {
+  const [data, setData] = useState<QueryDocumentSnapshot[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collectionQuery, (snapshot) => {
+      setData(snapshot.docs);
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [collectionQuery]);
+
+  return {data, isLoading};
+}
+
+export function useFirestoreDoc(
+  collectionName: string,
+  documentId: string
+): {
+  readonly data: DocumentSnapshot | null;
+  readonly isLoading: boolean;
+} {
+  const [data, setData] = useState<DocumentSnapshot | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const docRef = doc(firestore, collectionName, documentId);
+    const unsubscribe = onSnapshot(docRef, (snapshot) => {
+      setData(snapshot);
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [collectionName, documentId]);
+
+  return {data, isLoading};
+}
