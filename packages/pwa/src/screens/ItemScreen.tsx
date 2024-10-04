@@ -1,28 +1,28 @@
-import {SavedItemId} from '@shared/types';
+import {FeedItemId} from '@shared/types';
 import {Navigate, Params, useParams} from 'react-router-dom';
 
-import {useItem} from '../lib/items';
+import {useFeedItem} from '../lib/items';
 
 interface ItemScreenParams extends Params {
-  readonly itemId: SavedItemId;
+  readonly feedItemId: FeedItemId;
 }
 
 const ItemScreenRouterWrapper: React.FC = () => {
-  const {itemId} = useParams<ItemScreenParams>();
+  const {feedItemId} = useParams<ItemScreenParams>();
 
-  if (!itemId) {
+  if (!feedItemId) {
     // eslint-disable-next-line no-console
-    console.warn('No item ID provided to `/items` route');
+    console.warn('No feed item ID in URL');
     return <Navigate to="/" />;
   }
 
-  return <ItemScreenInner itemId={itemId} />;
+  return <ItemScreenInner feedItemId={feedItemId} />;
 };
 
 const ItemScreenInner: React.FC<{
-  readonly itemId: SavedItemId;
-}> = ({itemId}) => {
-  const {item, isLoading} = useItem(itemId);
+  readonly feedItemId: FeedItemId;
+}> = ({feedItemId}) => {
+  const {item, isLoading} = useFeedItem(feedItemId);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -30,13 +30,13 @@ const ItemScreenInner: React.FC<{
 
   if (!item) {
     // eslint-disable-next-line no-console
-    console.warn('Invalid item ID provided to `/items` route:', itemId);
+    console.warn('Invalid feed item ID in URL:', feedItemId);
     return <Navigate to="/" />;
   }
 
   return (
     <>
-      <div>Item {itemId}</div>
+      <div>Feed item {feedItemId}</div>
       <pre>{JSON.stringify(item, null, 2)}</pre>
     </>
   );

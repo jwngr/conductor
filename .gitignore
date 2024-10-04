@@ -4,3 +4,11 @@ packages/scripts/src/resources/
 node_modules/
 tsconfig.tsbuildinfo
 .DS_Store
+
+
+# Firebase debug log
+ui-debug.log
+firebase-debug.log
+functions-debug.log
+database-debug.log
+firestore-debug.log

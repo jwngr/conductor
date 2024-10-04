@@ -1,6 +1,7 @@
 import {FirebaseConfig} from '@shared/types';
 import {initializeApp} from 'firebase/app';
 import {
+  connectFirestoreEmulator,
   doc,
   DocumentSnapshot,
   getFirestore,
@@ -8,6 +9,7 @@ import {
   Query,
   QueryDocumentSnapshot,
 } from 'firebase/firestore';
+import {connectFunctionsEmulator, getFunctions} from 'firebase/functions';
 import {useEffect, useState} from 'react';
 
 function validateEnvVar(name: string) {
@@ -37,7 +39,19 @@ function getFirebaseConfig(): FirebaseConfig {
 
 const firebaseConfig = getFirebaseConfig();
 const firebaseApp = initializeApp(firebaseConfig);
+
 export const firestore = getFirestore(firebaseApp);
+
+// if (import.meta.env.DEV) {
+//   // Configure Firebase emulator for local development.
+//   const FIREBASE_EMULATOR_HOST = '127.0.0.1';
+//   const FUNCTIONS_EMULATOR_PORT = 5001;
+//   const FIRESTORE_EMULATOR_PORT = 8080;
+
+//   const functions = getFunctions(firebaseApp);
+//   connectFunctionsEmulator(functions, FIREBASE_EMULATOR_HOST, FUNCTIONS_EMULATOR_PORT);
+//   connectFirestoreEmulator(firestore, FIREBASE_EMULATOR_HOST, FIRESTORE_EMULATOR_PORT);
+// }
 
 export function useFirestoreQuery(collectionQuery: Query): {
   readonly data: QueryDocumentSnapshot[];
@@ -69,8 +83,7 @@ export function useFirestoreDoc(
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const docRef = doc(firestore, collectionName, documentId);
-    const unsubscribe = onSnapshot(docRef, (snapshot) => {
+    const unsubscribe = onSnapshot(doc(firestore, collectionName, documentId), (snapshot) => {
       setData(snapshot);
       setIsLoading(false);
     });

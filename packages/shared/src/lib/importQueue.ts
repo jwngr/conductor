@@ -1,6 +1,6 @@
-import {addDoc, CollectionReference, doc, getDoc} from 'firebase/firestore';
+import {addDoc, CollectionReference, doc, getDoc, serverTimestamp} from 'firebase/firestore';
 
-import {ImportQueueItem} from '../types';
+import {FeedItemId, ImportQueueItem} from '../types';
 
 export class ImportQueue {
   constructor(private readonly collectionRef: CollectionReference) {}
@@ -15,4 +15,14 @@ export class ImportQueue {
     const docSnap = await getDoc(docRef);
     return docSnap.data() as ImportQueueItem | null;
   }
+}
+
+export function makeImportQueueItem(url: string, feedItemId: FeedItemId): ImportQueueItem {
+  return {
+    // TODO: Add an ID for these objects?
+    url,
+    feedItemId,
+    createdAt: serverTimestamp(),
+    lastUpdatedAt: serverTimestamp(),
+  };
 }

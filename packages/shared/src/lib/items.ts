@@ -4,44 +4,55 @@ import {
   deleteDoc,
   doc,
   onSnapshot,
+  serverTimestamp,
   updateDoc,
 } from 'firebase/firestore';
 
-import {Func, SavedItem, Task} from '../types';
+import {FeedItem, Func, Task} from '../types';
 
 // TODO: This is currently not used, but the path I'd like to head...
 
-export class ItemsService {
+export class FeedItemsService {
   constructor(private readonly collectionRef: CollectionReference) {}
 
-  async watchAll(callback: Func<readonly SavedItem[]>): Promise<Task> {
+  async watchAll(callback: Func<readonly FeedItem[]>): Promise<Task> {
     const unsubscribe = onSnapshot(this.collectionRef, (snapshot) => {
-      callback(snapshot.docs.map((doc) => doc.data() as SavedItem));
+      callback(snapshot.docs.map((doc) => doc.data() as FeedItem));
     });
     return unsubscribe;
   }
 
-  async watch(callback: Func<SavedItem>): Promise<Task> {
+  async watch(callback: Func<FeedItem>): Promise<Task> {
     const unsubscribe = onSnapshot(this.collectionRef, (snapshot) => {
       snapshot.docs.forEach((doc) => {
-        callback(doc.data() as SavedItem);
+        callback(doc.data() as FeedItem);
       });
     });
     return unsubscribe;
   }
 
-  async add(item: SavedItem): Promise<string> {
+  async add(item: FeedItem): Promise<string> {
     const docRef = await addDoc(this.collectionRef, item);
     return docRef.id;
   }
 
-  async update(item: Partial<SavedItem>): Promise<void> {
-    const copy = {...item};
-    delete copy.id; // Don't persist IDs.
-    return updateDoc(doc(this.collectionRef, item.id), copy);
+  async update(itemId: string, item: Partial<FeedItem>): Promise<void> {
+    return updateDoc(doc(this.collectionRef, itemId), item);
   }
 
   async delete(itemId: string): Promise<void> {
     return deleteDoc(doc(this.collectionRef, itemId));
   }
+}
+
+export function makeFeedItem(url: string, collectionRef: CollectionReference): FeedItem {
+  return {
+    itemId: doc(collectionRef).id,
+    url,
+    isSaved: true,
+    source: 'extension',
+    isImporting: true,
+    createdAt: serverTimestamp(),
+    lastUpdatedAt: serverTimestamp(),
+  };
 }
