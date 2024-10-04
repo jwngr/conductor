@@ -36,6 +36,11 @@ export interface SavedItem {
   readonly lastUpdatedAt: FieldValue;
 }
 
+export interface StyleAttributes {
+  readonly style?: React.CSSProperties;
+  readonly className?: string;
+}
+
 export type Task<T = void> = () => T;
 export type AsyncTask<T = void> = () => Promise<T>;
 export type Func<T> = (args: T) => void;
