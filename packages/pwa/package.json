@@ -26,7 +26,8 @@
     "clean": "rm -rf dist/",
     "ci": "rm -rf node_modules/ && npm install",
     "build": "npm run clean && tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "firebase deploy --only hosting"
   },
   "browserslist": [
     ">0.2%",
