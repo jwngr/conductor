@@ -1,0 +1,19 @@
+{
+  "include": ["src"],
+  "extends": "../../tsconfig.json",
+
+  // This package consumes the shared package.
+  "references": [{"path": "../shared"}],
+
+  "compilerOptions": {
+    // Build output.
+    "rootDir": "./src",
+    "outDir": "./dist",
+
+    // Import aliases.
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["../shared/src/*"]
+    }
+  }
+}

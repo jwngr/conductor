@@ -10,6 +10,7 @@ The packages are:
 - `/shared` - Common models and libraries shared across all packages
 - `/pwa` - Progressive Web App
 - `/extension` - Browser extension
+- `/functions` - Firebase cloud functions (e.g. for managing the import queue)
 - `/scripts` - Helpful scripts for maintaining this repo
 
 ## Initial setup
@@ -72,5 +73,3 @@ $ yarn run build:extension
 The extension will now be available from your browser toolbar, although it may be hidden in a dropdown.
 
 The extension works in Chromium-based browsers.
-
-Opens at http://localhost:5173/.
