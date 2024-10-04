@@ -12,7 +12,7 @@ export const App: React.FC = () => {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<HomeScreen />} />
-          <Route path="/items/:itemId?/" element={<ItemScreen />} />
+          <Route path="/items/:feedItemId?/" element={<ItemScreen />} />
           {/* Redirect unmatched routes to home page, replacing history stack. */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

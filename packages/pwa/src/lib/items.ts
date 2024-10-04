@@ -1,30 +1,31 @@
-import {SavedItem, SavedItemId} from '@shared/types';
+import {FEED_ITEM_COLLECTION} from '@shared/lib/constants';
+import {FeedItem, FeedItemId} from '@shared/types';
 import {collection, orderBy, query} from 'firebase/firestore';
 import {useMemo} from 'react';
 
 import {firestore, useFirestoreDoc, useFirestoreQuery} from './firebase';
 
-export function useItems(): {
-  readonly items: SavedItem[];
+export function useFeedItems(): {
+  readonly feedItems: FeedItem[];
   readonly isLoading: boolean;
 } {
-  const itemsQuery = query(collection(firestore, 'items'), orderBy('createdAt', 'desc'));
+  const itemsQuery = useMemo(
+    () => query(collection(firestore, FEED_ITEM_COLLECTION), orderBy('createdAt', 'desc')),
+    []
+  );
   const {data: itemDocs, isLoading} = useFirestoreQuery(itemsQuery);
-  const items = useMemo(
-    () => itemDocs.map((itemDoc) => ({id: itemDoc.id, ...itemDoc.data()}) as SavedItem),
+  const feedItems = useMemo(
+    () => itemDocs.map((itemDoc) => itemDoc.data() as FeedItem),
     [itemDocs]
   );
-  return {items, isLoading};
+  return {feedItems, isLoading};
 }
 
-export function useItem(itemId: SavedItemId): {
-  readonly item: SavedItem | null;
+export function useFeedItem(itemId: FeedItemId): {
+  readonly item: FeedItem | null;
   readonly isLoading: boolean;
 } {
-  const {data: itemDoc, isLoading} = useFirestoreDoc('items', itemId);
-  const item = useMemo(
-    () => (itemDoc ? ({id: itemDoc.id, ...itemDoc.data()} as SavedItem) : null),
-    [itemDoc]
-  );
+  const {data: itemDoc, isLoading} = useFirestoreDoc('feedItems', itemId);
+  const item = useMemo(() => (itemDoc ? (itemDoc.data() as FeedItem) : null), [itemDoc]);
   return {item, isLoading};
 }

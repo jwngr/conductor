@@ -1,5 +1,7 @@
-import {ImportQueueItem, SavedItem} from '@shared/types';
-import {addDoc, collection, serverTimestamp} from 'firebase/firestore';
+import {FEED_ITEM_COLLECTION, IMPORT_QUEUE_COLLECTION} from '@shared/lib/constants';
+import {makeImportQueueItem} from '@shared/lib/importQueue';
+import {makeFeedItem} from '@shared/lib/items';
+import {addDoc, collection, doc, setDoc} from 'firebase/firestore';
 import {useState} from 'react';
 
 import {firestore} from '../lib/firebase';
@@ -19,25 +21,16 @@ function App() {
     }
 
     try {
-      const newItem: Omit<SavedItem, 'id'> = {
-        url: tab.url,
-        isSaved: true,
-        source: 'extension',
-        createdAt: serverTimestamp(),
-        lastUpdatedAt: serverTimestamp(),
-        isImporting: true,
-      };
+      const newItemsCollectionRef = collection(firestore, FEED_ITEM_COLLECTION);
+      const importQueueCollectionRef = collection(firestore, IMPORT_QUEUE_COLLECTION);
 
-      const newItemDocRef = await addDoc(collection(firestore, 'items'), newItem);
+      const feedItem = makeFeedItem(tab.url, newItemsCollectionRef);
+      const importQueueItem = makeImportQueueItem(tab.url, feedItem.itemId);
 
-      const importQueueItem: ImportQueueItem = {
-        url: tab.url,
-        itemId: newItemDocRef.id,
-        createdAt: serverTimestamp(),
-        lastUpdatedAt: serverTimestamp(),
-      };
-
-      await addDoc(collection(firestore, 'importQueue'), importQueueItem);
+      await Promise.all([
+        setDoc(doc(newItemsCollectionRef, feedItem.itemId), feedItem),
+        addDoc(importQueueCollectionRef, importQueueItem),
+      ]);
 
       setStatus('URL saved successfully');
     } catch (error) {

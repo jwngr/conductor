@@ -2,7 +2,7 @@ import {FieldValue} from 'firebase/firestore';
 
 export interface ImportQueueItem {
   readonly url: string;
-  readonly itemId: string; // Index into `/items` collection.
+  readonly feedItemId: string;
   readonly createdAt: FieldValue;
   readonly lastUpdatedAt: FieldValue;
 }
@@ -17,10 +17,10 @@ export interface FirebaseConfig {
   readonly measurementId?: string;
 }
 
-export type SavedItemId = string;
+export type FeedItemId = string;
 
-export interface SavedItem {
-  readonly id: SavedItemId;
+export interface FeedItem {
+  readonly itemId: FeedItemId;
   readonly url: string;
   // readonly title: string;
   // readonly description: string;
@@ -43,4 +43,6 @@ export interface StyleAttributes {
 
 export type Task<T = void> = () => T;
 export type AsyncTask<T = void> = () => Promise<T>;
-export type Func<T> = (args: T) => void;
+export type Func<A> = (arg1: A) => void;
+export type Func2<A, B> = (arg1: A, arg2: B) => void;
+export type Func3<A, B, C> = (arg1: A, arg2: B, arg3: C) => void;
