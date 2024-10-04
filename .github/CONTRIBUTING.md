@@ -10,7 +10,7 @@ The packages are:
 - `/shared` - Common models and libraries shared across all packages
 - `/pwa` - Progressive Web App
 - `/extension` - Browser extension
-- `/functions` - Firebase cloud functions (e.g. for managing the import queue)
+- `/functions` - Firebase cloud functions (import queue)
 - `/scripts` - Helpful scripts for maintaining this repo
 
 ## Initial setup
