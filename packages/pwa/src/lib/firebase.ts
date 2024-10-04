@@ -1,6 +1,13 @@
 import {FirebaseConfig} from '@shared/types';
 import {initializeApp} from 'firebase/app';
-import {getFirestore} from 'firebase/firestore';
+import {
+  collection,
+  getDocs,
+  getFirestore,
+  onSnapshot,
+  QueryDocumentSnapshot,
+} from 'firebase/firestore';
+import {useEffect, useState} from 'react';
 
 function validateEnvVar(name: string) {
   if (!import.meta.env[name]) {
@@ -30,3 +37,24 @@ function getFirebaseConfig(): FirebaseConfig {
 const firebaseConfig = getFirebaseConfig();
 const firebaseApp = initializeApp(firebaseConfig);
 export const firestore = getFirestore(firebaseApp);
+
+export function useFirestoreCollection(collectionName: string): {
+  readonly data: QueryDocumentSnapshot[];
+  readonly isLoading: boolean;
+} {
+  const [data, setData] = useState<QueryDocumentSnapshot[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const collectionRef = collection(firestore, collectionName);
+
+    const unsubscribe = onSnapshot(collectionRef, (snapshot) => {
+      setData(snapshot.docs);
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [collectionName]);
+
+  return {data, isLoading};
+}

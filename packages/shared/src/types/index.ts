@@ -14,3 +14,14 @@ export interface FirebaseConfig {
   readonly appId: string;
   readonly measurementId?: string;
 }
+
+export interface SavedItem {
+  readonly url: string;
+  // readonly title: string;
+  // readonly description: string;
+  readonly isSaved: boolean;
+  readonly source: string; // TODO: Make enum.
+  readonly savedAt: number;
+  readonly createdAt: number;
+  readonly lastUpdatedAt: number;
+}
