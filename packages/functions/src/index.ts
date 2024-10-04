@@ -15,6 +15,7 @@ export const processImportQueue = onDocumentCreated('/importQueue/{pushId}', asy
     return;
   }
 
+  // TODO: Properly validate the import item schema.
   const importItem = snapshot.data() as ImportQueueItem;
 
   logger.log(`URL received: ${importItem.url}`);
