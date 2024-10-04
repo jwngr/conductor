@@ -74,7 +74,7 @@ The extension will now be available from your browser toolbar, although it may b
 
 The extension works in Chromium-based browsers.
 
-## Firebase Emulators locally
+## Running Firebase emulator suite locally
 
 This repo is configured to work with the [Firebase emulator suite](https://firebase.google.com/docs/emulator-suite)
 for the following products:
@@ -96,10 +96,14 @@ $ npm i -g firebase-tools
 $ brew install openjdk
 ```
 
+1. Set `VITE_FIREBASE_USE_EMULATOR=true` in `.env` file at the root of the repo.
+
 1. Start the Firebase emulator suite:
 
 ```bash
 $ firebase emulators:start
 ```
+
+1. Restart the corresponding service you need to run.
 
 The Firebase emulator UI opens at http://localhost:4000.

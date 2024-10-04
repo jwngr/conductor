@@ -42,16 +42,16 @@ const firebaseApp = initializeApp(firebaseConfig);
 
 export const firestore = getFirestore(firebaseApp);
 
-// if (import.meta.env.DEV) {
-//   // Configure Firebase emulator for local development.
-//   const FIREBASE_EMULATOR_HOST = '127.0.0.1';
-//   const FUNCTIONS_EMULATOR_PORT = 5001;
-//   const FIRESTORE_EMULATOR_PORT = 8080;
+if (import.meta.env.DEV && import.meta.env.VITE_FIREBASE_USE_EMULATOR === 'true') {
+  // Configure Firebase emulator for local development.
+  const FIREBASE_EMULATOR_HOST = '127.0.0.1';
+  const FUNCTIONS_EMULATOR_PORT = 5001;
+  const FIRESTORE_EMULATOR_PORT = 8080;
 
-//   const functions = getFunctions(firebaseApp);
-//   connectFunctionsEmulator(functions, FIREBASE_EMULATOR_HOST, FUNCTIONS_EMULATOR_PORT);
-//   connectFirestoreEmulator(firestore, FIREBASE_EMULATOR_HOST, FIRESTORE_EMULATOR_PORT);
-// }
+  const functions = getFunctions(firebaseApp);
+  connectFunctionsEmulator(functions, FIREBASE_EMULATOR_HOST, FUNCTIONS_EMULATOR_PORT);
+  connectFirestoreEmulator(firestore, FIREBASE_EMULATOR_HOST, FIRESTORE_EMULATOR_PORT);
+}
 
 export function useFirestoreQuery(collectionQuery: Query): {
   readonly data: QueryDocumentSnapshot[];
