@@ -1,5 +1,10 @@
 name: Deploy staging Firebase Functions on PR
-on: pull_request
+on:
+  # Comment out or remove the push trigger
+  #pull_request
+
+  # Add a manual trigger instead
+  workflow_dispatch:
 permissions:
   checks: write
   contents: read

@@ -1,8 +1,12 @@
 name: Deploy prod Firebase Functions on merge
 on:
-  push:
-    branches:
-      - master
+  # Comment out or remove the push trigger
+  # push:
+  #   branches:
+  #     - master
+
+  # Add a manual trigger instead
+  workflow_dispatch:
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
