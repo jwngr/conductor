@@ -1,10 +1,13 @@
 import {collection} from 'firebase/firestore';
-import React, {useEffect} from 'react';
+import React, {Suspense, useEffect} from 'react';
+import {BrowserRouter, Navigate, Route, Routes} from 'react-router-dom';
 import {ThemeProvider} from 'styled-components';
 
 import {firestore} from '../lib/firebase';
 import {initImportQueue} from '../lib/importQueue';
 import theme from '../resources/theme.json';
+import {ItemScreen} from '../screens/HomeScreen';
+import {HomeScreen} from '../screens/ItemScreen';
 
 // import {SavedItem, SavedItemId} from '../types/savedItems';
 
@@ -21,7 +24,14 @@ export const App: React.FC = () => {
 
   return (
     <ThemeProvider theme={theme}>
-      <p>Hi I'm just testing...</p>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<HomeScreen />} />
+          <Route path="/items/:itemId?/" element={<ItemScreen />} />
+          {/* Redirect unmatched routes to home page, replacing history stack. */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
     </ThemeProvider>
   );
 };
