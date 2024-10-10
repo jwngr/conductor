@@ -30,6 +30,7 @@
     "build:server": "yarn run build:shared && yarn workspace @conductor/webServer build",
     "build:extension": "yarn run build:shared && yarn workspace @conductor/extension build",
     "build:functions": "yarn run build:shared && yarn workspace @conductor/functions build",
+    "firebase:local": "firebase emulators:start",
     "deploy:pwa": "yarn run build:shared && yarn workspace @conductor/pwa deploy",
     "deploy:functions": "yarn run build:shared && yarn workspace @conductor/functions deploy"
   },

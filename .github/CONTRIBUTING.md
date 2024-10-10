@@ -17,34 +17,45 @@ The packages are:
 
 1. Clone the repo:
 
-```bash
-$ git clone git@github.com:jwngr/conductor.git
-$ cd conductor
-```
+   ```bash
+   $ git clone git@github.com:jwngr/conductor.git
+   $ cd conductor
+   ```
 
-1. Create a Firebase project for loca and enable the following:
-1. Firestore
-1. Email authentication + passwordless auth
-1. No need to enable Auth for these non-prod projects.
+1. Create a Firebase project for local development and enable the following:
 
-1. Add a Firebase config to a `.env` file at the root of the repo:
+   1. Firestore
+   1. Functions
+   1. Cloud Storage
+   1. Email authentication + passwordless auth
 
-```bash
-$ cp .env.example .env
-# Open .env and add your Firebase config.
-```
+   Note: Enabling Analytics is not required for local development.
+
+1. Populate a `.env` file at the root of the repo:
+
+   ```bash
+   $ cp .env.example .env
+   # Open .env and add config.
+   ```
+
+1. Populate a `.env.local` file inside of `/packages/functions`:
+
+   ```bash
+   $ cp /packages/functions/.env.local.example /packages/functions/.env.local
+   # Open .env.local and add config.
+   ```
 
 1. Install Yarn (this repo uses Yarn workspaces to share code across all client and server code):
 
-```bash
-$ npm install --global yarn
-```
+   ```bash
+   $ npm install --global yarn
+   ```
 
 1. Install all dependencies:
 
-```bash
-$ yarn install
-```
+   ```bash
+   $ yarn install
+   ```
 
 ## Start PWA
 
