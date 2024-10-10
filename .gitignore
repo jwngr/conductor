@@ -8,6 +8,7 @@ tsconfig.tsbuildinfo
 # Environment variables.
 .env
 .env.local
+.env.conductor-local
 .env.staging
 .env.production
 
