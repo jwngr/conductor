@@ -22,10 +22,11 @@ export type FeedItemId = string;
 export interface FeedItem {
   readonly itemId: FeedItemId;
   readonly url: string;
-  // readonly title: string;
-  // readonly description: string;
+  readonly title: string;
+  readonly description: string;
   readonly isSaved: boolean;
   readonly source: string; // TODO: Make enum.
+  readonly outgoingLinks: string[];
 
   // Import status.
   readonly isImporting: boolean;

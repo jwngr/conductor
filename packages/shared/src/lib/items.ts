@@ -49,6 +49,9 @@ export function makeFeedItem(url: string, collectionRef: CollectionReference): F
   return {
     itemId: doc(collectionRef).id,
     url,
+    title: '',
+    description: '',
+    outgoingLinks: [],
     isSaved: true,
     source: 'extension',
     isImporting: true,
