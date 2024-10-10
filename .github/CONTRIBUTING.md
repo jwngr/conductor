@@ -35,7 +35,14 @@ The packages are:
 
    ```bash
    $ cp .env.example .env
-   # Open .env and add all non-optional config.
+   # Open .env and add config.
+   ```
+
+1. Populate a `.env.local` file inside of `/packages/functions`:
+
+   ```bash
+   $ cp /packages/functions/.env.local.example /packages/functions/.env.local
+   # Open .env.local and add config.
    ```
 
 1. Install Yarn (this repo uses Yarn workspaces to share code across all client and server code):
