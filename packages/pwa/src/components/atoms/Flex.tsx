@@ -17,15 +17,15 @@ export interface FlexProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 interface FlexWrapperProps {
-  readonly mobileGap: number;
-  readonly desktopGap: number;
+  readonly $mobileGap: number;
+  readonly $desktopGap: number;
 }
 
 const FlexWrapper = styled.div<FlexWrapperProps>`
-  gap: ${(props) => `calc(${props.desktopGap} * 1px)`};
+  gap: ${(props) => `calc(${props.$desktopGap} * 1px)`};
 
   @media (max-width: 768px) {
-    gap: ${(props) => `calc(${props.mobileGap} * 1px)`};
+    gap: ${(props) => `calc(${props.$mobileGap} * 1px)`};
   }
 `;
 
@@ -48,8 +48,8 @@ const Flex: React.FC<FlexProps> = ({
 
   return (
     <FlexWrapper
-      mobileGap={mobileGap}
-      desktopGap={desktopGap}
+      $mobileGap={mobileGap}
+      $desktopGap={desktopGap}
       style={{
         ...style,
         display: 'flex',

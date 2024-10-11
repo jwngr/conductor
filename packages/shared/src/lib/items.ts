@@ -53,9 +53,11 @@ export function makeFeedItem(url: string, collectionRef: CollectionReference): F
     description: '',
     outgoingLinks: [],
     isSaved: true,
+    isRead: false,
+    isDone: false,
     source: 'extension',
     isImporting: true,
-    createdAt: serverTimestamp(),
-    lastUpdatedAt: serverTimestamp(),
+    createdTime: serverTimestamp(),
+    lastUpdatedTime: serverTimestamp(),
   };
 }

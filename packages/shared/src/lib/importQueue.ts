@@ -22,7 +22,7 @@ export function makeImportQueueItem(url: string, feedItemId: FeedItemId): Import
     // TODO: Add an ID for these objects?
     url,
     feedItemId,
-    createdAt: serverTimestamp(),
-    lastUpdatedAt: serverTimestamp(),
+    createdTime: serverTimestamp(),
+    lastUpdatedTime: serverTimestamp(),
   };
 }

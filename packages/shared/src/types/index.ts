@@ -3,8 +3,8 @@ import {FieldValue} from 'firebase/firestore';
 export interface ImportQueueItem {
   readonly url: string;
   readonly feedItemId: string;
-  readonly createdAt: FieldValue;
-  readonly lastUpdatedAt: FieldValue;
+  readonly createdTime: FieldValue;
+  readonly lastUpdatedTime: FieldValue;
 }
 
 export interface FirebaseConfig {
@@ -21,20 +21,26 @@ export type FeedItemId = string;
 
 export interface FeedItem {
   readonly itemId: FeedItemId;
+  readonly source: string; // TODO: Make enum (e.g. extension vs email).
+
+  // Content metadata.
   readonly url: string;
   readonly title: string;
   readonly description: string;
-  readonly isSaved: boolean;
-  readonly source: string; // TODO: Make enum.
   readonly outgoingLinks: string[];
+
+  // State.
+  readonly isRead: boolean;
+  readonly isDone: boolean;
+  readonly isSaved: boolean;
 
   // Import status.
   readonly isImporting: boolean;
-  readonly lastImportedAt?: FieldValue;
+  readonly lastImportedTime?: FieldValue;
 
   // Timestamps.
-  readonly createdAt: FieldValue;
-  readonly lastUpdatedAt: FieldValue;
+  readonly createdTime: FieldValue;
+  readonly lastUpdatedTime: FieldValue;
 }
 
 export interface StyleAttributes {
