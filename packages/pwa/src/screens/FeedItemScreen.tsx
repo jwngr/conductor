@@ -1,14 +1,15 @@
 import {FeedItemId} from '@shared/types';
+import {useEffect} from 'react';
 import {Navigate, Params, useParams} from 'react-router-dom';
 
-import {useFeedItem} from '../lib/items';
+import {useFeedItem, useUpdateFeedItem} from '../lib/items';
 
-interface ItemScreenParams extends Params {
+interface FeedItemScreenParams extends Params {
   readonly feedItemId: FeedItemId;
 }
 
-const ItemScreenRouterWrapper: React.FC = () => {
-  const {feedItemId} = useParams<ItemScreenParams>();
+const FeedItemScreenRouterWrapper: React.FC = () => {
+  const {feedItemId} = useParams<FeedItemScreenParams>();
 
   if (!feedItemId) {
     // eslint-disable-next-line no-console
@@ -16,13 +17,19 @@ const ItemScreenRouterWrapper: React.FC = () => {
     return <Navigate to="/" />;
   }
 
-  return <ItemScreenInner feedItemId={feedItemId} />;
+  return <FeedItemScreenInner feedItemId={feedItemId} />;
 };
 
-const ItemScreenInner: React.FC<{
+const FeedItemScreenInner: React.FC<{
   readonly feedItemId: FeedItemId;
 }> = ({feedItemId}) => {
   const {item, isLoading} = useFeedItem(feedItemId);
+  const updateFeedItem = useUpdateFeedItem();
+
+  useEffect(() => {
+    if (!item) return;
+    updateFeedItem(feedItemId, {isRead: true});
+  }, [item, feedItemId, updateFeedItem]);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -42,4 +49,4 @@ const ItemScreenInner: React.FC<{
   );
 };
 
-export const ItemScreen = ItemScreenRouterWrapper;
+export const FeedItemScreen = FeedItemScreenRouterWrapper;

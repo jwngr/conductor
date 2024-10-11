@@ -56,43 +56,62 @@ if (import.meta.env.DEV && import.meta.env.VITE_FIREBASE_USE_EMULATOR === 'true'
   connectFirestoreEmulator(firestore, FIREBASE_EMULATOR_HOST, FIRESTORE_EMULATOR_PORT);
 }
 
-export function useFirestoreQuery(collectionQuery: Query): {
+interface UseFirstoreQueryResult {
   readonly data: QueryDocumentSnapshot[];
   readonly isLoading: boolean;
-} {
+  readonly error: Error | null;
+}
+
+export function useFirestoreQuery(collectionQuery: Query): UseFirstoreQueryResult {
   const [data, setData] = useState<QueryDocumentSnapshot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(collectionQuery, (snapshot) => {
-      setData(snapshot.docs);
-      setIsLoading(false);
-    });
+    const unsubscribe = onSnapshot(
+      collectionQuery,
+      (snapshot) => {
+        setData(snapshot.docs);
+        setIsLoading(false);
+      },
+      (error) => {
+        setError(error);
+        setIsLoading(false);
+      }
+    );
 
     return () => unsubscribe();
   }, [collectionQuery]);
 
-  return {data, isLoading};
+  return {data, isLoading, error};
 }
 
-export function useFirestoreDoc(
-  collectionName: string,
-  documentId: string
-): {
+interface UseFirestoreDocResult {
   readonly data: DocumentSnapshot | null;
   readonly isLoading: boolean;
-} {
+  readonly error: Error | null;
+}
+
+export function useFirestoreDoc(collectionName: string, documentId: string): UseFirestoreDocResult {
   const [data, setData] = useState<DocumentSnapshot | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(doc(firestore, collectionName, documentId), (snapshot) => {
-      setData(snapshot);
-      setIsLoading(false);
-    });
+    const unsubscribe = onSnapshot(
+      doc(firestore, collectionName, documentId),
+      (snapshot) => {
+        setData(snapshot);
+        setIsLoading(false);
+      },
+      (error) => {
+        setError(error);
+        setIsLoading(false);
+      }
+    );
 
     return () => unsubscribe();
   }, [collectionName, documentId]);
 
-  return {data, isLoading};
+  return {data, isLoading, error};
 }

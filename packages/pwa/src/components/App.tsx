@@ -3,8 +3,8 @@ import {BrowserRouter, Navigate, Route, Routes} from 'react-router-dom';
 import {ThemeProvider} from 'styled-components';
 
 import theme from '../resources/theme.json';
+import {FeedItemScreen} from '../screens/FeedItemScreen';
 import {HomeScreen} from '../screens/HomeScreen';
-import {ItemScreen} from '../screens/ItemScreen';
 
 export const App: React.FC = () => {
   return (
@@ -12,7 +12,7 @@ export const App: React.FC = () => {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<HomeScreen />} />
-          <Route path="/items/:feedItemId?/" element={<ItemScreen />} />
+          <Route path="/items/:feedItemId?/" element={<FeedItemScreen />} />
           {/* Redirect unmatched routes to home page, replacing history stack. */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

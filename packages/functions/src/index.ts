@@ -176,8 +176,8 @@ const updateFeedItemInFirestore = async (
     description: description ?? undefined,
     outgoingLinks: links,
     isImporting: false,
-    lastImportedAt: admin.firestore.FieldValue.serverTimestamp(),
-    lastUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    lastImportedTime: admin.firestore.FieldValue.serverTimestamp(),
+    lastUpdatedTime: admin.firestore.FieldValue.serverTimestamp(),
   };
 
   const itemDoc = firestore.doc(`${FEED_ITEM_COLLECTION}/${feedItemId}`);
