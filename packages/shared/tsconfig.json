@@ -7,6 +7,13 @@
 
     // Build output.
     "rootDir": "./src",
-    "outDir": "./dist"
+    "outDir": "./dist",
+
+    // Import aliases.
+    "paths": {
+      // Despite this being in the shared package itself, prefer @shared imports over @src. This
+      // makes code valid in any package when copy / pasting.
+      "@shared/*": ["./src/*"]
+    }
   }
 }

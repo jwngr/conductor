@@ -2,7 +2,7 @@ import {createRoot} from 'react-dom/client';
 
 import './index.css';
 
-import {App} from './components/App';
+import {App} from '@src/components/App';
 
 const rootDiv = document.getElementById('root');
 if (!rootDiv) {

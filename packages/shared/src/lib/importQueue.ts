@@ -1,6 +1,5 @@
+import {FeedItemId, ImportQueueItem} from '@shared/types/core';
 import {addDoc, CollectionReference, doc, getDoc, serverTimestamp} from 'firebase/firestore';
-
-import {FeedItemId, ImportQueueItem} from '../types';
 
 export class ImportQueue {
   constructor(private readonly collectionRef: CollectionReference) {}

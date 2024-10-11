@@ -13,6 +13,7 @@
     // Import aliases.
     "baseUrl": ".",
     "paths": {
+      "@src/*": ["./src/*"],
       "@shared/*": ["../shared/src/*"]
     }
   }

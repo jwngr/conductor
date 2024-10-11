@@ -1,10 +1,9 @@
+import theme from '@src/resources/theme.json';
+import {FeedItemScreen} from '@src/screens/FeedItemScreen';
+import {HomeScreen} from '@src/screens/HomeScreen';
 import React from 'react';
 import {BrowserRouter, Navigate, Route, Routes} from 'react-router-dom';
 import {ThemeProvider} from 'styled-components';
-
-import theme from '../resources/theme.json';
-import {FeedItemScreen} from '../screens/FeedItemScreen';
-import {HomeScreen} from '../screens/HomeScreen';
 
 export const App: React.FC = () => {
   return (

@@ -2,14 +2,13 @@ import {FEED_ITEM_COLLECTION, IMPORT_QUEUE_COLLECTION} from '@shared/lib/constan
 import {makeImportQueueItem} from '@shared/lib/importQueue';
 import {makeFeedItem} from '@shared/lib/items';
 import {ViewType} from '@shared/types/query';
+import {FlexColumn} from '@src/components/atoms/Flex';
+import {Text} from '@src/components/atoms/Text';
+import {View} from '@src/components/View';
+import {firestore} from '@src/lib/firebase';
 import {addDoc, collection, doc, setDoc} from 'firebase/firestore';
 import {useState} from 'react';
 import styled from 'styled-components';
-
-import {FlexColumn} from '../components/atoms/Flex';
-import {Text} from '../components/atoms/Text';
-import {View} from '../components/View';
-import {firestore} from '../lib/firebase';
 
 const HomeScreenWrapper = styled.div`
   padding: 20px;

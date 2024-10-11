@@ -1,8 +1,7 @@
 import {FeedItemId} from '@shared/types';
+import {useFeedItem, useUpdateFeedItem} from '@src/lib/items';
 import {useEffect} from 'react';
 import {Navigate, Params, useParams} from 'react-router-dom';
-
-import {useFeedItem, useUpdateFeedItem} from '../lib/items';
 
 interface FeedItemScreenParams extends Params {
   readonly feedItemId: FeedItemId;

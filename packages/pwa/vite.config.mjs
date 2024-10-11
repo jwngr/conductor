@@ -11,6 +11,7 @@ export default defineConfig({
   envDir: path.resolve(__dirname, '../..'), // .env is at repo root.
   resolve: {
     alias: {
+      '@src': path.resolve(__dirname, './src'),
       '@shared': path.resolve(__dirname, '../shared/src'),
     },
   },
