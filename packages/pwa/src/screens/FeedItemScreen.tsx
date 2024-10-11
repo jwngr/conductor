@@ -1,4 +1,4 @@
-import {FeedItemId} from '@shared/types';
+import {FeedItemId} from '@shared/types/core';
 import {useFeedItem, useUpdateFeedItem} from '@src/lib/items';
 import {useEffect} from 'react';
 import {Navigate, Params, useParams} from 'react-router-dom';

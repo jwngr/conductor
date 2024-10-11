@@ -1,9 +1,13 @@
-
-dist/
-packages/scripts/src/resources/
+# Misc.
 node_modules/
 tsconfig.tsbuildinfo
 .DS_Store
+
+# Private files.
+packages/scripts/src/resources/
+
+# Build output.
+dist/
 
 # Environment variables.
 .env

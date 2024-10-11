@@ -1,6 +1,6 @@
 import FirecrawlApp from '@mendable/firecrawl-js';
-import FireCrawlApp from '@mendable/firecrawl-js';
-import {FeedItem, FeedItemId, ImportQueueItem} from '@shared/types';
+import {FEED_ITEM_COLLECTION, IMPORT_QUEUE_COLLECTION} from '@shared/lib/constants';
+import {FeedItem, FeedItemId, ImportQueueItem} from '@shared/types/core';
 import admin from 'firebase-admin';
 import logger from 'firebase-functions/logger';
 import {defineString} from 'firebase-functions/params';
@@ -10,15 +10,11 @@ import {onDocumentCreated} from 'firebase-functions/v2/firestore';
 // Define some parameters
 const FIRECRAWL_API_KEY = defineString('FIRECRAWL_API_KEY');
 
-// TODO: Use constants from shared package.
-const FEED_ITEM_COLLECTION = 'feedItems';
-const IMPORT_QUEUE_COLLECTION = 'importQueue';
-
 admin.initializeApp();
 
 let firecrawlApp: FirecrawlApp;
 onInit(() => {
-  firecrawlApp = new FireCrawlApp({apiKey: FIRECRAWL_API_KEY.value()});
+  firecrawlApp = new FirecrawlApp({apiKey: FIRECRAWL_API_KEY.value()});
 });
 
 const firestore = admin.firestore();

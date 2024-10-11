@@ -8,6 +8,6 @@
     "format": "prettier --write 'src/**/*.{js,ts,json}'",
     "clean": "rm -rf dist/ tsconfig.tsbuildinfo",
     "ci": "rm -rf node_modules/ && npm install",
-    "build": "npm run clean && sed -i.bak '/setCookie(/d' ../../node_modules/@types/request/index.d.ts && vite build"
+    "build": "npm run clean && sed -i.bak '/setCookie(/d' ../../node_modules/@types/request/index.d.ts && tsc && vite build"
   }
 }

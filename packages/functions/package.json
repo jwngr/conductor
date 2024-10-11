@@ -2,25 +2,26 @@
   "name": "@conductor/functions",
   "version": "1.0.0",
   "private": true,
-  "type": "module",
+  "type": "commonjs",
   "engines": {
     "node": "22"
   },
   "main": "dist/index.js",
   "dependencies": {
+    "@conductor/shared": "1.0.0",
     "firebase-admin": "^12.6.0",
     "firebase-functions": "^6.0.1",
     "@mendable/firecrawl-js": "^1.5.3"
   },
   "devDependencies": {
-    "@types/node": "^22.5.0"
+    "@types/node": "^22.5.0",
+    "esbuild": "^0.19.0"
   },
   "scripts": {
     "lint": "prettier --check 'src/**/*.{js,jsx,ts,tsx,json,css}' && echo 'Running ESLint...' && eslint src --report-unused-disable-directives --max-warnings 0 && echo 'All files pass linting!'",
-    "format": "prettier --write 'src/**/*.{js,jsx,ts,tsx,json,css}'",
     "clean": "rm -rf dist/",
     "ci": "rm -rf node_modules/ && npm install",
-    "build": "npm run clean && tsc",
+    "build": "npm run clean && tsc && esbuild src/index.ts --bundle --platform=node --target=node22 --outfile=lib/index.js --external:firebase-admin --external:firebase-functions",
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",

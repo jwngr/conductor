@@ -1,4 +1,4 @@
-import {StyleAttributes} from '@shared/types';
+import {StyleAttributes} from '@shared/types/core';
 import styled from 'styled-components';
 
 interface SpacerWrapperProps {

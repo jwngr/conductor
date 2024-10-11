@@ -15,7 +15,7 @@
     "lint": "prettier --check 'src/**/*.{js,ts,json}' && echo 'Running ESLint...' && eslint src --report-unused-disable-directives --max-warnings 0 && echo 'All files pass linting!' && echo 'Running tsc...' && sed -i.bak '/setCookie(/d' ../../node_modules/@types/request/index.d.ts && tsc && echo 'All files pass type checking!'",
     "format": "prettier --write 'src/**/*.{js,ts,json}'",
     "ci": "rm -rf node_modules/ && npm install",
-    "build": "# scripts are run via tsx, not compiled",
+    "build": "tsc",
     "clean": "# scripts are run via tsx, not compiled, so there's nothing to clean"
   }
 }

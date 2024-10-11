@@ -21,7 +21,7 @@
     "start": "vite",
     "clean": "rm -rf dist/",
     "ci": "rm -rf node_modules/ && npm install",
-    "build": "npm run clean && vite build",
+    "build": "npm run clean && tsc &&vite build",
     "preview": "vite preview"
   },
   "browserslist": [

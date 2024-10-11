@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 
 import {JSDOM} from 'jsdom';
 
-const EXPORT_FILE_PATH = '../resources/pocketExport.html';
+const EXPORT_FILE_PATH = '@src/resources/pocketExport.html';
 
 interface PocketExportItem {
   readonly url: string;
