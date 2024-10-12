@@ -4,3 +4,8 @@
   outline: none;
   box-sizing: border-box;
 }
+
+#root {
+  height: 100vh;
+  width: 100vw;
+}
