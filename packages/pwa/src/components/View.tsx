@@ -1,4 +1,4 @@
-import {FeedItem} from '@shared/types';
+import {FeedItem} from '@shared/types/core';
 import {ViewType} from '@shared/types/query';
 import React from 'react';
 import {Link} from 'react-router-dom';
