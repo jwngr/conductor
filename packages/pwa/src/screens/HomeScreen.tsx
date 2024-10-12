@@ -4,7 +4,6 @@ import {makeFeedItem} from '@shared/lib/items';
 import {ViewType} from '@shared/types/query';
 import {addDoc, collection, doc, setDoc} from 'firebase/firestore';
 import {useState} from 'react';
-import {AppHeader} from 'src/components/AppHeader';
 import styled from 'styled-components';
 
 import {FlexColumn} from '../components/atoms/Flex';
