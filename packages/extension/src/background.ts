@@ -1,8 +1,10 @@
+import {addDoc, collection, doc, setDoc} from 'firebase/firestore';
+
 import {FEED_ITEM_COLLECTION, IMPORT_QUEUE_COLLECTION} from '@shared/lib/constants';
 import {makeImportQueueItem} from '@shared/lib/importQueue';
 import {makeFeedItem} from '@shared/lib/items';
+
 import {firestore} from '@src/lib/firebase';
-import {addDoc, collection, doc, setDoc} from 'firebase/firestore';
 
 chrome.action.onClicked.addListener(async (tab) => {
   if (tab.url) {

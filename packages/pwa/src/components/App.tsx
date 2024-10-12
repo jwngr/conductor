@@ -1,12 +1,14 @@
+import React from 'react';
+import {BrowserRouter, Navigate, Route, Routes} from 'react-router-dom';
+import styled, {ThemeProvider} from 'styled-components';
+
 import {theme} from '@shared/lib/theme';
+
 import {AllScreen} from '@src/screens/AllScreen';
 import {DoneScreen} from '@src/screens/DoneScreen';
 import {FeedItemScreen} from '@src/screens/FeedItemScreen';
 import {HomeScreen} from '@src/screens/HomeScreen';
 import {SavedScreen} from '@src/screens/SavedScreen';
-import React from 'react';
-import {BrowserRouter, Navigate, Route, Routes} from 'react-router-dom';
-import styled, {ThemeProvider} from 'styled-components';
 
 import {AppHeader} from './AppHeader';
 import {FlexColumn, FlexRow} from './atoms/Flex';

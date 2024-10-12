@@ -1,8 +1,9 @@
+import {collection, doc, query, updateDoc, where} from 'firebase/firestore';
+import {useMemo} from 'react';
+
 import {FEED_ITEM_COLLECTION} from '@shared/lib/constants';
 import {FeedItem, FeedItemId} from '@shared/types/core';
 import {fromFilterOperator, ViewType} from '@shared/types/query';
-import {collection, doc, query, updateDoc, where} from 'firebase/firestore';
-import {useMemo} from 'react';
 
 import {firestore, useFirestoreDoc, useFirestoreQuery} from './firebase';
 import {Views} from './views';

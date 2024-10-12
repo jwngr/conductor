@@ -1,6 +1,7 @@
-import {FirebaseConfig} from '@shared/types/core';
 import {initializeApp} from 'firebase/app';
 import {getFirestore} from 'firebase/firestore';
+
+import {FirebaseConfig} from '@shared/types/core';
 
 function validateEnvVar(name: string) {
   if (!import.meta.env[name]) {

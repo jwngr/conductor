@@ -1,9 +1,11 @@
+import {addDoc, collection, doc, setDoc} from 'firebase/firestore';
+import {useState} from 'react';
+
 import {FEED_ITEM_COLLECTION, IMPORT_QUEUE_COLLECTION} from '@shared/lib/constants';
 import {makeImportQueueItem} from '@shared/lib/importQueue';
 import {makeFeedItem} from '@shared/lib/items';
+
 import {firestore} from '@src/lib/firebase';
-import {addDoc, collection, doc, setDoc} from 'firebase/firestore';
-import {useState} from 'react';
 
 import {useCurrentTab} from '../lib/tabs';
 

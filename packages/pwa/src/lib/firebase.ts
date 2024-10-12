@@ -1,4 +1,3 @@
-import {FirebaseConfig} from '@shared/types/core';
 import {initializeApp} from 'firebase/app';
 import {
   connectFirestoreEmulator,
@@ -12,6 +11,8 @@ import {
 import {connectFunctionsEmulator, getFunctions} from 'firebase/functions';
 import {connectStorageEmulator, getStorage} from 'firebase/storage';
 import {useEffect, useState} from 'react';
+
+import {FirebaseConfig} from '@shared/types/core';
 
 function validateEnvVar(name: string) {
   if (!import.meta.env[name]) {
