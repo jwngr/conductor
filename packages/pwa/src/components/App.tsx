@@ -1,4 +1,4 @@
-import theme from '@src/resources/theme.json';
+import {theme} from '@shared/lib/theme';
 import {AllScreen} from '@src/screens/AllScreen';
 import {DoneScreen} from '@src/screens/DoneScreen';
 import {FeedItemScreen} from '@src/screens/FeedItemScreen';

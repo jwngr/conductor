@@ -1,10 +1,10 @@
 import {assertNever} from '@shared/lib/utils';
 import {ViewType} from '@shared/types/query';
 import React from 'react';
-import {Link} from 'react-router-dom';
 import styled from 'styled-components';
 
 import {FlexColumn, FlexRow} from './atoms/Flex';
+import {Link} from './atoms/Link';
 import {Text} from './atoms/Text';
 
 enum CustomizableImageType {

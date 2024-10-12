@@ -1,3 +1,4 @@
+import {ThemeColor} from '@shared/types/theme';
 import {HTMLAttributes} from 'react';
 import styled, {css} from 'styled-components';
 
@@ -14,8 +15,8 @@ function getFontWeight(bold?: boolean, weight?: FontWeight) {
 type TextElement = 'p' | 'span' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 
 interface TextWrapperProps {
-  readonly color?: string;
-  readonly hoverColor?: string;
+  readonly color?: ThemeColor;
+  readonly hoverColor?: ThemeColor;
   readonly light?: boolean;
   readonly monospace?: boolean;
   readonly truncate?: boolean;
@@ -39,35 +40,22 @@ export const TextWrapper = styled.span<TextWrapperProps>`
         `
       : null}
 
-  ${(props) => {
-    let colorValue: string;
-    if (props.color) {
-      colorValue = props.color;
-    } else if (props.light) {
-      colorValue = 'var(--black-1)';
-    } else {
-      colorValue = 'var(--black-0)';
-    }
+  ${({theme, color, light}) => {
+    // TODO: Set the default color somewhere. Probably shouldn't do it here.
+    if (!color && !light) return null;
     return css`
-      color: ${colorValue};
+      color: ${color ?? theme.colors[ThemeColor.Neutral500]};
+    `;
+  }};
+
+  ${({hoverColor}) => {
+    if (!hoverColor) return null;
+    return css`
+      &:hover {
+        color: ${hoverColor};
+      }
     `;
   }}
-
-  &:hover {
-    ${(props) => {
-      let colorValue: string | null = null;
-      if (props.hoverColor) {
-        colorValue = props.hoverColor;
-      } else if (props.light) {
-        colorValue = 'var(--black-1)';
-      }
-
-      if (!colorValue) return null;
-      return css`
-        color: ${colorValue};
-      `;
-    }}
-  }
 `;
 
 interface TextProps extends HTMLAttributes<HTMLParagraphElement> {
