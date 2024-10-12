@@ -39,13 +39,13 @@ function App() {
   };
 
   return (
-    <AppWrapper>
+    <>
       <p>URL: {currentTab?.url}</p>
       <button id="saveButton" onClick={handleClick}>
         Save Current URL
       </button>
       <p>{status}</p>
-    </AppWrapper>
+    </>
   );
 }
 
