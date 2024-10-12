@@ -6,8 +6,6 @@ const LinkWrapper = styled(RouterLink)`
   color: unset;
 `;
 
-interface LinkProps extends RouterLinkProps {}
-
-export const Link: React.FC<LinkProps> = ({children, ...props}) => {
+export const Link: React.FC<RouterLinkProps> = ({children, ...props}) => {
   return <LinkWrapper {...props}>{children}</LinkWrapper>;
 };
