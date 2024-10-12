@@ -2,6 +2,7 @@ import {FEED_ITEM_COLLECTION, IMPORT_QUEUE_COLLECTION} from '@shared/lib/constan
 import {makeImportQueueItem} from '@shared/lib/importQueue';
 import {makeFeedItem} from '@shared/lib/items';
 import {ViewType} from '@shared/types/query';
+import {ThemeColor} from '@shared/types/theme';
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
 import {View} from '@src/components/View';
@@ -55,7 +56,7 @@ export const HomeScreen: React.FC = () => {
       <FlexColumn gap={12} align="flex-start">
         <input type="text" value={url} onChange={(e) => setUrl(e.target.value)} />
         <button onClick={() => handleAddItemToQueue(url)}>Add to import queue</button>
-        <Text as="p" color="green" bold>
+        <Text as="p" color={ThemeColor.Green700} bold>
           {status}
         </Text>
       </FlexColumn>

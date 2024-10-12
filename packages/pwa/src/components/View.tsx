@@ -1,20 +1,36 @@
 import {FeedItem} from '@shared/types/core';
 import {ViewType} from '@shared/types/query';
+import {ThemeColor} from '@shared/types/theme';
 import React from 'react';
-import {Link} from 'react-router-dom';
+import styled from 'styled-components';
 
 import {useFeedItems} from '../lib/items';
+import {FlexColumn} from './atoms/Flex';
+import {Link} from './atoms/Link';
 import {Text} from './atoms/Text';
+
+const ViewListItemWrapper = styled(FlexColumn).attrs({justify: 'center', gap: 4})`
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 4px;
+
+  &:hover {
+    background-color: ${({theme}) => theme.colors[ThemeColor.Neutral100]};
+  }
+`;
 
 const ViewListItem: React.FC<{feedItem: FeedItem}> = ({feedItem}) => {
   return (
-    <li key={feedItem.itemId}>
-      <Link to={`/items/${feedItem.itemId}`}>
+    <Link to={`/items/${feedItem.itemId}`}>
+      <ViewListItemWrapper key={feedItem.itemId}>
         <Text as="p" bold>
+          {feedItem.title || 'No title'}
+        </Text>
+        <Text as="p" light>
           {feedItem.url}
         </Text>
-      </Link>
-    </li>
+      </ViewListItemWrapper>
+    </Link>
   );
 };
 

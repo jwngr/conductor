@@ -1,10 +1,10 @@
 import {assertNever} from '@shared/lib/utils';
 import {ViewType} from '@shared/types/query';
 import React from 'react';
-import {Link} from 'react-router-dom';
 import styled from 'styled-components';
 
 import {FlexColumn, FlexRow} from './atoms/Flex';
+import {Link} from './atoms/Link';
 import {Text} from './atoms/Text';
 
 enum CustomizableImageType {
@@ -84,9 +84,7 @@ const LeftSidebarSection: React.FC<{
 };
 
 const LeftSidebarWrapper = styled(FlexColumn)`
-  height: 100%;
   width: 200px;
-  border: solid 5px green;
   padding: 20px;
 `;
 
