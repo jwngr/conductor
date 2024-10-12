@@ -1,10 +1,8 @@
 import {HTMLAttributes} from 'react';
-import styled from 'styled-components';
+import styled, {css} from 'styled-components';
 
 export interface FlexProps extends HTMLAttributes<HTMLDivElement> {
   readonly direction: 'row' | 'column';
-  readonly gap: number | {mobile: number; desktop: number};
-  readonly wrap: boolean;
   readonly align: 'flex-start' | 'flex-end' | 'center' | 'stretch' | 'baseline';
   readonly justify:
     | 'flex-start'
@@ -13,38 +11,50 @@ export interface FlexProps extends HTMLAttributes<HTMLDivElement> {
     | 'space-between'
     | 'space-around'
     | 'space-evenly';
-  readonly flex: string | number | boolean;
+  readonly gap?: number | {mobile: number; desktop: number};
+  readonly wrap?: boolean;
+  readonly flex?: string | number | boolean;
 }
 
 interface FlexWrapperProps {
-  readonly $mobileGap: number;
-  readonly $desktopGap: number;
+  readonly $mobileGap?: number;
+  readonly $desktopGap?: number;
 }
 
 const FlexWrapper = styled.div<FlexWrapperProps>`
-  gap: ${(props) => `calc(${props.$desktopGap} * 1px)`};
+  ${({$desktopGap}) =>
+    typeof $desktopGap === 'undefined'
+      ? null
+      : css`
+          gap: calc(${$desktopGap * 1}px);
+        `};
 
-  @media (max-width: 768px) {
-    gap: ${(props) => `calc(${props.$mobileGap} * 1px)`};
-  }
+  ${({$mobileGap}) =>
+    typeof $mobileGap === 'undefined'
+      ? null
+      : css`
+          @media (max-width: 768px) {
+            gap: calc(${$mobileGap * 1}px);
+          }
+        `};
 `;
 
 const Flex: React.FC<FlexProps> = ({
   children,
-  gap,
   direction,
   align,
   justify,
-  wrap = false,
+  gap,
+  wrap,
   flex,
   style,
   ...rest
 }) => {
-  const mobileGap = typeof gap === 'number' ? gap : (gap?.mobile ?? 0);
-  const desktopGap = typeof gap === 'number' ? gap : (gap?.desktop ?? 0);
+  const mobileGap = typeof gap === 'number' ? gap : gap?.mobile;
+  const desktopGap = typeof gap === 'number' ? gap : gap?.desktop;
 
   const flexValue = flex === true ? 1 : flex === false ? 0 : flex;
-  const wrapValue = wrap === true ? 'wrap' : 'nowrap';
+  const wrapValue = wrap === true ? 'wrap' : wrap === false ? 'nowrap' : undefined;
 
   return (
     <FlexWrapper
@@ -54,10 +64,10 @@ const Flex: React.FC<FlexProps> = ({
         ...style,
         display: 'flex',
         flexDirection: direction,
-        flexWrap: wrapValue,
         alignItems: align,
         justifyContent: justify,
-        flex: flexValue,
+        ...(typeof flexValue === 'undefined' ? {} : {flex: flexValue}),
+        ...(typeof wrapValue === 'undefined' ? {} : {flexWrap: wrapValue}),
       }}
       {...rest}
     >
@@ -73,9 +83,9 @@ type FlexRowColumnProps = Partial<Omit<FlexProps, 'direction'>> & {
 export const FlexRow: React.FC<FlexRowColumnProps> = ({
   align = 'center',
   justify = 'flex-start',
-  gap = 0,
-  wrap = false,
-  flex = false,
+  gap,
+  wrap,
+  flex,
   children,
   ...rest
 }) => {
@@ -97,9 +107,9 @@ export const FlexRow: React.FC<FlexRowColumnProps> = ({
 export const FlexColumn: React.FC<FlexRowColumnProps> = ({
   align = 'stretch',
   justify = 'flex-start',
-  gap = 0,
-  wrap = false,
-  flex = false,
+  gap,
+  wrap,
+  flex,
   children,
   ...rest
 }) => {
