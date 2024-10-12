@@ -63,8 +63,8 @@ interface TextProps extends HTMLAttributes<HTMLParagraphElement> {
   readonly align?: 'left' | 'center' | 'right';
   readonly bold?: boolean;
   readonly weight?: FontWeight;
-  readonly color?: string;
-  readonly hoverColor?: string;
+  readonly color?: ThemeColor;
+  readonly hoverColor?: ThemeColor;
   readonly flex?: number | string | boolean;
   readonly truncate?: boolean;
   readonly monospace?: boolean;
