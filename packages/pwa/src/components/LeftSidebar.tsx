@@ -84,9 +84,7 @@ const LeftSidebarSection: React.FC<{
 };
 
 const LeftSidebarWrapper = styled(FlexColumn)`
-  height: 100%;
   width: 200px;
-  border: solid 5px green;
   padding: 20px;
 `;
 

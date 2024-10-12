@@ -19,6 +19,7 @@ const AppWrapper = styled(FlexColumn)`
 
 const MainContentWrapper = styled.div`
   flex: 1;
+  overflow: auto;
 `;
 
 export const App: React.FC = () => {
@@ -27,7 +28,7 @@ export const App: React.FC = () => {
       <BrowserRouter>
         <AppWrapper>
           <AppHeader />
-          <FlexRow align="flex-start" flex>
+          <FlexRow align="stretch" flex style={{overflow: 'hidden'}}>
             <LeftSidebar />
             <MainContentWrapper>
               <Routes>
