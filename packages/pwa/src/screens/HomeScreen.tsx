@@ -8,7 +8,7 @@ import styled from 'styled-components';
 
 import {FlexColumn} from '../components/atoms/Flex';
 import {Text} from '../components/atoms/Text';
-import {View} from '../components/View';
+import {View} from '../components/views/View';
 import {firestore} from '../lib/firebase';
 
 const HomeScreenWrapper = styled.div`

@@ -2,19 +2,19 @@ import {StyleAttributes} from '@shared/types';
 import styled from 'styled-components';
 
 interface SpacerWrapperProps {
-  readonly widthDesktop: number;
-  readonly widthMobile: number;
-  readonly heightDesktop: number;
-  readonly heightMobile: number;
+  readonly $widthDesktop: number;
+  readonly $widthMobile: number;
+  readonly $heightDesktop: number;
+  readonly $heightMobile: number;
 }
 
 const SpacerWrapper = styled.div<SpacerWrapperProps>`
-  width: ${(props) => props.widthDesktop}px;
-  height: ${(props) => props.heightDesktop}px;
+  width: ${(props) => props.$widthDesktop}px;
+  height: ${(props) => props.$heightDesktop}px;
 
   @media (max-width: 760px) {
-    width: ${(props) => props.widthMobile}px;
-    height: ${(props) => props.heightMobile}px;
+    width: ${(props) => props.$widthMobile}px;
+    height: ${(props) => props.$heightMobile}px;
   }
 `;
 
@@ -35,10 +35,10 @@ export const Spacer: React.FC<SpacerProps> = ({x, y, flex, ...rest}) => {
 
   return (
     <SpacerWrapper
-      widthDesktop={widthDesktop}
-      widthMobile={widthMobile}
-      heightDesktop={heightDesktop}
-      heightMobile={heightMobile}
+      $widthDesktop={widthDesktop}
+      $widthMobile={widthMobile}
+      $heightDesktop={heightDesktop}
+      $heightMobile={heightMobile}
       style={{flex: flexValue}}
       {...rest}
     >
