@@ -44,15 +44,15 @@ export const TextWrapper = styled.span<TextWrapperProps>`
     // TODO: Set the default color somewhere. Probably shouldn't do it here.
     if (!color && !light) return null;
     return css`
-      color: ${color ?? theme.colors[ThemeColor.Neutral500]};
+      color: ${theme.colors[color ?? ThemeColor.Neutral500]};
     `;
   }};
 
-  ${({hoverColor}) => {
+  ${({theme, hoverColor}) => {
     if (!hoverColor) return null;
     return css`
       &:hover {
-        color: ${hoverColor};
+        color: ${theme.colors[hoverColor]};
       }
     `;
   }}
