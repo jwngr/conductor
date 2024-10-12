@@ -1,7 +1,6 @@
 import {ViewType} from '@shared/types/query';
+import {View} from '@src/components/views/View';
 import styled from 'styled-components';
-
-import {View} from '../components/views/View';
 
 const AllScreenWrapper = styled.div`
   padding: 20px;
