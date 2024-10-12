@@ -1,5 +1,6 @@
-import {assertNever} from '@shared/lib/utils';
 import {OrderByDirection, WhereFilterOp} from 'firebase/firestore';
+
+import {assertNever} from '@shared/lib/utils';
 
 import {FeedItem} from './core';
 

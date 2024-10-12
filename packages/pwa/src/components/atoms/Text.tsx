@@ -1,6 +1,7 @@
-import {ThemeColor} from '@shared/types/theme';
 import {HTMLAttributes} from 'react';
 import styled, {css} from 'styled-components';
+
+import {ThemeColor} from '@shared/types/theme';
 
 type FontWeight = 'normal' | 'bold' | '900';
 const DEFAULT_FONT_WEIGHT = 'normal';

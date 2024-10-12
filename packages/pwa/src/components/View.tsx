@@ -1,8 +1,9 @@
+import React from 'react';
+import styled from 'styled-components';
+
 import {FeedItem} from '@shared/types/core';
 import {ViewType} from '@shared/types/query';
 import {ThemeColor} from '@shared/types/theme';
-import React from 'react';
-import styled from 'styled-components';
 
 import {useFeedItems} from '../lib/items';
 import {FlexColumn} from './atoms/Flex';
