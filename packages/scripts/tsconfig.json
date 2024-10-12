@@ -7,12 +7,14 @@
 
   "compilerOptions": {
     // Scripts are run via tsx, not compiled.
-    "noEmit": true,
+    "noEmit": true
 
+    // TODO: Get import aliases working by adding some build step.
     // Import aliases.
-    "baseUrl": ".",
-    "paths": {
-      "@shared/*": ["../shared/src/*"]
-    }
+    // "baseUrl": ".",
+    // "paths": {
+    //   "@src/*": ["./src"],
+    //   "@shared/*": ["../shared/src/*"]
+    // }
   }
 }

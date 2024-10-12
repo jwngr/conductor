@@ -1,10 +1,10 @@
-import {FeedItem} from '@shared/types';
+import {FeedItem} from '@shared/types/core';
 import {ViewType} from '@shared/types/query';
 import React from 'react';
 import {Link} from 'react-router-dom';
 
-import {useFeedItems} from '../../lib/items';
-import {Text} from '../atoms/Text';
+import {useFeedItems} from '../lib/items';
+import {Text} from './atoms/Text';
 
 const ViewListItem: React.FC<{feedItem: FeedItem}> = ({feedItem}) => {
   return (

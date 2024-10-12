@@ -1,13 +1,13 @@
+import theme from '@src/resources/theme.json';
+import {AllScreen} from '@src/screens/AllScreen';
+import {DoneScreen} from '@src/screens/DoneScreen';
+import {FeedItemScreen} from '@src/screens/FeedItemScreen';
+import {HomeScreen} from '@src/screens/HomeScreen';
+import {SavedScreen} from '@src/screens/SavedScreen';
 import React from 'react';
 import {BrowserRouter, Navigate, Route, Routes} from 'react-router-dom';
 import {ThemeProvider} from 'styled-components';
 
-import theme from '../resources/theme.json';
-import {AllScreen} from '../screens/AllScreen';
-import {DoneScreen} from '../screens/DoneScreen';
-import {FeedItemScreen} from '../screens/FeedItemScreen';
-import {HomeScreen} from '../screens/HomeScreen';
-import {SavedScreen} from '../screens/SavedScreen';
 import {AppHeader} from './AppHeader';
 import {FlexRow} from './atoms/Flex';
 import {LeftSidebar} from './LeftSidebar';

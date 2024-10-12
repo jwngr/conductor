@@ -1,5 +1,5 @@
 import {FEED_ITEM_COLLECTION} from '@shared/lib/constants';
-import {FeedItem, FeedItemId} from '@shared/types';
+import {FeedItem, FeedItemId} from '@shared/types/core';
 import {fromFilterOperator, ViewType} from '@shared/types/query';
 import {collection, doc, query, updateDoc, where} from 'firebase/firestore';
 import {useMemo} from 'react';

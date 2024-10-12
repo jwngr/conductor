@@ -6,13 +6,14 @@
   "references": [{"path": "../shared"}],
 
   "compilerOptions": {
-    // Build output.
-    "rootDir": "./src",
-    "outDir": "./dist",
+    // Build is handled by esbuild.
+    "moduleResolution": "bundler",
+    "noEmit": true,
 
     // Import aliases.
     "baseUrl": ".",
     "paths": {
+      "@src/*": ["./src/*"],
       "@shared/*": ["../shared/src/*"]
     }
   }

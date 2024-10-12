@@ -1,11 +1,7 @@
 {
   "hosting": {
     "public": "packages/pwa/dist/",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ]
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
   },
   "database": {
     "rules": "database.rules.json"
@@ -13,17 +9,8 @@
   "functions": [
     {
       "source": "packages/functions",
-      "ignore": [
-        "node_modules",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log",
-        "*.local"
-      ],
-      "predeploy": [
-        "yarn run lint:functions",
-        "yarn run build:functions"
-      ]
+      "ignore": ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log", "*.local"],
+      "predeploy": ["yarn run lint:functions", "yarn run build:functions"]
     }
   ],
   "emulators": {

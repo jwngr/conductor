@@ -1,3 +1,5 @@
+import {FeedItem} from '@shared/types/core';
+import {Func, Task} from '@shared/types/utils';
 import {
   addDoc,
   CollectionReference,
@@ -7,8 +9,6 @@ import {
   serverTimestamp,
   updateDoc,
 } from 'firebase/firestore';
-
-import {FeedItem, Func, Task} from '../types';
 
 // TODO: This is currently not used, but the path I'd like to head...
 
