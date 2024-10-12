@@ -4,11 +4,12 @@ import {makeFeedItem} from '@shared/lib/items';
 import {ViewType} from '@shared/types/query';
 import {addDoc, collection, doc, setDoc} from 'firebase/firestore';
 import {useState} from 'react';
+import {AppHeader} from 'src/components/AppHeader';
 import styled from 'styled-components';
 
 import {FlexColumn} from '../components/atoms/Flex';
 import {Text} from '../components/atoms/Text';
-import {View} from '../components/View';
+import {View} from '../components/views/View';
 import {firestore} from '../lib/firebase';
 
 const HomeScreenWrapper = styled.div`
