@@ -1,9 +1,17 @@
 import {useEffect} from 'react';
 import {Navigate, Params, useParams} from 'react-router-dom';
+import styled from 'styled-components';
 
 import {FeedItemId} from '@shared/types/core';
+import {IconName} from '@shared/types/icons';
 
+import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
+import {Text} from '@src/components/atoms/Text';
 import {useFeedItem, useUpdateFeedItem} from '@src/lib/items';
+
+const FeedItemActionsWrapper = styled.div`
+  border: solid 1px red;
+`;
 
 interface FeedItemScreenParams extends Params {
   readonly feedItemId: FeedItemId;
@@ -19,6 +27,19 @@ const FeedItemScreenRouterWrapper: React.FC = () => {
   }
 
   return <FeedItemScreenInner feedItemId={feedItemId} />;
+};
+
+const MarkDoneFeedItemActionIcon: React.FC = () => {
+  return (
+    <ButtonIcon
+      name={IconName.MarkDone}
+      size={40}
+      onClick={() => {
+        // eslint-disable-next-line no-console
+        console.log('Mark done');
+      }}
+    />
+  );
 };
 
 const FeedItemScreenInner: React.FC<{
@@ -44,7 +65,12 @@ const FeedItemScreenInner: React.FC<{
 
   return (
     <>
-      <div>Feed item {feedItemId}</div>
+      <Text as="h1" bold>
+        Feed item {feedItemId}
+      </Text>
+      <FeedItemActionsWrapper>
+        <MarkDoneFeedItemActionIcon />
+      </FeedItemActionsWrapper>
       <pre>{JSON.stringify(item, null, 2)}</pre>
     </>
   );
