@@ -75,7 +75,7 @@ export function getMarkDoneFeedItemActionInfo(): FeedItemAction {
 export function getSaveFeedItemActionInfo(): FeedItemAction {
   return {
     type: FeedItemActionType.Save,
-    name: 'Mark done',
+    name: 'Save',
     icon: IconName.Save,
   };
 }
