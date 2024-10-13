@@ -16,23 +16,23 @@ function getFontWeight(bold?: boolean, weight?: FontWeight) {
 type TextElement = 'p' | 'span' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 
 interface TextWrapperProps {
-  readonly color?: ThemeColor;
-  readonly hoverColor?: ThemeColor;
-  readonly light?: boolean;
-  readonly monospace?: boolean;
-  readonly truncate?: boolean;
+  readonly $color?: ThemeColor;
+  readonly $hoverColor?: ThemeColor;
+  readonly $light?: boolean;
+  readonly $monospace?: boolean;
+  readonly $truncate?: boolean;
 }
 
 export const TextWrapper = styled.span<TextWrapperProps>`
   ${(props) =>
-    props.monospace
+    props.$monospace
       ? css`
           font-family: ui-monospace, Menlo, Monaco, Consolas, 'Courier New', monospace;
         `
       : null}
 
   ${(props) =>
-    props.truncate
+    props.$truncate
       ? css`
           overflow: hidden;
           text-overflow: ellipsis;
@@ -41,19 +41,19 @@ export const TextWrapper = styled.span<TextWrapperProps>`
         `
       : null}
 
-  ${({theme, color, light}) => {
+  ${({theme, $color, $light}) => {
     // TODO: Set the default color somewhere. Probably shouldn't do it here.
-    if (!color && !light) return null;
+    if (!$color && !$light) return null;
     return css`
-      color: ${theme.colors[color ?? ThemeColor.Neutral500]};
+      color: ${theme.colors[$color ?? ThemeColor.Neutral500]};
     `;
   }};
 
-  ${({theme, hoverColor}) => {
-    if (!hoverColor) return null;
+  ${({theme, $hoverColor}) => {
+    if (!$hoverColor) return null;
     return css`
       &:hover {
-        color: ${theme.colors[hoverColor]};
+        color: ${theme.colors[$hoverColor]};
       }
     `;
   }}
@@ -81,6 +81,11 @@ export const Text: React.FC<TextProps> = ({
   flex,
   children,
   style,
+  color,
+  hoverColor,
+  light,
+  monospace,
+  truncate,
   ...rest
 }) => {
   return (
@@ -92,6 +97,11 @@ export const Text: React.FC<TextProps> = ({
         fontWeight: getFontWeight(bold, weight),
         flex: flex === true ? 1 : flex === false ? 0 : flex,
       }}
+      $color={color}
+      $hoverColor={hoverColor}
+      $light={light}
+      $monospace={monospace}
+      $truncate={truncate}
       {...rest}
     >
       {children}

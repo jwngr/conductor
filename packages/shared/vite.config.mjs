@@ -2,10 +2,12 @@ import path, {resolve} from 'path';
 import {fileURLToPath} from 'url';
 
 import {defineConfig} from 'vite';
+import svgr from 'vite-plugin-svgr';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
+  plugins: [svgr()],
   envDir: path.resolve(__dirname, '../..'), // .env is at repo root.
   build: {
     lib: {
