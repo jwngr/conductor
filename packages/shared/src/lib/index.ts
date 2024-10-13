@@ -1,6 +1,6 @@
 import * as constantsExports from './constants';
+import * as itemsExports from './feedItems';
 import * as importQueueExports from './importQueue';
-import * as itemsExports from './items';
 import * as themeExports from './theme';
 import * as utilsExports from './utils';
 

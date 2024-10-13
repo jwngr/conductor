@@ -3,8 +3,8 @@ import {useState} from 'react';
 import styled from 'styled-components';
 
 import {FEED_ITEM_COLLECTION, IMPORT_QUEUE_COLLECTION} from '@shared/lib/constants';
+import {makeFeedItem} from '@shared/lib/feedItems';
 import {makeImportQueueItem} from '@shared/lib/importQueue';
-import {makeFeedItem} from '@shared/lib/items';
 import {ViewType} from '@shared/types/query';
 import {ThemeColor} from '@shared/types/theme';
 

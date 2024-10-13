@@ -1,5 +1,7 @@
 import {FieldValue} from 'firebase/firestore';
 
+import {IconName} from './icons';
+
 export interface ImportQueueItem {
   readonly url: string;
   readonly feedItemId: string;
@@ -41,6 +43,19 @@ export interface FeedItem {
   // Timestamps.
   readonly createdTime: FieldValue;
   readonly lastUpdatedTime: FieldValue;
+}
+
+export enum FeedItemActionType {
+  MarkDone = 'markDone',
+  Save = 'save',
+}
+
+export interface FeedItemAction {
+  readonly type: FeedItemActionType;
+  readonly name: string;
+  readonly icon: IconName;
+  // TODO: Add keyboard shortcuts.
+  // readonly shortcut: ShortcutId;
 }
 
 export interface StyleAttributes {

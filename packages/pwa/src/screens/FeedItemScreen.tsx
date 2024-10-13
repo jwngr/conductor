@@ -6,12 +6,11 @@ import {FeedItemId} from '@shared/types/core';
 import {IconName} from '@shared/types/icons';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
+import {FlexRow} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
-import {useFeedItem, useUpdateFeedItem} from '@src/lib/items';
+import {useFeedItem, useUpdateFeedItem} from '@src/lib/feedItems';
 
-const FeedItemActionsWrapper = styled.div`
-  border: solid 1px red;
-`;
+const FeedItemActionsWrapper = styled(FlexRow).attrs({gap: 12})``;
 
 interface FeedItemScreenParams extends Params {
   readonly feedItemId: FeedItemId;
@@ -29,14 +28,43 @@ const FeedItemScreenRouterWrapper: React.FC = () => {
   return <FeedItemScreenInner feedItemId={feedItemId} />;
 };
 
-const MarkDoneFeedItemActionIcon: React.FC = () => {
+const MarkDoneFeedItemActionIcon: React.FC<{
+  readonly feedItemId: FeedItemId;
+}> = ({feedItemId}) => {
+  const updateFeedItem = useUpdateFeedItem();
   return (
     <ButtonIcon
       name={IconName.MarkDone}
       size={40}
-      onClick={() => {
-        // eslint-disable-next-line no-console
-        console.log('Mark done');
+      onClick={async () => {
+        try {
+          await updateFeedItem(feedItemId, {isDone: true});
+        } catch (error) {
+          // TODO: Show error toast.
+          // eslint-disable-next-line no-console
+          console.error('Error marking feed item as done:', {error});
+        }
+      }}
+    />
+  );
+};
+
+const SaveFeedItemActionIcon: React.FC<{
+  readonly feedItemId: FeedItemId;
+}> = ({feedItemId}) => {
+  const updateFeedItem = useUpdateFeedItem();
+  return (
+    <ButtonIcon
+      name={IconName.Save}
+      size={40}
+      onClick={async () => {
+        try {
+          await updateFeedItem(feedItemId, {isSaved: true});
+        } catch (error) {
+          // TODO: Show error toast.
+          // eslint-disable-next-line no-console
+          console.error('Error saving feed item:', {error});
+        }
       }}
     />
   );
@@ -69,7 +97,8 @@ const FeedItemScreenInner: React.FC<{
         Feed item {feedItemId}
       </Text>
       <FeedItemActionsWrapper>
-        <MarkDoneFeedItemActionIcon />
+        <MarkDoneFeedItemActionIcon feedItemId={feedItemId} />
+        <SaveFeedItemActionIcon feedItemId={feedItemId} />
       </FeedItemActionsWrapper>
       <pre>{JSON.stringify(item, null, 2)}</pre>
     </>

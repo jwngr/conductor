@@ -1,14 +1,14 @@
-import React from 'react';
+import React, {MouseEventHandler} from 'react';
 import styled from 'styled-components';
 
 import InboxIcon from '@shared/icons/inbox.svg?react';
 import MarkDoneIcon from '@shared/icons/markDone.svg?react';
+import SaveIcon from '@shared/icons/save.svg?react';
 import {getIconSizeFromButtonIconSize} from '@shared/lib/icons';
 import {assertNever} from '@shared/lib/utils';
 import {StyleAttributes} from '@shared/types/core';
 import {ButtonIconSize, IconName} from '@shared/types/icons';
 import {ThemeColor} from '@shared/types/theme';
-import {Task} from '@shared/types/utils';
 
 interface ButtonIconWrapperProps {
   readonly $color: ThemeColor;
@@ -39,7 +39,7 @@ interface ButtonIconProps extends StyleAttributes {
   readonly name: IconName;
   readonly size: ButtonIconSize;
   readonly color?: ThemeColor;
-  readonly onClick?: Task;
+  readonly onClick?: MouseEventHandler<HTMLDivElement>;
 }
 
 export const ButtonIcon: React.FC<ButtonIconProps> = ({
@@ -53,6 +53,9 @@ export const ButtonIcon: React.FC<ButtonIconProps> = ({
   switch (name) {
     case IconName.MarkDone:
       IconComponent = MarkDoneIcon;
+      break;
+    case IconName.Save:
+      IconComponent = SaveIcon;
       break;
     case IconName.Inbox:
       IconComponent = InboxIcon;

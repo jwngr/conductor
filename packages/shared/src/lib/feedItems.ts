@@ -8,7 +8,8 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 
-import {FeedItem} from '@shared/types/core';
+import {FeedItem, FeedItemAction, FeedItemActionType} from '@shared/types/core';
+import {IconName} from '@shared/types/icons';
 import {Func, Task} from '@shared/types/utils';
 
 // TODO: This is currently not used, but the path I'd like to head...
@@ -60,5 +61,21 @@ export function makeFeedItem(url: string, collectionRef: CollectionReference): F
     isImporting: true,
     createdTime: serverTimestamp(),
     lastUpdatedTime: serverTimestamp(),
+  };
+}
+
+export function getMarkDoneFeedItemActionInfo(): FeedItemAction {
+  return {
+    type: FeedItemActionType.MarkDone,
+    name: 'Mark done',
+    icon: IconName.MarkDone,
+  };
+}
+
+export function getSaveFeedItemActionInfo(): FeedItemAction {
+  return {
+    type: FeedItemActionType.Save,
+    name: 'Save',
+    icon: IconName.Save,
   };
 }
