@@ -7,7 +7,6 @@ import {IconName} from '@shared/types/icons';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {Text} from '@src/components/atoms/Text';
-import {TextIcon} from '@src/components/atoms/TextIcon';
 import {useFeedItem, useUpdateFeedItem} from '@src/lib/items';
 
 const FeedItemActionsWrapper = styled.div`
