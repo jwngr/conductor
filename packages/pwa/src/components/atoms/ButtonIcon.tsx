@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {MouseEventHandler} from 'react';
 import styled from 'styled-components';
 
 import InboxIcon from '@shared/icons/inbox.svg?react';
@@ -40,7 +40,7 @@ interface ButtonIconProps extends StyleAttributes {
   readonly name: IconName;
   readonly size: ButtonIconSize;
   readonly color?: ThemeColor;
-  readonly onClick?: Task;
+  readonly onClick?: MouseEventHandler<HTMLDivElement>;
 }
 
 export const ButtonIcon: React.FC<ButtonIconProps> = ({
