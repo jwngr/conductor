@@ -9,7 +9,6 @@ import {assertNever} from '@shared/lib/utils';
 import {StyleAttributes} from '@shared/types/core';
 import {ButtonIconSize, IconName} from '@shared/types/icons';
 import {ThemeColor} from '@shared/types/theme';
-import {Task} from '@shared/types/utils';
 
 interface ButtonIconWrapperProps {
   readonly $color: ThemeColor;
