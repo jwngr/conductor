@@ -3,6 +3,7 @@ import styled from 'styled-components';
 
 import InboxIcon from '@shared/icons/inbox.svg?react';
 import MarkDoneIcon from '@shared/icons/markDone.svg?react';
+import SaveIcon from '@shared/icons/save.svg?react';
 import {getIconSizeFromButtonIconSize} from '@shared/lib/icons';
 import {assertNever} from '@shared/lib/utils';
 import {StyleAttributes} from '@shared/types/core';
@@ -53,6 +54,9 @@ export const ButtonIcon: React.FC<ButtonIconProps> = ({
   switch (name) {
     case IconName.MarkDone:
       IconComponent = MarkDoneIcon;
+      break;
+    case IconName.Save:
+      IconComponent = SaveIcon;
       break;
     case IconName.Inbox:
       IconComponent = InboxIcon;

@@ -6,12 +6,11 @@ import {FeedItemId} from '@shared/types/core';
 import {IconName} from '@shared/types/icons';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
+import {FlexRow} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
-import {useFeedItem, useUpdateFeedItem} from '@src/lib/items';
+import {useFeedItem, useUpdateFeedItem} from '@src/lib/feedItems';
 
-const FeedItemActionsWrapper = styled.div`
-  border: solid 1px red;
-`;
+const FeedItemActionsWrapper = styled(FlexRow).attrs({gap: 12})``;
 
 interface FeedItemScreenParams extends Params {
   readonly feedItemId: FeedItemId;
@@ -37,6 +36,19 @@ const MarkDoneFeedItemActionIcon: React.FC = () => {
       onClick={() => {
         // eslint-disable-next-line no-console
         console.log('Mark done');
+      }}
+    />
+  );
+};
+
+const SaveFeedItemActionIcon: React.FC = () => {
+  return (
+    <ButtonIcon
+      name={IconName.Save}
+      size={40}
+      onClick={() => {
+        // eslint-disable-next-line no-console
+        console.log('Save');
       }}
     />
   );
@@ -70,6 +82,7 @@ const FeedItemScreenInner: React.FC<{
       </Text>
       <FeedItemActionsWrapper>
         <MarkDoneFeedItemActionIcon />
+        <SaveFeedItemActionIcon />
       </FeedItemActionsWrapper>
       <pre>{JSON.stringify(item, null, 2)}</pre>
     </>

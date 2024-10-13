@@ -5,7 +5,7 @@ import {FeedItem} from '@shared/types/core';
 import {ViewType} from '@shared/types/query';
 import {ThemeColor} from '@shared/types/theme';
 
-import {useFeedItems} from '../lib/items';
+import {useFeedItems} from '../lib/feedItems';
 import {FlexColumn} from './atoms/Flex';
 import {Link} from './atoms/Link';
 import {Text} from './atoms/Text';
