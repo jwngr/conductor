@@ -5,10 +5,11 @@ import {FeedItem} from '@shared/types/core';
 import {ViewType} from '@shared/types/query';
 import {ThemeColor} from '@shared/types/theme';
 
-import {useFeedItems} from '../lib/feedItems';
-import {FlexColumn} from './atoms/Flex';
-import {Link} from './atoms/Link';
-import {Text} from './atoms/Text';
+import {FlexColumn} from '@src/components/atoms/Flex';
+import {Link} from '@src/components/atoms/Link';
+import {Text} from '@src/components/atoms/Text';
+import {FeedItemAdder} from '@src/components/FeedItemAdder';
+import {useFeedItems} from '@src/lib/feedItems';
 
 const ViewListItemWrapper = styled(FlexColumn).attrs({justify: 'center', gap: 4})`
   cursor: pointer;
@@ -59,11 +60,19 @@ const ViewList: React.FC<{viewType: ViewType}> = ({viewType}) => {
   );
 };
 
+const ViewWrapper = styled(FlexColumn)`
+  flex: 1;
+  padding: 20px;
+  overflow: auto;
+`;
+
 export const View: React.FC<{viewType: ViewType}> = ({viewType}) => {
   return (
-    <div>
+    <ViewWrapper>
       <h2>{viewType}</h2>
       <ViewList viewType={viewType} />
-    </div>
+      {/* TODO: Move into developer toolbar. */}
+      <FeedItemAdder />
+    </ViewWrapper>
   );
 };

@@ -3,6 +3,7 @@ import styled from 'styled-components';
 
 import {assertNever} from '@shared/lib/utils';
 import {ViewType} from '@shared/types/query';
+import {ThemeColor} from '@shared/types/theme';
 
 import {FlexColumn, FlexRow} from './atoms/Flex';
 import {Link} from './atoms/Link';
@@ -53,15 +54,30 @@ const LeftSidebarItemAvatar: React.FC<{
   }
 };
 
+const LeftSideItemWrapper = styled(FlexRow).attrs({gap: 8})`
+  padding: 8px 12px;
+  border-radius: 4px;
+
+  &:hover {
+    background-color: ${({theme}) => theme.colors[ThemeColor.Neutral200]};
+  }
+
+  // Animate on click.
+  transition: transform 0.1s ease-in-out;
+  &:active {
+    transform: scale(0.95);
+  }
+`;
+
 const LeftSidebarItemComponent: React.FC<{
   readonly item: LeftSidebarItem;
 }> = ({item}) => {
   return (
     <Link to={item.url}>
-      <FlexRow gap={8}>
+      <LeftSideItemWrapper>
         <LeftSidebarItemAvatar img={item.img} />
         <Text as="p">{item.name}</Text>
-      </FlexRow>
+      </LeftSideItemWrapper>
     </Link>
   );
 };
@@ -74,12 +90,14 @@ const LeftSidebarSection: React.FC<{
 }> = ({title, items}) => {
   return (
     <LeftSidebarSectionWrapper>
-      <Text as="h3" light>
+      <Text as="h5" light>
         {title}
       </Text>
-      {items.map((item) => (
-        <LeftSidebarItemComponent key={item.name} item={item} />
-      ))}
+      <FlexColumn style={{margin: '0 -12px'}}>
+        {items.map((item) => (
+          <LeftSidebarItemComponent key={item.name} item={item} />
+        ))}
+      </FlexColumn>
     </LeftSidebarSectionWrapper>
   );
 };
@@ -87,6 +105,9 @@ const LeftSidebarSection: React.FC<{
 const LeftSidebarWrapper = styled(FlexColumn)`
   width: 200px;
   padding: 20px;
+  background-color: ${({theme}) => theme.colors[ThemeColor.Neutral100]};
+  border-right: solid 1px ${({theme}) => theme.colors[ThemeColor.Neutral300]};
+  overflow: auto;
 `;
 
 export const LeftSidebar: React.FC = () => {
