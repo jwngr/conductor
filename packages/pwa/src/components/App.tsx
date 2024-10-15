@@ -3,15 +3,12 @@ import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import styled, {ThemeProvider} from 'styled-components';
 
 import {theme} from '@shared/lib/theme';
+import {ViewType} from '@shared/types/query';
 
 import {NotFoundScreen} from '@src/screens/404';
-import {AllScreen} from '@src/screens/AllScreen';
-import {DoneScreen} from '@src/screens/DoneScreen';
 import {FeedItemScreen} from '@src/screens/FeedItemScreen';
-import {HomeScreen} from '@src/screens/HomeScreen';
-import {SavedScreen} from '@src/screens/SavedScreen';
-import {StarredScreen} from '@src/screens/StarredScreen';
-import {UnreadScreen} from '@src/screens/UnreadScreen';
+import {FeedItemAdder} from '@src/screens/HomeScreen';
+import {ViewScreen} from '@src/screens/ViewScreen';
 
 import {AppHeader} from './AppHeader';
 import {FlexColumn, FlexRow} from './atoms/Flex';
@@ -37,12 +34,20 @@ export const App: React.FC = () => {
             <LeftSidebar />
             <MainContentWrapper>
               <Routes>
-                <Route path="/" element={<HomeScreen />} />
-                <Route path="/saved" element={<SavedScreen />} />
-                <Route path="/done" element={<DoneScreen />} />
-                <Route path="/all" element={<AllScreen />} />
-                <Route path="/starred" element={<StarredScreen />} />
-                <Route path="/unread" element={<UnreadScreen />} />
+                <Route
+                  path="/"
+                  element={
+                    <>
+                      <ViewScreen viewType={ViewType.Untriaged} />
+                      <FeedItemAdder />
+                    </>
+                  }
+                />
+                <Route path="/saved" element={<ViewScreen viewType={ViewType.Saved} />} />
+                <Route path="/done" element={<ViewScreen viewType={ViewType.Done} />} />
+                <Route path="/all" element={<ViewScreen viewType={ViewType.All} />} />
+                <Route path="/starred" element={<ViewScreen viewType={ViewType.Starred} />} />
+                <Route path="/unread" element={<ViewScreen viewType={ViewType.Unread} />} />
                 <Route path="/items/:feedItemId?/" element={<FeedItemScreen />} />
                 <Route path="*" element={<NotFoundScreen />} />
               </Routes>
