@@ -107,6 +107,7 @@ const LeftSidebarWrapper = styled(FlexColumn)`
   padding: 20px;
   background-color: ${({theme}) => theme.colors[ThemeColor.Neutral100]};
   border-right: solid 1px ${({theme}) => theme.colors[ThemeColor.Neutral300]};
+  overflow: auto;
 `;
 
 export const LeftSidebar: React.FC = () => {

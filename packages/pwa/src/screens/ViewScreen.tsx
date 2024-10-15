@@ -1,19 +1,20 @@
-import styled from 'styled-components';
-
 import {ViewType} from '@shared/types/query';
 
+import {AppHeader} from '@src/components/AppHeader';
+import {ScreenMainContentWrapper, ScreenWrapper} from '@src/components/layout/Screen';
+import {LeftSidebar} from '@src/components/LeftSidebar';
 import {View} from '@src/components/View';
-
-const ViewScreenWrapper = styled.div`
-  padding: 20px;
-`;
 
 export const ViewScreen: React.FC<{
   readonly viewType: ViewType;
 }> = ({viewType}) => {
   return (
-    <ViewScreenWrapper>
-      <View viewType={viewType} />
-    </ViewScreenWrapper>
+    <ScreenWrapper>
+      <AppHeader />
+      <ScreenMainContentWrapper>
+        <LeftSidebar />
+        <View viewType={viewType} />
+      </ScreenMainContentWrapper>
+    </ScreenWrapper>
   );
 };
