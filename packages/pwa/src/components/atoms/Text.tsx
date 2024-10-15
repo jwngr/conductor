@@ -1,6 +1,7 @@
 import {HTMLAttributes} from 'react';
 import styled, {css} from 'styled-components';
 
+import {assertNever} from '@shared/lib/utils';
 import {ThemeColor} from '@shared/types/theme';
 
 type FontWeight = 'normal' | 'bold' | '900';
@@ -21,6 +22,7 @@ interface TextWrapperProps {
   readonly $light?: boolean;
   readonly $monospace?: boolean;
   readonly $truncate?: boolean;
+  readonly $underline?: 'always' | 'hover' | 'never';
 }
 
 export const TextWrapper = styled.span<TextWrapperProps>`
@@ -41,6 +43,13 @@ export const TextWrapper = styled.span<TextWrapperProps>`
         `
       : null}
 
+  ${(props) =>
+    props.$underline
+      ? css`
+          text-decoration: underline;
+        `
+      : null}
+
   ${({theme, $color, $light}) => {
     // TODO: Set the default color somewhere. Probably shouldn't do it here.
     if (!$color && !$light) return null;
@@ -57,6 +66,28 @@ export const TextWrapper = styled.span<TextWrapperProps>`
       }
     `;
   }}
+
+  ${({$underline}) => {
+    if (!$underline) return null;
+    switch ($underline) {
+      case 'always':
+        return css`
+          text-decoration: underline;
+        `;
+      case 'hover':
+        return css`
+          &:hover {
+            text-decoration: underline;
+          }
+        `;
+      case 'never':
+        return css`
+          text-decoration: none;
+        `;
+      default:
+        assertNever($underline);
+    }
+  }}
 `;
 
 interface TextProps extends HTMLAttributes<HTMLParagraphElement> {
@@ -70,6 +101,7 @@ interface TextProps extends HTMLAttributes<HTMLParagraphElement> {
   readonly truncate?: boolean;
   readonly monospace?: boolean;
   readonly light?: boolean;
+  readonly underline?: 'always' | 'hover' | 'never';
   readonly children: React.ReactNode;
 }
 
@@ -86,6 +118,7 @@ export const Text: React.FC<TextProps> = ({
   light,
   monospace,
   truncate,
+  underline,
   ...rest
 }) => {
   return (
@@ -102,6 +135,7 @@ export const Text: React.FC<TextProps> = ({
       $light={light}
       $monospace={monospace}
       $truncate={truncate}
+      $underline={underline}
       {...rest}
     >
       {children}

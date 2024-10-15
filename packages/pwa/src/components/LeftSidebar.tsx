@@ -95,6 +95,7 @@ export const LeftSidebar: React.FC = () => {
       <LeftSidebarSection
         title="Views"
         items={[
+          // TODO: Move these into `/shared`.
           {
             img: {
               type: CustomizableImageType.Emoji,
@@ -102,7 +103,7 @@ export const LeftSidebar: React.FC = () => {
             },
             name: 'Home',
             url: '/',
-            viewType: ViewType.Inbox,
+            viewType: ViewType.Untriaged,
           },
           {
             img: {
@@ -121,6 +122,24 @@ export const LeftSidebar: React.FC = () => {
             name: 'Done',
             url: '/done',
             viewType: ViewType.Done,
+          },
+          {
+            img: {
+              type: CustomizableImageType.Emoji,
+              emoji: '📰',
+            },
+            name: 'Unread',
+            url: '/unread',
+            viewType: ViewType.Unread,
+          },
+          {
+            img: {
+              type: CustomizableImageType.Emoji,
+              emoji: '⭐️',
+            },
+            name: 'Starred',
+            url: '/starred',
+            viewType: ViewType.Starred,
           },
           {
             img: {

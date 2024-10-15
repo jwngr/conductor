@@ -2,7 +2,9 @@
 export enum IconName {
   Inbox = 'inbox',
   MarkDone = 'markDone',
+  MarkUnread = 'markUnread',
   Save = 'save',
+  Star = 'star',
 }
 
 export type IconSize = 16 | 24 | 32 | 40;

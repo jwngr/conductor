@@ -1,33 +1,52 @@
 import {assertNever} from '@shared/lib/utils';
+import {TriageStatus} from '@shared/types/core';
 import {FilterOp, View, ViewType} from '@shared/types/query';
+import {SystemTagId} from '@shared/types/tags';
 
 const ALL_VIEW_CONFIGS: Record<ViewType, View> = {
-  [ViewType.Inbox]: {
-    name: 'Inbox',
-    type: ViewType.Inbox,
-    filters: [
-      {field: 'isDone', op: FilterOp.Equals, value: false},
-      // {field: 'isRead', op: FilterOperator.Equals, value: false},
-    ],
-    sort: {field: 'createdTime', direction: 'desc'},
-  },
-  [ViewType.Done]: {
-    name: 'Done',
-    type: ViewType.Done,
-    filters: [{field: 'isDone', op: FilterOp.Equals, value: true}],
-    sort: {field: 'lastUpdatedTime', direction: 'desc'},
-  },
-  [ViewType.Unread]: {
-    name: 'Unread',
-    type: ViewType.Unread,
-    filters: [{field: 'isRead', op: FilterOp.Equals, value: false}],
+  [ViewType.Untriaged]: {
+    name: 'Untriaged',
+    type: ViewType.Untriaged,
+    filters: [{field: 'triageStatus', op: FilterOp.Equals, value: TriageStatus.Untriaged}],
     sort: {field: 'createdTime', direction: 'desc'},
   },
   [ViewType.Saved]: {
     name: 'Saved',
     type: ViewType.Saved,
-    filters: [{field: 'isSaved', op: FilterOp.Equals, value: true}],
+    filters: [{field: 'triageStatus', op: FilterOp.Equals, value: TriageStatus.Saved}],
     sort: {field: 'lastUpdatedTime', direction: 'desc'},
+  },
+  [ViewType.Done]: {
+    name: 'Done',
+    type: ViewType.Done,
+    filters: [{field: 'triageStatus', op: FilterOp.Equals, value: TriageStatus.Done}],
+    sort: {field: 'lastUpdatedTime', direction: 'desc'},
+  },
+  [ViewType.Trashed]: {
+    name: 'Trashed',
+    type: ViewType.Trashed,
+    filters: [{field: 'triageStatus', op: FilterOp.Equals, value: TriageStatus.Trashed}],
+    sort: {field: 'lastUpdatedTime', direction: 'desc'},
+  },
+  [ViewType.Unread]: {
+    name: 'Unread',
+    type: ViewType.Unread,
+    filters: [
+      // TODO: Fix the typecasting here.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      {field: `tagIds.${SystemTagId.Unread}` as any, op: FilterOp.Equals, value: true},
+    ],
+    sort: {field: 'createdTime', direction: 'desc'},
+  },
+  [ViewType.Starred]: {
+    name: 'Starred',
+    type: ViewType.Starred,
+    filters: [
+      // TODO: Fix the typecasting here.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      {field: `tagIds.${SystemTagId.Starred}` as any, op: FilterOp.Equals, value: true},
+    ],
+    sort: {field: 'createdTime', direction: 'desc'},
   },
   [ViewType.All]: {
     name: 'All',
@@ -52,14 +71,18 @@ const ALL_VIEW_CONFIGS: Record<ViewType, View> = {
 export class Views {
   static get(viewType: ViewType): View {
     switch (viewType) {
-      case ViewType.Inbox:
+      case ViewType.Untriaged:
         return Views.getForInbox();
-      case ViewType.Done:
-        return Views.getForDone();
-      case ViewType.Unread:
-        return Views.getForUnread();
       case ViewType.Saved:
         return Views.getForSaved();
+      case ViewType.Done:
+        return Views.getForDone();
+      case ViewType.Trashed:
+        return Views.getForTrashed();
+      case ViewType.Unread:
+        return Views.getForUnread();
+      case ViewType.Starred:
+        return Views.getForStarred();
       case ViewType.All:
         return Views.getForAll();
       case ViewType.Today:
@@ -70,19 +93,27 @@ export class Views {
   }
 
   static getForInbox(): View {
-    return ALL_VIEW_CONFIGS[ViewType.Inbox];
+    return ALL_VIEW_CONFIGS[ViewType.Untriaged];
+  }
+
+  static getForSaved(): View {
+    return ALL_VIEW_CONFIGS[ViewType.Saved];
   }
 
   static getForDone(): View {
     return ALL_VIEW_CONFIGS[ViewType.Done];
   }
 
+  static getForTrashed(): View {
+    return ALL_VIEW_CONFIGS[ViewType.Trashed];
+  }
+
   static getForUnread(): View {
     return ALL_VIEW_CONFIGS[ViewType.Unread];
   }
 
-  static getForSaved(): View {
-    return ALL_VIEW_CONFIGS[ViewType.Saved];
+  static getForStarred(): View {
+    return ALL_VIEW_CONFIGS[ViewType.Starred];
   }
 
   static getForAll(): View {

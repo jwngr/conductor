@@ -51,7 +51,7 @@ export const HomeScreen: React.FC = () => {
 
   return (
     <HomeScreenWrapper>
-      <View viewType={ViewType.Inbox} />
+      <View viewType={ViewType.Untriaged} />
 
       <br />
 
