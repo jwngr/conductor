@@ -1,12 +1,14 @@
 import FirecrawlApp from '@mendable/firecrawl-js';
 import admin from 'firebase-admin';
-import logger from 'firebase-functions/logger';
+// TODO: Switch to using the Functions logger.
+// import logger from 'firebase-functions/logger';
 import {defineString} from 'firebase-functions/params';
 import {onInit} from 'firebase-functions/v2/core';
 import {onDocumentCreated} from 'firebase-functions/v2/firestore';
 
 import {FEED_ITEM_COLLECTION, IMPORT_QUEUE_COLLECTION} from '@shared/lib/constants';
 import {FeedItem, FeedItemId, ImportQueueItem} from '@shared/types/core';
+import {SystemTagId} from '@shared/types/tags';
 
 // Define some parameters
 const FIRECRAWL_API_KEY = defineString('FIRECRAWL_API_KEY');
@@ -27,11 +29,11 @@ export const processImportQueue = onDocumentCreated(
   `/${IMPORT_QUEUE_COLLECTION}/{pushId}`,
   async (event) => {
     const {pushId} = event.params;
-    logger.log(`Processing item ${pushId}`);
+    console.log(`Processing item ${pushId}`);
 
     const snapshot = event.data;
     if (!snapshot) {
-      logger.log('No data associated with import queue event');
+      console.log('No data associated with import queue event');
       return;
     }
 
@@ -39,13 +41,13 @@ export const processImportQueue = onDocumentCreated(
     const importItem = snapshot.data() as ImportQueueItem;
 
     try {
-      logger.log(`Processing import queue item ${pushId}...`, {
+      console.log(`Processing import queue item ${pushId}...`, {
         url: importItem.url,
         importQueueId: pushId,
         feedItemId: importItem.feedItemId,
       });
 
-      logger.log(`Fetching data from ${importItem.url}...`);
+      console.log(`Fetching data from ${importItem.url}...`);
 
       // Fetch in parallel.
       const [rawHtml, firecrawlResult] = await Promise.all([
@@ -53,13 +55,13 @@ export const processImportQueue = onDocumentCreated(
         fetchFirecrawlData(importItem.url),
       ]);
 
-      logger.log(`Storing fetched data in feed item ${importItem.feedItemId}...`);
+      console.log(`Storing fetched data in feed item ${importItem.feedItemId}...`);
 
       // Save in parallel.
       await Promise.all([
         saveRawHtmlToStorage(importItem.feedItemId, rawHtml),
         saveMarkdownToStorage(importItem.feedItemId, firecrawlResult.markdown),
-        updateFeedItemInFirestore(importItem.feedItemId, {
+        updateImportedFeedItemInFirestore(importItem.feedItemId, {
           links: firecrawlResult.links,
           title: firecrawlResult.title,
           description: firecrawlResult.description,
@@ -68,12 +70,12 @@ export const processImportQueue = onDocumentCreated(
 
       // Remove the processed item from the queue, waiting until the previous item is processed.
       // TODO: Should this be done in a transaction?
-      logger.log(`Removing import queue item ${pushId}...`);
+      console.log(`Removing import queue item ${pushId}...`);
       await firestore.collection(IMPORT_QUEUE_COLLECTION).doc(pushId).delete();
 
-      logger.log(`Successfully processed import queue item ${pushId}`);
+      console.log(`Successfully processed import queue item ${pushId}`);
     } catch (error) {
-      logger.error(`Error processing import queue item ${pushId}:`, error);
+      console.error(`Error processing import queue item ${pushId}:`, error);
       // TODO: Move failed item to a separate "failed" queue.
     }
   }
@@ -130,6 +132,14 @@ async function fetchFirecrawlData(url: string): Promise<ParsedFirecrawlData> {
       markdown: firecrawlResult.markdown ?? null,
       links: firecrawlResult.links ?? null,
     };
+
+    // TODO: delete this at some point.
+    // return {
+    //   title: 'Test title for ' + url,
+    //   description: 'Test description for ' + url,
+    //   markdown: 'Test Markdown for ' + url,
+    //   links: ['https://www.testing.com', 'https://www.testing2.com'],
+    // };
   } catch (error) {
     // Report the failure, but allow the import to continue.
     console.error(`Error fetching Firecrawl data:`, error);
@@ -155,28 +165,34 @@ const saveMarkdownToStorage = async (
   await llmContextFile.save(markdown, {contentType: 'text/markdown'});
 };
 
-interface UpdateFeedItemInFirestoreArgs {
+interface UpdateImportedFeedItemInFirestoreArgs {
   readonly links: string[] | null;
   readonly title: string | null;
   readonly description: string | null;
 }
 
-const updateFeedItemInFirestore = async (
+const updateImportedFeedItemInFirestore = async (
   feedItemId: FeedItemId,
-  {links, title, description}: UpdateFeedItemInFirestoreArgs
+  {links, title, description}: UpdateImportedFeedItemInFirestoreArgs
 ): Promise<void> => {
-  if (links === null) return;
-
-  // Update the item with the new import status.
-  const update: Partial<FeedItem> = {
-    title: title ?? undefined,
-    description: description ?? undefined,
-    outgoingLinks: links,
-    isImporting: false,
+  const update: Omit<
+    FeedItem,
+    'itemId' | 'source' | 'url' | 'createdTime' | 'triageStatus' | 'tagIds'
+  > = {
+    // TODO: Reconsider how to handle empty titles, descriptions, and links.
+    title: title ?? '',
+    description: description ?? '',
+    outgoingLinks: links ?? [],
     lastImportedTime: admin.firestore.FieldValue.serverTimestamp(),
     lastUpdatedTime: admin.firestore.FieldValue.serverTimestamp(),
   };
 
   const itemDoc = firestore.doc(`${FEED_ITEM_COLLECTION}/${feedItemId}`);
-  await itemDoc.update(update);
+  await itemDoc.update({
+    ...update,
+    // TODO: Consider using a Firestore converter to handle this. Ideally this would be part of the
+    // object above.
+    // See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
+    [`tagIds.${SystemTagId.Importing}`]: admin.firestore.FieldValue.delete(),
+  });
 };

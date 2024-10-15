@@ -1,14 +1,17 @@
 import React from 'react';
-import {BrowserRouter, Navigate, Route, Routes} from 'react-router-dom';
+import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import styled, {ThemeProvider} from 'styled-components';
 
 import {theme} from '@shared/lib/theme';
 
+import {NotFoundScreen} from '@src/screens/404';
 import {AllScreen} from '@src/screens/AllScreen';
 import {DoneScreen} from '@src/screens/DoneScreen';
 import {FeedItemScreen} from '@src/screens/FeedItemScreen';
 import {HomeScreen} from '@src/screens/HomeScreen';
 import {SavedScreen} from '@src/screens/SavedScreen';
+import {StarredScreen} from '@src/screens/StarredScreen';
+import {UnreadScreen} from '@src/screens/UnreadScreen';
 
 import {AppHeader} from './AppHeader';
 import {FlexColumn, FlexRow} from './atoms/Flex';
@@ -38,9 +41,10 @@ export const App: React.FC = () => {
                 <Route path="/saved" element={<SavedScreen />} />
                 <Route path="/done" element={<DoneScreen />} />
                 <Route path="/all" element={<AllScreen />} />
+                <Route path="/starred" element={<StarredScreen />} />
+                <Route path="/unread" element={<UnreadScreen />} />
                 <Route path="/items/:feedItemId?/" element={<FeedItemScreen />} />
-                {/* Redirect unmatched routes to home page, replacing history stack. */}
-                <Route path="*" element={<Navigate to="/" replace />} />
+                <Route path="*" element={<NotFoundScreen />} />
               </Routes>
             </MainContentWrapper>
           </FlexRow>

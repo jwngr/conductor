@@ -3,7 +3,9 @@ import styled from 'styled-components';
 
 import InboxIcon from '@shared/icons/inbox.svg?react';
 import MarkDoneIcon from '@shared/icons/markDone.svg?react';
+import MarkUnreadIcon from '@shared/icons/markUnread.svg?react';
 import SaveIcon from '@shared/icons/save.svg?react';
+import StarIcon from '@shared/icons/star.svg?react';
 import {assertNever} from '@shared/lib/utils';
 import {StyleAttributes} from '@shared/types/core';
 import {IconName, IconSize} from '@shared/types/icons';
@@ -49,6 +51,12 @@ export const TextIcon: React.FC<TextIconProps> = ({
       break;
     case IconName.Inbox:
       IconComponent = InboxIcon;
+      break;
+    case IconName.MarkUnread:
+      IconComponent = MarkUnreadIcon;
+      break;
+    case IconName.Star:
+      IconComponent = StarIcon;
       break;
     default:
       assertNever(name);

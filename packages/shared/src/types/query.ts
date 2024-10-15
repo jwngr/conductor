@@ -5,10 +5,12 @@ import {assertNever} from '@shared/lib/utils';
 import {FeedItem} from './core';
 
 export enum ViewType {
-  Inbox = 'INBOX',
-  Done = 'DONE',
-  Unread = 'UNREAD',
+  Untriaged = 'UNTRIAGED',
   Saved = 'SAVED',
+  Done = 'DONE',
+  Trashed = 'TRASHED',
+  Unread = 'UNREAD',
+  Starred = 'STARRED',
   All = 'ALL',
   Today = 'TODAY',
 }

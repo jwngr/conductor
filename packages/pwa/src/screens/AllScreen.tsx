@@ -8,6 +8,7 @@ const AllScreenWrapper = styled.div`
   padding: 20px;
 `;
 
+// TODO: Unify all `*Screen` components that are defined based on `View`.
 export const AllScreen: React.FC = () => {
   return (
     <AllScreenWrapper>
