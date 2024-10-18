@@ -1,8 +1,10 @@
 import {deleteField} from 'firebase/firestore';
 import {useEffect, useRef} from 'react';
-import {Navigate, Params, useParams} from 'react-router-dom';
+import {Navigate} from 'react-router-dom';
 import styled from 'styled-components';
 
+import {useFeedItemIdFromUrl} from '@shared/lib/router';
+import {Urls} from '@shared/lib/urls';
 import {FeedItemId} from '@shared/types/core';
 import {SystemTagId} from '@shared/types/tags';
 
@@ -57,7 +59,7 @@ const FeedItemScreenMainContent: React.FC<{
   if (!item) {
     // eslint-disable-next-line no-console
     console.warn('Invalid feed item ID in URL:', feedItemId);
-    return <Navigate to="/" />;
+    return <Navigate to={Urls.forRoot()} />;
   }
 
   return (
@@ -76,12 +78,8 @@ const FeedItemScreenMainContent: React.FC<{
   );
 };
 
-interface FeedItemScreenParams extends Params {
-  readonly feedItemId: FeedItemId;
-}
-
 export const FeedItemScreen: React.FC = () => {
-  const {feedItemId} = useParams<FeedItemScreenParams>();
+  const feedItemId = useFeedItemIdFromUrl();
 
   if (!feedItemId) {
     // eslint-disable-next-line no-console

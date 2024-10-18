@@ -14,14 +14,7 @@ export const App: React.FC = () => {
     <ThemeProvider theme={theme}>
       <BrowserRouter>
         <Routes>
-          <Route
-            path="/"
-            element={
-              <>
-                <ViewScreen viewType={ViewType.Untriaged} />
-              </>
-            }
-          />
+          <Route path="/" element={<ViewScreen viewType={ViewType.Untriaged} />} />
           <Route path="/saved" element={<ViewScreen viewType={ViewType.Saved} />} />
           <Route path="/done" element={<ViewScreen viewType={ViewType.Done} />} />
           <Route path="/all" element={<ViewScreen viewType={ViewType.All} />} />
