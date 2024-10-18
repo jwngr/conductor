@@ -23,7 +23,7 @@ export interface FirebaseConfig {
 export type FeedItemId = string;
 
 export function isFeedItemId(feedItemId: string | undefined): feedItemId is FeedItemId {
-  return typeof feedItemId === 'string';
+  return typeof feedItemId === 'string' && feedItemId.length > 0;
 }
 
 export enum TriageStatus {
