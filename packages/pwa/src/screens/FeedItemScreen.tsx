@@ -1,10 +1,8 @@
 import {deleteField} from 'firebase/firestore';
 import {useEffect, useRef} from 'react';
-import {Navigate} from 'react-router-dom';
 import styled from 'styled-components';
 
 import {useFeedItemIdFromUrl} from '@shared/lib/router';
-import {Urls} from '@shared/lib/urls';
 import {FeedItemId} from '@shared/types/core';
 import {SystemTagId} from '@shared/types/tags';
 
@@ -30,11 +28,6 @@ const FeedItemScreenMainContentWrapper = styled(FlexColumn).attrs({gap: 12})`
   overflow: auto;
   padding: 20px;
 `;
-
-const handleInvalidFeedItem = (
-  feedItemId: string | undefined,
-  message: string
-): React.ReactNode => {};
 
 const FeedItemScreenMainContent: React.FC<{
   readonly feedItemId: FeedItemId;
