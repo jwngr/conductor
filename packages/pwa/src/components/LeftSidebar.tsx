@@ -1,10 +1,11 @@
 import React from 'react';
-import {useLocation} from 'react-router-dom';
+import {useLocation, useMatch} from 'react-router-dom';
 import styled from 'styled-components';
 
 import {CustomIcon, CustomIconType} from '@shared/lib/customIcon';
 import {Urls} from '@shared/lib/urls';
 import {assertNever} from '@shared/lib/utils';
+import {ViewType} from '@shared/types/query';
 import {ThemeColor} from '@shared/types/theme';
 import {NavItem} from '@shared/types/urls';
 
@@ -54,11 +55,13 @@ const LeftSideItemWrapper = styled(FlexRow).attrs({
 
 const LeftSidebarItemComponent: React.FC<{
   readonly item: NavItem;
-  readonly isActive: boolean;
-}> = ({item, isActive}) => {
+}> = ({item}) => {
+  const url = Urls.forView(item.viewType);
+  const match = useMatch(url);
+
   return (
-    <Link to={Urls.forView(item.viewType)}>
-      <LeftSideItemWrapper isActive={isActive}>
+    <Link to={url}>
+      <LeftSideItemWrapper isActive={!!match}>
         <LeftSidebarItemAvatar icon={item.icon} />
         <Text as="p">{item.title}</Text>
       </LeftSideItemWrapper>
@@ -70,21 +73,15 @@ const LeftSidebarSection: React.FC<{
   readonly title: string;
   readonly items: readonly NavItem[];
 }> = ({title, items}) => {
-  const location = useLocation();
-
   return (
     <FlexColumn>
       <Text as="h5" light>
         {title}
       </Text>
       <FlexColumn style={{margin: '0 -12px'}}>
-        {items.map((item) => (
-          <LeftSidebarItemComponent
-            key={item.viewType}
-            item={item}
-            isActive={Urls.forView(item.viewType) === location.pathname}
-          />
-        ))}
+        {items.map((item) => {
+          return <LeftSidebarItemComponent key={item.viewType} item={item} />;
+        })}
       </FlexColumn>
     </FlexColumn>
   );
