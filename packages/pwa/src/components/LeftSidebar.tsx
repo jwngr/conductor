@@ -1,11 +1,10 @@
 import React from 'react';
-import {useLocation, useMatch} from 'react-router-dom';
+import {useMatch} from 'react-router-dom';
 import styled from 'styled-components';
 
 import {CustomIcon, CustomIconType} from '@shared/lib/customIcon';
 import {Urls} from '@shared/lib/urls';
 import {assertNever} from '@shared/lib/utils';
-import {ViewType} from '@shared/types/query';
 import {ThemeColor} from '@shared/types/theme';
 import {NavItem} from '@shared/types/urls';
 

@@ -29,6 +29,14 @@ const FeedItemScreenMainContentWrapper = styled(FlexColumn).attrs({gap: 12})`
   padding: 20px;
 `;
 
+const handleInvalidFeedItem = (feedItemId: string | undefined): React.ReactNode => {
+  // eslint-disable-next-line no-console
+  console.warn(
+    feedItemId ? 'No feed item ID in URL' : `Invalid feed item ID in URL: ${feedItemId}`
+  );
+  return <Navigate to={Urls.forRoot()} />;
+};
+
 const FeedItemScreenMainContent: React.FC<{
   readonly feedItemId: FeedItemId;
 }> = ({feedItemId}) => {
@@ -57,9 +65,7 @@ const FeedItemScreenMainContent: React.FC<{
   }
 
   if (!item) {
-    // eslint-disable-next-line no-console
-    console.warn('Invalid feed item ID in URL:', feedItemId);
-    return <Navigate to={Urls.forRoot()} />;
+    return handleInvalidFeedItem(feedItemId);
   }
 
   return (
@@ -82,9 +88,7 @@ export const FeedItemScreen: React.FC = () => {
   const feedItemId = useFeedItemIdFromUrl();
 
   if (!feedItemId) {
-    // eslint-disable-next-line no-console
-    console.warn('No feed item ID in URL');
-    return <Navigate to="/" />;
+    return handleInvalidFeedItem(feedItemId);
   }
 
   return (

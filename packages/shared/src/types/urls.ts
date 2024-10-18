@@ -5,6 +5,10 @@ import {CustomIcon} from '@shared/lib/customIcon';
 import {FeedItemId} from './core';
 import {ViewType} from './query';
 
+/**
+ * Enum representing the top-level paths in the application.
+ * Use these constants when defining routes or constructing URLs.
+ */
 export enum TopLevelPath {
   FeedItem = '/items/',
   Saved = '/saved',
