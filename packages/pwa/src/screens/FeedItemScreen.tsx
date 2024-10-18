@@ -21,6 +21,8 @@ import {ScreenMainContentWrapper, ScreenWrapper} from '@src/components/layout/Sc
 import {LeftSidebar} from '@src/components/LeftSidebar';
 import {useFeedItem, useUpdateFeedItem} from '@src/lib/feedItems';
 
+import {NotFoundScreen} from './404';
+
 const FeedItemActionsWrapper = styled(FlexRow).attrs({gap: 12})``;
 
 const FeedItemScreenMainContentWrapper = styled(FlexColumn).attrs({gap: 12})`
@@ -32,11 +34,7 @@ const FeedItemScreenMainContentWrapper = styled(FlexColumn).attrs({gap: 12})`
 const handleInvalidFeedItem = (
   feedItemId: string | undefined,
   message: string
-): React.ReactNode => {
-  // eslint-disable-next-line no-console
-  console.warn(message);
-  return <Navigate to={Urls.forRoot()} />;
-};
+): React.ReactNode => {};
 
 const FeedItemScreenMainContent: React.FC<{
   readonly feedItemId: FeedItemId;
@@ -66,7 +64,7 @@ const FeedItemScreenMainContent: React.FC<{
   }
 
   if (!item) {
-    return handleInvalidFeedItem(feedItemId, `Invalid feed item ID in URL: ${feedItemId}`);
+    return <NotFoundScreen message="Feed item not found" />;
   }
 
   return (
@@ -88,16 +86,16 @@ const FeedItemScreenMainContent: React.FC<{
 export const FeedItemScreen: React.FC = () => {
   const feedItemId = useFeedItemIdFromUrl();
 
-  if (!feedItemId) {
-    return handleInvalidFeedItem(feedItemId, 'No feed item ID in URL');
-  }
-
   return (
     <ScreenWrapper>
       <AppHeader />
       <ScreenMainContentWrapper>
         <LeftSidebar />
-        <FeedItemScreenMainContent feedItemId={feedItemId} />
+        {feedItemId ? (
+          <FeedItemScreenMainContent feedItemId={feedItemId} />
+        ) : (
+          <NotFoundScreen message="No feed item ID in URL" />
+        )}
       </ScreenMainContentWrapper>
     </ScreenWrapper>
   );

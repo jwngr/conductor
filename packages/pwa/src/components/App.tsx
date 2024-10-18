@@ -24,7 +24,7 @@ export const App: React.FC = () => {
             />
           ))}
           <Route path="/items/:feedItemId/" element={<FeedItemScreen />} />
-          <Route path="*" element={<NotFoundScreen />} />
+          <Route path="*" element={<NotFoundScreen message="Page not found" />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

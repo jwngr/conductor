@@ -9,9 +9,9 @@ const ALL_NAV_ITEMS: Record<ViewType, NavItem> = {
   [ViewType.Untriaged]: {
     icon: {
       type: CustomIconType.Emoji,
-      emoji: '🏠',
+      emoji: '🆕',
     },
-    title: 'Home',
+    title: 'New',
     viewType: ViewType.Untriaged,
   },
   [ViewType.Saved]: {
@@ -118,5 +118,9 @@ export class Urls {
   static getOrderedNavItems(): NavItem[] {
     // Return a copy to prevent external modification.
     return [...ALL_ORDERED_NAV_ITEMS];
+  }
+
+  static getNavItem(viewType: ViewType): NavItem {
+    return ALL_NAV_ITEMS[viewType];
   }
 }

@@ -22,6 +22,10 @@ export interface FirebaseConfig {
 
 export type FeedItemId = string;
 
+export function isFeedItemId(feedItemId: string | undefined): feedItemId is FeedItemId {
+  return typeof feedItemId === 'string';
+}
+
 export enum TriageStatus {
   Untriaged = 'UNTRIAGED',
   Saved = 'SAVED',
