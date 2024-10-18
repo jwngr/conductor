@@ -5,7 +5,7 @@ import {NavItem} from '@shared/types/urls';
 import {CustomIconType} from './customIcon';
 import {assertNever} from './utils';
 
-const ALL_NAV_ITEMS: Record<string, NavItem> = {
+const ALL_NAV_ITEMS: Record<ViewType, NavItem> = {
   [ViewType.Untriaged]: {
     icon: {
       type: CustomIconType.Emoji,
@@ -84,14 +84,14 @@ const ALL_ORDERED_NAV_ITEMS: NavItem[] = [
 ];
 
 export class Urls {
-  static forRoot() {
+  static forRoot(): string {
     return '/';
   }
 
-  static forView(viewType: ViewType) {
+  static forView(viewType: ViewType): string {
     switch (viewType) {
       case ViewType.Untriaged:
-        return Urls.forRoot();
+        return this.forRoot();
       case ViewType.Saved:
         return '/saved';
       case ViewType.Done:
@@ -111,11 +111,12 @@ export class Urls {
     }
   }
 
-  static forFeedItem(feedItemId: FeedItemId) {
+  static forFeedItem(feedItemId: FeedItemId): string {
     return `/items/${feedItemId}`;
   }
 
   static getOrderedNavItems(): NavItem[] {
-    return ALL_ORDERED_NAV_ITEMS;
+    // Return a copy to prevent external modification.
+    return [...ALL_ORDERED_NAV_ITEMS];
   }
 }
