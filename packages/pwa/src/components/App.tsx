@@ -3,32 +3,28 @@ import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import {ThemeProvider} from 'styled-components';
 
 import {theme} from '@shared/lib/theme';
-import {ViewType} from '@shared/types/query';
+import {Urls} from '@shared/lib/urls';
 
 import {NotFoundScreen} from '@src/screens/404';
 import {FeedItemScreen} from '@src/screens/FeedItemScreen';
 import {ViewScreen} from '@src/screens/ViewScreen';
 
 export const App: React.FC = () => {
+  const orderedNavItems = Urls.getOrderedNavItems();
+
   return (
     <ThemeProvider theme={theme}>
       <BrowserRouter>
         <Routes>
-          <Route
-            path="/"
-            element={
-              <>
-                <ViewScreen viewType={ViewType.Untriaged} />
-              </>
-            }
-          />
-          <Route path="/saved" element={<ViewScreen viewType={ViewType.Saved} />} />
-          <Route path="/done" element={<ViewScreen viewType={ViewType.Done} />} />
-          <Route path="/all" element={<ViewScreen viewType={ViewType.All} />} />
-          <Route path="/starred" element={<ViewScreen viewType={ViewType.Starred} />} />
-          <Route path="/unread" element={<ViewScreen viewType={ViewType.Unread} />} />
-          <Route path="/items/:feedItemId?/" element={<FeedItemScreen />} />
-          <Route path="*" element={<NotFoundScreen />} />
+          {orderedNavItems.map((item) => (
+            <Route
+              key={item.viewType}
+              path={Urls.forView(item.viewType)}
+              element={<ViewScreen viewType={item.viewType} />}
+            />
+          ))}
+          <Route path="/items/:feedItemId/" element={<FeedItemScreen />} />
+          <Route path="*" element={<NotFoundScreen message="Page not found" />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

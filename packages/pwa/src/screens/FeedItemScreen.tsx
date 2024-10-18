@@ -1,8 +1,8 @@
 import {deleteField} from 'firebase/firestore';
 import {useEffect, useRef} from 'react';
-import {Navigate, Params, useParams} from 'react-router-dom';
 import styled from 'styled-components';
 
+import {useFeedItemIdFromUrl} from '@shared/lib/router';
 import {FeedItemId} from '@shared/types/core';
 import {SystemTagId} from '@shared/types/tags';
 
@@ -18,6 +18,8 @@ import {
 import {ScreenMainContentWrapper, ScreenWrapper} from '@src/components/layout/Screen';
 import {LeftSidebar} from '@src/components/LeftSidebar';
 import {useFeedItem, useUpdateFeedItem} from '@src/lib/feedItems';
+
+import {NotFoundScreen} from './404';
 
 const FeedItemActionsWrapper = styled(FlexRow).attrs({gap: 12})``;
 
@@ -55,9 +57,7 @@ const FeedItemScreenMainContent: React.FC<{
   }
 
   if (!item) {
-    // eslint-disable-next-line no-console
-    console.warn('Invalid feed item ID in URL:', feedItemId);
-    return <Navigate to="/" />;
+    return <NotFoundScreen message="Feed item not found" />;
   }
 
   return (
@@ -76,25 +76,19 @@ const FeedItemScreenMainContent: React.FC<{
   );
 };
 
-interface FeedItemScreenParams extends Params {
-  readonly feedItemId: FeedItemId;
-}
-
 export const FeedItemScreen: React.FC = () => {
-  const {feedItemId} = useParams<FeedItemScreenParams>();
-
-  if (!feedItemId) {
-    // eslint-disable-next-line no-console
-    console.warn('No feed item ID in URL');
-    return <Navigate to="/" />;
-  }
+  const feedItemId = useFeedItemIdFromUrl();
 
   return (
     <ScreenWrapper>
       <AppHeader />
       <ScreenMainContentWrapper>
         <LeftSidebar />
-        <FeedItemScreenMainContent feedItemId={feedItemId} />
+        {feedItemId ? (
+          <FeedItemScreenMainContent feedItemId={feedItemId} />
+        ) : (
+          <NotFoundScreen message="No feed item ID in URL" />
+        )}
       </ScreenMainContentWrapper>
     </ScreenWrapper>
   );
