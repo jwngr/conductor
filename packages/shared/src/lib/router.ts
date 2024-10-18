@@ -5,5 +5,5 @@ import {FeedItemScreenParams} from '@shared/types/urls';
 
 export const useFeedItemIdFromUrl = (): FeedItemId | undefined => {
   const {feedItemId} = useParams<FeedItemScreenParams>();
-  return feedItemId;
+  return typeof feedItemId === 'string' ? (feedItemId as FeedItemId) : undefined;
 };

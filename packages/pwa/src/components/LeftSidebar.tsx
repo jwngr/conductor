@@ -80,7 +80,7 @@ const LeftSidebarSection: React.FC<{
       <FlexColumn style={{margin: '0 -12px'}}>
         {items.map((item) => (
           <LeftSidebarItemComponent
-            key={item.title}
+            key={item.viewType}
             item={item}
             isActive={Urls.forView(item.viewType) === location.pathname}
           />

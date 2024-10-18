@@ -5,8 +5,8 @@ import {NavItem} from '@shared/types/urls';
 import {CustomIconType} from './customIcon';
 import {assertNever} from './utils';
 
-const ALL_ORDERED_NAV_ITEMS: NavItem[] = [
-  {
+const ALL_NAV_ITEMS: Record<string, NavItem> = {
+  [ViewType.Untriaged]: {
     icon: {
       type: CustomIconType.Emoji,
       emoji: '🏠',
@@ -14,7 +14,7 @@ const ALL_ORDERED_NAV_ITEMS: NavItem[] = [
     title: 'Home',
     viewType: ViewType.Untriaged,
   },
-  {
+  [ViewType.Saved]: {
     icon: {
       type: CustomIconType.Emoji,
       emoji: '💾',
@@ -22,7 +22,7 @@ const ALL_ORDERED_NAV_ITEMS: NavItem[] = [
     title: 'Saved',
     viewType: ViewType.Saved,
   },
-  {
+  [ViewType.Done]: {
     icon: {
       type: CustomIconType.Emoji,
       emoji: '✅',
@@ -30,7 +30,7 @@ const ALL_ORDERED_NAV_ITEMS: NavItem[] = [
     title: 'Done',
     viewType: ViewType.Done,
   },
-  {
+  [ViewType.Unread]: {
     icon: {
       type: CustomIconType.Emoji,
       emoji: '📰',
@@ -38,7 +38,7 @@ const ALL_ORDERED_NAV_ITEMS: NavItem[] = [
     title: 'Unread',
     viewType: ViewType.Unread,
   },
-  {
+  [ViewType.Starred]: {
     icon: {
       type: CustomIconType.Emoji,
       emoji: '⭐️',
@@ -46,7 +46,7 @@ const ALL_ORDERED_NAV_ITEMS: NavItem[] = [
     title: 'Starred',
     viewType: ViewType.Starred,
   },
-  {
+  [ViewType.All]: {
     icon: {
       type: CustomIconType.Emoji,
       emoji: '📚',
@@ -54,6 +54,33 @@ const ALL_ORDERED_NAV_ITEMS: NavItem[] = [
     title: 'All',
     viewType: ViewType.All,
   },
+  [ViewType.Trashed]: {
+    icon: {
+      type: CustomIconType.Emoji,
+      emoji: '🗑️',
+    },
+    title: 'Trashed',
+    viewType: ViewType.Trashed,
+  },
+  [ViewType.Today]: {
+    icon: {
+      type: CustomIconType.Emoji,
+      emoji: '📅',
+    },
+    title: 'Today',
+    viewType: ViewType.Today,
+  },
+};
+
+const ALL_ORDERED_NAV_ITEMS: NavItem[] = [
+  ALL_NAV_ITEMS[ViewType.Untriaged],
+  ALL_NAV_ITEMS[ViewType.Saved],
+  ALL_NAV_ITEMS[ViewType.Done],
+  ALL_NAV_ITEMS[ViewType.Unread],
+  ALL_NAV_ITEMS[ViewType.Starred],
+  ALL_NAV_ITEMS[ViewType.All],
+  ALL_NAV_ITEMS[ViewType.Trashed],
+  ALL_NAV_ITEMS[ViewType.Today],
 ];
 
 export class Urls {
@@ -64,7 +91,7 @@ export class Urls {
   static forView(viewType: ViewType) {
     switch (viewType) {
       case ViewType.Untriaged:
-        return '/';
+        return Urls.forRoot();
       case ViewType.Saved:
         return '/saved';
       case ViewType.Done:
