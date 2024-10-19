@@ -1,11 +1,12 @@
 import {collection, doc, query, updateDoc, where} from 'firebase/firestore';
 import {useMemo} from 'react';
 
-import {FEED_ITEM_COLLECTION} from '@shared/lib/constants';
+import {FEED_ITEMS_COLLECTION} from '@shared/lib/constants';
+import {firestore} from '@shared/lib/firebase';
 import {FeedItem, FeedItemId} from '@shared/types/core';
 import {fromFilterOperator, ViewType} from '@shared/types/query';
 
-import {firestore, useFirestoreDoc, useFirestoreQuery} from './firebase';
+import {useFirestoreDoc, useFirestoreQuery} from './firebase';
 import {Views} from './views';
 
 interface UseFeedItemsArgs {
@@ -26,7 +27,7 @@ export function useFeedItems({viewType}: UseFeedItemsArgs): UseFeedItemsResult {
       where(filter.field, fromFilterOperator(filter.op), filter.value)
     );
     return query(
-      collection(firestore, FEED_ITEM_COLLECTION),
+      collection(firestore, FEED_ITEMS_COLLECTION),
       ...whereClauses
       // orderBy(viewConfig.sort.field, fromSortDirection(viewConfig.sort.direction))
     );
@@ -58,7 +59,7 @@ export function useUpdateFeedItem(): (
   item: Partial<FeedItem>
 ) => Promise<void> {
   return async (itemId, item) => {
-    const itemDoc = doc(collection(firestore, FEED_ITEM_COLLECTION), itemId);
+    const itemDoc = doc(collection(firestore, FEED_ITEMS_COLLECTION), itemId);
     await updateDoc(itemDoc, item);
   };
 }

@@ -1,5 +1,7 @@
 import {initializeApp} from 'firebase/app';
-import {getFirestore} from 'firebase/firestore';
+import {connectFirestoreEmulator, getFirestore} from 'firebase/firestore';
+import {connectFunctionsEmulator, getFunctions} from 'firebase/functions';
+import {connectStorageEmulator, getStorage} from 'firebase/storage';
 
 import {FirebaseConfig} from '@shared/types/core';
 
@@ -9,6 +11,7 @@ function validateEnvVar(name: string) {
   }
 }
 
+// Firebase config is stored in `.env` at the root of the repo.
 function getFirebaseConfig(): FirebaseConfig {
   validateEnvVar('VITE_FIREBASE_API_KEY');
   validateEnvVar('VITE_FIREBASE_AUTH_DOMAIN');
@@ -30,4 +33,18 @@ function getFirebaseConfig(): FirebaseConfig {
 
 const firebaseConfig = getFirebaseConfig();
 const firebaseApp = initializeApp(firebaseConfig);
+
 export const firestore = getFirestore(firebaseApp);
+export const storage = getStorage(firebaseApp);
+
+// Firebase emulator for local development is configured via an environment variable.
+if (import.meta.env.DEV && import.meta.env.VITE_FIREBASE_USE_EMULATOR === 'true') {
+  const FIREBASE_EMULATOR_HOST = '127.0.0.1';
+  const FUNCTIONS_EMULATOR_PORT = 5001;
+  const FIRESTORE_EMULATOR_PORT = 8080;
+  const STORAGE_EMULATOR_PORT = 9199;
+  const functions = getFunctions(firebaseApp);
+  connectStorageEmulator(storage, FIREBASE_EMULATOR_HOST, STORAGE_EMULATOR_PORT);
+  connectFunctionsEmulator(functions, FIREBASE_EMULATOR_HOST, FUNCTIONS_EMULATOR_PORT);
+  connectFirestoreEmulator(firestore, FIREBASE_EMULATOR_HOST, FIRESTORE_EMULATOR_PORT);
+}

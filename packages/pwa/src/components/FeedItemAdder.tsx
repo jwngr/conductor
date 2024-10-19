@@ -1,14 +1,17 @@
 import {addDoc, collection, doc, setDoc} from 'firebase/firestore';
 import {useState} from 'react';
 
-import {FEED_ITEM_COLLECTION, IMPORT_QUEUE_COLLECTION} from '@shared/lib/constants';
+import {FEED_ITEMS_COLLECTION, IMPORT_QUEUE_COLLECTION} from '@shared/lib/constants';
 import {makeFeedItem} from '@shared/lib/feedItems';
+import {firestore} from '@shared/lib/firebase';
 import {makeImportQueueItem} from '@shared/lib/importQueue';
 import {ThemeColor} from '@shared/types/theme';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
-import {firestore} from '@src/lib/firebase';
+
+const newItemsCollectionRef = collection(firestore, FEED_ITEMS_COLLECTION);
+const importQueueCollectionRef = collection(firestore, IMPORT_QUEUE_COLLECTION);
 
 export const FeedItemAdder: React.FC = () => {
   const [url, setUrl] = useState('');
@@ -25,9 +28,6 @@ export const FeedItemAdder: React.FC = () => {
     setStatus('Pending...');
 
     try {
-      const newItemsCollectionRef = collection(firestore, FEED_ITEM_COLLECTION);
-      const importQueueCollectionRef = collection(firestore, IMPORT_QUEUE_COLLECTION);
-
       const feedItem = makeFeedItem(url, newItemsCollectionRef);
       const importQueueItem = makeImportQueueItem(url, feedItem.itemId);
 
