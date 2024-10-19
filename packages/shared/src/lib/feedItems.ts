@@ -3,6 +3,7 @@ import {
   CollectionReference,
   deleteDoc,
   doc,
+  getDoc,
   onSnapshot,
   query,
   serverTimestamp,
@@ -35,6 +36,19 @@ export class FeedItemsService {
     private readonly importQueueDbRef: CollectionReference,
     private readonly feedItemsStorageRef: StorageReference
   ) {}
+
+  async getFeedItem(itemId: FeedItemId): Promise<FeedItem | null> {
+    try {
+      const snapshot = await getDoc(doc(this.feedItemsDbRef, itemId));
+      return snapshot.exists() ? ({...snapshot.data(), itemId: snapshot.id} as FeedItem) : null;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Error fetching feed item: ${error.message}`, {cause: error});
+      } else {
+        throw new Error(`Error fetching feed item: ${error}`);
+      }
+    }
+  }
 
   watchFeedItem(
     feedItemId: FeedItemId,
@@ -135,7 +149,11 @@ export class FeedItemsService {
 
   async getFeedItemMarkdown(itemId: FeedItemId): Promise<string> {
     try {
-      return await getDownloadURL(storageRef(this.feedItemsStorageRef, `${itemId}/llmContext.md`));
+      const fileRef = storageRef(this.feedItemsStorageRef, `${itemId}/llmContext.md`);
+      const downloadUrl = await getDownloadURL(fileRef);
+      const response = await fetch(downloadUrl);
+      const blob = await response.blob();
+      return await blob.text();
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(`Error getting feed item markdown: ${error.message}`, {cause: error});

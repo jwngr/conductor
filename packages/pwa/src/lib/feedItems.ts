@@ -51,3 +51,36 @@ export function useFeedItems({viewType}: {readonly viewType: ViewType}): {
 
   return state;
 }
+
+export function useFeedItemMarkdown(
+  feedItemId: FeedItemId,
+  isFeedItemImported: boolean
+): {
+  readonly markdown: string | null;
+  readonly isLoading: boolean;
+  readonly error: Error | null;
+} {
+  const [state, setState] = useState<{
+    readonly markdown: string | null;
+    readonly isLoading: boolean;
+    readonly error: Error | null;
+  }>({markdown: null, isLoading: true, error: null});
+
+  useEffect(() => {
+    async function go() {
+      // Wait to fetch markdown until the feed item has been imported.
+      if (!isFeedItemImported) return;
+
+      try {
+        const markdown = await feedItemsService.getFeedItemMarkdown(feedItemId);
+        setState({markdown, isLoading: false, error: null});
+      } catch (error) {
+        // We can safely cast to Error because the feedItemsService throws an Error.
+        setState({markdown: null, isLoading: false, error: error as Error});
+      }
+    }
+    go();
+  }, [feedItemId, isFeedItemImported]);
+
+  return state;
+}

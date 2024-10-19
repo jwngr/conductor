@@ -18,7 +18,8 @@ import {
 } from '@src/components/feedItems/FeedItemActionIcon';
 import {ScreenMainContentWrapper, ScreenWrapper} from '@src/components/layout/Screen';
 import {LeftSidebar} from '@src/components/LeftSidebar';
-import {useFeedItem} from '@src/lib/feedItems';
+import {Markdown} from '@src/components/Markdown';
+import {useFeedItem, useFeedItemMarkdown} from '@src/lib/feedItems';
 
 import {NotFoundScreen} from './404';
 
@@ -34,10 +35,17 @@ const FeedItemScreenMainContent: React.FC<{
   readonly feedItemId: FeedItemId;
 }> = ({feedItemId}) => {
   const alreadyMarkedRead = useRef(false);
-  const {feedItem, isLoading, error} = useFeedItem(feedItemId);
+  const {feedItem, isLoading: isItemLoading, error: feedItemError} = useFeedItem(feedItemId);
+  const isFeedItemImported = Boolean(feedItem?.lastImportedTime);
+  const {
+    markdown,
+    isLoading: isMarkdownLoading,
+    error: markdownError,
+  } = useFeedItemMarkdown(feedItemId, isFeedItemImported);
 
   useEffect(() => {
-    if (feedItem === null) return;
+    // Don't mark the feed item as read if it hasn't been imported yet.
+    if (feedItem === null || !isFeedItemImported) return;
 
     // Only mark the feed item as read once. This prevents the feed item from being marked as read
     // immediately after the user clicks the "Mark unread" button.
@@ -50,25 +58,30 @@ const FeedItemScreenMainContent: React.FC<{
       // See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
-  }, [feedItem, feedItemId]);
+  }, [feedItem, feedItemId, isFeedItemImported]);
 
-  if (isLoading) {
+  if (isItemLoading) {
     return <div>Loading...</div>;
   }
 
-  if (error) {
+  if (feedItemError) {
     // TODO: Introduce proper error screen.
-    return <div>Error: {error.message}</div>;
+    return <div>Error: {feedItemError.message}</div>;
   }
 
   if (!feedItem) {
     return <NotFoundScreen message="Feed item not found" />;
   }
 
+  if (markdownError) {
+    // TODO: Introduce proper error screen.
+    return <div>Error loading content: {markdownError.message}</div>;
+  }
+
   return (
     <FeedItemScreenMainContentWrapper>
       <Text as="h1" bold>
-        Feed item {feedItemId}
+        {feedItem.title}
       </Text>
       <FeedItemActionsWrapper>
         <MarkDoneFeedItemActionIcon feedItemId={feedItemId} />
@@ -76,7 +89,18 @@ const FeedItemScreenMainContent: React.FC<{
         <MarkUnreadFeedItemActionIcon feedItemId={feedItemId} />
         <StarFeedItemActionIcon feedItemId={feedItemId} />
       </FeedItemActionsWrapper>
+
       <pre>{JSON.stringify(feedItem, null, 2)}</pre>
+      <br />
+      <hr />
+      <br />
+      {isMarkdownLoading ? (
+        <div>Loading markdown...</div>
+      ) : markdown ? (
+        <Markdown content={markdown} />
+      ) : (
+        <div>No markdown</div>
+      )}
     </FeedItemScreenMainContentWrapper>
   );
 };

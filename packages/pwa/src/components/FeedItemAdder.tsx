@@ -25,6 +25,11 @@ export const FeedItemAdder: React.FC = () => {
     <FlexColumn gap={12} align="flex-start">
       <input type="text" value={url} onChange={(e) => setUrl(e.target.value)} />
       <button onClick={() => handleAddItemToQueue(url)}>Add to import queue</button>
+      <button
+        onClick={() => handleAddItemToQueue('https://jwn.gr/posts/migrating-from-gatsby-to-astro/')}
+      >
+        Add personal blog post to import queue
+      </button>
       <Text as="p" color={ThemeColor.Green700} bold>
         {status}
       </Text>
