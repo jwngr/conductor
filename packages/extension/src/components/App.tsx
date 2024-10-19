@@ -1,11 +1,10 @@
 import {addDoc, collection, doc, setDoc} from 'firebase/firestore';
 import {useState} from 'react';
 
-import {FEED_ITEM_COLLECTION, IMPORT_QUEUE_COLLECTION} from '@shared/lib/constants';
+import {FEED_ITEMS_COLLECTION, IMPORT_QUEUE_COLLECTION} from '@shared/lib/constants';
 import {makeFeedItem} from '@shared/lib/feedItems';
+import {firestore} from '@shared/lib/firebase';
 import {makeImportQueueItem} from '@shared/lib/importQueue';
-
-import {firestore} from '@src/lib/firebase';
 
 import {useCurrentTab} from '../lib/tabs';
 
@@ -23,7 +22,7 @@ function App() {
     }
 
     try {
-      const newItemsCollectionRef = collection(firestore, FEED_ITEM_COLLECTION);
+      const newItemsCollectionRef = collection(firestore, FEED_ITEMS_COLLECTION);
       const importQueueCollectionRef = collection(firestore, IMPORT_QUEUE_COLLECTION);
 
       const feedItem = makeFeedItem(tab.url, newItemsCollectionRef);

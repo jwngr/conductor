@@ -28,7 +28,7 @@ const LeftSidebarItemAvatar: React.FC<{
 };
 
 interface LeftSideItemWrapperProps {
-  readonly isActive: boolean;
+  readonly $isActive: boolean;
 }
 
 const LeftSideItemWrapper = styled(FlexRow).attrs({
@@ -37,11 +37,11 @@ const LeftSideItemWrapper = styled(FlexRow).attrs({
   padding: 8px 12px;
   border-radius: 4px;
 
-  background-color: ${({isActive, theme}) =>
+  background-color: ${({$isActive: isActive, theme}) =>
     isActive ? theme.colors[ThemeColor.Orange200] : 'transparent'};
 
   &:hover {
-    background-color: ${({isActive, theme}) =>
+    background-color: ${({$isActive: isActive, theme}) =>
       theme.colors[isActive ? ThemeColor.Orange300 : ThemeColor.Neutral300]};
   }
 
@@ -60,7 +60,7 @@ const LeftSidebarItemComponent: React.FC<{
 
   return (
     <Link to={url}>
-      <LeftSideItemWrapper isActive={!!match}>
+      <LeftSideItemWrapper $isActive={!!match}>
         <LeftSidebarItemAvatar icon={item.icon} />
         <Text as="p">{item.title}</Text>
       </LeftSideItemWrapper>
