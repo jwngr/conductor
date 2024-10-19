@@ -26,6 +26,7 @@ import {SystemTagId} from '@shared/types/tags';
 import {Func} from '@shared/types/utils';
 
 import {makeImportQueueItem} from './importQueue';
+import {isValidUrl} from './urls';
 import {Views} from './views';
 
 export class FeedItemsService {
@@ -85,14 +86,13 @@ export class FeedItemsService {
   async addFeedItem(url: string): Promise<FeedItemId | null> {
     const trimmedUrl = url.trim();
 
-    // TODO: Validate URL.
-    if (!trimmedUrl) {
+    if (!isValidUrl(trimmedUrl)) {
       return null;
     }
 
     try {
-      const feedItem = makeFeedItem(url, this.feedItemsDbRef);
-      const importQueueItem = makeImportQueueItem(url, feedItem.itemId);
+      const feedItem = makeFeedItem(trimmedUrl, this.feedItemsDbRef);
+      const importQueueItem = makeImportQueueItem(trimmedUrl, feedItem.itemId);
 
       await Promise.all([
         setDoc(doc(this.feedItemsDbRef, feedItem.itemId), feedItem),
@@ -101,20 +101,52 @@ export class FeedItemsService {
 
       return feedItem.itemId;
     } catch (error) {
-      return Promise.reject(error);
+      if (error instanceof Error) {
+        error.message = `Error adding feed item: ${error.message}`;
+        throw error;
+      } else {
+        throw new Error(`Error adding feed item: ${error}`);
+      }
     }
   }
 
   async updateFeedItem(itemId: FeedItemId, item: Partial<FeedItem>): Promise<void> {
-    return updateDoc(doc(this.feedItemsDbRef, itemId), item);
+    try {
+      return updateDoc(doc(this.feedItemsDbRef, itemId), item);
+    } catch (error) {
+      if (error instanceof Error) {
+        error.message = `Error updating feed item: ${error.message}`;
+        throw error;
+      } else {
+        throw new Error(`Error updating feed item: ${error}`);
+      }
+    }
   }
 
   async deleteFeedItem(itemId: FeedItemId): Promise<void> {
-    return deleteDoc(doc(this.feedItemsDbRef, itemId));
+    try {
+      return deleteDoc(doc(this.feedItemsDbRef, itemId));
+    } catch (error) {
+      if (error instanceof Error) {
+        error.message = `Error deleting feed item: ${error.message}`;
+        throw error;
+      } else {
+        throw new Error(`Error deleting feed item: ${error}`);
+      }
+    }
   }
 
   async getFeedItemMarkdown(itemId: FeedItemId): Promise<string> {
-    return getDownloadURL(storageRef(this.feedItemsStorageRef, `${itemId}/llmContext.md`));
+    try {
+      return getDownloadURL(storageRef(this.feedItemsStorageRef, `${itemId}/llmContext.md`));
+    } catch (error) {
+      if (error instanceof Error) {
+        error.message = `Error getting feed item markdown: ${error.message}`;
+        throw error;
+      } else {
+        throw new Error(`Error getting feed item markdown: ${error}`);
+      }
+    }
   }
 }
 

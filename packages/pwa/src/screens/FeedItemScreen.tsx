@@ -50,7 +50,7 @@ const FeedItemScreenMainContent: React.FC<{
       // See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
-  }, [feedItem, feedItemId, alreadyMarkedRead]);
+  }, [feedItem, feedItemId]);
 
   if (isLoading) {
     return <div>Loading...</div>;
