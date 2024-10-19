@@ -152,6 +152,9 @@ export class FeedItemsService {
       const fileRef = storageRef(this.feedItemsStorageRef, `${itemId}/llmContext.md`);
       const downloadUrl = await getDownloadURL(fileRef);
       const response = await fetch(downloadUrl);
+      if (!response.ok) {
+        throw new Error(`Response status ${response.status}: ${response.statusText}`);
+      }
       const blob = await response.blob();
       return await blob.text();
     } catch (error) {

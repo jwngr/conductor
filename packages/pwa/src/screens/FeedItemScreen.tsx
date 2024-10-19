@@ -20,6 +20,7 @@ import {ScreenMainContentWrapper, ScreenWrapper} from '@src/components/layout/Sc
 import {LeftSidebar} from '@src/components/LeftSidebar';
 import {Markdown} from '@src/components/Markdown';
 import {useFeedItem, useFeedItemMarkdown} from '@src/lib/feedItems';
+import {logger} from '@src/lib/logger';
 
 import {NotFoundScreen} from './404';
 
@@ -65,8 +66,9 @@ const FeedItemScreenMainContent: React.FC<{
   }
 
   if (feedItemError) {
+    logger.error('Error fetching feed item', {error: feedItemError});
     // TODO: Introduce proper error screen.
-    return <div>Error: {feedItemError.message}</div>;
+    return <Text as="p">There was a problem loading the feed item</Text>;
   }
 
   if (!feedItem) {
@@ -74,8 +76,9 @@ const FeedItemScreenMainContent: React.FC<{
   }
 
   if (markdownError) {
+    logger.error('Error fetching markdown', {error: markdownError});
     // TODO: Introduce proper error screen.
-    return <div>Error loading content: {markdownError.message}</div>;
+    return <Text as="p">There was a problem loading the content: {markdownError.message}</Text>;
   }
 
   return (
