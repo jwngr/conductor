@@ -4,47 +4,145 @@ import {
   deleteDoc,
   doc,
   onSnapshot,
+  query,
   serverTimestamp,
+  setDoc,
+  Unsubscribe,
   updateDoc,
+  where,
 } from 'firebase/firestore';
+import {getDownloadURL, ref as storageRef, StorageReference} from 'firebase/storage';
 
-import {FeedItem, FeedItemAction, FeedItemActionType, TriageStatus} from '@shared/types/core';
+import {
+  FeedItem,
+  FeedItemAction,
+  FeedItemActionType,
+  FeedItemId,
+  TriageStatus,
+} from '@shared/types/core';
 import {IconName} from '@shared/types/icons';
+import {fromFilterOperator, ViewType} from '@shared/types/query';
 import {SystemTagId} from '@shared/types/tags';
-import {Func, Task} from '@shared/types/utils';
+import {Func} from '@shared/types/utils';
 
-// TODO: This is currently not used, but the path I'd like to head...
+import {makeImportQueueItem} from './importQueue';
+import {isValidUrl} from './urls';
+import {Views} from './views';
 
 export class FeedItemsService {
-  constructor(private readonly collectionRef: CollectionReference) {}
+  constructor(
+    private readonly feedItemsDbRef: CollectionReference,
+    private readonly importQueueDbRef: CollectionReference,
+    private readonly feedItemsStorageRef: StorageReference
+  ) {}
 
-  async watchAll(callback: Func<readonly FeedItem[]>): Promise<Task> {
-    const unsubscribe = onSnapshot(this.collectionRef, (snapshot) => {
-      callback(snapshot.docs.map((doc) => doc.data() as FeedItem));
-    });
+  watchFeedItem(
+    feedItemId: FeedItemId,
+    successCallback: Func<FeedItem | null>, // null means feed item does not exist.
+    errorCallback: Func<Error>
+  ): Unsubscribe {
+    const unsubscribe = onSnapshot(
+      doc(this.feedItemsDbRef, feedItemId),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          successCallback({...snapshot.data(), itemId: snapshot.id} as FeedItem);
+        } else {
+          successCallback(null);
+        }
+      },
+      errorCallback
+    );
     return unsubscribe;
   }
 
-  async watch(callback: Func<FeedItem>): Promise<Task> {
-    const unsubscribe = onSnapshot(this.collectionRef, (snapshot) => {
-      snapshot.docs.forEach((doc) => {
-        callback(doc.data() as FeedItem);
-      });
-    });
+  watchFeedItemsQuery(
+    viewType: ViewType,
+    successCallback: Func<FeedItem[]>,
+    errorCallback: Func<Error>
+  ): Unsubscribe {
+    // Construct Firestore queries from the view config.
+    const viewConfig = Views.get(viewType);
+    const whereClauses = viewConfig.filters.map((filter) =>
+      where(filter.field, fromFilterOperator(filter.op), filter.value)
+    );
+    const itemsQuery = query(
+      this.feedItemsDbRef,
+      ...whereClauses
+      // TODO: Add order by condition.
+      // orderBy(viewConfig.sort.field, fromSortDirection(viewConfig.sort.direction))
+    );
+
+    const unsubscribe = onSnapshot(
+      itemsQuery,
+      (snapshot) => {
+        const feedItems = snapshot.docs.map((doc) => ({...doc.data(), itemId: doc.id}) as FeedItem);
+        successCallback(feedItems);
+      },
+      errorCallback
+    );
     return unsubscribe;
   }
 
-  async add(item: FeedItem): Promise<string> {
-    const docRef = await addDoc(this.collectionRef, item);
-    return docRef.id;
+  async addFeedItem(url: string): Promise<FeedItemId | null> {
+    const trimmedUrl = url.trim();
+
+    if (!isValidUrl(trimmedUrl)) {
+      return null;
+    }
+
+    try {
+      const feedItem = makeFeedItem(trimmedUrl, this.feedItemsDbRef);
+      const importQueueItem = makeImportQueueItem(trimmedUrl, feedItem.itemId);
+
+      await Promise.all([
+        setDoc(doc(this.feedItemsDbRef, feedItem.itemId), feedItem),
+        addDoc(this.importQueueDbRef, importQueueItem),
+      ]);
+
+      return feedItem.itemId;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Error adding feed item: ${error.message}`, {cause: error});
+      } else {
+        throw new Error(`Error adding feed item: ${error}`);
+      }
+    }
   }
 
-  async update(itemId: string, item: Partial<FeedItem>): Promise<void> {
-    return updateDoc(doc(this.collectionRef, itemId), item);
+  async updateFeedItem(itemId: FeedItemId, item: Partial<FeedItem>): Promise<void> {
+    try {
+      await updateDoc(doc(this.feedItemsDbRef, itemId), item);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Error updating feed item: ${error.message}`, {cause: error});
+      } else {
+        throw new Error(`Error updating feed item: ${error}`);
+      }
+    }
   }
 
-  async delete(itemId: string): Promise<void> {
-    return deleteDoc(doc(this.collectionRef, itemId));
+  async deleteFeedItem(itemId: FeedItemId): Promise<void> {
+    try {
+      await deleteDoc(doc(this.feedItemsDbRef, itemId));
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Error deleting feed item: ${error.message}`, {cause: error});
+      } else {
+        throw new Error(`Error deleting feed item: ${error}`);
+      }
+    }
+  }
+
+  async getFeedItemMarkdown(itemId: FeedItemId): Promise<string> {
+    try {
+      return await getDownloadURL(storageRef(this.feedItemsStorageRef, `${itemId}/llmContext.md`));
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Error getting feed item markdown: ${error.message}`, {cause: error});
+      } else {
+        throw new Error(`Error getting feed item markdown: ${error}`);
+      }
+    }
   }
 }
 

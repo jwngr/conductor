@@ -1,15 +1,8 @@
-import {addDoc, collection, doc, setDoc} from 'firebase/firestore';
 import {useState} from 'react';
 
-import {FEED_ITEMS_COLLECTION, IMPORT_QUEUE_COLLECTION} from '@shared/lib/constants';
-import {makeFeedItem} from '@shared/lib/feedItems';
-import {firestore} from '@shared/lib/firebase';
-import {makeImportQueueItem} from '@shared/lib/importQueue';
+import {feedItemsService} from '@shared/lib/feedItemsServiceInstance';
 
 import {useCurrentTab} from '../lib/tabs';
-
-const newItemsCollectionRef = collection(firestore, FEED_ITEMS_COLLECTION);
-const importQueueCollectionRef = collection(firestore, IMPORT_QUEUE_COLLECTION);
 
 function App() {
   const [status, setStatus] = useState<string>('');
@@ -25,13 +18,7 @@ function App() {
     }
 
     try {
-      const feedItem = makeFeedItem(tab.url, newItemsCollectionRef);
-      const importQueueItem = makeImportQueueItem(tab.url, feedItem.itemId);
-
-      await Promise.all([
-        setDoc(doc(newItemsCollectionRef, feedItem.itemId), feedItem),
-        addDoc(importQueueCollectionRef, importQueueItem),
-      ]);
+      await feedItemsService.addFeedItem(tab.url);
 
       setStatus('URL saved successfully');
     } catch (error) {

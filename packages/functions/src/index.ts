@@ -6,7 +6,11 @@ import {defineString} from 'firebase-functions/params';
 import {onInit} from 'firebase-functions/v2/core';
 import {onDocumentCreated} from 'firebase-functions/v2/firestore';
 
-import {FEED_ITEMS_COLLECTION, IMPORT_QUEUE_COLLECTION} from '@shared/lib/constants';
+import {
+  FEED_ITEMS_DB_COLLECTION,
+  FEED_ITEMS_STORAGE_COLLECTION,
+  IMPORT_QUEUE_COLLECTION,
+} from '@shared/lib/constants';
 import {FeedItem, FeedItemId, ImportQueueItem} from '@shared/types/core';
 import {SystemTagId} from '@shared/types/tags';
 
@@ -152,7 +156,7 @@ const saveRawHtmlToStorage = async (
   rawHtml: string | null
 ): Promise<void> => {
   if (rawHtml === null) return;
-  const rawHtmlFile = bucket.file(`${FEED_ITEMS_COLLECTION}/${feedItemId}/raw.html`);
+  const rawHtmlFile = bucket.file(`${FEED_ITEMS_STORAGE_COLLECTION}/${feedItemId}/raw.html`);
   await rawHtmlFile.save(rawHtml, {contentType: 'text/html'});
 };
 
@@ -161,7 +165,9 @@ const saveMarkdownToStorage = async (
   markdown: string | null
 ): Promise<void> => {
   if (markdown === null) return;
-  const llmContextFile = bucket.file(`${FEED_ITEMS_COLLECTION}/${feedItemId}/llmContext.md`);
+  const llmContextFile = bucket.file(
+    `${FEED_ITEMS_STORAGE_COLLECTION}/${feedItemId}/llmContext.md`
+  );
   await llmContextFile.save(markdown, {contentType: 'text/markdown'});
 };
 
@@ -187,7 +193,7 @@ const updateImportedFeedItemInFirestore = async (
     lastUpdatedTime: admin.firestore.FieldValue.serverTimestamp(),
   };
 
-  const itemDoc = firestore.doc(`${FEED_ITEMS_COLLECTION}/${feedItemId}`);
+  const itemDoc = firestore.doc(`${FEED_ITEMS_DB_COLLECTION}/${feedItemId}`);
   await itemDoc.update({
     ...update,
     // TODO: Consider using a Firestore converter to handle this. Ideally this would be part of the

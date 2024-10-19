@@ -2,6 +2,7 @@ import {deleteField} from 'firebase/firestore';
 import {useEffect, useRef} from 'react';
 import styled from 'styled-components';
 
+import {feedItemsService} from '@shared/lib/feedItemsServiceInstance';
 import {useFeedItemIdFromUrl} from '@shared/lib/router';
 import {FeedItemId} from '@shared/types/core';
 import {SystemTagId} from '@shared/types/tags';
@@ -17,7 +18,7 @@ import {
 } from '@src/components/feedItems/FeedItemActionIcon';
 import {ScreenMainContentWrapper, ScreenWrapper} from '@src/components/layout/Screen';
 import {LeftSidebar} from '@src/components/LeftSidebar';
-import {useFeedItem, useUpdateFeedItem} from '@src/lib/feedItems';
+import {useFeedItem} from '@src/lib/feedItems';
 
 import {NotFoundScreen} from './404';
 
@@ -32,31 +33,35 @@ const FeedItemScreenMainContentWrapper = styled(FlexColumn).attrs({gap: 12})`
 const FeedItemScreenMainContent: React.FC<{
   readonly feedItemId: FeedItemId;
 }> = ({feedItemId}) => {
-  const {item, isLoading} = useFeedItem(feedItemId);
-  const updateFeedItem = useUpdateFeedItem();
   const alreadyMarkedRead = useRef(false);
+  const {feedItem, isLoading, error} = useFeedItem(feedItemId);
 
   useEffect(() => {
-    if (item === null) return;
+    if (feedItem === null) return;
 
     // Only mark the feed item as read once. This prevents the feed item from being marked as read
     // immediately after the user clicks the "Mark unread" button.
     if (alreadyMarkedRead.current) return;
     alreadyMarkedRead.current = true;
 
-    updateFeedItem(feedItemId, {
+    feedItemsService.updateFeedItem(feedItemId, {
       [`tagIds.${SystemTagId.Unread}`]: deleteField(),
       // TODO: Consider using a Firestore converter to handle this.
       // See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
-  }, [item, feedItemId, updateFeedItem, alreadyMarkedRead]);
+  }, [feedItem, feedItemId]);
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  if (!item) {
+  if (error) {
+    // TODO: Introduce proper error screen.
+    return <div>Error: {error.message}</div>;
+  }
+
+  if (!feedItem) {
     return <NotFoundScreen message="Feed item not found" />;
   }
 
@@ -71,7 +76,7 @@ const FeedItemScreenMainContent: React.FC<{
         <MarkUnreadFeedItemActionIcon feedItemId={feedItemId} />
         <StarFeedItemActionIcon feedItemId={feedItemId} />
       </FeedItemActionsWrapper>
-      <pre>{JSON.stringify(item, null, 2)}</pre>
+      <pre>{JSON.stringify(feedItem, null, 2)}</pre>
     </FeedItemScreenMainContentWrapper>
   );
 };

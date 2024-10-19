@@ -5,6 +5,25 @@ import {NavItem} from '@shared/types/urls';
 import {CustomIconType} from './customIcon';
 import {assertNever} from './utils';
 
+// TODO: Make URL validation more robust.
+export function isValidUrl(url: string): boolean {
+  try {
+    new URL(url);
+    return true;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error1) {
+    // Passthrough.
+  }
+
+  try {
+    new URL('https://' + url);
+    return true;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error2) {
+    return false;
+  }
+}
+
 const ALL_NAV_ITEMS: Record<ViewType, NavItem> = {
   [ViewType.Untriaged]: {
     icon: {
