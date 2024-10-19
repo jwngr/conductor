@@ -44,6 +44,7 @@ const ViewList: React.FC<{viewType: ViewType}> = ({viewType}) => {
   }
 
   if (error) {
+    // TODO: Introduce proper error screen.
     return <div>Error: {error.message}</div>;
   }
 

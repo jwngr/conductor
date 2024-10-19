@@ -3,48 +3,113 @@ import {
   CollectionReference,
   deleteDoc,
   doc,
+  getDoc,
   onSnapshot,
+  query,
   serverTimestamp,
+  Unsubscribe,
   updateDoc,
+  where,
 } from 'firebase/firestore';
+import {getDownloadURL, ref as storageRef, StorageReference} from 'firebase/storage';
 
-import {FeedItem, FeedItemAction, FeedItemActionType, TriageStatus} from '@shared/types/core';
+import {
+  FeedItem,
+  FeedItemAction,
+  FeedItemActionType,
+  FeedItemId,
+  TriageStatus,
+} from '@shared/types/core';
 import {IconName} from '@shared/types/icons';
+import {fromFilterOperator, ViewType} from '@shared/types/query';
 import {SystemTagId} from '@shared/types/tags';
-import {Func, Task} from '@shared/types/utils';
+import {Func} from '@shared/types/utils';
 
-// TODO: This is currently not used, but the path I'd like to head...
+import {Views} from './views';
 
 export class FeedItemsService {
-  constructor(private readonly collectionRef: CollectionReference) {}
+  constructor(
+    private readonly feedItemsDbRef: CollectionReference,
+    private readonly feedItemsStorageRef: StorageReference
+  ) {}
 
-  async watchAll(callback: Func<readonly FeedItem[]>): Promise<Task> {
-    const unsubscribe = onSnapshot(this.collectionRef, (snapshot) => {
-      callback(snapshot.docs.map((doc) => doc.data() as FeedItem));
-    });
+  watchAll(successCallback: Func<readonly FeedItem[]>, errorCallback: Func<Error>): Unsubscribe {
+    const unsubscribe = onSnapshot(
+      this.feedItemsDbRef,
+      (snapshot) => {
+        successCallback(snapshot.docs.map((doc) => ({...doc.data(), itemId: doc.id}) as FeedItem));
+      },
+      errorCallback
+    );
     return unsubscribe;
   }
 
-  async watch(callback: Func<FeedItem>): Promise<Task> {
-    const unsubscribe = onSnapshot(this.collectionRef, (snapshot) => {
-      snapshot.docs.forEach((doc) => {
-        callback(doc.data() as FeedItem);
-      });
-    });
+  watchFeedItem(
+    feedItemId: FeedItemId,
+    successCallback: Func<FeedItem>,
+    errorCallback: Func<Error>
+  ): Unsubscribe {
+    const unsubscribe = onSnapshot(
+      doc(this.feedItemsDbRef, feedItemId),
+      (snapshot) => {
+        successCallback({...snapshot.data(), itemId: snapshot.id} as FeedItem);
+      },
+      errorCallback
+    );
     return unsubscribe;
   }
 
-  async add(item: FeedItem): Promise<string> {
-    const docRef = await addDoc(this.collectionRef, item);
+  watchFeedItemsQuery(
+    viewType: ViewType,
+    successCallback: Func<FeedItem[]>,
+    errorCallback: Func<Error>
+  ): Unsubscribe {
+    // Construct Firestore queries from the view config.
+    const viewConfig = Views.get(viewType);
+    const whereClauses = viewConfig.filters.map((filter) =>
+      where(filter.field, fromFilterOperator(filter.op), filter.value)
+    );
+    const itemsQuery = query(
+      this.feedItemsDbRef,
+      ...whereClauses
+      // TODO: Add order by condition.
+      // orderBy(viewConfig.sort.field, fromSortDirection(viewConfig.sort.direction))
+    );
+
+    const unsubscribe = onSnapshot(
+      itemsQuery,
+      (snapshot) => {
+        const feedItems = snapshot.docs.map((doc) => ({...doc.data(), itemId: doc.id}) as FeedItem);
+        successCallback(feedItems);
+      },
+      errorCallback
+    );
+    return unsubscribe;
+  }
+
+  async addFeedItem(item: Omit<FeedItem, 'itemId'>): Promise<FeedItemId> {
+    const docRef = await addDoc(this.feedItemsDbRef, item);
     return docRef.id;
   }
 
-  async update(itemId: string, item: Partial<FeedItem>): Promise<void> {
-    return updateDoc(doc(this.collectionRef, itemId), item);
+  async updateFeedItem(itemId: FeedItemId, item: Partial<FeedItem>): Promise<void> {
+    return updateDoc(doc(this.feedItemsDbRef, itemId), item);
   }
 
-  async delete(itemId: string): Promise<void> {
-    return deleteDoc(doc(this.collectionRef, itemId));
+  async deleteFeedItem(itemId: FeedItemId): Promise<void> {
+    return deleteDoc(doc(this.feedItemsDbRef, itemId));
+  }
+
+  async getFeedItem(itemId: FeedItemId): Promise<FeedItem | null> {
+    const docSnap = await getDoc(doc(this.feedItemsDbRef, itemId));
+    if (docSnap.exists()) {
+      return {...docSnap.data(), itemId: docSnap.id} as FeedItem;
+    }
+    return null;
+  }
+
+  async getFeedItemMarkdown(itemId: FeedItemId): Promise<string> {
+    return getDownloadURL(storageRef(this.feedItemsStorageRef, `${itemId}/llmContext.md`));
   }
 }
 
