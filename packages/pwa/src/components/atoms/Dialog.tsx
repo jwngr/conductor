@@ -19,9 +19,7 @@ const DialogOverlayWrapper = styled(DialogPrimitive.Overlay)`
   z-index: 50;
   background-color: ${({theme}) => theme.colors[ThemeColor.Neutral900]};
   opacity: 0.8;
-  animation:
-    in 0.2s ease-in-out,
-    out 0.2s ease-in-out;
+  // TODO: Add animation.
 `;
 
 const DialogOverlay = React.forwardRef<
@@ -39,7 +37,7 @@ const DialogContentWrapper = styled(DialogPrimitive.Content)`
   display: grid;
   max-height: 80%;
   max-width: 80%;
-  min-width: 960px;
+  width: 960px;
   overflow: auto;
   background-color: ${({theme}) => theme.colors[ThemeColor.Neutral200]};
   border: 1px solid ${({theme}) => theme.colors[ThemeColor.Neutral500]};
@@ -82,10 +80,8 @@ const DialogContent = React.forwardRef<
     <DialogOverlay />
     <DialogContentWrapper ref={ref} {...otherProps}>
       {children}
-      <CloseButtonWrapper>
+      <CloseButtonWrapper aria-label="Close">
         <Cross2Icon style={{height: 16, width: 16}} />
-        {/* TODO: Add accessibility label. */}
-        {/* <span className="sr-only">Close</span> */}
       </CloseButtonWrapper>
     </DialogContentWrapper>
   </DialogPortal>
