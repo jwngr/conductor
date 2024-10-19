@@ -7,6 +7,7 @@ import {
   onSnapshot,
   query,
   serverTimestamp,
+  setDoc,
   Unsubscribe,
   updateDoc,
   where,
@@ -25,11 +26,13 @@ import {fromFilterOperator, ViewType} from '@shared/types/query';
 import {SystemTagId} from '@shared/types/tags';
 import {Func} from '@shared/types/utils';
 
+import {makeImportQueueItem} from './importQueue';
 import {Views} from './views';
 
 export class FeedItemsService {
   constructor(
     private readonly feedItemsDbRef: CollectionReference,
+    private readonly importQueueDbRef: CollectionReference,
     private readonly feedItemsStorageRef: StorageReference
   ) {}
 
@@ -87,9 +90,27 @@ export class FeedItemsService {
     return unsubscribe;
   }
 
-  async addFeedItem(item: Omit<FeedItem, 'itemId'>): Promise<FeedItemId> {
-    const docRef = await addDoc(this.feedItemsDbRef, item);
-    return docRef.id;
+  async addFeedItem(url: string): Promise<FeedItemId | null> {
+    const trimmedUrl = url.trim();
+
+    // TODO: Validate URL.
+    if (!trimmedUrl) {
+      return null;
+    }
+
+    try {
+      const feedItem = makeFeedItem(url, this.feedItemsDbRef);
+      const importQueueItem = makeImportQueueItem(url, feedItem.itemId);
+
+      await Promise.all([
+        setDoc(doc(this.feedItemsDbRef, feedItem.itemId), feedItem),
+        addDoc(this.importQueueDbRef, importQueueItem),
+      ]);
+
+      return feedItem.itemId;
+    } catch (error) {
+      return Promise.reject(error);
+    }
   }
 
   async updateFeedItem(itemId: FeedItemId, item: Partial<FeedItem>): Promise<void> {
