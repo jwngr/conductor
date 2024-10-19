@@ -6,6 +6,15 @@ import {ThemeColor} from '@shared/types/theme';
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from './atoms/Dialog';
+
 export const FeedItemAdder: React.FC = () => {
   const [url, setUrl] = useState('');
   const [status, setStatus] = useState('');
@@ -30,9 +39,25 @@ export const FeedItemAdder: React.FC = () => {
       >
         Add personal blog post to import queue
       </button>
-      <Text as="p" color={ThemeColor.Green700} bold>
-        {status}
-      </Text>
+      {status ? (
+        <Text as="p" color={ThemeColor.Green700} bold>
+          {status}
+        </Text>
+      ) : null}
+      <Dialog>
+        <DialogTrigger>Open test dialog</DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Are you absolutely sure?</DialogTitle>
+            <DialogDescription>This is a test description</DialogDescription>
+            {Array.from({length: 50}, (_, index) => (
+              <Text key={index} as="p" color={ThemeColor.Red900} bold>
+                This is a test dialog
+              </Text>
+            ))}
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </FlexColumn>
   );
 };
