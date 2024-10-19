@@ -3,13 +3,13 @@ import {useEffect, useState} from 'react';
 
 import {firestore} from '@shared/lib/firebase';
 
-interface UseFirstoreQueryResult {
+interface UseFirestoreQueryResult {
   readonly data: QueryDocumentSnapshot[];
   readonly isLoading: boolean;
   readonly error: Error | null;
 }
 
-export function useFirestoreQuery(collectionQuery: Query): UseFirstoreQueryResult {
+export function useFirestoreQuery(collectionQuery: Query): UseFirestoreQueryResult {
   const [data, setData] = useState<QueryDocumentSnapshot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);

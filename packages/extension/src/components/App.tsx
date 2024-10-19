@@ -8,6 +8,9 @@ import {makeImportQueueItem} from '@shared/lib/importQueue';
 
 import {useCurrentTab} from '../lib/tabs';
 
+const newItemsCollectionRef = collection(firestore, FEED_ITEMS_COLLECTION);
+const importQueueCollectionRef = collection(firestore, IMPORT_QUEUE_COLLECTION);
+
 function App() {
   const [status, setStatus] = useState<string>('');
   const {currentTab} = useCurrentTab();
@@ -22,9 +25,6 @@ function App() {
     }
 
     try {
-      const newItemsCollectionRef = collection(firestore, FEED_ITEMS_COLLECTION);
-      const importQueueCollectionRef = collection(firestore, IMPORT_QUEUE_COLLECTION);
-
       const feedItem = makeFeedItem(tab.url, newItemsCollectionRef);
       const importQueueItem = makeImportQueueItem(tab.url, feedItem.itemId);
 

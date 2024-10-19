@@ -37,12 +37,12 @@ const LeftSideItemWrapper = styled(FlexRow).attrs({
   padding: 8px 12px;
   border-radius: 4px;
 
-  background-color: ${({$isActive: isActive, theme}) =>
-    isActive ? theme.colors[ThemeColor.Orange200] : 'transparent'};
+  background-color: ${({$isActive, theme}) =>
+    $isActive ? theme.colors[ThemeColor.Orange200] : 'transparent'};
 
   &:hover {
-    background-color: ${({$isActive: isActive, theme}) =>
-      theme.colors[isActive ? ThemeColor.Orange300 : ThemeColor.Neutral300]};
+    background-color: ${({$isActive, theme}) =>
+      theme.colors[$isActive ? ThemeColor.Orange300 : ThemeColor.Neutral300]};
   }
 
   // Animate on click.

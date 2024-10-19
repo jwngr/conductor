@@ -10,6 +10,9 @@ import {ThemeColor} from '@shared/types/theme';
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
 
+const newItemsCollectionRef = collection(firestore, FEED_ITEMS_COLLECTION);
+const importQueueCollectionRef = collection(firestore, IMPORT_QUEUE_COLLECTION);
+
 export const FeedItemAdder: React.FC = () => {
   const [url, setUrl] = useState('');
   const [status, setStatus] = useState('');
@@ -25,9 +28,6 @@ export const FeedItemAdder: React.FC = () => {
     setStatus('Pending...');
 
     try {
-      const newItemsCollectionRef = collection(firestore, FEED_ITEMS_COLLECTION);
-      const importQueueCollectionRef = collection(firestore, IMPORT_QUEUE_COLLECTION);
-
       const feedItem = makeFeedItem(url, newItemsCollectionRef);
       const importQueueItem = makeImportQueueItem(url, feedItem.itemId);
 
