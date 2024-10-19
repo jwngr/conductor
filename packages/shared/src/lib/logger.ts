@@ -3,7 +3,7 @@ type ConsoleColor = 'black' | 'green' | 'yellow' | 'red';
 export class Logger {
   private logInternal(
     message: string,
-    data?: Record<string, unknown> | undefined,
+    data: Record<string, unknown> | undefined,
     color: ConsoleColor = 'black'
   ): void {
     if (typeof data === 'undefined') {
@@ -17,7 +17,8 @@ export class Logger {
 
   /** Passthrough to `console.log`. */
   public log(...args: unknown[]): void {
-    this.logInternal(args.join(' '));
+    // eslint-disable-next-line no-console
+    console.log(...args);
   }
 
   public warning(message: string, data?: Record<string, unknown>): void {
@@ -26,10 +27,17 @@ export class Logger {
 
   public error(message: string, data?: Record<string, unknown>): void {
     const {error, ...otherData} = data ?? {};
-    const errorData = {
-      error: error ?? new Error(message),
+    const errorData: Record<string, unknown> = {
+      error: error instanceof Error ? error : new Error(message),
       ...otherData,
     };
+    if (error && !(error instanceof Error)) {
+      this.logInternal(
+        `[ERROR] logger.error() called with non-error`,
+        {invalidError: error},
+        'red'
+      );
+    }
     this.logInternal(`[ERROR] ${message}`, errorData, 'red');
   }
 }
