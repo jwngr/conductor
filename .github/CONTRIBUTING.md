@@ -118,3 +118,13 @@ $ firebase emulators:start
 1. Restart the corresponding service you need to run.
 
 The Firebase emulator UI opens at http://localhost:4000.
+
+## CORS
+
+CORS headers are managed in `cors.json`. To update them, run:
+
+```bash
+$ gsutil cors set cors.json gs://<FIREBASE_PROJECT_ID>.appspot.com
+```
+
+Changes should take effect within a few seconds.
