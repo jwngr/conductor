@@ -16,25 +16,12 @@ export function useFeedItem(feedItemId: FeedItemId): {
   }>({feedItem: null, isLoading: true, error: null});
 
   useEffect(() => {
-    let isMounted = true;
-
     const unsubscribe = feedItemsService.watchFeedItem(
       feedItemId,
-      (feedItem) => {
-        if (isMounted) {
-          setState({feedItem, isLoading: false, error: null});
-        }
-      },
-      (error) => {
-        if (isMounted) {
-          setState({feedItem: null, isLoading: false, error});
-        }
-      }
+      (feedItem) => setState({feedItem, isLoading: false, error: null}),
+      (error) => setState({feedItem: null, isLoading: false, error})
     );
-    return () => {
-      isMounted = false;
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, [feedItemId]);
 
   return state;
@@ -52,25 +39,12 @@ export function useFeedItems({viewType}: {readonly viewType: ViewType}): {
   }>({feedItems: [], isLoading: true, error: null});
 
   useEffect(() => {
-    let isMounted = true;
-
     const unsubscribe = feedItemsService.watchFeedItemsQuery(
       viewType,
-      (feedItems) => {
-        if (isMounted) {
-          setState({feedItems, isLoading: false, error: null});
-        }
-      },
-      (error) => {
-        if (isMounted) {
-          setState({feedItems: [], isLoading: false, error});
-        }
-      }
+      (feedItems) => setState({feedItems, isLoading: false, error: null}),
+      (error) => setState({feedItems: [], isLoading: false, error})
     );
-    return () => {
-      isMounted = false;
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, [viewType]);
 
   return state;

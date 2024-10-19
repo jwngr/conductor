@@ -155,8 +155,7 @@ export class FeedItemsService {
       if (!response.ok) {
         throw new Error(`Response status ${response.status}: ${response.statusText}`);
       }
-      const blob = await response.blob();
-      return await blob.text();
+      return await response.text();
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(`Error getting feed item markdown: ${error.message}`, {cause: error});
