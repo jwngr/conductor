@@ -5,6 +5,7 @@ import {NavItem} from '@shared/types/urls';
 import {CustomIconType} from './customIcon';
 import {assertNever} from './utils';
 
+// TODO: Make URL validation more robust.
 export function isValidUrl(url: string): boolean {
   try {
     new URL(url);

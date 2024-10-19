@@ -102,8 +102,7 @@ export class FeedItemsService {
       return feedItem.itemId;
     } catch (error) {
       if (error instanceof Error) {
-        error.message = `Error adding feed item: ${error.message}`;
-        throw error;
+        throw new Error(`Error adding feed item: ${error.message}`, {cause: error});
       } else {
         throw new Error(`Error adding feed item: ${error}`);
       }
@@ -112,11 +111,10 @@ export class FeedItemsService {
 
   async updateFeedItem(itemId: FeedItemId, item: Partial<FeedItem>): Promise<void> {
     try {
-      return updateDoc(doc(this.feedItemsDbRef, itemId), item);
+      await updateDoc(doc(this.feedItemsDbRef, itemId), item);
     } catch (error) {
       if (error instanceof Error) {
-        error.message = `Error updating feed item: ${error.message}`;
-        throw error;
+        throw new Error(`Error updating feed item: ${error.message}`, {cause: error});
       } else {
         throw new Error(`Error updating feed item: ${error}`);
       }
@@ -125,11 +123,10 @@ export class FeedItemsService {
 
   async deleteFeedItem(itemId: FeedItemId): Promise<void> {
     try {
-      return deleteDoc(doc(this.feedItemsDbRef, itemId));
+      await deleteDoc(doc(this.feedItemsDbRef, itemId));
     } catch (error) {
       if (error instanceof Error) {
-        error.message = `Error deleting feed item: ${error.message}`;
-        throw error;
+        throw new Error(`Error deleting feed item: ${error.message}`, {cause: error});
       } else {
         throw new Error(`Error deleting feed item: ${error}`);
       }
@@ -138,11 +135,10 @@ export class FeedItemsService {
 
   async getFeedItemMarkdown(itemId: FeedItemId): Promise<string> {
     try {
-      return getDownloadURL(storageRef(this.feedItemsStorageRef, `${itemId}/llmContext.md`));
+      return await getDownloadURL(storageRef(this.feedItemsStorageRef, `${itemId}/llmContext.md`));
     } catch (error) {
       if (error instanceof Error) {
-        error.message = `Error getting feed item markdown: ${error.message}`;
-        throw error;
+        throw new Error(`Error getting feed item markdown: ${error.message}`, {cause: error});
       } else {
         throw new Error(`Error getting feed item markdown: ${error}`);
       }
