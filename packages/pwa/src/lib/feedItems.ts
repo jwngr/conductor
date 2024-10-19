@@ -4,15 +4,6 @@ import {feedItemsService} from '@shared/lib/feedItemsServiceInstance';
 import {FeedItem, FeedItemId} from '@shared/types/core';
 import {ViewType} from '@shared/types/query';
 
-export function useUpdateFeedItem(): (
-  itemId: FeedItemId,
-  item: Partial<FeedItem>
-) => Promise<void> {
-  return async (itemId, item) => {
-    await feedItemsService.updateFeedItem(itemId, item);
-  };
-}
-
 export function useFeedItem(feedItemId: FeedItemId): {
   readonly feedItem: FeedItem | null;
   readonly isLoading: boolean;

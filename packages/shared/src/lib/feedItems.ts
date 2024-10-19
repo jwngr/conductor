@@ -3,7 +3,6 @@ import {
   CollectionReference,
   deleteDoc,
   doc,
-  getDoc,
   onSnapshot,
   query,
   serverTimestamp,
@@ -36,26 +35,19 @@ export class FeedItemsService {
     private readonly feedItemsStorageRef: StorageReference
   ) {}
 
-  watchAll(successCallback: Func<readonly FeedItem[]>, errorCallback: Func<Error>): Unsubscribe {
-    const unsubscribe = onSnapshot(
-      this.feedItemsDbRef,
-      (snapshot) => {
-        successCallback(snapshot.docs.map((doc) => ({...doc.data(), itemId: doc.id}) as FeedItem));
-      },
-      errorCallback
-    );
-    return unsubscribe;
-  }
-
   watchFeedItem(
     feedItemId: FeedItemId,
-    successCallback: Func<FeedItem>,
+    successCallback: Func<FeedItem | null>, // null means feed item does not exist.
     errorCallback: Func<Error>
   ): Unsubscribe {
     const unsubscribe = onSnapshot(
       doc(this.feedItemsDbRef, feedItemId),
       (snapshot) => {
-        successCallback({...snapshot.data(), itemId: snapshot.id} as FeedItem);
+        if (snapshot.exists()) {
+          successCallback({...snapshot.data(), itemId: snapshot.id} as FeedItem);
+        } else {
+          successCallback(null);
+        }
       },
       errorCallback
     );
@@ -119,14 +111,6 @@ export class FeedItemsService {
 
   async deleteFeedItem(itemId: FeedItemId): Promise<void> {
     return deleteDoc(doc(this.feedItemsDbRef, itemId));
-  }
-
-  async getFeedItem(itemId: FeedItemId): Promise<FeedItem | null> {
-    const docSnap = await getDoc(doc(this.feedItemsDbRef, itemId));
-    if (docSnap.exists()) {
-      return {...docSnap.data(), itemId: docSnap.id} as FeedItem;
-    }
-    return null;
   }
 
   async getFeedItemMarkdown(itemId: FeedItemId): Promise<string> {

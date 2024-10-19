@@ -2,6 +2,7 @@ import {deleteField} from 'firebase/firestore';
 import {useEffect, useRef} from 'react';
 import styled from 'styled-components';
 
+import {feedItemsService} from '@shared/lib/feedItemsServiceInstance';
 import {useFeedItemIdFromUrl} from '@shared/lib/router';
 import {FeedItemId} from '@shared/types/core';
 import {SystemTagId} from '@shared/types/tags';
@@ -17,7 +18,7 @@ import {
 } from '@src/components/feedItems/FeedItemActionIcon';
 import {ScreenMainContentWrapper, ScreenWrapper} from '@src/components/layout/Screen';
 import {LeftSidebar} from '@src/components/LeftSidebar';
-import {useFeedItem, useUpdateFeedItem} from '@src/lib/feedItems';
+import {useFeedItem} from '@src/lib/feedItems';
 
 import {NotFoundScreen} from './404';
 
@@ -32,9 +33,8 @@ const FeedItemScreenMainContentWrapper = styled(FlexColumn).attrs({gap: 12})`
 const FeedItemScreenMainContent: React.FC<{
   readonly feedItemId: FeedItemId;
 }> = ({feedItemId}) => {
-  const {feedItem, isLoading, error} = useFeedItem(feedItemId);
-  const updateFeedItem = useUpdateFeedItem();
   const alreadyMarkedRead = useRef(false);
+  const {feedItem, isLoading, error} = useFeedItem(feedItemId);
 
   useEffect(() => {
     if (feedItem === null) return;
@@ -44,13 +44,13 @@ const FeedItemScreenMainContent: React.FC<{
     if (alreadyMarkedRead.current) return;
     alreadyMarkedRead.current = true;
 
-    updateFeedItem(feedItemId, {
+    feedItemsService.updateFeedItem(feedItemId, {
       [`tagIds.${SystemTagId.Unread}`]: deleteField(),
       // TODO: Consider using a Firestore converter to handle this.
       // See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
-  }, [feedItem, feedItemId, updateFeedItem, alreadyMarkedRead]);
+  }, [feedItem, feedItemId, alreadyMarkedRead]);
 
   if (isLoading) {
     return <div>Loading...</div>;
