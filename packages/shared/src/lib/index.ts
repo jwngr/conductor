@@ -1,7 +1,6 @@
 import * as constantsExports from './constants';
 import * as customIconsExports from './customIcons';
 import * as feedItemsExports from './feedItems';
-import * as feedSubscriptionsExports from './feedSubscriptions';
 import * as firebaseExports from './firebase';
 import * as iconsExports from './icons';
 import * as importQueueExports from './importQueue';
@@ -15,7 +14,6 @@ import * as viewsExports from './views';
 export const constants = constantsExports;
 export const customIcons = customIconsExports;
 export const feedItems = feedItemsExports;
-export const feedSubscriptions = feedSubscriptionsExports;
 export const firebase = firebaseExports;
 export const icons = iconsExports;
 export const importQueue = importQueueExports;
