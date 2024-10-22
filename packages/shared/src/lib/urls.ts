@@ -130,6 +130,10 @@ export class Urls {
     }
   }
 
+  static forFeeds(): string {
+    return '/feeds';
+  }
+
   static forFeedItem(feedItemId: FeedItemId): string {
     return `/items/${feedItemId}`;
   }

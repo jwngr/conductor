@@ -24,8 +24,8 @@ export const App: React.FC = () => {
               element={<ViewScreen viewType={item.viewType} />}
             />
           ))}
-          <Route path="/items/:feedItemId/" element={<FeedItemScreen />} />
-          <Route path="/feeds/" element={<FeedsScreen />} />
+          <Route path={Urls.forFeedItem(':feedItemId')} element={<FeedItemScreen />} />
+          <Route path={Urls.forFeeds()} element={<FeedsScreen />} />
           <Route path="*" element={<NotFoundScreen message="Page not found" />} />
         </Routes>
       </BrowserRouter>

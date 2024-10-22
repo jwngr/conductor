@@ -28,8 +28,8 @@ const InputWrapper = styled.input`
   }
 `;
 
-const Input = React.forwardRef<HTMLInputElement, InputProps>(({type, ...otherProps}, ref) => {
-  return <InputWrapper type={type} ref={ref} {...otherProps} />;
+const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
+  return <InputWrapper ref={ref} {...props} />;
 });
 Input.displayName = 'Input';
 

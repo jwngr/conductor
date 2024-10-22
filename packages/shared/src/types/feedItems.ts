@@ -17,7 +17,7 @@ export enum TriageStatus {
   Trashed = 'TRASHED',
 }
 
-enum FeedItemSourceType {
+export enum FeedItemSourceType {
   /** Feed item was manually added from the app. */
   App = 'APP',
   /** Feed item was manually added from the web extension. */
