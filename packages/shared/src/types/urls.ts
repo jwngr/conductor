@@ -1,8 +1,8 @@
 import {Params} from 'react-router-dom';
 
-import {CustomIcon} from '@shared/lib/customIcon';
+import {CustomIcon} from '@shared/lib/customIcons';
 
-import {FeedItemId} from './core';
+import {FeedItemId} from './feedItems';
 import {ViewType} from './query';
 
 /**

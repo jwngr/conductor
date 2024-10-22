@@ -1,5 +1,5 @@
 import {assertNever} from '@shared/lib/utils';
-import {TriageStatus} from '@shared/types/core';
+import {TriageStatus} from '@shared/types/feedItems';
 import {FilterOp, View, ViewType} from '@shared/types/query';
 import {SystemTagId} from '@shared/types/tags';
 

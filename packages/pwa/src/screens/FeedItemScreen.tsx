@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 import {feedItemsService} from '@shared/lib/feedItemsServiceInstance';
 import {useFeedItemIdFromUrl} from '@shared/lib/router';
-import {FeedItemId} from '@shared/types/core';
+import {FeedItemId} from '@shared/types/feedItems';
 import {SystemTagId} from '@shared/types/tags';
 
 import {AppHeader} from '@src/components/AppHeader';
