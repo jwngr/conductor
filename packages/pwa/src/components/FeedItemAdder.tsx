@@ -1,6 +1,7 @@
 import {useState} from 'react';
 
 import {feedItemsService} from '@shared/lib/feedItemsServiceInstance';
+import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems';
 import {ThemeColor} from '@shared/types/theme';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
@@ -14,6 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from './atoms/Dialog';
+import {Input} from './atoms/Input';
 
 export const FeedItemAdder: React.FC = () => {
   const [url, setUrl] = useState('');
@@ -23,7 +25,7 @@ export const FeedItemAdder: React.FC = () => {
     setStatus('Pending...');
 
     try {
-      await feedItemsService.addFeedItem(url);
+      await feedItemsService.addFeedItem({url, source: FEED_ITEM_APP_SOURCE});
       setStatus('URL saved successfully');
     } catch (error) {
       setStatus(`Error: ${error}`);
@@ -32,7 +34,12 @@ export const FeedItemAdder: React.FC = () => {
 
   return (
     <FlexColumn gap={12} align="flex-start">
-      <input type="text" value={url} onChange={(e) => setUrl(e.target.value)} />
+      <Input
+        type="text"
+        value={url}
+        placeholder="Enter URL"
+        onChange={(e) => setUrl(e.target.value)}
+      />
       <button onClick={() => handleAddItemToQueue(url)}>Add to import queue</button>
       <button
         onClick={() => handleAddItemToQueue('https://jwn.gr/posts/migrating-from-gatsby-to-astro/')}

@@ -1,6 +1,7 @@
 import {useState} from 'react';
 
 import {feedItemsService} from '@shared/lib/feedItemsServiceInstance';
+import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems';
 
 import {useCurrentTab} from '../lib/tabs';
 
@@ -18,7 +19,10 @@ function App() {
     }
 
     try {
-      await feedItemsService.addFeedItem(tab.url);
+      await feedItemsService.addFeedItem({
+        url: tab.url,
+        source: FEED_ITEM_APP_SOURCE,
+      });
 
       setStatus('URL saved successfully');
     } catch (error) {

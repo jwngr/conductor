@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
 
 import {feedItemsService} from '@shared/lib/feedItemsServiceInstance';
-import {FeedItem, FeedItemId} from '@shared/types/core';
+import {FeedItem, FeedItemId} from '@shared/types/feedItems';
 import {ViewType} from '@shared/types/query';
 
 export function useFeedItem(feedItemId: FeedItemId): {

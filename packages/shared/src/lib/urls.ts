@@ -1,8 +1,8 @@
-import {FeedItemId} from '@shared/types/core';
+import {FeedItemId} from '@shared/types/feedItems';
 import {ViewType} from '@shared/types/query';
 import {NavItem} from '@shared/types/urls';
 
-import {CustomIconType} from './customIcon';
+import {CustomIconType} from './customIcons';
 import {assertNever} from './utils';
 
 // TODO: Make URL validation more robust.

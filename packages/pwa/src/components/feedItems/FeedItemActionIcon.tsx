@@ -5,7 +5,7 @@ import {
   getStarFeedItemActionInfo,
 } from '@shared/lib/feedItems';
 import {feedItemsService} from '@shared/lib/feedItemsServiceInstance';
-import {FeedItemId, TriageStatus} from '@shared/types/core';
+import {FeedItemId, TriageStatus} from '@shared/types/feedItems';
 import {SystemTagId} from '@shared/types/tags';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';

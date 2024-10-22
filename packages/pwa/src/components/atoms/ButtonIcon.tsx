@@ -8,9 +8,9 @@ import SaveIcon from '@shared/icons/save.svg?react';
 import StarIcon from '@shared/icons/star.svg?react';
 import {getIconSizeFromButtonIconSize} from '@shared/lib/icons';
 import {assertNever} from '@shared/lib/utils';
-import {StyleAttributes} from '@shared/types/core';
 import {ButtonIconSize, IconName} from '@shared/types/icons';
 import {ThemeColor} from '@shared/types/theme';
+import {StyleAttributes} from '@shared/types/utils';
 
 interface ButtonIconWrapperProps {
   readonly $color: ThemeColor;

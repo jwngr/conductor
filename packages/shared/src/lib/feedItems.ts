@@ -19,8 +19,9 @@ import {
   FeedItemAction,
   FeedItemActionType,
   FeedItemId,
+  FeedItemSource,
   TriageStatus,
-} from '@shared/types/core';
+} from '@shared/types/feedItems';
 import {IconName} from '@shared/types/icons';
 import {fromFilterOperator, ViewType} from '@shared/types/query';
 import {SystemTagId} from '@shared/types/tags';
@@ -97,15 +98,21 @@ export class FeedItemsService {
     return unsubscribe;
   }
 
-  async addFeedItem(url: string): Promise<FeedItemId | null> {
-    const trimmedUrl = url.trim();
+  async addFeedItem(args: {
+    readonly url: string;
+    readonly source: FeedItemSource;
+  }): Promise<FeedItemId | null> {
+    const {url, source} = args;
 
-    if (!isValidUrl(trimmedUrl)) {
-      return null;
-    }
+    const trimmedUrl = url.trim();
+    if (!isValidUrl(trimmedUrl)) return null;
 
     try {
-      const feedItem = makeFeedItem(trimmedUrl, this.feedItemsDbRef);
+      const feedItem = makeFeedItem({
+        url: trimmedUrl,
+        collectionRef: this.feedItemsDbRef,
+        source,
+      });
       const importQueueItem = makeImportQueueItem(trimmedUrl, feedItem.itemId);
 
       await Promise.all([
@@ -166,7 +173,13 @@ export class FeedItemsService {
   }
 }
 
-export function makeFeedItem(url: string, collectionRef: CollectionReference): FeedItem {
+interface MakeFeedItemArgs {
+  readonly url: string;
+  readonly collectionRef: CollectionReference;
+  readonly source: FeedItemSource;
+}
+
+export function makeFeedItem({url, collectionRef, source}: MakeFeedItemArgs): FeedItem {
   return {
     itemId: doc(collectionRef).id,
     url,
@@ -178,7 +191,7 @@ export function makeFeedItem(url: string, collectionRef: CollectionReference): F
       [SystemTagId.Unread]: true,
       [SystemTagId.Importing]: true,
     },
-    source: 'extension',
+    source,
     createdTime: serverTimestamp(),
     lastUpdatedTime: serverTimestamp(),
   };

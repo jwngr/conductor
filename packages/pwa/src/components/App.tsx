@@ -7,6 +7,7 @@ import {Urls} from '@shared/lib/urls';
 
 import {NotFoundScreen} from '@src/screens/404';
 import {FeedItemScreen} from '@src/screens/FeedItemScreen';
+import {FeedsScreen} from '@src/screens/FeedsScreen';
 import {ViewScreen} from '@src/screens/ViewScreen';
 
 export const App: React.FC = () => {
@@ -24,6 +25,7 @@ export const App: React.FC = () => {
             />
           ))}
           <Route path="/items/:feedItemId/" element={<FeedItemScreen />} />
+          <Route path="/feeds/" element={<FeedsScreen />} />
           <Route path="*" element={<NotFoundScreen message="Page not found" />} />
         </Routes>
       </BrowserRouter>

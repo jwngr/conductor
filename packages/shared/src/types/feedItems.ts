@@ -1,24 +1,8 @@
 import {FieldValue} from 'firebase/firestore';
 
+import {FeedSubscriptionId} from './feedSubscriptions';
 import {IconName} from './icons';
 import {TagId} from './tags';
-
-export interface ImportQueueItem {
-  readonly url: string;
-  readonly feedItemId: string;
-  readonly createdTime: FieldValue;
-  readonly lastUpdatedTime: FieldValue;
-}
-
-export interface FirebaseConfig {
-  readonly apiKey: string;
-  readonly authDomain: string;
-  readonly projectId: string;
-  readonly storageBucket: string;
-  readonly messagingSenderId: string;
-  readonly appId: string;
-  readonly measurementId?: string;
-}
 
 export type FeedItemId = string;
 
@@ -33,9 +17,51 @@ export enum TriageStatus {
   Trashed = 'TRASHED',
 }
 
+enum FeedItemSourceType {
+  /** Feed item was manually added from the app. */
+  App = 'APP',
+  /** Feed item was manually added from the web extension. */
+  Extension = 'EXTENSION',
+  /** Feed item was added from an RSS feed subscription. */
+  RSS = 'RSS',
+}
+
+interface FeedItemAppSource {
+  readonly type: FeedItemSourceType.App;
+}
+
+export const FEED_ITEM_EXTENSION_SOURCE: FeedItemExtensionSource = {
+  type: FeedItemSourceType.Extension,
+};
+
+interface FeedItemExtensionSource {
+  readonly type: FeedItemSourceType.Extension;
+}
+
+export const FEED_ITEM_APP_SOURCE: FeedItemAppSource = {
+  type: FeedItemSourceType.App,
+};
+
+interface FeedItemRSSSource {
+  readonly type: FeedItemSourceType.RSS;
+  readonly feedSubscriptionId: FeedSubscriptionId;
+}
+
+export function makeFeedItemRSSSource(feedSubscriptionId: FeedSubscriptionId): FeedItemRSSSource {
+  return {
+    type: FeedItemSourceType.RSS,
+    feedSubscriptionId,
+  };
+}
+
+export type FeedItemSource =
+  | typeof FEED_ITEM_APP_SOURCE
+  | typeof FEED_ITEM_EXTENSION_SOURCE
+  | FeedItemRSSSource;
+
 export interface FeedItem {
   readonly itemId: FeedItemId;
-  readonly source: string; // TODO: Make enum (e.g. extension vs email).
+  readonly source: FeedItemSource;
 
   // Content metadata.
   readonly url: string;
@@ -83,9 +109,4 @@ export interface FeedItemAction {
   readonly icon: IconName;
   // TODO: Add keyboard shortcuts.
   // readonly shortcut: ShortcutId;
-}
-
-export interface StyleAttributes {
-  readonly style?: React.CSSProperties;
-  readonly className?: string;
 }

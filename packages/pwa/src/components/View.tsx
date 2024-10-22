@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import {FeedItem} from '@shared/types/core';
+import {FeedItem} from '@shared/types/feedItems';
 import {ViewType} from '@shared/types/query';
 import {ThemeColor} from '@shared/types/theme';
 

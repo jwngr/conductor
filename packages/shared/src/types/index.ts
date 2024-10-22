@@ -1,11 +1,21 @@
-import * as coreExports from './core';
+import * as feedItemsExports from './feedItems';
+import * as feedSubscriptionsExports from './feedSubscriptions';
+import * as firebaseExports from './firebase';
 import * as iconsExports from './icons';
+import * as importQueueExports from './importQueue';
 import * as queryExports from './query';
+import * as tagsExports from './tags';
 import * as themeExports from './theme';
+import * as urlsExports from './urls';
 import * as utilsExports from './utils';
 
-export const core = coreExports;
+export const feedItems = feedItemsExports;
+export const feedSubscriptions = feedSubscriptionsExports;
+export const firebase = firebaseExports;
 export const icons = iconsExports;
+export const importQueue = importQueueExports;
 export const query = queryExports;
+export const tags = tagsExports;
 export const theme = themeExports;
+export const urls = urlsExports;
 export const utils = utilsExports;

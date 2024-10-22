@@ -3,6 +3,7 @@ export const formatWithCommas = (val: number): string => {
 };
 
 export function assertNever(x: never): never {
+  // TODO: Add logging. Or a global error handler.
   throw new Error(`Unexpected object: ${x}`);
 }
 

@@ -2,7 +2,7 @@ import React from 'react';
 import {useMatch} from 'react-router-dom';
 import styled from 'styled-components';
 
-import {CustomIcon, CustomIconType} from '@shared/lib/customIcon';
+import {CustomIcon, CustomIconType} from '@shared/lib/customIcons';
 import {Urls} from '@shared/lib/urls';
 import {assertNever} from '@shared/lib/utils';
 import {ThemeColor} from '@shared/types/theme';

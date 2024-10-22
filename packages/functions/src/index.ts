@@ -11,7 +11,8 @@ import {
   FEED_ITEMS_STORAGE_COLLECTION,
   IMPORT_QUEUE_COLLECTION,
 } from '@shared/lib/constants';
-import {FeedItem, FeedItemId, ImportQueueItem} from '@shared/types/core';
+import {FeedItem, FeedItemId} from '@shared/types/feedItems';
+import {ImportQueueItem} from '@shared/types/importQueue';
 import {SystemTagId} from '@shared/types/tags';
 
 // Define some parameters
