@@ -18,6 +18,7 @@ export const SignOutRedirect: React.FC = () => {
         await signOut(auth);
         // Don't strand the user on a page they no longer have access to view.
         navigate(Urls.forSignIn());
+        // TODO: Clear other stuff from local storage.
       } catch (error) {
         // TODO: Filter out error message that are expected user error.
         const errorMessage = 'Failed to sign out user';

@@ -2,15 +2,25 @@ import {isSignInWithEmailLink, onAuthStateChanged, signInWithEmailLink} from 'fi
 import {useEffect} from 'react';
 
 import {auth} from '@shared/lib/firebase';
+import {logger} from '@shared/lib/logger';
 
 import {useUserStore} from '@src/stores/UserStore';
 
 const useCurrentUserSubscription = () => {
   const setLoggedInUser = useUserStore((state) => state.setLoggedInUser);
 
-  onAuthStateChanged(auth, (loggedInUser) => {
-    setLoggedInUser(loggedInUser);
-  });
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (loggedInUser) => setLoggedInUser(loggedInUser),
+      (error) => {
+        logger.error('onAuthStateChanged listener errored', {error});
+        setLoggedInUser(null);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [setLoggedInUser]);
 };
 
 const usePasswordlessAuthSubscription = () => {

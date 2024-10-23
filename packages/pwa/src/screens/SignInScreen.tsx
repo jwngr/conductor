@@ -1,4 +1,4 @@
-import {sendSignInLinkToEmail} from 'firebase/auth';
+import {ActionCodeSettings, sendSignInLinkToEmail} from 'firebase/auth';
 import {useState} from 'react';
 
 import {auth} from '@shared/lib/firebase';
@@ -9,7 +9,7 @@ import {Text} from '@src/components/atoms/Text';
 
 import {Input} from '../components/atoms/Input';
 
-const PASSWORDLESS_AUTH_ACTION_CODE_SETTINGS = {
+const PASSWORDLESS_AUTH_ACTION_CODE_SETTINGS: ActionCodeSettings = {
   // URL to redirect back to.
   // TODO: Make this dynamic.
   // TODO: Add URLs here to the authorized domains list in the Firebase Console.

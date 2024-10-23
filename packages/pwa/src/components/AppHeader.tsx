@@ -18,19 +18,25 @@ const AppHeaderWrapper = styled(FlexRow)`
 
 export const AppHeader: React.FC = () => {
   const loggedInUser = useUserStore((state) => state.loggedInUser);
-  const hasFetchedLoggedInUser = useUserStore((state) => state.hasFetchedLoggedInUser);
+
+  let authContent: React.ReactNode = null;
+  if (loggedInUser) {
+    authContent = (
+      <>
+        <Text light>{loggedInUser.email}</Text>
+        <Spacer x={12} />
+        <Link to={Urls.forSignOut()}>
+          <Text underline="hover">Sign out</Text>
+        </Link>
+      </>
+    );
+  }
 
   return (
     <AppHeaderWrapper>
       <Text as="h2">Conductor</Text>
-
       <Spacer flex />
-
-      <Text light>{hasFetchedLoggedInUser ? (loggedInUser?.email ?? '---') : '???'}</Text>
-      <Spacer x={12} />
-      <Link to={Urls.forSignOut()}>
-        <Text underline="hover">Sign out</Text>
-      </Link>
+      {authContent}
     </AppHeaderWrapper>
   );
 };
