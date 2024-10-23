@@ -1,12 +1,16 @@
 import React from 'react';
 import styled from 'styled-components';
 
+import {Urls} from '@shared/lib/urls';
+
 import {FlexRow} from './atoms/Flex';
+import {Link} from './atoms/Link';
 import {Spacer} from './atoms/Spacer';
 import {Text} from './atoms/Text';
 
 const AppHeaderWrapper = styled(FlexRow)`
-  height: 100px;
+  height: 60px;
+  padding: 0 16px;
   border-bottom: 1px solid red;
 `;
 
@@ -15,7 +19,9 @@ export const AppHeader: React.FC = () => {
     <AppHeaderWrapper>
       <Text>Conductor</Text>
       <Spacer flex />
-      <Text>Settings</Text>
+      <Link to={Urls.forSignOut()}>
+        <Text underline="hover">Sign out</Text>
+      </Link>
     </AppHeaderWrapper>
   );
 };

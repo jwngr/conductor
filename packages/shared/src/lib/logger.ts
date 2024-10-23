@@ -1,6 +1,6 @@
 type ConsoleColor = 'black' | 'green' | 'yellow' | 'red';
 
-export class Logger {
+class Logger {
   private logInternal(
     message: string,
     data: Record<string, unknown> | undefined,
@@ -41,3 +41,5 @@ export class Logger {
     this.logInternal(`[ERROR] ${message}`, errorData, 'red');
   }
 }
+
+export const logger = new Logger();
