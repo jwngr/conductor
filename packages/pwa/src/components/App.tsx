@@ -8,7 +8,11 @@ import {Urls} from '@shared/lib/urls';
 import {NotFoundScreen} from '@src/screens/404';
 import {FeedItemScreen} from '@src/screens/FeedItemScreen';
 import {FeedsScreen} from '@src/screens/FeedsScreen';
+import {SignInScreen} from '@src/screens/SignInScreen';
 import {ViewScreen} from '@src/screens/ViewScreen';
+
+import {AuthSubscriptions} from './auth/AuthSubscriptions';
+import {SignOutRedirect} from './auth/SignOutRedirect';
 
 export const App: React.FC = () => {
   const orderedNavItems = Urls.getOrderedNavItems();
@@ -26,8 +30,14 @@ export const App: React.FC = () => {
           ))}
           <Route path={Urls.forFeedItem(':feedItemId')} element={<FeedItemScreen />} />
           <Route path={Urls.forFeeds()} element={<FeedsScreen />} />
+          <Route path={Urls.forSignIn()} element={<SignInScreen />} />
+          {/* All sign outs go through this route to consolidate logic. */}
+          <Route path={Urls.forSignOut()} element={<SignOutRedirect />} />
           <Route path="*" element={<NotFoundScreen message="Page not found" />} />
         </Routes>
+
+        {/* App-wide subscriptions. */}
+        <AuthSubscriptions />
       </BrowserRouter>
     </ThemeProvider>
   );

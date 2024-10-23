@@ -146,4 +146,12 @@ export class Urls {
   static getNavItem(viewType: ViewType): NavItem {
     return ALL_NAV_ITEMS[viewType];
   }
+
+  static forSignIn(): string {
+    return '/login';
+  }
+
+  static forSignOut(): string {
+    return '/logout';
+  }
 }

@@ -1,21 +1,42 @@
 import React from 'react';
 import styled from 'styled-components';
 
+import {Urls} from '@shared/lib/urls';
+
+import {useUserStore} from '@src/stores/UserStore';
+
 import {FlexRow} from './atoms/Flex';
+import {Link} from './atoms/Link';
 import {Spacer} from './atoms/Spacer';
 import {Text} from './atoms/Text';
 
 const AppHeaderWrapper = styled(FlexRow)`
-  height: 100px;
+  height: 60px;
+  padding: 0 16px;
   border-bottom: 1px solid red;
 `;
 
 export const AppHeader: React.FC = () => {
+  const loggedInUser = useUserStore((state) => state.loggedInUser);
+
+  let authContent: React.ReactNode = null;
+  if (loggedInUser) {
+    authContent = (
+      <>
+        <Text light>{loggedInUser.email}</Text>
+        <Spacer x={12} />
+        <Link to={Urls.forSignOut()}>
+          <Text underline="hover">Sign out</Text>
+        </Link>
+      </>
+    );
+  }
+
   return (
     <AppHeaderWrapper>
-      <Text>Conductor</Text>
+      <Text as="h2">Conductor</Text>
       <Spacer flex />
-      <Text>Settings</Text>
+      {authContent}
     </AppHeaderWrapper>
   );
 };

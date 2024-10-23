@@ -43,12 +43,7 @@ export const TextWrapper = styled.span<TextWrapperProps>`
         `
       : null}
 
-  ${(props) =>
-    props.$underline
-      ? css`
-          text-decoration: underline;
-        `
-      : null}
+  
 
   ${({theme, $color, $light}) => {
     // TODO: Set the default color somewhere. Probably shouldn't do it here.
@@ -72,11 +67,13 @@ export const TextWrapper = styled.span<TextWrapperProps>`
     switch ($underline) {
       case 'always':
         return css`
+          cursor: pointer;
           text-decoration: underline;
         `;
       case 'hover':
         return css`
           &:hover {
+            cursor: pointer;
             text-decoration: underline;
           }
         `;

@@ -3,6 +3,7 @@ import {useEffect, useRef} from 'react';
 import styled from 'styled-components';
 
 import {feedItemsService} from '@shared/lib/feedItemsServiceInstance';
+import {logger} from '@shared/lib/logger';
 import {useFeedItemIdFromUrl} from '@shared/lib/router';
 import {FeedItemId} from '@shared/types/feedItems';
 import {SystemTagId} from '@shared/types/tags';
@@ -20,7 +21,6 @@ import {ScreenMainContentWrapper, ScreenWrapper} from '@src/components/layout/Sc
 import {LeftSidebar} from '@src/components/LeftSidebar';
 import {Markdown} from '@src/components/Markdown';
 import {useFeedItem, useFeedItemMarkdown} from '@src/lib/feedItems';
-import {logger} from '@src/lib/logger';
 
 import {NotFoundScreen} from './404';
 
