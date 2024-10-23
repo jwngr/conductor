@@ -3,9 +3,13 @@ import {useEffect} from 'react';
 
 import {auth} from '@shared/lib/firebase';
 
+import {useUserStore} from '@src/stores/UserStore';
+
 const useCurrentUserSubscription = () => {
-  onAuthStateChanged(auth, () => {
-    // TODO: Store user info in a global store.
+  const setLoggedInUser = useUserStore((state) => state.setLoggedInUser);
+
+  onAuthStateChanged(auth, (loggedInUser) => {
+    setLoggedInUser(loggedInUser);
   });
 };
 

@@ -67,11 +67,13 @@ export const TextWrapper = styled.span<TextWrapperProps>`
     switch ($underline) {
       case 'always':
         return css`
+          cursor: pointer;
           text-decoration: underline;
         `;
       case 'hover':
         return css`
           &:hover {
+            cursor: pointer;
             text-decoration: underline;
           }
         `;
