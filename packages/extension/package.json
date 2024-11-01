@@ -13,7 +13,7 @@
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
-    "vite": "^5.3.1"
+    "vite": "^5.4.10"
   },
   "scripts": {
     "lint": "prettier --check 'src/**/*.{js,jsx,ts,tsx,json,css}' && echo 'Running ESLint...' && eslint src --report-unused-disable-directives --max-warnings 0 && echo 'All files pass linting!'",
