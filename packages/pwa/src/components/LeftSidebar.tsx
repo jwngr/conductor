@@ -8,9 +8,9 @@ import {assertNever} from '@shared/lib/utils';
 import {ThemeColor} from '@shared/types/theme';
 import {NavItem} from '@shared/types/urls';
 
-import {FlexColumn, FlexRow} from './atoms/Flex';
-import {Link} from './atoms/Link';
-import {Text} from './atoms/Text';
+import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
+import {Link} from '@src/components/atoms/Link';
+import {Text} from '@src/components/atoms/Text';
 
 const LeftSidebarItemAvatar: React.FC<{
   readonly icon: CustomIcon;

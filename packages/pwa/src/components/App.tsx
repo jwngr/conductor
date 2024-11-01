@@ -5,39 +5,77 @@ import {ThemeProvider} from 'styled-components';
 import {theme} from '@shared/lib/theme';
 import {Urls} from '@shared/lib/urls';
 
+import {AuthSubscriptions} from '@src/components/auth/AuthSubscriptions';
+import {RequireLoggedInUser} from '@src/components/auth/RequireLoggedInUser';
+import {SignOutRedirect} from '@src/components/auth/SignOutRedirect';
 import {NotFoundScreen} from '@src/screens/404';
 import {FeedItemScreen} from '@src/screens/FeedItemScreen';
 import {FeedsScreen} from '@src/screens/FeedsScreen';
 import {SignInScreen} from '@src/screens/SignInScreen';
 import {ViewScreen} from '@src/screens/ViewScreen';
 
-import {AuthSubscriptions} from './auth/AuthSubscriptions';
-import {SignOutRedirect} from './auth/SignOutRedirect';
+export const CatchAllRoute: React.FC = () => {
+  // TODO: Prevent ability to use 404s vs logged-out redirects to figure out what routes exist.
+  return <NotFoundScreen message="Page not found" />;
+};
+
+const AllRoutes: React.FC = () => {
+  const orderedNavItems = Urls.getOrderedNavItems();
+  return (
+    <Routes>
+      {/* Publicly visible routes. */}
+      <Route path={Urls.forSignIn()} element={<SignInScreen />} />
+      <Route path={Urls.forSignOut()} element={<SignOutRedirect />} />
+
+      {/* Authenticated routes. */}
+      {orderedNavItems.map((item) => (
+        <Route
+          key={item.viewType}
+          path={Urls.forView(item.viewType)}
+          element={
+            <RequireLoggedInUser>
+              <ViewScreen viewType={item.viewType} />
+            </RequireLoggedInUser>
+          }
+        />
+      ))}
+      <Route
+        path={Urls.forFeedItem(':feedItemId')}
+        element={
+          <RequireLoggedInUser>
+            <FeedItemScreen />
+          </RequireLoggedInUser>
+        }
+      />
+      <Route
+        path={Urls.forFeeds()}
+        element={
+          <RequireLoggedInUser>
+            <FeedsScreen />
+          </RequireLoggedInUser>
+        }
+      />
+
+      {/* Catch-all route. */}
+      <Route path="*" element={<CatchAllRoute />} />
+    </Routes>
+  );
+};
+
+const AppWideSubscriptions: React.FC = () => {
+  return (
+    <>
+      <AuthSubscriptions />
+    </>
+  );
+};
 
 export const App: React.FC = () => {
-  const orderedNavItems = Urls.getOrderedNavItems();
-
   return (
     <ThemeProvider theme={theme}>
       <BrowserRouter>
-        <Routes>
-          {orderedNavItems.map((item) => (
-            <Route
-              key={item.viewType}
-              path={Urls.forView(item.viewType)}
-              element={<ViewScreen viewType={item.viewType} />}
-            />
-          ))}
-          <Route path={Urls.forFeedItem(':feedItemId')} element={<FeedItemScreen />} />
-          <Route path={Urls.forFeeds()} element={<FeedsScreen />} />
-          <Route path={Urls.forSignIn()} element={<SignInScreen />} />
-          {/* All sign outs go through this route to consolidate logic. */}
-          <Route path={Urls.forSignOut()} element={<SignOutRedirect />} />
-          <Route path="*" element={<NotFoundScreen message="Page not found" />} />
-        </Routes>
-
-        {/* App-wide subscriptions. */}
-        <AuthSubscriptions />
+        <AllRoutes />
+        <AppWideSubscriptions />
       </BrowserRouter>
     </ThemeProvider>
   );

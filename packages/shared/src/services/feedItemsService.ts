@@ -1,5 +1,6 @@
 import {
   addDoc,
+  collection,
   CollectionReference,
   deleteDoc,
   doc,
@@ -8,28 +9,34 @@ import {
   query,
   serverTimestamp,
   setDoc,
-  Unsubscribe,
   updateDoc,
   where,
 } from 'firebase/firestore';
 import {getDownloadURL, ref as storageRef, StorageReference} from 'firebase/storage';
 
 import {
+  FEED_ITEMS_DB_COLLECTION,
+  FEED_ITEMS_STORAGE_COLLECTION,
+  IMPORT_QUEUE_DB_COLLECTION,
+} from '@shared/lib/constants';
+import {firestore, storage} from '@shared/lib/firebase';
+import {makeImportQueueItem} from '@shared/lib/importQueue';
+import {isValidUrl} from '@shared/lib/urls';
+import {Views} from '@shared/lib/views';
+import {
   FeedItem,
   FeedItemAction,
   FeedItemActionType,
   FeedItemId,
   FeedItemSource,
+  FeedItemType,
   TriageStatus,
 } from '@shared/types/feedItems';
 import {IconName} from '@shared/types/icons';
 import {fromFilterOperator, ViewType} from '@shared/types/query';
 import {SystemTagId} from '@shared/types/tags';
-import {Func} from '@shared/types/utils';
-
-import {makeImportQueueItem} from './importQueue';
-import {isValidUrl} from './urls';
-import {Views} from './views';
+import {AuthStateChangedUnsubscribe} from '@shared/types/user';
+import {Consumer} from '@shared/types/utils';
 
 export class FeedItemsService {
   constructor(
@@ -53,9 +60,9 @@ export class FeedItemsService {
 
   watchFeedItem(
     feedItemId: FeedItemId,
-    successCallback: Func<FeedItem | null>, // null means feed item does not exist.
-    errorCallback: Func<Error>
-  ): Unsubscribe {
+    successCallback: Consumer<FeedItem | null>, // null means feed item does not exist.
+    errorCallback: Consumer<Error>
+  ): AuthStateChangedUnsubscribe {
     const unsubscribe = onSnapshot(
       doc(this.feedItemsDbRef, feedItemId),
       (snapshot) => {
@@ -67,14 +74,14 @@ export class FeedItemsService {
       },
       errorCallback
     );
-    return unsubscribe;
+    return () => unsubscribe();
   }
 
   watchFeedItemsQuery(
     viewType: ViewType,
-    successCallback: Func<FeedItem[]>,
-    errorCallback: Func<Error>
-  ): Unsubscribe {
+    successCallback: Consumer<FeedItem[]>,
+    errorCallback: Consumer<Error>
+  ): AuthStateChangedUnsubscribe {
     // Construct Firestore queries from the view config.
     const viewConfig = Views.get(viewType);
     const whereClauses = viewConfig.filters.map((filter) =>
@@ -95,7 +102,7 @@ export class FeedItemsService {
       },
       errorCallback
     );
-    return unsubscribe;
+    return () => unsubscribe();
   }
 
   async addFeedItem(args: {
@@ -110,8 +117,11 @@ export class FeedItemsService {
     try {
       const feedItem = makeFeedItem({
         url: trimmedUrl,
-        collectionRef: this.feedItemsDbRef,
+        // TODO: Make this dynamic based on the actual content. Maybe it should be null initially
+        // until we've done the import? Or should we compute this at save time?
+        type: FeedItemType.Website,
         source,
+        collectionRef: this.feedItemsDbRef,
       });
       const importQueueItem = makeImportQueueItem(trimmedUrl, feedItem.itemId);
 
@@ -175,14 +185,17 @@ export class FeedItemsService {
 
 interface MakeFeedItemArgs {
   readonly url: string;
-  readonly collectionRef: CollectionReference;
+  readonly type: FeedItemType;
   readonly source: FeedItemSource;
+  readonly collectionRef: CollectionReference;
 }
 
-export function makeFeedItem({url, collectionRef, source}: MakeFeedItemArgs): FeedItem {
+export function makeFeedItem({url, type, source, collectionRef}: MakeFeedItemArgs): FeedItem {
   return {
     itemId: doc(collectionRef).id,
     url,
+    type,
+    source,
     title: '',
     description: '',
     outgoingLinks: [],
@@ -191,7 +204,6 @@ export function makeFeedItem({url, collectionRef, source}: MakeFeedItemArgs): Fe
       [SystemTagId.Unread]: true,
       [SystemTagId.Importing]: true,
     },
-    source,
     createdTime: serverTimestamp(),
     lastUpdatedTime: serverTimestamp(),
   };
@@ -228,3 +240,13 @@ export function getStarFeedItemActionInfo(): FeedItemAction {
     icon: IconName.Star,
   };
 }
+
+const feedItemsDbRef = collection(firestore, FEED_ITEMS_DB_COLLECTION);
+const importQueueDbRef = collection(firestore, IMPORT_QUEUE_DB_COLLECTION);
+const feedItemsStorageRef = storageRef(storage, FEED_ITEMS_STORAGE_COLLECTION);
+
+export const feedItemsService = new FeedItemsService(
+  feedItemsDbRef,
+  importQueueDbRef,
+  feedItemsStorageRef
+);

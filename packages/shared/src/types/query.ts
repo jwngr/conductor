@@ -1,8 +1,7 @@
 import {OrderByDirection, WhereFilterOp} from 'firebase/firestore';
 
 import {assertNever} from '@shared/lib/utils';
-
-import {FeedItem} from './feedItems';
+import {FeedItem} from '@shared/types/feedItems';
 
 export enum ViewType {
   Untriaged = 'UNTRIAGED',

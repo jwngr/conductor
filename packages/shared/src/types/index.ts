@@ -1,13 +1,13 @@
-import * as feedItemsExports from './feedItems';
-import * as feedSubscriptionsExports from './feedSubscriptions';
-import * as firebaseExports from './firebase';
-import * as iconsExports from './icons';
-import * as importQueueExports from './importQueue';
-import * as queryExports from './query';
-import * as tagsExports from './tags';
-import * as themeExports from './theme';
-import * as urlsExports from './urls';
-import * as utilsExports from './utils';
+import * as feedItemsExports from '@shared/types/feedItems';
+import * as feedSubscriptionsExports from '@shared/types/feedSubscriptions';
+import * as firebaseExports from '@shared/types/firebase';
+import * as iconsExports from '@shared/types/icons';
+import * as importQueueExports from '@shared/types/importQueue';
+import * as queryExports from '@shared/types/query';
+import * as tagsExports from '@shared/types/tags';
+import * as themeExports from '@shared/types/theme';
+import * as urlsExports from '@shared/types/urls';
+import * as utilsExports from '@shared/types/utils';
 
 export const feedItems = feedItemsExports;
 export const feedSubscriptions = feedSubscriptionsExports;

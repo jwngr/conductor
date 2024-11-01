@@ -1,16 +1,19 @@
+import React from 'react';
+
 import {
+  feedItemsService,
   getMarkDoneFeedItemActionInfo,
   getMarkUnreadFeedItemActionInfo,
   getSaveFeedItemActionInfo,
   getStarFeedItemActionInfo,
-} from '@shared/lib/feedItems';
-import {feedItemsService} from '@shared/lib/feedItemsServiceInstance';
+} from '@shared/services/feedItemsService';
 import {FeedItemId, TriageStatus} from '@shared/types/feedItems';
 import {SystemTagId} from '@shared/types/tags';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
+import {FlexRow} from '@src/components/atoms/Flex';
 
-export const MarkDoneFeedItemActionIcon: React.FC<{
+const MarkDoneFeedItemActionIcon: React.FC<{
   readonly feedItemId: FeedItemId;
 }> = ({feedItemId}) => {
   const markDoneActionInfo = getMarkDoneFeedItemActionInfo();
@@ -32,7 +35,7 @@ export const MarkDoneFeedItemActionIcon: React.FC<{
   );
 };
 
-export const SaveFeedItemActionIcon: React.FC<{
+const SaveFeedItemActionIcon: React.FC<{
   readonly feedItemId: FeedItemId;
 }> = ({feedItemId}) => {
   const saveActionInfo = getSaveFeedItemActionInfo();
@@ -54,7 +57,7 @@ export const SaveFeedItemActionIcon: React.FC<{
   );
 };
 
-export const MarkUnreadFeedItemActionIcon: React.FC<{
+const MarkUnreadFeedItemActionIcon: React.FC<{
   readonly feedItemId: FeedItemId;
 }> = ({feedItemId}) => {
   const markUnreadActionInfo = getMarkUnreadFeedItemActionInfo();
@@ -81,7 +84,7 @@ export const MarkUnreadFeedItemActionIcon: React.FC<{
   );
 };
 
-export const StarFeedItemActionIcon: React.FC<{
+const StarFeedItemActionIcon: React.FC<{
   readonly feedItemId: FeedItemId;
 }> = ({feedItemId}) => {
   const starActionInfo = getStarFeedItemActionInfo();
@@ -105,5 +108,16 @@ export const StarFeedItemActionIcon: React.FC<{
         }
       }}
     />
+  );
+};
+
+export const FeedItemActions: React.FC<{feedItemId: FeedItemId}> = ({feedItemId}) => {
+  return (
+    <FlexRow gap={12}>
+      <MarkDoneFeedItemActionIcon feedItemId={feedItemId} />
+      <SaveFeedItemActionIcon feedItemId={feedItemId} />
+      <MarkUnreadFeedItemActionIcon feedItemId={feedItemId} />
+      <StarFeedItemActionIcon feedItemId={feedItemId} />
+    </FlexRow>
   );
 };

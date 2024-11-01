@@ -9,9 +9,9 @@ import {onDocumentCreated} from 'firebase-functions/v2/firestore';
 import {
   FEED_ITEMS_DB_COLLECTION,
   FEED_ITEMS_STORAGE_COLLECTION,
-  IMPORT_QUEUE_COLLECTION,
+  IMPORT_QUEUE_DB_COLLECTION,
 } from '@shared/lib/constants';
-import {FeedItem, FeedItemId} from '@shared/types/feedItems';
+import {FeedItem, FeedItemId, FeedItemType} from '@shared/types/feedItems';
 import {ImportQueueItem} from '@shared/types/importQueue';
 import {SystemTagId} from '@shared/types/tags';
 
@@ -31,7 +31,7 @@ const bucket = admin.storage().bucket();
 
 // TODO: Make this idempotent given the "at least once" guarantee.
 export const processImportQueue = onDocumentCreated(
-  `/${IMPORT_QUEUE_COLLECTION}/{pushId}`,
+  `/${IMPORT_QUEUE_DB_COLLECTION}/{pushId}`,
   async (event) => {
     const {pushId} = event.params;
     console.log(`Processing item ${pushId}`);
@@ -76,7 +76,7 @@ export const processImportQueue = onDocumentCreated(
       // Remove the processed item from the queue, waiting until the previous item is processed.
       // TODO: Should this be done in a transaction?
       console.log(`Removing import queue item ${pushId}...`);
-      await firestore.collection(IMPORT_QUEUE_COLLECTION).doc(pushId).delete();
+      await firestore.collection(IMPORT_QUEUE_DB_COLLECTION).doc(pushId).delete();
 
       console.log(`Successfully processed import queue item ${pushId}`);
     } catch (error) {
@@ -186,6 +186,8 @@ const updateImportedFeedItemInFirestore = async (
     FeedItem,
     'itemId' | 'source' | 'url' | 'createdTime' | 'triageStatus' | 'tagIds'
   > = {
+    // TODO: Determine the type based on the URL or fetched content.
+    type: FeedItemType.Website,
     // TODO: Reconsider how to handle empty titles, descriptions, and links.
     title: title ?? '',
     description: description ?? '',

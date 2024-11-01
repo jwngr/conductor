@@ -1,29 +1,31 @@
-import {isSignInWithEmailLink, onAuthStateChanged, signInWithEmailLink} from 'firebase/auth';
+import {isSignInWithEmailLink, signInWithEmailLink} from 'firebase/auth';
 import {useEffect} from 'react';
 
 import {auth} from '@shared/lib/firebase';
 import {logger} from '@shared/lib/logger';
+import {authService} from '@shared/services/authService';
 
-import {useUserStore} from '@src/stores/UserStore';
+import {useAuthStore} from '@src/stores/AuthStore';
 
-const useCurrentUserSubscription = () => {
-  const setLoggedInUser = useUserStore((state) => state.setLoggedInUser);
-
+const AuthServiceSubscription: React.FC = () => {
+  const {setLoggedInUser} = useAuthStore();
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (loggedInUser) => setLoggedInUser(loggedInUser),
-      (error) => {
-        logger.error('onAuthStateChanged listener errored', {error});
-        setLoggedInUser(null);
-      }
-    );
-
+    const unsubscribe = authService.onAuthStateChanged({
+      successCallback: (loggedInUser) => {
+        logger.log('User service auth state changed', {loggedInUser});
+        setLoggedInUser(loggedInUser);
+      },
+      errorCallback: (error) => {
+        logger.error('User service `onAuthStateChanged` listener errored', {error});
+      },
+    });
     return () => unsubscribe();
   }, [setLoggedInUser]);
+  return null;
 };
 
-const usePasswordlessAuthSubscription = () => {
+const PasswordlessAuthSubscription: React.FC = () => {
+  const {setLoggedInUser} = useAuthStore();
   useEffect(() => {
     const go = async () => {
       // Only do something if the current URL is a "sign-in with email" link.
@@ -39,10 +41,8 @@ const usePasswordlessAuthSubscription = () => {
         email = window.prompt('Please provide your email for confirmation');
       }
 
-      if (!email) {
-        // Do nothing if the user didn't provide an email.
-        return;
-      }
+      // Do nothing if the user didn't provide an email.
+      if (!email) return;
 
       try {
         const authResult = await signInWithEmailLink(auth, email, window.location.href);
@@ -54,6 +54,7 @@ const usePasswordlessAuthSubscription = () => {
           window.history.replaceState({}, document.title, window.location.pathname);
         }
       } catch (error) {
+        // TODO: Reconsider throwing errors here. Maybe I should put them in `AuthStore`.
         if (error instanceof Error) {
           // TODO: More gracefull handle common Firebase auth errors.
           // See https://firebase.google.com/docs/reference/js/auth#autherrorcodes.
@@ -64,11 +65,15 @@ const usePasswordlessAuthSubscription = () => {
       }
     };
     go();
-  }, []);
+  }, [setLoggedInUser]);
+  return null;
 };
 
 export const AuthSubscriptions: React.FC = () => {
-  useCurrentUserSubscription();
-  usePasswordlessAuthSubscription();
-  return null;
+  return (
+    <>
+      <AuthServiceSubscription />
+      <PasswordlessAuthSubscription />
+    </>
+  );
 };

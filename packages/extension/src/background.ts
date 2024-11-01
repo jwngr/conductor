@@ -1,4 +1,4 @@
-import {feedItemsService} from '@shared/lib/feedItemsServiceInstance';
+import {feedItemsService} from '@shared/services/feedItemsService';
 import {FEED_ITEM_EXTENSION_SOURCE} from '@shared/types/feedItems';
 
 chrome.action.onClicked.addListener(async (tab) => {

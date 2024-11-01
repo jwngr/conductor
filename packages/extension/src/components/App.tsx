@@ -1,9 +1,9 @@
 import {useState} from 'react';
 
-import {feedItemsService} from '@shared/lib/feedItemsServiceInstance';
+import {feedItemsService} from '@shared/services/feedItemsService';
 import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems';
 
-import {useCurrentTab} from '../lib/tabs';
+import {useCurrentTab} from '@src/lib/tabs';
 
 function App() {
   const [status, setStatus] = useState<string>('');

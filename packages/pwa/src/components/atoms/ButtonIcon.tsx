@@ -1,4 +1,4 @@
-import React, {MouseEventHandler} from 'react';
+import React from 'react';
 import styled from 'styled-components';
 
 import InboxIcon from '@shared/icons/inbox.svg?react';
@@ -11,6 +11,8 @@ import {assertNever} from '@shared/lib/utils';
 import {ButtonIconSize, IconName} from '@shared/types/icons';
 import {ThemeColor} from '@shared/types/theme';
 import {StyleAttributes} from '@shared/types/utils';
+
+import {OnClick} from '@src/types/utils';
 
 interface ButtonIconWrapperProps {
   readonly $color: ThemeColor;
@@ -41,7 +43,7 @@ interface ButtonIconProps extends StyleAttributes {
   readonly name: IconName;
   readonly size: ButtonIconSize;
   readonly color?: ThemeColor;
-  readonly onClick?: MouseEventHandler<HTMLDivElement>;
+  readonly onClick?: OnClick<HTMLDivElement>;
 }
 
 export const ButtonIcon: React.FC<ButtonIconProps> = ({

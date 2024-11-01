@@ -3,12 +3,11 @@ import styled from 'styled-components';
 
 import {Urls} from '@shared/lib/urls';
 
-import {useUserStore} from '@src/stores/UserStore';
-
-import {FlexRow} from './atoms/Flex';
-import {Link} from './atoms/Link';
-import {Spacer} from './atoms/Spacer';
-import {Text} from './atoms/Text';
+import {FlexRow} from '@src/components/atoms/Flex';
+import {Link} from '@src/components/atoms/Link';
+import {Spacer} from '@src/components/atoms/Spacer';
+import {Text} from '@src/components/atoms/Text';
+import {useMaybeLoggedInUser} from '@src/lib/users';
 
 const AppHeaderWrapper = styled(FlexRow)`
   height: 60px;
@@ -17,10 +16,10 @@ const AppHeaderWrapper = styled(FlexRow)`
 `;
 
 export const AppHeader: React.FC = () => {
-  const loggedInUser = useUserStore((state) => state.loggedInUser);
+  const {isLoading, loggedInUser} = useMaybeLoggedInUser();
 
   let authContent: React.ReactNode = null;
-  if (loggedInUser) {
+  if (!isLoading && loggedInUser) {
     authContent = (
       <>
         <Text light>{loggedInUser.email}</Text>
