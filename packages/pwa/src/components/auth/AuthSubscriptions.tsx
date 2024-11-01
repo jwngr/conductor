@@ -3,6 +3,7 @@ import {useEffect} from 'react';
 
 import {auth} from '@shared/lib/firebase';
 import {logger} from '@shared/lib/logger';
+
 import {authService} from '@shared/services/authService';
 
 import {useAuthStore} from '@src/stores/AuthStore';

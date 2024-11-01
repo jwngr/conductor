@@ -1,4 +1,5 @@
 import {assertNever} from '@shared/lib/utils';
+
 import {ButtonIconSize, IconSize} from '@shared/types/icons';
 
 export function getIconSizeFromButtonIconSize(buttonIconSize: ButtonIconSize): IconSize {
