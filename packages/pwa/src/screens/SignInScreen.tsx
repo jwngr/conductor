@@ -22,8 +22,9 @@ const PasswordlessAuthButton: React.FC<{
   readonly onClick: OnClick<HTMLButtonElement>;
   readonly onSuccess: Consumer<string>;
   readonly onError: Consumer<Error>;
-}> = ({email, onSuccess, onError}) => {
-  const handleSignInButtonClick = async () => {
+}> = ({email, onClick, onSuccess, onError}) => {
+  const handleSignInButtonClick: OnClick<HTMLButtonElement> = async (event) => {
+    onClick(event);
     try {
       await sendSignInLinkToEmail(auth, email, PASSWORDLESS_AUTH_ACTION_CODE_SETTINGS);
       // Save the email locally so we don't need to reprompt for it again if they open the link on the same device.
