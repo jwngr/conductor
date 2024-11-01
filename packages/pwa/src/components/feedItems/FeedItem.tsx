@@ -6,8 +6,7 @@ import {FeedItem} from '@shared/types/feedItems';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Spacer} from '@src/components/atoms/Spacer';
 import {Text} from '@src/components/atoms/Text';
-
-import {FeedItemActions} from './FeedItemActions';
+import {FeedItemActions} from '@src/components/feedItems/FeedItemActions';
 
 export const FeedItemWrapper = styled(FlexColumn).attrs({gap: 12})`
   flex: 1;

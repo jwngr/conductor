@@ -3,6 +3,7 @@ import {useState} from 'react';
 
 import {auth} from '@shared/lib/firebase';
 import {logger} from '@shared/lib/logger';
+
 import {ThemeColor} from '@shared/types/theme';
 import {Consumer} from '@shared/types/utils';
 
@@ -13,10 +14,7 @@ import {useMaybeLoggedInUser} from '@src/lib/users';
 import {OnClick} from '@src/types/utils';
 
 const PASSWORDLESS_AUTH_ACTION_CODE_SETTINGS: ActionCodeSettings = {
-  // URL to redirect back to.
-  // TODO: Make this dynamic.
-  // TODO: Add URLs here to the authorized domains list in the Firebase Console.
-  url: 'http://localhost:5173/',
+  url: import.meta.env.VITE_CONDUCTOR_URL, // URL to redirect back to.
   handleCodeInApp: true, // Must be true for this flow.
 };
 

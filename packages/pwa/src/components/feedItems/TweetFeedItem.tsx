@@ -2,8 +2,8 @@ import React from 'react';
 
 import {TweetFeedItem} from '@shared/types/feedItems';
 
-import {FeedItemHeader, FeedItemWrapper} from './FeedItem';
-import {FeedItemMarkdown} from './FeedItemMarkdown';
+import {FeedItemHeader, FeedItemWrapper} from '@src/components/feedItems/FeedItem';
+import {FeedItemMarkdown} from '@src/components/feedItems/FeedItemMarkdown';
 
 export const TweetFeedItemComponent: React.FC<{readonly feedItem: TweetFeedItem}> = ({
   feedItem,

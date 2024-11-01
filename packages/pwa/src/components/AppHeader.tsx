@@ -3,12 +3,11 @@ import styled from 'styled-components';
 
 import {Urls} from '@shared/lib/urls';
 
+import {FlexRow} from '@src/components/atoms/Flex';
+import {Link} from '@src/components/atoms/Link';
+import {Spacer} from '@src/components/atoms/Spacer';
+import {Text} from '@src/components/atoms/Text';
 import {useMaybeLoggedInUser} from '@src/lib/users';
-
-import {FlexRow} from './atoms/Flex';
-import {Link} from './atoms/Link';
-import {Spacer} from './atoms/Spacer';
-import {Text} from './atoms/Text';
 
 const AppHeaderWrapper = styled(FlexRow)`
   height: 60px;

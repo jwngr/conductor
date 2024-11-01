@@ -2,7 +2,7 @@ import React from 'react';
 
 import {VideoFeedItem} from '@shared/types/feedItems';
 
-import {FeedItemHeader, FeedItemWrapper} from './FeedItem';
+import {FeedItemHeader, FeedItemWrapper} from '@src/components/feedItems/FeedItem';
 
 export const VideoFeedItemComponent: React.FC<{readonly feedItem: VideoFeedItem}> = ({
   feedItem,

@@ -5,15 +5,14 @@ import {ThemeProvider} from 'styled-components';
 import {theme} from '@shared/lib/theme';
 import {Urls} from '@shared/lib/urls';
 
+import {AuthSubscriptions} from '@src/components/auth/AuthSubscriptions';
+import {RequireLoggedInUser} from '@src/components/auth/RequireLoggedInUser';
+import {SignOutRedirect} from '@src/components/auth/SignOutRedirect';
 import {NotFoundScreen} from '@src/screens/404';
 import {FeedItemScreen} from '@src/screens/FeedItemScreen';
 import {FeedsScreen} from '@src/screens/FeedsScreen';
 import {SignInScreen} from '@src/screens/SignInScreen';
 import {ViewScreen} from '@src/screens/ViewScreen';
-
-import {AuthSubscriptions} from './auth/AuthSubscriptions';
-import {RequireLoggedInUser} from './auth/RequireLoggedInUser';
-import {SignOutRedirect} from './auth/SignOutRedirect';
 
 export const CatchAllRoute: React.FC = () => {
   // TODO: Prevent ability to use 404s vs logged-out redirects to figure out what routes exist.

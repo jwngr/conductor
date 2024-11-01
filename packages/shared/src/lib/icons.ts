@@ -1,6 +1,6 @@
-import {ButtonIconSize, IconSize} from '@shared/types/icons';
+import {assertNever} from '@shared/lib/utils';
 
-import {assertNever} from './utils';
+import {ButtonIconSize, IconSize} from '@shared/types/icons';
 
 export function getIconSizeFromButtonIconSize(buttonIconSize: ButtonIconSize): IconSize {
   switch (buttonIconSize) {

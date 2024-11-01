@@ -18,8 +18,7 @@ import {XkcdFeedItemComponent} from '@src/components/feedItems/XkcdFeedItem';
 import {ScreenMainContentWrapper, ScreenWrapper} from '@src/components/layout/Screen';
 import {LeftSidebar} from '@src/components/LeftSidebar';
 import {useFeedItem} from '@src/lib/feedItems';
-
-import {NotFoundScreen} from './404';
+import {NotFoundScreen} from '@src/screens/404';
 
 const useMarkFeedItemRead = ({
   feedItemId,
