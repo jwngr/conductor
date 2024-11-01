@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 import {Urls} from '@shared/lib/urls';
 
-import {useUserStore} from '@src/stores/UserStore';
+import {useMaybeLoggedInUser} from '@src/lib/users';
 
 import {FlexRow} from './atoms/Flex';
 import {Link} from './atoms/Link';
@@ -17,10 +17,10 @@ const AppHeaderWrapper = styled(FlexRow)`
 `;
 
 export const AppHeader: React.FC = () => {
-  const loggedInUser = useUserStore((state) => state.loggedInUser);
+  const {isLoading, loggedInUser} = useMaybeLoggedInUser();
 
   let authContent: React.ReactNode = null;
-  if (loggedInUser) {
+  if (!isLoading && loggedInUser) {
     authContent = (
       <>
         <Text light>{loggedInUser.email}</Text>

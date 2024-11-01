@@ -1,23 +1,19 @@
-import {User} from 'firebase/auth';
 import {create} from 'zustand';
 
-import {Func} from '@shared/types/utils';
+import {LoggedInUser} from '@shared/types/user';
+import {Consumer} from '@shared/types/utils';
 
 interface UserStoreState {
-  loggedInUser: User | null;
-  hasFetchedLoggedInUser: boolean;
-  setLoggedInUser: Func<User | null>;
+  readonly loggedInUser: LoggedInUser | null;
+  readonly isLoading: boolean;
+  readonly setLoggedInUser: Consumer<LoggedInUser | null>;
 }
 
 export const useUserStore = create<UserStoreState>((set) => ({
   // Initial state.
   loggedInUser: null,
-  hasFetchedLoggedInUser: false,
+  isLoading: true,
 
   // Actions.
-  setLoggedInUser: (loggedInUser) =>
-    set({
-      loggedInUser,
-      hasFetchedLoggedInUser: true,
-    }),
+  setLoggedInUser: (loggedInUser) => set({loggedInUser, isLoading: false}),
 }));

@@ -1,9 +1,8 @@
 import {Params} from 'react-router-dom';
 
 import {CustomIcon} from '@shared/lib/customIcons';
-
-import {FeedItemId} from './feedItems';
-import {ViewType} from './query';
+import {FeedItemId} from '@shared/types/feedItems';
+import {ViewType} from '@shared/types/query';
 
 /**
  * Enum representing the top-level paths in the application.

@@ -1,11 +1,8 @@
 import {useState} from 'react';
 
-import {feedItemsService} from '@shared/lib/feedItemsServiceInstance';
+import {feedItemsService} from '@shared/services/feedItemsService';
 import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems';
 import {ThemeColor} from '@shared/types/theme';
-
-import {FlexColumn} from '@src/components/atoms/Flex';
-import {Text} from '@src/components/atoms/Text';
 
 import {
   Dialog,
@@ -14,8 +11,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from './atoms/Dialog';
-import {Input} from './atoms/Input';
+} from '@src/components/atoms/Dialog';
+import {FlexColumn} from '@src/components/atoms/Flex';
+import {Input} from '@src/components/atoms/Input';
+import {Text} from '@src/components/atoms/Text';
 
 export const FeedItemAdder: React.FC = () => {
   const [url, setUrl] = useState('');

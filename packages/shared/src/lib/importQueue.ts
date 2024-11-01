@@ -3,6 +3,7 @@ import {addDoc, CollectionReference, doc, getDoc, serverTimestamp} from 'firebas
 import {FeedItemId} from '@shared/types/feedItems';
 import {ImportQueueItem} from '@shared/types/importQueue';
 
+// TODO: This is not used anywhere.
 export class ImportQueue {
   constructor(private readonly collectionRef: CollectionReference) {}
 

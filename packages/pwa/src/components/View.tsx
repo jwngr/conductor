@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
+import {logger} from '@shared/lib/logger';
 import {FeedItem} from '@shared/types/feedItems';
 import {ViewType} from '@shared/types/query';
 import {ThemeColor} from '@shared/types/theme';
@@ -8,7 +9,7 @@ import {ThemeColor} from '@shared/types/theme';
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
-import {FeedItemAdder} from '@src/components/FeedItemAdder';
+import {FeedItemAdder} from '@src/components/feedItems/FeedItemAdder';
 import {useFeedItems} from '@src/lib/feedItems';
 
 const ViewListItemWrapper = styled(FlexColumn).attrs({justify: 'center', gap: 4})`
@@ -21,7 +22,7 @@ const ViewListItemWrapper = styled(FlexColumn).attrs({justify: 'center', gap: 4}
   }
 `;
 
-const ViewListItem: React.FC<{feedItem: FeedItem}> = ({feedItem}) => {
+const ViewListItem: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
   return (
     <Link to={`/items/${feedItem.itemId}`}>
       <ViewListItemWrapper key={feedItem.itemId}>
@@ -45,6 +46,7 @@ const ViewList: React.FC<{viewType: ViewType}> = ({viewType}) => {
 
   if (error) {
     // TODO: Introduce proper error screen.
+    logger.error('Error loading feed items', {error, viewType});
     return <div>Error: {error.message}</div>;
   }
 

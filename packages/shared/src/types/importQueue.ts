@@ -1,6 +1,6 @@
 import {FieldValue} from 'firebase/firestore';
 
-import {FeedItemId} from './feedItems';
+import {FeedItemId} from '@shared/types/feedItems';
 
 export interface ImportQueueItem {
   readonly url: string;

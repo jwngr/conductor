@@ -10,6 +10,15 @@ export function isFeedItemId(feedItemId: string | undefined): feedItemId is Feed
   return typeof feedItemId === 'string' && feedItemId.length > 0;
 }
 
+// TODO: Do I want to persist this or just compute it on the client?
+export enum FeedItemType {
+  Article = 'ARTICLE',
+  Video = 'VIDEO',
+  Website = 'WEBSITE',
+  Tweet = 'TWEET',
+  Xkcd = 'XKCD',
+}
+
 export enum TriageStatus {
   Untriaged = 'UNTRIAGED',
   Saved = 'SAVED',
@@ -59,8 +68,9 @@ export type FeedItemSource =
   | typeof FEED_ITEM_EXTENSION_SOURCE
   | FeedItemRSSSource;
 
-export interface FeedItem {
+interface BaseFeedItem {
   readonly itemId: FeedItemId;
+  readonly type: FeedItemType;
   readonly source: FeedItemSource;
 
   // Content metadata.
@@ -95,6 +105,33 @@ export interface FeedItem {
   readonly lastUpdatedTime: FieldValue;
   readonly lastImportedTime?: FieldValue;
 }
+
+export interface ArticleFeedItem extends BaseFeedItem {
+  readonly type: FeedItemType.Article;
+}
+
+export interface VideoFeedItem extends BaseFeedItem {
+  readonly type: FeedItemType.Video;
+}
+
+export interface WebsiteFeedItem extends BaseFeedItem {
+  readonly type: FeedItemType.Website;
+}
+
+export interface TweetFeedItem extends BaseFeedItem {
+  readonly type: FeedItemType.Tweet;
+}
+
+export interface XkcdFeedItem extends BaseFeedItem {
+  readonly type: FeedItemType.Xkcd;
+}
+
+export type FeedItem =
+  | ArticleFeedItem
+  | VideoFeedItem
+  | WebsiteFeedItem
+  | TweetFeedItem
+  | XkcdFeedItem;
 
 export enum FeedItemActionType {
   MarkDone = 'MARK_DONE',
