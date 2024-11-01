@@ -2,6 +2,7 @@ import {HTMLAttributes} from 'react';
 import styled, {css} from 'styled-components';
 
 import {assertNever} from '@shared/lib/utils';
+
 import {ThemeColor} from '@shared/types/theme';
 
 type FontWeight = 'normal' | 'bold' | '900';

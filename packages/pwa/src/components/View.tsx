@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import {logger} from '@shared/lib/logger';
+
 import {FeedItem} from '@shared/types/feedItems';
 import {ViewType} from '@shared/types/query';
 import {ThemeColor} from '@shared/types/theme';
@@ -10,6 +11,7 @@ import {FlexColumn} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
 import {FeedItemAdder} from '@src/components/feedItems/FeedItemAdder';
+
 import {useFeedItems} from '@src/lib/feedItems';
 
 const ViewListItemWrapper = styled(FlexColumn).attrs({justify: 'center', gap: 4})`

@@ -1,4 +1,5 @@
 import {logger} from '@shared/lib/logger';
+
 import {LoggedInUser} from '@shared/types/user';
 
 import {useAuthStore} from '@src/stores/AuthStore';

@@ -1,5 +1,6 @@
 import {CustomIconType} from '@shared/lib/customIcons';
 import {assertNever} from '@shared/lib/utils';
+
 import {FeedItemId} from '@shared/types/feedItems';
 import {ViewType} from '@shared/types/query';
 import {NavItem} from '@shared/types/urls';

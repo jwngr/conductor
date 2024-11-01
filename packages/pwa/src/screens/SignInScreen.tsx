@@ -3,13 +3,16 @@ import {useState} from 'react';
 
 import {auth} from '@shared/lib/firebase';
 import {logger} from '@shared/lib/logger';
+
 import {ThemeColor} from '@shared/types/theme';
 import {Consumer} from '@shared/types/utils';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Input} from '@src/components/atoms/Input';
 import {Text} from '@src/components/atoms/Text';
+
 import {useMaybeLoggedInUser} from '@src/lib/users';
+
 import {OnClick} from '@src/types/utils';
 
 const PASSWORDLESS_AUTH_ACTION_CODE_SETTINGS: ActionCodeSettings = {

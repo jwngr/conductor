@@ -1,10 +1,12 @@
 import React from 'react';
 
 import {logger} from '@shared/lib/logger';
+
 import {FeedItem} from '@shared/types/feedItems';
 
 import {Text} from '@src/components/atoms/Text';
 import {Markdown} from '@src/components/Markdown';
+
 import {useFeedItemMarkdown} from '@src/lib/feedItems';
 
 export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {

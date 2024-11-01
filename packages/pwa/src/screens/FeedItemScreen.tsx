@@ -4,7 +4,9 @@ import {useEffect, useRef} from 'react';
 import {logger} from '@shared/lib/logger';
 import {useFeedItemIdFromUrl} from '@shared/lib/router';
 import {assertNever} from '@shared/lib/utils';
+
 import {feedItemsService} from '@shared/services/feedItemsService';
+
 import {FeedItem, FeedItemId, FeedItemType} from '@shared/types/feedItems';
 import {SystemTagId} from '@shared/types/tags';
 
@@ -17,7 +19,9 @@ import {WebsiteFeedItemComponent} from '@src/components/feedItems/WebsiteFeedIte
 import {XkcdFeedItemComponent} from '@src/components/feedItems/XkcdFeedItem';
 import {ScreenMainContentWrapper, ScreenWrapper} from '@src/components/layout/Screen';
 import {LeftSidebar} from '@src/components/LeftSidebar';
+
 import {useFeedItem} from '@src/lib/feedItems';
+
 import {NotFoundScreen} from '@src/screens/404';
 
 const useMarkFeedItemRead = ({
