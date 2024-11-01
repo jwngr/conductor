@@ -11,6 +11,17 @@ const sharedLanguageOptions = {
 const sharedRules = {
   'no-console': 'error',
   '@typescript-eslint/no-extraneous-class': 'off',
+  'no-restricted-imports': [
+    'error',
+    {
+      patterns: [
+        {
+          group: ['.*'],
+          message: 'Use @src or @shared imports instead of relative paths.',
+        },
+      ],
+    },
+  ],
 };
 
 export default tseslint.config(
@@ -48,7 +59,11 @@ export default tseslint.config(
   {
     files: ['packages/scripts/**/*.ts'],
     languageOptions: sharedLanguageOptions,
-    rules: sharedRules,
+    rules: {
+      ...sharedRules,
+      // TODO: Remove this after getting @src imports working in /scripts.
+      'no-restricted-imports': 'off',
+    },
   },
 
   // Extension package config.
