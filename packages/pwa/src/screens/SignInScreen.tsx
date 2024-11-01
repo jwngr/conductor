@@ -3,7 +3,6 @@ import {useState} from 'react';
 
 import {auth} from '@shared/lib/firebase';
 import {logger} from '@shared/lib/logger';
-
 import {ThemeColor} from '@shared/types/theme';
 import {Consumer} from '@shared/types/utils';
 
