@@ -74,7 +74,7 @@ export class FeedItemsService {
       },
       errorCallback
     );
-    return unsubscribe;
+    return () => unsubscribe();
   }
 
   watchFeedItemsQuery(
@@ -102,7 +102,7 @@ export class FeedItemsService {
       },
       errorCallback
     );
-    return unsubscribe;
+    return () => unsubscribe();
   }
 
   async addFeedItem(args: {
