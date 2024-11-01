@@ -1,19 +1,19 @@
 import {logger} from '@shared/lib/logger';
 import {LoggedInUser} from '@shared/types/user';
 
-import {useUserStore} from '@src/stores/UserStore';
+import {useAuthStore} from '@src/stores/AuthStore';
 
 export function useMaybeLoggedInUser(): {
   readonly isLoading: boolean;
   readonly loggedInUser: LoggedInUser | null;
 } {
-  const isLoading = useUserStore((state) => state.isLoading);
-  const loggedInUser = useUserStore((state) => state.loggedInUser);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const loggedInUser = useAuthStore((state) => state.loggedInUser);
   return {isLoading, loggedInUser};
 }
 
 export function useLoggedInUser(): LoggedInUser {
-  const loggedInUser = useUserStore((state) => state.loggedInUser);
+  const loggedInUser = useAuthStore((state) => state.loggedInUser);
   if (!loggedInUser) {
     const errorMessage =
       'No logged-in user exists. `useLoggedInUser` can only be called when there is a logged-in user. Either use `useMaybeLoggedInUser` or fix the bug.';

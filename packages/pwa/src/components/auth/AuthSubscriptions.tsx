@@ -5,12 +5,12 @@ import {auth} from '@shared/lib/firebase';
 import {logger} from '@shared/lib/logger';
 import {authService} from '@shared/services/authService';
 
-import {useUserStore} from '@src/stores/UserStore';
+import {useAuthStore} from '@src/stores/AuthStore';
 
 const AuthServiceSubscription: React.FC = () => {
-  const {setLoggedInUser} = useUserStore();
+  const {setLoggedInUser} = useAuthStore();
   useEffect(() => {
-    authService.onAuthStateChanged({
+    const unsubscribe = authService.onAuthStateChanged({
       successCallback: (loggedInUser) => {
         logger.log('User service auth state changed', {loggedInUser});
         setLoggedInUser(loggedInUser);
@@ -19,12 +19,13 @@ const AuthServiceSubscription: React.FC = () => {
         logger.error('User service `onAuthStateChanged` listener errored', {error});
       },
     });
+    return () => unsubscribe();
   }, [setLoggedInUser]);
   return null;
 };
 
 const PasswordlessAuthSubscription: React.FC = () => {
-  const {setLoggedInUser} = useUserStore();
+  const {setLoggedInUser} = useAuthStore();
   useEffect(() => {
     const go = async () => {
       // Only do something if the current URL is a "sign-in with email" link.
@@ -53,6 +54,7 @@ const PasswordlessAuthSubscription: React.FC = () => {
           window.history.replaceState({}, document.title, window.location.pathname);
         }
       } catch (error) {
+        // TODO: Reconsider throwing errors here. Maybe I should put them in `AuthStore`.
         if (error instanceof Error) {
           // TODO: More gracefull handle common Firebase auth errors.
           // See https://firebase.google.com/docs/reference/js/auth#autherrorcodes.

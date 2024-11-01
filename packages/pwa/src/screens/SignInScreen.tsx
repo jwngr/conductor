@@ -39,7 +39,6 @@ const PasswordlessAuthButton: React.FC<{
       }
       logger.error(betterError.message, {error: betterError});
       onError(betterError);
-      throw betterError;
     }
   };
 
