@@ -17,13 +17,13 @@ import {ImportQueueItem} from '@shared/types/importQueue';
 import {SystemTagId} from '@shared/types/tags';
 
 // Environment variables.
-const VITE_FIRECRAWL_API_KEY = defineString('VITE_FIRECRAWL_API_KEY');
+const FIRECRAWL_API_KEY = defineString('FIRECRAWL_API_KEY');
 
 admin.initializeApp();
 
 let firecrawlApp: FirecrawlApp;
 onInit(() => {
-  firecrawlApp = new FirecrawlApp({apiKey: VITE_FIRECRAWL_API_KEY.value()});
+  firecrawlApp = new FirecrawlApp({apiKey: FIRECRAWL_API_KEY.value()});
 });
 
 const firestore = admin.firestore();
