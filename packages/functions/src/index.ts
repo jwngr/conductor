@@ -16,7 +16,7 @@ import {FeedItem, FeedItemId, FeedItemType} from '@shared/types/feedItems';
 import {ImportQueueItem} from '@shared/types/importQueue';
 import {SystemTagId} from '@shared/types/tags';
 
-// Define some parameters
+// Environment variables.
 const FIRECRAWL_API_KEY = defineString('FIRECRAWL_API_KEY');
 
 admin.initializeApp();

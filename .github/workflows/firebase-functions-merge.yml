@@ -1,14 +1,20 @@
-name: Deploy prod Firebase Functions on merge
+name: Deploy prod Functions on merge
 on:
-  # Comment out or remove the push trigger
-  # push:
-  #   branches:
-  #     - master
-
-  # Add a manual trigger instead
-  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - 'packages/functions/**'
+      - 'packages/shared/**'
+      - '.firebaserc'
+      - '.prettierrc'
+      - 'eslint.config.mjs'
+      - 'firebase.json'
+      - 'package.json'
+      - 'tsconfig.json'
+      - 'yarn.lock'
 jobs:
-  build_and_deploy:
+  deploy_functions_prod:
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -16,13 +22,21 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: 'yarn'
       - run: yarn install
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
-      - name: Create Firebase credentials file
+      - name: Create .env file
+        working-directory: packages/functions
+        env:
+          FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
         run: |
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_CONDUCTOR_PROD }}' > /tmp/firebase-credentials.json
-      - name: Set GOOGLE_APPLICATION_CREDENTIALS
-        run: echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/firebase-credentials.json" >> $GITHUB_ENV
+          if [ -z "$FIRECRAWL_API_KEY" ]; then
+            echo "Error: FIRECRAWL_API_KEY secret must be added in GitHub"
+            exit 1
+          fi
+          echo "FIRECRAWL_API_KEY=${FIRECRAWL_API_KEY}" > .env.conductor-prod
       - name: Deploy Firebase Functions
-        run: yarn run deploy:functions
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: yarn run deploy:functions --project=prod

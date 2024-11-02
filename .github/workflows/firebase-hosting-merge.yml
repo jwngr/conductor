@@ -3,8 +3,18 @@ on:
   push:
     branches:
       - master
+    paths:
+      - 'packages/pwa/**'
+      - 'packages/shared/**'
+      - '.firebaserc'
+      - '.prettierrc'
+      - 'eslint.config.mjs'
+      - 'firebase.json'
+      - 'package.json'
+      - 'tsconfig.json'
+      - 'yarn.lock'
 jobs:
-  build_and_deploy:
+  deploy_hosting_prod:
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -12,6 +22,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: 'yarn'
       - name: Install
         run: yarn install
       - name: Build
