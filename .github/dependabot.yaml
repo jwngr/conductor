@@ -5,8 +5,10 @@ updates:
   - package-ecosystem: 'npm'
     directories:
       - '/'
-      - '/packages/shared'
-      - '/packages/pwa'
-      - '/packages/scripts'
+      - '/packages/extension/'
+      - '/packages/functions/'
+      - '/packages/pwa/'
+      - '/packages/scripts/'
+      - '/packages/shared/'
     schedule:
       interval: 'monthly'
