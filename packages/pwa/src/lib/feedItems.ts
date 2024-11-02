@@ -5,7 +5,7 @@ import {feedItemsService} from '@shared/services/feedItemsService';
 import {FeedItem, FeedItemId} from '@shared/types/feedItems';
 import {ViewType} from '@shared/types/query';
 
-import {useLoggedInUser} from './users';
+import {useLoggedInUser} from '@src/lib/users';
 
 export function useFeedItem(feedItemId: FeedItemId): {
   readonly feedItem: FeedItem | null;
