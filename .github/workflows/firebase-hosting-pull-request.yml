@@ -1,5 +1,16 @@
 name: Preview staging PWA on PR
-on: pull_request
+on:
+  pull_request:
+    paths:
+      - 'packages/pwa/**'
+      - 'packages/shared/**'
+      - '.firebaserc'
+      - '.prettierrc'
+      - 'eslint.config.mjs'
+      - 'firebase.json'
+      - 'package.json'
+      - 'tsconfig.json'
+      - 'yarn.lock'
 permissions:
   checks: write
   contents: read
@@ -14,6 +25,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: 'yarn'
       - run: yarn install
       - run: yarn run build:pwa
         env:
