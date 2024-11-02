@@ -1,14 +1,10 @@
-name: Deploy prod Firebase Functions on merge
+name: Deploy prod Functions on merge
 on:
-  # Comment out or remove the push trigger
-  # push:
-  #   branches:
-  #     - master
-
-  # Add a manual trigger instead
-  workflow_dispatch:
+  push:
+    branches:
+      - master
 jobs:
-  build_and_deploy:
+  deploy_functions_prod:
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -19,10 +15,8 @@ jobs:
       - run: yarn install
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
-      - name: Create Firebase credentials file
-        run: |
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_CONDUCTOR_PROD }}' > /tmp/firebase-credentials.json
-      - name: Set GOOGLE_APPLICATION_CREDENTIALS
-        run: echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/firebase-credentials.json" >> $GITHUB_ENV
       - name: Deploy Firebase Functions
-        run: yarn run deploy:functions
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+        run: yarn run deploy:functions --project=prod
