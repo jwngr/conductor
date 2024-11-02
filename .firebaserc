@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "conductor-local"
+    "default": "conductor-local",
+    "staging": "conductor-stag",
+    "prod": "conductor-prod"
   }
 }
