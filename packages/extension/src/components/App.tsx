@@ -23,6 +23,8 @@ function App() {
       await feedItemsService.addFeedItem({
         url: tab.url,
         source: FEED_ITEM_APP_SOURCE,
+        // TODO: Properly set this once the extension has auth.
+        userId: 'TODO',
       });
 
       setStatus('URL saved successfully');

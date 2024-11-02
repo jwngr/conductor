@@ -5,6 +5,7 @@ import {auth} from '@shared/lib/firebase';
 import {logger} from '@shared/lib/logger';
 
 import {ThemeColor} from '@shared/types/theme';
+import {EmailAddress} from '@shared/types/user';
 import {Consumer} from '@shared/types/utils';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
@@ -21,7 +22,7 @@ const PASSWORDLESS_AUTH_ACTION_CODE_SETTINGS: ActionCodeSettings = {
 };
 
 const PasswordlessAuthButton: React.FC<{
-  readonly email: string;
+  readonly email: EmailAddress;
   readonly onClick: OnClick<HTMLButtonElement>;
   readonly onSuccess: Consumer<string>;
   readonly onError: Consumer<Error>;

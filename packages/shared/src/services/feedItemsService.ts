@@ -34,9 +34,10 @@ import {
   TriageStatus,
 } from '@shared/types/feedItems';
 import {IconName} from '@shared/types/icons';
+import {ImportQueueItemId} from '@shared/types/importQueue';
 import {fromFilterOperator, ViewType} from '@shared/types/query';
 import {SystemTagId} from '@shared/types/tags';
-import {AuthStateChangedUnsubscribe} from '@shared/types/user';
+import {AuthStateChangedUnsubscribe, UserId} from '@shared/types/user';
 import {Consumer} from '@shared/types/utils';
 
 export class FeedItemsService {
@@ -109,8 +110,9 @@ export class FeedItemsService {
   async addFeedItem(args: {
     readonly url: string;
     readonly source: FeedItemSource;
+    readonly userId: UserId;
   }): Promise<FeedItemId | null> {
-    const {url, source} = args;
+    const {url, source, userId} = args;
 
     const trimmedUrl = url.trim();
     if (!isValidUrl(trimmedUrl)) return null;
@@ -124,7 +126,17 @@ export class FeedItemsService {
         source,
         collectionRef: this.feedItemsDbRef,
       });
-      const importQueueItem = makeImportQueueItem(trimmedUrl, feedItem.itemId);
+
+      // Generate a push ID for the feed item.
+      const importQueueItemId = doc(this.importQueueDbRef).id as ImportQueueItemId;
+
+      // Add the feed item to the import queue.
+      const importQueueItem = makeImportQueueItem({
+        importQueueItemId,
+        feedItemId: feedItem.itemId,
+        userId,
+        url: trimmedUrl,
+      });
 
       await Promise.all([
         setDoc(doc(this.feedItemsDbRef, feedItem.itemId), feedItem),

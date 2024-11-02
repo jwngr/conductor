@@ -1,7 +1,8 @@
 import {addDoc, CollectionReference, doc, getDoc, serverTimestamp} from 'firebase/firestore';
 
 import {FeedItemId} from '@shared/types/feedItems';
-import {ImportQueueItem} from '@shared/types/importQueue';
+import {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue';
+import {UserId} from '@shared/types/user';
 
 // TODO: This is not used anywhere.
 export class ImportQueue {
@@ -12,18 +13,29 @@ export class ImportQueue {
     return docRef.id;
   }
 
-  async read(id: string): Promise<ImportQueueItem | null> {
-    const docRef = doc(this.collectionRef, id);
+  async read(itemId: ImportQueueItemId): Promise<ImportQueueItem | null> {
+    const docRef = doc(this.collectionRef, itemId);
     const docSnap = await getDoc(docRef);
-    return docSnap.data() as ImportQueueItem | null;
+    return {...docSnap.data(), importQueueItemId: itemId} as ImportQueueItem | null;
   }
 }
 
-export function makeImportQueueItem(url: string, feedItemId: FeedItemId): ImportQueueItem {
+export function makeImportQueueItem({
+  importQueueItemId,
+  feedItemId,
+  userId,
+  url,
+}: {
+  readonly importQueueItemId: ImportQueueItemId;
+  readonly feedItemId: FeedItemId;
+  readonly userId: UserId;
+  readonly url: string;
+}): ImportQueueItem {
   return {
-    // TODO: Add an ID for these objects?
-    url,
+    importQueueItemId,
     feedItemId,
+    userId,
+    url,
     createdTime: serverTimestamp(),
     lastUpdatedTime: serverTimestamp(),
   };

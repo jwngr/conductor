@@ -6,7 +6,7 @@ import {TagId} from '@shared/types/tags';
 
 export type FeedItemId = string;
 
-export function isFeedItemId(feedItemId: string | undefined): feedItemId is FeedItemId {
+export function isFeedItemId(feedItemId: FeedItemId | undefined): feedItemId is FeedItemId {
   return typeof feedItemId === 'string' && feedItemId.length > 0;
 }
 
