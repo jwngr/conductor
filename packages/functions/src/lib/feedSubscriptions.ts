@@ -30,10 +30,7 @@ export async function unsubscribeFromFeedSubscriptionsForUser(userId: UserId): P
 
   // TODO: Batch this instead of doing it one at a time.
   for (const doc of userFeedSubscriptionDocs.docs) {
-    await unsubscribeFromFeedSubscription({
-      subscriptionId: doc.id,
-      ...doc.data(),
-    } as FeedSubscription);
+    await unsubscribeFromFeedSubscription(doc.data() as FeedSubscription);
   }
 }
 
@@ -41,6 +38,6 @@ export async function unsubscribeFromFeedSubscriptionsForUser(userId: UserId): P
  * Unsubscribes from an individual feed subscription.
  */
 async function unsubscribeFromFeedSubscription(feedSubscription: FeedSubscription): Promise<void> {
-  console.log(`Unsubscribing from feed subscription ${feedSubscription.subscriptionId}...`);
+  console.log(`Unsubscribing from feed subscription ${feedSubscription.feedSubscriptionId}...`);
   throw new Error(`TODO: Unsubscribing not yet implemented`);
 }

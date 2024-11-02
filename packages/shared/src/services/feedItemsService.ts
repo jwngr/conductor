@@ -50,7 +50,7 @@ export class FeedItemsService {
   async getFeedItem(itemId: FeedItemId): Promise<FeedItem | null> {
     try {
       const snapshot = await getDoc(doc(this.feedItemsDbRef, itemId));
-      return snapshot.exists() ? ({...snapshot.data(), itemId: snapshot.id} as FeedItem) : null;
+      return snapshot.exists() ? ({...snapshot.data(), feedItemId: snapshot.id} as FeedItem) : null;
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(`Error fetching feed item: ${error.message}`, {cause: error});
@@ -69,7 +69,7 @@ export class FeedItemsService {
       doc(this.feedItemsDbRef, feedItemId),
       (snapshot) => {
         if (snapshot.exists()) {
-          successCallback({...snapshot.data(), itemId: snapshot.id} as FeedItem);
+          successCallback({...snapshot.data(), feedItemId: snapshot.id} as FeedItem);
         } else {
           successCallback(null);
         }
@@ -105,7 +105,7 @@ export class FeedItemsService {
     const unsubscribe = onSnapshot(
       itemsQuery,
       (snapshot) => {
-        const feedItems = snapshot.docs.map((doc) => ({...doc.data(), itemId: doc.id}) as FeedItem);
+        const feedItems = snapshot.docs.map((doc) => doc.data() as FeedItem);
         successCallback(feedItems);
       },
       errorCallback
@@ -124,13 +124,16 @@ export class FeedItemsService {
     if (!isValidUrl(trimmedUrl)) return null;
 
     try {
+      const feedItemDoc = doc(this.feedItemsDbRef);
+
       const feedItem = makeFeedItem({
+        feedItemId: feedItemDoc.id as FeedItemId,
+        type: FeedItemType.Website,
         url: trimmedUrl,
         // TODO: Make this dynamic based on the actual content. Maybe it should be null initially
         // until we've done the import? Or should we compute this at save time?
-        type: FeedItemType.Website,
         source,
-        collectionRef: this.feedItemsDbRef,
+        userId,
       });
 
       // Generate a push ID for the feed item.
@@ -139,17 +142,17 @@ export class FeedItemsService {
       // Add the feed item to the import queue.
       const importQueueItem = makeImportQueueItem({
         importQueueItemId,
-        feedItemId: feedItem.itemId,
+        feedItemId: feedItem.feedItemId,
         userId,
         url: trimmedUrl,
       });
 
       await Promise.all([
-        setDoc(doc(this.feedItemsDbRef, feedItem.itemId), feedItem),
+        setDoc(feedItemDoc, feedItem),
         addDoc(this.importQueueDbRef, importQueueItem),
       ]);
 
-      return feedItem.itemId;
+      return feedItem.feedItemId;
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(`Error adding feed item: ${error.message}`, {cause: error});
@@ -203,15 +206,17 @@ export class FeedItemsService {
 }
 
 interface MakeFeedItemArgs {
-  readonly url: string;
+  readonly feedItemId: FeedItemId;
   readonly type: FeedItemType;
+  readonly url: string;
   readonly source: FeedItemSource;
-  readonly collectionRef: CollectionReference;
+  readonly userId: UserId;
 }
 
-export function makeFeedItem({url, type, source, collectionRef}: MakeFeedItemArgs): FeedItem {
+export function makeFeedItem({feedItemId, type, url, source, userId}: MakeFeedItemArgs): FeedItem {
   return {
-    itemId: doc(collectionRef).id,
+    feedItemId,
+    userId,
     url,
     type,
     source,

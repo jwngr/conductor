@@ -41,12 +41,13 @@ export const firestore = getFirestore(firebaseApp);
 
 // Firebase emulator for local development is configured via an environment variable.
 if (import.meta.env.DEV && import.meta.env.VITE_FIREBASE_USE_EMULATOR === 'true') {
-  const FIREBASE_EMULATOR_HOST = '127.0.0.1';
+  const FIREBASE_EMULATOR_HOST = 'http://127.0.0.1';
   const FUNCTIONS_EMULATOR_PORT = 5001;
   const FIRESTORE_EMULATOR_PORT = 8080;
   const STORAGE_EMULATOR_PORT = 9199;
+  const AUTH_EMULATOR_PORT = 9099;
   const functions = getFunctions(firebaseApp);
-  connectAuthEmulator(auth, FIREBASE_EMULATOR_HOST);
+  connectAuthEmulator(auth, `${FIREBASE_EMULATOR_HOST}:${AUTH_EMULATOR_PORT}`);
   connectStorageEmulator(storage, FIREBASE_EMULATOR_HOST, STORAGE_EMULATOR_PORT);
   connectFunctionsEmulator(functions, FIREBASE_EMULATOR_HOST, FUNCTIONS_EMULATOR_PORT);
   connectFirestoreEmulator(firestore, FIREBASE_EMULATOR_HOST, FIRESTORE_EMULATOR_PORT);

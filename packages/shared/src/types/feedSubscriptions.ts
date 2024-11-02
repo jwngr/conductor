@@ -11,7 +11,7 @@ export function isFeedSubscriptionId(
 }
 
 export interface FeedSubscription {
-  readonly subscriptionId: FeedSubscriptionId;
+  readonly feedSubscriptionId: FeedSubscriptionId;
   readonly url: string;
   readonly userId: UserId;
   readonly createdTime: FieldValue;

@@ -3,6 +3,7 @@ import {FieldValue} from 'firebase/firestore';
 import {FeedSubscriptionId} from '@shared/types/feedSubscriptions';
 import {IconName} from '@shared/types/icons';
 import {TagId} from '@shared/types/tags';
+import {UserId} from '@shared/types/user';
 
 export type FeedItemId = string;
 
@@ -69,7 +70,8 @@ export type FeedItemSource =
   | FeedItemRSSSource;
 
 interface BaseFeedItem {
-  readonly itemId: FeedItemId;
+  readonly feedItemId: FeedItemId;
+  readonly userId: UserId;
   readonly type: FeedItemType;
   readonly source: FeedItemSource;
 

@@ -69,7 +69,7 @@ const PasswordlessAuthSubscription: React.FC = () => {
       }
     };
     go();
-  }, [setLoggedInUser]);
+  }, [navigate, setLoggedInUser]);
   return null;
 };
 

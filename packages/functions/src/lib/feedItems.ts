@@ -23,7 +23,7 @@ export async function updateImportedFeedItemInFirestore(
 ): Promise<void> {
   const update: Omit<
     FeedItem,
-    'itemId' | 'source' | 'url' | 'createdTime' | 'triageStatus' | 'tagIds'
+    'feedItemId' | 'userId' | 'source' | 'url' | 'createdTime' | 'triageStatus' | 'tagIds'
   > = {
     // TODO: Determine the type based on the URL or fetched content.
     type: FeedItemType.Website,

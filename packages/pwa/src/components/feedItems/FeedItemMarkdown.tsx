@@ -11,7 +11,7 @@ import {useFeedItemMarkdown} from '@src/lib/feedItems';
 
 export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
   const isFeedItemImported = Boolean(feedItem?.lastImportedTime);
-  const {markdown, isLoading, error} = useFeedItemMarkdown(feedItem.itemId, isFeedItemImported);
+  const {markdown, isLoading, error} = useFeedItemMarkdown(feedItem.feedItemId, isFeedItemImported);
 
   if (error) {
     logger.error('Error fetching markdown', {error});

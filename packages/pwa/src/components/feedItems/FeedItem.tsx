@@ -23,7 +23,7 @@ export const FeedItemHeader: React.FC<{readonly feedItem: FeedItem}> = ({feedIte
         {feedItem.title}
       </Text>
       <Spacer flex />
-      <FeedItemActions feedItemId={feedItem.itemId} />
+      <FeedItemActions feedItemId={feedItem.feedItemId} />
     </FeedItemHeaderWrapper>
   );
 };
