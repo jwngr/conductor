@@ -17,12 +17,14 @@ jobs:
       - run: yarn install
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
-      - name: Create Firebase credentials file
-        run: |
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_CONDUCTOR_STAG }}' > /tmp/firebase-credentials.json
-      - name: Set GOOGLE_APPLICATION_CREDENTIALS
-        run: echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/firebase-credentials.json" >> $GITHUB_ENV
+      # - name: Create Firebase credentials file
+      #   run: |
+      #     echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_CONDUCTOR_STAG }}' > /tmp/firebase-credentials.json
+      # - name: Set GOOGLE_APPLICATION_CREDENTIALS
+      #   run: echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/firebase-credentials.json" >> $GITHUB_ENV
       - name: Switch Firebase project
         run: firebase use staging
       - name: Deploy Firebase Functions
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: yarn run deploy:functions
