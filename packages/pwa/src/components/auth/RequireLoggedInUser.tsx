@@ -12,20 +12,16 @@ export const RequireLoggedInUser: React.FC<{
 }> = ({children}) => {
   const {isLoading, loggedInUser} = useMaybeLoggedInUser();
 
-  // Ignore "sign-in with email" links which affect auth state and causes a race if it is checked.
-  if (isSignInWithEmailLink(auth, window.location.href)) {
-    return children;
-  }
-
   // Wait to show anything until we know the auth state.
-  // TODO: Better loading state.
   if (isLoading) return null;
 
-  // If the user is not logged in, redirect them to the sign-in page.
-  if (!loggedInUser) {
-    return <Navigate to={Urls.forSignIn()} replace />;
-  }
-
   // The user is logged in, so show the requested component.
-  return children;
+  if (loggedInUser) return children;
+
+  // Ignore paths which directly affect auth state and cause a race if checked here.
+  const isIgnoredPath = isSignInWithEmailLink(auth, window.location.href);
+  if (isIgnoredPath) return null;
+
+  // If the user is not logged in, redirect them to the sign-in page.
+  return <Navigate to={Urls.forSignIn()} replace />;
 };

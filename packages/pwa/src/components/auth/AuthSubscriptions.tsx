@@ -1,8 +1,10 @@
 import {isSignInWithEmailLink, signInWithEmailLink} from 'firebase/auth';
 import {useEffect} from 'react';
+import {useNavigate} from 'react-router-dom';
 
 import {auth} from '@shared/lib/firebase';
 import {logger} from '@shared/lib/logger';
+import {Urls} from '@shared/lib/urls';
 
 import {authService} from '@shared/services/authService';
 
@@ -26,6 +28,7 @@ const AuthServiceSubscription: React.FC = () => {
 };
 
 const PasswordlessAuthSubscription: React.FC = () => {
+  const navigate = useNavigate();
   const {setLoggedInUser} = useAuthStore();
   useEffect(() => {
     const go = async () => {
@@ -51,8 +54,8 @@ const PasswordlessAuthSubscription: React.FC = () => {
           // Clear the email from local storage since we no longer need it.
           window.localStorage.removeItem('emailForSignIn');
 
-          // Clear the URL query params so we don't end up back here.
-          window.history.replaceState({}, document.title, window.location.pathname);
+          // Redirect to the root path.
+          navigate(Urls.forRoot());
         }
       } catch (error) {
         // TODO: Reconsider throwing errors here. Maybe I should put them in `AuthStore`.
