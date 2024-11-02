@@ -79,16 +79,22 @@ export class FeedItemsService {
     return () => unsubscribe();
   }
 
-  watchFeedItemsQuery(
-    viewType: ViewType,
-    successCallback: Consumer<FeedItem[]>,
-    errorCallback: Consumer<Error>
-  ): AuthStateChangedUnsubscribe {
+  watchFeedItemsQuery(args: {
+    readonly viewType: ViewType;
+    readonly userId: UserId;
+    readonly successCallback: Consumer<FeedItem[]>;
+    readonly errorCallback: Consumer<Error>;
+  }): AuthStateChangedUnsubscribe {
+    const {viewType, userId, successCallback, errorCallback} = args;
+
     // Construct Firestore queries from the view config.
     const viewConfig = Views.get(viewType);
-    const whereClauses = viewConfig.filters.map((filter) =>
-      where(filter.field, fromFilterOperator(filter.op), filter.value)
-    );
+    const whereClauses = [
+      where('userId', '==', userId),
+      ...viewConfig.filters.map((filter) =>
+        where(filter.field, fromFilterOperator(filter.op), filter.value)
+      ),
+    ];
     const itemsQuery = query(
       this.feedItemsDbRef,
       ...whereClauses

@@ -5,6 +5,8 @@ import {feedItemsService} from '@shared/services/feedItemsService';
 import {FeedItem, FeedItemId} from '@shared/types/feedItems';
 import {ViewType} from '@shared/types/query';
 
+import {useLoggedInUser} from './users';
+
 export function useFeedItem(feedItemId: FeedItemId): {
   readonly feedItem: FeedItem | null;
   readonly isLoading: boolean;
@@ -38,15 +40,17 @@ export function useFeedItems({viewType}: {readonly viewType: ViewType}): {
     readonly isLoading: boolean;
     readonly error: Error | null;
   }>({feedItems: [], isLoading: true, error: null});
+  const loggedInUser = useLoggedInUser();
 
   useEffect(() => {
-    const unsubscribe = feedItemsService.watchFeedItemsQuery(
+    const unsubscribe = feedItemsService.watchFeedItemsQuery({
       viewType,
-      (feedItems) => setState({feedItems, isLoading: false, error: null}),
-      (error) => setState({feedItems: [], isLoading: false, error})
-    );
+      userId: loggedInUser.userId,
+      successCallback: (feedItems) => setState({feedItems, isLoading: false, error: null}),
+      errorCallback: (error) => setState({feedItems: [], isLoading: false, error}),
+    });
     return () => unsubscribe();
-  }, [viewType]);
+  }, [viewType, loggedInUser.userId]);
 
   return state;
 }
