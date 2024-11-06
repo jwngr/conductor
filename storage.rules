@@ -2,8 +2,31 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
+    ////////////////////////
+    //  Helper functions  //
+    ////////////////////////
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    /////////////
+    //  Rules  //
+    /////////////
+    // Allow users to manage their own files.
+    match /feedItems/{userId}/{allPaths=**} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // Disallow all other operations.
     match /{allPaths=**} {
       allow read, write: if false;
     }
   }
 }
+
+
+

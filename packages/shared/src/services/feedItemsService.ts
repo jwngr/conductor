@@ -1,5 +1,4 @@
 import {
-  addDoc,
   collection,
   CollectionReference,
   deleteDoc,
@@ -149,7 +148,7 @@ export class FeedItemsService {
 
       await Promise.all([
         setDoc(feedItemDoc, feedItem),
-        addDoc(this.importQueueDbRef, importQueueItem),
+        setDoc(doc(this.importQueueDbRef, importQueueItemId), importQueueItem),
       ]);
 
       return feedItem.feedItemId;
