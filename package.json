@@ -33,6 +33,9 @@
     "firebase:local": "firebase emulators:start",
     "deploy:pwa": "yarn run build:shared && yarn workspace @conductor/pwa deploy",
     "deploy:functions": "yarn run build:shared && yarn workspace @conductor/functions deploy",
+    "deploy:rules": "firebase deploy --only firestore:rules,storage",
+    "deploy:rules:firestore": "firebase deploy --only firestore:rules",
+    "deploy:rules:storage": "firebase deploy --only storage",
     "update-deps": "npx npm-check-updates -u --packageFile package.json && npx npm-check-updates -u --packageFile \"packages/*/package.json\""
   },
   "dependencies": {
