@@ -34,15 +34,15 @@ The packages are:
 1. Populate a `.env` file at the root of the repo:
 
    ```bash
-   $ cp .env.example .env
+   $ cp dot-env.example .env
    # Open .env and add config.
    ```
 
-1. Populate a `.env.local` file inside of `/packages/functions`:
+1. Populate a `.env.conductor-local` file inside of `/packages/functions`:
 
    ```bash
-   $ cp /packages/functions/.env.local.example /packages/functions/.env.local
-   # Open .env.local and add config.
+   $ cp /packages/functions/dot-env.example /packages/functions/.env.conductor-local
+   # Open .env.conductor-local and add config.
    ```
 
 1. Install Yarn (this repo uses Yarn workspaces to share code across all client and server code):

@@ -26,8 +26,8 @@ const ViewListItemWrapper = styled(FlexColumn).attrs({justify: 'center', gap: 4}
 
 const ViewListItem: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
   return (
-    <Link to={`/items/${feedItem.itemId}`}>
-      <ViewListItemWrapper key={feedItem.itemId}>
+    <Link to={`/items/${feedItem.feedItemId}`}>
+      <ViewListItemWrapper key={feedItem.feedItemId}>
         <Text as="p" bold>
           {feedItem.title || 'No title'}
         </Text>
@@ -59,7 +59,7 @@ const ViewList: React.FC<{viewType: ViewType}> = ({viewType}) => {
   return (
     <ul>
       {feedItems.map((feedItem) => (
-        <ViewListItem key={feedItem.itemId} feedItem={feedItem} />
+        <ViewListItem key={feedItem.feedItemId} feedItem={feedItem} />
       ))}
     </ul>
   );

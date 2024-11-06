@@ -17,15 +17,22 @@ import {FlexColumn} from '@src/components/atoms/Flex';
 import {Input} from '@src/components/atoms/Input';
 import {Text} from '@src/components/atoms/Text';
 
+import {useLoggedInUser} from '@src/lib/users';
+
 export const FeedItemAdder: React.FC = () => {
   const [url, setUrl] = useState('');
   const [status, setStatus] = useState('');
+  const loggedInUser = useLoggedInUser();
 
   const handleAddItemToQueue = async (url: string) => {
     setStatus('Pending...');
 
     try {
-      await feedItemsService.addFeedItem({url, source: FEED_ITEM_APP_SOURCE});
+      await feedItemsService.addFeedItem({
+        url,
+        source: FEED_ITEM_APP_SOURCE,
+        userId: loggedInUser.userId,
+      });
       setStatus('URL saved successfully');
     } catch (error) {
       setStatus(`Error: ${error}`);

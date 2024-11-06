@@ -8,6 +8,8 @@ chrome.action.onClicked.addListener(async (tab) => {
       await feedItemsService.addFeedItem({
         url: tab.url,
         source: FEED_ITEM_EXTENSION_SOURCE,
+        // TODO: Properly set this once the extension has auth.
+        userId: 'TODO',
       });
 
       // eslint-disable-next-line no-console
