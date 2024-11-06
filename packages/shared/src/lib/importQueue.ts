@@ -13,10 +13,11 @@ export class ImportQueue {
     return docRef.id;
   }
 
-  async read(itemId: ImportQueueItemId): Promise<ImportQueueItem | null> {
-    const docRef = doc(this.collectionRef, itemId);
+  async read(importQueueItemId: ImportQueueItemId): Promise<ImportQueueItem | null> {
+    const docRef = doc(this.collectionRef, importQueueItemId);
     const docSnap = await getDoc(docRef);
-    return {...docSnap.data(), importQueueItemId: itemId} as ImportQueueItem | null;
+    if (!docSnap.exists()) return null;
+    return {...docSnap.data(), importQueueItemId} as ImportQueueItem;
   }
 }
 

@@ -47,9 +47,9 @@ export class FeedItemsService {
     private readonly feedItemsStorageRef: StorageReference
   ) {}
 
-  async getFeedItem(itemId: FeedItemId): Promise<FeedItem | null> {
+  async getFeedItem(feedItemId: FeedItemId): Promise<FeedItem | null> {
     try {
-      const snapshot = await getDoc(doc(this.feedItemsDbRef, itemId));
+      const snapshot = await getDoc(doc(this.feedItemsDbRef, feedItemId));
       return snapshot.exists() ? ({...snapshot.data(), feedItemId: snapshot.id} as FeedItem) : null;
     } catch (error) {
       if (error instanceof Error) {
@@ -162,9 +162,9 @@ export class FeedItemsService {
     }
   }
 
-  async updateFeedItem(itemId: FeedItemId, item: Partial<FeedItem>): Promise<void> {
+  async updateFeedItem(feedItemId: FeedItemId, item: Partial<FeedItem>): Promise<void> {
     try {
-      await updateDoc(doc(this.feedItemsDbRef, itemId), item);
+      await updateDoc(doc(this.feedItemsDbRef, feedItemId), item);
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(`Error updating feed item: ${error.message}`, {cause: error});
@@ -174,9 +174,9 @@ export class FeedItemsService {
     }
   }
 
-  async deleteFeedItem(itemId: FeedItemId): Promise<void> {
+  async deleteFeedItem(feedItemId: FeedItemId): Promise<void> {
     try {
-      await deleteDoc(doc(this.feedItemsDbRef, itemId));
+      await deleteDoc(doc(this.feedItemsDbRef, feedItemId));
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(`Error deleting feed item: ${error.message}`, {cause: error});
@@ -186,9 +186,9 @@ export class FeedItemsService {
     }
   }
 
-  async getFeedItemMarkdown(itemId: FeedItemId): Promise<string> {
+  async getFeedItemMarkdown(feedItemId: FeedItemId): Promise<string> {
     try {
-      const fileRef = storageRef(this.feedItemsStorageRef, `${itemId}/llmContext.md`);
+      const fileRef = storageRef(this.feedItemsStorageRef, `${feedItemId}/llmContext.md`);
       const downloadUrl = await getDownloadURL(fileRef);
       const response = await fetch(downloadUrl);
       if (!response.ok) {
