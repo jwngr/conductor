@@ -32,7 +32,8 @@
     "build:functions": "yarn run build:shared && yarn workspace @conductor/functions build",
     "firebase:local": "firebase emulators:start",
     "deploy:pwa": "yarn run build:shared && yarn workspace @conductor/pwa deploy",
-    "deploy:functions": "yarn run build:shared && yarn workspace @conductor/functions deploy"
+    "deploy:functions": "yarn run build:shared && yarn workspace @conductor/functions deploy",
+    "update-deps": "yarn upgrade-interactive --latest"
   },
   "dependencies": {
     "firebase": "^11.0.1",
