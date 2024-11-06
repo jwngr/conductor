@@ -34,14 +34,14 @@ The packages are:
 1. Populate a `.env` file at the root of the repo:
 
    ```bash
-   $ cp .env.example .env
+   $ cp dot-env.example .env
    # Open .env and add config.
    ```
 
 1. Populate a `.env.conductor-local` file inside of `/packages/functions`:
 
    ```bash
-   $ cp /packages/functions/.env.local.example /packages/functions/.env.conductor-local
+   $ cp /packages/functions/dot-env.example /packages/functions/.env.conductor-local
    # Open .env.conductor-local and add config.
    ```
 
