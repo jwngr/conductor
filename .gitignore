@@ -3,6 +3,9 @@ node_modules/
 tsconfig.tsbuildinfo
 .DS_Store
 
+# Use yarn.lock instead of package-lock.json.
+package-lock.json
+
 # Private files.
 packages/scripts/src/resources/
 
