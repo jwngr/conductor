@@ -1,6 +1,7 @@
 // TODO: Switch to using the Functions logger.
 // import logger from 'firebase-functions/logger';
-import auth from 'firebase-functions/v1/auth';
+// TODO: Figure out why the import is not working properly for the build.
+// import functions from 'firebase-functions/v1';
 import {onDocumentCreated} from 'firebase-functions/v2/firestore';
 
 import {IMPORT_QUEUE_DB_COLLECTION} from '@shared/lib/constants';
@@ -8,7 +9,8 @@ import {IMPORT_QUEUE_DB_COLLECTION} from '@shared/lib/constants';
 import {ImportQueueItem} from '@shared/types/importQueue';
 
 import {deleteImportQueueItem, importFeedItem} from '@src/lib/importQueue';
-import {wipeoutUser} from '@src/lib/wipeout';
+
+// import {wipeoutUser} from '@src/lib/wipeout';
 
 /**
  * Processes an import queue item when it is created.
@@ -57,13 +59,13 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
 /**
  * Hard-deletes all data associated with a user when their Firebase auth account is deleted.
  */
-export const wipeoutUserOnAuthDelete = auth.user().onDelete(async (firebaseUser) => {
-  const userId = firebaseUser.uid;
-  try {
-    console.log(`[WIPEOUT] Wiping out user ${userId}...`);
-    await wipeoutUser(userId);
-    console.log(`[WIPEOUT] Successfully wiped out user ${userId}`);
-  } catch (error) {
-    console.error(`[WIPEOUT] Error wiping out user ${userId}:`, error);
-  }
-});
+// export const wipeoutUserOnAuthDelete = functions.auth.user().onDelete(async (firebaseUser) => {
+//   const userId = firebaseUser.uid;
+//   try {
+//     console.log(`[WIPEOUT] Wiping out user ${userId}...`);
+//     await wipeoutUser(userId);
+//     console.log(`[WIPEOUT] Successfully wiped out user ${userId}`);
+//   } catch (error) {
+//     console.error(`[WIPEOUT] Error wiping out user ${userId}:`, error);
+//   }
+// });
