@@ -1,0 +1,16 @@
+{
+  "indexes": [],
+
+  "fieldOverrides": [
+    {
+      "collectionGroup": "feedItems",
+      "fieldPath": "description",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "feedItems",
+      "fieldPath": "outgoingLinks",
+      "indexes": []
+    }
+  ]
+}
