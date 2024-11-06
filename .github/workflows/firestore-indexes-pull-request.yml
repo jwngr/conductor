@@ -1,15 +1,16 @@
-name: Deploy prod Firebase rules on merge
+name: Deploy staging Firestore indexes on PR
 on:
-  push:
-    branches:
-      - master
+  pull_request:
     paths:
-      - 'firestore.rules'
-      - 'storage.rules'
+      - 'firestore.indexes.json'
+permissions:
+  checks: write
+  contents: read
+  pull-requests: write
 jobs:
-  deploy_rules_prod:
+  deploy_firestore_indexes_stag:
     runs-on: ubuntu-latest
-    environment: production
+    environment: staging
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -18,7 +19,7 @@ jobs:
           cache: 'yarn'
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
-      - name: Deploy Firebase rules
+      - name: Deploy Firestore indexes
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-        run: yarn run deploy:rules --project=prod
+        run: yarn run deploy:indexes --project=stag

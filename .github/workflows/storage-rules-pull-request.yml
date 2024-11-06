@@ -1,15 +1,14 @@
-name: Deploy staging Firebase rules on PR
+name: Deploy staging Cloud Storage rules on PR
 on:
   pull_request:
     paths:
-      - 'firestore.rules'
       - 'storage.rules'
 permissions:
   checks: write
   contents: read
   pull-requests: write
 jobs:
-  deploy_rules_stag:
+  deploy_storage_rules_stag:
     runs-on: ubuntu-latest
     environment: staging
     steps:
@@ -20,7 +19,7 @@ jobs:
           cache: 'yarn'
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
-      - name: Deploy Firebase rules
+      - name: Deploy Cloud Storage rules
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-        run: yarn run deploy:rules --project=stag
+        run: yarn run deploy:rules:storage --project=stag
