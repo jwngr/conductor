@@ -5,6 +5,7 @@ import {ThemeProvider} from 'styled-components';
 import {theme} from '@shared/lib/theme';
 import {Urls} from '@shared/lib/urls';
 
+import {TooltipProvider} from '@src/components/atoms/Tooltip';
 import {AuthSubscriptions} from '@src/components/auth/AuthSubscriptions';
 import {RequireLoggedInUser} from '@src/components/auth/RequireLoggedInUser';
 import {SignOutRedirect} from '@src/components/auth/SignOutRedirect';
@@ -74,10 +75,12 @@ const AppWideSubscriptions: React.FC = () => {
 export const App: React.FC = () => {
   return (
     <ThemeProvider theme={theme}>
-      <BrowserRouter>
-        <AllRoutes />
-        <AppWideSubscriptions />
-      </BrowserRouter>
+      <TooltipProvider>
+        <BrowserRouter>
+          <AllRoutes />
+          <AppWideSubscriptions />
+        </BrowserRouter>
+      </TooltipProvider>
     </ThemeProvider>
   );
 };

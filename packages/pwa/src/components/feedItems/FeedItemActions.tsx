@@ -22,6 +22,7 @@ const MarkDoneFeedItemActionIcon: React.FC<{
   return (
     <ButtonIcon
       name={markDoneActionInfo.icon}
+      tooltip={markDoneActionInfo.text}
       size={40}
       onClick={async () => {
         try {
@@ -44,6 +45,7 @@ const SaveFeedItemActionIcon: React.FC<{
   return (
     <ButtonIcon
       name={saveActionInfo.icon}
+      tooltip={saveActionInfo.text}
       size={40}
       onClick={async () => {
         try {
@@ -66,6 +68,7 @@ const MarkUnreadFeedItemActionIcon: React.FC<{
   return (
     <ButtonIcon
       name={markUnreadActionInfo.icon}
+      tooltip={markUnreadActionInfo.text}
       size={40}
       onClick={async () => {
         try {
@@ -93,6 +96,7 @@ const StarFeedItemActionIcon: React.FC<{
   return (
     <ButtonIcon
       name={starActionInfo.icon}
+      tooltip={starActionInfo.text}
       size={40}
       onClick={async () => {
         try {
