@@ -14,6 +14,8 @@ import MarkUnreadIcon from '@shared/icons/markUnread.svg?react';
 import SaveIcon from '@shared/icons/save.svg?react';
 import StarIcon from '@shared/icons/star.svg?react';
 
+import {Tooltip, TooltipContent} from '@src/components/atoms/Tooltip';
+
 import {OnClick} from '@src/types/utils';
 
 interface ButtonIconWrapperProps {
@@ -46,10 +48,12 @@ interface ButtonIconProps extends StyleAttributes {
   readonly size: ButtonIconSize;
   readonly color?: ThemeColor;
   readonly onClick?: OnClick<HTMLDivElement>;
+  readonly tooltip: TooltipContent;
 }
 
 export const ButtonIcon: React.FC<ButtonIconProps> = ({
   name,
+  tooltip,
   size: buttonIconSize,
   color = ThemeColor.Neutral900,
   onClick,
@@ -78,9 +82,11 @@ export const ButtonIcon: React.FC<ButtonIconProps> = ({
 
   const iconSize = getIconSizeFromButtonIconSize(buttonIconSize);
 
-  return (
+  const buttonIcon = (
     <ButtonIconWrapper $color={color} $size={buttonIconSize} onClick={onClick}>
       <IconComponent width={iconSize} height={iconSize} {...styleProps} />
     </ButtonIconWrapper>
   );
+
+  return <Tooltip trigger={buttonIcon} content={tooltip} />;
 };
