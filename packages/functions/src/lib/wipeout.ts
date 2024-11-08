@@ -1,4 +1,4 @@
-import {UserId} from '@shared/types/user';
+import {UserId} from '@shared/types/user.types';
 
 import {deleteFeedItemDocsForUsers, deleteStorageFilesForUser} from '@src/lib/feedItems';
 import {

@@ -1,8 +1,8 @@
 import {FEED_ITEMS_DB_COLLECTION, FEED_ITEMS_STORAGE_COLLECTION} from '@shared/lib/constants';
 
-import {FeedItem, FeedItemId, FeedItemType} from '@shared/types/feedItems';
-import {SystemTagId} from '@shared/types/tags';
-import {UserId} from '@shared/types/user';
+import {FeedItem, FeedItemId, FeedItemType} from '@shared/types/feedItems.types';
+import {SystemTagId} from '@shared/types/tags.types';
+import {UserId} from '@shared/types/user.types';
 
 import {FieldValue, firestore, storageBucket} from '@src/lib/firebase';
 

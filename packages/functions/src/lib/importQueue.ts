@@ -1,7 +1,7 @@
 import {IMPORT_QUEUE_DB_COLLECTION} from '@shared/lib/constants';
 
-import {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue';
-import {UserId} from '@shared/types/user';
+import {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue.types';
+import {UserId} from '@shared/types/user.types';
 
 import {batchDeleteFirestoreDocuments} from '@src/lib/batch';
 import {firestore} from '@src/lib/firebase';

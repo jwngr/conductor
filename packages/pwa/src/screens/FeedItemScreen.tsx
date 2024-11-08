@@ -7,8 +7,8 @@ import {assertNever} from '@shared/lib/utils';
 
 import {feedItemsService} from '@shared/services/feedItemsService';
 
-import {FeedItem, FeedItemId, FeedItemType} from '@shared/types/feedItems';
-import {SystemTagId} from '@shared/types/tags';
+import {FeedItem, FeedItemId, FeedItemType} from '@shared/types/feedItems.types';
+import {SystemTagId} from '@shared/types/tags.types';
 
 import {AppHeader} from '@src/components/AppHeader';
 import {Text} from '@src/components/atoms/Text';

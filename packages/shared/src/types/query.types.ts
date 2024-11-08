@@ -2,7 +2,7 @@ import {OrderByDirection, WhereFilterOp} from 'firebase/firestore';
 
 import {assertNever} from '@shared/lib/utils';
 
-import {FeedItem} from '@shared/types/feedItems';
+import {FeedItem} from '@shared/types/feedItems.types';
 
 export enum ViewType {
   Untriaged = 'UNTRIAGED',

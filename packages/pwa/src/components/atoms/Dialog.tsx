@@ -3,7 +3,7 @@ import {Cross2Icon} from '@radix-ui/react-icons';
 import * as React from 'react';
 import styled from 'styled-components';
 
-import {ThemeColor} from '@shared/types/theme';
+import {ThemeColor} from '@shared/types/theme.types';
 
 const Dialog = DialogPrimitive.Root;
 

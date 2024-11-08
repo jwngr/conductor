@@ -1,8 +1,8 @@
 import {assertNever} from '@shared/lib/utils';
 
-import {TriageStatus} from '@shared/types/feedItems';
-import {FilterOp, View, ViewType} from '@shared/types/query';
-import {SystemTagId} from '@shared/types/tags';
+import {TriageStatus} from '@shared/types/feedItems.types';
+import {FilterOp, View, ViewType} from '@shared/types/query.types';
+import {SystemTagId} from '@shared/types/tags.types';
 
 const ALL_VIEW_CONFIGS: Record<ViewType, View> = {
   [ViewType.Untriaged]: {

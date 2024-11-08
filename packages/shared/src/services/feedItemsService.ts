@@ -31,13 +31,13 @@ import {
   FeedItemSource,
   FeedItemType,
   TriageStatus,
-} from '@shared/types/feedItems';
-import {IconName} from '@shared/types/icons';
-import {ImportQueueItemId} from '@shared/types/importQueue';
-import {fromFilterOperator, ViewType} from '@shared/types/query';
-import {SystemTagId} from '@shared/types/tags';
-import {AuthStateChangedUnsubscribe, UserId} from '@shared/types/user';
-import {Consumer} from '@shared/types/utils';
+} from '@shared/types/feedItems.types';
+import {IconName} from '@shared/types/icons.types';
+import {ImportQueueItemId} from '@shared/types/importQueue.types';
+import {fromFilterOperator, ViewType} from '@shared/types/query.types';
+import {SystemTagId} from '@shared/types/tags.types';
+import {AuthStateChangedUnsubscribe, UserId} from '@shared/types/user.types';
+import {Consumer} from '@shared/types/utils.types';
 
 export class FeedItemsService {
   constructor(

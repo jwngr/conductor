@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import {FeedItem} from '@shared/types/feedItems';
+import {FeedItem} from '@shared/types/feedItems.types';
 
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Spacer} from '@src/components/atoms/Spacer';

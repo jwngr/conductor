@@ -2,7 +2,7 @@ import {useState} from 'react';
 
 import {feedItemsService} from '@shared/services/feedItemsService';
 
-import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems';
+import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems.types';
 
 import {useCurrentTab} from '@src/lib/tabs';
 

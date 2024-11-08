@@ -2,7 +2,7 @@ import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import * as React from 'react';
 import styled from 'styled-components';
 
-import {ThemeColor} from '@shared/types/theme';
+import {ThemeColor} from '@shared/types/theme.types';
 
 import {Text} from '@src/components/atoms/Text';
 

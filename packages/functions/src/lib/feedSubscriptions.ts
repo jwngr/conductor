@@ -1,7 +1,7 @@
 import {FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants';
 
-import {FeedSubscription} from '@shared/types/feedSubscriptions';
-import {UserId} from '@shared/types/user';
+import {FeedSubscription} from '@shared/types/feedSubscriptions.types';
+import {UserId} from '@shared/types/user.types';
 
 import {firestore} from '@src/lib/firebase';
 

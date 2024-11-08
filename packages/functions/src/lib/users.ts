@@ -1,6 +1,6 @@
 import {USERS_DB_COLLECTION} from '@shared/lib/constants';
 
-import {UserId} from '@shared/types/user';
+import {UserId} from '@shared/types/user.types';
 
 import {firestore} from '@src/lib/firebase';
 

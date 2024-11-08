@@ -2,8 +2,8 @@ import {useState} from 'react';
 
 import {feedItemsService} from '@shared/services/feedItemsService';
 
-import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems';
-import {ThemeColor} from '@shared/types/theme';
+import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems.types';
+import {ThemeColor} from '@shared/types/theme.types';
 
 import {
   Dialog,

@@ -1,6 +1,6 @@
 import {Urls} from '@shared/lib/urls';
 
-import {ViewType} from '@shared/types/query';
+import {ViewType} from '@shared/types/query.types';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';

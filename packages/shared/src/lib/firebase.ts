@@ -4,7 +4,7 @@ import {connectFirestoreEmulator, getFirestore} from 'firebase/firestore';
 import {connectFunctionsEmulator, getFunctions} from 'firebase/functions';
 import {connectStorageEmulator, getStorage} from 'firebase/storage';
 
-import {FirebaseConfig} from '@shared/types/firebase';
+import {FirebaseConfig} from '@shared/types/firebase.types';
 
 function validateEnvVar(name: string) {
   if (!import.meta.env[name]) {
