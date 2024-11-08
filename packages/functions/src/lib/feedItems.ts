@@ -4,7 +4,7 @@ import {FeedItem, FeedItemId, FeedItemType} from '@shared/types/feedItems.types'
 import {SystemTagId} from '@shared/types/tags.types';
 import {UserId} from '@shared/types/user.types';
 
-import {FieldValue, firestore, storageBucket} from '@src/lib/firebase';
+import {FieldValue, firestore, storageBucket} from '@src/lib/firebaseAdmin';
 
 import {batchDeleteFirestoreDocuments} from './batch';
 

@@ -38,6 +38,7 @@ const firebaseApp = initializeApp(firebaseConfig);
 export const auth = getAuth(firebaseApp);
 export const storage = getStorage(firebaseApp);
 export const firestore = getFirestore(firebaseApp);
+export const functions = getFunctions(firebaseApp);
 
 // Firebase emulator for local development is configured via an environment variable.
 if (import.meta.env.DEV && import.meta.env.VITE_FIREBASE_USE_EMULATOR === 'true') {
@@ -46,7 +47,6 @@ if (import.meta.env.DEV && import.meta.env.VITE_FIREBASE_USE_EMULATOR === 'true'
   const FIRESTORE_EMULATOR_PORT = 8080;
   const STORAGE_EMULATOR_PORT = 9199;
   const AUTH_EMULATOR_PORT = 9099;
-  const functions = getFunctions(firebaseApp);
   connectAuthEmulator(auth, `http://${FIREBASE_EMULATOR_HOST}:${AUTH_EMULATOR_PORT}`);
   connectStorageEmulator(storage, FIREBASE_EMULATOR_HOST, STORAGE_EMULATOR_PORT);
   connectFunctionsEmulator(functions, FIREBASE_EMULATOR_HOST, FUNCTIONS_EMULATOR_PORT);

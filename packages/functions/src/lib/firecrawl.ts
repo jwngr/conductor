@@ -2,7 +2,6 @@ import FirecrawlApp from '@mendable/firecrawl-js';
 import {defineString} from 'firebase-functions/params';
 import {onInit} from 'firebase-functions/v2/core';
 
-// Environment variables.
 const FIRECRAWL_API_KEY = defineString('FIRECRAWL_API_KEY');
 
 let firecrawlApp: FirecrawlApp;
