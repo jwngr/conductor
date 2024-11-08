@@ -1,6 +1,6 @@
 import type {DocumentReference} from 'firebase-admin/firestore';
 
-import {firestore} from '@src/lib/firebase';
+import {firestore} from '@src/lib/firebaseAdmin';
 
 const BATCH_DELETE_SIZE = 500;
 

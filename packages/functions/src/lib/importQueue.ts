@@ -4,7 +4,7 @@ import {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue.type
 import {UserId} from '@shared/types/user.types';
 
 import {batchDeleteFirestoreDocuments} from '@src/lib/batch';
-import {firestore} from '@src/lib/firebase';
+import {firestore} from '@src/lib/firebaseAdmin';
 
 import {
   saveMarkdownToStorage,

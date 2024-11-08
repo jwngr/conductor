@@ -76,7 +76,8 @@ export const App: React.FC = () => {
   return (
     <ThemeProvider theme={theme}>
       <TooltipProvider>
-        <BrowserRouter>
+        {/* Pass flags to silence console logs. */}
+        <BrowserRouter future={{v7_startTransition: true, v7_relativeSplatPath: true}}>
           <AllRoutes />
           <AppWideSubscriptions />
         </BrowserRouter>
