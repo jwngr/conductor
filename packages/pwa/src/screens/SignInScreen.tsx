@@ -4,9 +4,9 @@ import {useState} from 'react';
 import {auth} from '@shared/lib/firebase';
 import {logger} from '@shared/lib/logger';
 
-import {ThemeColor} from '@shared/types/theme';
-import {EmailAddress} from '@shared/types/user';
-import {Consumer} from '@shared/types/utils';
+import {ThemeColor} from '@shared/types/theme.types';
+import {EmailAddress} from '@shared/types/user.types';
+import {Consumer} from '@shared/types/utils.types';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Input} from '@src/components/atoms/Input';

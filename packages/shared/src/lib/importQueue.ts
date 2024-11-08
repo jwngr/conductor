@@ -1,8 +1,8 @@
 import {addDoc, CollectionReference, doc, getDoc, serverTimestamp} from 'firebase/firestore';
 
-import {FeedItemId} from '@shared/types/feedItems';
-import {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue';
-import {UserId} from '@shared/types/user';
+import {FeedItemId} from '@shared/types/feedItems.types';
+import {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue.types';
+import {UserId} from '@shared/types/user.types';
 
 // TODO: This is not used anywhere.
 export class ImportQueue {

@@ -6,7 +6,7 @@ import {onDocumentCreated} from 'firebase-functions/v2/firestore';
 
 import {IMPORT_QUEUE_DB_COLLECTION} from '@shared/lib/constants';
 
-import {ImportQueueItem} from '@shared/types/importQueue';
+import {ImportQueueItem} from '@shared/types/importQueue.types';
 
 import {deleteImportQueueItem, importFeedItem} from '@src/lib/importQueue';
 

@@ -7,8 +7,8 @@ import {
   AuthStateChangedCallback,
   LoggedInUser,
   makeLoggedInUserFromFirebaseUser,
-} from '@shared/types/user';
-import {Consumer} from '@shared/types/utils';
+} from '@shared/types/user.types';
+import {Consumer} from '@shared/types/utils.types';
 
 function createAuthService(): AuthService {
   let currentUser: LoggedInUser | null = null;

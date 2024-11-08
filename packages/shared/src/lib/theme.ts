@@ -1,4 +1,4 @@
-import {ThemeColor} from '@shared/types/theme';
+import {ThemeColor} from '@shared/types/theme.types';
 
 // Colors taken from Tailwind Stone theme: https://tailwindcss.com/docs/customizing-colors.
 const neutralColors = {

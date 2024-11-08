@@ -1,9 +1,9 @@
 import {FieldValue} from 'firebase/firestore';
 
-import {FeedSubscriptionId} from '@shared/types/feedSubscriptions';
-import {IconName} from '@shared/types/icons';
-import {TagId} from '@shared/types/tags';
-import {UserId} from '@shared/types/user';
+import {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
+import {IconName} from '@shared/types/icons.types';
+import {TagId} from '@shared/types/tags.types';
+import {UserId} from '@shared/types/user.types';
 
 export type FeedItemId = string;
 

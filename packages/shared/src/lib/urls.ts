@@ -1,9 +1,9 @@
 import {CustomIconType} from '@shared/lib/customIcons';
 import {assertNever} from '@shared/lib/utils';
 
-import {FeedItemId} from '@shared/types/feedItems';
-import {ViewType} from '@shared/types/query';
-import {NavItem} from '@shared/types/urls';
+import {FeedItemId} from '@shared/types/feedItems.types';
+import {ViewType} from '@shared/types/query.types';
+import {NavItem} from '@shared/types/urls.types';
 
 // TODO: Make URL validation more robust.
 export function isValidUrl(url: string): boolean {

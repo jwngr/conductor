@@ -8,8 +8,8 @@ import {
   getStarFeedItemActionInfo,
 } from '@shared/services/feedItemsService';
 
-import {FeedItemId, TriageStatus} from '@shared/types/feedItems';
-import {SystemTagId} from '@shared/types/tags';
+import {FeedItemId, TriageStatus} from '@shared/types/feedItems.types';
+import {SystemTagId} from '@shared/types/tags.types';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {FlexRow} from '@src/components/atoms/Flex';

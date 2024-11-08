@@ -2,8 +2,8 @@ import {useEffect, useState} from 'react';
 
 import {feedItemsService} from '@shared/services/feedItemsService';
 
-import {FeedItem, FeedItemId} from '@shared/types/feedItems';
-import {ViewType} from '@shared/types/query';
+import {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
+import {ViewType} from '@shared/types/query.types';
 
 import {useLoggedInUser} from '@src/lib/users';
 

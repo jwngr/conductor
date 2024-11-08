@@ -1,7 +1,7 @@
 import {FieldValue} from 'firebase/firestore';
 
-import {FeedItemId} from '@shared/types/feedItems';
-import {UserId} from '@shared/types/user';
+import {FeedItemId} from '@shared/types/feedItems.types';
+import {UserId} from '@shared/types/user.types';
 
 export type ImportQueueItemId = string;
 

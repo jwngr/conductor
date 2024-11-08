@@ -1,7 +1,7 @@
 import * as React from 'react';
 import styled from 'styled-components';
 
-import {ThemeColor} from '@shared/types/theme';
+import {ThemeColor} from '@shared/types/theme.types';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {}

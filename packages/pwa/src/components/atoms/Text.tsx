@@ -3,7 +3,7 @@ import styled, {css} from 'styled-components';
 
 import {assertNever} from '@shared/lib/utils';
 
-import {ThemeColor} from '@shared/types/theme';
+import {ThemeColor} from '@shared/types/theme.types';
 
 type FontWeight = 'normal' | 'bold' | '900';
 const DEFAULT_FONT_WEIGHT = 'normal';

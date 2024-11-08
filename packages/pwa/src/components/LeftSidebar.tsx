@@ -6,8 +6,8 @@ import {CustomIcon, CustomIconType} from '@shared/lib/customIcons';
 import {Urls} from '@shared/lib/urls';
 import {assertNever} from '@shared/lib/utils';
 
-import {ThemeColor} from '@shared/types/theme';
-import {NavItem} from '@shared/types/urls';
+import {ThemeColor} from '@shared/types/theme.types';
+import {NavItem} from '@shared/types/urls.types';
 
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';

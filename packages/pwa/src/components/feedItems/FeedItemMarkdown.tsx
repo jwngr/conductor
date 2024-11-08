@@ -2,7 +2,7 @@ import React from 'react';
 
 import {logger} from '@shared/lib/logger';
 
-import {FeedItem} from '@shared/types/feedItems';
+import {FeedItem} from '@shared/types/feedItems.types';
 
 import {Text} from '@src/components/atoms/Text';
 import {Markdown} from '@src/components/Markdown';

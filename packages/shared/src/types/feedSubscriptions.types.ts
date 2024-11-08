@@ -1,6 +1,6 @@
 import {FieldValue} from 'firebase/firestore';
 
-import {UserId} from '@shared/types/user';
+import {UserId} from '@shared/types/user.types';
 
 export type FeedSubscriptionId = string;
 

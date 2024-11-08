@@ -3,9 +3,9 @@ import styled from 'styled-components';
 
 import {logger} from '@shared/lib/logger';
 
-import {FeedItem} from '@shared/types/feedItems';
-import {ViewType} from '@shared/types/query';
-import {ThemeColor} from '@shared/types/theme';
+import {FeedItem} from '@shared/types/feedItems.types';
+import {ViewType} from '@shared/types/query.types';
+import {ThemeColor} from '@shared/types/theme.types';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';

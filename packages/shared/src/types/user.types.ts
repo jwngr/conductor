@@ -1,6 +1,6 @@
 import {User as FirebaseUser} from 'firebase/auth';
 
-import {Consumer, Task} from '@shared/types/utils';
+import {Consumer, Task} from '@shared/types/utils.types';
 
 // TODO: Make usage of these more type safe.
 export type UserId = string;
