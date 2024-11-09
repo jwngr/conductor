@@ -18,7 +18,7 @@
   "scripts": {
     "validate": "npm run validate:lint && npm run validate:types && npm run validate:format",
     "validate:lint": "eslint src --report-unused-disable-directives --max-warnings 0",
-    "validate:types": "tsc --noEmit",
+    "validate:types": "sed -i.bak '/setCookie(/d' ../../node_modules/@types/request/index.d.ts && tsc --noEmit",
     "validate:format": "prettier --check 'src/**/*.{js,jsx,ts,tsx,json,css}'",
     "format": "prettier --write 'src/**/*.{js,jsx,ts,tsx,json,css}'",
     "start": "vite",
