@@ -9,8 +9,6 @@ runs:
     - uses: actions/setup-node@v4
       with:
         node-version: 22
-        cache: 'yarn'
-        cache-dependency-path: './yarn.lock'
     - name: Enable corepack
       shell: bash
       run: corepack enable
@@ -23,4 +21,4 @@ runs:
     - name: Install Dependencies
       if: inputs.install-deps == 'true'
       shell: bash
-      run: yarn install --immutable --immutable-cache
+      run: yarn install --immutable
