@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'storage.rules'
+      - '.github/actions/setup-firebase-deploy/**'
       - '.github/workflows/storage-rules-pull-request.yml'
 permissions:
   checks: write
