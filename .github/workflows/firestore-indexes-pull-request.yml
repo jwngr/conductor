@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'firestore.indexes.json'
+      - '.github/workflows/firestore-indexes-pull-request.yml'
 permissions:
   checks: write
   contents: read
@@ -13,12 +14,8 @@ jobs:
     environment: staging
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: 'yarn'
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
+      - name: CI setup action for Firebase deploy
+        uses: ./.github/actions/setup-firebase-deploy
       - name: Deploy Firestore indexes
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
