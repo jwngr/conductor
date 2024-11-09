@@ -30,8 +30,7 @@
   "functions": [
     {
       "source": "packages/functions",
-      "ignore": ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log", "*.local"],
-      "predeploy": ["yarn run lint:functions", "yarn run build:functions"]
+      "ignore": ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log", "*.local"]
     }
   ]
 }

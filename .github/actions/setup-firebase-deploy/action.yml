@@ -1,0 +1,19 @@
+name: Setup Node and install Firebase CLI
+inputs:
+  install-deps:
+    required: false
+    default: 'false'
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
+        cache: 'yarn'
+    - name: Install Firebase CLI
+      shell: bash
+      run: yarn global add firebase-tools
+    - name: Install Dependencies
+      if: inputs.install-deps == 'true'
+      shell: bash
+      run: yarn install
