@@ -20,7 +20,7 @@ async function request<T extends object>(
   const queryString = params ? '?' + new URLSearchParams(params).toString() : '';
 
   return asyncTryWithErrorMessage<SuccessResponse<T> | ErrorResponse>({
-    errorMessagePrefix: 'Failed to fetch request',
+    errorMessagePrefix: 'Error fetching request',
     onError: (error) => makeErrorResponse(error, 500),
     asyncFn: async () => {
       const rawResponse = await fetch(url + queryString, {
@@ -41,7 +41,7 @@ async function request<T extends object>(
       }
 
       return asyncTryWithErrorMessage<SuccessResponse<T> | ErrorResponse>({
-        errorMessagePrefix: 'Failed to parse response as JSON',
+        errorMessagePrefix: 'Error parsing JSON response',
         onError: (error) => makeErrorResponse(error, 500),
         asyncFn: async () => {
           const jsonResponse = await rawResponse.json();
