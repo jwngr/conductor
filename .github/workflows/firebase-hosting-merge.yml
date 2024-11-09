@@ -4,8 +4,7 @@ on:
     branches:
       - master
     paths:
-      - 'packages/pwa/**'
-      - 'packages/shared/**'
+      - 'packages/{pwa,shared}/**'
       - '.firebaserc'
       - '.prettierrc'
       - 'eslint.config.mjs'
@@ -13,6 +12,7 @@ on:
       - 'package.json'
       - 'tsconfig.json'
       - 'yarn.lock'
+      - '.github/actions/setup-firebase-deploy/**'
       - '.github/workflows/firebase-hosting-merge.yml'
 jobs:
   deploy_hosting_prod:

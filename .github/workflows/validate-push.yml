@@ -1,7 +1,10 @@
-name: Run CI on push
+name: Run staging validate on push
 on: [push]
 jobs:
-  ci-push:
+  validate_stag:
+    strategy:
+      matrix:
+        task: [lint, types, format]
     runs-on: ubuntu-latest
     environment: staging
     steps:

@@ -5,6 +5,7 @@ on:
       - master
     paths:
       - 'storage.rules'
+      - '.github/actions/setup-firebase-deploy/**'
       - '.github/workflows/storage-rules-merge.yml'
 jobs:
   deploy_storage_rules_prod:

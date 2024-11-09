@@ -2,8 +2,7 @@ name: Deploy staging Functions on PR
 on:
   pull_request:
     paths:
-      - 'packages/functions/**'
-      - 'packages/shared/**'
+      - 'packages/{functions,shared}/**'
       - '.firebaserc'
       - '.prettierrc'
       - 'eslint.config.mjs'
@@ -11,6 +10,7 @@ on:
       - 'package.json'
       - 'tsconfig.json'
       - 'yarn.lock'
+      - '.github/actions/setup-firebase-deploy/**'
       - '.github/workflows/firebase-functions-pull-request.yml'
 permissions:
   checks: write
