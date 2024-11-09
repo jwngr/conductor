@@ -9,14 +9,25 @@ export interface RequestOptions {
   // TODO: Add timeouts and retries.
 }
 
-interface SuccessResponse<T extends object> {
+export interface SuccessResponse<T extends object> {
   readonly data: T;
   readonly statusCode: number;
 }
 
-interface ErrorResponse {
-  readonly error: string;
+export interface ErrorResponse {
+  readonly error: Error;
   readonly statusCode: number;
+}
+
+export function makeSuccessResponse<T extends object>(
+  data: T,
+  statusCode: number
+): SuccessResponse<T> {
+  return {data, statusCode};
+}
+
+export function makeErrorResponse(error: Error, statusCode: number): ErrorResponse {
+  return {error, statusCode};
 }
 
 export type RequestResponse<T extends object> = SuccessResponse<T> | ErrorResponse;
