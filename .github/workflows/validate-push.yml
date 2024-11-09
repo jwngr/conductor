@@ -8,9 +8,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: CI setup for yarn install
         uses: ./.github/actions/setup-yarn-install
+      - name: Validate format
+        run: yarn run validate:format
       - name: Validate lint
         run: yarn run validate:lint
       - name: Validate types
         run: yarn run validate:types
-      - name: Validate format
-        run: yarn run validate:format

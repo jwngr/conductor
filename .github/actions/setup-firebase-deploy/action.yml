@@ -17,7 +17,7 @@ runs:
       run: corepack prepare yarn@4 --activate
     - name: Install Firebase CLI
       shell: bash
-      run: yarn global add firebase-tools
+      run: npm install -g firebase-tools
     - name: Install Dependencies
       if: inputs.install-deps == 'true'
       shell: bash
