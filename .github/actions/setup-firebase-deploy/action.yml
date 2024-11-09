@@ -21,4 +21,4 @@ runs:
     - name: Install Dependencies
       if: inputs.install-deps == 'true'
       shell: bash
-      run: yarn install --immutable --immutable-cache --non-interactive
+      run: yarn install --immutable --immutable-cache
