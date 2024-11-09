@@ -1,14 +1,15 @@
-name: Run CI on push
+name: Run validate on push
 on: [push]
 jobs:
-  ci-push:
+  validate:
+    strategy:
+      matrix:
+        task: [lint, types, format]
     runs-on: ubuntu-latest
     environment: staging
     steps:
       - uses: actions/checkout@v4
       - name: CI setup for yarn install
         uses: ./.github/actions/setup-yarn-install
-      - name: Validate
-        run: yarn run validate
-      - name: Build
-        run: yarn run build
+      - name: Validate ${{ matrix.task }}
+        run: yarn run validate:${{ matrix.task }}
