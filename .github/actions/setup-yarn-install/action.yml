@@ -6,6 +6,7 @@ runs:
       with:
         node-version: 22
         cache: 'yarn'
+        cache-dependency-path: './yarn.lock'
     - name: Install dependencies
       shell: bash
       run: yarn install

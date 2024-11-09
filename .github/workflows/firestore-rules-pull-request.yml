@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'firestore.rules'
+      - '.github/actions/setup-firebase-deploy/**'
       - '.github/workflows/firestore-rules-pull-request.yml'
 permissions:
   checks: write
