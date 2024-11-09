@@ -138,8 +138,8 @@ The extension works in Chromium-based browsers.
 
 CORS headers are managed in [`cors.json`](/cors.json). To update them, run:
 
-    ```bash
-    $ gsutil cors set cors.json gs://<FIREBASE_PROJECT_ID>.appspot.com
-    ```
+```bash
+$ gsutil cors set cors.json gs://<FIREBASE_PROJECT_ID>.appspot.com
+```
 
 Changes should take effect within a few seconds.
