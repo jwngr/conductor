@@ -42,7 +42,7 @@ const AllRoutes: React.FC = () => {
         />
       ))}
       <Route
-        path={Urls.forFeedItem(':feedItemId')}
+        path="/items/:feedItemId"
         element={
           <RequireLoggedInUser>
             <FeedItemScreen />

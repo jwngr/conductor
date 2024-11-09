@@ -1,9 +1,32 @@
+import {makeErrorResult, makeSuccessResult, Result} from '@shared/types/result.types';
+
 export enum TagType {
   User = 'USER',
   System = 'SYSTEM',
 }
 
-export type UserTagId = string;
+/**
+ * Strongly-typed type for a user tag's unique identifier. Prefer this over plain strings.
+ */
+export type UserTagId = string & {readonly __brand: 'UserTagIdBrand'};
+
+/**
+ * Checks if a value is a valid `UserTagId`.
+ */
+export function isUserTagId(maybeUserTagId: unknown): maybeUserTagId is UserTagId {
+  return typeof maybeUserTagId === 'string' && maybeUserTagId.length > 0;
+}
+
+/**
+ * Creates a `UserTagId` from a plain string. Returns an error if the string is not a valid
+ * `UserTagId`.
+ */
+export function createUserTagId(maybeUserTagId: string): Result<UserTagId> {
+  if (!isUserTagId(maybeUserTagId)) {
+    return makeErrorResult(new Error(`Invalid user tag ID: "${maybeUserTagId}"`));
+  }
+  return makeSuccessResult(maybeUserTagId);
+}
 
 export enum SystemTagId {
   Unread = 'UNREAD',

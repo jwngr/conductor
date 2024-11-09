@@ -1,3 +1,5 @@
+import {DocumentSnapshot, QuerySnapshot} from 'firebase-admin/firestore';
+
 import {IMPORT_QUEUE_DB_COLLECTION} from '@shared/lib/constants';
 
 import {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue.types';
@@ -55,10 +57,12 @@ export async function deleteImportQueueItem(importQueueItemId: ImportQueueItemId
  * Hard-deletes all import queue items associated with a user.
  */
 export async function deleteImportQueueDocsForUser(userId: UserId): Promise<void> {
-  const userImportQueueItemDocs = await firestore
+  const userImportQueueItemDocs = (await firestore
     .collection(IMPORT_QUEUE_DB_COLLECTION)
     .where('userId', '==', userId)
-    .get();
+    .get()) as QuerySnapshot<ImportQueueItem>;
 
-  await batchDeleteFirestoreDocuments(userImportQueueItemDocs.docs.map((doc) => doc.ref));
+  await batchDeleteFirestoreDocuments(
+    userImportQueueItemDocs.docs.map((doc: DocumentSnapshot) => doc.ref)
+  );
 }

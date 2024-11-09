@@ -2,13 +2,31 @@ import {FieldValue} from 'firebase/firestore';
 
 import {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
 import {IconName} from '@shared/types/icons.types';
+import {makeErrorResult, makeSuccessResult, Result} from '@shared/types/result.types';
 import {TagId} from '@shared/types/tags.types';
 import {UserId} from '@shared/types/user.types';
 
-export type FeedItemId = string;
+/**
+ * Strongly-typed type for a feed item's unique identifier. Prefer this over plain strings.
+ */
+export type FeedItemId = string & {readonly __brand: 'FeedItemIdBrand'};
 
-export function isFeedItemId(feedItemId: FeedItemId | undefined): feedItemId is FeedItemId {
-  return typeof feedItemId === 'string' && feedItemId.length > 0;
+/**
+ * Checks if a value is a valid `FeedItemId`.
+ */
+export function isFeedItemId(maybeFeedItemId: unknown): maybeFeedItemId is FeedItemId {
+  return typeof maybeFeedItemId === 'string' && maybeFeedItemId.length > 0;
+}
+
+/**
+ * Converts a plain string into a strongly-typed `FeedItemId`. Returns an error if the string is
+ * not a valid `FeedItemId`.
+ */
+export function createFeedItemId(maybeFeedItemId: string): Result<FeedItemId> {
+  if (!isFeedItemId(maybeFeedItemId)) {
+    return makeErrorResult(new Error(`Invalid feed item ID: "${maybeFeedItemId}"`));
+  }
+  return makeSuccessResult(maybeFeedItemId);
 }
 
 // TODO: Do I want to persist this or just compute it on the client?
@@ -100,7 +118,7 @@ interface BaseFeedItem {
    * TODO: Consider abstracting this strange type way with a Firestore converter.
    * See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
    */
-  readonly tagIds: Record<TagId, true | FieldValue>;
+  readonly tagIds: Partial<Record<TagId, true | FieldValue>>;
 
   // Timestamps.
   readonly createdTime: FieldValue;
