@@ -4,8 +4,7 @@ on:
     branches:
       - master
     paths:
-      - 'packages/functions/**'
-      - 'packages/shared/**'
+      - 'packages/{functions,shared}/**'
       - '.firebaserc'
       - '.prettierrc'
       - 'eslint.config.mjs'
@@ -13,6 +12,7 @@ on:
       - 'package.json'
       - 'tsconfig.json'
       - 'yarn.lock'
+      - '.github/actions/setup-firebase-deploy/**'
       - '.github/workflows/firebase-functions-merge.yml'
 jobs:
   deploy_functions_prod:

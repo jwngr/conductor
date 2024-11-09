@@ -5,6 +5,7 @@ on:
       - master
     paths:
       - 'firestore.rules'
+      - '.github/actions/setup-firebase-deploy/**'
       - '.github/workflows/firestore-rules-merge.yml'
 jobs:
   deploy_firestore_rules_prod:
