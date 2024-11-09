@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'firestore.rules'
+      - '.github/workflows/firestore-rules-pull-request.yml'
 permissions:
   checks: write
   contents: read
@@ -13,7 +14,8 @@ jobs:
     environment: staging
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-firebase-deploy
+      - name: CI setup action for Firebase deploy
+        uses: ./.github/actions/setup-firebase-deploy
       - name: Deploy Firestore rules
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

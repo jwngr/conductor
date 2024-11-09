@@ -13,15 +13,19 @@ on:
       - 'package.json'
       - 'tsconfig.json'
       - 'yarn.lock'
+      - '.github/workflows/firebase-functions-merge.yml'
 jobs:
   deploy_functions_prod:
     runs-on: ubuntu-latest
     environment: production
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-firebase-deploy
+      - name: CI setup action for Firebase deploy
+        uses: ./.github/actions/setup-firebase-deploy
         with:
           install-deps: 'true'
+      - name: Build functions
+        run: yarn run build:functions
       - name: Create .env file
         working-directory: packages/functions
         env:

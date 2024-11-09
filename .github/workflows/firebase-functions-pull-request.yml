@@ -11,6 +11,7 @@ on:
       - 'package.json'
       - 'tsconfig.json'
       - 'yarn.lock'
+      - '.github/workflows/firebase-functions-pull-request.yml'
 permissions:
   checks: write
   contents: read
@@ -21,9 +22,12 @@ jobs:
     environment: staging
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-firebase-deploy
+      - name: CI setup action for Firebase deploy
+        uses: ./.github/actions/setup-firebase-deploy
         with:
           install-deps: 'true'
+      - name: Build functions
+        run: yarn run build:functions
       - name: Create .env file
         working-directory: packages/functions
         env:

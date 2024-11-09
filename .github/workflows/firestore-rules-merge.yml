@@ -5,13 +5,15 @@ on:
       - master
     paths:
       - 'firestore.rules'
+      - '.github/workflows/firestore-rules-merge.yml'
 jobs:
   deploy_firestore_rules_prod:
     runs-on: ubuntu-latest
     environment: production
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-firebase-deploy
+      - name: CI setup action for Firebase deploy
+        uses: ./.github/actions/setup-firebase-deploy
       - name: Deploy Firestore rules
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
