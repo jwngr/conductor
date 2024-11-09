@@ -27,7 +27,10 @@
   },
   "scripts": {
     "analyze": "source-map-explorer build/static/js/*",
-    "lint": "prettier --check 'src/**/*.{js,jsx,ts,tsx,json,css,svg}' && echo 'Running ESLint...' && eslint src --report-unused-disable-directives --max-warnings 0 && echo 'All files pass linting!'",
+    "validate": "npm run validate:lint && npm run validate:types && npm run validate:format",
+    "validate:lint": "eslint src --report-unused-disable-directives --max-warnings 0",
+    "validate:types": "tsc --noEmit",
+    "validate:format": "prettier --check 'src/**/*.{js,jsx,ts,tsx,json,css,svg}'",
     "format": "prettier --write 'src/**/*.{js,jsx,ts,tsx,json,css,svg}'",
     "start": "vite",
     "clean": "rm -rf dist/",

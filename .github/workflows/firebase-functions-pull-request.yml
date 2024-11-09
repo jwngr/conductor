@@ -20,14 +20,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: staging
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/setup-firebase-deploy
         with:
-          node-version: 22
-          cache: 'yarn'
-      - run: yarn install
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
+          install-deps: 'true'
       - name: Create .env file
         working-directory: packages/functions
         env:

@@ -17,7 +17,10 @@
     "esbuild": "^0.24.0"
   },
   "scripts": {
-    "lint": "prettier --check 'src/**/*.{js,jsx,ts,tsx,json,css}' && echo 'Running ESLint...' && eslint src --report-unused-disable-directives --max-warnings 0 && echo 'All files pass linting!'",
+    "validate": "npm run validate:lint && npm run validate:types && npm run validate:format",
+    "validate:lint": "eslint src --report-unused-disable-directives --max-warnings 0",
+    "validate:types": "tsc --noEmit",
+    "validate:format": "prettier --check 'src/**/*.{js,ts,json}'",
     "format": "prettier --write 'src/**/*.{js,ts,json}'",
     "clean": "rm -rf dist/",
     "ci": "rm -rf node_modules/ && npm install",

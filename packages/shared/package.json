@@ -9,7 +9,10 @@
     "vite-plugin-svgr": "^4.3.0"
   },
   "scripts": {
-    "lint": "prettier --check 'src/**/*.{js,ts,json,svg}' && echo 'Running ESLint...' && eslint src --report-unused-disable-directives --max-warnings 0 && echo 'All files pass linting!' && echo 'Running tsc...' && sed -i.bak '/setCookie(/d' ../../node_modules/@types/request/index.d.ts && tsc && echo 'All files pass type checking!'",
+    "validate": "npm run validate:lint && npm run validate:types && npm run validate:format",
+    "validate:lint": "eslint src --report-unused-disable-directives --max-warnings 0",
+    "validate:types": "sed -i.bak '/setCookie(/d' ../../node_modules/@types/request/index.d.ts && tsc --noEmit",
+    "validate:format": "prettier --check 'src/**/*.{js,ts,json,svg}'",
     "format": "prettier --write 'src/**/*.{js,ts,json,svg}'",
     "clean": "rm -rf dist/ tsconfig.tsbuildinfo",
     "ci": "rm -rf node_modules/ && npm install",
