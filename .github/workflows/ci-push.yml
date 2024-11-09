@@ -6,8 +6,8 @@ jobs:
     environment: staging
     steps:
       - uses: actions/checkout@v4
-      - name: CI setup for npm install
-        uses: ./.github/actions/setup-npm-install
+      - name: CI setup for yarn install
+        uses: ./.github/actions/setup-yarn-install
       - name: Validate
         run: yarn run validate
       - name: Build

@@ -6,8 +6,8 @@
   "references": [{"path": "../shared"}],
 
   "compilerOptions": {
-    // Scripts are run via tsx, not compiled.
-    "noEmit": true
+    // Required since this is a TypeScript referenced project.
+    "composite": true
 
     // TODO: Get import aliases working by adding some build step.
     // Import aliases.

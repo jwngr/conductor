@@ -9,13 +9,13 @@
     "vite-plugin-svgr": "^4.3.0"
   },
   "scripts": {
-    "validate": "npm run validate:lint && npm run validate:types && npm run validate:format",
+    "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",
     "validate:lint": "eslint src --report-unused-disable-directives --max-warnings 0",
     "validate:types": "tsc --noEmit",
     "validate:format": "prettier --check 'src/**/*.{js,ts,json,svg}'",
     "format": "prettier --write 'src/**/*.{js,ts,json,svg}'",
     "clean": "rm -rf dist/ tsconfig.tsbuildinfo",
-    "ci": "rm -rf node_modules/ && npm install",
-    "build": "npm run clean && tsc && vite build"
+    "ci": "rm -rf node_modules/ && yarn install",
+    "build": "vite build && tsc"
   }
 }
