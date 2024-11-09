@@ -10,7 +10,7 @@ on:
       - 'package.json'
       - 'tsconfig.json'
       - 'yarn.lock'
-      - '.github/actions/setup-firebase-deploy/**'
+      - '.github/actions/setup-workflow/**'
       - '.github/workflows/firebase-functions-pull-request.yml'
 permissions:
   checks: write
@@ -23,9 +23,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: CI setup action for Firebase deploy
-        uses: ./.github/actions/setup-firebase-deploy
+        uses: ./.github/actions/setup-workflow
         with:
           install-deps: 'true'
+          install-firebase: 'true'
       - name: Validate functions
         run: yarn run validate:functions
       - name: Build functions

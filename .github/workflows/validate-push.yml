@@ -7,7 +7,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: CI setup for yarn install
-        uses: ./.github/actions/setup-yarn-install
+        uses: ./.github/actions/setup-workflow
+        with:
+          install-deps: 'true'
       - name: Validate format
         run: yarn run validate:format
       - name: Validate lint

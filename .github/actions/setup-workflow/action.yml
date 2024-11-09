@@ -1,6 +1,9 @@
-name: Setup Node and install Firebase CLI
+name: Shared GitHub action setup
 inputs:
   install-deps:
+    required: false
+    default: 'false'
+  install-firebase:
     required: false
     default: 'false'
 runs:
@@ -16,9 +19,10 @@ runs:
       shell: bash
       run: corepack prepare yarn@4 --activate
     - name: Install Firebase CLI
+      if: inputs.install-firebase == 'true'
       shell: bash
       run: npm install -g firebase-tools
     - name: Install Dependencies
       if: inputs.install-deps == 'true'
       shell: bash
-      run: yarn install --immutable
+      run: yarn install

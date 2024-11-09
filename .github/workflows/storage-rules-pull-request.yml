@@ -3,7 +3,7 @@ on:
   pull_request:
     paths:
       - 'storage.rules'
-      - '.github/actions/setup-firebase-deploy/**'
+      - '.github/actions/setup-workflow/**'
       - '.github/workflows/storage-rules-pull-request.yml'
 permissions:
   checks: write
@@ -16,9 +16,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: CI setup action for Firebase deploy
-        uses: ./.github/actions/setup-firebase-deploy
+        uses: ./.github/actions/setup-workflow
         with:
           install-deps: 'true' # TODO: This is not really needed, but CI fails without it.
+          install-firebase: 'true'
       - name: Deploy Cloud Storage rules
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
