@@ -18,7 +18,7 @@
     "validate:format": "prettier --check 'src/**/*.{js,ts,json}'",
     "format": "prettier --write 'src/**/*.{js,ts,json}'",
     "ci": "rm -rf node_modules/ && yarn install",
-    "build": "# scripts are run via tsx, not compiled, so there's nothing to build",
-    "clean": "# scripts are run via tsx, not compiled, so there's nothing to clean"
+    "build": "exit 0",
+    "clean": "exit 0"
   }
 }
