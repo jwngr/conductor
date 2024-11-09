@@ -12,7 +12,7 @@ runs:
         cache: 'yarn'
     - name: Install Firebase CLI
       shell: bash
-      run: yarn install -g firebase-tools
+      run: yarn global add firebase-tools
     - name: Install Dependencies
       if: inputs.install-deps == 'true'
       shell: bash
