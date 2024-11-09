@@ -1,6 +1,7 @@
 import {DocumentSnapshot, QuerySnapshot} from 'firebase-admin/firestore';
 
 import {FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants';
+import {batchPromises} from '@shared/lib/utils';
 
 import {FeedSubscription} from '@shared/types/feedSubscriptions.types';
 import {UserId} from '@shared/types/user.types';
@@ -27,15 +28,17 @@ export async function deleteFeedSubscriptionsDocsForUser(userId: UserId): Promis
  * Unsubscribes from all feed subscriptions associated with a user.
  */
 export async function unsubscribeFromFeedSubscriptionsForUser(userId: UserId): Promise<void> {
-  const userFeedSubscriptionDocs = await firestore
+  const userFeedSubscriptionDocs = (await firestore
     .collection(FEED_SUBSCRIPTIONS_DB_COLLECTION)
     .where('userId', '==', userId)
-    .get();
+    .get()) as QuerySnapshot<FeedSubscription>;
 
-  // TODO: Batch this instead of doing it one at a time.
-  for (const doc of userFeedSubscriptionDocs.docs) {
-    await unsubscribeFromFeedSubscription(doc.data() as FeedSubscription);
-  }
+  const allUnsubscribePromises = userFeedSubscriptionDocs.docs.map(
+    (doc: DocumentSnapshot<FeedSubscription>) =>
+      unsubscribeFromFeedSubscription(doc.data() as FeedSubscription)
+  );
+
+  await batchPromises(allUnsubscribePromises, 3);
 }
 
 /**
