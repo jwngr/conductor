@@ -11,7 +11,7 @@ import {
 import {Consumer} from '@shared/types/utils.types';
 
 function createAuthService(): AuthService {
-  const currentUser: LoggedInUser | null = null;
+  let currentUser: LoggedInUser | null = null;
   const subscribers = new Set<{
     readonly successCallback: AuthStateChangedCallback;
     readonly errorCallback: Consumer<Error>;
@@ -20,21 +20,32 @@ function createAuthService(): AuthService {
   onAuthStateChangedFirebase(
     auth,
     (firebaseUser) => {
-      if (!firebaseUser) return null;
+      // Fire subscriber's callbacks with null if the user is not logged in.
+      if (firebaseUser === null) {
+        currentUser = null;
+        subscribers.forEach((cb) => cb.successCallback(null));
+        return;
+      }
+
+      // Validate a logged in user can be created from the Firebase user. Fire subscriber's
+      // callbacks with an error if we cannot.
       const loggedInUserResult = makeLoggedInUserFromFirebaseUser(firebaseUser);
-      // Fire subscriber's callbacks based on the result. This should almost always be successful,
-      // but due to strict type safety, we need to check the result from Firebase.
-      if (loggedInUserResult.success) {
-        subscribers.forEach((cb) => cb.successCallback(loggedInUserResult.value));
-      } else {
+      if (!loggedInUserResult.success) {
+        currentUser = null;
         const betterError = new Error('Failed to create logged in user from Firebase user', {
           cause: loggedInUserResult.error,
         });
         subscribers.forEach((cb) => cb.errorCallback(betterError));
+        return;
       }
+
+      // Otherwise, fire subscriber's success callbacks with the logged in user.
+      currentUser = loggedInUserResult.value;
+      subscribers.forEach((cb) => cb.successCallback(loggedInUserResult.value));
     },
     (error) => {
       // Fire each subscriber's error callback when auth state errors occur in Firebase.
+      currentUser = null;
       subscribers.forEach((cb) => cb.errorCallback(error));
     }
   );
