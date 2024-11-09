@@ -10,11 +10,12 @@
   "scripts": {
     "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",
     "validate:lint": "eslint src --report-unused-disable-directives --max-warnings 0",
-    "validate:types": "sed -i.bak '/setCookie(/d' ../../node_modules/@types/request/index.d.ts && tsc --noEmit",
+    "validate:types": "npm run hack-type && tsc --noEmit",
     "validate:format": "prettier --check 'src/**/*.{js,ts,json,svg}'",
     "format": "prettier --write 'src/**/*.{js,ts,json,svg}'",
     "clean": "rm -rf dist/ tsconfig.tsbuildinfo",
     "ci": "rm -rf node_modules/ && yarn install",
-    "build": "vite build && sed -i.bak '/setCookie(/d' ../../node_modules/@types/request/index.d.ts && tsc"
+    "build": "vite build && yarn run hack-type && tsc",
+    "hack-type": "sed -i.bak '/setCookie(/d' ../../node_modules/@types/request/index.d.ts"
   }
 }

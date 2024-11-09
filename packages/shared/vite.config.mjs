@@ -12,7 +12,6 @@ export default defineConfig({
   build: {
     lib: {
       entry: resolve(__dirname, './src/index.ts'),
-      formats: ['es', 'cjs'],
     },
     // This configuration is required to output `/dist` with the same hierarchy as `/src`.
     rollupOptions: {
