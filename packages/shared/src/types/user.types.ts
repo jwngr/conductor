@@ -89,7 +89,8 @@ export type AuthStateChangedCallback = Consumer<LoggedInUser | null>;
 export type AuthStateChangedUnsubscribe = Task;
 
 /**
- * Service for interacting with authentication state.
+ * Service for interacting with authentication state. It contains limited profile information about
+ * the currently logged in user.
  */
 export interface AuthService {
   getLoggedInUser: () => LoggedInUser | null;
