@@ -27,6 +27,8 @@ jobs:
         uses: ./.github/actions/setup-firebase-deploy
         with:
           install-deps: 'true'
+      - name: Validate PWA
+        run: yarn run validate:pwa
       - name: Build PWA
         run: yarn run build:pwa
         env:
