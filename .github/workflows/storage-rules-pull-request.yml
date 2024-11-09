@@ -17,6 +17,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: CI setup action for Firebase deploy
         uses: ./.github/actions/setup-firebase-deploy
+        with:
+          install-deps: 'true' # TODO: This is not really needed, but CI fails without it.
       - name: Deploy Cloud Storage rules
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
