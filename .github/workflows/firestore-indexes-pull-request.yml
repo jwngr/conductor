@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: staging
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-firebase-deploy
       - name: Deploy Firestore indexes
         env:

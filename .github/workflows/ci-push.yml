@@ -5,6 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: staging
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-npm-install
       - name: Validate
         run: yarn run validate
