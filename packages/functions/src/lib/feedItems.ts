@@ -1,3 +1,5 @@
+import {DocumentSnapshot, QuerySnapshot} from 'firebase-admin/firestore';
+
 import {FEED_ITEMS_DB_COLLECTION, FEED_ITEMS_STORAGE_COLLECTION} from '@shared/lib/constants';
 
 import {FeedItem, FeedItemId, FeedItemType} from '@shared/types/feedItems.types';
@@ -49,12 +51,14 @@ export async function updateImportedFeedItemInFirestore(
  * Hard-deletes all feed items associated with a user.
  */
 export async function deleteFeedItemDocsForUsers(userId: UserId): Promise<void> {
-  const userFeedItemDocs = await firestore
+  const userFeedItemDocs = (await firestore
     .collection(FEED_ITEMS_DB_COLLECTION)
     .where('userId', '==', userId)
-    .get();
+    .get()) as QuerySnapshot<FeedItem>;
 
-  await batchDeleteFirestoreDocuments(userFeedItemDocs.docs.map((doc) => doc.ref));
+  await batchDeleteFirestoreDocuments(
+    userFeedItemDocs.docs.map((doc: DocumentSnapshot) => doc.ref)
+  );
 }
 
 /**

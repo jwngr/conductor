@@ -20,12 +20,32 @@ function createAuthService(): AuthService {
   onAuthStateChangedFirebase(
     auth,
     (firebaseUser) => {
-      // Fire each subscriber's success callback when the user changes in Firebase.
-      currentUser = firebaseUser ? makeLoggedInUserFromFirebaseUser(firebaseUser) : null;
-      subscribers.forEach((cb) => cb.successCallback(currentUser));
+      // Fire subscriber's callbacks with null if the user is not logged in.
+      if (firebaseUser === null) {
+        currentUser = null;
+        subscribers.forEach((cb) => cb.successCallback(null));
+        return;
+      }
+
+      // Validate a logged in user can be created from the Firebase user. Fire subscriber's
+      // callbacks with an error if we cannot.
+      const loggedInUserResult = makeLoggedInUserFromFirebaseUser(firebaseUser);
+      if (!loggedInUserResult.success) {
+        currentUser = null;
+        const betterError = new Error('Failed to create logged in user from Firebase user', {
+          cause: loggedInUserResult.error,
+        });
+        subscribers.forEach((cb) => cb.errorCallback(betterError));
+        return;
+      }
+
+      // Otherwise, fire subscriber's success callbacks with the logged in user.
+      currentUser = loggedInUserResult.value;
+      subscribers.forEach((cb) => cb.successCallback(loggedInUserResult.value));
     },
     (error) => {
       // Fire each subscriber's error callback when auth state errors occur in Firebase.
+      currentUser = null;
       subscribers.forEach((cb) => cb.errorCallback(error));
     }
   );

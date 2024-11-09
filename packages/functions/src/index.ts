@@ -6,7 +6,7 @@ import {onDocumentCreated} from 'firebase-functions/v2/firestore';
 
 import {IMPORT_QUEUE_DB_COLLECTION} from '@shared/lib/constants';
 
-import {ImportQueueItem} from '@shared/types/importQueue.types';
+import {createImportQueueItemId, ImportQueueItem} from '@shared/types/importQueue.types';
 
 import {deleteImportQueueItem, importFeedItem} from '@src/lib/importQueue';
 
@@ -19,7 +19,16 @@ import {deleteImportQueueItem, importFeedItem} from '@src/lib/importQueue';
 export const processImportQueueOnDocumentCreated = onDocumentCreated(
   `/${IMPORT_QUEUE_DB_COLLECTION}/{importQueueItemId}`,
   async (event) => {
-    const {importQueueItemId} = event.params;
+    const {importQueueItemId: maybeImportQueueItemId} = event.params;
+
+    const importQueueItemIdResult = createImportQueueItemId(maybeImportQueueItemId);
+    if (!importQueueItemIdResult.success) {
+      console.error(
+        `[IMPORT] Invalid import queue item ID "${maybeImportQueueItemId}": ${importQueueItemIdResult.error}`
+      );
+      return;
+    }
+    const importQueueItemId = importQueueItemIdResult.value;
 
     const snapshot = event.data;
     if (!snapshot) {

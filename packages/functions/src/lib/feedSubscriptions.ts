@@ -1,3 +1,5 @@
+import {DocumentSnapshot, QuerySnapshot} from 'firebase-admin/firestore';
+
 import {FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants';
 
 import {FeedSubscription} from '@shared/types/feedSubscriptions.types';
@@ -11,12 +13,14 @@ import {batchDeleteFirestoreDocuments} from './batch';
  * Hard-deletes all feed subscription data in Firestore associated with a user.
  */
 export async function deleteFeedSubscriptionsDocsForUser(userId: UserId): Promise<void> {
-  const userFeedItemDocs = await firestore
+  const userFeedItemDocs = (await firestore
     .collection(FEED_SUBSCRIPTIONS_DB_COLLECTION)
     .where('userId', '==', userId)
-    .get();
+    .get()) as QuerySnapshot<FeedSubscription>;
 
-  await batchDeleteFirestoreDocuments(userFeedItemDocs.docs.map((doc) => doc.ref));
+  await batchDeleteFirestoreDocuments(
+    userFeedItemDocs.docs.map((doc: DocumentSnapshot) => doc.ref)
+  );
 }
 
 /**

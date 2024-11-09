@@ -1,25 +1,24 @@
 import {asyncTryWithErrorMessage} from '@shared/lib/errors';
 
 import {
-  ErrorResponse,
   HttpMethod,
   makeErrorResponse,
   makeSuccessResponse,
   RequestBody,
   RequestOptions,
-  SuccessResponse,
+  RequestResult,
 } from '@shared/types/requests.types';
 
 async function request<T extends object>(
   url: string,
   method: HttpMethod,
   options: RequestOptions = {}
-): Promise<SuccessResponse<T> | ErrorResponse> {
+): Promise<RequestResult<T>> {
   const {headers = {}, body, params = {}} = options;
 
   const queryString = params ? '?' + new URLSearchParams(params).toString() : '';
 
-  return asyncTryWithErrorMessage<SuccessResponse<T> | ErrorResponse>({
+  return asyncTryWithErrorMessage<RequestResult<T>>({
     errorMessagePrefix: 'Error fetching request',
     onError: (error) => makeErrorResponse(error, 500),
     asyncFn: async () => {
@@ -40,7 +39,7 @@ async function request<T extends object>(
         return makeErrorResponse(new Error(errorResponseText || defaultErrorMessage), statusCode);
       }
 
-      return asyncTryWithErrorMessage<SuccessResponse<T> | ErrorResponse>({
+      return asyncTryWithErrorMessage<RequestResult<T>>({
         errorMessagePrefix: 'Error parsing JSON response',
         onError: (error) => makeErrorResponse(error, 500),
         asyncFn: async () => {
@@ -55,7 +54,7 @@ async function request<T extends object>(
 export async function requestGet<T extends object>(
   url: string,
   options?: RequestOptions
-): Promise<SuccessResponse<T> | ErrorResponse> {
+): Promise<RequestResult<T>> {
   return request<T>(url, HttpMethod.GET, options);
 }
 
@@ -63,14 +62,14 @@ export async function requestPost<T extends object>(
   url: string,
   body: RequestBody,
   options?: RequestOptions
-): Promise<SuccessResponse<T> | ErrorResponse> {
+): Promise<RequestResult<T>> {
   return request<T>(url, HttpMethod.POST, {...options, body});
 }
 
 export async function requestDelete<T extends object>(
   url: string,
   options?: RequestOptions
-): Promise<SuccessResponse<T> | ErrorResponse> {
+): Promise<RequestResult<T>> {
   return request<T>(url, HttpMethod.DELETE, options);
 }
 
@@ -78,6 +77,6 @@ export async function requestPut<T extends object>(
   url: string,
   body: RequestBody,
   options?: RequestOptions
-): Promise<SuccessResponse<T> | ErrorResponse> {
+): Promise<RequestResult<T>> {
   return request<T>(url, HttpMethod.PUT, {...options, body});
 }

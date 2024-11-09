@@ -3,6 +3,7 @@ import {useState} from 'react';
 import {feedItemsService} from '@shared/services/feedItemsService';
 
 import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems.types';
+import {createUserId} from '@shared/types/user.types';
 
 import {useCurrentTab} from '@src/lib/tabs';
 
@@ -19,12 +20,19 @@ function App() {
       return;
     }
 
+    // TODO: Get the user ID from the extension's auth once it's implemented.
+    const userIdResult = createUserId('TODO');
+    if (!userIdResult.success) {
+      setStatus(`Error: ${userIdResult.error.message}`);
+      return;
+    }
+    const userId = userIdResult.value;
+
     try {
       await feedItemsService.addFeedItem({
         url: tab.url,
         source: FEED_ITEM_APP_SOURCE,
-        // TODO: Properly set this once the extension has auth.
-        userId: 'TODO',
+        userId,
       });
 
       setStatus('URL saved successfully');
