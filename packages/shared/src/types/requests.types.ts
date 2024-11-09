@@ -1,3 +1,5 @@
+import {ErrorResult, SuccessResult} from '@shared/types/result.types';
+
 export type RequestHeaders = Record<string, string>;
 export type RequestBody = Record<
   string,
@@ -13,28 +15,26 @@ export interface RequestOptions {
   // TODO: Add timeouts and retries.
 }
 
-export interface SuccessResponse<T extends object> {
-  readonly data: T;
+interface SuccessRequestResult<T extends object> extends SuccessResult<T> {
   readonly statusCode: number;
 }
 
-export interface ErrorResponse {
-  readonly error: Error;
+interface ErrorRequestResult extends ErrorResult {
   readonly statusCode: number;
 }
+
+export type RequestResult<T extends object> = SuccessRequestResult<T> | ErrorRequestResult;
 
 export function makeSuccessResponse<T extends object>(
-  data: T,
+  value: T,
   statusCode: number
-): SuccessResponse<T> {
-  return {data, statusCode};
+): SuccessRequestResult<T> {
+  return {success: true, value, statusCode};
 }
 
-export function makeErrorResponse(error: Error, statusCode: number): ErrorResponse {
-  return {error, statusCode};
+export function makeErrorResponse(error: Error, statusCode: number): ErrorRequestResult {
+  return {success: false, error, statusCode};
 }
-
-export type RequestResponse<T extends object> = SuccessResponse<T> | ErrorResponse;
 
 export enum HttpMethod {
   GET = 'GET',
