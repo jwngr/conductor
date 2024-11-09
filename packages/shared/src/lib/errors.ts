@@ -1,22 +1,32 @@
 import {Func, Supplier} from '@shared/types/utils.types';
 
 interface BaseTryWithErrorMessageArg<T> {
+  /* Forces errors to be handled. */
   readonly onError: Func<Error, T>;
+  /* Optional prefix for the error message. */
   readonly errorMessagePrefix?: string;
 }
 
-interface SyncTryWithErrorMessageArgs<T> extends BaseTryWithErrorMessageArg<T> {
+interface SyncTryWithErrorMessageArgs<T extends object> extends BaseTryWithErrorMessageArg<T> {
+  /* The function to execute, which may throw an error. */
   readonly fn: Supplier<T>;
 }
 
-interface AsyncTryWithErrorMessageArgs<T> extends BaseTryWithErrorMessageArg<T> {
+interface AsyncTryWithErrorMessageArgs<T extends object> extends BaseTryWithErrorMessageArg<T> {
+  /* The asynchronous function to execute, which may throw a synchronous or asynchronous error. */
   readonly asyncFn: Supplier<Promise<T>>;
+}
+
+interface HandleErrorArgs<T> {
+  readonly error: unknown;
+  readonly onError: Func<Error, T>;
+  readonly errorMessagePrefix?: string;
 }
 
 /**
  * Handles an error by creating a better error message and calling `onError` with it.
  */
-function handleError<T>(error: unknown, onError: Func<Error, T>, errorMessagePrefix?: string): T {
+function handleError<T>({error, onError, errorMessagePrefix}: HandleErrorArgs<T>): T {
   let betterError: Error;
   const prefix = errorMessagePrefix ? `${errorMessagePrefix}: ` : '';
   if (error instanceof Error) {
@@ -35,7 +45,7 @@ function handleError<T>(error: unknown, onError: Func<Error, T>, errorMessagePre
  *
  * For asynchronous functions, see {@link asyncTryWithErrorMessage}.
  */
-export function tryWithErrorMessage<T>({
+export function tryWithErrorMessage<T extends object>({
   fn,
   onError,
   errorMessagePrefix,
@@ -43,7 +53,7 @@ export function tryWithErrorMessage<T>({
   try {
     return fn();
   } catch (error) {
-    return handleError(error, onError, errorMessagePrefix);
+    return handleError({error, onError, errorMessagePrefix});
   }
 }
 
@@ -53,7 +63,7 @@ export function tryWithErrorMessage<T>({
  *
  * For synchronous functions, see {@link tryWithErrorMessage}.
  */
-export async function asyncTryWithErrorMessage<T>({
+export async function asyncTryWithErrorMessage<T extends object>({
   asyncFn,
   onError,
   errorMessagePrefix,
@@ -61,6 +71,6 @@ export async function asyncTryWithErrorMessage<T>({
   try {
     return await asyncFn();
   } catch (error) {
-    return handleError(error, onError, errorMessagePrefix);
+    return handleError({error, onError, errorMessagePrefix});
   }
 }
