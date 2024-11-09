@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import {logger} from '@shared/lib/logger';
+import {Urls} from '@shared/lib/urls';
 
 import {FeedItem} from '@shared/types/feedItems.types';
 import {ViewType} from '@shared/types/query.types';
@@ -26,7 +27,7 @@ const ViewListItemWrapper = styled(FlexColumn).attrs({justify: 'center', gap: 4}
 
 const ViewListItem: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
   return (
-    <Link to={`/items/${feedItem.feedItemId}`}>
+    <Link to={Urls.forFeedItem(feedItem.feedItemId)}>
       <ViewListItemWrapper key={feedItem.feedItemId}>
         <Text as="p" bold>
           {feedItem.title || 'No title'}

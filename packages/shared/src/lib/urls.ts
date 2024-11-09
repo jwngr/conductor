@@ -134,8 +134,16 @@ export class Urls {
     return '/feeds';
   }
 
+  static forFeedItemRoot(): string {
+    return '/items';
+  }
+
   static forFeedItem(feedItemId: FeedItemId): string {
-    return `/items/${feedItemId}`;
+    return `${this.forFeedItemRoot()}/${feedItemId}`;
+  }
+
+  static forFeedItemUnsafe(maybeFeedItemId: string): string {
+    return `${this.forFeedItemRoot()}/${maybeFeedItemId}`;
   }
 
   static getOrderedNavItems(): NavItem[] {

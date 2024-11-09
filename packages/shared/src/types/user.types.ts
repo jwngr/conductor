@@ -51,7 +51,7 @@ export function createEmailAddress(maybeEmail: string): Result<EmailAddress> {
 
 export interface LoggedInUser {
   readonly userId: UserId;
-  readonly email: EmailAddress | null;
+  readonly email: EmailAddress;
   readonly displayName: string | null;
   // TODO: Add photo URL.
   // readonly photoUrl: string;

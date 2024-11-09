@@ -42,7 +42,7 @@ const AllRoutes: React.FC = () => {
         />
       ))}
       <Route
-        path="/items/:feedItemId"
+        path={Urls.forFeedItemUnsafe(':feedItemId')}
         element={
           <RequireLoggedInUser>
             <FeedItemScreen />
