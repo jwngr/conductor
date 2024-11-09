@@ -14,11 +14,11 @@
   "scripts": {
     "validate": "npm run validate:lint && npm run validate:types && npm run validate:format",
     "validate:lint": "eslint src --report-unused-disable-directives --max-warnings 0",
-    "validate:types": "sed -i.bak '/setCookie(/d' ../../node_modules/@types/request/index.d.ts && tsc --noEmit",
+    "validate:types": "tsc --noEmit",
     "validate:format": "prettier --check 'src/**/*.{js,ts,json}'",
     "format": "prettier --write 'src/**/*.{js,ts,json}'",
     "ci": "rm -rf node_modules/ && npm install",
-    "build": "tsc",
+    "build": "# scripts are run via tsx, not compiled, so there's nothing to build",
     "clean": "# scripts are run via tsx, not compiled, so there's nothing to clean"
   }
 }
