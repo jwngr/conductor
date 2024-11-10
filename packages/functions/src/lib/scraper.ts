@@ -1,3 +1,5 @@
+import {logger} from 'firebase-functions';
+
 /**
  * Fetches the raw HTML for a given URL.
  */
@@ -11,7 +13,7 @@ export async function fetchRawHtml(url: string): Promise<string | null> {
     return rawHtmlResponse.text();
   } catch (error) {
     // Report the failure, but allow the import to continue.
-    console.error(`Error fetching raw HTML:`, error);
+    logger.error(`Error fetching raw HTML:`, error);
     return null;
   }
 }

@@ -1,3 +1,5 @@
+import {logger} from 'firebase-functions';
+
 import {UserId} from '@shared/types/user.types';
 
 import {deleteFeedItemDocsForUsers, deleteStorageFilesForUser} from '@src/lib/feedItems';
@@ -14,26 +16,26 @@ import {deleteUsersDocForUser} from '@src/lib/users';
 export async function wipeoutUser(userId: UserId): Promise<void> {
   let wasSuccessful = true;
 
-  console.log(`[WIPEOUT] Unsubscribing from all feed subscriptions for user ${userId}...`);
+  logger.log(`[WIPEOUT] Unsubscribing from all feed subscriptions for user ${userId}...`);
   try {
     await unsubscribeFromFeedSubscriptionsForUser(userId);
   } catch (error) {
-    console.error(
+    logger.error(
       `[WIPEOUT] Error unsubscribing from all feed subscriptions for user ${userId}:`,
       error
     );
     wasSuccessful = false;
   }
 
-  console.log(`[WIPEOUT] Wiping out Cloud Storage files for user ${userId}...`);
+  logger.log(`[WIPEOUT] Wiping out Cloud Storage files for user ${userId}...`);
   try {
     await deleteStorageFilesForUser(userId);
   } catch (error) {
-    console.error(`[WIPEOUT] Error wiping out Cloud Storage files for user ${userId}:`, error);
+    logger.error(`[WIPEOUT] Error wiping out Cloud Storage files for user ${userId}:`, error);
     wasSuccessful = false;
   }
 
-  console.log(`[WIPEOUT] Wiping out Firestore data for user ${userId}...`);
+  logger.log(`[WIPEOUT] Wiping out Firestore data for user ${userId}...`);
   try {
     await Promise.all([
       deleteUsersDocForUser(userId),
@@ -42,7 +44,7 @@ export async function wipeoutUser(userId: UserId): Promise<void> {
       deleteImportQueueDocsForUser(userId),
     ]);
   } catch (error) {
-    console.error(`[WIPEOUT] Error wiping out Firestore data for user ${userId}:`, error);
+    logger.error(`[WIPEOUT] Error wiping out Firestore data for user ${userId}:`, error);
     wasSuccessful = false;
   }
 

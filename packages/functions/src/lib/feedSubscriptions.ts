@@ -1,4 +1,5 @@
 import {DocumentSnapshot, QuerySnapshot} from 'firebase-admin/firestore';
+import {logger} from 'firebase-functions';
 
 import {FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants';
 import {batchPromises} from '@shared/lib/utils';
@@ -45,6 +46,6 @@ export async function unsubscribeFromFeedSubscriptionsForUser(userId: UserId): P
  * Unsubscribes from an individual feed subscription.
  */
 async function unsubscribeFromFeedSubscription(feedSubscription: FeedSubscription): Promise<void> {
-  console.log(`Unsubscribing from feed subscription ${feedSubscription.feedSubscriptionId}...`);
+  logger.log(`Unsubscribing from feed subscription ${feedSubscription.feedSubscriptionId}...`);
   throw new Error(`TODO: Unsubscribing not yet implemented`);
 }
