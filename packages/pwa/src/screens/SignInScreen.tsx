@@ -1,8 +1,6 @@
 import {ActionCodeSettings} from 'firebase/auth';
 import {useState} from 'react';
 
-import {authService} from '@shared/services/authService';
-
 import {ThemeColor} from '@shared/types/theme.types';
 import {createEmailAddress, isValidEmail} from '@shared/types/user.types';
 import {Consumer} from '@shared/types/utils.types';
@@ -11,7 +9,7 @@ import {FlexColumn} from '@src/components/atoms/Flex';
 import {Input} from '@src/components/atoms/Input';
 import {Text} from '@src/components/atoms/Text';
 
-import {useMaybeLoggedInUser} from '@src/lib/users';
+import {authService, useMaybeLoggedInUser} from '@src/lib/auth.pwa';
 
 import {OnClick} from '@src/types/utils';
 

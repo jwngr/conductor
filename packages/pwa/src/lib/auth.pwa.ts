@@ -1,8 +1,13 @@
+import {AuthService} from '@shared/lib/auth';
 import {logger} from '@shared/lib/logger';
 
 import {LoggedInUser} from '@shared/types/user.types';
 
+import {firebaseService} from '@src/lib/firebase.pwa';
+
 import {useAuthStore} from '@src/stores/AuthStore';
+
+export const authService = new AuthService(firebaseService.auth);
 
 export function useMaybeLoggedInUser(): {
   readonly isLoading: boolean;

@@ -1,11 +1,29 @@
+import {collection} from 'firebase/firestore';
+import {ref as storageRef} from 'firebase/storage';
 import {useEffect, useState} from 'react';
 
-import {feedItemsService} from '@shared/services/feedItemsService';
+import {
+  FEED_ITEMS_DB_COLLECTION,
+  FEED_ITEMS_STORAGE_COLLECTION,
+  IMPORT_QUEUE_DB_COLLECTION,
+} from '@shared/lib/constants';
+import {FeedItemsService} from '@shared/lib/feedItems';
 
 import {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
 import {ViewType} from '@shared/types/query.types';
 
-import {useLoggedInUser} from '@src/lib/users';
+import {useLoggedInUser} from '@src/lib/auth.pwa';
+import {firebaseService} from '@src/lib/firebase.pwa';
+
+const feedItemsDbRef = collection(firebaseService.firestore, FEED_ITEMS_DB_COLLECTION);
+const importQueueDbRef = collection(firebaseService.firestore, IMPORT_QUEUE_DB_COLLECTION);
+const feedItemsStorageRef = storageRef(firebaseService.storage, FEED_ITEMS_STORAGE_COLLECTION);
+
+export const feedItemsService = new FeedItemsService(
+  feedItemsDbRef,
+  importQueueDbRef,
+  feedItemsStorageRef
+);
 
 export function useFeedItem(feedItemId: FeedItemId): {
   readonly feedItem: FeedItem | null;

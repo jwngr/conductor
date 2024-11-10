@@ -2,11 +2,10 @@ import {useState} from 'react';
 
 import {asyncTry} from '@shared/lib/errors';
 
-import {feedItemsService} from '@shared/services/feedItemsService';
-
 import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems.types';
 import {createUserId} from '@shared/types/user.types';
 
+import {feedItemsService} from '@src/lib/feedItems.ext';
 import {useCurrentTab} from '@src/lib/tabs';
 
 function App() {

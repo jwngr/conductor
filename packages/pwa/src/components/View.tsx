@@ -13,7 +13,7 @@ import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
 import {FeedItemAdder} from '@src/components/feedItems/FeedItemAdder';
 
-import {useFeedItems} from '@src/lib/feedItems';
+import {useFeedItems} from '@src/lib/feedItems.pwa';
 
 const ViewListItemWrapper = styled(FlexColumn).attrs({justify: 'center', gap: 4})`
   cursor: pointer;

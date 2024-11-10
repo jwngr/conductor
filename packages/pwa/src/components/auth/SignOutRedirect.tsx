@@ -4,7 +4,7 @@ import {useNavigate} from 'react-router-dom';
 import {logger} from '@shared/lib/logger';
 import {Urls} from '@shared/lib/urls';
 
-import {authService} from '@shared/services/authService';
+import {authService} from '@src/lib/auth.pwa';
 
 /**
  * Signs the user out and redirects them to sign in page.

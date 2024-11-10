@@ -2,8 +2,6 @@ import {useState} from 'react';
 
 import {isValidUrl} from '@shared/lib/urls';
 
-import {feedItemsService} from '@shared/services/feedItemsService';
-
 import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems.types';
 import {ThemeColor} from '@shared/types/theme.types';
 
@@ -19,7 +17,8 @@ import {FlexColumn} from '@src/components/atoms/Flex';
 import {Input} from '@src/components/atoms/Input';
 import {Text} from '@src/components/atoms/Text';
 
-import {useLoggedInUser} from '@src/lib/users';
+import {useLoggedInUser} from '@src/lib/auth.pwa';
+import {feedItemsService} from '@src/lib/feedItems.pwa';
 
 export const FeedItemAdder: React.FC = () => {
   const [url, setUrl] = useState('');

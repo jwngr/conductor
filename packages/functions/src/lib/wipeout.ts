@@ -5,7 +5,7 @@ import {asyncTryAll} from '@shared/lib/errors';
 import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import {UserId} from '@shared/types/user.types';
 
-import {deleteFeedItemDocsForUsers, deleteStorageFilesForUser} from '@src/lib/feedItems';
+import {deleteFeedItemDocsForUsers, deleteStorageFilesForUser} from '@src/lib/feedItems.func';
 import {
   deleteFeedSubscriptionsDocsForUser,
   unsubscribeFromFeedSubscriptionsForUser,

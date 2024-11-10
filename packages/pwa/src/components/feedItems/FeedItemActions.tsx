@@ -1,20 +1,20 @@
 import React from 'react';
 
-import {logger} from '@shared/lib/logger';
-
 import {
-  feedItemsService,
   getMarkDoneFeedItemActionInfo,
   getMarkUnreadFeedItemActionInfo,
   getSaveFeedItemActionInfo,
   getStarFeedItemActionInfo,
-} from '@shared/services/feedItemsService';
+} from '@shared/lib/feedItems';
+import {logger} from '@shared/lib/logger';
 
 import {FeedItemId, TriageStatus} from '@shared/types/feedItems.types';
 import {SystemTagId} from '@shared/types/tags.types';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {FlexRow} from '@src/components/atoms/Flex';
+
+import {feedItemsService} from '@src/lib/feedItems.pwa';
 
 const MarkDoneFeedItemActionIcon: React.FC<{
   readonly feedItemId: FeedItemId;

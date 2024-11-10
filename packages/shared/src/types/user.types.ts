@@ -100,6 +100,7 @@ interface AuthStateChangedCallbacks {
 export interface AuthService {
   getLoggedInUser: Supplier<LoggedInUser | null>;
   onAuthStateChanged: Func<AuthStateChangedCallbacks, AuthStateChangedUnsubscribe>;
+  isSignInWithEmailLink: (url: string) => boolean;
   signInWithEmailLink: (email: EmailAddress, emailLink: string) => AsyncResult<UserCredential>;
   sendSignInLinkToEmail: (
     email: EmailAddress,

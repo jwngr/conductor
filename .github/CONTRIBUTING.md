@@ -106,7 +106,7 @@ This repo is configured to work with the
    $ yarn run firebase:local
    ```
 
-1. Restart other services (e.g. PWA, extension) which rely on Firebase.
+1. Restart other packages (e.g. PWA, extension) which rely on Firebase.
 
 The Firebase emulator admin UI opens at http://localhost:4000.
 
