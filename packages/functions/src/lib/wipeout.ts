@@ -16,7 +16,7 @@ import {deleteUsersDocForUser} from '@src/lib/users';
 export async function wipeoutUser(userId: UserId): Promise<void> {
   let wasSuccessful = true;
 
-  logger.log(`[WIPEOUT] Unsubscribing from all feed subscriptions for user ${userId}...`);
+  logger.info(`[WIPEOUT] Unsubscribing from all feed subscriptions for user ${userId}...`);
   try {
     await unsubscribeFromFeedSubscriptionsForUser(userId);
   } catch (error) {
@@ -27,7 +27,7 @@ export async function wipeoutUser(userId: UserId): Promise<void> {
     wasSuccessful = false;
   }
 
-  logger.log(`[WIPEOUT] Wiping out Cloud Storage files for user ${userId}...`);
+  logger.info(`[WIPEOUT] Wiping out Cloud Storage files for user ${userId}...`);
   try {
     await deleteStorageFilesForUser(userId);
   } catch (error) {
@@ -35,7 +35,7 @@ export async function wipeoutUser(userId: UserId): Promise<void> {
     wasSuccessful = false;
   }
 
-  logger.log(`[WIPEOUT] Wiping out Firestore data for user ${userId}...`);
+  logger.info(`[WIPEOUT] Wiping out Firestore data for user ${userId}...`);
   try {
     await Promise.all([
       deleteUsersDocForUser(userId),

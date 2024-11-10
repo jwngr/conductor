@@ -46,6 +46,6 @@ export async function unsubscribeFromFeedSubscriptionsForUser(userId: UserId): P
  * Unsubscribes from an individual feed subscription.
  */
 async function unsubscribeFromFeedSubscription(feedSubscription: FeedSubscription): Promise<void> {
-  logger.log(`Unsubscribing from feed subscription ${feedSubscription.feedSubscriptionId}...`);
+  logger.info(`Unsubscribing from feed subscription ${feedSubscription.feedSubscriptionId}...`);
   throw new Error(`TODO: Unsubscribing not yet implemented`);
 }
