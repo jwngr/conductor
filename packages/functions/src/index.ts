@@ -3,7 +3,6 @@ import {auth} from 'firebase-functions/v1';
 import {onDocumentCreated} from 'firebase-functions/v2/firestore';
 
 import {IMPORT_QUEUE_DB_COLLECTION} from '@shared/lib/constants';
-import {asyncTryWithErrorMessage} from '@shared/lib/errors';
 
 import {
   createImportQueueItemId,
@@ -55,26 +54,42 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
       userId: importQueueItem.userId,
     } as const;
 
-    await asyncTryWithErrorMessage({
-      asyncFn: async () => {
-        logger.info(`[IMPORT] Claiming import queue item...`, logDetails);
-        await updateImportQueueItem(importQueueItemId, {status: ImportQueueItemStatus.Processing});
+    const handleError = async (errorMessage: string, errorDetails: Record<string, unknown>) => {
+      logger.error(errorMessage, {
+        ...logDetails,
+        ...errorDetails,
+      });
+      await updateImportQueueItem(importQueueItemId, {status: ImportQueueItemStatus.Failed});
+    };
 
-        logger.info(`[IMPORT] Importing queue item...`, logDetails);
-        await importFeedItem(importQueueItem);
-
-        // Remove the import queue item once everything else has processed successfully.
-        logger.info(`[IMPORT] Deleting import queue item...`, logDetails);
-        await deleteImportQueueItem(importQueueItemId);
-      },
-      onSuccess: async () => {
-        logger.info(`[IMPORT] Successfully processed import queue item`, logDetails);
-      },
-      onError: async (error) => {
-        logger.error(`[IMPORT] Error processing import queue item`, {...logDetails, error});
-        await updateImportQueueItem(importQueueItemId, {status: ImportQueueItemStatus.Failed});
-      },
+    // Claim the item so that no other function picks it up.
+    logger.info(`[IMPORT] Claiming import queue item...`, logDetails);
+    const claimItemResult = await updateImportQueueItem(importQueueItemId, {
+      status: ImportQueueItemStatus.Processing,
     });
+    if (!claimItemResult.success) {
+      await handleError('Failed to claim import queue item', {error: claimItemResult.error});
+      return;
+    }
+
+    // Actually import the feed item.
+    logger.info(`[IMPORT] Importing queue item...`, logDetails);
+    const importItemResult = await importFeedItem(importQueueItem);
+    if (!importItemResult.success) {
+      await handleError('Error importing queue item', {error: importItemResult.error});
+      await updateImportQueueItem(importQueueItemId, {status: ImportQueueItemStatus.Failed});
+    }
+
+    // Remove the import queue item once everything else has processed successfully.
+    logger.info(`[IMPORT] Deleting import queue item...`, logDetails);
+    const deleteItemResult = await deleteImportQueueItem(importQueueItemId);
+    if (!deleteItemResult.success) {
+      await handleError('Error deleting import queue item', {
+        error: deleteItemResult.error,
+      });
+    }
+
+    logger.info(`[IMPORT] Successfully processed import queue item`, logDetails);
   }
 );
 
@@ -92,18 +107,12 @@ export const wipeoutUserOnAuthDelete = auth.user().onDelete(async (firebaseUser)
   }
   const userId = userIdResult.value;
 
-  await asyncTryWithErrorMessage({
-    asyncFn: async () => {
-      await wipeoutUser(userId);
-    },
-    onBefore: async () => {
-      logger.info(`[WIPEOUT] Wiping out user...`, {userId});
-    },
-    onSuccess: async () => {
-      logger.info(`[WIPEOUT] Successfully wiped out user`, {userId});
-    },
-    onError: async (error) => {
-      logger.error(`[WIPEOUT] Failed to wipe out user`, {error, userId});
-    },
-  });
+  logger.info(`[WIPEOUT] Wiping out user...`, {userId});
+  const wipeoutUserResult = await wipeoutUser(userId);
+  if (!wipeoutUserResult.success) {
+    logger.error(`[WIPEOUT] Failed to wipe out user`, {error: wipeoutUserResult.error, userId});
+    return;
+  }
+
+  logger.info(`[WIPEOUT] Successfully wiped out user`, {userId});
 });

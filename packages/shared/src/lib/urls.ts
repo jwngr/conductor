@@ -1,4 +1,5 @@
 import {CustomIconType} from '@shared/lib/customIcons';
+import {syncTry} from '@shared/lib/errors';
 import {assertNever} from '@shared/lib/utils';
 
 import {FeedItemId} from '@shared/types/feedItems.types';
@@ -7,21 +8,11 @@ import {NavItem} from '@shared/types/urls.types';
 
 // TODO: Make URL validation more robust.
 export function isValidUrl(url: string): boolean {
-  try {
-    new URL(url);
-    return true;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (error1) {
-    // Passthrough.
-  }
+  const isValidUrlResult1 = syncTry(() => new URL(url));
+  if (isValidUrlResult1.success) return true;
 
-  try {
-    new URL('https://' + url);
-    return true;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (error2) {
-    return false;
-  }
+  const isValidUrlResult2 = syncTry(() => new URL('https://' + url));
+  return isValidUrlResult2.success;
 }
 
 const ALL_NAV_ITEMS: Record<ViewType, NavItem> = {

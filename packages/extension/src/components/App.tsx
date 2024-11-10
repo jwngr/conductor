@@ -12,32 +12,33 @@ function App() {
   const {currentTab} = useCurrentTab();
 
   const handleClick = async () => {
-    setStatus('Pending...');
+    setStatus('Saving URL...');
     const [tab] = await chrome.tabs.query({active: true, lastFocusedWindow: true});
 
-    if (!tab.url) {
-      setStatus('Error: No URL found');
+    const tabUrl = tab.url;
+    if (!tabUrl) {
+      setStatus('Error saving URL: No URL found for tab');
       return;
     }
 
     // TODO: Get the user ID from the extension's auth once it's implemented.
     const userIdResult = createUserId('TODO');
     if (!userIdResult.success) {
-      setStatus(`Error: ${userIdResult.error.message}`);
+      setStatus(`Error creating user ID: ${userIdResult.error.message}`);
       return;
     }
     const userId = userIdResult.value;
 
-    try {
-      await feedItemsService.addFeedItem({
-        url: tab.url,
-        source: FEED_ITEM_APP_SOURCE,
-        userId,
-      });
+    const addFeedItemResult = await feedItemsService.addFeedItem({
+      url: tabUrl,
+      source: FEED_ITEM_APP_SOURCE,
+      userId,
+    });
 
-      setStatus('URL saved successfully');
-    } catch (error) {
-      setStatus(`Error: ${error}`);
+    if (addFeedItemResult.success) {
+      setStatus('URL saved successfully!');
+    } else {
+      setStatus(`Error saving URL: ${addFeedItemResult.error.message}`);
     }
   };
 

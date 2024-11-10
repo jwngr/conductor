@@ -76,15 +76,12 @@ export function useFeedItemMarkdown(
       // Wait to fetch markdown until the feed item has been imported.
       if (!isFeedItemImported) return;
 
-      try {
-        const markdown = await feedItemsService.getFeedItemMarkdown(feedItemId);
-        if (isMounted) {
-          setState({markdown, isLoading: false, error: null});
-        }
-      } catch (error) {
-        // We can safely cast to Error because the feedItemsService throws an Error.
-        if (isMounted) {
-          setState({markdown: null, isLoading: false, error: error as Error});
+      const markdownResult = await feedItemsService.getFeedItemMarkdown(feedItemId);
+      if (isMounted) {
+        if (markdownResult.success) {
+          setState({markdown: markdownResult.value, isLoading: false, error: null});
+        } else {
+          setState({markdown: null, isLoading: false, error: markdownResult.error});
         }
       }
     }

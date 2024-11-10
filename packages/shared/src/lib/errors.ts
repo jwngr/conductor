@@ -1,35 +1,19 @@
-import {AsyncConsumer, AsyncFunc, Supplier} from '@shared/types/utils.types';
+import {partition} from '@shared/lib/utils';
 
-interface BaseTryWithErrorMessageArg<T> {
-  /*
-   * Optional callback fired immediately before the function is executed.
-   */
-  readonly onBefore?: AsyncConsumer<void>;
-  /*
-   * Optional callback fired if the function succeeds, with the function's result.
-   */
-  readonly onSuccess?: AsyncConsumer<T>;
-  /*
-   * Required error callback to ensure a value of type `T` is always returned. Almost every caller
-   * should at the very least log an error. Most should handle the error gracefully for the user.
-   */
-  readonly onError: AsyncFunc<Error, T>;
-}
-
-interface SyncTryWithErrorMessageArgs<T> extends BaseTryWithErrorMessageArg<T> {
-  /* The function to execute, which may throw an error. */
-  readonly fn: Supplier<T>;
-}
-
-interface AsyncTryWithErrorMessageArgs<T> extends BaseTryWithErrorMessageArg<T> {
-  /* The asynchronous function to execute, which may throw a synchronous or asynchronous error. */
-  readonly asyncFn: Supplier<Promise<T>>;
-}
+import {
+  AsyncResult,
+  ErrorResult,
+  makeErrorResult,
+  makeSuccessResult,
+  Result,
+  SuccessResult,
+} from '@shared/types/result.types';
+import {Supplier} from '@shared/types/utils.types';
 
 /**
  * Upgrades an unknown error into a proper `Error` object with the best message possible.
  */
-function upgradeUnknownError(error: unknown): Error {
+export function upgradeUnknownError(error: unknown): Error {
   const defaultErrorMessage = 'An unexpected error occurred';
   if (error instanceof Error) {
     return new Error(`${error.message || defaultErrorMessage}`, {cause: error});
@@ -38,49 +22,71 @@ function upgradeUnknownError(error: unknown): Error {
 }
 
 /**
- * Executes the given synchronous function and returns its result.
+ * Executes the given synchronous function and returns its result. Errors should never be thrown.
+ * Instead, a `ErrorResult` is returned.
  *
- * Notes:
- * - This function is async even though you provide a synchronous callback. The `onError` callback
- *   can be async, which is why this function is async.
- * - The `onError` callback is provided with an upgraded error.
- *
- * For asynchronous functions, see {@link asyncTryWithErrorMessage}.
+ * For asynchronous functions, see {@link asyncTry}.
  */
-export async function tryWithErrorMessage<T>(args: SyncTryWithErrorMessageArgs<T>): Promise<T> {
-  const {fn, onBefore, onSuccess, onError} = args;
+export function syncTry<T>(fn: Supplier<T>): Result<T> {
   try {
-    if (onBefore) await onBefore();
     const result = fn();
-    if (onSuccess) await onSuccess(result);
-    return result;
+    return makeSuccessResult(result);
   } catch (error) {
     const betterError = upgradeUnknownError(error);
-    const onErrorResult = await onError(betterError);
-    return onErrorResult;
+    return makeErrorResult(betterError);
   }
 }
 
 /**
- * Executes the given asynchronous function and returns its result.
+ * Executes the given asynchronous function and returns its result. Errors should never be thrown.
+ * Instead, a `ErrorResult` is returned.
  *
- * Notes:
- * - The `onError` callback is provided with an upgraded error.
- *
- * For synchronous functions, see {@link tryWithErrorMessage}.
+ * For synchronous functions, see {@link syncTry}.
  */
-export async function asyncTryWithErrorMessage<T>(
-  args: AsyncTryWithErrorMessageArgs<T>
-): Promise<T> {
-  const {asyncFn, onBefore, onError, onSuccess} = args;
+export async function asyncTry<T>(asyncFn: Supplier<Promise<T>>): AsyncResult<T> {
   try {
-    if (onBefore) await onBefore();
     const result = await asyncFn();
-    if (onSuccess) await onSuccess(result);
-    return result;
+    return makeSuccessResult(result);
   } catch (error) {
     const betterError = upgradeUnknownError(error);
-    const onErrorResult = await onError(betterError);
-    return onErrorResult;
+    return makeErrorResult(betterError);
+  }
+}
+
+/**
+ * Executes the given `AsyncResult`s in parallel and returns a single `SuccessResult<T>` with their
+ * results. If any of the results fail, an array of `ErrorResult`s is returned.
+ */
+export async function asyncTryAll<T>(
+  asyncResults: AsyncResult<unknown>[]
+): AsyncResult<T, Error[]> {
+  try {
+    const results = await Promise.all(asyncResults);
+    const [suceededResults, failedResults] = partition<SuccessResult<unknown>, ErrorResult>(
+      results,
+      (result) => result.success
+    );
+    if (failedResults.length > 0) {
+      return makeErrorResult(failedResults.map((result) => result.error));
+    }
+    const succeededValues = suceededResults.map((result) => result.value);
+    return makeSuccessResult(succeededValues as T);
+  } catch (error) {
+    const betterError = upgradeUnknownError(error);
+    return makeErrorResult([betterError]);
+  }
+}
+
+/**
+ * Executes the given `Promise`s in parallel and returns a single `SuccessResult<T>` with their
+ * results. If any of the promises fail, a single `ErrorResult` is returned.
+ */
+export async function asyncTryAllPromises<T>(asyncFns: Promise<unknown>[]): AsyncResult<T, Error> {
+  try {
+    const results = await Promise.all(asyncFns);
+    return makeSuccessResult(results as T);
+  } catch (error) {
+    const betterError = upgradeUnknownError(error);
+    return makeErrorResult(betterError);
   }
 }

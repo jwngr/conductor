@@ -27,15 +27,16 @@ export const FeedItemAdder: React.FC = () => {
   const handleAddItemToQueue = async (url: string) => {
     setStatus('Pending...');
 
-    try {
-      await feedItemsService.addFeedItem({
-        url,
-        source: FEED_ITEM_APP_SOURCE,
-        userId: loggedInUser.userId,
-      });
+    const addFeedItemResult = await feedItemsService.addFeedItem({
+      url,
+      source: FEED_ITEM_APP_SOURCE,
+      userId: loggedInUser.userId,
+    });
+
+    if (addFeedItemResult.success) {
       setStatus('URL saved successfully');
-    } catch (error) {
-      setStatus(`Error: ${error}`);
+    } else {
+      setStatus(`Error saving URL: ${addFeedItemResult.error}`);
     }
   };
 

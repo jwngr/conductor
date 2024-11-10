@@ -1,7 +1,15 @@
-import {onAuthStateChanged as onAuthStateChangedFirebase} from 'firebase/auth';
+import {
+  onAuthStateChanged as onAuthStateChangedFirebase,
+  sendSignInLinkToEmail as sendSignInLinkToEmailFirebase,
+  signInWithEmailLink as signInWithEmailLinkFirebase,
+  signOut as signOutFirebase,
+  UserCredential,
+} from 'firebase/auth';
 
+import {asyncTry} from '@shared/lib/errors';
 import {auth} from '@shared/lib/firebase';
 
+import {AsyncResult} from '@shared/types/result.types';
 import {
   AuthService,
   AuthStateChangedCallback,
@@ -75,6 +83,24 @@ function createAuthService(): AuthService {
       return () => {
         subscribers.delete(callbacks);
       };
+    },
+
+    signInWithEmailLink: async (email, emailLink): AsyncResult<UserCredential> => {
+      return await asyncTry<UserCredential>(async () => {
+        return await signInWithEmailLinkFirebase(auth, email, emailLink);
+      });
+    },
+
+    sendSignInLinkToEmail: async (email, actionCodeSettings): AsyncResult<void> => {
+      return await asyncTry(async () => {
+        await sendSignInLinkToEmailFirebase(auth, email, actionCodeSettings);
+      });
+    },
+
+    signOut: async (): AsyncResult<void> => {
+      return await asyncTry(async () => {
+        await signOutFirebase(auth);
+      });
     },
   };
 }

@@ -14,19 +14,23 @@ chrome.action.onClicked.addListener(async (tab) => {
   }
   const userId = userIdResult.value;
 
-  if (tab.url) {
-    try {
-      await feedItemsService.addFeedItem({
-        url: tab.url,
-        source: FEED_ITEM_EXTENSION_SOURCE,
-        userId,
-      });
-
-      // eslint-disable-next-line no-console
-      console.log('URL saved successfully');
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error saving URL:', error);
-    }
+  const tabUrl = tab.url;
+  if (!tabUrl) {
+    // eslint-disable-next-line no-console
+    console.error('No URL found for tab');
+    return;
   }
+
+  const addFeedItemResult = await feedItemsService.addFeedItem({
+    url: tabUrl,
+    source: FEED_ITEM_EXTENSION_SOURCE,
+    userId,
+  });
+
+  if (!addFeedItemResult.success) {
+    logger.error('Error saving URL:', {error: addFeedItemResult.error, userId});
+    return;
+  }
+
+  logger.log('URL saved successfully!', {userId});
 });

@@ -23,8 +23,6 @@ interface ErrorRequestResult extends ErrorResult {
   readonly statusCode: number;
 }
 
-export type RequestResult<T extends object> = SuccessRequestResult<T> | ErrorRequestResult;
-
 export function makeSuccessResponse<T extends object>(
   value: T,
   statusCode: number

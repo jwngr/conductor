@@ -5,12 +5,16 @@
  * Always prefer `Result` over throwing errors.
  */
 
-export interface SuccessResult<T> {
+interface BaseResult {
+  readonly success: boolean;
+}
+
+export interface SuccessResult<T> extends BaseResult {
   readonly success: true;
   readonly value: T;
 }
 
-export interface ErrorResult<E = Error> {
+export interface ErrorResult<E = Error> extends BaseResult {
   readonly success: false;
   readonly error: E;
 }
