@@ -35,7 +35,7 @@
     "start": "vite",
     "clean": "rm -rf dist/",
     "ci": "rm -rf node_modules/ && yarn install",
-    "build": "yarn workspace @conductor/shared build && vite build",
+    "build": "yarn run clean && yarn workspace @conductor/shared build && vite build",
     "preview": "vite preview",
     "deploy": "firebase deploy --only hosting"
   },

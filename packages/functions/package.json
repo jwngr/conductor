@@ -24,7 +24,7 @@
     "format": "prettier --write 'src/**/*.{js,ts,json}'",
     "clean": "rm -rf dist/",
     "ci": "rm -rf node_modules/ && yarn install",
-    "build": "yarn workspace @conductor/shared build && esbuild src/index.ts --bundle --platform=node --target=node22 --outfile=dist/index.js --external:firebase-admin --external:firebase-functions",
+    "build": "yarn run clean && yarn workspace @conductor/shared build && esbuild src/index.ts --bundle --platform=node --target=node22 --outfile=dist/index.js --external:firebase-admin --external:firebase-functions",
     "serve": "yarn run build && firebase emulators:start --only functions",
     "shell": "yarn run build && firebase functions:shell",
     "start": "yarn run shell",

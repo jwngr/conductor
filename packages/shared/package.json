@@ -15,7 +15,7 @@
     "format": "prettier --write 'src/**/*.{js,ts,json,svg}'",
     "clean": "rm -rf dist/ tsconfig.tsbuildinfo",
     "ci": "rm -rf node_modules/ && yarn install",
-    "build": "vite build && yarn run hack-type && tsc",
+    "build": "yarn run clean && vite build && yarn run hack-type && tsc",
     "hack-type": "sed -i.bak '/setCookie(/d' ../../node_modules/@types/request/index.d.ts"
   }
 }

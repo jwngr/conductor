@@ -6,9 +6,6 @@
   "references": [{"path": "../shared"}],
 
   "compilerOptions": {
-    // Required since this is a TypeScript referenced project.
-    "composite": true
-
     // TODO: Get import aliases working by adding some build step.
     // Import aliases.
     // "baseUrl": ".",
