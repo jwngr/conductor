@@ -19,8 +19,8 @@ async function request<T extends object>(
 
   const queryString = params ? '?' + new URLSearchParams(params).toString() : '';
 
-  return asyncTryWithErrorMessage<RequestResult<T>>({
-    onError: (error) => {
+  const result = await asyncTryWithErrorMessage<RequestResult<T>>({
+    onError: async (error) => {
       logger.error('Error fetching request', {error, url});
       return makeErrorResponse(error, 500);
     },
@@ -42,8 +42,8 @@ async function request<T extends object>(
         return makeErrorResponse(new Error(errorResponseText || defaultErrorMessage), statusCode);
       }
 
-      return asyncTryWithErrorMessage<RequestResult<T>>({
-        onError: (error) => {
+      const jsonResult = await asyncTryWithErrorMessage<RequestResult<T>>({
+        onError: async (error) => {
           logger.error('Error parsing JSON response', {error, url});
           return makeErrorResponse(error, 500);
         },
@@ -52,8 +52,10 @@ async function request<T extends object>(
           return makeSuccessResponse<T>(jsonResponse, statusCode);
         },
       });
+      return jsonResult;
     },
   });
+  return result;
 }
 
 export async function requestGet<T extends object>(

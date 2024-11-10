@@ -55,31 +55,26 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
       userId: importQueueItem.userId,
     } as const;
 
-    try {
-      logger.info(`[IMPORT] Claiming import queue item...`, logDetails);
-      await updateImportQueueItem(importQueueItemId, {
-        status: ImportQueueItemStatus.Processing,
-      });
+    await asyncTryWithErrorMessage({
+      asyncFn: async () => {
+        logger.info(`[IMPORT] Claiming import queue item...`, logDetails);
+        await updateImportQueueItem(importQueueItemId, {status: ImportQueueItemStatus.Processing});
 
-      logger.info(`[IMPORT] Importing queue item...`, logDetails);
-      await importFeedItem(importQueueItem);
+        logger.info(`[IMPORT] Importing queue item...`, logDetails);
+        await importFeedItem(importQueueItem);
 
-      // Remove the import queue item once everything else has processed successfully.
-      logger.info(`[IMPORT] Deleting import queue item...`, logDetails);
-      await deleteImportQueueItem(importQueueItemId);
-
-      logger.info(`[IMPORT] Done processing import queue item`, logDetails);
-    } catch (error) {
-      logger.error(`[IMPORT] Error processing import queue item`, {
-        ...logDetails,
-        // TODO: Figure out a simpler solution here that is reusable.
-        error:
-          typeof error === 'object' && error !== null && 'message' in error ? error.message : error,
-      });
-      await updateImportQueueItem(importQueueItemId, {
-        status: ImportQueueItemStatus.Failed,
-      });
-    }
+        // Remove the import queue item once everything else has processed successfully.
+        logger.info(`[IMPORT] Deleting import queue item...`, logDetails);
+        await deleteImportQueueItem(importQueueItemId);
+      },
+      onSuccess: async () => {
+        logger.info(`[IMPORT] Successfully processed import queue item`, logDetails);
+      },
+      onError: async (error) => {
+        logger.error(`[IMPORT] Error processing import queue item`, {...logDetails, error});
+        await updateImportQueueItem(importQueueItemId, {status: ImportQueueItemStatus.Failed});
+      },
+    });
   }
 );
 
@@ -97,17 +92,18 @@ export const wipeoutUserOnAuthDelete = auth.user().onDelete(async (firebaseUser)
   }
   const userId = userIdResult.value;
 
-  asyncTryWithErrorMessage({
+  await asyncTryWithErrorMessage({
     asyncFn: async () => {
-      logger.info(`[WIPEOUT] Wiping out user ${userId}...`);
       await wipeoutUser(userId);
-      logger.info(`[WIPEOUT] Successfully wiped out user ${userId}`);
     },
-    onError: (error) => {
-      logger.error(`[WIPEOUT] Failed to wipe out user`, {
-        error,
-        userId,
-      });
+    onBefore: async () => {
+      logger.info(`[WIPEOUT] Wiping out user...`, {userId});
+    },
+    onSuccess: async () => {
+      logger.info(`[WIPEOUT] Successfully wiped out user`, {userId});
+    },
+    onError: async (error) => {
+      logger.error(`[WIPEOUT] Failed to wipe out user`, {error, userId});
     },
   });
 });
