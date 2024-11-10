@@ -7,7 +7,7 @@ import {FeedItem} from '@shared/types/feedItems.types';
 import {Text} from '@src/components/atoms/Text';
 import {Markdown} from '@src/components/Markdown';
 
-import {useFeedItemMarkdown} from '@src/lib/feedItems';
+import {useFeedItemMarkdown} from '@src/lib/feedItems.pwa';
 
 export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
   const isFeedItemImported = Boolean(feedItem?.lastImportedTime);

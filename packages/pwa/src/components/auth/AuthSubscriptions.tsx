@@ -2,13 +2,13 @@ import {isSignInWithEmailLink} from 'firebase/auth';
 import {useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 
-import {auth} from '@shared/lib/firebase';
 import {logger} from '@shared/lib/logger';
 import {Urls} from '@shared/lib/urls';
 
-import {authService} from '@shared/services/authService';
-
 import {isValidEmail} from '@shared/types/user.types';
+
+import {authService} from '@src/lib/auth.pwa';
+import {firebaseService} from '@src/lib/firebase.pwa';
 
 import {useAuthStore} from '@src/stores/AuthStore';
 
@@ -35,7 +35,7 @@ const PasswordlessAuthSubscription: React.FC = () => {
   useEffect(() => {
     const go = async () => {
       // Only do something if the current URL is a "sign-in with email" link.
-      if (!isSignInWithEmailLink(auth, window.location.href)) return;
+      if (!isSignInWithEmailLink(firebaseService.auth, window.location.href)) return;
 
       // The sign in screen persisted the email to login in local storage. If the user opened the
       // link on the same browser as the one used to sign in, this value will be present.

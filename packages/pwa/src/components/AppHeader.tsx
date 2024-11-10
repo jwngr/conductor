@@ -8,7 +8,7 @@ import {Link} from '@src/components/atoms/Link';
 import {Spacer} from '@src/components/atoms/Spacer';
 import {Text} from '@src/components/atoms/Text';
 
-import {useMaybeLoggedInUser} from '@src/lib/users';
+import {useMaybeLoggedInUser} from '@src/lib/auth.pwa';
 
 const AppHeaderWrapper = styled(FlexRow)`
   height: 60px;

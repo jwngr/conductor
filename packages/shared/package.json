@@ -3,10 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "devDependencies": {
-    "vite": "^5.4.10",
-    "vite-plugin-svgr": "^4.3.0"
-  },
   "scripts": {
     "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",
     "validate:lint": "eslint src --report-unused-disable-directives --max-warnings 0",
@@ -15,7 +11,7 @@
     "format": "prettier --write 'src/**/*.{js,ts,json,svg}'",
     "clean": "rm -rf dist/ tsconfig.tsbuildinfo",
     "ci": "rm -rf node_modules/ && yarn install",
-    "build": "yarn run clean && yarn run hack-type && vite build && tsc --build",
+    "build": "yarn run clean && yarn run hack-type && tsc --build",
     "hack-type": "sed -i.bak '/setCookie(/d' ../../node_modules/@types/request/index.d.ts"
   }
 }

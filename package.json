@@ -23,7 +23,7 @@
     "clean:scripts": "yarn workspace @conductor/scripts clean",
     "clean:extension": "yarn workspace @conductor/extension clean",
     "clean:functions": "yarn workspace @conductor/functions clean",
-    "ci": "yarn install --force",
+    "ci": "rm yarn.lock && yarn install",
     "build": "yarn workspaces foreach --all -p -t run build",
     "build:shared": "yarn workspace @conductor/shared build",
     "build:pwa": "yarn workspace @conductor/pwa build",

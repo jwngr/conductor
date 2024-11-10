@@ -2,12 +2,11 @@ import {useState} from 'react';
 
 import {asyncTry} from '@shared/lib/errors';
 
-import {feedItemsService} from '@shared/services/feedItemsService';
-
 import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems.types';
 import {createUserId} from '@shared/types/user.types';
 
-import {useCurrentTab} from '@src/lib/tabs';
+import {feedItemsService} from '@src/lib/feedItems.ext';
+import {useCurrentTab} from '@src/lib/tabs.ext';
 
 function App() {
   const [status, setStatus] = useState<string>('');

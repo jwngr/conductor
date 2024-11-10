@@ -5,8 +5,6 @@ import {logger} from '@shared/lib/logger';
 import {useFeedItemIdFromUrl} from '@shared/lib/router';
 import {assertNever} from '@shared/lib/utils';
 
-import {feedItemsService} from '@shared/services/feedItemsService';
-
 import {FeedItem, FeedItemId, FeedItemType} from '@shared/types/feedItems.types';
 import {SystemTagId} from '@shared/types/tags.types';
 
@@ -20,7 +18,7 @@ import {XkcdFeedItemComponent} from '@src/components/feedItems/XkcdFeedItem';
 import {ScreenMainContentWrapper, ScreenWrapper} from '@src/components/layout/Screen';
 import {LeftSidebar} from '@src/components/LeftSidebar';
 
-import {useFeedItem} from '@src/lib/feedItems';
+import {feedItemsService, useFeedItem} from '@src/lib/feedItems.pwa';
 
 import {NotFoundScreen} from '@src/screens/404';
 

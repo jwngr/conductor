@@ -13,7 +13,7 @@ import {
   saveMarkdownToStorage,
   saveRawHtmlToStorage,
   updateImportedFeedItemInFirestore,
-} from '@src/lib/feedItems';
+} from '@src/lib/feedItems.func';
 import {
   batchDeleteFirestoreDocuments,
   deleteFirestoreDoc,
