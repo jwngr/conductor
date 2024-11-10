@@ -18,6 +18,7 @@ import {
   FEED_ITEMS_STORAGE_COLLECTION,
   IMPORT_QUEUE_DB_COLLECTION,
 } from '@shared/lib/constants';
+import {asyncTry, asyncTryAllPromises} from '@shared/lib/errors';
 import {firestore, storage} from '@shared/lib/firebase';
 import {makeImportQueueItem} from '@shared/lib/importQueue';
 import {isValidUrl} from '@shared/lib/urls';
@@ -35,6 +36,7 @@ import {
 import {IconName} from '@shared/types/icons.types';
 import {ImportQueueItemId} from '@shared/types/importQueue.types';
 import {fromFilterOperator, ViewType} from '@shared/types/query.types';
+import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import {SystemTagId} from '@shared/types/tags.types';
 import {AuthStateChangedUnsubscribe, UserId} from '@shared/types/user.types';
 import {Consumer} from '@shared/types/utils.types';
@@ -46,17 +48,11 @@ export class FeedItemsService {
     private readonly feedItemsStorageRef: StorageReference
   ) {}
 
-  async getFeedItem(feedItemId: FeedItemId): Promise<FeedItem | null> {
-    try {
+  async getFeedItem(feedItemId: FeedItemId): AsyncResult<FeedItem | null> {
+    return asyncTry<FeedItem | null>(async () => {
       const snapshot = await getDoc(doc(this.feedItemsDbRef, feedItemId));
       return snapshot.exists() ? ({...snapshot.data(), feedItemId: snapshot.id} as FeedItem) : null;
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(`Error fetching feed item: ${error.message}`, {cause: error});
-      } else {
-        throw new Error(`Error fetching feed item: ${error}`);
-      }
-    }
+    });
   }
 
   watchFeedItem(
@@ -116,91 +112,73 @@ export class FeedItemsService {
     readonly url: string;
     readonly source: FeedItemSource;
     readonly userId: UserId;
-  }): Promise<FeedItemId | null> {
+  }): AsyncResult<FeedItemId | null> {
     const {url, source, userId} = args;
 
     const trimmedUrl = url.trim();
-    if (!isValidUrl(trimmedUrl)) return null;
-
-    try {
-      const feedItemDoc = doc(this.feedItemsDbRef);
-
-      const feedItem = makeFeedItem({
-        feedItemId: feedItemDoc.id as FeedItemId,
-        type: FeedItemType.Website,
-        url: trimmedUrl,
-        // TODO: Make this dynamic based on the actual content. Maybe it should be null initially
-        // until we've done the import? Or should we compute this at save time?
-        source,
-        userId,
-      });
-
-      // Generate a push ID for the feed item.
-      const importQueueItemId = doc(this.importQueueDbRef).id as ImportQueueItemId;
-
-      // Add the feed item to the import queue.
-      const importQueueItem = makeImportQueueItem({
-        importQueueItemId,
-        feedItemId: feedItem.feedItemId,
-        userId,
-        url: trimmedUrl,
-      });
-
-      await Promise.all([
-        setDoc(feedItemDoc, feedItem),
-        setDoc(doc(this.importQueueDbRef, importQueueItemId), importQueueItem),
-      ]);
-
-      return feedItem.feedItemId;
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(`Error adding feed item: ${error.message}`, {cause: error});
-      } else {
-        throw new Error(`Error adding feed item: ${error}`);
-      }
+    if (!isValidUrl(trimmedUrl)) {
+      return makeErrorResult(new Error(`Invalid URL provided for feed item: "${url}"`));
     }
+
+    const feedItemDoc = doc(this.feedItemsDbRef);
+
+    const feedItem = makeFeedItem({
+      feedItemId: feedItemDoc.id as FeedItemId,
+      type: FeedItemType.Website,
+      url: trimmedUrl,
+      // TODO: Make this dynamic based on the actual content. Maybe it should be null initially
+      // until we've done the import? Or should we compute this at save time?
+      source,
+      userId,
+    });
+
+    // Generate a push ID for the feed item.
+    const importQueueItemId = doc(this.importQueueDbRef).id as ImportQueueItemId;
+
+    // Add the feed item to the import queue.
+    const importQueueItem = makeImportQueueItem({
+      importQueueItemId,
+      feedItemId: feedItem.feedItemId,
+      userId,
+      url: trimmedUrl,
+    });
+
+    const addFeedItemResult = await asyncTryAllPromises<[undefined, undefined]>([
+      setDoc(feedItemDoc, feedItem),
+      setDoc(doc(this.importQueueDbRef, importQueueItemId), importQueueItem),
+    ]);
+
+    if (!addFeedItemResult.success) {
+      return makeErrorResult(addFeedItemResult.error[0]);
+    }
+
+    return makeSuccessResult(feedItem.feedItemId);
   }
 
-  async updateFeedItem(feedItemId: FeedItemId, item: Partial<FeedItem>): Promise<void> {
-    try {
+  async updateFeedItem(feedItemId: FeedItemId, item: Partial<FeedItem>): AsyncResult<undefined> {
+    return asyncTry<undefined>(async () => {
       await updateDoc(doc(this.feedItemsDbRef, feedItemId), item);
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(`Error updating feed item: ${error.message}`, {cause: error});
-      } else {
-        throw new Error(`Error updating feed item: ${error}`);
-      }
-    }
+    });
   }
 
-  async deleteFeedItem(feedItemId: FeedItemId): Promise<void> {
-    try {
+  async deleteFeedItem(feedItemId: FeedItemId): AsyncResult<undefined> {
+    return asyncTry<undefined>(async () => {
       await deleteDoc(doc(this.feedItemsDbRef, feedItemId));
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(`Error deleting feed item: ${error.message}`, {cause: error});
-      } else {
-        throw new Error(`Error deleting feed item: ${error}`);
-      }
-    }
+    });
   }
 
-  async getFeedItemMarkdown(feedItemId: FeedItemId): Promise<string> {
-    try {
+  async getFeedItemMarkdown(feedItemId: FeedItemId): AsyncResult<string> {
+    // TODO: Clean up error handling here.
+    return asyncTry<string>(async () => {
       const fileRef = storageRef(this.feedItemsStorageRef, `${feedItemId}/llmContext.md`);
       const downloadUrl = await getDownloadURL(fileRef);
+      // TODO: Use shared `request` helper instead of `fetch`.
       const response = await fetch(downloadUrl);
       if (!response.ok) {
         throw new Error(`Response status ${response.status}: ${response.statusText}`);
       }
       return await response.text();
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(`Error getting feed item markdown: ${error.message}`, {cause: error});
-      } else {
-        throw new Error(`Error getting feed item markdown: ${error}`);
-      }
-    }
+    });
   }
 }
 

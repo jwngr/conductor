@@ -1,4 +1,6 @@
-import {logger} from 'firebase-functions';
+import {asyncTry} from '@shared/lib/errors';
+
+import {AsyncResult} from '@shared/types/result.types';
 
 /**
  * Fetches the raw HTML for a given URL.
@@ -7,13 +9,13 @@ import {logger} from 'firebase-functions';
 // 1. Handle more than just HTML.
 // 2. Extract a canonical URL (resolving redirects and removing tracking parameters).
 // 3. Handle images more gracefully (download and replace links in the HTML?).
-export async function fetchRawHtml(url: string): Promise<string | null> {
-  try {
+export async function fetchRawHtml(url: string): AsyncResult<string> {
+  return await asyncTry<string>(async () => {
+    // TODO: Use shared `request` helper instead of `fetch`.
     const rawHtmlResponse = await fetch(url);
-    return rawHtmlResponse.text();
-  } catch (error) {
-    // Report the failure, but allow the import to continue.
-    logger.error(`Error fetching raw HTML:`, error);
-    return null;
-  }
+    if (!rawHtmlResponse.ok) {
+      throw new Error(`Response status ${rawHtmlResponse.status}: ${rawHtmlResponse.statusText}`);
+    }
+    return await rawHtmlResponse.text();
+  });
 }

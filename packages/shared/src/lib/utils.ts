@@ -1,3 +1,6 @@
+import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import {Func} from '@shared/types/utils.types';
+
 export const formatWithCommas = (val: number): string => {
   return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 };
@@ -24,23 +27,39 @@ export function mapUndefined<T>(value: T | undefined): T | null {
 }
 
 /**
- * Runs all of the provided async tasks in batches of a given size. If the number of tasks is less
+ * Runs all of the provided `AsyncTask`s in batches of a given size. If the number of tasks is less
  * than the batch size, all tasks are run in parallel.
  */
-export async function batchPromises<T>(tasks: Promise<T>[], batchSize: number): Promise<T[]> {
-  if (batchSize <= 0) {
-    throw new Error(`Invalid batch size: ${batchSize}`);
+export async function batchAsyncResults<T>(
+  asyncResults: AsyncResult<unknown>[],
+  batchSize: number
+): AsyncResult<T> {
+  if (batchSize < 1) {
+    return makeErrorResult(new Error(`Batch size must be at least 1: ${batchSize}`));
   }
 
-  const allBatches: Promise<T>[][] = [];
-  for (let i = 0; i < tasks.length; i += batchSize) {
-    allBatches.push(tasks.slice(i, i + batchSize));
+  const resultsPerBatch: AsyncResult<unknown>[][] = [];
+  for (let i = 0; i < asyncResults.length; i += batchSize) {
+    resultsPerBatch.push(asyncResults.slice(i, i + batchSize));
   }
 
-  const allResults: T[] = [];
-  for (const currentBatch of allBatches) {
-    const currentBatchResults = await Promise.all(currentBatch);
-    allResults.push(...currentBatchResults);
+  const allResults: unknown[] = [];
+  for (const currentResults of resultsPerBatch) {
+    allResults.push(...(await Promise.all(currentResults)));
   }
-  return allResults;
+  return makeSuccessResult(allResults as T);
+}
+
+export function partition<T, U>(arr: (T | U)[], predicate: Func<T | U, boolean>): [T[], U[]] {
+  return arr.reduce(
+    (acc, item) => {
+      if (predicate(item)) {
+        acc[0].push(item as T);
+      } else {
+        acc[1].push(item as U);
+      }
+      return acc;
+    },
+    [[], []] as [T[], U[]]
+  );
 }

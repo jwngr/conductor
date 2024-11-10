@@ -21,19 +21,25 @@ const MarkDoneFeedItemActionIcon: React.FC<{
 }> = ({feedItemId}) => {
   const markDoneActionInfo = getMarkDoneFeedItemActionInfo();
 
+  const handleMarkDoneFeedItem = async () => {
+    const handleMarkDoneFeedItemResult = await feedItemsService.updateFeedItem(feedItemId, {
+      triageStatus: TriageStatus.Done,
+    });
+    if (!handleMarkDoneFeedItemResult.success) {
+      // TODO: Show error toast.
+      logger.error('Error marking feed item as done:', {
+        error: handleMarkDoneFeedItemResult.error,
+        feedItemId,
+      });
+    }
+  };
+
   return (
     <ButtonIcon
       name={markDoneActionInfo.icon}
       tooltip={markDoneActionInfo.text}
       size={40}
-      onClick={async () => {
-        try {
-          await feedItemsService.updateFeedItem(feedItemId, {triageStatus: TriageStatus.Done});
-        } catch (error) {
-          // TODO: Show error toast.
-          logger.error('Error marking feed item as done:', {error});
-        }
-      }}
+      onClick={handleMarkDoneFeedItem}
     />
   );
 };
@@ -43,19 +49,22 @@ const SaveFeedItemActionIcon: React.FC<{
 }> = ({feedItemId}) => {
   const saveActionInfo = getSaveFeedItemActionInfo();
 
+  const handleSaveFeedItem = async () => {
+    const handleSaveFeedItemResult = await feedItemsService.updateFeedItem(feedItemId, {
+      triageStatus: TriageStatus.Saved,
+    });
+    if (!handleSaveFeedItemResult.success) {
+      // TODO: Show error toast.
+      logger.error('Error saving feed item:', {error: handleSaveFeedItemResult.error, feedItemId});
+    }
+  };
+
   return (
     <ButtonIcon
       name={saveActionInfo.icon}
       tooltip={saveActionInfo.text}
       size={40}
-      onClick={async () => {
-        try {
-          await feedItemsService.updateFeedItem(feedItemId, {triageStatus: TriageStatus.Saved});
-        } catch (error) {
-          // TODO: Show error toast.
-          logger.error('Error saving feed item:', {error});
-        }
-      }}
+      onClick={handleSaveFeedItem}
     />
   );
 };
@@ -65,24 +74,29 @@ const MarkUnreadFeedItemActionIcon: React.FC<{
 }> = ({feedItemId}) => {
   const markUnreadActionInfo = getMarkUnreadFeedItemActionInfo();
 
+  const handleMarkUnreadFeedItem = async () => {
+    const handleMarkUnreadFeedItemResult =
+      // TODO: Consider using a Firestore converter to handle this.
+      // See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
+      await feedItemsService.updateFeedItem(feedItemId, {
+        [`tagIds.${SystemTagId.Unread}`]: true,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+    if (!handleMarkUnreadFeedItemResult.success) {
+      // TODO: Show error toast.
+      logger.error('Error marking feed item as unread:', {
+        error: handleMarkUnreadFeedItemResult.error,
+        feedItemId,
+      });
+    }
+  };
+
   return (
     <ButtonIcon
       name={markUnreadActionInfo.icon}
       tooltip={markUnreadActionInfo.text}
       size={40}
-      onClick={async () => {
-        try {
-          // TODO: Consider using a Firestore converter to handle this.
-          // See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
-          await feedItemsService.updateFeedItem(feedItemId, {
-            [`tagIds.${SystemTagId.Unread}`]: true,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          } as any);
-        } catch (error) {
-          // TODO: Show error toast.
-          logger.error('Error marking feed item as unread:', {error});
-        }
-      }}
+      onClick={handleMarkUnreadFeedItem}
     />
   );
 };
@@ -92,24 +106,30 @@ const StarFeedItemActionIcon: React.FC<{
 }> = ({feedItemId}) => {
   const starActionInfo = getStarFeedItemActionInfo();
 
+  const handleStarFeedItem = async () => {
+    const handleStarFeedItemResult =
+      // TODO: Consider using a Firestore converter to handle this.
+      // See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
+      await feedItemsService.updateFeedItem(feedItemId, {
+        [`tagIds.${SystemTagId.Starred}`]: true,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+    if (!handleStarFeedItemResult.success) {
+      // TODO: Show error toast.
+      logger.error('Error starring feed item:', {
+        error: handleStarFeedItemResult.error,
+        feedItemId,
+      });
+      return;
+    }
+  };
+
   return (
     <ButtonIcon
       name={starActionInfo.icon}
       tooltip={starActionInfo.text}
       size={40}
-      onClick={async () => {
-        try {
-          // TODO: Consider using a Firestore converter to handle this.
-          // See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
-          await feedItemsService.updateFeedItem(feedItemId, {
-            [`tagIds.${SystemTagId.Starred}`]: true,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          } as any);
-        } catch (error) {
-          // TODO: Show error toast.
-          logger.error('Error starring feed item:', {error});
-        }
-      }}
+      onClick={handleStarFeedItem}
     />
   );
 };

@@ -1,8 +1,7 @@
-import {ActionCodeSettings, sendSignInLinkToEmail} from 'firebase/auth';
+import {ActionCodeSettings} from 'firebase/auth';
 import {useState} from 'react';
 
-import {auth} from '@shared/lib/firebase';
-import {logger} from '@shared/lib/logger';
+import {authService} from '@shared/services/authService';
 
 import {ThemeColor} from '@shared/types/theme.types';
 import {createEmailAddress, isValidEmail} from '@shared/types/user.types';
@@ -29,28 +28,27 @@ const PasswordlessAuthButton: React.FC<{
 }> = ({maybeEmail, onClick, onSuccess, onError}) => {
   const handleSignInButtonClick: OnClick<HTMLButtonElement> = async (event) => {
     onClick(event);
-    try {
-      const emailResult = createEmailAddress(maybeEmail);
-      if (!emailResult.success) {
-        onError(emailResult.error);
-        return;
-      }
-      const email = emailResult.value;
-      await sendSignInLinkToEmail(auth, email, PASSWORDLESS_AUTH_ACTION_CODE_SETTINGS);
-      // Save the email locally so we don't need to reprompt for it again if they open the link on the same device.
-      window.localStorage.setItem('emailForSignIn', email);
-      onSuccess(email);
-    } catch (error) {
-      const errorMessage = 'Error sending passwordless sign in link';
-      let betterError: Error;
-      if (error instanceof Error) {
-        betterError = new Error(`${errorMessage}: ${error.message}`, {cause: error});
-      } else {
-        betterError = new Error(`${errorMessage}: ${error}`);
-      }
-      logger.error(betterError.message, {error: betterError});
-      onError(betterError);
+
+    const emailResult = createEmailAddress(maybeEmail);
+    if (!emailResult.success) {
+      onError(emailResult.error);
+      return;
     }
+    const email = emailResult.value;
+
+    const sendSignInLinkResult = await authService.sendSignInLinkToEmail(
+      email,
+      PASSWORDLESS_AUTH_ACTION_CODE_SETTINGS
+    );
+    if (!sendSignInLinkResult.success) {
+      onError(sendSignInLinkResult.error);
+      return;
+    }
+
+    // Save email locally to avoid reprompting for it again if opened on the same device.
+    window.localStorage.setItem('emailForSignIn', email);
+
+    onSuccess(email);
   };
 
   return (

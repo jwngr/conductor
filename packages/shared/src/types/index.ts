@@ -1,6 +1,7 @@
 import * as feedItemsTypesExports from '@shared/types/feedItems.types';
 import * as feedSubscriptionsTypesExports from '@shared/types/feedSubscriptions.types';
 import * as firebaseTypesExports from '@shared/types/firebase.types';
+import * as firecrawlTypesExports from '@shared/types/firecrawl.types';
 import * as iconsTypesExports from '@shared/types/icons.types';
 import * as importQueueTypesExports from '@shared/types/importQueue.types';
 import * as queryTypesExports from '@shared/types/query.types';
@@ -14,6 +15,7 @@ import * as utilsTypesExports from '@shared/types/utils.types';
 export const feedItems = feedItemsTypesExports;
 export const feedSubscriptions = feedSubscriptionsTypesExports;
 export const firebase = firebaseTypesExports;
+export const firecrawl = firecrawlTypesExports;
 export const icons = iconsTypesExports;
 export const importQueue = importQueueTypesExports;
 export const query = queryTypesExports;

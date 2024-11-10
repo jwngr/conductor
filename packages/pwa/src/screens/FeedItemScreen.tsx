@@ -48,17 +48,25 @@ const useMarkFeedItemRead = ({
       // 2. once per mount, to prevent marking read immediately after clicking "Mark unread".
       if (wasAlreadyMarkedReadAtMount.current || wasMarkedReadOnThisMount.current) return;
 
-      try {
+      // TODO: Consider using a Firestore converter to handle this.
+      // See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
+      const feedItemUpdates: Partial<FeedItem> = {
+        [`tagIds.${SystemTagId.Unread}`]: deleteField(),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any;
+      const markFeedItemAsReadResult = await feedItemsService.updateFeedItem(
+        feedItemId,
+        feedItemUpdates
+      );
+
+      if (markFeedItemAsReadResult.success) {
         wasMarkedReadOnThisMount.current = true;
-        await feedItemsService.updateFeedItem(feedItemId, {
-          [`tagIds.${SystemTagId.Unread}`]: deleteField(),
-          // TODO: Consider using a Firestore converter to handle this.
-          // See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any);
-      } catch (error) {
+      } else {
         wasMarkedReadOnThisMount.current = false;
-        logger.error('Unread manager failed to mark item as read', {error, feedItemId});
+        logger.error('Unread manager failed to mark item as read', {
+          error: markFeedItemAsReadResult.error,
+          feedItemId,
+        });
         // TODO: Show an error toast.
       }
     }

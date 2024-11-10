@@ -1,7 +1,7 @@
-import {User as FirebaseUser} from 'firebase/auth';
+import {ActionCodeSettings, User as FirebaseUser, UserCredential} from 'firebase/auth';
 
-import {makeErrorResult, makeSuccessResult, Result} from '@shared/types/result.types';
-import {Consumer, Task} from '@shared/types/utils.types';
+import {AsyncResult, makeErrorResult, makeSuccessResult, Result} from '@shared/types/result.types';
+import {Consumer, Func, Supplier, Task} from '@shared/types/utils.types';
 
 /**
  * Strongly-typed type for a user's unique identifier. Prefer this over plain strings.
@@ -43,7 +43,7 @@ export function isValidEmail(maybeEmail: unknown): maybeEmail is EmailAddress {
  */
 export function createEmailAddress(maybeEmail: string): Result<EmailAddress> {
   if (!isValidEmail(maybeEmail)) {
-    return makeErrorResult(new Error('Invalid email address format'));
+    return makeErrorResult(new Error(`Invalid email address format: "${maybeEmail}"`));
   }
   // TODO: Should we normalize email addresses?
   return makeSuccessResult(maybeEmail);
@@ -88,14 +88,22 @@ export type AuthStateChangedCallback = Consumer<LoggedInUser | null>;
 
 export type AuthStateChangedUnsubscribe = Task;
 
+interface AuthStateChangedCallbacks {
+  successCallback: AuthStateChangedCallback;
+  errorCallback: Consumer<Error>;
+}
+
 /**
  * Service for interacting with authentication state. It contains limited profile information about
  * the currently logged in user.
  */
 export interface AuthService {
-  getLoggedInUser: () => LoggedInUser | null;
-  onAuthStateChanged: (callbacks: {
-    successCallback: AuthStateChangedCallback;
-    errorCallback: Consumer<Error>;
-  }) => AuthStateChangedUnsubscribe;
+  getLoggedInUser: Supplier<LoggedInUser | null>;
+  onAuthStateChanged: Func<AuthStateChangedCallbacks, AuthStateChangedUnsubscribe>;
+  signInWithEmailLink: (email: EmailAddress, emailLink: string) => AsyncResult<UserCredential>;
+  sendSignInLinkToEmail: (
+    email: EmailAddress,
+    actionCodeSettings: ActionCodeSettings
+  ) => AsyncResult<void>;
+  signOut: Supplier<AsyncResult<void>>;
 }
