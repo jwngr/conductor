@@ -31,6 +31,25 @@ export function createImportQueueItemId(maybeImportQueueItemId: string): Result<
 }
 
 /**
+ * The import status of an import queue item.
+ */
+export enum ImportQueueItemStatus {
+  /**
+   * The item has been created but not yet processed.
+   */
+  New = 'NEW',
+  /**
+   * The item is currently being processed.
+   */
+  Processing = 'PROCESSING',
+  /**
+   * The item failed to be processed.
+   */
+  Failed = 'FAILED',
+  // Note: There is no "completed" status because items are deleted once complete.
+}
+
+/**
  * An item in the feed import queue.
  */
 export interface ImportQueueItem {
@@ -38,6 +57,7 @@ export interface ImportQueueItem {
   readonly userId: UserId;
   readonly feedItemId: FeedItemId;
   readonly url: string;
+  readonly status: ImportQueueItemStatus;
   readonly createdTime: FieldValue;
   readonly lastUpdatedTime: FieldValue;
 }

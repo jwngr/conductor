@@ -1,7 +1,11 @@
 import {addDoc, CollectionReference, doc, getDoc, serverTimestamp} from 'firebase/firestore';
 
 import {FeedItemId} from '@shared/types/feedItems.types';
-import {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue.types';
+import {
+  ImportQueueItem,
+  ImportQueueItemId,
+  ImportQueueItemStatus,
+} from '@shared/types/importQueue.types';
 import {UserId} from '@shared/types/user.types';
 
 // TODO: This is not used anywhere.
@@ -37,6 +41,7 @@ export function makeImportQueueItem({
     feedItemId,
     userId,
     url,
+    status: ImportQueueItemStatus.New,
     createdTime: serverTimestamp(),
     lastUpdatedTime: serverTimestamp(),
   };
