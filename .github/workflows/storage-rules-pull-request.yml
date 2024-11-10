@@ -18,9 +18,9 @@ jobs:
       - name: CI setup action for Firebase deploy
         uses: ./.github/actions/setup-workflow
         with:
-          install-deps: 'true' # TODO: This is not really needed, but CI fails without it.
           install-firebase: 'true'
       - name: Deploy Cloud Storage rules
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-        run: yarn run deploy:rules:storage --project=stag
+        # Yarn v4 requires installing deps before using `yarn run`, so use `firebase deploy` directly.
+        run: firebase deploy --only rules:storage --project=stag

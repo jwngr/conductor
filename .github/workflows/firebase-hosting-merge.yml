@@ -26,8 +26,6 @@ jobs:
         with:
           install-deps: 'true'
           install-firebase: 'true'
-      - name: Validate PWA
-        run: yarn run validate:pwa
       - name: Build PWA
         run: yarn run build:pwa
         env:
@@ -38,6 +36,8 @@ jobs:
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
           VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}
+      - name: Validate PWA
+        run: yarn run validate:pwa
       - name: Deploy PWA
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
