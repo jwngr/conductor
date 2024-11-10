@@ -6,9 +6,6 @@
   "references": [{"path": "../shared"}],
 
   "compilerOptions": {
-    // Required since this is a TypeScript referenced project.
-    "composite": true,
-
     // Override to include DOM.
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
 

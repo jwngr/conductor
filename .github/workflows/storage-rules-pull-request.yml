@@ -23,4 +23,4 @@ jobs:
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         # Yarn v4 requires installing deps before using `yarn run`, so use `firebase deploy` directly.
-        run: firebase deploy --only rules:storage --project=stag
+        run: firebase deploy --only storage --project=stag
