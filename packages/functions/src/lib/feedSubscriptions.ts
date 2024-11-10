@@ -52,9 +52,7 @@ export async function unsubscribeFromFeedSubscriptionsForUser(userId: UserId): A
         unsubscribeFromFeedSubscription(doc.data() as FeedSubscription)
     );
 
-  await batchAsyncResults(allUnsubscribeResultSuppliers, 3);
-
-  return makeSuccessResult(undefined);
+  return batchAsyncResults(allUnsubscribeResultSuppliers, 3);
 }
 
 /**

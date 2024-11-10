@@ -168,6 +168,7 @@ export class FeedItemsService {
   }
 
   async getFeedItemMarkdown(feedItemId: FeedItemId): AsyncResult<string> {
+    // TODO: Clean up error handling here.
     return asyncTry(async () => {
       const fileRef = storageRef(this.feedItemsStorageRef, `${feedItemId}/llmContext.md`);
       const downloadUrl = await getDownloadURL(fileRef);

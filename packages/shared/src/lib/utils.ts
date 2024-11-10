@@ -1,4 +1,4 @@
-import {AsyncResult, makeSuccessResult} from '@shared/types/result.types';
+import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import {Func, Supplier} from '@shared/types/utils.types';
 
 export const formatWithCommas = (val: number): string => {
@@ -34,8 +34,8 @@ export async function batchAsyncResults<T>(
   asyncResultSuppliers: Supplier<AsyncResult<unknown>>[],
   batchSize: number
 ): AsyncResult<T> {
-  if (batchSize <= 0) {
-    throw new Error(`Invalid batch size: ${batchSize}`);
+  if (batchSize < 1) {
+    return makeErrorResult(new Error(`Batch size must be at least 1: ${batchSize}`));
   }
 
   const suppliersPerBatch: Supplier<AsyncResult<unknown>>[][] = [];
