@@ -19,6 +19,14 @@ runs:
     - name: Activate Yarn v4
       shell: bash
       run: corepack prepare yarn@4 --activate
+    - name: Cache Yarn dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          .yarn/cache
+          .yarn/berry
+          .yarn/build-state.yml
+        key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
     - name: Install Firebase CLI
       if: inputs.install-firebase == 'true'
       shell: bash
@@ -27,8 +35,3 @@ runs:
       if: inputs.install-deps == 'true'
       shell: bash
       run: yarn install
-    - name: Cache Yarn dependencies
-      uses: actions/cache@v3
-      with:
-        path: .yarn/cache
-        key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
