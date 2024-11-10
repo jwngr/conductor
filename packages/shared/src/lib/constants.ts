@@ -6,3 +6,6 @@ export const FEED_SUBSCRIPTIONS_DB_COLLECTION = 'feedSubscriptions';
 
 // Firebase Cloud Storage collections.
 export const FEED_ITEMS_STORAGE_COLLECTION = 'feedItems';
+
+// Superfeedr.
+export const SUPERFEEDR_BASE_URL = 'https://push.superfeedr.com/';

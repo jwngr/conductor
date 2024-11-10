@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
+import {subscribeToFeed} from '@shared/lib/feedSubscriptions';
 import {logger} from '@shared/lib/logger';
 import {Urls} from '@shared/lib/urls';
 
@@ -73,9 +74,27 @@ const ViewWrapper = styled(FlexColumn)`
 `;
 
 export const View: React.FC<{viewType: ViewType}> = ({viewType}) => {
+  const [isSubscribing, setIsSubscribing] = React.useState(false);
+
+  const handleSubscribe = async () => {
+    setIsSubscribing(true);
+    try {
+      logger.log('Subscribing to feed');
+      await subscribeToFeed('https://jwn.gr/rss.xml');
+      setIsSubscribing(false);
+      logger.log('Successfully subscribed to feed');
+    } catch (error) {
+      setIsSubscribing(false);
+      logger.error('Failed to subscribe to feed', {error});
+    }
+  };
+
   return (
     <ViewWrapper>
       <h2>{viewType}</h2>
+      <button onClick={handleSubscribe} disabled={isSubscribing}>
+        {isSubscribing ? 'Subscribing...' : 'Subscribe to JWN.GR'}
+      </button>
       <ViewList viewType={viewType} />
       {/* TODO: Move into developer toolbar. */}
       <FeedItemAdder />

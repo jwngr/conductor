@@ -1,9 +1,11 @@
-import {logger} from 'firebase-functions';
+import {logger, setGlobalOptions} from 'firebase-functions';
 import {auth} from 'firebase-functions/v1';
 import {onDocumentCreated} from 'firebase-functions/v2/firestore';
+import {HttpsError, onCall} from 'firebase-functions/v2/https';
 
 import {IMPORT_QUEUE_DB_COLLECTION} from '@shared/lib/constants';
 
+import {FeedSubscriptionStatus} from '@shared/types/feedSubscriptions.types';
 import {
   createImportQueueItemId,
   ImportQueueItem,
@@ -11,8 +13,16 @@ import {
 } from '@shared/types/importQueue.types';
 import {createUserId} from '@shared/types/user.types';
 
+import {createFeedSubscription, updateFeedSubscription} from '@src/lib/feedSubscriptions';
+import {FieldValue} from '@src/lib/firebaseAdmin';
 import {deleteImportQueueItem, importFeedItem, updateImportQueueItem} from '@src/lib/importQueue';
+import {subscribeToFeed} from '@src/lib/superfeedr';
 import {wipeoutUser} from '@src/lib/wipeout';
+
+setGlobalOptions({
+  region: 'us-central1', // TODO: This should probably be an environment variable.
+  invoker: 'private', // Only allow authenticated requests to the functions.
+});
 
 /**
  * Processes an import queue item when it is created.
@@ -89,6 +99,68 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
     }
 
     logger.info(`[IMPORT] Successfully processed import queue item`, logDetails);
+  }
+);
+
+/**
+ * Subscribes to a Superfeedr feed.
+ */
+export const subscribeToFeedOnCall = onCall(
+  // TODO: Lock down the cors to only allow requests from my domains.
+  {cors: true},
+  async (request) => {
+    console.log(`[SUBSCRIBE] STARTING choo choo`);
+
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'User must be authenticated');
+    } else if (!request.data.url) {
+      // TODO: Use zod to validate the request data.
+      throw new HttpsError('invalid-argument', 'URL is required');
+    }
+
+    const userId = request.auth.uid;
+    const {url} = request.data;
+
+    console.log(`[SUBSCRIBE] Subscribing to feed ${url} for user ${userId}...`);
+
+    const [feedSubscriptionId, createFeedSubscriptionError] = await createFeedSubscription({
+      url,
+      userId,
+    });
+
+    // TODO: Use a response object to avoid having to check for !feedSubscriptionId.
+    if (createFeedSubscriptionError || !feedSubscriptionId) {
+      throw new HttpsError(
+        'internal',
+        createFeedSubscriptionError?.message ?? 'Unexpectedly received empty feed subscription ID'
+      );
+    }
+    console.log(`[SUBSCRIBE] Created feed subscription ${feedSubscriptionId}`);
+
+    const [superfeedrResponse, subscribeToFeedError] = await subscribeToFeed(url);
+
+    if (subscribeToFeedError) {
+      // Mark the feed subscription as errored, but don't wait for the update to complete.
+      void updateFeedSubscription(feedSubscriptionId, {
+        status: FeedSubscriptionStatus.Errored,
+      });
+      throw new HttpsError('internal', subscribeToFeedError.message);
+    }
+
+    const [, updateFeedSubscriptionError] = await updateFeedSubscription(feedSubscriptionId, {
+      status: FeedSubscriptionStatus.Subscribed,
+      subscribedTime: FieldValue.serverTimestamp(),
+    });
+
+    if (updateFeedSubscriptionError) {
+      throw new HttpsError('internal', updateFeedSubscriptionError.message);
+    }
+
+    console.log(`[SUBSCRIBE] Successfully subscribed to feed ${url} for user ${userId}`);
+
+    const {status, message} = superfeedrResponse;
+
+    return {status, message};
   }
 );
 
