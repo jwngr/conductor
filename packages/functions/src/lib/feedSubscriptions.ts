@@ -7,7 +7,6 @@ import {batchAsyncResults} from '@shared/lib/utils';
 import {FeedSubscription} from '@shared/types/feedSubscriptions.types';
 import {AsyncResult, makeErrorResult} from '@shared/types/result.types';
 import {UserId} from '@shared/types/user.types';
-import {Supplier} from '@shared/types/utils.types';
 
 import {
   batchDeleteFirestoreDocuments,
