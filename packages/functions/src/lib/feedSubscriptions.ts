@@ -46,13 +46,11 @@ export async function unsubscribeFromFeedSubscriptionsForUser(userId: UserId): A
   }
   const subscriptionQuerySnapshot = subscriptionQuerySnapshotResult.value;
 
-  const allUnsubscribeResultSuppliers: Supplier<AsyncResult<void>>[] =
-    subscriptionQuerySnapshot.docs.map(
-      (doc: DocumentSnapshot) => () =>
-        unsubscribeFromFeedSubscription(doc.data() as FeedSubscription)
-    );
+  const allUnsubscribeResults: AsyncResult<void>[] = subscriptionQuerySnapshot.docs.map(
+    (doc: DocumentSnapshot) => unsubscribeFromFeedSubscription(doc.data() as FeedSubscription)
+  );
 
-  return batchAsyncResults(allUnsubscribeResultSuppliers, 3);
+  return batchAsyncResults(allUnsubscribeResults, 3);
 }
 
 /**
