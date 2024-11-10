@@ -8,7 +8,6 @@
   "compilerOptions": {
     // Build is handled by esbuild.
     "moduleResolution": "bundler",
-    "noEmit": true,
 
     // Import aliases.
     "baseUrl": ".",
