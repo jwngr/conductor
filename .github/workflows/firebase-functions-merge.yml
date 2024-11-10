@@ -26,10 +26,10 @@ jobs:
         with:
           install-deps: 'true'
           install-firebase: 'true'
-      - name: Build functions
-        run: yarn run build:functions
       - name: Validate functions
         run: yarn run validate:functions
+      - name: Build functions
+        run: yarn run build:functions
       - name: Create .env file
         working-directory: packages/functions
         env:
