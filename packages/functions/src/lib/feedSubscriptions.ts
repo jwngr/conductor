@@ -9,9 +9,11 @@ import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/res
 import {UserId} from '@shared/types/user.types';
 import {Supplier} from '@shared/types/utils.types';
 
-import {firestore, getFirestoreQuerySnapshot} from '@src/lib/firebaseAdmin';
-
-import {batchDeleteFirestoreDocuments} from './batch';
+import {
+  batchDeleteFirestoreDocuments,
+  firestore,
+  getFirestoreQuerySnapshot,
+} from '@src/lib/firebaseAdmin';
 
 /**
  * Hard-deletes all feed subscription data in Firestore associated with a user.

@@ -9,13 +9,13 @@ import {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue.type
 import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import {UserId} from '@shared/types/user.types';
 
-import {batchDeleteFirestoreDocuments} from '@src/lib/batch';
 import {
   saveMarkdownToStorage,
   saveRawHtmlToStorage,
   updateImportedFeedItemInFirestore,
 } from '@src/lib/feedItems';
 import {
+  batchDeleteFirestoreDocuments,
   deleteFirestoreDoc,
   FieldValue,
   firestore,

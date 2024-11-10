@@ -9,14 +9,13 @@ import {SystemTagId} from '@shared/types/tags.types';
 import {UserId} from '@shared/types/user.types';
 
 import {
+  batchDeleteFirestoreDocuments,
   FieldValue,
   firestore,
   getFirestoreQuerySnapshot,
   storageBucket,
   updateFirestoreDoc,
 } from '@src/lib/firebaseAdmin';
-
-import {batchDeleteFirestoreDocuments} from './batch';
 
 interface UpdateImportedFeedItemInFirestoreArgs {
   readonly links: string[] | null;
