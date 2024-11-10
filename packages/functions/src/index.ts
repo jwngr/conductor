@@ -1,24 +1,23 @@
 import {logger} from 'firebase-functions';
-// TODO: Figure out why the import is not working properly for the build.
-// import functions from 'firebase-functions/v1';
+import {auth} from 'firebase-functions/v1';
 import {onDocumentCreated} from 'firebase-functions/v2/firestore';
 
 import {IMPORT_QUEUE_DB_COLLECTION} from '@shared/lib/constants';
+import {asyncTryWithErrorMessage} from '@shared/lib/errors';
 
 import {
   createImportQueueItemId,
   ImportQueueItem,
   ImportQueueItemStatus,
 } from '@shared/types/importQueue.types';
+import {createUserId} from '@shared/types/user.types';
 
 import {deleteImportQueueItem, importFeedItem, updateImportQueueItem} from '@src/lib/importQueue';
-
-// import {wipeoutUser} from '@src/lib/wipeout';
+import {wipeoutUser} from '@src/lib/wipeout';
 
 /**
  * Processes an import queue item when it is created.
  */
-// TODO: Make this idempotent given the "at least once" guarantee.
 export const processImportQueueOnDocumentCreated = onDocumentCreated(
   `/${IMPORT_QUEUE_DB_COLLECTION}/{importQueueItemId}`,
   async (event) => {
@@ -87,15 +86,28 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
 /**
  * Hard-deletes all data associated with a user when their Firebase auth account is deleted.
  */
-// export const wipeoutUserOnAuthDelete = functions.auth.user().onDelete(async (firebaseUser) => {
-//   const userId = firebaseUser.uid;
-//   try {
-//     logger.info(`[WIPEOUT] Wiping out user ${userId}...`);
-//     await wipeoutUser(userId);
-//     logger.info(`[WIPEOUT] Successfully wiped out user ${userId}`);
-//   } catch (error) {
-//     logger.error(
-//       new Error(`[WIPEOUT] Error wiping out user ${userId}: ${error.message ?? error}`)
-//     );
-//   }
-// });
+export const wipeoutUserOnAuthDelete = auth.user().onDelete(async (firebaseUser) => {
+  const userIdResult = createUserId(firebaseUser.uid);
+  if (!userIdResult.success) {
+    logger.error('[WIPEOUT] Invalid user ID. Not wiping out user.', {
+      error: userIdResult.error,
+      userId: firebaseUser.uid,
+    });
+    return;
+  }
+  const userId = userIdResult.value;
+
+  asyncTryWithErrorMessage({
+    asyncFn: async () => {
+      logger.info(`[WIPEOUT] Wiping out user ${userId}...`);
+      await wipeoutUser(userId);
+      logger.info(`[WIPEOUT] Successfully wiped out user ${userId}`);
+    },
+    onError: (error) => {
+      logger.error(`[WIPEOUT] Failed to wipe out user`, {
+        error,
+        userId,
+      });
+    },
+  });
+});

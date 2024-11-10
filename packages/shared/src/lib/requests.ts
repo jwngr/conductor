@@ -1,4 +1,5 @@
 import {asyncTryWithErrorMessage} from '@shared/lib/errors';
+import {logger} from '@shared/lib/logger';
 
 import {
   HttpMethod,
@@ -19,8 +20,10 @@ async function request<T extends object>(
   const queryString = params ? '?' + new URLSearchParams(params).toString() : '';
 
   return asyncTryWithErrorMessage<RequestResult<T>>({
-    errorMessagePrefix: 'Error fetching request',
-    onError: (error) => makeErrorResponse(error, 500),
+    onError: (error) => {
+      logger.error('Error fetching request', {error, url});
+      return makeErrorResponse(error, 500);
+    },
     asyncFn: async () => {
       const rawResponse = await fetch(url + queryString, {
         method,
@@ -40,8 +43,10 @@ async function request<T extends object>(
       }
 
       return asyncTryWithErrorMessage<RequestResult<T>>({
-        errorMessagePrefix: 'Error parsing JSON response',
-        onError: (error) => makeErrorResponse(error, 500),
+        onError: (error) => {
+          logger.error('Error parsing JSON response', {error, url});
+          return makeErrorResponse(error, 500);
+        },
         asyncFn: async () => {
           const jsonResponse = await rawResponse.json();
           return makeSuccessResponse<T>(jsonResponse, statusCode);
