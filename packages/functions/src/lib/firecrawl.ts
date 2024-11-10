@@ -1,4 +1,5 @@
 import FirecrawlApp from '@mendable/firecrawl-js';
+import {logger} from 'firebase-functions';
 import {defineString} from 'firebase-functions/params';
 import {onInit} from 'firebase-functions/v2/core';
 
@@ -32,10 +33,10 @@ export async function fetchFirecrawlData(url: string): Promise<ParsedFirecrawlDa
 
     // Some fields should always be present. Report them, but still allow the import to continue.
     if (!firecrawlResult.markdown) {
-      console.error('No markdown found in Firecrawl result');
+      logger.error('No markdown found in Firecrawl result');
     }
     if (!firecrawlResult.links) {
-      console.error('No links found in Firecrawl result');
+      logger.error('No links found in Firecrawl result');
     }
 
     return {
@@ -47,7 +48,7 @@ export async function fetchFirecrawlData(url: string): Promise<ParsedFirecrawlDa
     };
   } catch (error) {
     // Report the failure, but allow the import to continue.
-    console.error(`Error fetching Firecrawl data:`, error);
+    logger.error(`Error fetching Firecrawl data:`, error);
     return {title: null, description: null, markdown: null, links: null};
   }
 }

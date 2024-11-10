@@ -1,5 +1,4 @@
-// TODO: Switch to using the Functions logger.
-// import logger from 'firebase-functions/logger';
+import {logger} from 'firebase-functions';
 // TODO: Figure out why the import is not working properly for the build.
 // import functions from 'firebase-functions/v1';
 import {onDocumentCreated} from 'firebase-functions/v2/firestore';
@@ -27,7 +26,7 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
 
     const importQueueItemIdResult = createImportQueueItemId(maybeImportQueueItemId);
     if (!importQueueItemIdResult.success) {
-      console.error(
+      logger.error(
         `[IMPORT] Invalid import queue item ID "${maybeImportQueueItemId}": ${importQueueItemIdResult.error}`
       );
       return;
@@ -36,7 +35,7 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
 
     const snapshot = event.data;
     if (!snapshot) {
-      console.error(`[IMPORT] No data associated with import queue item ${importQueueItemId}`);
+      logger.error(`[IMPORT] No data associated with import queue item ${importQueueItemId}`);
       return;
     }
 
@@ -45,32 +44,39 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
 
     // Avoid double processing by only processing items with a "new" status.
     if (importQueueItem.status !== ImportQueueItemStatus.New) {
-      console.warn(
+      logger.warn(
         `[IMPORT] Import queue item ${importQueueItemId} is not in the "new" status. Skipping...`
       );
       return;
     }
 
+    const logDetails = {
+      importQueueItemId,
+      feedItemId: importQueueItem.feedItemId,
+      userId: importQueueItem.userId,
+    } as const;
+
     try {
-      console.log(`[IMPORT] Claiming import queue item ${importQueueItemId}...`);
+      logger.info(`[IMPORT] Claiming import queue item...`, logDetails);
       await updateImportQueueItem(importQueueItemId, {
         status: ImportQueueItemStatus.Processing,
       });
 
-      console.log(`[IMPORT] Importing queue item ${importQueueItemId}...`, {
-        importQueueItemId,
-        feedItemId: importQueueItem.feedItemId,
-        userId: importQueueItem.userId,
-      });
+      logger.info(`[IMPORT] Importing queue item...`, logDetails);
       await importFeedItem(importQueueItem);
 
       // Remove the import queue item once everything else has processed successfully.
-      console.log(`[IMPORT] Deleting import queue item ${importQueueItemId}...`);
+      logger.info(`[IMPORT] Deleting import queue item...`, logDetails);
       await deleteImportQueueItem(importQueueItemId);
 
-      console.log(`[IMPORT] Done processing import queue item ${importQueueItemId}`);
+      logger.info(`[IMPORT] Done processing import queue item`, logDetails);
     } catch (error) {
-      console.error(`[IMPORT] Error processing import queue item ${importQueueItemId}:`, error);
+      logger.error(`[IMPORT] Error processing import queue item`, {
+        ...logDetails,
+        // TODO: Figure out a simpler solution here that is reusable.
+        error:
+          typeof error === 'object' && error !== null && 'message' in error ? error.message : error,
+      });
       await updateImportQueueItem(importQueueItemId, {
         status: ImportQueueItemStatus.Failed,
       });
@@ -84,10 +90,12 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
 // export const wipeoutUserOnAuthDelete = functions.auth.user().onDelete(async (firebaseUser) => {
 //   const userId = firebaseUser.uid;
 //   try {
-//     console.log(`[WIPEOUT] Wiping out user ${userId}...`);
+//     logger.info(`[WIPEOUT] Wiping out user ${userId}...`);
 //     await wipeoutUser(userId);
-//     console.log(`[WIPEOUT] Successfully wiped out user ${userId}`);
+//     logger.info(`[WIPEOUT] Successfully wiped out user ${userId}`);
 //   } catch (error) {
-//     console.error(`[WIPEOUT] Error wiping out user ${userId}:`, error);
+//     logger.error(
+//       new Error(`[WIPEOUT] Error wiping out user ${userId}: ${error.message ?? error}`)
+//     );
 //   }
 // });

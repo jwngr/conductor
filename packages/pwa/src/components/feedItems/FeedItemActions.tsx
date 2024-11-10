@@ -1,5 +1,7 @@
 import React from 'react';
 
+import {logger} from '@shared/lib/logger';
+
 import {
   feedItemsService,
   getMarkDoneFeedItemActionInfo,
@@ -29,8 +31,7 @@ const MarkDoneFeedItemActionIcon: React.FC<{
           await feedItemsService.updateFeedItem(feedItemId, {triageStatus: TriageStatus.Done});
         } catch (error) {
           // TODO: Show error toast.
-          // eslint-disable-next-line no-console
-          console.error('Error marking feed item as done:', {error});
+          logger.error('Error marking feed item as done:', {error});
         }
       }}
     />
@@ -52,8 +53,7 @@ const SaveFeedItemActionIcon: React.FC<{
           await feedItemsService.updateFeedItem(feedItemId, {triageStatus: TriageStatus.Saved});
         } catch (error) {
           // TODO: Show error toast.
-          // eslint-disable-next-line no-console
-          console.error('Error saving feed item:', {error});
+          logger.error('Error saving feed item:', {error});
         }
       }}
     />
@@ -80,8 +80,7 @@ const MarkUnreadFeedItemActionIcon: React.FC<{
           } as any);
         } catch (error) {
           // TODO: Show error toast.
-          // eslint-disable-next-line no-console
-          console.error('Error marking feed item as unread:', {error});
+          logger.error('Error marking feed item as unread:', {error});
         }
       }}
     />
@@ -108,8 +107,7 @@ const StarFeedItemActionIcon: React.FC<{
           } as any);
         } catch (error) {
           // TODO: Show error toast.
-          // eslint-disable-next-line no-console
-          console.error('Error starring feed item:', {error});
+          logger.error('Error starring feed item:', {error});
         }
       }}
     />
