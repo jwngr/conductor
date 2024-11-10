@@ -6,9 +6,13 @@ import {onDocumentCreated} from 'firebase-functions/v2/firestore';
 
 import {IMPORT_QUEUE_DB_COLLECTION} from '@shared/lib/constants';
 
-import {createImportQueueItemId, ImportQueueItem} from '@shared/types/importQueue.types';
+import {
+  createImportQueueItemId,
+  ImportQueueItem,
+  ImportQueueItemStatus,
+} from '@shared/types/importQueue.types';
 
-import {deleteImportQueueItem, importFeedItem} from '@src/lib/importQueue';
+import {deleteImportQueueItem, importFeedItem, updateImportQueueItem} from '@src/lib/importQueue';
 
 // import {wipeoutUser} from '@src/lib/wipeout';
 
@@ -37,30 +41,39 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
     }
 
     // TODO: Properly validate the import item schema.
-    const importQueueItem = {
-      ...snapshot.data(),
-      importQueueItemId,
-    } as ImportQueueItem;
+    const importQueueItem = {importQueueItemId, ...snapshot.data()} as ImportQueueItem;
+
+    // Avoid double processing by only processing items with a "new" status.
+    if (importQueueItem.status !== ImportQueueItemStatus.New) {
+      console.warn(
+        `[IMPORT] Import queue item ${importQueueItemId} is not in the "new" status. Skipping...`
+      );
+      return;
+    }
 
     try {
-      console.log(`[IMPORT] Processing import queue item ${importQueueItemId}...`, {
+      console.log(`[IMPORT] Claiming import queue item ${importQueueItemId}...`);
+      await updateImportQueueItem(importQueueItemId, {
+        status: ImportQueueItemStatus.Processing,
+      });
+
+      console.log(`[IMPORT] Importing queue item ${importQueueItemId}...`, {
         importQueueItemId,
         feedItemId: importQueueItem.feedItemId,
         userId: importQueueItem.userId,
       });
-
       await importFeedItem(importQueueItem);
-
-      console.log(`[IMPORT] Successfully processed import queue item ${importQueueItemId}`);
 
       // Remove the import queue item once everything else has processed successfully.
       console.log(`[IMPORT] Deleting import queue item ${importQueueItemId}...`);
       await deleteImportQueueItem(importQueueItemId);
 
-      console.log(`[IMPORT] Successfully deleted import queue item ${importQueueItemId}`);
+      console.log(`[IMPORT] Done processing import queue item ${importQueueItemId}`);
     } catch (error) {
       console.error(`[IMPORT] Error processing import queue item ${importQueueItemId}:`, error);
-      // TODO: Move failed item to a separate "failed" queue.
+      await updateImportQueueItem(importQueueItemId, {
+        status: ImportQueueItemStatus.Failed,
+      });
     }
   }
 );

@@ -6,7 +6,7 @@ import {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue.type
 import {UserId} from '@shared/types/user.types';
 
 import {batchDeleteFirestoreDocuments} from '@src/lib/batch';
-import {firestore} from '@src/lib/firebaseAdmin';
+import {FieldValue, firestore} from '@src/lib/firebaseAdmin';
 
 import {
   saveMarkdownToStorage,
@@ -44,6 +44,21 @@ export async function importFeedItem(importQueueItem: ImportQueueItem): Promise<
       description: firecrawlResult.description,
     }),
   ]);
+}
+
+/**
+ * Updates an import queue item in Firestore.
+ */
+export async function updateImportQueueItem(
+  importQueueItemId: ImportQueueItemId,
+  updates: Partial<Pick<ImportQueueItem, 'status'>>
+): Promise<void> {
+  const fullUpdates: Partial<ImportQueueItem> = {
+    ...updates,
+    lastUpdatedTime: FieldValue.serverTimestamp(),
+  };
+
+  await firestore.collection(IMPORT_QUEUE_DB_COLLECTION).doc(importQueueItemId).update(fullUpdates);
 }
 
 /**
