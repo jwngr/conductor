@@ -1,5 +1,5 @@
 {
-  "include": ["src/**/*"],
+  "include": ["src"],
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     // This project is referenced by other TypeScript projects, so it must be composite.
