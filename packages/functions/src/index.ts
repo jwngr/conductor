@@ -3,6 +3,7 @@ import {auth} from 'firebase-functions/v1';
 import {onDocumentCreated} from 'firebase-functions/v2/firestore';
 
 import {IMPORT_QUEUE_DB_COLLECTION} from '@shared/lib/constants';
+import {asyncTryWithErrorMessage} from '@shared/lib/errors';
 
 import {
   createImportQueueItemId,
@@ -96,16 +97,17 @@ export const wipeoutUserOnAuthDelete = auth.user().onDelete(async (firebaseUser)
   }
   const userId = userIdResult.value;
 
-  try {
-    logger.info(`[WIPEOUT] Wiping out user ${userId}...`);
-    await wipeoutUser(userId);
-    logger.info(`[WIPEOUT] Successfully wiped out user ${userId}`);
-  } catch (error) {
-    logger.error('[WIPEOUT] Failed to wipe out user', {
-      // TODO: Figure out a simpler solution here that is reusable.
-      error:
-        typeof error === 'object' && error !== null && 'message' in error ? error.message : error,
-      userId,
-    });
-  }
+  asyncTryWithErrorMessage({
+    asyncFn: async () => {
+      logger.info(`[WIPEOUT] Wiping out user ${userId}...`);
+      await wipeoutUser(userId);
+      logger.info(`[WIPEOUT] Successfully wiped out user ${userId}`);
+    },
+    onError: (error) => {
+      logger.error(`[WIPEOUT] Failed to wipe out user`, {
+        error,
+        userId,
+      });
+    },
+  });
 });

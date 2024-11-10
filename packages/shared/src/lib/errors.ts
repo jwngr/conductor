@@ -1,42 +1,33 @@
 import {Func, Supplier} from '@shared/types/utils.types';
 
 interface BaseTryWithErrorMessageArg<T> {
-  /* Forces errors to be handled. */
+  /*
+   * Error handling callback is required to ensure a value of type `T` is always returned. Most
+   * callers should at the very least be logging the error. Most should be doing something else
+   * to handle the error gracefully for the user.
+   */
   readonly onError: Func<Error, T>;
-  /* Optional prefix for the error message. */
-  readonly errorMessagePrefix?: string;
 }
 
-interface SyncTryWithErrorMessageArgs<T extends object> extends BaseTryWithErrorMessageArg<T> {
+interface SyncTryWithErrorMessageArgs<T> extends BaseTryWithErrorMessageArg<T> {
   /* The function to execute, which may throw an error. */
   readonly fn: Supplier<T>;
 }
 
-interface AsyncTryWithErrorMessageArgs<T extends object> extends BaseTryWithErrorMessageArg<T> {
+interface AsyncTryWithErrorMessageArgs<T> extends BaseTryWithErrorMessageArg<T> {
   /* The asynchronous function to execute, which may throw a synchronous or asynchronous error. */
   readonly asyncFn: Supplier<Promise<T>>;
 }
 
-interface HandleErrorArgs<T> {
-  readonly error: unknown;
-  readonly onError: Func<Error, T>;
-  readonly errorMessagePrefix?: string;
-}
-
 /**
- * Handles an error by creating a better error message and calling `onError` with it.
+ * Upgrades an unknown error into a proper `Error` object with the best message possible.
  */
-function handleError<T>({error, onError, errorMessagePrefix}: HandleErrorArgs<T>): T {
-  let betterError: Error;
-  const prefix = errorMessagePrefix ? `${errorMessagePrefix}: ` : '';
+function upgradeUnknownError(error: unknown): Error {
+  const defaultErrorMessage = 'An unexpected error occurred';
   if (error instanceof Error) {
-    betterError = new Error(`${prefix}${error.message}`, {cause: error});
-  } else {
-    const defaultErrorMessage = 'An unexpected error occurred';
-    betterError = new Error(`${prefix}${error ?? defaultErrorMessage}`);
+    return new Error(`${error.message || defaultErrorMessage}`, {cause: error});
   }
-
-  return onError(betterError);
+  return new Error(`${error || defaultErrorMessage}`);
 }
 
 /**
@@ -45,15 +36,12 @@ function handleError<T>({error, onError, errorMessagePrefix}: HandleErrorArgs<T>
  *
  * For asynchronous functions, see {@link asyncTryWithErrorMessage}.
  */
-export function tryWithErrorMessage<T extends object>({
-  fn,
-  onError,
-  errorMessagePrefix,
-}: SyncTryWithErrorMessageArgs<T>): T {
+export function tryWithErrorMessage<T>({fn, onError}: SyncTryWithErrorMessageArgs<T>): T {
   try {
     return fn();
   } catch (error) {
-    return handleError({error, onError, errorMessagePrefix});
+    const betterError = upgradeUnknownError(error);
+    return onError(betterError);
   }
 }
 
@@ -63,14 +51,14 @@ export function tryWithErrorMessage<T extends object>({
  *
  * For synchronous functions, see {@link tryWithErrorMessage}.
  */
-export async function asyncTryWithErrorMessage<T extends object>({
+export async function asyncTryWithErrorMessage<T>({
   asyncFn,
   onError,
-  errorMessagePrefix,
 }: AsyncTryWithErrorMessageArgs<T>): Promise<T> {
   try {
     return await asyncFn();
   } catch (error) {
-    return handleError({error, onError, errorMessagePrefix});
+    const betterError = upgradeUnknownError(error);
+    return onError(betterError);
   }
 }
