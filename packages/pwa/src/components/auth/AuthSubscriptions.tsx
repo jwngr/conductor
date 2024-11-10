@@ -58,9 +58,10 @@ const PasswordlessAuthSubscription: React.FC = () => {
           navigate(Urls.forRoot());
         }
       } catch (error) {
-        // TODO: Reconsider throwing errors here. Maybe I should put them in `AuthStore`.
+        // TODO: Reconsider throwing errors here. This causes a blank screen on error. Maybe I
+        // should put them in `AuthStore`?
         if (error instanceof Error) {
-          // TODO: More gracefull handle common Firebase auth errors.
+          // TODO: More gracefully handle common Firebase auth errors.
           // See https://firebase.google.com/docs/reference/js/auth#autherrorcodes.
           throw new Error(`Error signing in with email link: ${error.message}`, {cause: error});
         } else {
