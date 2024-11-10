@@ -149,27 +149,27 @@ export class FeedItemsService {
     ]);
 
     if (!addFeedItemResult.success) {
-      return addFeedItemResult;
+      return makeErrorResult(addFeedItemResult.error[0]);
     }
 
     return makeSuccessResult(feedItem.feedItemId);
   }
 
-  async updateFeedItem(feedItemId: FeedItemId, item: Partial<FeedItem>): AsyncResult<void> {
-    return asyncTry(async () => {
+  async updateFeedItem(feedItemId: FeedItemId, item: Partial<FeedItem>): AsyncResult<undefined> {
+    return asyncTry<undefined>(async () => {
       await updateDoc(doc(this.feedItemsDbRef, feedItemId), item);
     });
   }
 
-  async deleteFeedItem(feedItemId: FeedItemId): AsyncResult<void> {
-    return asyncTry(async () => {
+  async deleteFeedItem(feedItemId: FeedItemId): AsyncResult<undefined> {
+    return asyncTry<undefined>(async () => {
       await deleteDoc(doc(this.feedItemsDbRef, feedItemId));
     });
   }
 
   async getFeedItemMarkdown(feedItemId: FeedItemId): AsyncResult<string> {
     // TODO: Clean up error handling here.
-    return asyncTry(async () => {
+    return asyncTry<string>(async () => {
       const fileRef = storageRef(this.feedItemsStorageRef, `${feedItemId}/llmContext.md`);
       const downloadUrl = await getDownloadURL(fileRef);
       // TODO: Use shared `request` helper instead of `fetch`.

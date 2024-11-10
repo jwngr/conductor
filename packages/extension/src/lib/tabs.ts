@@ -9,14 +9,15 @@ export function useCurrentTab() {
 
   useEffect(() => {
     async function fetchCurrentTab() {
-      const fetchCurrentTabResult = await asyncTry(async () => {
+      const tabResult = await asyncTry<chrome.tabs.Tab>(async () => {
         const [tab] = await chrome.tabs.query({active: true, lastFocusedWindow: true});
-        setCurrentTab(tab);
+        return tab;
       });
-      if (fetchCurrentTabResult.success) {
+      if (tabResult.success) {
+        setCurrentTab(tabResult.value);
         setIsLoading(false);
       } else {
-        setError(fetchCurrentTabResult.error);
+        setError(tabResult.error);
         setIsLoading(false);
       }
     }

@@ -77,16 +77,15 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
     const importItemResult = await importFeedItem(importQueueItem);
     if (!importItemResult.success) {
       await handleError('Error importing queue item', {error: importItemResult.error});
-      await updateImportQueueItem(importQueueItemId, {status: ImportQueueItemStatus.Failed});
+      return;
     }
 
     // Remove the import queue item once everything else has processed successfully.
     logger.info(`[IMPORT] Deleting import queue item...`, logDetails);
     const deleteItemResult = await deleteImportQueueItem(importQueueItemId);
     if (!deleteItemResult.success) {
-      await handleError('Error deleting import queue item', {
-        error: deleteItemResult.error,
-      });
+      await handleError('Error deleting import queue item', {error: deleteItemResult.error});
+      return;
     }
 
     logger.info(`[IMPORT] Successfully processed import queue item`, logDetails);

@@ -92,13 +92,13 @@ function createAuthService(): AuthService {
     },
 
     sendSignInLinkToEmail: async (email, actionCodeSettings): AsyncResult<void> => {
-      return await asyncTry(async () => {
+      return await asyncTry<undefined>(async () => {
         await sendSignInLinkToEmailFirebase(auth, email, actionCodeSettings);
       });
     },
 
     signOut: async (): AsyncResult<void> => {
-      return await asyncTry(async () => {
+      return await asyncTry<undefined>(async () => {
         await signOutFirebase(auth);
       });
     },

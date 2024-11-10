@@ -17,8 +17,7 @@ export const SignOutRedirect: React.FC = () => {
       const signOutResult = await authService.signOut();
       if (!signOutResult.success) {
         // TODO: Filter out error message that are expected user error.
-        const errorMessage = 'Failed to sign out user';
-        logger.error(errorMessage, {error: signOutResult.error});
+        logger.error('Failed to sign out user', {error: signOutResult.error});
         // TODO: Surface error to user.
         return;
       }

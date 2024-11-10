@@ -62,14 +62,14 @@ export async function asyncTryAll<T>(
 ): AsyncResult<T, Error[]> {
   try {
     const results = await Promise.all(asyncResults);
-    const [suceededResults, failedResults] = partition<SuccessResult<unknown>, ErrorResult>(
+    const [succeededResults, failedResults] = partition<SuccessResult<unknown>, ErrorResult>(
       results,
       (result) => result.success
     );
     if (failedResults.length > 0) {
       return makeErrorResult(failedResults.map((result) => result.error));
     }
-    const succeededValues = suceededResults.map((result) => result.value);
+    const succeededValues = succeededResults.map((result) => result.value);
     return makeSuccessResult(succeededValues as T);
   } catch (error) {
     const betterError = upgradeUnknownError(error);
@@ -81,12 +81,22 @@ export async function asyncTryAll<T>(
  * Executes the given `Promise`s in parallel and returns a single `SuccessResult<T>` with their
  * results. If any of the promises fail, a single `ErrorResult` is returned.
  */
-export async function asyncTryAllPromises<T>(asyncFns: Promise<unknown>[]): AsyncResult<T, Error> {
+export async function asyncTryAllPromises<T>(
+  asyncFns: Promise<unknown>[]
+): AsyncResult<T, Error[]> {
   try {
-    const results = await Promise.all(asyncFns);
-    return makeSuccessResult(results as T);
+    const results = await Promise.allSettled(asyncFns);
+    const [fulfilled, rejected] = partition(results, (result) => result.status === 'fulfilled');
+    if (rejected.length > 0) {
+      const errors = rejected.map((result) =>
+        upgradeUnknownError((result as PromiseRejectedResult).reason)
+      );
+      return makeErrorResult(errors);
+    }
+    const values = fulfilled.map((result) => (result as PromiseFulfilledResult<unknown>).value);
+    return makeSuccessResult(values as T);
   } catch (error) {
     const betterError = upgradeUnknownError(error);
-    return makeErrorResult(betterError);
+    return makeErrorResult([betterError]);
   }
 }

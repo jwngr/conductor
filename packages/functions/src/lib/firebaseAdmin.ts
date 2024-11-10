@@ -3,9 +3,7 @@ import {DocumentData, DocumentReference, Query, QuerySnapshot} from 'firebase-ad
 
 import {asyncTry} from '@shared/lib/errors';
 
-import type {} from 'firebase-admin/firestore';
-
-import {AsyncResult, makeSuccessResult} from '@shared/types/result.types';
+import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 
 const BATCH_DELETE_SIZE = 500;
 
@@ -18,7 +16,7 @@ export const storageBucket = admin.storage().bucket();
 export const FieldValue = admin.firestore.FieldValue;
 
 export function getFirestoreQuerySnapshot(query: Query): AsyncResult<QuerySnapshot> {
-  return asyncTry(async () => {
+  return asyncTry<QuerySnapshot>(async () => {
     return await query.get();
   });
 }
@@ -26,13 +24,13 @@ export function updateFirestoreDoc<T>(
   docRef: DocumentReference,
   updates: Partial<T>
 ): AsyncResult<void> {
-  return asyncTry(async () => {
+  return asyncTry<undefined>(async () => {
     await docRef.update(updates);
   });
 }
 
 export function deleteFirestoreDoc(docPath: string): AsyncResult<void> {
-  return asyncTry(async () => {
+  return asyncTry<undefined>(async () => {
     await firestore.doc(docPath).delete();
   });
 }
@@ -43,6 +41,8 @@ export function deleteFirestoreDoc(docPath: string): AsyncResult<void> {
 export async function batchDeleteFirestoreDocuments<T extends DocumentData>(
   refs: DocumentReference<T>[]
 ): AsyncResult<void> {
+  const errors: Error[] = [];
+
   const totalBatches = Math.ceil(refs.length / BATCH_DELETE_SIZE);
 
   const refsPerBatch: DocumentReference<T>[][] = Array.from({length: totalBatches}).map((_, i) => {
@@ -51,15 +51,15 @@ export async function batchDeleteFirestoreDocuments<T extends DocumentData>(
 
   // Run one batch at a time.
   for (const currentRefs of refsPerBatch) {
-    const deleteBatchResult = await asyncTry(async () => {
+    const deleteBatchResult = await asyncTry<undefined>(async () => {
       const batch = firestore.batch();
       currentRefs.forEach((ref) => batch.delete(ref));
       await batch.commit();
     });
     if (!deleteBatchResult.success) {
-      return deleteBatchResult;
+      errors.push(deleteBatchResult.error);
     }
   }
 
-  return makeSuccessResult(undefined);
+  return errors.length > 0 ? makeErrorResult(errors[0]) : makeSuccessResult(undefined);
 }

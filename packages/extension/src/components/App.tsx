@@ -1,5 +1,7 @@
 import {useState} from 'react';
 
+import {asyncTry} from '@shared/lib/errors';
+
 import {feedItemsService} from '@shared/services/feedItemsService';
 
 import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems.types';
@@ -13,7 +15,17 @@ function App() {
 
   const handleClick = async () => {
     setStatus('Saving URL...');
-    const [tab] = await chrome.tabs.query({active: true, lastFocusedWindow: true});
+
+    const tabResult = await asyncTry<chrome.tabs.Tab>(async () => {
+      const [tab] = await chrome.tabs.query({active: true, lastFocusedWindow: true});
+      return tab;
+    });
+
+    if (!tabResult.success) {
+      setStatus(`Error getting tab: ${tabResult.error.message}`);
+      return;
+    }
+    const tab = tabResult.value;
 
     const tabUrl = tab.url;
     if (!tabUrl) {

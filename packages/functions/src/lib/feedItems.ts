@@ -30,7 +30,7 @@ export async function updateImportedFeedItemInFirestore(
   feedItemId: FeedItemId,
   {links, title, description}: UpdateImportedFeedItemInFirestoreArgs
 ): AsyncResult<void> {
-  return await asyncTry(async () => {
+  return await asyncTry<undefined>(async () => {
     const update: Omit<
       FeedItem,
       'feedItemId' | 'userId' | 'source' | 'url' | 'createdTime' | 'triageStatus' | 'tagIds'
@@ -85,7 +85,7 @@ export async function saveRawHtmlToStorage(args: {
   readonly userId: UserId;
 }): AsyncResult<void> {
   const {feedItemId, rawHtml, userId} = args;
-  return await asyncTry(async () => {
+  return await asyncTry<undefined>(async () => {
     const rawHtmlFile = storageBucket.file(
       `${FEED_ITEMS_STORAGE_COLLECTION}/${userId}/${feedItemId}/raw.html`
     );
@@ -106,7 +106,7 @@ export async function saveMarkdownToStorage(args: {
     return makeErrorResult(new Error('Markdown is null'));
   }
 
-  return await asyncTry(async () => {
+  return await asyncTry<undefined>(async () => {
     const llmContextFile = storageBucket.file(
       `${FEED_ITEMS_STORAGE_COLLECTION}/${userId}/${feedItemId}/llmContext.md`
     );
@@ -118,7 +118,7 @@ export async function saveMarkdownToStorage(args: {
  * Hard-deletes all storage files associated with a user.
  */
 export async function deleteStorageFilesForUser(userId: UserId): AsyncResult<void> {
-  return await asyncTry(async () => {
+  return await asyncTry<undefined>(async () => {
     await storageBucket.deleteFiles({prefix: `${FEED_ITEMS_STORAGE_COLLECTION}/${userId}/`});
   });
 }

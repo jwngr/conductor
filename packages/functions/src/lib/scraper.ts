@@ -11,7 +11,11 @@ import {AsyncResult} from '@shared/types/result.types';
 // 3. Handle images more gracefully (download and replace links in the HTML?).
 export async function fetchRawHtml(url: string): AsyncResult<string> {
   return await asyncTry<string>(async () => {
+    // TODO: Use shared `request` helper instead of `fetch`.
     const rawHtmlResponse = await fetch(url);
+    if (!rawHtmlResponse.ok) {
+      throw new Error(`Response status ${rawHtmlResponse.status}: ${rawHtmlResponse.statusText}`);
+    }
     return await rawHtmlResponse.text();
   });
 }

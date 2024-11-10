@@ -1,5 +1,5 @@
 import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import {Func, Supplier} from '@shared/types/utils.types';
+import {Func} from '@shared/types/utils.types';
 
 export const formatWithCommas = (val: number): string => {
   return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -31,21 +31,21 @@ export function mapUndefined<T>(value: T | undefined): T | null {
  * than the batch size, all tasks are run in parallel.
  */
 export async function batchAsyncResults<T>(
-  asyncResultSuppliers: Supplier<AsyncResult<unknown>>[],
+  asyncResults: AsyncResult<unknown>[],
   batchSize: number
 ): AsyncResult<T> {
   if (batchSize < 1) {
     return makeErrorResult(new Error(`Batch size must be at least 1: ${batchSize}`));
   }
 
-  const suppliersPerBatch: Supplier<AsyncResult<unknown>>[][] = [];
-  for (let i = 0; i < asyncResultSuppliers.length; i += batchSize) {
-    suppliersPerBatch.push(asyncResultSuppliers.slice(i, i + batchSize));
+  const resultsPerBatch: AsyncResult<unknown>[][] = [];
+  for (let i = 0; i < asyncResults.length; i += batchSize) {
+    resultsPerBatch.push(asyncResults.slice(i, i + batchSize));
   }
 
-  const allResults: AsyncResult<unknown>[] = [];
-  for (const currentSuppliers of suppliersPerBatch) {
-    currentSuppliers.forEach((supplier) => allResults.push(supplier()));
+  const allResults: unknown[] = [];
+  for (const currentResults of resultsPerBatch) {
+    allResults.push(...(await Promise.all(currentResults)));
   }
   return makeSuccessResult(allResults as T);
 }

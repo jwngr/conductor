@@ -16,8 +16,7 @@ chrome.action.onClicked.addListener(async (tab) => {
 
   const tabUrl = tab.url;
   if (!tabUrl) {
-    // eslint-disable-next-line no-console
-    console.error('No URL found for tab');
+    logger.error('No URL found for tab');
     return;
   }
 

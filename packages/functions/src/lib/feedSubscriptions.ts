@@ -5,7 +5,7 @@ import {FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants';
 import {batchAsyncResults} from '@shared/lib/utils';
 
 import {FeedSubscription} from '@shared/types/feedSubscriptions.types';
-import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import {AsyncResult, makeErrorResult} from '@shared/types/result.types';
 import {UserId} from '@shared/types/user.types';
 import {Supplier} from '@shared/types/utils.types';
 
