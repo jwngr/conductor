@@ -1,4 +1,4 @@
-import {isSignInWithEmailLink, signInWithEmailLink} from 'firebase/auth';
+import {isSignInWithEmailLink} from 'firebase/auth';
 import {useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 
@@ -7,6 +7,8 @@ import {logger} from '@shared/lib/logger';
 import {Urls} from '@shared/lib/urls';
 
 import {authService} from '@shared/services/authService';
+
+import {isValidEmail} from '@shared/types/user.types';
 
 import {useAuthStore} from '@src/stores/AuthStore';
 
@@ -45,28 +47,29 @@ const PasswordlessAuthSubscription: React.FC = () => {
         email = window.prompt('Please provide your email for confirmation');
       }
 
-      // Do nothing if the user didn't provide an email.
-      if (!email) return;
+      // Do nothing if the user didn't provide a valid email.
+      if (!isValidEmail(email)) return;
 
-      try {
-        const authResult = await signInWithEmailLink(auth, email, window.location.href);
-        if (authResult.user) {
-          // Clear the email from local storage since we no longer need it.
-          window.localStorage.removeItem('emailForSignIn');
+      const authCredentialResult = await authService.signInWithEmailLink(
+        email,
+        window.location.href
+      );
 
-          // Redirect to the root path.
-          navigate(Urls.forRoot());
-        }
-      } catch (error) {
-        // TODO: Reconsider throwing errors here. Maybe I should put them in `AuthStore`.
-        if (error instanceof Error) {
-          // TODO: More gracefull handle common Firebase auth errors.
-          // See https://firebase.google.com/docs/reference/js/auth#autherrorcodes.
-          throw new Error(`Error signing in with email link: ${error.message}`, {cause: error});
-        } else {
-          throw new Error(`Error signing in with email link: ${error}`);
-        }
+      if (!authCredentialResult.success) {
+        // TODO: Reconsider throwing errors here. This causes a blank screen on error. Maybe I
+        // should put them in `AuthStore`?
+        // TODO: More gracefully handle common Firebase auth errors.
+        // See https://firebase.google.com/docs/reference/js/auth#autherrorcodes.
+        throw new Error(`Error signing in with email link: ${authCredentialResult.error.message}`, {
+          cause: authCredentialResult.error,
+        });
       }
+
+      // Clear the email from local storage since we no longer need it.
+      window.localStorage.removeItem('emailForSignIn');
+
+      // Redirect to the root path.
+      navigate(Urls.forRoot());
     };
     go();
   }, [navigate, setLoggedInUser]);

@@ -1,11 +1,10 @@
-import {ActionCodeSettings, sendSignInLinkToEmail} from 'firebase/auth';
+import {ActionCodeSettings} from 'firebase/auth';
 import {useState} from 'react';
 
-import {auth} from '@shared/lib/firebase';
-import {logger} from '@shared/lib/logger';
+import {authService} from '@shared/services/authService';
 
 import {ThemeColor} from '@shared/types/theme.types';
-import {EmailAddress} from '@shared/types/user.types';
+import {createEmailAddress, isValidEmail} from '@shared/types/user.types';
 import {Consumer} from '@shared/types/utils.types';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
@@ -22,32 +21,41 @@ const PASSWORDLESS_AUTH_ACTION_CODE_SETTINGS: ActionCodeSettings = {
 };
 
 const PasswordlessAuthButton: React.FC<{
-  readonly email: EmailAddress;
+  readonly maybeEmail: string;
   readonly onClick: OnClick<HTMLButtonElement>;
   readonly onSuccess: Consumer<string>;
   readonly onError: Consumer<Error>;
-}> = ({email, onClick, onSuccess, onError}) => {
+}> = ({maybeEmail, onClick, onSuccess, onError}) => {
   const handleSignInButtonClick: OnClick<HTMLButtonElement> = async (event) => {
     onClick(event);
-    try {
-      await sendSignInLinkToEmail(auth, email, PASSWORDLESS_AUTH_ACTION_CODE_SETTINGS);
-      // Save the email locally so we don't need to reprompt for it again if they open the link on the same device.
-      window.localStorage.setItem('emailForSignIn', email);
-      onSuccess(email);
-    } catch (error) {
-      const errorMessage = 'Error sending passwordless sign in link';
-      let betterError: Error;
-      if (error instanceof Error) {
-        betterError = new Error(`${errorMessage}: ${error.message}`, {cause: error});
-      } else {
-        betterError = new Error(`${errorMessage}: ${error}`);
-      }
-      logger.error(betterError.message, {error: betterError});
-      onError(betterError);
+
+    const emailResult = createEmailAddress(maybeEmail);
+    if (!emailResult.success) {
+      onError(emailResult.error);
+      return;
     }
+    const email = emailResult.value;
+
+    const sendSignInLinkResult = await authService.sendSignInLinkToEmail(
+      email,
+      PASSWORDLESS_AUTH_ACTION_CODE_SETTINGS
+    );
+    if (!sendSignInLinkResult.success) {
+      onError(sendSignInLinkResult.error);
+      return;
+    }
+
+    // Save email locally to avoid reprompting for it again if opened on the same device.
+    window.localStorage.setItem('emailForSignIn', email);
+
+    onSuccess(email);
   };
 
-  return <button onClick={handleSignInButtonClick}>Send sign in link</button>;
+  return (
+    <button onClick={handleSignInButtonClick} disabled={!isValidEmail(maybeEmail)}>
+      Send sign in link
+    </button>
+  );
 };
 
 export const SignInScreen: React.FC = () => {
@@ -73,7 +81,7 @@ export const SignInScreen: React.FC = () => {
         onChange={(event) => setEmailInputVal(event.target.value)}
       />
       <PasswordlessAuthButton
-        email={emailInputVal}
+        maybeEmail={emailInputVal}
         onClick={() => {
           setSignInLinkError(null);
           setSuccessfulSignInLinkSentTo(null);

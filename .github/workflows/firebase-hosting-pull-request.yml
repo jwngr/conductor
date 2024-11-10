@@ -2,7 +2,8 @@ name: Preview staging PWA on PR
 on:
   pull_request:
     paths:
-      - 'packages/{pwa,shared}/**'
+      - 'packages/pwa/**'
+      - 'packages/shared/**'
       - '.firebaserc'
       - '.prettierrc'
       - 'eslint.config.mjs'

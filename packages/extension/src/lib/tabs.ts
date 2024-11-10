@@ -1,5 +1,7 @@
 import {useEffect, useState} from 'react';
 
+import {asyncTry} from '@shared/lib/errors';
+
 export function useCurrentTab() {
   const [currentTab, setCurrentTab] = useState<chrome.tabs.Tab | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -7,12 +9,15 @@ export function useCurrentTab() {
 
   useEffect(() => {
     async function fetchCurrentTab() {
-      try {
+      const tabResult = await asyncTry<chrome.tabs.Tab>(async () => {
         const [tab] = await chrome.tabs.query({active: true, lastFocusedWindow: true});
-        setCurrentTab(tab);
+        return tab;
+      });
+      if (tabResult.success) {
+        setCurrentTab(tabResult.value);
         setIsLoading(false);
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to fetch current tab'));
+      } else {
+        setError(tabResult.error);
         setIsLoading(false);
       }
     }

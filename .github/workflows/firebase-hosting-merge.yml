@@ -4,7 +4,8 @@ on:
     branches:
       - master
     paths:
-      - 'packages/{pwa,shared}/**'
+      - 'packages/pwa/**'
+      - 'packages/shared/**'
       - '.firebaserc'
       - '.prettierrc'
       - 'eslint.config.mjs'

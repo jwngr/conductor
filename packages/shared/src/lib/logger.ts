@@ -15,7 +15,7 @@ class Logger {
     }
   }
 
-  /** Passthrough to `console.log`. */
+  /** Passthrough to native logger. */
   public log(...args: unknown[]): void {
     // eslint-disable-next-line no-console
     console.log(...args);

@@ -1,5 +1,7 @@
 import {useState} from 'react';
 
+import {isValidUrl} from '@shared/lib/urls';
+
 import {feedItemsService} from '@shared/services/feedItemsService';
 
 import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems.types';
@@ -27,15 +29,22 @@ export const FeedItemAdder: React.FC = () => {
   const handleAddItemToQueue = async (url: string) => {
     setStatus('Pending...');
 
-    try {
-      await feedItemsService.addFeedItem({
-        url,
-        source: FEED_ITEM_APP_SOURCE,
-        userId: loggedInUser.userId,
-      });
+    const trimmedUrl = url.trim();
+    if (!isValidUrl(trimmedUrl)) {
+      setStatus('URL is not valid');
+      return;
+    }
+
+    const addFeedItemResult = await feedItemsService.addFeedItem({
+      url: trimmedUrl,
+      source: FEED_ITEM_APP_SOURCE,
+      userId: loggedInUser.userId,
+    });
+
+    if (addFeedItemResult.success) {
       setStatus('URL saved successfully');
-    } catch (error) {
-      setStatus(`Error: ${error}`);
+    } else {
+      setStatus(`Error saving URL: ${addFeedItemResult.error}`);
     }
   };
 
