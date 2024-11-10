@@ -12,12 +12,12 @@ export async function batchDeleteFirestoreDocuments<T extends DocumentData>(
 ): Promise<void> {
   const totalBatches = Math.ceil(refs.length / BATCH_DELETE_SIZE);
 
-  const batchPromises = Array.from({length: totalBatches}).map((_, i) => {
+  const batchedDeletePromises = Array.from({length: totalBatches}).map((_, i) => {
     const batch = firestore.batch();
     const batchRefs = refs.slice(i * BATCH_DELETE_SIZE, (i + 1) * BATCH_DELETE_SIZE);
     batchRefs.forEach((ref) => batch.delete(ref));
     return batch.commit();
   });
 
-  await Promise.all(batchPromises);
+  await Promise.all(batchedDeletePromises);
 }

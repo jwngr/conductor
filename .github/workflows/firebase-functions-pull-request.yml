@@ -2,7 +2,8 @@ name: Deploy staging Functions on PR
 on:
   pull_request:
     paths:
-      - 'packages/{functions,shared}/**'
+      - 'packages/functions/**'
+      - 'packages/shared/**'
       - '.firebaserc'
       - '.prettierrc'
       - 'eslint.config.mjs'
