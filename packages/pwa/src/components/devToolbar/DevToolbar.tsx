@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {styled} from 'styled-components';
 
 import {Divider} from '@src/components/atoms/Divider';
@@ -56,13 +56,27 @@ export function DevToolbar({isVisible = true}: DevToolbarProps): JSX.Element | n
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
-  if (!IS_DEVELOPMENT || !isVisible) return null;
-
   const handleToolbarClick = () => {
     if (!isOpen) {
       setIsOpen(true);
     }
   };
+
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen) {
+        setIsOpen(false);
+      }
+    },
+    [isOpen]
+  );
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
+
+  if (!IS_DEVELOPMENT || !isVisible) return null;
 
   return (
     <DevToolbarWrapper ref={toolbarRef} isOpen={isOpen} onClick={handleToolbarClick}>
