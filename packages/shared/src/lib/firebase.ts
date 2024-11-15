@@ -50,7 +50,10 @@ export class FirebaseService {
       FIRESTORE_EMULATOR_PORT,
     } = FirebaseService;
 
-    connectAuthEmulator(auth, `http://${EMULATOR_HOST}:${AUTH_EMULATOR_PORT}`);
+    connectAuthEmulator(auth, `http://${EMULATOR_HOST}:${AUTH_EMULATOR_PORT}`, {
+      // Hides the bottom banner warning about using the Firebase emulator.
+      disableWarnings: true,
+    });
     connectStorageEmulator(storage, EMULATOR_HOST, STORAGE_EMULATOR_PORT);
     connectFunctionsEmulator(functions, EMULATOR_HOST, FUNCTIONS_EMULATOR_PORT);
     connectFirestoreEmulator(firestore, EMULATOR_HOST, FIRESTORE_EMULATOR_PORT);

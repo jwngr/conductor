@@ -11,7 +11,7 @@ import {Text} from '@src/components/atoms/Text';
 
 import {authService, useMaybeLoggedInUser} from '@src/lib/auth.pwa';
 
-import {OnClick} from '@src/types/utils';
+import {OnClick} from '@src/types/utils.pwa.types';
 
 const PASSWORDLESS_AUTH_ACTION_CODE_SETTINGS: ActionCodeSettings = {
   url: import.meta.env.VITE_CONDUCTOR_URL, // URL to redirect back to.

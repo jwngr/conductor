@@ -10,6 +10,7 @@ import {TooltipProvider} from '@src/components/atoms/Tooltip';
 import {AuthSubscriptions} from '@src/components/auth/AuthSubscriptions';
 import {RequireLoggedInUser} from '@src/components/auth/RequireLoggedInUser';
 import {SignOutRedirect} from '@src/components/auth/SignOutRedirect';
+import {DevToolbar} from '@src/components/devToolbar/DevToolbar';
 
 import {NotFoundScreen} from '@src/screens/404';
 import {FeedItemScreen} from '@src/screens/FeedItemScreen';
@@ -83,6 +84,7 @@ export const App: React.FC = () => {
         >
           <AllRoutes />
           <AppWideSubscriptions />
+          <DevToolbar />
         </BrowserRouter>
         <Toaster />
       </TooltipProvider>
