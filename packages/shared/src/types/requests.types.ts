@@ -3,7 +3,6 @@ import {ErrorResult, SuccessResult} from '@shared/types/result.types';
 export type RequestHeaders = Record<string, string>;
 export type RequestBody = Record<
   string,
-  // eslint-disable-next-line @typescript-eslint/array-type
   object | number | string | boolean | null | Array<object | number | string | boolean | null>
 >;
 export type RequestParams = Record<string, string>;
