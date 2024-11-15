@@ -173,6 +173,30 @@ export class FeedItemsService {
       return await response.text();
     });
   }
+
+  public static isMarkedDone(feedItem: MaybeFeedItem): boolean {
+    return feedItem?.triageStatus === TriageStatus.Done;
+  }
+
+  public static isSaved(feedItem: MaybeFeedItem): boolean {
+    return feedItem?.triageStatus === TriageStatus.Saved;
+  }
+
+  public static isTrashed(feedItem: MaybeFeedItem): boolean {
+    return feedItem?.triageStatus === TriageStatus.Trashed;
+  }
+
+  public static isStarred(feedItem: MaybeFeedItem): boolean {
+    return feedItem?.tagIds[SystemTagId.Starred] === true;
+  }
+
+  public static isImporting(feedItem: MaybeFeedItem): boolean {
+    return feedItem?.tagIds[SystemTagId.Importing] === true;
+  }
+
+  public static isUnread(feedItem: MaybeFeedItem): boolean {
+    return feedItem?.tagIds[SystemTagId.Unread] === true;
+  }
 }
 
 interface MakeFeedItemArgs {
@@ -234,3 +258,5 @@ export function getStarFeedItemActionInfo(): FeedItemAction {
     icon: IconName.Star,
   };
 }
+
+type MaybeFeedItem = FeedItem | undefined | null;

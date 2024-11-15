@@ -5,6 +5,7 @@ import {getIconSizeFromButtonIconSize} from '@shared/lib/icons';
 import {assertNever} from '@shared/lib/utils';
 
 import {ButtonIconSize, IconName} from '@shared/types/icons.types';
+import {KeyboardShortcut} from '@shared/types/shortcuts.types';
 import {ThemeColor} from '@shared/types/theme.types';
 import {StyleAttributes} from '@shared/types/utils.types';
 
@@ -48,6 +49,7 @@ interface ButtonIconProps extends StyleAttributes {
   readonly size: ButtonIconSize;
   readonly color?: ThemeColor;
   readonly onClick?: OnClick<HTMLDivElement>;
+  readonly shortcut?: KeyboardShortcut;
   readonly tooltip: TooltipContent;
 }
 
@@ -57,6 +59,7 @@ export const ButtonIcon: React.FC<ButtonIconProps> = ({
   size: buttonIconSize,
   color = ThemeColor.Neutral900,
   onClick,
+  shortcut,
   ...styleProps
 }) => {
   let IconComponent: React.ElementType;
@@ -88,5 +91,5 @@ export const ButtonIcon: React.FC<ButtonIconProps> = ({
     </ButtonIconWrapper>
   );
 
-  return <Tooltip trigger={buttonIcon} content={tooltip} />;
+  return <Tooltip trigger={buttonIcon} content={tooltip} shortcut={shortcut} />;
 };

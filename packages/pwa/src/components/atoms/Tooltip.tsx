@@ -2,6 +2,7 @@ import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import * as React from 'react';
 import styled from 'styled-components';
 
+import {KeyboardShortcut} from '@shared/types/shortcuts.types';
 import {ThemeColor} from '@shared/types/theme.types';
 
 import {Text} from '@src/components/atoms/Text';
@@ -34,8 +35,6 @@ TooltipContentComponent.displayName = TooltipPrimitive.Content.displayName;
 
 interface SimpleTooltipContent {
   readonly text: string;
-  // TODO: Add keyboard shortcuts.
-  // readonly shortcutId: KeyboardShortcut;
 }
 
 export type TooltipContent = React.ReactElement | string | SimpleTooltipContent;
@@ -43,9 +42,10 @@ export type TooltipContent = React.ReactElement | string | SimpleTooltipContent;
 interface TooltipProps extends TooltipPrimitive.TooltipProps {
   readonly trigger: React.ReactNode;
   readonly content: TooltipContent;
+  readonly shortcut?: KeyboardShortcut;
 }
 
-export const Tooltip: React.FC<TooltipProps> = ({trigger, content, ...tooltipProps}) => {
+export const Tooltip: React.FC<TooltipProps> = ({trigger, content, shortcut, ...tooltipProps}) => {
   let tooltipContent: React.ReactNode;
   if (typeof content === 'string') {
     tooltipContent = <Text as="p">{content}</Text>;
@@ -55,10 +55,13 @@ export const Tooltip: React.FC<TooltipProps> = ({trigger, content, ...tooltipPro
     tooltipContent = content;
   }
 
+  const shortcutContent = shortcut ? <Text as="p">{shortcut.text}</Text> : null;
+
   return (
     <TooltipRootComponent {...tooltipProps}>
       <TooltipTriggerComponent>{trigger}</TooltipTriggerComponent>
       <TooltipContentComponent>{tooltipContent}</TooltipContentComponent>
+      {shortcutContent}
     </TooltipRootComponent>
   );
 };

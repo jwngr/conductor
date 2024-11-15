@@ -8,25 +8,29 @@ import {
 } from '@shared/lib/feedItems';
 import {logger} from '@shared/lib/logger';
 
-import {FeedItemId, TriageStatus} from '@shared/types/feedItems.types';
+import {FeedItem, TriageStatus} from '@shared/types/feedItems.types';
 import {SystemTagId} from '@shared/types/tags.types';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {FlexRow} from '@src/components/atoms/Flex';
 
 import {feedItemsService} from '@src/lib/feedItems.pwa';
+import {keyboardShortcutsService} from '@src/lib/shortcuts.pwa';
 import {ToastType, useToast} from '@src/lib/toasts';
 
 const MarkDoneFeedItemActionIcon: React.FC<{
-  readonly feedItemId: FeedItemId;
-}> = ({feedItemId}) => {
+  readonly feedItem: FeedItem;
+}> = ({feedItem}) => {
   const {showToast} = useToast();
   const markDoneActionInfo = getMarkDoneFeedItemActionInfo();
 
   const handleMarkDoneFeedItem = async () => {
-    const handleMarkDoneFeedItemResult = await feedItemsService.updateFeedItem(feedItemId, {
-      triageStatus: TriageStatus.Done,
-    });
+    const handleMarkDoneFeedItemResult = await feedItemsService.updateFeedItem(
+      feedItem.feedItemId,
+      {
+        triageStatus: TriageStatus.Done,
+      }
+    );
 
     if (!handleMarkDoneFeedItemResult.success) {
       const errorMessagePrefix = 'Error marking feed item as done';
@@ -34,7 +38,10 @@ const MarkDoneFeedItemActionIcon: React.FC<{
         type: ToastType.Error,
         message: `${errorMessagePrefix}: ${handleMarkDoneFeedItemResult.error.message}`,
       });
-      logger.error(errorMessagePrefix, {error: handleMarkDoneFeedItemResult.error, feedItemId});
+      logger.error(errorMessagePrefix, {
+        error: handleMarkDoneFeedItemResult.error,
+        feedItemId: feedItem.feedItemId,
+      });
       return;
     }
 
@@ -47,19 +54,20 @@ const MarkDoneFeedItemActionIcon: React.FC<{
       name={markDoneActionInfo.icon}
       tooltip={markDoneActionInfo.text}
       size={40}
+      shortcut={keyboardShortcutsService.forToggleDone(feedItem)}
       onClick={handleMarkDoneFeedItem}
     />
   );
 };
 
 const SaveFeedItemActionIcon: React.FC<{
-  readonly feedItemId: FeedItemId;
-}> = ({feedItemId}) => {
+  readonly feedItem: FeedItem;
+}> = ({feedItem}) => {
   const saveActionInfo = getSaveFeedItemActionInfo();
   const {showToast} = useToast();
 
   const handleSaveFeedItem = async () => {
-    const handleSaveFeedItemResult = await feedItemsService.updateFeedItem(feedItemId, {
+    const handleSaveFeedItemResult = await feedItemsService.updateFeedItem(feedItem.feedItemId, {
       triageStatus: TriageStatus.Saved,
     });
 
@@ -69,7 +77,10 @@ const SaveFeedItemActionIcon: React.FC<{
         type: ToastType.Error,
         message: `${errorMessagePrefix}: ${handleSaveFeedItemResult.error.message}`,
       });
-      logger.error(errorMessagePrefix, {error: handleSaveFeedItemResult.error, feedItemId});
+      logger.error(errorMessagePrefix, {
+        error: handleSaveFeedItemResult.error,
+        feedItemId: feedItem.feedItemId,
+      });
       return;
     }
 
@@ -83,13 +94,14 @@ const SaveFeedItemActionIcon: React.FC<{
       tooltip={saveActionInfo.text}
       size={40}
       onClick={handleSaveFeedItem}
+      shortcut={keyboardShortcutsService.forToggleSaved(feedItem)}
     />
   );
 };
 
 const MarkUnreadFeedItemActionIcon: React.FC<{
-  readonly feedItemId: FeedItemId;
-}> = ({feedItemId}) => {
+  readonly feedItem: FeedItem;
+}> = ({feedItem}) => {
   const {showToast} = useToast();
   const markUnreadActionInfo = getMarkUnreadFeedItemActionInfo();
 
@@ -97,7 +109,7 @@ const MarkUnreadFeedItemActionIcon: React.FC<{
     const handleMarkUnreadFeedItemResult =
       // TODO: Consider using a Firestore converter to handle this.
       // See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
-      await feedItemsService.updateFeedItem(feedItemId, {
+      await feedItemsService.updateFeedItem(feedItem.feedItemId, {
         [`tagIds.${SystemTagId.Unread}`]: true,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
@@ -108,7 +120,10 @@ const MarkUnreadFeedItemActionIcon: React.FC<{
         type: ToastType.Error,
         message: `${errorMessagePrefix}: ${handleMarkUnreadFeedItemResult.error.message}`,
       });
-      logger.error(errorMessagePrefix, {error: handleMarkUnreadFeedItemResult.error, feedItemId});
+      logger.error(errorMessagePrefix, {
+        error: handleMarkUnreadFeedItemResult.error,
+        feedItemId: feedItem.feedItemId,
+      });
       return;
     }
 
@@ -122,13 +137,14 @@ const MarkUnreadFeedItemActionIcon: React.FC<{
       tooltip={markUnreadActionInfo.text}
       size={40}
       onClick={handleMarkUnreadFeedItem}
+      shortcut={keyboardShortcutsService.forToggleUnread(feedItem)}
     />
   );
 };
 
 const StarFeedItemActionIcon: React.FC<{
-  readonly feedItemId: FeedItemId;
-}> = ({feedItemId}) => {
+  readonly feedItem: FeedItem;
+}> = ({feedItem}) => {
   const {showToast} = useToast();
   const starActionInfo = getStarFeedItemActionInfo();
 
@@ -136,7 +152,7 @@ const StarFeedItemActionIcon: React.FC<{
     const handleStarFeedItemResult =
       // TODO: Consider using a Firestore converter to handle this.
       // See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
-      await feedItemsService.updateFeedItem(feedItemId, {
+      await feedItemsService.updateFeedItem(feedItem.feedItemId, {
         [`tagIds.${SystemTagId.Starred}`]: true,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
@@ -147,7 +163,10 @@ const StarFeedItemActionIcon: React.FC<{
         type: ToastType.Error,
         message: `${errorMessagePrefix}: ${handleStarFeedItemResult.error.message}`,
       });
-      logger.error(errorMessagePrefix, {error: handleStarFeedItemResult.error, feedItemId});
+      logger.error(errorMessagePrefix, {
+        error: handleStarFeedItemResult.error,
+        feedItemId: feedItem.feedItemId,
+      });
       return;
     }
 
@@ -161,17 +180,18 @@ const StarFeedItemActionIcon: React.FC<{
       tooltip={starActionInfo.text}
       size={40}
       onClick={handleStarFeedItem}
+      shortcut={keyboardShortcutsService.forToggleStarred(feedItem)}
     />
   );
 };
 
-export const FeedItemActions: React.FC<{feedItemId: FeedItemId}> = ({feedItemId}) => {
+export const FeedItemActions: React.FC<{feedItem: FeedItem}> = ({feedItem}) => {
   return (
     <FlexRow gap={12}>
-      <MarkDoneFeedItemActionIcon feedItemId={feedItemId} />
-      <SaveFeedItemActionIcon feedItemId={feedItemId} />
-      <MarkUnreadFeedItemActionIcon feedItemId={feedItemId} />
-      <StarFeedItemActionIcon feedItemId={feedItemId} />
+      <MarkDoneFeedItemActionIcon feedItem={feedItem} />
+      <SaveFeedItemActionIcon feedItem={feedItem} />
+      <MarkUnreadFeedItemActionIcon feedItem={feedItem} />
+      <StarFeedItemActionIcon feedItem={feedItem} />
     </FlexRow>
   );
 };
