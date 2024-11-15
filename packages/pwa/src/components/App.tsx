@@ -5,6 +5,7 @@ import {ThemeProvider} from 'styled-components';
 import {theme} from '@shared/lib/theme';
 import {Urls} from '@shared/lib/urls';
 
+import {Toaster} from '@src/components/atoms/Toaster';
 import {TooltipProvider} from '@src/components/atoms/Tooltip';
 import {AuthSubscriptions} from '@src/components/auth/AuthSubscriptions';
 import {RequireLoggedInUser} from '@src/components/auth/RequireLoggedInUser';
@@ -76,11 +77,14 @@ export const App: React.FC = () => {
   return (
     <ThemeProvider theme={theme}>
       <TooltipProvider>
-        {/* Pass flags to silence console logs. */}
-        <BrowserRouter future={{v7_startTransition: true, v7_relativeSplatPath: true}}>
+        <BrowserRouter
+          // Pass flags to silence console logs.
+          future={{v7_startTransition: true, v7_relativeSplatPath: true}}
+        >
           <AllRoutes />
           <AppWideSubscriptions />
         </BrowserRouter>
+        <Toaster />
       </TooltipProvider>
     </ThemeProvider>
   );
