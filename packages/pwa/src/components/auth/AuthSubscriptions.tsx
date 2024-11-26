@@ -31,7 +31,7 @@ const AuthServiceSubscription: React.FC = () => {
 
 const PasswordlessAuthSubscription: React.FC = () => {
   const navigate = useNavigate();
-  const {setLoggedInUser} = useAuthStore();
+  const {setError} = useAuthStore();
   useEffect(() => {
     const go = async () => {
       // Only do something if the current URL is a "sign-in with email" link.
@@ -56,13 +56,13 @@ const PasswordlessAuthSubscription: React.FC = () => {
       );
 
       if (!authCredentialResult.success) {
-        // TODO: Reconsider throwing errors here. This causes a blank screen on error. Maybe I
-        // should put them in `AuthStore`?
         // TODO: More gracefully handle common Firebase auth errors.
         // See https://firebase.google.com/docs/reference/js/auth#autherrorcodes.
-        throw new Error(`Error signing in with email link: ${authCredentialResult.error.message}`, {
-          cause: authCredentialResult.error,
-        });
+        setError(
+          new Error(`Error signing in with email link: ${authCredentialResult.error.message}`, {
+            cause: authCredentialResult.error,
+          })
+        );
       }
 
       // Clear the email from local storage since we no longer need it.
@@ -72,7 +72,7 @@ const PasswordlessAuthSubscription: React.FC = () => {
       navigate(Urls.forRoot());
     };
     go();
-  }, [navigate, setLoggedInUser]);
+  }, [navigate, setError]);
   return null;
 };
 

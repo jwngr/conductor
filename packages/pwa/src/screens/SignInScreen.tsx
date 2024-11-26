@@ -11,6 +11,8 @@ import {Text} from '@src/components/atoms/Text';
 
 import {authService, useMaybeLoggedInUser} from '@src/lib/auth.pwa';
 
+import {useAuthStore} from '@src/stores/AuthStore';
+
 import {OnClick} from '@src/types/utils.pwa.types';
 
 const PASSWORDLESS_AUTH_ACTION_CODE_SETTINGS: ActionCodeSettings = {
@@ -58,6 +60,7 @@ const PasswordlessAuthButton: React.FC<{
 
 export const SignInScreen: React.FC = () => {
   const {loggedInUser} = useMaybeLoggedInUser();
+  const {error: authError} = useAuthStore();
 
   const [emailInputVal, setEmailInputVal] = useState('');
   const [successfulSignInLinkSentTo, setSuccessfulSignInLinkSentTo] = useState<string | null>(null);
