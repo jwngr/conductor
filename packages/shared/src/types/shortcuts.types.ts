@@ -17,6 +17,7 @@ export enum KeyboardShortcutId {
  * platform-specific strings.
  */
 export enum ModifierKey {
+  Command = 'COMMAND',
   Control = 'CONTROL',
   Enter = 'ENTER',
   Option = 'OPTION',
@@ -24,6 +25,7 @@ export enum ModifierKey {
 }
 
 const ALL_MODIFIER_KEYS: Record<ModifierKey, true> = {
+  [ModifierKey.Command]: true,
   [ModifierKey.Control]: true,
   [ModifierKey.Enter]: true,
   [ModifierKey.Option]: true,

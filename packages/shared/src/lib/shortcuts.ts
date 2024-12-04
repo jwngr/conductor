@@ -11,6 +11,7 @@ import {
   ShortcutHandler,
   ShortcutKey,
 } from '@shared/types/shortcuts.types';
+import {Task} from '@shared/types/utils.types';
 
 interface KeyboardShortcutsServiceArgs {
   readonly isMac: boolean;
@@ -19,7 +20,7 @@ interface KeyboardShortcutsServiceArgs {
 export class KeyboardShortcutsService {
   private isMac: boolean;
   private readonly registeredShortcuts = new Map<KeyboardShortcutId, RegisteredShortcut>();
-  private unsubscribeTinykeys?: () => void;
+  private unsubscribeTinykeys?: Task;
 
   constructor({isMac}: KeyboardShortcutsServiceArgs) {
     this.isMac = isMac;
@@ -29,8 +30,10 @@ export class KeyboardShortcutsService {
     // Map modifier keys to the correct platform-specific keys.
     if (isModifierKey(key)) {
       switch (key) {
-        case ModifierKey.Control:
+        case ModifierKey.Command:
           return this.isMac ? 'Cmd' : 'Ctrl';
+        case ModifierKey.Control:
+          return 'Ctrl';
         case ModifierKey.Enter:
           return 'Enter';
         case ModifierKey.Option:

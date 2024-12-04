@@ -138,8 +138,7 @@ const MarkUnreadFeedItemActionIcon: React.FC<{
       onAction={async (isActive) => {
         const result = await feedItemsService.updateFeedItem(feedItem.feedItemId, {
           [`tagIds.${SystemTagId.Unread}`]: isActive ? deleteField() : true,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any);
+        } as Partial<FeedItem>);
         return result;
       }}
       toastText={isUnread ? 'Feed item marked as read' : 'Feed item marked as unread'}
@@ -166,8 +165,7 @@ const StarFeedItemActionIcon: React.FC<{
       onAction={async (isActive) => {
         const result = await feedItemsService.updateFeedItem(feedItem.feedItemId, {
           [`tagIds.${SystemTagId.Starred}`]: isActive ? deleteField() : true,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any);
+        } as Partial<FeedItem>);
         return result;
       }}
       toastText={isStarred ? 'Feed item unstarred' : 'Feed item starred'}

@@ -49,14 +49,9 @@ const useMarkFeedItemRead = ({
 
       // TODO: Consider using a Firestore converter to handle this.
       // See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
-      const feedItemUpdates: Partial<FeedItem> = {
+      const markFeedItemAsReadResult = await feedItemsService.updateFeedItem(feedItemId, {
         [`tagIds.${SystemTagId.Unread}`]: deleteField(),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any;
-      const markFeedItemAsReadResult = await feedItemsService.updateFeedItem(
-        feedItemId,
-        feedItemUpdates
-      );
+      } as Partial<FeedItem>);
 
       if (markFeedItemAsReadResult.success) {
         wasMarkedReadOnThisMount.current = true;

@@ -6,6 +6,7 @@ import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {ThemeColor} from '@shared/types/theme.types';
 import {Task} from '@shared/types/utils.types';
 
+import {FlexRow} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
 
 import {keyboardShortcutsService} from '@src/lib/shortcuts.pwa';
@@ -56,16 +57,17 @@ export const Tooltip: React.FC<TooltipProps> = ({
   onShortcutTrigger,
   ...tooltipProps
 }) => {
-  useEffect(() => {
-    if (!shortcutId || !onShortcutTrigger) return;
+  const shortcut = shortcutId ? keyboardShortcutsService.getShortcut(shortcutId) : undefined;
 
-    const shortcut = keyboardShortcutsService.getShortcut(shortcutId);
+  useEffect(() => {
+    if (!shortcut || !onShortcutTrigger) return;
+
     keyboardShortcutsService.registerShortcut(shortcut, onShortcutTrigger);
 
     return () => {
-      keyboardShortcutsService.unregisterShortcut(shortcutId);
+      keyboardShortcutsService.unregisterShortcut(shortcut.shortcutId);
     };
-  }, [shortcutId, onShortcutTrigger]);
+  }, [onShortcutTrigger, shortcut]);
 
   let tooltipContent: React.ReactNode;
   if (typeof content === 'string') {
@@ -76,10 +78,24 @@ export const Tooltip: React.FC<TooltipProps> = ({
     tooltipContent = content;
   }
 
+  let shortcutKeysContent: React.ReactNode;
+  if (shortcut) {
+    shortcutKeysContent = shortcut.displayKeys.map((key) => (
+      <Text as="span" key={key}>
+        {key}
+      </Text>
+    ));
+  }
+
   return (
     <TooltipRootComponent {...tooltipProps}>
       <TooltipTriggerComponent>{trigger}</TooltipTriggerComponent>
-      <TooltipContentComponent>{tooltipContent}</TooltipContentComponent>
+      <TooltipContentComponent>
+        <FlexRow gap={8}>
+          {tooltipContent}
+          {shortcutKeysContent}
+        </FlexRow>
+      </TooltipContentComponent>
     </TooltipRootComponent>
   );
 };
