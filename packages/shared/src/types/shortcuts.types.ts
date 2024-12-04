@@ -31,11 +31,7 @@ const ALL_MODIFIER_KEYS: Record<ModifierKey, true> = {
 };
 
 export function isModifierKey(maybeModifierKey: string): maybeModifierKey is ModifierKey {
-  return (
-    maybeModifierKey in ALL_MODIFIER_KEYS &&
-    // TODO: Is the `as` needed here?
-    ALL_MODIFIER_KEYS[maybeModifierKey as ModifierKey] === true
-  );
+  return maybeModifierKey in ALL_MODIFIER_KEYS;
 }
 
 /**
