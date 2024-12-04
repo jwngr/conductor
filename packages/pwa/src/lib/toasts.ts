@@ -190,6 +190,7 @@ function showToast({
 interface UseToastResult {
   readonly toasts: ToasterToast[];
   readonly showToast: typeof showToast;
+  readonly showErrorToast: typeof showToast;
   readonly hideToast: Consumer<string>;
 }
 
@@ -209,6 +210,7 @@ export function useToast(): UseToastResult {
   return {
     ...state,
     showToast,
+    showErrorToast: (props) => showToast({...props, type: ToastType.Error}),
     hideToast: (toastId) => dispatch({actionType: ToastActionType.DismissToast, toastId}),
   };
 }
