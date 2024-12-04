@@ -1,9 +1,7 @@
 import {tinykeys} from 'tinykeys';
 
-import {FeedItemsService} from '@shared/lib/feedItems';
 import {assertNever} from '@shared/lib/utils';
 
-import {FeedItem} from '@shared/types/feedItems.types';
 import {
   isModifierKey,
   KeyboardShortcut,
@@ -13,26 +11,6 @@ import {
   ShortcutHandler,
   ShortcutKey,
 } from '@shared/types/shortcuts.types';
-
-interface ToggleDoneKeyboardShortcut extends KeyboardShortcut {
-  readonly shortcutId: KeyboardShortcutId.ToggleDone;
-}
-
-interface ToggleSavedKeyboardShortcut extends KeyboardShortcut {
-  readonly shortcutId: KeyboardShortcutId.ToggleSaved;
-}
-
-interface ToggleStarredKeyboardShortcut extends KeyboardShortcut {
-  readonly shortcutId: KeyboardShortcutId.ToggleStarred;
-}
-
-interface ToggleTrashedKeyboardShortcut extends KeyboardShortcut {
-  readonly shortcutId: KeyboardShortcutId.ToggleTrashed;
-}
-
-interface ToggleUnreadKeyboardShortcut extends KeyboardShortcut {
-  readonly shortcutId: KeyboardShortcutId.ToggleUnread;
-}
 
 interface KeyboardShortcutsServiceArgs {
   readonly isMac: boolean;
@@ -71,53 +49,70 @@ export class KeyboardShortcutsService {
     return keys.map(this.getPlatformSpecificKey);
   }
 
-  public forToggleDone(feedItem: FeedItem): ToggleDoneKeyboardShortcut {
-    const isAlreadyDone = FeedItemsService.isMarkedDone(feedItem);
+  public getShortcut(shortcutId: KeyboardShortcutId): KeyboardShortcut {
+    switch (shortcutId) {
+      case KeyboardShortcutId.ToggleDone:
+        return this.forToggleDone();
+      case KeyboardShortcutId.ToggleSaved:
+        return this.forToggleSaved();
+      case KeyboardShortcutId.ToggleStarred:
+        return this.forToggleStarred();
+      case KeyboardShortcutId.ToggleTrashed:
+        return this.forToggleTrashed();
+      case KeyboardShortcutId.ToggleUnread:
+        return this.forToggleUnread();
+      case KeyboardShortcutId.Close:
+        return this.forClose();
+      default:
+        assertNever(shortcutId);
+    }
+  }
+
+  public forToggleDone(): KeyboardShortcut {
     return {
       shortcutId: KeyboardShortcutId.ToggleDone,
-      text: isAlreadyDone ? 'Mark done' : 'Mark undone',
       displayKeys: this.getPlatformSpecificKeys(['D']),
       keyPattern: 'd',
     };
   }
 
-  public forToggleSaved(feedItem: FeedItem): ToggleSavedKeyboardShortcut {
-    const isAlreadySaved = FeedItemsService.isSaved(feedItem);
+  public forToggleSaved(): KeyboardShortcut {
     return {
       shortcutId: KeyboardShortcutId.ToggleSaved,
-      text: isAlreadySaved ? 'Save' : 'Unsave',
       displayKeys: this.getPlatformSpecificKeys(['B']),
       keyPattern: 'b',
     };
   }
 
-  public forToggleStarred(feedItem: FeedItem): ToggleStarredKeyboardShortcut {
-    const isAlreadyStarred = FeedItemsService.isStarred(feedItem);
+  public forToggleStarred(): KeyboardShortcut {
     return {
       shortcutId: KeyboardShortcutId.ToggleStarred,
-      text: isAlreadyStarred ? 'Star' : 'Unstar',
       displayKeys: this.getPlatformSpecificKeys(['S']),
       keyPattern: 's',
     };
   }
 
-  public forToggleTrashed(feedItem: FeedItem): ToggleTrashedKeyboardShortcut {
-    const isAlreadyTrashed = FeedItemsService.isTrashed(feedItem);
+  public forToggleTrashed(): KeyboardShortcut {
     return {
       shortcutId: KeyboardShortcutId.ToggleTrashed,
-      text: isAlreadyTrashed ? 'Trash' : 'Untrash',
       displayKeys: this.getPlatformSpecificKeys(['#']),
       keyPattern: '#',
     };
   }
 
-  public forToggleUnread(feedItem: FeedItem): ToggleUnreadKeyboardShortcut {
-    const isAlreadyUnread = FeedItemsService.isUnread(feedItem);
+  public forToggleUnread(): KeyboardShortcut {
     return {
       shortcutId: KeyboardShortcutId.ToggleUnread,
-      text: isAlreadyUnread ? 'Mark read' : 'Mark unread',
       displayKeys: this.getPlatformSpecificKeys(['U']),
       keyPattern: 'u',
+    };
+  }
+
+  public forClose(): KeyboardShortcut {
+    return {
+      shortcutId: KeyboardShortcutId.Close,
+      displayKeys: this.getPlatformSpecificKeys(['Esc']),
+      keyPattern: 'Escape',
     };
   }
 

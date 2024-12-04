@@ -50,8 +50,6 @@ export type ShortcutKey = string | ModifierKey;
  */
 export interface KeyboardShortcut {
   readonly shortcutId: KeyboardShortcutId;
-  /** Text describing the action. */
-  readonly text: string;
   /** Platform-specific strings shown in the UI (e.g. ["D"] or ["⌘", "Shift", "S"]) */
   readonly displayKeys: readonly string[];
   /** Keyboard pattern registered with tinykeys (e.g. 'd' or '$mod+$shift+s'). */

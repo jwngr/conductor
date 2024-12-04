@@ -1,11 +1,11 @@
-import React from 'react';
+import React, {useCallback} from 'react';
 import styled from 'styled-components';
 
 import {getIconSizeFromButtonIconSize} from '@shared/lib/icons';
 import {assertNever} from '@shared/lib/utils';
 
 import {ButtonIconSize, IconName} from '@shared/types/icons.types';
-import {KeyboardShortcut} from '@shared/types/shortcuts.types';
+import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {ThemeColor} from '@shared/types/theme.types';
 import {StyleAttributes} from '@shared/types/utils.types';
 
@@ -48,8 +48,8 @@ interface ButtonIconProps extends StyleAttributes {
   readonly name: IconName;
   readonly size: ButtonIconSize;
   readonly color?: ThemeColor;
-  readonly onClick?: OnClick<HTMLDivElement>;
-  readonly shortcut?: KeyboardShortcut;
+  readonly onClick: OnClick<HTMLDivElement>;
+  readonly shortcutId?: KeyboardShortcutId;
   readonly tooltip: TooltipContent;
 }
 
@@ -59,7 +59,7 @@ export const ButtonIcon: React.FC<ButtonIconProps> = ({
   size: buttonIconSize,
   color = ThemeColor.Neutral900,
   onClick,
-  shortcut,
+  shortcutId,
   ...styleProps
 }) => {
   let IconComponent: React.ElementType;
@@ -85,7 +85,7 @@ export const ButtonIcon: React.FC<ButtonIconProps> = ({
 
   const iconSize = getIconSizeFromButtonIconSize(buttonIconSize);
 
-  const handleShortcut = React.useCallback(() => {
+  const handleShortcut = useCallback(() => {
     // TODO: Clean up this type.
     onClick?.(null as unknown as React.MouseEvent<HTMLDivElement>);
   }, [onClick]);
@@ -100,8 +100,8 @@ export const ButtonIcon: React.FC<ButtonIconProps> = ({
     <Tooltip
       trigger={buttonIcon}
       content={tooltip}
-      shortcut={shortcut}
-      onShortcutTrigger={onClick ? handleShortcut : undefined}
+      shortcutId={shortcutId}
+      onShortcutTrigger={handleShortcut}
     />
   );
 };

@@ -1,6 +1,8 @@
+import {deleteField} from 'firebase/firestore';
 import React from 'react';
 
 import {
+  FeedItemsService,
   getMarkDoneFeedItemActionInfo,
   getMarkUnreadFeedItemActionInfo,
   getSaveFeedItemActionInfo,
@@ -15,38 +17,40 @@ import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {FlexRow} from '@src/components/atoms/Flex';
 
 import {feedItemsService} from '@src/lib/feedItems.pwa';
-import {keyboardShortcutsService} from '@src/lib/shortcuts.pwa';
 import {ToastType, useToast} from '@src/lib/toasts';
 
 const MarkDoneFeedItemActionIcon: React.FC<{
   readonly feedItem: FeedItem;
 }> = ({feedItem}) => {
   const {showToast} = useToast();
-  const markDoneActionInfo = getMarkDoneFeedItemActionInfo();
+  const markDoneActionInfo = getMarkDoneFeedItemActionInfo(feedItem);
 
-  const handleMarkDoneFeedItem = async () => {
-    const handleMarkDoneFeedItemResult = await feedItemsService.updateFeedItem(
+  const handleToggleDoneFeedItem = async () => {
+    const isAlreadyDone = FeedItemsService.isMarkedDone(feedItem);
+
+    const handleToggleDoneFeedItemResult = await feedItemsService.updateFeedItem(
       feedItem.feedItemId,
       {
-        triageStatus: TriageStatus.Done,
+        triageStatus: isAlreadyDone ? TriageStatus.Untriaged : TriageStatus.Done,
       }
     );
 
-    if (!handleMarkDoneFeedItemResult.success) {
-      const errorMessagePrefix = 'Error marking feed item as done';
+    if (!handleToggleDoneFeedItemResult.success) {
+      const errorMessagePrefix = isAlreadyDone
+        ? 'Error marking feed item as undone'
+        : 'Error marking feed item as done';
       showToast({
         type: ToastType.Error,
-        message: `${errorMessagePrefix}: ${handleMarkDoneFeedItemResult.error.message}`,
+        message: `${errorMessagePrefix}: ${handleToggleDoneFeedItemResult.error.message}`,
       });
       logger.error(errorMessagePrefix, {
-        error: handleMarkDoneFeedItemResult.error,
+        error: handleToggleDoneFeedItemResult.error,
         feedItemId: feedItem.feedItemId,
       });
       return;
     }
 
-    // TODO: Update based on if already done.
-    showToast({message: 'Feed item marked as done'});
+    showToast({message: isAlreadyDone ? 'Feed item marked as undone' : 'Feed item marked as done'});
   };
 
   return (
@@ -54,8 +58,8 @@ const MarkDoneFeedItemActionIcon: React.FC<{
       name={markDoneActionInfo.icon}
       tooltip={markDoneActionInfo.text}
       size={40}
-      shortcut={keyboardShortcutsService.forToggleDone(feedItem)}
-      onClick={handleMarkDoneFeedItem}
+      shortcutId={markDoneActionInfo.shortcutId}
+      onClick={handleToggleDoneFeedItem}
     />
   );
 };
@@ -63,29 +67,35 @@ const MarkDoneFeedItemActionIcon: React.FC<{
 const SaveFeedItemActionIcon: React.FC<{
   readonly feedItem: FeedItem;
 }> = ({feedItem}) => {
-  const saveActionInfo = getSaveFeedItemActionInfo();
+  const saveActionInfo = getSaveFeedItemActionInfo(feedItem);
   const {showToast} = useToast();
 
-  const handleSaveFeedItem = async () => {
-    const handleSaveFeedItemResult = await feedItemsService.updateFeedItem(feedItem.feedItemId, {
-      triageStatus: TriageStatus.Saved,
-    });
+  const handleToggleSavedFeedItem = async () => {
+    const isAlreadySaved = FeedItemsService.isSaved(feedItem);
 
-    if (!handleSaveFeedItemResult.success) {
-      const errorMessagePrefix = 'Error saving feed item';
+    const handleToggleSavedFeedItemResult = await feedItemsService.updateFeedItem(
+      feedItem.feedItemId,
+      {
+        triageStatus: isAlreadySaved ? TriageStatus.Untriaged : TriageStatus.Saved,
+      }
+    );
+
+    if (!handleToggleSavedFeedItemResult.success) {
+      const errorMessagePrefix = isAlreadySaved
+        ? 'Error unsaving feed item'
+        : 'Error saving feed item';
       showToast({
         type: ToastType.Error,
-        message: `${errorMessagePrefix}: ${handleSaveFeedItemResult.error.message}`,
+        message: `${errorMessagePrefix}: ${handleToggleSavedFeedItemResult.error.message}`,
       });
       logger.error(errorMessagePrefix, {
-        error: handleSaveFeedItemResult.error,
+        error: handleToggleSavedFeedItemResult.error,
         feedItemId: feedItem.feedItemId,
       });
       return;
     }
 
-    // TODO: Update based on if already saved.
-    showToast({message: 'Feed item saved'});
+    showToast({message: isAlreadySaved ? 'Feed item unsaved' : 'Feed item saved'});
   };
 
   return (
@@ -93,8 +103,8 @@ const SaveFeedItemActionIcon: React.FC<{
       name={saveActionInfo.icon}
       tooltip={saveActionInfo.text}
       size={40}
-      onClick={handleSaveFeedItem}
-      shortcut={keyboardShortcutsService.forToggleSaved(feedItem)}
+      onClick={handleToggleSavedFeedItem}
+      shortcutId={saveActionInfo.shortcutId}
     />
   );
 };
@@ -103,32 +113,35 @@ const MarkUnreadFeedItemActionIcon: React.FC<{
   readonly feedItem: FeedItem;
 }> = ({feedItem}) => {
   const {showToast} = useToast();
-  const markUnreadActionInfo = getMarkUnreadFeedItemActionInfo();
+  const markUnreadActionInfo = getMarkUnreadFeedItemActionInfo(feedItem);
 
-  const handleMarkUnreadFeedItem = async () => {
-    const handleMarkUnreadFeedItemResult =
+  const handleToggleUnreadFeedItem = async () => {
+    const isAlreadyUnread = FeedItemsService.isUnread(feedItem);
+
+    const handleToggleUnreadFeedItemResult =
       // TODO: Consider using a Firestore converter to handle this.
       // See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
       await feedItemsService.updateFeedItem(feedItem.feedItemId, {
-        [`tagIds.${SystemTagId.Unread}`]: true,
+        [`tagIds.${SystemTagId.Unread}`]: isAlreadyUnread ? deleteField() : true,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
 
-    if (!handleMarkUnreadFeedItemResult.success) {
+    if (!handleToggleUnreadFeedItemResult.success) {
       const errorMessagePrefix = 'Error marking feed item as unread';
       showToast({
         type: ToastType.Error,
-        message: `${errorMessagePrefix}: ${handleMarkUnreadFeedItemResult.error.message}`,
+        message: `${errorMessagePrefix}: ${handleToggleUnreadFeedItemResult.error.message}`,
       });
       logger.error(errorMessagePrefix, {
-        error: handleMarkUnreadFeedItemResult.error,
+        error: handleToggleUnreadFeedItemResult.error,
         feedItemId: feedItem.feedItemId,
       });
       return;
     }
 
-    // TODO: Update based on if already unread.
-    showToast({message: 'Feed item marked as unread'});
+    showToast({
+      message: isAlreadyUnread ? 'Feed item marked as read' : 'Feed item marked as unread',
+    });
   };
 
   return (
@@ -136,8 +149,8 @@ const MarkUnreadFeedItemActionIcon: React.FC<{
       name={markUnreadActionInfo.icon}
       tooltip={markUnreadActionInfo.text}
       size={40}
-      onClick={handleMarkUnreadFeedItem}
-      shortcut={keyboardShortcutsService.forToggleUnread(feedItem)}
+      onClick={handleToggleUnreadFeedItem}
+      shortcutId={markUnreadActionInfo.shortcutId}
     />
   );
 };
@@ -146,32 +159,35 @@ const StarFeedItemActionIcon: React.FC<{
   readonly feedItem: FeedItem;
 }> = ({feedItem}) => {
   const {showToast} = useToast();
-  const starActionInfo = getStarFeedItemActionInfo();
+  const starActionInfo = getStarFeedItemActionInfo(feedItem);
 
-  const handleStarFeedItem = async () => {
-    const handleStarFeedItemResult =
+  const handleToggleStarFeedItem = async () => {
+    const isAlreadyStarred = FeedItemsService.isStarred(feedItem);
+
+    const handleToggleStarFeedItemResult =
       // TODO: Consider using a Firestore converter to handle this.
       // See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
       await feedItemsService.updateFeedItem(feedItem.feedItemId, {
-        [`tagIds.${SystemTagId.Starred}`]: true,
+        [`tagIds.${SystemTagId.Starred}`]: isAlreadyStarred ? deleteField() : true,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
 
-    if (!handleStarFeedItemResult.success) {
-      const errorMessagePrefix = 'Error starring feed item';
+    if (!handleToggleStarFeedItemResult.success) {
+      const errorMessagePrefix = isAlreadyStarred
+        ? 'Error unstarring feed item'
+        : 'Error starring feed item';
       showToast({
         type: ToastType.Error,
-        message: `${errorMessagePrefix}: ${handleStarFeedItemResult.error.message}`,
+        message: `${errorMessagePrefix}: ${handleToggleStarFeedItemResult.error.message}`,
       });
       logger.error(errorMessagePrefix, {
-        error: handleStarFeedItemResult.error,
+        error: handleToggleStarFeedItemResult.error,
         feedItemId: feedItem.feedItemId,
       });
       return;
     }
 
-    // TODO: Update based on if already starred.
-    showToast({message: 'Feed item starred'});
+    showToast({message: isAlreadyStarred ? 'Feed item unstarred' : 'Feed item starred'});
   };
 
   return (
@@ -179,8 +195,8 @@ const StarFeedItemActionIcon: React.FC<{
       name={starActionInfo.icon}
       tooltip={starActionInfo.text}
       size={40}
-      onClick={handleStarFeedItem}
-      shortcut={keyboardShortcutsService.forToggleStarred(feedItem)}
+      onClick={handleToggleStarFeedItem}
+      shortcutId={starActionInfo.shortcutId}
     />
   );
 };

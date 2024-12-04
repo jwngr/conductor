@@ -1,8 +1,8 @@
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
-import * as React from 'react';
+import React, {useEffect} from 'react';
 import styled from 'styled-components';
 
-import {KeyboardShortcut} from '@shared/types/shortcuts.types';
+import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {ThemeColor} from '@shared/types/theme.types';
 import {Task} from '@shared/types/utils.types';
 
@@ -45,26 +45,27 @@ export type TooltipContent = React.ReactElement | string | SimpleTooltipContent;
 interface TooltipProps extends TooltipPrimitive.TooltipProps {
   readonly trigger: React.ReactNode;
   readonly content: TooltipContent;
-  readonly shortcut?: KeyboardShortcut;
+  readonly shortcutId?: KeyboardShortcutId;
   readonly onShortcutTrigger?: Task;
 }
 
 export const Tooltip: React.FC<TooltipProps> = ({
   trigger,
   content,
-  shortcut,
+  shortcutId,
   onShortcutTrigger,
   ...tooltipProps
 }) => {
-  React.useEffect(() => {
-    if (!shortcut?.shortcutId || !onShortcutTrigger) return;
+  useEffect(() => {
+    if (!shortcutId || !onShortcutTrigger) return;
 
+    const shortcut = keyboardShortcutsService.getShortcut(shortcutId);
     keyboardShortcutsService.registerShortcut(shortcut, onShortcutTrigger);
 
     return () => {
-      keyboardShortcutsService.unregisterShortcut(shortcut.shortcutId);
+      keyboardShortcutsService.unregisterShortcut(shortcutId);
     };
-  }, [shortcut, onShortcutTrigger]);
+  }, [shortcutId, onShortcutTrigger]);
 
   let tooltipContent: React.ReactNode;
   if (typeof content === 'string') {
@@ -75,13 +76,10 @@ export const Tooltip: React.FC<TooltipProps> = ({
     tooltipContent = content;
   }
 
-  const shortcutContent = shortcut ? <Text as="p">{shortcut.text}</Text> : null;
-
   return (
     <TooltipRootComponent {...tooltipProps}>
       <TooltipTriggerComponent>{trigger}</TooltipTriggerComponent>
       <TooltipContentComponent>{tooltipContent}</TooltipContentComponent>
-      {shortcutContent}
     </TooltipRootComponent>
   );
 };

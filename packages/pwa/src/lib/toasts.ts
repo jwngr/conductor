@@ -1,4 +1,4 @@
-import * as React from 'react';
+import {useEffect, useState} from 'react';
 
 import {makeId} from '@shared/lib/utils';
 
@@ -194,9 +194,9 @@ interface UseToastResult {
 }
 
 export function useToast(): UseToastResult {
-  const [state, setState] = React.useState(memoryState);
+  const [state, setState] = useState(memoryState);
 
-  React.useEffect(() => {
+  useEffect(() => {
     listeners.push(setState);
     return () => {
       const index = listeners.indexOf(setState);
