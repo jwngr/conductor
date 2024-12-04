@@ -7,28 +7,29 @@ import {FeedItemImportTester} from '@src/components/devToolbar/FeedItemImportTes
 
 import {IS_DEVELOPMENT} from '@src/lib/environment.pwa';
 
-const DevToolbarWrapper = styled.div<{isOpen: boolean}>`
+const DevToolbarWrapper = styled.div<{readonly $isOpen: boolean}>`
   position: fixed;
   bottom: 16px;
   right: 16px;
-  background-color: ${({theme, isOpen}) => (isOpen ? theme.colors.surface : theme.colors.primary)};
-  border-radius: ${({isOpen}) => (isOpen ? '12px' : '999px')};
+  background-color: ${({theme, $isOpen}) =>
+    $isOpen ? theme.colors.surface : theme.colors.primary};
+  border-radius: ${({$isOpen}) => ($isOpen ? '12px' : '999px')};
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   border: 2px solid ${({theme}) => theme.colors.border};
-  cursor: ${({isOpen}) => (isOpen ? 'default' : 'pointer')};
-  width: ${({isOpen}) => (isOpen ? '300px' : '32px')};
-  height: ${({isOpen}) => (isOpen ? 'auto' : '32px')};
-  padding: ${({isOpen}) => (isOpen ? '16px' : '0')};
+  cursor: ${({$isOpen}) => ($isOpen ? 'default' : 'pointer')};
+  width: ${({$isOpen}) => ($isOpen ? '300px' : '32px')};
+  height: ${({$isOpen}) => ($isOpen ? 'auto' : '32px')};
+  padding: ${({$isOpen}) => ($isOpen ? '16px' : '0')};
 `;
 
-const DevToolbarContent = styled.div<{isOpen: boolean}>`
-  display: ${({isOpen}) => (isOpen ? 'flex' : 'none')};
+const DevToolbarContent = styled.div<{readonly $isOpen: boolean}>`
+  display: ${({$isOpen}) => ($isOpen ? 'flex' : 'none')};
   flex-direction: column;
   gap: 12px;
 `;
 
-const BugEmoji = styled.span<{isOpen: boolean}>`
-  display: ${({isOpen}) => (isOpen ? 'none' : 'block')};
+const BugEmoji = styled.span<{readonly $isOpen: boolean}>`
+  display: ${({$isOpen}) => ($isOpen ? 'none' : 'block')};
   position: absolute;
   left: 50%;
   top: 50%;
@@ -79,11 +80,11 @@ export function DevToolbar({isVisible = true}: DevToolbarProps): JSX.Element | n
   if (!IS_DEVELOPMENT || !isVisible) return null;
 
   return (
-    <DevToolbarWrapper ref={toolbarRef} isOpen={isOpen} onClick={handleToolbarClick}>
-      <BugEmoji isOpen={isOpen} aria-hidden="true">
+    <DevToolbarWrapper ref={toolbarRef} $isOpen={isOpen} onClick={handleToolbarClick}>
+      <BugEmoji $isOpen={isOpen} aria-hidden="true">
         🐛
       </BugEmoji>
-      <DevToolbarContent isOpen={isOpen}>
+      <DevToolbarContent $isOpen={isOpen}>
         <FeedItemImportTester />
         <Divider />
         <DialogTester />

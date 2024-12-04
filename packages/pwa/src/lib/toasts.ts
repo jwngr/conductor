@@ -1,4 +1,4 @@
-import * as React from 'react';
+import {useEffect, useState} from 'react';
 
 import {makeId} from '@shared/lib/utils';
 
@@ -190,13 +190,14 @@ function showToast({
 interface UseToastResult {
   readonly toasts: ToasterToast[];
   readonly showToast: typeof showToast;
+  readonly showErrorToast: typeof showToast;
   readonly hideToast: Consumer<string>;
 }
 
 export function useToast(): UseToastResult {
-  const [state, setState] = React.useState(memoryState);
+  const [state, setState] = useState(memoryState);
 
-  React.useEffect(() => {
+  useEffect(() => {
     listeners.push(setState);
     return () => {
       const index = listeners.indexOf(setState);
@@ -209,6 +210,7 @@ export function useToast(): UseToastResult {
   return {
     ...state,
     showToast,
+    showErrorToast: (props) => showToast({...props, type: ToastType.Error}),
     hideToast: (toastId) => dispatch({actionType: ToastActionType.DismissToast, toastId}),
   };
 }

@@ -3,6 +3,7 @@ import {FieldValue} from 'firebase/firestore';
 import {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
 import {IconName} from '@shared/types/icons.types';
 import {makeErrorResult, makeSuccessResult, Result} from '@shared/types/result.types';
+import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {TagId} from '@shared/types/tags.types';
 import {UserId} from '@shared/types/user.types';
 
@@ -164,6 +165,5 @@ export interface FeedItemAction {
   readonly type: FeedItemActionType;
   readonly text: string;
   readonly icon: IconName;
-  // TODO: Add keyboard shortcuts.
-  // readonly shortcut: ShortcutId;
+  readonly shortcutId: KeyboardShortcutId;
 }

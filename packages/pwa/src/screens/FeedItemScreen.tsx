@@ -1,6 +1,7 @@
 import {deleteField} from 'firebase/firestore';
 import {useEffect, useRef} from 'react';
 
+import {FeedItemsService} from '@shared/lib/feedItems';
 import {logger} from '@shared/lib/logger';
 import {useFeedItemIdFromUrl} from '@shared/lib/router';
 import {assertNever} from '@shared/lib/utils';
@@ -29,7 +30,7 @@ const useMarkFeedItemRead = ({
   readonly feedItemId: FeedItemId;
   readonly feedItem: FeedItem | null;
 }) => {
-  const wasAlreadyMarkedReadAtMount = useRef(feedItem?.tagIds[SystemTagId.Unread] ?? false);
+  const wasAlreadyMarkedReadAtMount = useRef(!FeedItemsService.isUnread(feedItem));
   const wasMarkedReadOnThisMount = useRef(false);
 
   // Variables exist so we don't need to include the entire feed item in the deps array.
@@ -48,14 +49,9 @@ const useMarkFeedItemRead = ({
 
       // TODO: Consider using a Firestore converter to handle this.
       // See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
-      const feedItemUpdates: Partial<FeedItem> = {
+      const markFeedItemAsReadResult = await feedItemsService.updateFeedItem(feedItemId, {
         [`tagIds.${SystemTagId.Unread}`]: deleteField(),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any;
-      const markFeedItemAsReadResult = await feedItemsService.updateFeedItem(
-        feedItemId,
-        feedItemUpdates
-      );
+      } as Partial<FeedItem>);
 
       if (markFeedItemAsReadResult.success) {
         wasMarkedReadOnThisMount.current = true;

@@ -30,6 +30,7 @@ import {IconName} from '@shared/types/icons.types';
 import {ImportQueueItemId} from '@shared/types/importQueue.types';
 import {fromFilterOperator, ViewType} from '@shared/types/query.types';
 import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
 import {AuthStateChangedUnsubscribe, UserId} from '@shared/types/user.types';
 import {Consumer} from '@shared/types/utils.types';
@@ -173,6 +174,30 @@ export class FeedItemsService {
       return await response.text();
     });
   }
+
+  public static isMarkedDone(feedItem: MaybeFeedItem): boolean {
+    return feedItem?.triageStatus === TriageStatus.Done;
+  }
+
+  public static isSaved(feedItem: MaybeFeedItem): boolean {
+    return feedItem?.triageStatus === TriageStatus.Saved;
+  }
+
+  public static isTrashed(feedItem: MaybeFeedItem): boolean {
+    return feedItem?.triageStatus === TriageStatus.Trashed;
+  }
+
+  public static isStarred(feedItem: MaybeFeedItem): boolean {
+    return feedItem?.tagIds[SystemTagId.Starred] === true;
+  }
+
+  public static isImporting(feedItem: MaybeFeedItem): boolean {
+    return feedItem?.tagIds[SystemTagId.Importing] === true;
+  }
+
+  public static isUnread(feedItem: MaybeFeedItem): boolean {
+    return feedItem?.tagIds[SystemTagId.Unread] === true;
+  }
 }
 
 interface MakeFeedItemArgs {
@@ -203,34 +228,44 @@ export function makeFeedItem({feedItemId, type, url, source, userId}: MakeFeedIt
   };
 }
 
-export function getMarkDoneFeedItemActionInfo(): FeedItemAction {
+export function getMarkDoneFeedItemActionInfo(feedItem: FeedItem): FeedItemAction {
+  const isAlreadyDone = FeedItemsService.isMarkedDone(feedItem);
   return {
     type: FeedItemActionType.MarkDone,
-    text: 'Mark done',
-    icon: IconName.MarkDone,
+    text: isAlreadyDone ? 'Mark undone' : 'Mark done',
+    icon: IconName.MarkDone, // TODO: Make icon dynamic.
+    shortcutId: KeyboardShortcutId.ToggleDone,
   };
 }
 
-export function getSaveFeedItemActionInfo(): FeedItemAction {
+export function getSaveFeedItemActionInfo(feedItem: FeedItem): FeedItemAction {
+  const isAlreadySaved = FeedItemsService.isSaved(feedItem);
   return {
     type: FeedItemActionType.Save,
-    text: 'Save',
+    text: isAlreadySaved ? 'Unsave' : 'Save',
     icon: IconName.Save,
+    shortcutId: KeyboardShortcutId.ToggleSaved,
   };
 }
 
-export function getMarkUnreadFeedItemActionInfo(): FeedItemAction {
+export function getMarkUnreadFeedItemActionInfo(feedItem: FeedItem): FeedItemAction {
+  const isAlreadyUnread = FeedItemsService.isUnread(feedItem);
   return {
     type: FeedItemActionType.MarkUnread,
-    text: 'Mark unread',
+    text: isAlreadyUnread ? 'Mark read' : 'Mark unread',
     icon: IconName.MarkUnread,
+    shortcutId: KeyboardShortcutId.ToggleUnread,
   };
 }
 
-export function getStarFeedItemActionInfo(): FeedItemAction {
+export function getStarFeedItemActionInfo(feedItem: FeedItem): FeedItemAction {
+  const isAlreadyStarred = FeedItemsService.isStarred(feedItem);
   return {
     type: FeedItemActionType.Star,
-    text: 'Star',
+    text: isAlreadyStarred ? 'Unstar' : 'Star',
     icon: IconName.Star,
+    shortcutId: KeyboardShortcutId.ToggleStarred,
   };
 }
+
+type MaybeFeedItem = FeedItem | undefined | null;
