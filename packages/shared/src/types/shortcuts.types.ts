@@ -1,3 +1,5 @@
+import {Task} from '@shared/types/utils.types';
+
 /**
  * Unique identifier for a keyboard shortcut.
  */
@@ -48,6 +50,17 @@ export type ShortcutKey = string | ModifierKey;
  */
 export interface KeyboardShortcut {
   readonly shortcutId: KeyboardShortcutId;
+  /** Text describing the action. */
   readonly text: string;
-  readonly shorcutKeys: readonly string[]; // Platform-specific strings ready to be registered.
+  /** Platform-specific strings shown in the UI (e.g. ["D"] or ["⌘", "Shift", "S"]) */
+  readonly displayKeys: readonly string[];
+  /** Keyboard pattern registered with tinykeys (e.g. 'd' or '$mod+$shift+s'). */
+  readonly keyPattern: string;
+}
+
+export type ShortcutHandler = Task;
+
+export interface RegisteredShortcut {
+  readonly shortcut: KeyboardShortcut;
+  readonly handler: ShortcutHandler;
 }

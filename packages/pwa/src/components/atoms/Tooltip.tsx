@@ -4,8 +4,11 @@ import styled from 'styled-components';
 
 import {KeyboardShortcut} from '@shared/types/shortcuts.types';
 import {ThemeColor} from '@shared/types/theme.types';
+import {Task} from '@shared/types/utils.types';
 
 import {Text} from '@src/components/atoms/Text';
+
+import {keyboardShortcutsService} from '@src/lib/shortcuts.pwa';
 
 export const TooltipProvider = TooltipPrimitive.Provider;
 
@@ -43,9 +46,26 @@ interface TooltipProps extends TooltipPrimitive.TooltipProps {
   readonly trigger: React.ReactNode;
   readonly content: TooltipContent;
   readonly shortcut?: KeyboardShortcut;
+  readonly onShortcutTrigger?: Task;
 }
 
-export const Tooltip: React.FC<TooltipProps> = ({trigger, content, shortcut, ...tooltipProps}) => {
+export const Tooltip: React.FC<TooltipProps> = ({
+  trigger,
+  content,
+  shortcut,
+  onShortcutTrigger,
+  ...tooltipProps
+}) => {
+  React.useEffect(() => {
+    if (!shortcut?.shortcutId || !onShortcutTrigger) return;
+
+    keyboardShortcutsService.registerShortcut(shortcut, onShortcutTrigger);
+
+    return () => {
+      keyboardShortcutsService.unregisterShortcut(shortcut.shortcutId);
+    };
+  }, [shortcut, onShortcutTrigger]);
+
   let tooltipContent: React.ReactNode;
   if (typeof content === 'string') {
     tooltipContent = <Text as="p">{content}</Text>;

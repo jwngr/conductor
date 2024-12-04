@@ -1,3 +1,5 @@
+import {tinykeys} from 'tinykeys';
+
 import {FeedItemsService} from '@shared/lib/feedItems';
 import {assertNever} from '@shared/lib/utils';
 
@@ -7,6 +9,8 @@ import {
   KeyboardShortcut,
   KeyboardShortcutId,
   ModifierKey,
+  RegisteredShortcut,
+  ShortcutHandler,
   ShortcutKey,
 } from '@shared/types/shortcuts.types';
 
@@ -36,6 +40,8 @@ interface KeyboardShortcutsServiceArgs {
 
 export class KeyboardShortcutsService {
   private isMac: boolean;
+  private readonly registeredShortcuts = new Map<KeyboardShortcutId, RegisteredShortcut>();
+  private unsubscribeTinykeys?: () => void;
 
   constructor({isMac}: KeyboardShortcutsServiceArgs) {
     this.isMac = isMac;
@@ -57,8 +63,8 @@ export class KeyboardShortcutsService {
           assertNever(key);
       }
     }
-    // Don't re-map normal string keys.
-    return key;
+    // Re-map all other keys to uppercase.
+    return key.toUpperCase();
   }
 
   private getPlatformSpecificKeys(keys: ShortcutKey[]): string[] {
@@ -70,7 +76,8 @@ export class KeyboardShortcutsService {
     return {
       shortcutId: KeyboardShortcutId.ToggleDone,
       text: isAlreadyDone ? 'Mark done' : 'Mark undone',
-      shorcutKeys: this.getPlatformSpecificKeys(['d']),
+      displayKeys: this.getPlatformSpecificKeys(['D']),
+      keyPattern: 'd',
     };
   }
 
@@ -79,7 +86,8 @@ export class KeyboardShortcutsService {
     return {
       shortcutId: KeyboardShortcutId.ToggleSaved,
       text: isAlreadySaved ? 'Save' : 'Unsave',
-      shorcutKeys: this.getPlatformSpecificKeys(['b']),
+      displayKeys: this.getPlatformSpecificKeys(['B']),
+      keyPattern: 'b',
     };
   }
 
@@ -88,7 +96,8 @@ export class KeyboardShortcutsService {
     return {
       shortcutId: KeyboardShortcutId.ToggleStarred,
       text: isAlreadyStarred ? 'Star' : 'Unstar',
-      shorcutKeys: this.getPlatformSpecificKeys(['s']),
+      displayKeys: this.getPlatformSpecificKeys(['S']),
+      keyPattern: 's',
     };
   }
 
@@ -97,7 +106,8 @@ export class KeyboardShortcutsService {
     return {
       shortcutId: KeyboardShortcutId.ToggleTrashed,
       text: isAlreadyTrashed ? 'Trash' : 'Untrash',
-      shorcutKeys: this.getPlatformSpecificKeys(['#']),
+      displayKeys: this.getPlatformSpecificKeys(['#']),
+      keyPattern: '#',
     };
   }
 
@@ -106,7 +116,40 @@ export class KeyboardShortcutsService {
     return {
       shortcutId: KeyboardShortcutId.ToggleUnread,
       text: isAlreadyUnread ? 'Mark read' : 'Mark unread',
-      shorcutKeys: this.getPlatformSpecificKeys(['u']),
+      displayKeys: this.getPlatformSpecificKeys(['U']),
+      keyPattern: 'u',
     };
+  }
+
+  private setupTinykeys(): void {
+    if (this.unsubscribeTinykeys) {
+      this.unsubscribeTinykeys();
+    }
+
+    const shortcutMap: Record<string, (e: Event) => void> = {};
+
+    this.registeredShortcuts.forEach(({shortcut, handler}) => {
+      shortcutMap[shortcut.keyPattern] = (e: Event) => {
+        e.preventDefault();
+        handler();
+      };
+    });
+
+    this.unsubscribeTinykeys = tinykeys(window, shortcutMap);
+  }
+
+  public registerShortcut(shortcut: KeyboardShortcut, handler: ShortcutHandler): void {
+    this.registeredShortcuts.set(shortcut.shortcutId, {shortcut, handler});
+    this.setupTinykeys();
+  }
+
+  public unregisterShortcut(shortcutId: KeyboardShortcutId): void {
+    this.registeredShortcuts.delete(shortcutId);
+    this.setupTinykeys();
+  }
+
+  public cleanup(): void {
+    this.unsubscribeTinykeys?.();
+    this.registeredShortcuts.clear();
   }
 }

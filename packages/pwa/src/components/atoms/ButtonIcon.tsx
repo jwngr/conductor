@@ -85,11 +85,23 @@ export const ButtonIcon: React.FC<ButtonIconProps> = ({
 
   const iconSize = getIconSizeFromButtonIconSize(buttonIconSize);
 
+  const handleShortcut = React.useCallback(() => {
+    // TODO: Clean up this type.
+    onClick?.(null as unknown as React.MouseEvent<HTMLDivElement>);
+  }, [onClick]);
+
   const buttonIcon = (
     <ButtonIconWrapper $color={color} $size={buttonIconSize} onClick={onClick}>
       <IconComponent width={iconSize} height={iconSize} {...styleProps} />
     </ButtonIconWrapper>
   );
 
-  return <Tooltip trigger={buttonIcon} content={tooltip} shortcut={shortcut} />;
+  return (
+    <Tooltip
+      trigger={buttonIcon}
+      content={tooltip}
+      shortcut={shortcut}
+      onShortcutTrigger={onClick ? handleShortcut : undefined}
+    />
+  );
 };
