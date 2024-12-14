@@ -1,10 +1,11 @@
-import React from 'react';
+import React, {StrictMode} from 'react';
 import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import {ThemeProvider} from 'styled-components';
 
 import {theme} from '@shared/lib/theme';
 import {Urls} from '@shared/lib/urls';
 
+import {ErrorBoundary} from '@src/components/atoms/ErrorBoundary';
 import {Toaster} from '@src/components/atoms/Toaster';
 import {TooltipProvider} from '@src/components/atoms/Tooltip';
 import {AuthSubscriptions} from '@src/components/auth/AuthSubscriptions';
@@ -13,6 +14,7 @@ import {SignOutRedirect} from '@src/components/auth/SignOutRedirect';
 import {DevToolbar} from '@src/components/devToolbar/DevToolbar';
 
 import {NotFoundScreen} from '@src/screens/404';
+import {ErrorScreen} from '@src/screens/ErrorScreen';
 import {FeedItemScreen} from '@src/screens/FeedItemScreen';
 import {FeedsScreen} from '@src/screens/FeedsScreen';
 import {SignInScreen} from '@src/screens/SignInScreen';
@@ -76,18 +78,22 @@ const AppWideSubscriptions: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <ThemeProvider theme={theme}>
-      <TooltipProvider>
-        <BrowserRouter
-          // Pass flags to silence console logs.
-          future={{v7_startTransition: true, v7_relativeSplatPath: true}}
-        >
-          <AllRoutes />
-          <AppWideSubscriptions />
-          <DevToolbar />
-        </BrowserRouter>
-        <Toaster />
-      </TooltipProvider>
-    </ThemeProvider>
+    <StrictMode>
+      <ThemeProvider theme={theme}>
+        <TooltipProvider>
+          <BrowserRouter
+            // Pass flags to silence console logs.
+            future={{v7_startTransition: true, v7_relativeSplatPath: true}}
+          >
+            <ErrorBoundary fallback={(error) => <ErrorScreen error={error} />}>
+              <AllRoutes />
+              <AppWideSubscriptions />
+              <DevToolbar />
+            </ErrorBoundary>
+          </BrowserRouter>
+          <Toaster />
+        </TooltipProvider>
+      </ThemeProvider>
+    </StrictMode>
   );
 };
