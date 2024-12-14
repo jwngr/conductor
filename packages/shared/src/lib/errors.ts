@@ -13,12 +13,19 @@ import {Supplier} from '@shared/types/utils.types';
 /**
  * Upgrades an unknown error into a proper `Error` object with the best message possible.
  */
-export function upgradeUnknownError(error: unknown): Error {
+export function upgradeUnknownError(unknownError: unknown): Error {
   const defaultErrorMessage = 'An unexpected error occurred';
-  if (error instanceof Error) {
-    return new Error(`${error.message || defaultErrorMessage}`, {cause: error});
+  if (unknownError instanceof Error) {
+    return new Error(`${unknownError.message || defaultErrorMessage}`, {cause: unknownError});
   }
-  return new Error(`${error || defaultErrorMessage}`);
+  if (typeof unknownError === 'string' && unknownError.length > 0) {
+    return new Error(unknownError, {cause: unknownError});
+  }
+  // `String` provides better inspect than `JSON.stringify` for remaining types.
+  return new Error(
+    `Expected error, but caught \`${String(unknownError)}\` (${typeof unknownError})`,
+    {cause: unknownError}
+  );
 }
 
 /**
