@@ -6,6 +6,7 @@ import {makeErrorResult, makeSuccessResult, Result} from '@shared/types/result.t
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {TagId} from '@shared/types/tags.types';
 import {UserId} from '@shared/types/user.types';
+import {BaseStoreItem, Timestamp} from '@shared/types/utils.types';
 
 /**
  * Strongly-typed type for a feed item's unique identifier. Prefer this over plain strings.
@@ -23,7 +24,7 @@ export function isFeedItemId(maybeFeedItemId: unknown): maybeFeedItemId is FeedI
  * Converts a plain string into a strongly-typed `FeedItemId`. Returns an error if the string is
  * not a valid `FeedItemId`.
  */
-export function createFeedItemId(maybeFeedItemId: string): Result<FeedItemId> {
+export function makeFeedItemId(maybeFeedItemId: string): Result<FeedItemId> {
   if (!isFeedItemId(maybeFeedItemId)) {
     return makeErrorResult(new Error(`Invalid feed item ID: "${maybeFeedItemId}"`));
   }
@@ -88,7 +89,7 @@ export type FeedItemSource =
   | typeof FEED_ITEM_EXTENSION_SOURCE
   | FeedItemRSSSource;
 
-interface BaseFeedItem {
+interface BaseFeedItem extends BaseStoreItem {
   readonly feedItemId: FeedItemId;
   readonly userId: UserId;
   readonly type: FeedItemType;
@@ -122,9 +123,7 @@ interface BaseFeedItem {
   readonly tagIds: Partial<Record<TagId, true | FieldValue>>;
 
   // Timestamps.
-  readonly createdTime: FieldValue;
-  readonly lastUpdatedTime: FieldValue;
-  readonly lastImportedTime?: FieldValue;
+  readonly lastImportedTime?: Timestamp;
 }
 
 export interface ArticleFeedItem extends BaseFeedItem {

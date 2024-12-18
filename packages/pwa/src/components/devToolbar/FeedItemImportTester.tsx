@@ -11,9 +11,9 @@ import {Button} from '@src/components/devToolbar/Button';
 import {useMaybeLoggedInUser} from '@src/lib/auth.pwa';
 import {feedItemsService} from '@src/lib/feedItems.pwa';
 
-const Status = styled.div<{isError?: boolean}>`
+const Status = styled.div<{readonly $isError?: boolean}>`
   font-size: 12px;
-  color: ${({theme, isError}) => (isError ? theme.colors.error : theme.colors.success)};
+  color: ${({theme, $isError}) => ($isError ? theme.colors.error : theme.colors.success)};
 `;
 
 export const FeedItemImportTester: React.FC = () => {
@@ -60,7 +60,7 @@ export const FeedItemImportTester: React.FC = () => {
       >
         Test blog import
       </Button>
-      {status && <Status isError={status.includes('Error')}>{status}</Status>}
+      {status && <Status $isError={status.includes('Error')}>{status}</Status>}
     </>
   );
 };

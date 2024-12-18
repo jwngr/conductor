@@ -1,3 +1,4 @@
+import * as eventLogTypesExports from '@shared/types/eventLog.types';
 import * as feedItemsTypesExports from '@shared/types/feedItems.types';
 import * as feedSubscriptionsTypesExports from '@shared/types/feedSubscriptions.types';
 import * as firebaseTypesExports from '@shared/types/firebase.types';
@@ -13,6 +14,7 @@ import * as themeTypesExports from '@shared/types/theme.types';
 import * as urlsTypesExports from '@shared/types/urls.types';
 import * as utilsTypesExports from '@shared/types/utils.types';
 
+export const eventLog = eventLogTypesExports;
 export const feedItems = feedItemsTypesExports;
 export const feedSubscriptions = feedSubscriptionsTypesExports;
 export const firebase = firebaseTypesExports;

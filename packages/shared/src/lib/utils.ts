@@ -76,6 +76,8 @@ export function partition<T, U>(arr: Array<T | U>, predicate: Func<T | U, boolea
 
 /**
  * Generates a random ID of the given length.
+ *
+ * TODO: Switch to UUIDs.
  */
 export function makeId(length = 20): string {
   const validChars = 'abcdefghijklmnopqrstuvwxyz0123456789';

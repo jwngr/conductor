@@ -1,5 +1,6 @@
 import * as constantsExports from '@shared/lib/constants';
 import * as customIconsExports from '@shared/lib/customIcons';
+import * as eventLogExports from '@shared/lib/eventLog';
 import * as feedItemsExports from '@shared/lib/feedItems';
 import * as firebaseExports from '@shared/lib/firebase';
 import * as iconsExports from '@shared/lib/icons';
@@ -14,6 +15,7 @@ import * as viewsExports from '@shared/lib/views';
 
 export const constants = constantsExports;
 export const customIcons = customIconsExports;
+export const eventLog = eventLogExports;
 export const feedItems = feedItemsExports;
 export const firebase = firebaseExports;
 export const icons = iconsExports;
