@@ -3,9 +3,9 @@ import {logger} from '@shared/lib/logger';
 
 import {LoggedInUser} from '@shared/types/user.types';
 
-import {firebaseService} from '@src/lib/firebase.pwa';
+import {useAuthStore} from '@shared/stores/AuthStore';
 
-import {useAuthStore} from '@src/stores/AuthStore';
+import {firebaseService} from '@src/lib/firebase.pwa';
 
 export const authService = new AuthService(firebaseService.auth);
 

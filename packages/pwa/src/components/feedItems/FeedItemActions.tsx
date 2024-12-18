@@ -22,7 +22,7 @@ import {FlexRow} from '@src/components/atoms/Flex';
 
 import {useLoggedInUser} from '@src/lib/auth.pwa';
 import {eventLogService} from '@src/lib/eventLog.pwa';
-import {feedItemsService} from '@src/lib/feedItems.pwa';
+import {useFeedItemsService} from '@src/lib/feedItems.pwa';
 import {useToast} from '@src/lib/toasts';
 
 interface GenericFeedItemActionIconProps {
@@ -85,6 +85,7 @@ const MarkDoneFeedItemActionIcon: React.FC<{
 }> = ({feedItem}) => {
   const actionInfo = getMarkDoneFeedItemActionInfo(feedItem);
   const isDone = FeedItemsService.isMarkedDone(feedItem);
+  const feedItemsService = useFeedItemsService();
 
   return (
     <GenericFeedItemActionIcon
@@ -113,6 +114,7 @@ const SaveFeedItemActionIcon: React.FC<{
 }> = ({feedItem}) => {
   const actionInfo = getSaveFeedItemActionInfo(feedItem);
   const isSaved = FeedItemsService.isSaved(feedItem);
+  const feedItemsService = useFeedItemsService();
 
   return (
     <GenericFeedItemActionIcon
@@ -139,6 +141,7 @@ const MarkUnreadFeedItemActionIcon: React.FC<{
 }> = ({feedItem}) => {
   const actionInfo = getMarkUnreadFeedItemActionInfo(feedItem);
   const isUnread = FeedItemsService.isUnread(feedItem);
+  const feedItemsService = useFeedItemsService();
 
   return (
     <GenericFeedItemActionIcon
@@ -167,6 +170,7 @@ const StarFeedItemActionIcon: React.FC<{
 }> = ({feedItem}) => {
   const actionInfo = getStarFeedItemActionInfo(feedItem);
   const isStarred = FeedItemsService.isStarred(feedItem);
+  const feedItemsService = useFeedItemsService();
 
   return (
     <GenericFeedItemActionIcon

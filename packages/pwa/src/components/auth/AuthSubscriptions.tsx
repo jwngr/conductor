@@ -7,10 +7,10 @@ import {Urls} from '@shared/lib/urls';
 
 import {isValidEmail} from '@shared/types/user.types';
 
+import {useAuthStore} from '@shared/stores/AuthStore';
+
 import {authService} from '@src/lib/auth.pwa';
 import {firebaseService} from '@src/lib/firebase.pwa';
-
-import {useAuthStore} from '@src/stores/AuthStore';
 
 const AuthServiceSubscription: React.FC = () => {
   const {setLoggedInUser} = useAuthStore();
