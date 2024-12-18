@@ -5,10 +5,11 @@ import {isValidUrl} from '@shared/lib/urls';
 
 import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems.types';
 
+import {useMaybeLoggedInUser} from '@shared/hooks/auth.hooks';
+
 import {Input} from '@src/components/atoms/Input';
 import {Button} from '@src/components/devToolbar/Button';
 
-import {useMaybeLoggedInUser} from '@src/lib/auth.pwa';
 import {useMaybeFeedItemsService} from '@src/lib/feedItems.pwa';
 
 const Status = styled.div<{readonly $isError?: boolean}>`

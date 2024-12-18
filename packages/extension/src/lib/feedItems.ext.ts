@@ -9,7 +9,8 @@ import {
 } from '@shared/lib/constants';
 import {FeedItemsService} from '@shared/lib/feedItems';
 
-import {useLoggedInUser} from '@src/lib/auth.ext';
+import {useLoggedInUser} from '@shared/hooks/auth.hooks';
+
 import {firebaseService} from '@src/lib/firebase.ext';
 
 const feedItemsDbRef = collection(firebaseService.firestore, FEED_ITEMS_DB_COLLECTION);

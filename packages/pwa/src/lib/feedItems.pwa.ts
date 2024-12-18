@@ -12,7 +12,8 @@ import {FeedItemsService} from '@shared/lib/feedItems';
 import {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
 import {ViewType} from '@shared/types/query.types';
 
-import {useLoggedInUser, useMaybeLoggedInUser} from '@src/lib/auth.pwa';
+import {useLoggedInUser, useMaybeLoggedInUser} from '@shared/hooks/auth.hooks';
+
 import {firebaseService} from '@src/lib/firebase.pwa';
 
 const feedItemsDbRef = collection(firebaseService.firestore, FEED_ITEMS_DB_COLLECTION);

@@ -7,7 +7,8 @@ import {EventLogService} from '@shared/lib/eventLog';
 import {EventId, EventLogItem} from '@shared/types/eventLog.types';
 import {ViewType} from '@shared/types/query.types';
 
-import {useLoggedInUser} from '@src/lib/auth.pwa';
+import {useLoggedInUser} from '@shared/hooks/auth.hooks';
+
 import {firebaseService} from '@src/lib/firebase.pwa';
 
 // TODO: This is a somewhat arbitrary limit. Reconsider what the logic should be here.

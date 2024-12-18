@@ -17,10 +17,11 @@ import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
 import {AsyncFunc, Func} from '@shared/types/utils.types';
 
+import {useLoggedInUser} from '@shared/hooks/auth.hooks';
+
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {FlexRow} from '@src/components/atoms/Flex';
 
-import {useLoggedInUser} from '@src/lib/auth.pwa';
 import {eventLogService} from '@src/lib/eventLog.pwa';
 import {useFeedItemsService} from '@src/lib/feedItems.pwa';
 import {useToast} from '@src/lib/toasts';
