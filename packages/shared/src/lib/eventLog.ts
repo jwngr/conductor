@@ -5,6 +5,7 @@ import {
   limit as firestoreLimit,
   getDoc,
   onSnapshot,
+  orderBy,
   query,
   serverTimestamp,
   setDoc,
@@ -15,7 +16,6 @@ import {
 import {asyncTry} from '@shared/lib/errors';
 import {logger} from '@shared/lib/logger';
 import {makeId} from '@shared/lib/utils';
-import {Views} from '@shared/lib/views';
 
 import {
   EventId,
@@ -27,7 +27,6 @@ import {
 } from '@shared/types/eventLog.types';
 import {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
 import {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
-import {fromFilterOperator, ViewType} from '@shared/types/query.types';
 import {AsyncResult, makeSuccessResult, Result} from '@shared/types/result.types';
 import {UserId} from '@shared/types/user.types';
 import {Consumer, Unsubscribe} from '@shared/types/utils.types';
@@ -64,28 +63,18 @@ export class EventLogService {
   }
 
   watchEventLogItemsQuery(args: {
-    readonly viewType: ViewType;
     readonly userId: UserId;
     readonly successCallback: Consumer<EventLogItem[]>;
     readonly errorCallback: Consumer<Error>;
     readonly limit?: number;
   }): Unsubscribe {
-    const {viewType, userId, successCallback, errorCallback, limit} = args;
+    const {userId, successCallback, errorCallback, limit} = args;
 
-    // Construct Firestore queries from the view config.
-    const viewConfig = Views.get(viewType);
-    const whereClauses = [
-      where('userId', '==', userId),
-      ...viewConfig.filters.map((filter) =>
-        where(filter.field, fromFilterOperator(filter.op), filter.value)
-      ),
-    ];
     const itemsQuery = query(
       this.eventLogDbRef,
-      ...whereClauses,
-      ...(limit ? [firestoreLimit(limit)] : [])
-      // TODO: Add order by condition.
-      // orderBy(viewConfig.sort.field, fromSortDirection(viewConfig.sort.direction))
+      where('userId', '==', userId),
+      ...(limit ? [firestoreLimit(limit)] : []),
+      orderBy('createdTime', 'desc')
     );
 
     const unsubscribe = onSnapshot(
