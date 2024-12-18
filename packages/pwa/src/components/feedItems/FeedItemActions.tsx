@@ -17,12 +17,10 @@ import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
 import {AsyncFunc, Func} from '@shared/types/utils.types';
 
-import {useLoggedInUser} from '@shared/hooks/auth.hooks';
-
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {FlexRow} from '@src/components/atoms/Flex';
 
-import {eventLogService} from '@src/lib/eventLog.pwa';
+import {useEventLogService} from '@src/lib/eventLog.pwa';
 import {useFeedItemsService} from '@src/lib/feedItems.pwa';
 import {useToast} from '@src/lib/toasts';
 
@@ -49,7 +47,8 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
   toastText,
   errorMessage,
 }) => {
-  const loggedInUser = useLoggedInUser();
+  const {feedItemId} = feedItem;
+  const eventLogService = useEventLogService();
   const {showToast, showErrorToast} = useToast();
 
   const handleAction = async () => {
@@ -58,11 +57,7 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
 
     if (result.success) {
       showToast({message: toastText});
-      eventLogService.logFeedItemActionEvent({
-        userId: loggedInUser.userId,
-        feedItemId: feedItem.feedItemId,
-        feedItemActionType,
-      });
+      eventLogService.logFeedItemActionEvent({feedItemId, feedItemActionType});
       return;
     }
 

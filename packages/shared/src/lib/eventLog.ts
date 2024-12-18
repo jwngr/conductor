@@ -32,7 +32,10 @@ import {UserId} from '@shared/types/user.types';
 import {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
 export class EventLogService {
-  constructor(private readonly eventLogDbRef: CollectionReference) {}
+  constructor(
+    private readonly eventLogDbRef: CollectionReference,
+    private readonly userId: UserId
+  ) {}
 
   public async fetchEventLogItem(eventId: EventId): AsyncResult<EventLogItem | null> {
     return asyncTry<EventLogItem | null>(async () => {
@@ -63,16 +66,15 @@ export class EventLogService {
   }
 
   public watchEventLog(args: {
-    readonly userId: UserId;
     readonly successCallback: Consumer<EventLogItem[]>;
     readonly errorCallback: Consumer<Error>;
     readonly limit?: number;
   }): Unsubscribe {
-    const {userId, successCallback, errorCallback, limit} = args;
+    const {successCallback, errorCallback, limit} = args;
 
     const itemsQuery = query(
       this.eventLogDbRef,
-      where('userId', '==', userId),
+      where('userId', '==', this.userId),
       ...(limit ? [firestoreLimit(limit)] : []),
       orderBy('createdTime', 'desc')
     );
@@ -112,21 +114,17 @@ export class EventLogService {
   }
 
   public async logFeedItemActionEvent(args: {
-    // TODO: Store the user ID as state on the instance so that each method call doesn't need to
-    // pass it in.
-    readonly userId: UserId;
     readonly feedItemId: FeedItemId;
     readonly feedItemActionType: FeedItemActionType;
   }): AsyncResult<EventId | null> {
-    const eventLogItemResult = makeFeedItemActionEventLogItem(args);
+    const eventLogItemResult = makeFeedItemActionEventLogItem({...args, userId: this.userId});
     return this.logEvent(eventLogItemResult);
   }
 
   public async logFeedSubscriptionEvent(args: {
-    readonly userId: UserId;
     readonly feedSubscriptionId: FeedSubscriptionId;
   }): AsyncResult<EventId | null> {
-    const eventLogItemResult = makeFeedSubscriptionEventLogItem(args);
+    const eventLogItemResult = makeFeedSubscriptionEventLogItem({...args, userId: this.userId});
     return this.logEvent(eventLogItemResult);
   }
 
