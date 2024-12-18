@@ -55,8 +55,7 @@ export function useEventLogItems({viewType}: {readonly viewType: ViewType}): {
   const loggedInUser = useLoggedInUser();
 
   useEffect(() => {
-    const unsubscribe = eventLogService.watchEventLogItemsQuery({
-      viewType,
+    const unsubscribe = eventLogService.watchEventLog({
       userId: loggedInUser.userId,
       successCallback: (eventLogItems) =>
         setState({eventLogItems, isLoading: false, error: null, limit: EVENT_LOG_LIMIT}),

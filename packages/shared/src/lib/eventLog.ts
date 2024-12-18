@@ -34,7 +34,7 @@ import {Consumer, Unsubscribe} from '@shared/types/utils.types';
 export class EventLogService {
   constructor(private readonly eventLogDbRef: CollectionReference) {}
 
-  async getEventLogItem(eventId: EventId): AsyncResult<EventLogItem | null> {
+  public async fetchEventLogItem(eventId: EventId): AsyncResult<EventLogItem | null> {
     return asyncTry<EventLogItem | null>(async () => {
       const snapshot = await getDoc(doc(this.eventLogDbRef, eventId));
       return snapshot.exists()
@@ -43,7 +43,7 @@ export class EventLogService {
     });
   }
 
-  watchEventLogItem(
+  public watchEventLogItem(
     eventId: EventId,
     successCallback: Consumer<EventLogItem | null>, // null means event log item does not exist.
     errorCallback: Consumer<Error>
@@ -62,7 +62,7 @@ export class EventLogService {
     return () => unsubscribe();
   }
 
-  watchEventLogItemsQuery(args: {
+  public watchEventLog(args: {
     readonly userId: UserId;
     readonly successCallback: Consumer<EventLogItem[]>;
     readonly errorCallback: Consumer<Error>;
@@ -88,7 +88,7 @@ export class EventLogService {
     return () => unsubscribe();
   }
 
-  async logEvent(eventLogItemResult: Result<EventLogItem>): AsyncResult<EventId | null> {
+  public async logEvent(eventLogItemResult: Result<EventLogItem>): AsyncResult<EventId | null> {
     if (!eventLogItemResult.success) {
       return eventLogItemResult;
     }
@@ -111,7 +111,7 @@ export class EventLogService {
     return makeSuccessResult(eventLogItem.eventId);
   }
 
-  async logFeedItemActionEvent(args: {
+  public async logFeedItemActionEvent(args: {
     // TODO: Store the user ID as state on the instance so that each method call doesn't need to
     // pass it in.
     readonly userId: UserId;
@@ -122,7 +122,7 @@ export class EventLogService {
     return this.logEvent(eventLogItemResult);
   }
 
-  async logFeedSubscriptionEvent(args: {
+  public async logFeedSubscriptionEvent(args: {
     readonly userId: UserId;
     readonly feedSubscriptionId: FeedSubscriptionId;
   }): AsyncResult<EventId | null> {
@@ -130,13 +130,16 @@ export class EventLogService {
     return this.logEvent(eventLogItemResult);
   }
 
-  async updateEventLogItem(eventId: EventId, item: Partial<EventLogItem>): AsyncResult<undefined> {
+  public async updateEventLogItem(
+    eventId: EventId,
+    item: Partial<EventLogItem>
+  ): AsyncResult<undefined> {
     return asyncTry<undefined>(async () => {
       await updateDoc(doc(this.eventLogDbRef, eventId), item);
     });
   }
 
-  async deleteEventLogItem(eventId: EventId): AsyncResult<undefined> {
+  public async deleteEventLogItem(eventId: EventId): AsyncResult<undefined> {
     return asyncTry<undefined>(async () => {
       await deleteDoc(doc(this.eventLogDbRef, eventId));
     });
