@@ -145,8 +145,9 @@ service cloud.firestore {
       allow create: if isNewResourceOwner() && isValidEventLogItemDoc(eventId);
       allow delete: if isResourceOwner();
 
-      // Event log items can only be deleted once created.
-      allow update: if false;
+      // Allow updates if the current user owns the document.
+      // TODO: Should this be append and delete only.
+      allow update: if isResourceOwner() && isNewResourceOwner() && isValidEventLogItemDoc(eventId);
     }
   }
 }
