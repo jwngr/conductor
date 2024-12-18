@@ -12,11 +12,12 @@ import {
   where,
 } from 'firebase/firestore';
 
-import {asyncTry, asyncTryAllPromises} from '@shared/lib/errors';
+import {asyncTry} from '@shared/lib/errors';
+import {logger} from '@shared/lib/logger';
+import {makeId} from '@shared/lib/utils';
 import {Views} from '@shared/lib/views';
 
 import {
-  BaseEventLogItem,
   EventId,
   EventLogItem,
   EventType,
@@ -27,11 +28,9 @@ import {
 import {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
 import {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
 import {fromFilterOperator, ViewType} from '@shared/types/query.types';
-import {AsyncResult, makeErrorResult, makeSuccessResult, Result} from '@shared/types/result.types';
+import {AsyncResult, makeSuccessResult, Result} from '@shared/types/result.types';
 import {UserId} from '@shared/types/user.types';
 import {Consumer, Unsubscribe} from '@shared/types/utils.types';
-
-import {makeId} from './utils';
 
 export class EventLogService {
   constructor(private readonly eventLogDbRef: CollectionReference) {}
@@ -106,20 +105,27 @@ export class EventLogService {
     }
 
     const eventLogItem = eventLogItemResult.value;
-    const eventLogItemDoc = doc(this.eventLogDbRef);
+    const eventLogItemDoc = doc(this.eventLogDbRef, eventLogItem.eventId);
 
-    const addEventLogItemResult = await asyncTryAllPromises<[undefined]>([
-      setDoc(eventLogItemDoc, eventLogItem),
-    ]);
+    const addEventLogItemResult = await asyncTry<undefined>(async () => {
+      await setDoc(eventLogItemDoc, eventLogItem);
+    });
 
     if (!addEventLogItemResult.success) {
-      return makeErrorResult(addEventLogItemResult.error[0]);
+      logger.error(`Failed to log event: ${addEventLogItemResult.error.message}`, {
+        eventLogItem,
+        error: addEventLogItemResult.error,
+      });
+      return addEventLogItemResult;
     }
 
     return makeSuccessResult(eventLogItem.eventId);
   }
 
   async logFeedItemActionEvent(args: {
+    // TODO: Store the user ID as state on the instance so that each method call doesn't need to
+    // pass it in.
+    readonly userId: UserId;
     readonly feedItemId: FeedItemId;
     readonly feedItemActionType: FeedItemActionType;
   }): AsyncResult<EventId | null> {
@@ -128,6 +134,7 @@ export class EventLogService {
   }
 
   async logFeedSubscriptionEvent(args: {
+    readonly userId: UserId;
     readonly feedSubscriptionId: FeedSubscriptionId;
   }): AsyncResult<EventId | null> {
     const eventLogItemResult = makeFeedSubscriptionEventLogItem(args);
@@ -159,12 +166,14 @@ export function makeEventLogItem<T extends EventLogItem>(
 }
 
 export function makeFeedItemActionEventLogItem(args: {
+  readonly userId: UserId;
   readonly feedItemId: FeedItemId;
   readonly feedItemActionType: FeedItemActionType;
 }): Result<FeedItemActionEventLogItem> {
-  const {feedItemId, feedItemActionType} = args;
+  const {userId, feedItemId, feedItemActionType} = args;
 
   return makeEventLogItem<FeedItemActionEventLogItem>({
+    userId,
     eventType: EventType.FeedItemAction,
     data: {feedItemId, feedItemActionType},
     createdTime: serverTimestamp(),
@@ -173,12 +182,14 @@ export function makeFeedItemActionEventLogItem(args: {
 }
 
 export function makeFeedSubscriptionEventLogItem(args: {
+  readonly userId: UserId;
   readonly feedSubscriptionId: FeedSubscriptionId;
 }): Result<FeedSubscriptionEventLogItem> {
-  const {feedSubscriptionId} = args;
+  const {userId, feedSubscriptionId} = args;
 
   return makeEventLogItem<FeedSubscriptionEventLogItem>({
     eventType: EventType.FeedSubscription,
+    userId,
     data: {feedSubscriptionId},
     createdTime: serverTimestamp(),
     lastUpdatedTime: serverTimestamp(),

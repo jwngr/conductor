@@ -20,6 +20,7 @@ import {AsyncFunc, Func} from '@shared/types/utils.types';
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {FlexRow} from '@src/components/atoms/Flex';
 
+import {useLoggedInUser} from '@src/lib/auth.pwa';
 import {eventLogService} from '@src/lib/eventLog.pwa';
 import {feedItemsService} from '@src/lib/feedItems.pwa';
 import {useToast} from '@src/lib/toasts';
@@ -47,6 +48,7 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
   toastText,
   errorMessage,
 }) => {
+  const loggedInUser = useLoggedInUser();
   const {showToast, showErrorToast} = useToast();
 
   const handleAction = async () => {
@@ -55,7 +57,11 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
 
     if (result.success) {
       showToast({message: toastText});
-      eventLogService.logFeedItemActionEvent({feedItemId: feedItem.feedItemId, feedItemActionType});
+      eventLogService.logFeedItemActionEvent({
+        userId: loggedInUser.userId,
+        feedItemId: feedItem.feedItemId,
+        feedItemActionType,
+      });
       return;
     }
 

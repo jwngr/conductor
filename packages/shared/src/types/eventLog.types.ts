@@ -1,6 +1,7 @@
 import {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
 import {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
 import {makeErrorResult, makeSuccessResult, Result} from '@shared/types/result.types';
+import {UserId} from '@shared/types/user.types';
 import {BaseStoreItem} from '@shared/types/utils.types';
 
 /**
@@ -31,8 +32,9 @@ export enum EventType {
   FeedSubscription = 'FEED_SUBSCRIPTION',
 }
 
-export interface BaseEventLogItem extends BaseStoreItem {
+interface BaseEventLogItem extends BaseStoreItem {
   readonly eventId: EventId;
+  readonly userId: UserId;
   readonly eventType: EventType;
   /** Arbitrary data associated with the event. */
   readonly data?: Record<string, unknown>;
@@ -40,7 +42,7 @@ export interface BaseEventLogItem extends BaseStoreItem {
 
 export interface FeedItemActionEventLogItem extends BaseEventLogItem {
   readonly eventType: EventType.FeedItemAction;
-  data: {
+  readonly data: {
     readonly feedItemId: FeedItemId;
     readonly feedItemActionType: FeedItemActionType;
   };
@@ -48,7 +50,7 @@ export interface FeedItemActionEventLogItem extends BaseEventLogItem {
 
 export interface FeedSubscriptionEventLogItem extends BaseEventLogItem {
   readonly eventType: EventType.FeedSubscription;
-  data: {
+  readonly data: {
     readonly feedSubscriptionId: FeedSubscriptionId;
     // TODO: Add `feedSubscriptionActionType`.
   };
