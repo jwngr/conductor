@@ -1,6 +1,6 @@
 import {collection} from 'firebase/firestore';
 import {ref as storageRef} from 'firebase/storage';
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 
 import {
   FEED_ITEMS_DB_COLLECTION,
@@ -12,24 +12,51 @@ import {FeedItemsService} from '@shared/lib/feedItems';
 import {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
 import {ViewType} from '@shared/types/query.types';
 
-import {useLoggedInUser} from '@src/lib/auth.pwa';
+import {useLoggedInUser, useMaybeLoggedInUser} from '@shared/hooks/auth.hooks';
+
 import {firebaseService} from '@src/lib/firebase.pwa';
 
 const feedItemsDbRef = collection(firebaseService.firestore, FEED_ITEMS_DB_COLLECTION);
 const importQueueDbRef = collection(firebaseService.firestore, IMPORT_QUEUE_DB_COLLECTION);
 const feedItemsStorageRef = storageRef(firebaseService.storage, FEED_ITEMS_STORAGE_COLLECTION);
 
-export const feedItemsService = new FeedItemsService(
-  feedItemsDbRef,
-  importQueueDbRef,
-  feedItemsStorageRef
-);
+export function useFeedItemsService(): FeedItemsService {
+  const loggedInUser = useLoggedInUser();
+
+  const feedItemsService = useMemo(() => {
+    return new FeedItemsService(
+      feedItemsDbRef,
+      importQueueDbRef,
+      feedItemsStorageRef,
+      loggedInUser.userId
+    );
+  }, [loggedInUser]);
+
+  return feedItemsService;
+}
+
+export function useMaybeFeedItemsService(): FeedItemsService | null {
+  const {isLoading, loggedInUser} = useMaybeLoggedInUser();
+
+  const feedItemsService = useMemo(() => {
+    if (isLoading || !loggedInUser) return null;
+    return new FeedItemsService(
+      feedItemsDbRef,
+      importQueueDbRef,
+      feedItemsStorageRef,
+      loggedInUser.userId
+    );
+  }, [isLoading, loggedInUser]);
+
+  return feedItemsService;
+}
 
 export function useFeedItem(feedItemId: FeedItemId): {
   readonly feedItem: FeedItem | null;
   readonly isLoading: boolean;
   readonly error: Error | null;
 } {
+  const feedItemsService = useFeedItemsService();
   const [state, setState] = useState<{
     readonly feedItem: FeedItem | null;
     readonly isLoading: boolean;
@@ -43,7 +70,7 @@ export function useFeedItem(feedItemId: FeedItemId): {
       (error) => setState({feedItem: null, isLoading: false, error})
     );
     return () => unsubscribe();
-  }, [feedItemId]);
+  }, [feedItemId, feedItemsService]);
 
   return state;
 }
@@ -53,22 +80,21 @@ export function useFeedItems({viewType}: {readonly viewType: ViewType}): {
   readonly isLoading: boolean;
   readonly error: Error | null;
 } {
+  const feedItemsService = useFeedItemsService();
   const [state, setState] = useState<{
     readonly feedItems: FeedItem[];
     readonly isLoading: boolean;
     readonly error: Error | null;
   }>({feedItems: [], isLoading: true, error: null});
-  const loggedInUser = useLoggedInUser();
 
   useEffect(() => {
     const unsubscribe = feedItemsService.watchFeedItemsQuery({
       viewType,
-      userId: loggedInUser.userId,
       successCallback: (feedItems) => setState({feedItems, isLoading: false, error: null}),
       errorCallback: (error) => setState({feedItems: [], isLoading: false, error}),
     });
     return () => unsubscribe();
-  }, [viewType, loggedInUser.userId]);
+  }, [viewType, feedItemsService]);
 
   return state;
 }
@@ -81,6 +107,7 @@ export function useFeedItemMarkdown(
   readonly isLoading: boolean;
   readonly error: Error | null;
 } {
+  const feedItemsService = useFeedItemsService();
   const [state, setState] = useState<{
     readonly markdown: string | null;
     readonly isLoading: boolean;
@@ -108,7 +135,7 @@ export function useFeedItemMarkdown(
     return () => {
       isMounted = false;
     };
-  }, [feedItemId, isFeedItemImported]);
+  }, [feedItemId, isFeedItemImported, feedItemsService]);
 
   return state;
 }

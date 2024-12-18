@@ -1,5 +1,5 @@
 import {collection} from 'firebase/firestore';
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 
 import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants';
 import {EventLogService} from '@shared/lib/eventLog';
@@ -7,7 +7,8 @@ import {EventLogService} from '@shared/lib/eventLog';
 import {EventId, EventLogItem} from '@shared/types/eventLog.types';
 import {ViewType} from '@shared/types/query.types';
 
-import {useLoggedInUser} from '@src/lib/auth.pwa';
+import {useLoggedInUser, useMaybeLoggedInUser} from '@shared/hooks/auth.hooks';
+
 import {firebaseService} from '@src/lib/firebase.pwa';
 
 // TODO: This is a somewhat arbitrary limit. Reconsider what the logic should be here.
@@ -15,18 +16,43 @@ const EVENT_LOG_LIMIT = 100;
 
 const eventLogDbRef = collection(firebaseService.firestore, EVENT_LOG_DB_COLLECTION);
 
-export const eventLogService = new EventLogService(eventLogDbRef);
+export const useEventLogService = () => {
+  const loggedInUser = useLoggedInUser();
 
-export function useEventLogItem(eventId: EventId): {
+  const eventLogService = useMemo(
+    () => new EventLogService(eventLogDbRef, loggedInUser.userId),
+    [loggedInUser.userId]
+  );
+
+  return eventLogService;
+};
+
+export const useMaybeEventLogService = () => {
+  const {isLoading, loggedInUser} = useMaybeLoggedInUser();
+
+  const eventLogService = useMemo(() => {
+    if (isLoading || !loggedInUser) return null;
+    return new EventLogService(eventLogDbRef, loggedInUser.userId);
+  }, [isLoading, loggedInUser]);
+
+  return eventLogService;
+};
+
+interface EventLogItemState {
   readonly eventLogItem: EventLogItem | null;
   readonly isLoading: boolean;
   readonly error: Error | null;
-} {
-  const [state, setState] = useState<{
-    readonly eventLogItem: EventLogItem | null;
-    readonly isLoading: boolean;
-    readonly error: Error | null;
-  }>({eventLogItem: null, isLoading: true, error: null});
+}
+
+// TODO: Ideally these hooks would live in the `shared` package.
+export function useEventLogItem(eventId: EventId): EventLogItemState {
+  const eventLogService = useEventLogService();
+
+  const [state, setState] = useState<EventLogItemState>({
+    eventLogItem: null,
+    isLoading: true,
+    error: null,
+  });
 
   useEffect(() => {
     const unsubscribe = eventLogService.watchEventLogItem(
@@ -35,35 +61,37 @@ export function useEventLogItem(eventId: EventId): {
       (error) => setState({eventLogItem: null, isLoading: false, error})
     );
     return () => unsubscribe();
-  }, [eventId]);
+  }, [eventId, eventLogService]);
 
   return state;
 }
 
-export function useEventLogItems({viewType}: {readonly viewType: ViewType}): {
+interface EventLogItemsState {
   readonly eventLogItems: EventLogItem[];
   readonly isLoading: boolean;
   readonly error: Error | null;
   readonly limit: number;
-} {
-  const [state, setState] = useState<{
-    readonly eventLogItems: EventLogItem[];
-    readonly isLoading: boolean;
-    readonly error: Error | null;
-    readonly limit: number;
-  }>({eventLogItems: [], isLoading: true, error: null, limit: 0});
-  const loggedInUser = useLoggedInUser();
+}
+
+export function useEventLogItems({viewType}: {readonly viewType: ViewType}): EventLogItemsState {
+  const eventLogService = useEventLogService();
+
+  const [state, setState] = useState<EventLogItemsState>({
+    eventLogItems: [],
+    isLoading: true,
+    error: null,
+    limit: 0,
+  });
 
   useEffect(() => {
     const unsubscribe = eventLogService.watchEventLog({
-      userId: loggedInUser.userId,
       successCallback: (eventLogItems) =>
         setState({eventLogItems, isLoading: false, error: null, limit: EVENT_LOG_LIMIT}),
       errorCallback: (error) =>
         setState({eventLogItems: [], isLoading: false, error, limit: EVENT_LOG_LIMIT}),
     });
     return () => unsubscribe();
-  }, [viewType, loggedInUser.userId]);
+  }, [viewType, eventLogService]);
 
   return state;
 }

@@ -5,11 +5,12 @@ import {isValidUrl} from '@shared/lib/urls';
 
 import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems.types';
 
+import {useMaybeLoggedInUser} from '@shared/hooks/auth.hooks';
+
 import {Input} from '@src/components/atoms/Input';
 import {Button} from '@src/components/devToolbar/Button';
 
-import {useMaybeLoggedInUser} from '@src/lib/auth.pwa';
-import {feedItemsService} from '@src/lib/feedItems.pwa';
+import {useMaybeFeedItemsService} from '@src/lib/feedItems.pwa';
 
 const Status = styled.div<{readonly $isError?: boolean}>`
   font-size: 12px;
@@ -17,13 +18,21 @@ const Status = styled.div<{readonly $isError?: boolean}>`
 `;
 
 export const FeedItemImportTester: React.FC = () => {
-  const [url, setUrl] = useState('');
-  const [status, setStatus] = useState('');
+  // The dev toolbar is visible even when logged-out, so use hooks which don't require auth state.
+  const feedItemsService = useMaybeFeedItemsService();
   const {isLoading: isLoadingLoggedInUser, loggedInUser} = useMaybeLoggedInUser();
 
-  if (isLoadingLoggedInUser || !loggedInUser) return null;
+  const [url, setUrl] = useState('');
+  const [status, setStatus] = useState('');
 
   const handleAddItemToQueue = async (urlToAdd: string) => {
+    if (!feedItemsService) {
+      setStatus(
+        `Error: Feed items service not initialized (logged in user: ${JSON.stringify(loggedInUser)})`
+      );
+      return;
+    }
+
     setStatus('Pending...');
 
     const trimmedUrl = urlToAdd.trim();
@@ -35,7 +44,6 @@ export const FeedItemImportTester: React.FC = () => {
     const addFeedItemResult = await feedItemsService.addFeedItem({
       url: trimmedUrl,
       source: FEED_ITEM_APP_SOURCE,
-      userId: loggedInUser.userId,
     });
 
     if (addFeedItemResult.success) {
@@ -45,6 +53,9 @@ export const FeedItemImportTester: React.FC = () => {
       setStatus(`Error: ${addFeedItemResult.error}`);
     }
   };
+
+  // Only show the toolbar if we have auth state.
+  if (isLoadingLoggedInUser || !loggedInUser) return null;
 
   return (
     <>

@@ -19,17 +19,18 @@ import {XkcdFeedItemComponent} from '@src/components/feedItems/XkcdFeedItem';
 import {ScreenMainContentWrapper, ScreenWrapper} from '@src/components/layout/Screen';
 import {LeftSidebar} from '@src/components/LeftSidebar';
 
-import {feedItemsService, useFeedItem} from '@src/lib/feedItems.pwa';
+import {useFeedItem, useFeedItemsService} from '@src/lib/feedItems.pwa';
 
 import {NotFoundScreen} from '@src/screens/404';
 
-const useMarkFeedItemRead = ({
-  feedItemId,
-  feedItem,
-}: {
+const useMarkFeedItemRead = (args: {
   readonly feedItemId: FeedItemId;
   readonly feedItem: FeedItem | null;
 }) => {
+  const {feedItemId, feedItem} = args;
+
+  const feedItemsService = useFeedItemsService();
+
   const wasAlreadyMarkedReadAtMount = useRef(!FeedItemsService.isUnread(feedItem));
   const wasMarkedReadOnThisMount = useRef(false);
 
@@ -65,7 +66,7 @@ const useMarkFeedItemRead = ({
       }
     }
     go();
-  }, [feedItemId, isFeedItemNull, isFeedItemImported]);
+  }, [feedItemId, isFeedItemNull, isFeedItemImported, feedItemsService]);
 };
 
 const FeedItemScreenMainContent: React.FC<{

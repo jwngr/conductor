@@ -5,11 +5,13 @@ import {ThemeColor} from '@shared/types/theme.types';
 import {createEmailAddress, isValidEmail} from '@shared/types/user.types';
 import {Consumer} from '@shared/types/utils.types';
 
+import {useMaybeLoggedInUser} from '@shared/hooks/auth.hooks';
+
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Input} from '@src/components/atoms/Input';
 import {Text} from '@src/components/atoms/Text';
 
-import {authService, useMaybeLoggedInUser} from '@src/lib/auth.pwa';
+import {authService} from '@src/lib/auth.pwa';
 
 import {OnClick} from '@src/types/utils.pwa.types';
 

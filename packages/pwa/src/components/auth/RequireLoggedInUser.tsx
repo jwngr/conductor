@@ -4,7 +4,8 @@ import {Navigate} from 'react-router-dom';
 
 import {Urls} from '@shared/lib/urls';
 
-import {useMaybeLoggedInUser} from '@src/lib/auth.pwa';
+import {useMaybeLoggedInUser} from '@shared/hooks/auth.hooks';
+
 import {firebaseService} from '@src/lib/firebase.pwa';
 
 export const RequireLoggedInUser: React.FC<{

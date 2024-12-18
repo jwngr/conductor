@@ -15,8 +15,7 @@
     "react-markdown": "^9.0.1",
     "react-router-dom": "^6.28.0",
     "styled-components": "^6.1.13",
-    "tinykeys": "^3.0.0",
-    "zustand": "^5.0.1"
+    "tinykeys": "^3.0.0"
   },
   "devDependencies": {
     "@types/jsdom": "^21.1.7",

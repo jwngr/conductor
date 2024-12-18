@@ -3,14 +3,14 @@ import {useState} from 'react';
 import {asyncTry} from '@shared/lib/errors';
 
 import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems.types';
-import {createUserId} from '@shared/types/user.types';
 
-import {feedItemsService} from '@src/lib/feedItems.ext';
+import {useFeedItemsService} from '@src/lib/feedItems.ext';
 import {useCurrentTab} from '@src/lib/tabs.ext';
 
 function App() {
   const [status, setStatus] = useState<string>('');
   const {currentTab} = useCurrentTab();
+  const feedItemsService = useFeedItemsService();
 
   const handleClick = async () => {
     setStatus('Saving URL...');
@@ -32,18 +32,9 @@ function App() {
       return;
     }
 
-    // TODO: Get the user ID from the extension's auth once it's implemented.
-    const userIdResult = createUserId('TODO');
-    if (!userIdResult.success) {
-      setStatus(`Error creating user ID: ${userIdResult.error.message}`);
-      return;
-    }
-    const userId = userIdResult.value;
-
     const addFeedItemResult = await feedItemsService.addFeedItem({
       url: tabUrl,
       source: FEED_ITEM_APP_SOURCE,
-      userId,
     });
 
     if (addFeedItemResult.success) {

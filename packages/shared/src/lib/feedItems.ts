@@ -39,7 +39,8 @@ export class FeedItemsService {
   constructor(
     private readonly feedItemsDbRef: CollectionReference,
     private readonly importQueueDbRef: CollectionReference,
-    private readonly feedItemsStorageRef: StorageReference
+    private readonly feedItemsStorageRef: StorageReference,
+    private readonly userId: UserId
   ) {}
 
   async getFeedItem(feedItemId: FeedItemId): AsyncResult<FeedItem | null> {
@@ -70,16 +71,15 @@ export class FeedItemsService {
 
   watchFeedItemsQuery(args: {
     readonly viewType: ViewType;
-    readonly userId: UserId;
     readonly successCallback: Consumer<FeedItem[]>;
     readonly errorCallback: Consumer<Error>;
   }): AuthStateChangedUnsubscribe {
-    const {viewType, userId, successCallback, errorCallback} = args;
+    const {viewType, successCallback, errorCallback} = args;
 
     // Construct Firestore queries from the view config.
     const viewConfig = Views.get(viewType);
     const whereClauses = [
-      where('userId', '==', userId),
+      where('userId', '==', this.userId),
       ...viewConfig.filters.map((filter) =>
         where(filter.field, fromFilterOperator(filter.op), filter.value)
       ),
@@ -105,9 +105,8 @@ export class FeedItemsService {
   async addFeedItem(args: {
     readonly url: string;
     readonly source: FeedItemSource;
-    readonly userId: UserId;
   }): AsyncResult<FeedItemId | null> {
-    const {url, source, userId} = args;
+    const {url, source} = args;
 
     const trimmedUrl = url.trim();
     if (!isValidUrl(trimmedUrl)) {
@@ -123,7 +122,7 @@ export class FeedItemsService {
       // TODO: Make this dynamic based on the actual content. Maybe it should be null initially
       // until we've done the import? Or should we compute this at save time?
       source,
-      userId,
+      userId: this.userId,
     });
 
     // Generate a push ID for the feed item.
@@ -133,7 +132,7 @@ export class FeedItemsService {
     const importQueueItem = makeImportQueueItem({
       importQueueItemId,
       feedItemId: feedItem.feedItemId,
-      userId,
+      userId: this.userId,
       url: trimmedUrl,
     });
 
@@ -164,7 +163,10 @@ export class FeedItemsService {
   async getFeedItemMarkdown(feedItemId: FeedItemId): AsyncResult<string> {
     // TODO: Clean up error handling here.
     return asyncTry<string>(async () => {
-      const fileRef = storageRef(this.feedItemsStorageRef, `${feedItemId}/llmContext.md`);
+      const fileRef = storageRef(
+        this.feedItemsStorageRef,
+        `${this.userId}/${feedItemId}/llmContext.md`
+      );
       const downloadUrl = await getDownloadURL(fileRef);
       // TODO: Use shared `request` helper instead of `fetch`.
       const response = await fetch(downloadUrl);
