@@ -3,6 +3,18 @@ node_modules/
 tsconfig.tsbuildinfo
 .DS_Store
 
+# Use yarn.lock instead of package-lock.json.
+package-lock.json
+
+# Yarn v4.
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
 # Private files.
 packages/scripts/src/resources/
 

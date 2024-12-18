@@ -1,6 +1,6 @@
 type ConsoleColor = 'black' | 'green' | 'yellow' | 'red';
 
-export class Logger {
+class Logger {
   private logInternal(
     message: string,
     data: Record<string, unknown> | undefined,
@@ -15,7 +15,7 @@ export class Logger {
     }
   }
 
-  /** Passthrough to `console.log`. */
+  /** Passthrough to native logger. */
   public log(...args: unknown[]): void {
     // eslint-disable-next-line no-console
     console.log(...args);
@@ -41,3 +41,5 @@ export class Logger {
     this.logInternal(`[ERROR] ${message}`, errorData, 'red');
   }
 }
+
+export const logger = new Logger();

@@ -1,15 +1,17 @@
 import React from 'react';
 import styled from 'styled-components';
 
+import {assertNever} from '@shared/lib/utils';
+
+import {IconName, IconSize} from '@shared/types/icons.types';
+import {ThemeColor} from '@shared/types/theme.types';
+import {StyleAttributes} from '@shared/types/utils.types';
+
 import InboxIcon from '@shared/icons/inbox.svg?react';
 import MarkDoneIcon from '@shared/icons/markDone.svg?react';
 import MarkUnreadIcon from '@shared/icons/markUnread.svg?react';
 import SaveIcon from '@shared/icons/save.svg?react';
 import StarIcon from '@shared/icons/star.svg?react';
-import {assertNever} from '@shared/lib/utils';
-import {StyleAttributes} from '@shared/types/core';
-import {IconName, IconSize} from '@shared/types/icons';
-import {ThemeColor} from '@shared/types/theme';
 
 interface TextIconWrapperProps {
   readonly $color: ThemeColor;

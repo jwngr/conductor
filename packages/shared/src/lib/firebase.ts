@@ -1,50 +1,89 @@
-import {initializeApp} from 'firebase/app';
-import {connectFirestoreEmulator, getFirestore} from 'firebase/firestore';
-import {connectFunctionsEmulator, getFunctions} from 'firebase/functions';
-import {connectStorageEmulator, getStorage} from 'firebase/storage';
+import {FirebaseApp, initializeApp} from 'firebase/app';
+import {Auth, connectAuthEmulator, getAuth} from 'firebase/auth';
+import {connectFirestoreEmulator, Firestore, getFirestore} from 'firebase/firestore';
+import {connectFunctionsEmulator, Functions, getFunctions} from 'firebase/functions';
+import {connectStorageEmulator, FirebaseStorage, getStorage} from 'firebase/storage';
 
-import {FirebaseConfig} from '@shared/types/core';
+import {FirebaseConfig} from '@shared/types/firebase.types';
 
-function validateEnvVar(name: string) {
-  if (!import.meta.env[name]) {
-    throw new Error(`${name} is not set`);
+interface FirebaseServiceConfig {
+  readonly config: FirebaseConfig;
+  readonly isEmulatorEnabled: boolean;
+}
+
+export class FirebaseService {
+  private app: FirebaseApp;
+  private config: FirebaseConfig;
+  private isEmulatorEnabled: boolean;
+  private authInstance: Auth | null = null;
+  private storageInstance: FirebaseStorage | null = null;
+  private firestoreInstance: Firestore | null = null;
+  private functionsInstance: Functions | null = null;
+
+  private static readonly EMULATOR_HOST = '127.0.0.1';
+  private static readonly FUNCTIONS_EMULATOR_PORT = 5001;
+  private static readonly FIRESTORE_EMULATOR_PORT = 8080;
+  private static readonly STORAGE_EMULATOR_PORT = 9199;
+  private static readonly AUTH_EMULATOR_PORT = 9099;
+
+  constructor({config, isEmulatorEnabled}: FirebaseServiceConfig) {
+    this.config = config;
+    this.app = initializeApp(this.config);
+
+    this.isEmulatorEnabled = isEmulatorEnabled;
+    if (this.isEmulatorEnabled) {
+      this.setupEmulators();
+    }
   }
-}
 
-// Firebase config is stored in `.env` at the root of the repo.
-function getFirebaseConfig(): FirebaseConfig {
-  validateEnvVar('VITE_FIREBASE_API_KEY');
-  validateEnvVar('VITE_FIREBASE_AUTH_DOMAIN');
-  validateEnvVar('VITE_FIREBASE_PROJECT_ID');
-  validateEnvVar('VITE_FIREBASE_STORAGE_BUCKET');
-  validateEnvVar('VITE_FIREBASE_MESSAGING_SENDER_ID');
-  validateEnvVar('VITE_FIREBASE_APP_ID');
+  private setupEmulators(): void {
+    const auth = this.auth;
+    const storage = this.storage;
+    const functions = this.functions;
+    const firestore = this.firestore;
 
-  return {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    appId: import.meta.env.VITE_FIREBASE_APP_ID,
-    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID, // Optional.
-  };
-}
+    const {
+      EMULATOR_HOST,
+      AUTH_EMULATOR_PORT,
+      STORAGE_EMULATOR_PORT,
+      FUNCTIONS_EMULATOR_PORT,
+      FIRESTORE_EMULATOR_PORT,
+    } = FirebaseService;
 
-const firebaseConfig = getFirebaseConfig();
-const firebaseApp = initializeApp(firebaseConfig);
+    connectAuthEmulator(auth, `http://${EMULATOR_HOST}:${AUTH_EMULATOR_PORT}`, {
+      // Hides the bottom banner warning about using the Firebase emulator.
+      disableWarnings: true,
+    });
+    connectStorageEmulator(storage, EMULATOR_HOST, STORAGE_EMULATOR_PORT);
+    connectFunctionsEmulator(functions, EMULATOR_HOST, FUNCTIONS_EMULATOR_PORT);
+    connectFirestoreEmulator(firestore, EMULATOR_HOST, FIRESTORE_EMULATOR_PORT);
+  }
 
-export const firestore = getFirestore(firebaseApp);
-export const storage = getStorage(firebaseApp);
+  get auth(): Auth {
+    if (!this.authInstance) {
+      this.authInstance = getAuth(this.app);
+    }
+    return this.authInstance;
+  }
 
-// Firebase emulator for local development is configured via an environment variable.
-if (import.meta.env.DEV && import.meta.env.VITE_FIREBASE_USE_EMULATOR === 'true') {
-  const FIREBASE_EMULATOR_HOST = '127.0.0.1';
-  const FUNCTIONS_EMULATOR_PORT = 5001;
-  const FIRESTORE_EMULATOR_PORT = 8080;
-  const STORAGE_EMULATOR_PORT = 9199;
-  const functions = getFunctions(firebaseApp);
-  connectStorageEmulator(storage, FIREBASE_EMULATOR_HOST, STORAGE_EMULATOR_PORT);
-  connectFunctionsEmulator(functions, FIREBASE_EMULATOR_HOST, FUNCTIONS_EMULATOR_PORT);
-  connectFirestoreEmulator(firestore, FIREBASE_EMULATOR_HOST, FIRESTORE_EMULATOR_PORT);
+  get storage(): FirebaseStorage {
+    if (!this.storageInstance) {
+      this.storageInstance = getStorage(this.app);
+    }
+    return this.storageInstance;
+  }
+
+  get firestore(): Firestore {
+    if (!this.firestoreInstance) {
+      this.firestoreInstance = getFirestore(this.app);
+    }
+    return this.firestoreInstance;
+  }
+
+  get functions(): Functions {
+    if (!this.functionsInstance) {
+      this.functionsInstance = getFunctions(this.app);
+    }
+    return this.functionsInstance;
+  }
 }

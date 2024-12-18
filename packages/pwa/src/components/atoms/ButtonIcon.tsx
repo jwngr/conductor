@@ -1,16 +1,23 @@
-import React, {MouseEventHandler} from 'react';
+import React, {useCallback} from 'react';
 import styled from 'styled-components';
+
+import {getIconSizeFromButtonIconSize} from '@shared/lib/icons';
+import {assertNever} from '@shared/lib/utils';
+
+import {ButtonIconSize, IconName} from '@shared/types/icons.types';
+import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
+import {ThemeColor} from '@shared/types/theme.types';
+import {StyleAttributes} from '@shared/types/utils.types';
 
 import InboxIcon from '@shared/icons/inbox.svg?react';
 import MarkDoneIcon from '@shared/icons/markDone.svg?react';
 import MarkUnreadIcon from '@shared/icons/markUnread.svg?react';
 import SaveIcon from '@shared/icons/save.svg?react';
 import StarIcon from '@shared/icons/star.svg?react';
-import {getIconSizeFromButtonIconSize} from '@shared/lib/icons';
-import {assertNever} from '@shared/lib/utils';
-import {StyleAttributes} from '@shared/types/core';
-import {ButtonIconSize, IconName} from '@shared/types/icons';
-import {ThemeColor} from '@shared/types/theme';
+
+import {Tooltip, TooltipContent} from '@src/components/atoms/Tooltip';
+
+import {OnClick} from '@src/types/utils.pwa.types';
 
 interface ButtonIconWrapperProps {
   readonly $color: ThemeColor;
@@ -41,14 +48,18 @@ interface ButtonIconProps extends StyleAttributes {
   readonly name: IconName;
   readonly size: ButtonIconSize;
   readonly color?: ThemeColor;
-  readonly onClick?: MouseEventHandler<HTMLDivElement>;
+  readonly onClick: OnClick<HTMLDivElement>;
+  readonly shortcutId?: KeyboardShortcutId;
+  readonly tooltip: TooltipContent;
 }
 
 export const ButtonIcon: React.FC<ButtonIconProps> = ({
   name,
+  tooltip,
   size: buttonIconSize,
   color = ThemeColor.Neutral900,
   onClick,
+  shortcutId,
   ...styleProps
 }) => {
   let IconComponent: React.ElementType;
@@ -74,9 +85,23 @@ export const ButtonIcon: React.FC<ButtonIconProps> = ({
 
   const iconSize = getIconSizeFromButtonIconSize(buttonIconSize);
 
-  return (
+  const handleShortcut = useCallback(() => {
+    // TODO: Clean up this type.
+    onClick?.(null as unknown as React.MouseEvent<HTMLDivElement>);
+  }, [onClick]);
+
+  const buttonIcon = (
     <ButtonIconWrapper $color={color} $size={buttonIconSize} onClick={onClick}>
       <IconComponent width={iconSize} height={iconSize} {...styleProps} />
     </ButtonIconWrapper>
+  );
+
+  return (
+    <Tooltip
+      trigger={buttonIcon}
+      content={tooltip}
+      shortcutId={shortcutId}
+      onShortcutTrigger={handleShortcut}
+    />
   );
 };

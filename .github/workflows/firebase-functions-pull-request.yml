@@ -1,0 +1,48 @@
+name: Deploy staging Functions on PR
+on:
+  pull_request:
+    paths:
+      - 'packages/functions/**'
+      - 'packages/shared/**'
+      - '.firebaserc'
+      - '.prettierrc'
+      - 'eslint.config.mjs'
+      - 'firebase.json'
+      - 'package.json'
+      - 'tsconfig.json'
+      - 'yarn.lock'
+      - '.github/actions/setup-workflow/**'
+      - '.github/workflows/firebase-functions-pull-request.yml'
+permissions:
+  checks: write
+  contents: read
+  pull-requests: write
+jobs:
+  deploy_functions_stag:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - name: CI setup action for Firebase deploy
+        uses: ./.github/actions/setup-workflow
+        with:
+          install-deps: 'true'
+          install-firebase: 'true'
+      - name: Validate functions
+        run: yarn run validate:functions
+      - name: Build functions
+        run: yarn run build:functions
+      - name: Create .env file
+        working-directory: packages/functions
+        env:
+          FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+        run: |
+          if [ -z "$FIRECRAWL_API_KEY" ]; then
+            echo "Error: FIRECRAWL_API_KEY secret must be added in GitHub"
+            exit 1
+          fi
+          echo "FIRECRAWL_API_KEY=${FIRECRAWL_API_KEY}" > .env.conductor-stag
+      - name: Deploy Firebase Functions
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: yarn run deploy:functions --project=stag

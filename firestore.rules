@@ -1,0 +1,152 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    ////////////////////////
+    //  Helper functions  //
+    ////////////////////////
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isResourceOwner() {
+      return isOwner(resource.data.userId);
+    }
+
+    function isNewResourceOwner() {
+      return isOwner(request.resource.data.userId);
+    }
+
+    function isValidFeedItemDoc(feedItemId) {
+      return request.resource.data.keys().hasAll([
+        'feedItemId',
+        'type',
+        'source',
+        'url',
+        'title',
+        'description',
+        'outgoingLinks',
+        'triageStatus',
+        'tagIds',
+        'createdTime',
+        'lastUpdatedTime'
+      ]) &&
+      request.resource.data.feedItemId is string &&
+      request.resource.data.feedItemId == feedItemId &&
+      request.resource.data.type in ['ARTICLE', 'VIDEO', 'WEBSITE', 'TWEET', 'XKCD'] &&
+      request.resource.data.source.type in ['APP', 'EXTENSION', 'RSS'] &&
+      request.resource.data.url is string &&
+      request.resource.data.title is string &&
+      request.resource.data.description is string &&
+      request.resource.data.outgoingLinks is list &&
+      request.resource.data.triageStatus in ['UNTRIAGED', 'SAVED', 'DONE', 'TRASHED'] &&
+      request.resource.data.tagIds is map &&
+      request.resource.data.createdTime is timestamp &&
+      request.resource.data.lastUpdatedTime is timestamp;
+    }
+
+    function isValidFeedSubscriptionDoc(feedSubscriptionId) {
+      return request.resource.data.keys().hasAll([
+        'feedSubscriptionId',
+        'userId',
+        'url',
+        'createdTime',
+        'lastUpdatedTime'
+      ]) &&
+      request.resource.data.feedSubscriptionId is string &&
+      request.resource.data.feedSubscriptionId == feedSubscriptionId &&
+      request.resource.data.url is string &&
+      request.resource.data.createdTime is timestamp &&
+      request.resource.data.lastUpdatedTime is timestamp;
+    }
+
+    function isValidImportQueueDoc(importQueueItemId) {
+      return request.resource.data.keys().hasAll([
+        'importQueueItemId',
+        'userId',
+        'feedItemId', 
+        'url',
+        'createdTime',
+        'lastUpdatedTime'
+      ]) &&
+      request.resource.data.importQueueItemId is string &&
+      request.resource.data.importQueueItemId == importQueueItemId &&
+      request.resource.data.feedItemId is string &&
+      request.resource.data.url is string &&
+      request.resource.data.createdTime is timestamp &&
+      request.resource.data.lastUpdatedTime is timestamp;
+    }
+
+    function isValidEventLogItemDoc(eventId) {
+      return request.resource.data.keys().hasAll([
+        'eventId',
+        'eventType',
+        'createdTime',
+        'lastUpdatedTime'
+      ]) &&
+      request.resource.data.eventId is string &&
+      request.resource.data.eventId == eventId &&
+      request.resource.data.eventType is string &&
+      request.resource.data.createdTime is timestamp &&
+      request.resource.data.lastUpdatedTime is timestamp;
+    }
+
+    /////////////
+    //  Rules  //
+    /////////////
+    match /users/{userId} {
+      // Allow users to manage their own user data.
+      // TODO: Some fields should not be user-editable.
+      allow read: if isOwner(userId) && isResourceOwner();
+      allow create: if isNewResourceOwner();
+      allow update: if isResourceOwner() && isNewResourceOwner();
+
+      // Only allow deletes via the admin SDK.
+      allow delete: if false;
+    }
+
+    match /feedItems/{feedItemId} {
+      // Allow users to manage their own feed items.
+      // TODO: Some fields should not be user-editable.
+      allow read: if isResourceOwner();
+      allow create: if isNewResourceOwner() && isValidFeedItemDoc(feedItemId);
+      allow update: if isResourceOwner() && isNewResourceOwner();
+      allow delete: if isResourceOwner();
+    }
+
+    match /feedSubscriptions/{feedSubscriptionId} {
+      // Allow users to manage their own feed subscriptions.
+      // TODO: Some fields should not be user-editable.
+      allow read: if isResourceOwner();
+      allow create: if isNewResourceOwner() && isValidFeedSubscriptionDoc(feedSubscriptionId);
+      allow update: if isResourceOwner() && isNewResourceOwner() && isValidFeedSubscriptionDoc(feedSubscriptionId);
+      allow delete: if isResourceOwner();
+    }
+
+    match /importQueue/{importQueueItemId} {
+      // Allow creation if the current user owns the new document.
+      allow create: if isNewResourceOwner() && isValidImportQueueDoc(importQueueItemId);
+      allow update: if isNewResourceOwner() && isValidImportQueueDoc(importQueueItemId);
+
+      // Only allow reads or writes via the admin SDK - only the import queue server needs access.
+      allow read: if false
+      allow delete: if false
+    }
+
+    match /eventLog/{eventId} {
+      // Allow users to read their own event log.
+      allow read: if isResourceOwner();
+
+      // Allow creation and deletion if the current user owns the new document.
+      allow create: if isNewResourceOwner() && isValidEventLogItemDoc(eventId);
+      allow delete: if isResourceOwner();
+
+      // Event log items cannot be updated, only created or deleted.
+      allow update: if false;
+    }
+  }
+}

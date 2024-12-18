@@ -1,0 +1,24 @@
+name: Deploy prod Firestore rules on merge
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'firestore.rules'
+      - '.github/actions/setup-workflow/**'
+      - '.github/workflows/firestore-rules-merge.yml'
+jobs:
+  deploy_firestore_rules_prod:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - name: CI setup action for Firebase deploy
+        uses: ./.github/actions/setup-workflow
+        with:
+          install-deps: 'true' # TODO: This is not really needed, but CI fails without it.
+      - name: Deploy Firestore rules
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        # Yarn v4 requires installing deps before using `yarn run`, so use `firebase deploy` directly.
+        run: firebase deploy --only firestore:rules --project=prod

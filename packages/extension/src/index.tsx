@@ -1,8 +1,8 @@
 import {createRoot} from 'react-dom/client';
 
-import App from './components/App';
+import App from '@src/components/App';
 
-import './index.css';
+import '@src/index.css';
 
 const rootDiv = document.getElementById('root');
 if (!rootDiv) {

@@ -14,7 +14,6 @@
 
     // Build is handled by Vite.
     "moduleResolution": "bundler",
-    "noEmit": true,
 
     // Import aliases.
     "baseUrl": ".",

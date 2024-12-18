@@ -2,15 +2,16 @@ import React from 'react';
 import {useMatch} from 'react-router-dom';
 import styled from 'styled-components';
 
-import {CustomIcon, CustomIconType} from '@shared/lib/customIcon';
+import {CustomIcon, CustomIconType} from '@shared/lib/customIcons';
 import {Urls} from '@shared/lib/urls';
 import {assertNever} from '@shared/lib/utils';
-import {ThemeColor} from '@shared/types/theme';
-import {NavItem} from '@shared/types/urls';
 
-import {FlexColumn, FlexRow} from './atoms/Flex';
-import {Link} from './atoms/Link';
-import {Text} from './atoms/Text';
+import {ThemeColor} from '@shared/types/theme.types';
+import {NavItem} from '@shared/types/urls.types';
+
+import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
+import {Link} from '@src/components/atoms/Link';
+import {Text} from '@src/components/atoms/Text';
 
 const LeftSidebarItemAvatar: React.FC<{
   readonly icon: CustomIcon;
@@ -53,16 +54,16 @@ const LeftSideItemWrapper = styled(FlexRow).attrs({
 `;
 
 const LeftSidebarItemComponent: React.FC<{
-  readonly item: NavItem;
-}> = ({item}) => {
-  const url = Urls.forView(item.viewType);
+  readonly navItem: NavItem;
+}> = ({navItem}) => {
+  const url = Urls.forView(navItem.viewType);
   const match = useMatch(url);
 
   return (
     <Link to={url}>
       <LeftSideItemWrapper $isActive={!!match}>
-        <LeftSidebarItemAvatar icon={item.icon} />
-        <Text as="p">{item.title}</Text>
+        <LeftSidebarItemAvatar icon={navItem.icon} />
+        <Text as="p">{navItem.title}</Text>
       </LeftSideItemWrapper>
     </Link>
   );
@@ -70,16 +71,16 @@ const LeftSidebarItemComponent: React.FC<{
 
 const LeftSidebarSection: React.FC<{
   readonly title: string;
-  readonly items: readonly NavItem[];
-}> = ({title, items}) => {
+  readonly navItems: readonly NavItem[];
+}> = ({title, navItems}) => {
   return (
     <FlexColumn>
       <Text as="h5" light>
         {title}
       </Text>
       <FlexColumn style={{margin: '0 -12px'}}>
-        {items.map((item) => {
-          return <LeftSidebarItemComponent key={item.viewType} item={item} />;
+        {navItems.map((navItem) => {
+          return <LeftSidebarItemComponent key={navItem.viewType} navItem={navItem} />;
         })}
       </FlexColumn>
     </FlexColumn>
@@ -97,7 +98,7 @@ const LeftSidebarWrapper = styled(FlexColumn)`
 export const LeftSidebar: React.FC = () => {
   return (
     <LeftSidebarWrapper>
-      <LeftSidebarSection title="Views" items={Urls.getOrderedNavItems()} />
+      <LeftSidebarSection title="Views" navItems={Urls.getOrderedNavItems()} />
     </LeftSidebarWrapper>
   );
 };

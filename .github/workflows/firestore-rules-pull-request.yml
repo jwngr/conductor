@@ -1,0 +1,26 @@
+name: Deploy staging Firestore rules on PR
+on:
+  pull_request:
+    paths:
+      - 'firestore.rules'
+      - '.github/actions/setup-workflow/**'
+      - '.github/workflows/firestore-rules-pull-request.yml'
+permissions:
+  checks: write
+  contents: read
+  pull-requests: write
+jobs:
+  deploy_firestore_rules_stag:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - name: CI setup action for Firebase deploy
+        uses: ./.github/actions/setup-workflow
+        with:
+          install-firebase: 'true'
+      - name: Deploy Firestore rules
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        # Yarn v4 requires installing deps before using `yarn run`, so use `firebase deploy` directly.
+        run: firebase deploy --only firestore:rules --project=stag

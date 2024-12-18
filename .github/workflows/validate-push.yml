@@ -1,0 +1,18 @@
+name: Run validate on push
+on: [push]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - name: CI setup for yarn install
+        uses: ./.github/actions/setup-workflow
+        with:
+          install-deps: 'true'
+      - name: Validate format
+        run: yarn run validate:format
+      - name: Validate lint
+        run: yarn run validate:lint
+      - name: Validate types
+        run: yarn run validate:types

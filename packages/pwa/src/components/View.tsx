@@ -1,15 +1,18 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import {FeedItem} from '@shared/types/core';
-import {ViewType} from '@shared/types/query';
-import {ThemeColor} from '@shared/types/theme';
+import {logger} from '@shared/lib/logger';
+import {Urls} from '@shared/lib/urls';
+
+import {FeedItem} from '@shared/types/feedItems.types';
+import {ViewType} from '@shared/types/query.types';
+import {ThemeColor} from '@shared/types/theme.types';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
-import {FeedItemAdder} from '@src/components/FeedItemAdder';
-import {useFeedItems} from '@src/lib/feedItems';
+
+import {useFeedItems} from '@src/lib/feedItems.pwa';
 
 const ViewListItemWrapper = styled(FlexColumn).attrs({justify: 'center', gap: 4})`
   cursor: pointer;
@@ -21,10 +24,10 @@ const ViewListItemWrapper = styled(FlexColumn).attrs({justify: 'center', gap: 4}
   }
 `;
 
-const ViewListItem: React.FC<{feedItem: FeedItem}> = ({feedItem}) => {
+const ViewListItem: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
   return (
-    <Link to={`/items/${feedItem.itemId}`}>
-      <ViewListItemWrapper key={feedItem.itemId}>
+    <Link to={Urls.forFeedItem(feedItem.feedItemId)}>
+      <ViewListItemWrapper key={feedItem.feedItemId}>
         <Text as="p" bold>
           {feedItem.title || 'No title'}
         </Text>
@@ -45,6 +48,7 @@ const ViewList: React.FC<{viewType: ViewType}> = ({viewType}) => {
 
   if (error) {
     // TODO: Introduce proper error screen.
+    logger.error('Error loading feed items', {error, viewType});
     return <div>Error: {error.message}</div>;
   }
 
@@ -55,7 +59,7 @@ const ViewList: React.FC<{viewType: ViewType}> = ({viewType}) => {
   return (
     <ul>
       {feedItems.map((feedItem) => (
-        <ViewListItem key={feedItem.itemId} feedItem={feedItem} />
+        <ViewListItem key={feedItem.feedItemId} feedItem={feedItem} />
       ))}
     </ul>
   );
@@ -72,8 +76,6 @@ export const View: React.FC<{viewType: ViewType}> = ({viewType}) => {
     <ViewWrapper>
       <h2>{viewType}</h2>
       <ViewList viewType={viewType} />
-      {/* TODO: Move into developer toolbar. */}
-      <FeedItemAdder />
     </ViewWrapper>
   );
 };

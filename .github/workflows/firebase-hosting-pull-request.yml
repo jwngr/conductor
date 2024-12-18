@@ -1,21 +1,38 @@
-name: Deploy frontend preview on PR
-on: pull_request
+name: Preview staging PWA on PR
+on:
+  pull_request:
+    paths:
+      - 'packages/pwa/**'
+      - 'packages/shared/**'
+      - '.firebaserc'
+      - '.prettierrc'
+      - 'eslint.config.mjs'
+      - 'firebase.json'
+      - 'package.json'
+      - 'tsconfig.json'
+      - 'yarn.lock'
+      - '.github/actions/setup-workflow/**'
+      - '.github/workflows/firebase-hosting-pull-request.yml'
 permissions:
   checks: write
   contents: read
   pull-requests: write
 jobs:
-  build_and_preview:
+  preview_hosting_stag:
     if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
     environment: staging
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: CI setup action for Firebase deploy
+        uses: ./.github/actions/setup-workflow
         with:
-          node-version: 22
-      - run: yarn install
-      - run: yarn run build:pwa
+          install-deps: 'true'
+          install-firebase: 'true'
+      - name: Validate PWA
+        run: yarn run validate:pwa
+      - name: Build PWA
+        run: yarn run build:pwa
         env:
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
@@ -24,7 +41,8 @@ jobs:
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
           VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}
-      - uses: FirebaseExtended/action-hosting-deploy@v0
+      - name: Deploy PWA
+        uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_CONDUCTOR_STAG }}

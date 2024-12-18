@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-import {StyleAttributes} from '@shared/types/core';
+import {StyleAttributes} from '@shared/types/utils.types';
 
 interface SpacerWrapperProps {
   readonly $widthDesktop: number;

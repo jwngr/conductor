@@ -2,7 +2,8 @@ import {HTMLAttributes} from 'react';
 import styled, {css} from 'styled-components';
 
 import {assertNever} from '@shared/lib/utils';
-import {ThemeColor} from '@shared/types/theme';
+
+import {ThemeColor} from '@shared/types/theme.types';
 
 type FontWeight = 'normal' | 'bold' | '900';
 const DEFAULT_FONT_WEIGHT = 'normal';
@@ -43,12 +44,7 @@ export const TextWrapper = styled.span<TextWrapperProps>`
         `
       : null}
 
-  ${(props) =>
-    props.$underline
-      ? css`
-          text-decoration: underline;
-        `
-      : null}
+  
 
   ${({theme, $color, $light}) => {
     // TODO: Set the default color somewhere. Probably shouldn't do it here.
@@ -72,11 +68,13 @@ export const TextWrapper = styled.span<TextWrapperProps>`
     switch ($underline) {
       case 'always':
         return css`
+          cursor: pointer;
           text-decoration: underline;
         `;
       case 'hover':
         return css`
           &:hover {
+            cursor: pointer;
             text-decoration: underline;
           }
         `;

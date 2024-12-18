@@ -1,27 +1,64 @@
-import {addDoc, CollectionReference, doc, getDoc, serverTimestamp} from 'firebase/firestore';
+import {
+  addDoc,
+  CollectionReference,
+  doc,
+  DocumentReference,
+  getDoc,
+  serverTimestamp,
+} from 'firebase/firestore';
 
-import {FeedItemId, ImportQueueItem} from '@shared/types/core';
+import {asyncTry} from '@shared/lib/errors';
 
+import {FeedItemId} from '@shared/types/feedItems.types';
+import {
+  createImportQueueItemId,
+  ImportQueueItem,
+  ImportQueueItemId,
+  ImportQueueItemStatus,
+} from '@shared/types/importQueue.types';
+import {AsyncResult} from '@shared/types/result.types';
+import {UserId} from '@shared/types/user.types';
+
+// TODO: This is not used anywhere.
 export class ImportQueue {
   constructor(private readonly collectionRef: CollectionReference) {}
 
-  async add(item: ImportQueueItem): Promise<string> {
-    const docRef = await addDoc(this.collectionRef, item);
-    return docRef.id;
+  async add(item: ImportQueueItem): AsyncResult<ImportQueueItemId> {
+    const docRefResult = await asyncTry<DocumentReference>(async () => {
+      return await addDoc(this.collectionRef, item);
+    });
+    if (!docRefResult.success) return docRefResult;
+    return createImportQueueItemId(docRefResult.value.id);
   }
 
-  async read(id: string): Promise<ImportQueueItem | null> {
-    const docRef = doc(this.collectionRef, id);
-    const docSnap = await getDoc(docRef);
-    return docSnap.data() as ImportQueueItem | null;
+  async read(importQueueItemId: ImportQueueItemId): AsyncResult<ImportQueueItem | null> {
+    return asyncTry<ImportQueueItem | null>(async () => {
+      const docRef = doc(this.collectionRef, importQueueItemId);
+      const docSnap = await getDoc(docRef);
+      if (!docSnap.exists()) return null;
+      // TODO: Add typesafe `createImportQueueItem` helper.
+      return {...docSnap.data(), importQueueItemId} as ImportQueueItem;
+    });
   }
 }
 
-export function makeImportQueueItem(url: string, feedItemId: FeedItemId): ImportQueueItem {
+export function makeImportQueueItem({
+  importQueueItemId,
+  feedItemId,
+  userId,
+  url,
+}: {
+  readonly importQueueItemId: ImportQueueItemId;
+  readonly feedItemId: FeedItemId;
+  readonly userId: UserId;
+  readonly url: string;
+}): ImportQueueItem {
   return {
-    // TODO: Add an ID for these objects?
-    url,
+    importQueueItemId,
     feedItemId,
+    userId,
+    url,
+    status: ImportQueueItemStatus.New,
     createdTime: serverTimestamp(),
     lastUpdatedTime: serverTimestamp(),
   };

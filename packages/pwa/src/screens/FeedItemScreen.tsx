@@ -1,99 +1,125 @@
 import {deleteField} from 'firebase/firestore';
 import {useEffect, useRef} from 'react';
-import styled from 'styled-components';
 
-import {feedItemsService} from '@shared/lib/feedItemsServiceInstance';
+import {FeedItemsService} from '@shared/lib/feedItems';
+import {logger} from '@shared/lib/logger';
 import {useFeedItemIdFromUrl} from '@shared/lib/router';
-import {FeedItemId} from '@shared/types/core';
-import {SystemTagId} from '@shared/types/tags';
+import {assertNever} from '@shared/lib/utils';
+
+import {FeedItem, FeedItemId, FeedItemType} from '@shared/types/feedItems.types';
+import {SystemTagId} from '@shared/types/tags.types';
 
 import {AppHeader} from '@src/components/AppHeader';
-import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
-import {
-  MarkDoneFeedItemActionIcon,
-  MarkUnreadFeedItemActionIcon,
-  SaveFeedItemActionIcon,
-  StarFeedItemActionIcon,
-} from '@src/components/feedItems/FeedItemActionIcon';
+import {ArticleFeedItemComponent} from '@src/components/feedItems/ArticleFeedItem';
+import {TweetFeedItemComponent} from '@src/components/feedItems/TweetFeedItem';
+import {VideoFeedItemComponent} from '@src/components/feedItems/VideoFeedItem';
+import {WebsiteFeedItemComponent} from '@src/components/feedItems/WebsiteFeedItem';
+import {XkcdFeedItemComponent} from '@src/components/feedItems/XkcdFeedItem';
 import {ScreenMainContentWrapper, ScreenWrapper} from '@src/components/layout/Screen';
 import {LeftSidebar} from '@src/components/LeftSidebar';
-import {useFeedItem} from '@src/lib/feedItems';
 
-import {NotFoundScreen} from './404';
+import {feedItemsService, useFeedItem} from '@src/lib/feedItems.pwa';
 
-const FeedItemActionsWrapper = styled(FlexRow).attrs({gap: 12})``;
+import {NotFoundScreen} from '@src/screens/404';
 
-const FeedItemScreenMainContentWrapper = styled(FlexColumn).attrs({gap: 12})`
-  flex: 1;
-  overflow: auto;
-  padding: 20px;
-`;
+const useMarkFeedItemRead = ({
+  feedItemId,
+  feedItem,
+}: {
+  readonly feedItemId: FeedItemId;
+  readonly feedItem: FeedItem | null;
+}) => {
+  const wasAlreadyMarkedReadAtMount = useRef(!FeedItemsService.isUnread(feedItem));
+  const wasMarkedReadOnThisMount = useRef(false);
+
+  // Variables exist so we don't need to include the entire feed item in the deps array.
+  const isFeedItemNull = feedItem === null;
+  const isFeedItemImported = feedItem ? Boolean(feedItem?.lastImportedTime) : false;
+
+  useEffect(() => {
+    async function go() {
+      // Don't mark the feed item as read unless it has been imported.
+      if (isFeedItemNull || !isFeedItemImported) return;
+
+      // Only mark the feed item as read:
+      // 1. if it was not already read at mount, to avoid unnecessary requests.
+      // 2. once per mount, to prevent marking read immediately after clicking "Mark unread".
+      if (wasAlreadyMarkedReadAtMount.current || wasMarkedReadOnThisMount.current) return;
+
+      // TODO: Consider using a Firestore converter to handle this.
+      // See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
+      const markFeedItemAsReadResult = await feedItemsService.updateFeedItem(feedItemId, {
+        [`tagIds.${SystemTagId.Unread}`]: deleteField(),
+      } as Partial<FeedItem>);
+
+      if (markFeedItemAsReadResult.success) {
+        wasMarkedReadOnThisMount.current = true;
+      } else {
+        wasMarkedReadOnThisMount.current = false;
+        logger.error('Unread manager failed to mark item as read', {
+          error: markFeedItemAsReadResult.error,
+          feedItemId,
+        });
+        // TODO: Show an error toast.
+      }
+    }
+    go();
+  }, [feedItemId, isFeedItemNull, isFeedItemImported]);
+};
 
 const FeedItemScreenMainContent: React.FC<{
   readonly feedItemId: FeedItemId;
 }> = ({feedItemId}) => {
-  const alreadyMarkedRead = useRef(false);
-  const {feedItem, isLoading, error} = useFeedItem(feedItemId);
+  const {feedItem, isLoading: isItemLoading, error: feedItemError} = useFeedItem(feedItemId);
+  useMarkFeedItemRead({feedItem, feedItemId});
 
-  useEffect(() => {
-    if (feedItem === null) return;
-
-    // Only mark the feed item as read once. This prevents the feed item from being marked as read
-    // immediately after the user clicks the "Mark unread" button.
-    if (alreadyMarkedRead.current) return;
-    alreadyMarkedRead.current = true;
-
-    feedItemsService.updateFeedItem(feedItemId, {
-      [`tagIds.${SystemTagId.Unread}`]: deleteField(),
-      // TODO: Consider using a Firestore converter to handle this.
-      // See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
-  }, [feedItem, feedItemId]);
-
-  if (isLoading) {
+  if (isItemLoading) {
+    // TODO: Introduce proper loading state.
     return <div>Loading...</div>;
   }
 
-  if (error) {
+  if (feedItemError) {
+    logger.error('Error fetching feed item', {error: feedItemError});
     // TODO: Introduce proper error screen.
-    return <div>Error: {error.message}</div>;
+    return <Text as="p">There was a problem loading the feed item</Text>;
   }
 
   if (!feedItem) {
     return <NotFoundScreen message="Feed item not found" />;
   }
 
-  return (
-    <FeedItemScreenMainContentWrapper>
-      <Text as="h1" bold>
-        Feed item {feedItemId}
-      </Text>
-      <FeedItemActionsWrapper>
-        <MarkDoneFeedItemActionIcon feedItemId={feedItemId} />
-        <SaveFeedItemActionIcon feedItemId={feedItemId} />
-        <MarkUnreadFeedItemActionIcon feedItemId={feedItemId} />
-        <StarFeedItemActionIcon feedItemId={feedItemId} />
-      </FeedItemActionsWrapper>
-      <pre>{JSON.stringify(feedItem, null, 2)}</pre>
-    </FeedItemScreenMainContentWrapper>
-  );
+  switch (feedItem.type) {
+    case FeedItemType.Article:
+      return <ArticleFeedItemComponent feedItem={feedItem} />;
+    case FeedItemType.Video:
+      return <VideoFeedItemComponent feedItem={feedItem} />;
+    case FeedItemType.Website:
+      return <WebsiteFeedItemComponent feedItem={feedItem} />;
+    case FeedItemType.Tweet:
+      return <TweetFeedItemComponent feedItem={feedItem} />;
+    case FeedItemType.Xkcd:
+      return <XkcdFeedItemComponent feedItem={feedItem} />;
+    default:
+      assertNever(feedItem);
+  }
 };
 
 export const FeedItemScreen: React.FC = () => {
   const feedItemId = useFeedItemIdFromUrl();
+
+  const mainContent = feedItemId ? (
+    <FeedItemScreenMainContent feedItemId={feedItemId} />
+  ) : (
+    <NotFoundScreen message="No feed item ID in URL" />
+  );
 
   return (
     <ScreenWrapper>
       <AppHeader />
       <ScreenMainContentWrapper>
         <LeftSidebar />
-        {feedItemId ? (
-          <FeedItemScreenMainContent feedItemId={feedItemId} />
-        ) : (
-          <NotFoundScreen message="No feed item ID in URL" />
-        )}
+        {mainContent}
       </ScreenMainContentWrapper>
     </ScreenWrapper>
   );

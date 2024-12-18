@@ -3,16 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "dependencies": {},
-  "devDependencies": {
-    "vite": "^5.3.1",
-    "vite-plugin-svgr": "^4.2.0"
-  },
   "scripts": {
-    "lint": "prettier --check 'src/**/*.{js,ts,json,svg}' && echo 'Running ESLint...' && eslint src --report-unused-disable-directives --max-warnings 0 && echo 'All files pass linting!' && echo 'Running tsc...' && sed -i.bak '/setCookie(/d' ../../node_modules/@types/request/index.d.ts && tsc && echo 'All files pass type checking!'",
+    "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",
+    "validate:lint": "eslint src --report-unused-disable-directives --max-warnings 0",
+    "validate:types": "yarn run hack-type && tsc --noEmit",
+    "validate:format": "prettier --check 'src/**/*.{js,ts,json,svg}'",
     "format": "prettier --write 'src/**/*.{js,ts,json,svg}'",
     "clean": "rm -rf dist/ tsconfig.tsbuildinfo",
-    "ci": "rm -rf node_modules/ && npm install",
-    "build": "npm run clean && sed -i.bak '/setCookie(/d' ../../node_modules/@types/request/index.d.ts && tsc && vite build"
+    "ci": "rm -rf node_modules/ && yarn install",
+    "build": "yarn run clean && yarn run hack-type && tsc --build",
+    "hack-type": "sed -i.bak '/setCookie(/d' ../../node_modules/@types/request/index.d.ts"
   }
 }

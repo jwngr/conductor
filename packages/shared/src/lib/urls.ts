@@ -1,27 +1,18 @@
-import {FeedItemId} from '@shared/types/core';
-import {ViewType} from '@shared/types/query';
-import {NavItem} from '@shared/types/urls';
+import {CustomIconType} from '@shared/lib/customIcons';
+import {syncTry} from '@shared/lib/errors';
+import {assertNever} from '@shared/lib/utils';
 
-import {CustomIconType} from './customIcon';
-import {assertNever} from './utils';
+import {FeedItemId} from '@shared/types/feedItems.types';
+import {ViewType} from '@shared/types/query.types';
+import {NavItem} from '@shared/types/urls.types';
 
 // TODO: Make URL validation more robust.
 export function isValidUrl(url: string): boolean {
-  try {
-    new URL(url);
-    return true;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (error1) {
-    // Passthrough.
-  }
+  const isValidUrlResult1 = syncTry(() => new URL(url));
+  if (isValidUrlResult1.success) return true;
 
-  try {
-    new URL('https://' + url);
-    return true;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (error2) {
-    return false;
-  }
+  const isValidUrlResult2 = syncTry(() => new URL('https://' + url));
+  return isValidUrlResult2.success;
 }
 
 const ALL_NAV_ITEMS: Record<ViewType, NavItem> = {
@@ -130,8 +121,20 @@ export class Urls {
     }
   }
 
+  static forFeeds(): string {
+    return '/feeds';
+  }
+
+  static forFeedItemRoot(): string {
+    return '/items';
+  }
+
   static forFeedItem(feedItemId: FeedItemId): string {
-    return `/items/${feedItemId}`;
+    return `${this.forFeedItemRoot()}/${feedItemId}`;
+  }
+
+  static forFeedItemUnsafe(maybeFeedItemId: string): string {
+    return `${this.forFeedItemRoot()}/${maybeFeedItemId}`;
   }
 
   static getOrderedNavItems(): NavItem[] {
@@ -141,5 +144,13 @@ export class Urls {
 
   static getNavItem(viewType: ViewType): NavItem {
     return ALL_NAV_ITEMS[viewType];
+  }
+
+  static forSignIn(): string {
+    return '/login';
+  }
+
+  static forSignOut(): string {
+    return '/logout';
   }
 }
