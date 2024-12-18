@@ -81,6 +81,20 @@ service cloud.firestore {
       request.resource.data.lastUpdatedTime is timestamp;
     }
 
+    function isValidEventLogItemDoc(eventId) {
+      return request.resource.data.keys().hasAll([
+        'eventId',
+        'eventType',
+        'createdTime',
+        'lastUpdatedTime'
+      ]) &&
+      request.resource.data.eventId is string &&
+      request.resource.data.eventId == eventId &&
+      request.resource.data.eventType is string &&
+      request.resource.data.createdTime is timestamp &&
+      request.resource.data.lastUpdatedTime is timestamp;
+    }
+
     /////////////
     //  Rules  //
     /////////////
@@ -121,6 +135,18 @@ service cloud.firestore {
       // Only allow reads or writes via the admin SDK - only the import queue server needs access.
       allow read: if false
       allow delete: if false
+    }
+
+    match /eventLog/{eventId} {
+      // Allow users to read their own event log.
+      allow read: if isResourceOwner();
+
+      // Allow creation and deletion if the current user owns the new document.
+      allow create: if isNewResourceOwner() && isValidEventLogItemDoc(eventId);
+      allow delete: if isResourceOwner();
+
+      // Event log items can only be deleted once created.
+      allow update: if false;
     }
   }
 }

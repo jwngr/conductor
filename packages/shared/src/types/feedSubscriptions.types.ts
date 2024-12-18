@@ -1,7 +1,6 @@
-import {FieldValue} from 'firebase/firestore';
-
 import {makeErrorResult, makeSuccessResult, Result} from '@shared/types/result.types';
 import {UserId} from '@shared/types/user.types';
+import {BaseStoreItem} from '@shared/types/utils.types';
 
 /**
  * Strongly-typed type for a feed subscription's unique identifier. Prefer this over plain strings.
@@ -30,10 +29,8 @@ export function createFeedSubscriptionId(
   return makeSuccessResult(maybeFeedSubscriptionId);
 }
 
-export interface FeedSubscription {
+export interface FeedSubscription extends BaseStoreItem {
   readonly feedSubscriptionId: FeedSubscriptionId;
   readonly url: string;
   readonly userId: UserId;
-  readonly createdTime: FieldValue;
-  readonly lastUpdatedTime: FieldValue;
 }

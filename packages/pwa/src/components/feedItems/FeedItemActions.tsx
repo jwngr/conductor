@@ -10,7 +10,7 @@ import {
 } from '@shared/lib/feedItems';
 import {logger} from '@shared/lib/logger';
 
-import {FeedItem, TriageStatus} from '@shared/types/feedItems.types';
+import {FeedItem, FeedItemActionType, TriageStatus} from '@shared/types/feedItems.types';
 import {IconName} from '@shared/types/icons.types';
 import {Result} from '@shared/types/result.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
@@ -20,11 +20,13 @@ import {AsyncFunc, Func} from '@shared/types/utils.types';
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {FlexRow} from '@src/components/atoms/Flex';
 
+import {eventLogService} from '@src/lib/eventLog.pwa';
 import {feedItemsService} from '@src/lib/feedItems.pwa';
 import {useToast} from '@src/lib/toasts';
 
 interface GenericFeedItemActionIconProps {
   readonly feedItem: FeedItem;
+  readonly feedItemActionType: FeedItemActionType;
   readonly icon: IconName;
   readonly tooltip: string;
   readonly shortcutId?: KeyboardShortcutId;
@@ -36,6 +38,7 @@ interface GenericFeedItemActionIconProps {
 
 const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
   feedItem,
+  feedItemActionType,
   icon,
   tooltip,
   shortcutId,
@@ -52,6 +55,7 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
 
     if (result.success) {
       showToast({message: toastText});
+      eventLogService.logFeedItemActionEvent({feedItemId: feedItem.feedItemId, feedItemActionType});
       return;
     }
 
@@ -79,6 +83,7 @@ const MarkDoneFeedItemActionIcon: React.FC<{
   return (
     <GenericFeedItemActionIcon
       feedItem={feedItem}
+      feedItemActionType={FeedItemActionType.MarkDone}
       icon={actionInfo.icon}
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}
@@ -106,6 +111,7 @@ const SaveFeedItemActionIcon: React.FC<{
   return (
     <GenericFeedItemActionIcon
       feedItem={feedItem}
+      feedItemActionType={FeedItemActionType.Save}
       icon={actionInfo.icon}
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}
@@ -131,6 +137,7 @@ const MarkUnreadFeedItemActionIcon: React.FC<{
   return (
     <GenericFeedItemActionIcon
       feedItem={feedItem}
+      feedItemActionType={FeedItemActionType.MarkUnread}
       icon={actionInfo.icon}
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}
@@ -158,6 +165,7 @@ const StarFeedItemActionIcon: React.FC<{
   return (
     <GenericFeedItemActionIcon
       feedItem={feedItem}
+      feedItemActionType={FeedItemActionType.Star}
       icon={actionInfo.icon}
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}

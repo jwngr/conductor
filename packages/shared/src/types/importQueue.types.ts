@@ -1,8 +1,7 @@
-import {FieldValue} from 'firebase/firestore';
-
 import {FeedItemId} from '@shared/types/feedItems.types';
 import {makeErrorResult, makeSuccessResult, Result} from '@shared/types/result.types';
 import {UserId} from '@shared/types/user.types';
+import {BaseStoreItem} from '@shared/types/utils.types';
 
 /**
  * Strongly-typed type for an import queue item's unique identifier. Prefer this over
@@ -52,12 +51,10 @@ export enum ImportQueueItemStatus {
 /**
  * An item in the feed import queue.
  */
-export interface ImportQueueItem {
+export interface ImportQueueItem extends BaseStoreItem {
   readonly importQueueItemId: ImportQueueItemId;
   readonly userId: UserId;
   readonly feedItemId: FeedItemId;
   readonly url: string;
   readonly status: ImportQueueItemStatus;
-  readonly createdTime: FieldValue;
-  readonly lastUpdatedTime: FieldValue;
 }
