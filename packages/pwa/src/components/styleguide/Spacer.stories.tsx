@@ -1,43 +1,57 @@
+import styled from 'styled-components';
+
 import {ThemeColor} from '@shared/types/theme.types';
 
-import {FlexRow} from '@src/components/atoms/Flex';
+import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Spacer} from '@src/components/atoms/Spacer';
 import {Text} from '@src/components/atoms/Text';
 import {StorySection} from '@src/components/styleguide/StorySection';
+
+const FlexRowStoryWrapper = styled(FlexRow)`
+  border: solid 3px ${({theme}) => theme.colors[ThemeColor.Red200]};
+`;
+
+const FlexColumnStoryWrapper = styled(FlexColumn)`
+  background-color: ${({theme}) => theme.colors[ThemeColor.Red200]};
+`;
+
+const SpacerWrapper = styled(Spacer)`
+  background-color: ${({theme}) => theme.colors[ThemeColor.Green700]};
+`;
 
 export const SpacerStories: React.FC = () => {
   return (
     <>
       <StorySection title="Horizontal spacer">
-        <FlexRow style={{backgroundColor: ThemeColor.Red200}}>
+        <FlexRowStoryWrapper>
           <Text>Left</Text>
-          <Spacer x={32} />
+          <SpacerWrapper x={100} />
           <Text>Right</Text>
-        </FlexRow>
+        </FlexRowStoryWrapper>
       </StorySection>
 
       <StorySection title="Vertical spacer">
-        <div style={{backgroundColor: ThemeColor.Neutral200}}>
+        <FlexColumnStoryWrapper>
           <Text>Top</Text>
-          <Spacer y={32} />
+          <SpacerWrapper y={32} />
           <Text>Bottom</Text>
-        </div>
+        </FlexColumnStoryWrapper>
       </StorySection>
 
       <StorySection title="Responsive spacer">
-        <FlexRow style={{backgroundColor: ThemeColor.Neutral200}}>
+        <FlexRowStoryWrapper>
           <Text>Left</Text>
-          <Spacer x={{mobile: 16, desktop: 64}} />
-          <Text>Right (spacing changes on mobile)</Text>
-        </FlexRow>
+          <SpacerWrapper x={{mobile: 16, desktop: 64}} />
+          <Text>Right (spacing decreases on mobile)</Text>
+        </FlexRowStoryWrapper>
       </StorySection>
 
       <StorySection title="Flex spacer">
-        <FlexRow style={{backgroundColor: ThemeColor.Neutral200}}>
+        <FlexRowStoryWrapper>
           <Text>Left</Text>
-          <Spacer flex={1} />
+          <SpacerWrapper flex={1} />
           <Text>Right (pushed to end)</Text>
-        </FlexRow>
+        </FlexRowStoryWrapper>
       </StorySection>
     </>
   );
