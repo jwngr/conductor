@@ -3,6 +3,8 @@ export enum StyleguideSectionId {
   Buttons = 'BUTTONS',
   Divider = 'DIVIDER',
   Spacer = 'SPACER',
+  Toast = 'TOAST',
+  Tooltip = 'TOOLTIP',
 }
 
 export const DEFAULT_STYLEGUIDE_SECTION_ID = StyleguideSectionId.Typography;
@@ -29,6 +31,14 @@ const STYLEGUIDE_SECTIONS_BY_ID: Record<StyleguideSectionId, StyleguideSection> 
     sectionId: StyleguideSectionId.Spacer,
     name: 'Spacer',
   },
+  [StyleguideSectionId.Toast]: {
+    sectionId: StyleguideSectionId.Toast,
+    name: 'Toast',
+  },
+  [StyleguideSectionId.Tooltip]: {
+    sectionId: StyleguideSectionId.Tooltip,
+    name: 'Tooltip',
+  },
 };
 
 const ORDERED_STYLEGUIDE_SECTION_IDS: StyleguideSectionId[] = [
@@ -36,6 +46,8 @@ const ORDERED_STYLEGUIDE_SECTION_IDS: StyleguideSectionId[] = [
   StyleguideSectionId.Buttons,
   StyleguideSectionId.Divider,
   StyleguideSectionId.Spacer,
+  StyleguideSectionId.Toast,
+  StyleguideSectionId.Tooltip,
 ];
 
 export class Styleguide {

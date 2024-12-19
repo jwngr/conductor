@@ -15,6 +15,8 @@ import {Text} from '@src/components/atoms/Text';
 import {ButtonStories} from '@src/components/styleguide/Button.stories';
 import {DividerStories} from '@src/components/styleguide/Divider.stories';
 import {SpacerStories} from '@src/components/styleguide/Spacer.stories';
+import {ToastStories} from '@src/components/styleguide/Toast.stories';
+import {TooltipStories} from '@src/components/styleguide/Tooltip.stories';
 import {TypographyStories} from '@src/components/styleguide/Typography.stories';
 
 const StyleguideWrapper = styled(FlexRow)`
@@ -84,6 +86,10 @@ const StyleguideSectionStoriesContent: React.FC<{readonly sectionId: StyleguideS
       return <DividerStories />;
     case StyleguideSectionId.Spacer:
       return <SpacerStories />;
+    case StyleguideSectionId.Toast:
+      return <ToastStories />;
+    case StyleguideSectionId.Tooltip:
+      return <TooltipStories />;
     default:
       assertNever(sectionId);
   }
