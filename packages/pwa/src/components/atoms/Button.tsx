@@ -30,7 +30,7 @@ export const Button = styled.button<ButtonProps>`
       case ButtonVariant.Secondary:
         return css`
           background-color: transparent;
-          color: theme.colors[ThemeColor.Neutral900];
+          color: ${theme.colors[ThemeColor.Neutral900]};
         `;
       default:
         assertNever(variant);

@@ -1,5 +1,4 @@
 import {Button, ButtonVariant} from '@src/components/atoms/Button';
-import {FlexRow} from '@src/components/atoms/Flex';
 import {ToastActionElement} from '@src/components/atoms/Toast';
 import {StorySection} from '@src/components/styleguide/StorySection';
 
