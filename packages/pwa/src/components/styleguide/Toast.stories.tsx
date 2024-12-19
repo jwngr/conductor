@@ -1,4 +1,4 @@
-import {Button} from '@src/components/atoms/Button';
+import {Button, ButtonVariant} from '@src/components/atoms/Button';
 import {FlexRow} from '@src/components/atoms/Flex';
 import {StorySection} from '@src/components/styleguide/StorySection';
 
@@ -11,6 +11,7 @@ export const ToastStories: React.FC = () => {
     <>
       <StorySection title="Basic toast">
         <Button
+          variant={ButtonVariant.Primary}
           onClick={() =>
             showToast({
               title: 'Toast Title',
@@ -24,13 +25,14 @@ export const ToastStories: React.FC = () => {
 
       <StorySection title="Toast with action">
         <Button
+          variant={ButtonVariant.Primary}
           onClick={() =>
             showToast({
-              title: 'Undo Action',
+              title: 'Undo action',
               message: 'Item has been deleted',
               action: (
                 <Button
-                  variant="secondary"
+                  variant={ButtonVariant.Secondary}
                   onClick={() => {
                     // Intentionally empty for demo purposes
                   }}
@@ -48,6 +50,7 @@ export const ToastStories: React.FC = () => {
       <StorySection title="Multiple toasts">
         <FlexRow gap={8}>
           <Button
+            variant={ButtonVariant.Primary}
             onClick={() =>
               showToast({
                 title: 'First Toast',
@@ -58,6 +61,7 @@ export const ToastStories: React.FC = () => {
             Show First Toast
           </Button>
           <Button
+            variant={ButtonVariant.Primary}
             onClick={() =>
               showToast({
                 title: 'Second Toast',

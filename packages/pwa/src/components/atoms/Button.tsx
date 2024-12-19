@@ -1,9 +1,16 @@
-import styled from 'styled-components';
+import styled, {css} from 'styled-components';
+
+import {assertNever} from '@shared/lib/utils';
 
 import {ThemeColor} from '@shared/types/theme.types';
 
+export enum ButtonVariant {
+  Primary = 'PRIMARY',
+  Secondary = 'SECONDARY',
+}
+
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  readonly variant?: 'primary' | 'secondary';
+  readonly variant: ButtonVariant;
 }
 
 export const Button = styled.button<ButtonProps>`
@@ -13,12 +20,22 @@ export const Button = styled.button<ButtonProps>`
   font-size: 14px;
   border: 1px solid ${({theme}) => theme.colors[ThemeColor.Neutral500]};
 
-  background-color: ${({theme, variant}) =>
-    variant === 'secondary' ? 'transparent' : theme.colors[ThemeColor.Neutral900]};
-  color: ${({theme, variant}) =>
-    variant === 'secondary'
-      ? theme.colors[ThemeColor.Neutral900]
-      : theme.colors[ThemeColor.Neutral100]};
+  ${({theme, variant}) => {
+    switch (variant) {
+      case ButtonVariant.Primary:
+        return css`
+          background-color: ${theme.colors[ThemeColor.Neutral900]};
+          color: ${theme.colors[ThemeColor.Neutral100]};
+        `;
+      case ButtonVariant.Secondary:
+        return css`
+          background-color: transparent;
+          color: theme.colors[ThemeColor.Neutral900];
+        `;
+      default:
+        assertNever(variant);
+    }
+  }}
 
   &:hover {
     opacity: 0.9;
