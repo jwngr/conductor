@@ -28,15 +28,6 @@ export const InputStories: React.FC = () => {
           <Text>Current value: {controlledValue || '(empty)'}</Text>
         </FlexColumn>
       </StorySection>
-
-      <StorySection title="Input with label">
-        <FlexColumn gap={4}>
-          <Text as="label" htmlFor="email">
-            Email address
-          </Text>
-          <Input id="email" type="email" placeholder="Enter your email" />
-        </FlexColumn>
-      </StorySection>
     </>
   );
 };

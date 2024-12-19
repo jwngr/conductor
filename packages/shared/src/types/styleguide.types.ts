@@ -1,77 +1,89 @@
 export enum StyleguideSectionId {
-  Typography = 'TYPOGRAPHY',
-  Buttons = 'BUTTONS',
+  Button = 'BUTTON',
+  ButtonIcon = 'BUTTON_ICON',
+  Dialog = 'DIALOG',
   Divider = 'DIVIDER',
+  Flex = 'FLEX',
+  Input = 'INPUT',
+  Link = 'LINK',
   Spacer = 'SPACER',
+  TextIcon = 'TEXT_ICON',
   Toast = 'TOAST',
   Tooltip = 'TOOLTIP',
-  ButtonIcon = 'BUTTON_ICON',
-  TextIcon = 'TEXT_ICON',
-  Dialog = 'DIALOG',
-  Input = 'INPUT',
+  Typography = 'TYPOGRAPHY',
 }
 
 export const DEFAULT_STYLEGUIDE_SECTION_ID = StyleguideSectionId.Typography;
 
 interface StyleguideSection {
   readonly sectionId: StyleguideSectionId;
-  readonly name: string;
+  readonly title: string;
 }
 
 const STYLEGUIDE_SECTIONS_BY_ID: Record<StyleguideSectionId, StyleguideSection> = {
-  [StyleguideSectionId.Typography]: {
-    sectionId: StyleguideSectionId.Typography,
-    name: 'Typography',
-  },
-  [StyleguideSectionId.Buttons]: {
-    sectionId: StyleguideSectionId.Buttons,
-    name: 'Buttons',
-  },
-  [StyleguideSectionId.Divider]: {
-    sectionId: StyleguideSectionId.Divider,
-    name: 'Divider',
-  },
-  [StyleguideSectionId.Spacer]: {
-    sectionId: StyleguideSectionId.Spacer,
-    name: 'Spacer',
-  },
-  [StyleguideSectionId.Toast]: {
-    sectionId: StyleguideSectionId.Toast,
-    name: 'Toast',
-  },
-  [StyleguideSectionId.Tooltip]: {
-    sectionId: StyleguideSectionId.Tooltip,
-    name: 'Tooltip',
+  [StyleguideSectionId.Button]: {
+    sectionId: StyleguideSectionId.Button,
+    title: 'Buttons',
   },
   [StyleguideSectionId.ButtonIcon]: {
     sectionId: StyleguideSectionId.ButtonIcon,
-    name: 'Button Icon',
-  },
-  [StyleguideSectionId.TextIcon]: {
-    sectionId: StyleguideSectionId.TextIcon,
-    name: 'Text Icon',
+    title: 'Button Icon',
   },
   [StyleguideSectionId.Dialog]: {
     sectionId: StyleguideSectionId.Dialog,
-    name: 'Dialog',
+    title: 'Dialog',
+  },
+  [StyleguideSectionId.Divider]: {
+    sectionId: StyleguideSectionId.Divider,
+    title: 'Divider',
+  },
+  [StyleguideSectionId.Flex]: {
+    sectionId: StyleguideSectionId.Flex,
+    title: 'Flex',
   },
   [StyleguideSectionId.Input]: {
     sectionId: StyleguideSectionId.Input,
-    name: 'Input',
+    title: 'Input',
+  },
+  [StyleguideSectionId.Link]: {
+    sectionId: StyleguideSectionId.Link,
+    title: 'Link',
+  },
+  [StyleguideSectionId.Spacer]: {
+    sectionId: StyleguideSectionId.Spacer,
+    title: 'Spacer',
+  },
+  [StyleguideSectionId.TextIcon]: {
+    sectionId: StyleguideSectionId.TextIcon,
+    title: 'Text Icon',
+  },
+  [StyleguideSectionId.Toast]: {
+    sectionId: StyleguideSectionId.Toast,
+    title: 'Toast',
+  },
+  [StyleguideSectionId.Tooltip]: {
+    sectionId: StyleguideSectionId.Tooltip,
+    title: 'Tooltip',
+  },
+  [StyleguideSectionId.Typography]: {
+    sectionId: StyleguideSectionId.Typography,
+    title: 'Typography',
   },
 };
 
 const ORDERED_STYLEGUIDE_SECTION_IDS: StyleguideSectionId[] = [
   StyleguideSectionId.Typography,
-  StyleguideSectionId.Buttons,
-  StyleguideSectionId.ButtonIcon,
+  StyleguideSectionId.Link,
   StyleguideSectionId.TextIcon,
+  StyleguideSectionId.ButtonIcon,
+  StyleguideSectionId.Button,
   StyleguideSectionId.Input,
   StyleguideSectionId.Dialog,
-  StyleguideSectionId.Divider,
-  StyleguideSectionId.Spacer,
   StyleguideSectionId.Toast,
   StyleguideSectionId.Tooltip,
+  StyleguideSectionId.Divider,
+  StyleguideSectionId.Flex,
+  StyleguideSectionId.Spacer,
 ];
 
 export class Styleguide {

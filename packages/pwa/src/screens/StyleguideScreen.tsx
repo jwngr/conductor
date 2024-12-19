@@ -16,7 +16,9 @@ import {ButtonStories} from '@src/components/styleguide/Button.stories';
 import {ButtonIconStories} from '@src/components/styleguide/ButtonIcon.stories';
 import {DialogStories} from '@src/components/styleguide/Dialog.stories';
 import {DividerStories} from '@src/components/styleguide/Divider.stories';
+import {FlexStories} from '@src/components/styleguide/Flex.stories';
 import {InputStories} from '@src/components/styleguide/Input.stories';
+import {LinkStories} from '@src/components/styleguide/Link.stories';
 import {SpacerStories} from '@src/components/styleguide/Spacer.stories';
 import {TextIconStories} from '@src/components/styleguide/TextIcon.stories';
 import {ToastStories} from '@src/components/styleguide/Toast.stories';
@@ -70,7 +72,7 @@ const StyleguideSidebar: React.FC<{
             $isActive={activeSectionId === sidebarSectionId}
             onClick={() => setActiveSectionId(sidebarSectionId)}
           >
-            {Styleguide.getSectionById(sidebarSectionId).name}
+            {Styleguide.getSectionById(sidebarSectionId).title}
           </SidebarItem>
         ))}
       </FlexColumn>
@@ -82,28 +84,33 @@ const StyleguideSectionStoriesContent: React.FC<{readonly sectionId: StyleguideS
   sectionId,
 }) => {
   switch (sectionId) {
-    case StyleguideSectionId.Typography:
-      return <TypographyStories />;
-    case StyleguideSectionId.Buttons:
+    case StyleguideSectionId.Button:
       return <ButtonStories />;
+    case StyleguideSectionId.ButtonIcon:
+      return <ButtonIconStories />;
+    case StyleguideSectionId.Dialog:
+      return <DialogStories />;
+    case StyleguideSectionId.Flex:
+      return <FlexStories />;
+    case StyleguideSectionId.Input:
+      return <InputStories />;
+    case StyleguideSectionId.Link:
+      return <LinkStories />;
     case StyleguideSectionId.Divider:
       return <DividerStories />;
     case StyleguideSectionId.Spacer:
       return <SpacerStories />;
+    case StyleguideSectionId.TextIcon:
+      return <TextIconStories />;
     case StyleguideSectionId.Toast:
       return <ToastStories />;
     case StyleguideSectionId.Tooltip:
       return <TooltipStories />;
-    case StyleguideSectionId.ButtonIcon:
-      return <ButtonIconStories />;
-    case StyleguideSectionId.TextIcon:
-      return <TextIconStories />;
-    case StyleguideSectionId.Dialog:
-      return <DialogStories />;
-    case StyleguideSectionId.Input:
-      return <InputStories />;
-    default:
-      return assertNever(sectionId);
+    case StyleguideSectionId.Typography:
+      return <TypographyStories />;
+    default: {
+      assertNever(sectionId);
+    }
   }
 };
 
@@ -114,7 +121,7 @@ const StyleguideSectionContent: React.FC<{readonly sectionId: StyleguideSectionI
   return (
     <StyleguideSectionContentWrapper>
       <Text as="h1" bold>
-        {sectionConfig.name}
+        {sectionConfig.title}
       </Text>
       <FlexColumn gap={40}>
         <StyleguideSectionStoriesContent sectionId={sectionId} />
