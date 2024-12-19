@@ -7,6 +7,8 @@ export enum StyleguideSectionId {
   Tooltip = 'TOOLTIP',
   ButtonIcon = 'BUTTON_ICON',
   TextIcon = 'TEXT_ICON',
+  Dialog = 'DIALOG',
+  Input = 'INPUT',
 }
 
 export const DEFAULT_STYLEGUIDE_SECTION_ID = StyleguideSectionId.Typography;
@@ -49,6 +51,14 @@ const STYLEGUIDE_SECTIONS_BY_ID: Record<StyleguideSectionId, StyleguideSection> 
     sectionId: StyleguideSectionId.TextIcon,
     name: 'Text Icon',
   },
+  [StyleguideSectionId.Dialog]: {
+    sectionId: StyleguideSectionId.Dialog,
+    name: 'Dialog',
+  },
+  [StyleguideSectionId.Input]: {
+    sectionId: StyleguideSectionId.Input,
+    name: 'Input',
+  },
 };
 
 const ORDERED_STYLEGUIDE_SECTION_IDS: StyleguideSectionId[] = [
@@ -56,6 +66,8 @@ const ORDERED_STYLEGUIDE_SECTION_IDS: StyleguideSectionId[] = [
   StyleguideSectionId.Buttons,
   StyleguideSectionId.ButtonIcon,
   StyleguideSectionId.TextIcon,
+  StyleguideSectionId.Input,
+  StyleguideSectionId.Dialog,
   StyleguideSectionId.Divider,
   StyleguideSectionId.Spacer,
   StyleguideSectionId.Toast,

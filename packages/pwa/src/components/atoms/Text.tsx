@@ -15,7 +15,7 @@ function getFontWeight(bold?: boolean, weight?: FontWeight) {
   }
 }
 
-type TextElement = 'p' | 'span' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+type TextElement = 'p' | 'span' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'label';
 
 interface TextWrapperProps {
   readonly $color?: ThemeColor;

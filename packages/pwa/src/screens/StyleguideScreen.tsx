@@ -14,7 +14,9 @@ import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
 import {ButtonStories} from '@src/components/styleguide/Button.stories';
 import {ButtonIconStories} from '@src/components/styleguide/ButtonIcon.stories';
+import {DialogStories} from '@src/components/styleguide/Dialog.stories';
 import {DividerStories} from '@src/components/styleguide/Divider.stories';
+import {InputStories} from '@src/components/styleguide/Input.stories';
 import {SpacerStories} from '@src/components/styleguide/Spacer.stories';
 import {TextIconStories} from '@src/components/styleguide/TextIcon.stories';
 import {ToastStories} from '@src/components/styleguide/Toast.stories';
@@ -96,9 +98,12 @@ const StyleguideSectionStoriesContent: React.FC<{readonly sectionId: StyleguideS
       return <ButtonIconStories />;
     case StyleguideSectionId.TextIcon:
       return <TextIconStories />;
-    default: {
-      assertNever(sectionId);
-    }
+    case StyleguideSectionId.Dialog:
+      return <DialogStories />;
+    case StyleguideSectionId.Input:
+      return <InputStories />;
+    default:
+      return assertNever(sectionId);
   }
 };
 
