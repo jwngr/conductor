@@ -34,7 +34,7 @@ export const TooltipStories: React.FC = () => {
           content="Save changes"
           shortcutId={KeyboardShortcutId.ToggleSaved}
           onShortcutTrigger={() => {
-            // Intentionally empty for demo purposes
+            window.alert('Keyboard shortcut triggered');
           }}
         />
       </StorySection>

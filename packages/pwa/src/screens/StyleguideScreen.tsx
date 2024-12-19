@@ -90,14 +90,14 @@ const StyleguideSectionStoriesContent: React.FC<{readonly sectionId: StyleguideS
       return <ButtonIconStories />;
     case StyleguideSectionId.Dialog:
       return <DialogStories />;
+    case StyleguideSectionId.Divider:
+      return <DividerStories />;
     case StyleguideSectionId.Flex:
       return <FlexStories />;
     case StyleguideSectionId.Input:
       return <InputStories />;
     case StyleguideSectionId.Link:
       return <LinkStories />;
-    case StyleguideSectionId.Divider:
-      return <DividerStories />;
     case StyleguideSectionId.Spacer:
       return <SpacerStories />;
     case StyleguideSectionId.TextIcon:
