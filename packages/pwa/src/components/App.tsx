@@ -18,6 +18,7 @@ import {ErrorScreen} from '@src/screens/ErrorScreen';
 import {FeedItemScreen} from '@src/screens/FeedItemScreen';
 import {FeedsScreen} from '@src/screens/FeedsScreen';
 import {SignInScreen} from '@src/screens/SignInScreen';
+import {StyleguideScreen} from '@src/screens/StyleguideScreen';
 import {ViewScreen} from '@src/screens/ViewScreen';
 
 export const CatchAllRoute: React.FC = () => {
@@ -32,6 +33,7 @@ const AllRoutes: React.FC = () => {
       {/* Publicly visible routes. */}
       <Route path={Urls.forSignIn()} element={<SignInScreen />} />
       <Route path={Urls.forSignOut()} element={<SignOutRedirect />} />
+      <Route path={Urls.forStyleguide()} element={<StyleguideScreen />} />
 
       {/* Authenticated routes. */}
       {orderedNavItems.map((item) => (

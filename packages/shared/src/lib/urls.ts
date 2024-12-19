@@ -153,4 +153,8 @@ export class Urls {
   static forSignOut(): string {
     return '/logout';
   }
+
+  static forStyleguide(): string {
+    return '/styleguide';
+  }
 }
