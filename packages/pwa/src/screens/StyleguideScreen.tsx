@@ -13,8 +13,10 @@ import {ThemeColor} from '@shared/types/theme.types';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
 import {ButtonStories} from '@src/components/styleguide/Button.stories';
+import {ButtonIconStories} from '@src/components/styleguide/ButtonIcon.stories';
 import {DividerStories} from '@src/components/styleguide/Divider.stories';
 import {SpacerStories} from '@src/components/styleguide/Spacer.stories';
+import {TextIconStories} from '@src/components/styleguide/TextIcon.stories';
 import {ToastStories} from '@src/components/styleguide/Toast.stories';
 import {TooltipStories} from '@src/components/styleguide/Tooltip.stories';
 import {TypographyStories} from '@src/components/styleguide/Typography.stories';
@@ -90,8 +92,13 @@ const StyleguideSectionStoriesContent: React.FC<{readonly sectionId: StyleguideS
       return <ToastStories />;
     case StyleguideSectionId.Tooltip:
       return <TooltipStories />;
-    default:
+    case StyleguideSectionId.ButtonIcon:
+      return <ButtonIconStories />;
+    case StyleguideSectionId.TextIcon:
+      return <TextIconStories />;
+    default: {
       assertNever(sectionId);
+    }
   }
 };
 
