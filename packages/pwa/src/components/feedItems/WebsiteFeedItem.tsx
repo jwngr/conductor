@@ -11,8 +11,6 @@ export const WebsiteFeedItemComponent: React.FC<{readonly feedItem: WebsiteFeedI
   return (
     <FeedItemWrapper>
       <FeedItemHeader feedItem={feedItem} />
-      <pre>{JSON.stringify(feedItem, null, 2)}</pre>
-      <br />
       <FeedItemMarkdown feedItem={feedItem} />
     </FeedItemWrapper>
   );

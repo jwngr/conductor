@@ -1,5 +1,7 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {styled} from 'styled-components';
+
+import {useDevToolbarStore} from '@shared/stores/devToolbarStore';
 
 import {Divider} from '@src/components/atoms/Divider';
 import {DialogTester} from '@src/components/devToolbar/DialogTester';
@@ -37,6 +39,20 @@ const BugEmoji = styled.span<{readonly $isOpen: boolean}>`
   font-size: 16px;
 `;
 
+const ActionButton = styled.button`
+  padding: 8px 12px;
+  background-color: ${({theme}) => theme.colors.primary};
+  color: ${({theme}) => theme.colors.text};
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
 export interface DevToolbarProps {
   readonly isVisible?: boolean;
 }
@@ -44,6 +60,8 @@ export interface DevToolbarProps {
 export function DevToolbar({isVisible = true}: DevToolbarProps): JSX.Element | null {
   const [isOpen, setIsOpen] = useState(false);
   const toolbarRef = useRef<HTMLDivElement>(null);
+
+  const additionalActions = useDevToolbarStore((state) => state.actions);
 
   // Close the toolbar if the user clicks outside of it.
   useEffect(() => {
@@ -86,8 +104,12 @@ export function DevToolbar({isVisible = true}: DevToolbarProps): JSX.Element | n
       </BugEmoji>
       <DevToolbarContent $isOpen={isOpen}>
         <FeedItemImportTester />
-        <Divider />
-        <DialogTester />
+        {additionalActions.length > 0 && <Divider />}
+        {additionalActions.map((action) => (
+          <ActionButton key={action.actionId} onClick={action.onClick}>
+            {action.text}
+          </ActionButton>
+        ))}
       </DevToolbarContent>
     </DevToolbarWrapper>
   );

@@ -1,5 +1,5 @@
 import {deleteField} from 'firebase/firestore';
-import {useEffect, useRef} from 'react';
+import {useEffect, useRef, useState} from 'react';
 
 import {FeedItemsService} from '@shared/lib/feedItems';
 import {logger} from '@shared/lib/logger';
@@ -9,7 +9,17 @@ import {assertNever} from '@shared/lib/utils';
 import {FeedItem, FeedItemId, FeedItemType} from '@shared/types/feedItems.types';
 import {SystemTagId} from '@shared/types/tags.types';
 
+import {useDevToolbarAction} from '@shared/hooks/useDevToolbarAction';
+import {useDevToolbarStore} from '@shared/stores/devToolbarStore';
+
 import {AppHeader} from '@src/components/AppHeader';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@src/components/atoms/Dialog';
 import {Text} from '@src/components/atoms/Text';
 import {ArticleFeedItemComponent} from '@src/components/feedItems/ArticleFeedItem';
 import {TweetFeedItemComponent} from '@src/components/feedItems/TweetFeedItem';
@@ -73,6 +83,7 @@ const FeedItemScreenMainContent: React.FC<{
   readonly feedItemId: FeedItemId;
 }> = ({feedItemId}) => {
   const {feedItem, isLoading: isItemLoading, error: feedItemError} = useFeedItem(feedItemId);
+
   useMarkFeedItemRead({feedItem, feedItemId});
 
   if (isItemLoading) {
@@ -90,20 +101,60 @@ const FeedItemScreenMainContent: React.FC<{
     return <NotFoundScreen message="Feed item not found" />;
   }
 
+  let feedItemContent: React.ReactNode;
   switch (feedItem.type) {
     case FeedItemType.Article:
-      return <ArticleFeedItemComponent feedItem={feedItem} />;
+      feedItemContent = <ArticleFeedItemComponent feedItem={feedItem} />;
+      break;
     case FeedItemType.Video:
-      return <VideoFeedItemComponent feedItem={feedItem} />;
+      feedItemContent = <VideoFeedItemComponent feedItem={feedItem} />;
+      break;
     case FeedItemType.Website:
-      return <WebsiteFeedItemComponent feedItem={feedItem} />;
+      feedItemContent = <WebsiteFeedItemComponent feedItem={feedItem} />;
+      break;
     case FeedItemType.Tweet:
-      return <TweetFeedItemComponent feedItem={feedItem} />;
+      feedItemContent = <TweetFeedItemComponent feedItem={feedItem} />;
+      break;
     case FeedItemType.Xkcd:
-      return <XkcdFeedItemComponent feedItem={feedItem} />;
+      feedItemContent = <XkcdFeedItemComponent feedItem={feedItem} />;
+      break;
     default:
       assertNever(feedItem);
   }
+
+  return (
+    <>
+      {feedItemContent}
+      <RegisterFeedItemScreenDevToolbarActions feedItem={feedItem} />
+    </>
+  );
+};
+
+const RegisterFeedItemScreenDevToolbarActions: React.FC<{
+  readonly feedItem: FeedItem;
+}> = ({feedItem}) => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const registerAction = useDevToolbarStore((state) => state.registerAction);
+
+  useEffect(() => {
+    return registerAction({
+      actionId: 'VIEW_FEED_ITEM_JSON',
+      text: 'View feed item as JSON',
+      onClick: () => setIsDialogOpen(true),
+    });
+  }, [registerAction]);
+
+  return (
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Feed item JSON</DialogTitle>
+        </DialogHeader>
+        <pre style={{overflow: 'auto', maxHeight: '60vh'}}>{JSON.stringify(feedItem, null, 2)}</pre>
+      </DialogContent>
+    </Dialog>
+  );
 };
 
 export const FeedItemScreen: React.FC = () => {
