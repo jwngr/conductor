@@ -1,6 +1,8 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {styled} from 'styled-components';
 
+import {ThemeColor} from '@shared/types/theme.types';
+
 import {useDevToolbarStore} from '@shared/stores/devToolbarStore';
 
 import {Button, ButtonVariant} from '@src/components/atoms/Button';
@@ -13,9 +15,8 @@ const DevToolbarWrapper = styled.div<{readonly $isOpen: boolean}>`
   position: fixed;
   bottom: 16px;
   right: 16px;
-  background-color: ${({theme, $isOpen}) =>
-    $isOpen ? theme.colors.surface : theme.colors.primary};
-  border-radius: ${({$isOpen}) => ($isOpen ? '12px' : '999px')};
+  background-color: ${({theme}) => theme.colors[ThemeColor.Neutral100]};
+  border-radius: ${({$isOpen}) => ($isOpen ? '12px' : '100%')};
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   border: 2px solid ${({theme}) => theme.colors.border};
   cursor: ${({$isOpen}) => ($isOpen ? 'default' : 'pointer')};
