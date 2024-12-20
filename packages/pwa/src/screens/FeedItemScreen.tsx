@@ -9,17 +9,10 @@ import {assertNever} from '@shared/lib/utils';
 import {FeedItem, FeedItemId, FeedItemType} from '@shared/types/feedItems.types';
 import {SystemTagId} from '@shared/types/tags.types';
 
-import {useDevToolbarAction} from '@shared/hooks/useDevToolbarAction';
 import {useDevToolbarStore} from '@shared/stores/devToolbarStore';
 
 import {AppHeader} from '@src/components/AppHeader';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@src/components/atoms/Dialog';
+import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@src/components/atoms/Dialog';
 import {Text} from '@src/components/atoms/Text';
 import {ArticleFeedItemComponent} from '@src/components/feedItems/ArticleFeedItem';
 import {TweetFeedItemComponent} from '@src/components/feedItems/TweetFeedItem';
