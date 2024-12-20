@@ -3,8 +3,8 @@ import {styled} from 'styled-components';
 
 import {useDevToolbarStore} from '@shared/stores/devToolbarStore';
 
+import {Button, ButtonVariant} from '@src/components/atoms/Button';
 import {Divider} from '@src/components/atoms/Divider';
-import {DialogTester} from '@src/components/devToolbar/DialogTester';
 import {FeedItemImportTester} from '@src/components/devToolbar/FeedItemImportTester';
 
 import {IS_DEVELOPMENT} from '@src/lib/environment.pwa';
@@ -37,20 +37,6 @@ const BugEmoji = styled.span<{readonly $isOpen: boolean}>`
   top: 50%;
   transform: translate(-50%, -50%);
   font-size: 16px;
-`;
-
-const ActionButton = styled.button`
-  padding: 8px 12px;
-  background-color: ${({theme}) => theme.colors.primary};
-  color: ${({theme}) => theme.colors.text};
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-
-  &:hover {
-    opacity: 0.9;
-  }
 `;
 
 export interface DevToolbarProps {
@@ -106,9 +92,9 @@ export function DevToolbar({isVisible = true}: DevToolbarProps): JSX.Element | n
         <FeedItemImportTester />
         {additionalActions.length > 0 && <Divider />}
         {additionalActions.map((action) => (
-          <ActionButton key={action.actionId} onClick={action.onClick}>
+          <Button key={action.actionId} variant={ButtonVariant.Secondary} onClick={action.onClick}>
             {action.text}
-          </ActionButton>
+          </Button>
         ))}
       </DevToolbarContent>
     </DevToolbarWrapper>

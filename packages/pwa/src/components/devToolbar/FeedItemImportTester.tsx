@@ -7,8 +7,8 @@ import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems.types';
 
 import {useMaybeLoggedInUser} from '@shared/hooks/auth.hooks';
 
+import {Button, ButtonVariant} from '@src/components/atoms/Button';
 import {Input} from '@src/components/atoms/Input';
-import {Button} from '@src/components/devToolbar/Button';
 
 import {useMaybeFeedItemsService} from '@src/lib/feedItems.pwa';
 
@@ -65,8 +65,11 @@ export const FeedItemImportTester: React.FC = () => {
         placeholder="Enter URL to test"
         onChange={(e) => setUrl(e.target.value)}
       />
-      <Button onClick={() => handleAddItemToQueue(url)}>Test URL import</Button>
+      <Button variant={ButtonVariant.Secondary} onClick={() => handleAddItemToQueue(url)}>
+        Test URL import
+      </Button>
       <Button
+        variant={ButtonVariant.Secondary}
         onClick={() => handleAddItemToQueue('https://jwn.gr/posts/migrating-from-gatsby-to-astro/')}
       >
         Test blog import
