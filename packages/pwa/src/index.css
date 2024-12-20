@@ -9,3 +9,76 @@
   height: 100vh;
   width: 100vw;
 }
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+li {
+  /* System sans serif font w/ fallbacks as needed for broadest compatibility. */
+  font-family: -apple-system, 'system-ui', 'Segoe UI', Arimo, system-ui;
+  margin: 0;
+  padding: 0;
+}
+
+input,
+button {
+  /* System sans serif font w/ fallbacks as needed for broadest compatibility. */
+  font-family: -apple-system, 'system-ui', 'Segoe UI', Arimo, system-ui;
+  font-size: 1.125rem; /* 18px */
+  line-height: 1.875rem; /* 30px */
+}
+
+p {
+  font-size: 1.125rem; /* 18px */
+  line-height: 1.875rem; /* 30px */
+}
+
+li {
+  font-size: 1.125rem; /* 18px */
+  /* Slightly taller than standard p to visually distinguish list items. */
+  line-height: 1.875rem; /* 30px */
+  padding-left: 8px;
+}
+
+li:not(:last-of-type) {
+  margin-bottom: 8px;
+}
+
+h1 {
+  font-size: 1.875rem; /* 30px */
+  line-height: 2.5rem; /* 40px */
+}
+
+h2 {
+  font-size: 1.5rem; /* 24px */
+  line-height: 2.25rem; /* 36px */
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+h3 {
+  font-size: 1.25rem; /* 20px */
+  line-height: 2rem; /* 32px */
+}
+
+h4 {
+  font-size: 1.125rem; /* 18px */
+  line-height: 1.875rem; /* 30px */
+}
+
+h5,
+h6 {
+  font-size: 1rem; /* 16px */
+  line-height: 1.5rem; /* 24px */
+  font-weight: normal;
+}
+
+pre,
+code {
+  /* System monospace font w/ fallbacks as needed for broadest compatibility. */
+  font-family: ui-monospace, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
