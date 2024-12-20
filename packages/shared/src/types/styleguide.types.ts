@@ -1,4 +1,4 @@
-export enum StyleguideSectionId {
+export enum StyleguideStoryGroupId {
   Button = 'BUTTON',
   ButtonIcon = 'BUTTON_ICON',
   Dialog = 'DIALOG',
@@ -11,87 +11,100 @@ export enum StyleguideSectionId {
   Toast = 'TOAST',
   Tooltip = 'TOOLTIP',
   Typography = 'TYPOGRAPHY',
+  MarkdownContentViewer = 'MARKDOWN_CONTENT_VIEWER',
 }
 
-export const DEFAULT_STYLEGUIDE_SECTION_ID = StyleguideSectionId.Typography;
+export const DEFAULT_STYLEGUIDE_STORY_GROUP_ID = StyleguideStoryGroupId.Typography;
 
-interface StyleguideSection {
-  readonly sectionId: StyleguideSectionId;
+interface StyleguideStoryGroup {
+  readonly storyGroupId: StyleguideStoryGroupId;
   readonly title: string;
 }
 
-const STYLEGUIDE_SECTIONS_BY_ID: Record<StyleguideSectionId, StyleguideSection> = {
-  [StyleguideSectionId.Button]: {
-    sectionId: StyleguideSectionId.Button,
+const STYLEGUIDE_STORY_GROUPS_BY_ID: Record<StyleguideStoryGroupId, StyleguideStoryGroup> = {
+  [StyleguideStoryGroupId.Button]: {
+    storyGroupId: StyleguideStoryGroupId.Button,
     title: 'Buttons',
   },
-  [StyleguideSectionId.ButtonIcon]: {
-    sectionId: StyleguideSectionId.ButtonIcon,
+  [StyleguideStoryGroupId.ButtonIcon]: {
+    storyGroupId: StyleguideStoryGroupId.ButtonIcon,
     title: 'Button Icon',
   },
-  [StyleguideSectionId.Dialog]: {
-    sectionId: StyleguideSectionId.Dialog,
+  [StyleguideStoryGroupId.Dialog]: {
+    storyGroupId: StyleguideStoryGroupId.Dialog,
     title: 'Dialog',
   },
-  [StyleguideSectionId.Divider]: {
-    sectionId: StyleguideSectionId.Divider,
+  [StyleguideStoryGroupId.Divider]: {
+    storyGroupId: StyleguideStoryGroupId.Divider,
     title: 'Divider',
   },
-  [StyleguideSectionId.Flex]: {
-    sectionId: StyleguideSectionId.Flex,
+  [StyleguideStoryGroupId.Flex]: {
+    storyGroupId: StyleguideStoryGroupId.Flex,
     title: 'Flex',
   },
-  [StyleguideSectionId.Input]: {
-    sectionId: StyleguideSectionId.Input,
+  [StyleguideStoryGroupId.Input]: {
+    storyGroupId: StyleguideStoryGroupId.Input,
     title: 'Input',
   },
-  [StyleguideSectionId.Link]: {
-    sectionId: StyleguideSectionId.Link,
+  [StyleguideStoryGroupId.Link]: {
+    storyGroupId: StyleguideStoryGroupId.Link,
     title: 'Link',
   },
-  [StyleguideSectionId.Spacer]: {
-    sectionId: StyleguideSectionId.Spacer,
+  [StyleguideStoryGroupId.Spacer]: {
+    storyGroupId: StyleguideStoryGroupId.Spacer,
     title: 'Spacer',
   },
-  [StyleguideSectionId.TextIcon]: {
-    sectionId: StyleguideSectionId.TextIcon,
+  [StyleguideStoryGroupId.TextIcon]: {
+    storyGroupId: StyleguideStoryGroupId.TextIcon,
     title: 'Text Icon',
   },
-  [StyleguideSectionId.Toast]: {
-    sectionId: StyleguideSectionId.Toast,
+  [StyleguideStoryGroupId.Toast]: {
+    storyGroupId: StyleguideStoryGroupId.Toast,
     title: 'Toast',
   },
-  [StyleguideSectionId.Tooltip]: {
-    sectionId: StyleguideSectionId.Tooltip,
+  [StyleguideStoryGroupId.Tooltip]: {
+    storyGroupId: StyleguideStoryGroupId.Tooltip,
     title: 'Tooltip',
   },
-  [StyleguideSectionId.Typography]: {
-    sectionId: StyleguideSectionId.Typography,
+  [StyleguideStoryGroupId.Typography]: {
+    storyGroupId: StyleguideStoryGroupId.Typography,
     title: 'Typography',
+  },
+  [StyleguideStoryGroupId.MarkdownContentViewer]: {
+    storyGroupId: StyleguideStoryGroupId.MarkdownContentViewer,
+    title: 'Markdown',
   },
 };
 
-const ORDERED_STYLEGUIDE_SECTION_IDS: StyleguideSectionId[] = [
-  StyleguideSectionId.Typography,
-  StyleguideSectionId.Link,
-  StyleguideSectionId.TextIcon,
-  StyleguideSectionId.ButtonIcon,
-  StyleguideSectionId.Button,
-  StyleguideSectionId.Input,
-  StyleguideSectionId.Dialog,
-  StyleguideSectionId.Toast,
-  StyleguideSectionId.Tooltip,
-  StyleguideSectionId.Divider,
-  StyleguideSectionId.Flex,
-  StyleguideSectionId.Spacer,
+const ORDERED_ATOMIC_COMPONENT_STORY_GROUP_IDS: StyleguideStoryGroupId[] = [
+  StyleguideStoryGroupId.Typography,
+  StyleguideStoryGroupId.Link,
+  StyleguideStoryGroupId.TextIcon,
+  StyleguideStoryGroupId.ButtonIcon,
+  StyleguideStoryGroupId.Button,
+  StyleguideStoryGroupId.Input,
+  StyleguideStoryGroupId.Dialog,
+  StyleguideStoryGroupId.Toast,
+  StyleguideStoryGroupId.Tooltip,
+  StyleguideStoryGroupId.Divider,
+  StyleguideStoryGroupId.Flex,
+  StyleguideStoryGroupId.Spacer,
+];
+
+const ORDERED_CONTENT_VIEWER_STORY_GROUP_IDS: StyleguideStoryGroupId[] = [
+  StyleguideStoryGroupId.MarkdownContentViewer,
 ];
 
 export class Styleguide {
-  public static getOrderedSectionIds(): StyleguideSectionId[] {
-    return ORDERED_STYLEGUIDE_SECTION_IDS;
+  public static getSectionById(storyGroupId: StyleguideStoryGroupId): StyleguideStoryGroup {
+    return STYLEGUIDE_STORY_GROUPS_BY_ID[storyGroupId];
   }
 
-  public static getSectionById(styleguideSectionId: StyleguideSectionId): StyleguideSection {
-    return STYLEGUIDE_SECTIONS_BY_ID[styleguideSectionId];
+  public static getOrderedAtomicComponentIds(): StyleguideStoryGroupId[] {
+    return ORDERED_ATOMIC_COMPONENT_STORY_GROUP_IDS;
+  }
+
+  public static getOrderedContentViewerIds(): StyleguideStoryGroupId[] {
+    return ORDERED_CONTENT_VIEWER_STORY_GROUP_IDS;
   }
 }
