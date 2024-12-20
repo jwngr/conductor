@@ -4,9 +4,9 @@ import styled from 'styled-components';
 import {assertNever} from '@shared/lib/utils';
 
 import {
-  DEFAULT_STYLEGUIDE_SECTION_ID,
+  DEFAULT_STYLEGUIDE_STORY_GROUP_ID,
   Styleguide,
-  StyleguideSectionId,
+  StyleguideStoryGroupId,
 } from '@shared/types/styleguide.types';
 import {ThemeColor} from '@shared/types/theme.types';
 
@@ -31,21 +31,29 @@ const StyleguideWrapper = styled(FlexRow)`
   background-color: ${({theme}) => theme.colors[ThemeColor.Neutral100]};
 `;
 
-const StyleguideSidebarWrapper = styled(FlexColumn)`
+const StyleguideSidebarWrapper = styled(FlexColumn).attrs({gap: 20})`
   width: 240px;
   height: 100%;
   padding: 20px;
   border-right: 1px solid ${({theme}) => theme.colors[ThemeColor.Neutral300]};
 `;
 
-const StyleguideSectionContentWrapper = styled(FlexColumn).attrs({gap: 32})`
+const StyleguideStoryGroupWrapper = styled(FlexColumn).attrs({gap: 32})`
   height: 100%;
   padding: 20px;
   overflow: auto;
 `;
 
-const SidebarItem = styled(Text)<{readonly $isActive?: boolean}>`
+const SidebarCategory = styled(Text)`
   padding: 8px 12px;
+  font-size: 14px;
+  color: ${({theme}) => theme.colors[ThemeColor.Neutral500]};
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+`;
+
+const SidebarItem = styled(Text)<{readonly $isActive?: boolean}>`
+  padding: 8px 12px 8px 24px;
   border-radius: 4px;
   cursor: pointer;
   background-color: ${({theme, $isActive}) =>
@@ -56,57 +64,85 @@ const SidebarItem = styled(Text)<{readonly $isActive?: boolean}>`
   }
 `;
 
+const StyleguideSidebarSection: React.FC<{
+  readonly title: string;
+  readonly sectionIds: StyleguideStoryGroupId[];
+  readonly activeSectionId: StyleguideStoryGroupId;
+  readonly setActiveSectionId: (sectionId: StyleguideStoryGroupId) => void;
+}> = ({title, sectionIds, activeSectionId, setActiveSectionId}) => {
+  return (
+    <FlexColumn gap={4}>
+      <SidebarCategory>{title}</SidebarCategory>
+      {sectionIds.map((sectionId) => {
+        const section = Styleguide.getSectionById(sectionId);
+        return (
+          <SidebarItem
+            key={section.storyGroupId}
+            $isActive={activeSectionId === section.storyGroupId}
+            onClick={() => setActiveSectionId(section.storyGroupId)}
+          >
+            {section.title}
+          </SidebarItem>
+        );
+      })}
+    </FlexColumn>
+  );
+};
+
 const StyleguideSidebar: React.FC<{
-  readonly activeSectionId: StyleguideSectionId;
-  readonly setActiveSectionId: (sectionId: StyleguideSectionId) => void;
+  readonly activeSectionId: StyleguideStoryGroupId;
+  readonly setActiveSectionId: (sectionId: StyleguideStoryGroupId) => void;
 }> = ({activeSectionId, setActiveSectionId}) => {
   return (
     <StyleguideSidebarWrapper>
       <Text as="h2" bold>
         Styleguide
       </Text>
-      <FlexColumn gap={4} style={{marginTop: 20}}>
-        {Styleguide.getOrderedSectionIds().map((sidebarSectionId) => (
-          <SidebarItem
-            key={sidebarSectionId}
-            $isActive={activeSectionId === sidebarSectionId}
-            onClick={() => setActiveSectionId(sidebarSectionId)}
-          >
-            {Styleguide.getSectionById(sidebarSectionId).title}
-          </SidebarItem>
-        ))}
+      <FlexColumn gap={16}>
+        <StyleguideSidebarSection
+          title="Atomic components"
+          sectionIds={Styleguide.getOrderedAtomicComponentIds()}
+          activeSectionId={activeSectionId}
+          setActiveSectionId={setActiveSectionId}
+        />
+        <StyleguideSidebarSection
+          title="Content viewers"
+          sectionIds={Styleguide.getOrderedContentViewerIds()}
+          activeSectionId={activeSectionId}
+          setActiveSectionId={setActiveSectionId}
+        />
       </FlexColumn>
     </StyleguideSidebarWrapper>
   );
 };
 
-const StyleguideSectionStoriesContent: React.FC<{readonly sectionId: StyleguideSectionId}> = ({
+const StyleguideStoryGroupContent: React.FC<{readonly sectionId: StyleguideStoryGroupId}> = ({
   sectionId,
 }) => {
   switch (sectionId) {
-    case StyleguideSectionId.Button:
+    case StyleguideStoryGroupId.Button:
       return <ButtonStories />;
-    case StyleguideSectionId.ButtonIcon:
+    case StyleguideStoryGroupId.ButtonIcon:
       return <ButtonIconStories />;
-    case StyleguideSectionId.Dialog:
+    case StyleguideStoryGroupId.Dialog:
       return <DialogStories />;
-    case StyleguideSectionId.Divider:
+    case StyleguideStoryGroupId.Divider:
       return <DividerStories />;
-    case StyleguideSectionId.Flex:
+    case StyleguideStoryGroupId.Flex:
       return <FlexStories />;
-    case StyleguideSectionId.Input:
+    case StyleguideStoryGroupId.Input:
       return <InputStories />;
-    case StyleguideSectionId.Link:
+    case StyleguideStoryGroupId.Link:
       return <LinkStories />;
-    case StyleguideSectionId.Spacer:
+    case StyleguideStoryGroupId.Spacer:
       return <SpacerStories />;
-    case StyleguideSectionId.TextIcon:
+    case StyleguideStoryGroupId.TextIcon:
       return <TextIconStories />;
-    case StyleguideSectionId.Toast:
+    case StyleguideStoryGroupId.Toast:
       return <ToastStories />;
-    case StyleguideSectionId.Tooltip:
+    case StyleguideStoryGroupId.Tooltip:
       return <TooltipStories />;
-    case StyleguideSectionId.Typography:
+    case StyleguideStoryGroupId.Typography:
       return <TypographyStories />;
     default: {
       assertNever(sectionId);
@@ -114,25 +150,25 @@ const StyleguideSectionStoriesContent: React.FC<{readonly sectionId: StyleguideS
   }
 };
 
-const StyleguideSectionContent: React.FC<{readonly sectionId: StyleguideSectionId}> = ({
+const StyleguideStoryGroup: React.FC<{readonly sectionId: StyleguideStoryGroupId}> = ({
   sectionId,
 }) => {
   const sectionConfig = Styleguide.getSectionById(sectionId);
   return (
-    <StyleguideSectionContentWrapper>
+    <StyleguideStoryGroupWrapper>
       <Text as="h1" bold>
         {sectionConfig.title}
       </Text>
       <FlexColumn gap={40}>
-        <StyleguideSectionStoriesContent sectionId={sectionId} />
+        <StyleguideStoryGroupContent sectionId={sectionId} />
       </FlexColumn>
-    </StyleguideSectionContentWrapper>
+    </StyleguideStoryGroupWrapper>
   );
 };
 
 export const StyleguideScreen: React.FC = () => {
-  const [activeSectionId, setActiveSectionId] = useState<StyleguideSectionId>(
-    DEFAULT_STYLEGUIDE_SECTION_ID
+  const [activeSectionId, setActiveSectionId] = useState<StyleguideStoryGroupId>(
+    DEFAULT_STYLEGUIDE_STORY_GROUP_ID
   );
 
   return (
@@ -141,7 +177,7 @@ export const StyleguideScreen: React.FC = () => {
         activeSectionId={activeSectionId}
         setActiveSectionId={setActiveSectionId}
       />
-      <StyleguideSectionContent sectionId={activeSectionId} />
+      <StyleguideStoryGroup sectionId={activeSectionId} />
     </StyleguideWrapper>
   );
 };
