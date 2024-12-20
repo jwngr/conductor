@@ -9,7 +9,7 @@ import {assertNever} from '@shared/lib/utils';
 import {FeedItem, FeedItemId, FeedItemType} from '@shared/types/feedItems.types';
 import {SystemTagId} from '@shared/types/tags.types';
 
-import {useDevToolbarStore} from '@shared/stores/devToolbarStore';
+import {useDevToolbarStore} from '@shared/stores/DevToolbarStore';
 
 import {AppHeader} from '@src/components/AppHeader';
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@src/components/atoms/Dialog';

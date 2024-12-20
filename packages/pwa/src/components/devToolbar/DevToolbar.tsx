@@ -3,7 +3,7 @@ import {styled} from 'styled-components';
 
 import {ThemeColor} from '@shared/types/theme.types';
 
-import {useDevToolbarStore} from '@shared/stores/devToolbarStore';
+import {useDevToolbarStore} from '@shared/stores/DevToolbarStore';
 
 import {Button, ButtonVariant} from '@src/components/atoms/Button';
 import {Divider} from '@src/components/atoms/Divider';
