@@ -26,7 +26,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   }
 
   componentDidCatch(error: unknown, info: {componentStack: string}): void {
-    const safeError = upgradeUnknownError(error);
+    const safeError = upgradeUnknownError(error, 'Caught error in ErrorBoundary');
     this.props.onError?.(safeError, info.componentStack);
   }
 

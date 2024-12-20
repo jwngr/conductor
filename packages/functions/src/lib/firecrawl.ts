@@ -1,12 +1,11 @@
 import FirecrawlApp from '@mendable/firecrawl-js';
-import {logger} from 'firebase-functions';
 import {defineString} from 'firebase-functions/params';
 import {onInit} from 'firebase-functions/v2/core';
 
-import {asyncTry} from '@shared/lib/errors';
+import {asyncTry, prefixError} from '@shared/lib/errors';
 
 import {ParsedFirecrawlData, RawFirecrawlResponse} from '@shared/types/firecrawl.types';
-import {AsyncResult, makeSuccessResult} from '@shared/types/result.types';
+import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 
 const FIRECRAWL_API_KEY = defineString('FIRECRAWL_API_KEY');
 
@@ -20,29 +19,28 @@ onInit(() => {
 // 2. Outgoing links referenced by the content (stored in Firestore).
 export async function fetchFirecrawlData(url: string): AsyncResult<ParsedFirecrawlData> {
   const rawFirecrawlResult = await asyncTry<RawFirecrawlResponse>(async () => {
-    const firecrawlScrapeUrl = await firecrawlApp.scrapeUrl(url, {
+    const firecrawlScrapeUrlResult = await firecrawlApp.scrapeUrl(url, {
       formats: ['markdown', 'links'],
       waitFor: 1000,
     });
-    if (!firecrawlScrapeUrl.success) {
-      throw new Error(firecrawlScrapeUrl.error);
+    if (!firecrawlScrapeUrlResult.success) {
+      throw new Error(firecrawlScrapeUrlResult.error);
     }
-    return firecrawlScrapeUrl as RawFirecrawlResponse;
+    return firecrawlScrapeUrlResult as RawFirecrawlResponse;
   });
 
   if (!rawFirecrawlResult.success) {
-    logger.error('Error fetching Firecrawl data', {error: rawFirecrawlResult.error, url});
-    return rawFirecrawlResult;
+    return makeErrorResult(prefixError(rawFirecrawlResult.error, 'Error fetching Firecrawl data'));
   }
 
   const rawFirecrawlData = rawFirecrawlResult.value;
 
   // Some fields should always be present. Report them, but still allow the import to continue.
   if (!rawFirecrawlData.markdown) {
-    logger.error('No markdown found in Firecrawl result');
+    return makeErrorResult(new Error('Error fetching Firecrawl data: No markdown found.'));
   }
   if (!rawFirecrawlData.links) {
-    logger.error('No links found in Firecrawl result');
+    return makeErrorResult(new Error('Error fetching Firecrawl data: No links found.'));
   }
 
   return makeSuccessResult({

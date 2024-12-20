@@ -54,11 +54,8 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
       userId: importQueueItem.userId,
     } as const;
 
-    const handleError = async (errorMessage: string, errorDetails: Record<string, unknown>) => {
-      logger.error(errorMessage, {
-        ...logDetails,
-        ...errorDetails,
-      });
+    const handleError = async (errorPrefix: string, error: Error) => {
+      logger.error(`${errorPrefix}: ${error.message}`, logDetails);
       await updateImportQueueItem(importQueueItemId, {status: ImportQueueItemStatus.Failed});
     };
 
@@ -68,7 +65,7 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
       status: ImportQueueItemStatus.Processing,
     });
     if (!claimItemResult.success) {
-      await handleError('Failed to claim import queue item', {error: claimItemResult.error});
+      await handleError('Failed to claim import queue item', claimItemResult.error);
       return;
     }
 
@@ -76,7 +73,7 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
     logger.info(`[IMPORT] Importing queue item...`, logDetails);
     const importItemResult = await importFeedItem(importQueueItem);
     if (!importItemResult.success) {
-      await handleError('Error importing queue item', {error: importItemResult.error});
+      await handleError('Error importing queue item', importItemResult.error);
       return;
     }
 
@@ -84,7 +81,7 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
     logger.info(`[IMPORT] Deleting import queue item...`, logDetails);
     const deleteItemResult = await deleteImportQueueItem(importQueueItemId);
     if (!deleteItemResult.success) {
-      await handleError('Error deleting import queue item', {error: deleteItemResult.error});
+      await handleError('Error deleting import queue item', deleteItemResult.error);
       return;
     }
 

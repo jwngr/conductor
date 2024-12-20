@@ -46,7 +46,11 @@ export async function unsubscribeFromFeedSubscriptionsForUser(userId: UserId): A
   const subscriptionQuerySnapshot = subscriptionQuerySnapshotResult.value;
 
   const allUnsubscribeResults: AsyncResult<void>[] = subscriptionQuerySnapshot.docs.map(
-    (doc: DocumentSnapshot) => unsubscribeFromFeedSubscription(doc.data() as FeedSubscription)
+    (doc: DocumentSnapshot) => {
+      const feedSubscription = doc.data() as FeedSubscription;
+      logger.info(`Unsubscribing from feed subscription ${feedSubscription.feedSubscriptionId}...`);
+      return unsubscribeFromFeedSubscription(feedSubscription);
+    }
   );
 
   return batchAsyncResults(allUnsubscribeResults, 3);
@@ -58,6 +62,7 @@ export async function unsubscribeFromFeedSubscriptionsForUser(userId: UserId): A
 async function unsubscribeFromFeedSubscription(
   feedSubscription: FeedSubscription
 ): AsyncResult<void> {
-  logger.info(`Unsubscribing from feed subscription ${feedSubscription.feedSubscriptionId}...`);
-  return makeErrorResult(new Error(`TODO: Unsubscribing not yet implemented`));
+  return makeErrorResult(
+    new Error(`TODO: Unsubscribing not yet implemented for ${feedSubscription.feedSubscriptionId}`)
+  );
 }
