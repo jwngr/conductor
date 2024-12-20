@@ -10,7 +10,6 @@ import {
   deleteFeedSubscriptionsDocsForUser,
   fetchFeedSubscriptionsForUser,
   unsubscribeFromFeedSubscriptions,
-  unsubscribeFromFeedSubscriptionsForUser,
 } from '@src/lib/feedSubscriptions';
 import {deleteImportQueueDocsForUser} from '@src/lib/importQueue';
 import {deleteUsersDocForUser} from '@src/lib/users';
