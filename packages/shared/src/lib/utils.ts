@@ -1,5 +1,5 @@
 import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import {Func} from '@shared/types/utils.types';
+import {Func, Supplier} from '@shared/types/utils.types';
 
 /**
  * Formats a number with commas.
@@ -33,26 +33,29 @@ export function filterUndefined<T>(arr: Array<T | undefined>): T[] {
   return arr.filter(Boolean) as T[];
 }
 
+type UnknownAsyncResultSupplier = Supplier<AsyncResult<unknown>>;
+
 /**
- * Runs all of the provided `AsyncTask`s in batches of a given size. If the number of tasks is less
- * than the batch size, all tasks are run in parallel.
+ * Runs all of the provided async task suppliers in batches of a given size. If the number of tasks is less
+ * than the batch size, all tasks are run in parallel. Tasks are not executed until this function is called.
  */
 export async function batchAsyncResults<T>(
-  asyncResults: Array<AsyncResult<unknown>>,
+  asyncResultSuppliers: UnknownAsyncResultSupplier[],
   batchSize: number
 ): AsyncResult<T> {
   if (batchSize < 1) {
     return makeErrorResult(new Error(`Batch size must be at least 1: ${batchSize}`));
   }
 
-  const resultsPerBatch: Array<Array<AsyncResult<unknown>>> = [];
-  for (let i = 0; i < asyncResults.length; i += batchSize) {
-    resultsPerBatch.push(asyncResults.slice(i, i + batchSize));
+  const resultsPerBatch: UnknownAsyncResultSupplier[][] = [];
+  for (let i = 0; i < asyncResultSuppliers.length; i += batchSize) {
+    resultsPerBatch.push(asyncResultSuppliers.slice(i, i + batchSize));
   }
 
   const allResults: unknown[] = [];
-  for (const currentResults of resultsPerBatch) {
-    allResults.push(...(await Promise.all(currentResults)));
+  for (const currentSuppliers of resultsPerBatch) {
+    const currentResults = await Promise.all(currentSuppliers.map((supplier) => supplier()));
+    allResults.push(...currentResults);
   }
   return makeSuccessResult(allResults as T);
 }

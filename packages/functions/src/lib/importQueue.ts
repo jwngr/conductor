@@ -1,9 +1,9 @@
 import {DocumentSnapshot} from 'firebase-admin/firestore';
-import {logger} from 'firebase-functions';
 
 import {IMPORT_QUEUE_DB_COLLECTION} from '@shared/lib/constants';
-import {asyncTryAll} from '@shared/lib/errors';
+import {asyncTryAll, prefixError} from '@shared/lib/errors';
 
+import {FeedItemId} from '@shared/types/feedItems.types';
 import {ParsedFirecrawlData} from '@shared/types/firecrawl.types';
 import {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue.types';
 import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
@@ -29,47 +29,96 @@ import {fetchRawHtml} from '@src/lib/scraper';
  * Imports a feed item, pulling in the raw HTML and LLM context.
  */
 export async function importFeedItem(importQueueItem: ImportQueueItem): AsyncResult<void> {
-  // Fetch in parallel.
-  const fetchDataResult = await asyncTryAll<[string, ParsedFirecrawlData]>([
-    fetchRawHtml(importQueueItem.url),
-    fetchFirecrawlData(importQueueItem.url),
+  const importAllDataResult = await asyncTryAll<[string, ParsedFirecrawlData]>([
+    importFeedItemHtml({
+      url: importQueueItem.url,
+      feedItemId: importQueueItem.feedItemId,
+      userId: importQueueItem.userId,
+    }),
+    importFeedItemFirecrawl({
+      url: importQueueItem.url,
+      feedItemId: importQueueItem.feedItemId,
+      userId: importQueueItem.userId,
+    }),
   ]);
-  if (!fetchDataResult.success) {
-    const errors = fetchDataResult.error;
-    errors.forEach((error) => {
-      logger.error(`[IMPORT] Error fetching raw feed item data`, {
-        error,
-      });
-    });
-    return makeErrorResult(errors[0]);
+
+  if (!importAllDataResult.success) {
+    return makeErrorResult(
+      // TODO: This indexing into errors array is a bit awkward.
+      prefixError(importAllDataResult.error[0], 'Error importing feed item')
+    );
   }
 
-  const [rawHtml, firecrawlData] = fetchDataResult.value;
+  return makeSuccessResult(undefined);
+}
 
-  // Save in parallel.
-  const saveDataResult = await asyncTryAll<[undefined, undefined, undefined]>([
-    saveRawHtmlToStorage({
-      feedItemId: importQueueItem.feedItemId,
-      userId: importQueueItem.userId,
-      rawHtml,
-    }),
+/**
+ * Imports a feed item's HTML and saves it to storage.
+ */
+export async function importFeedItemHtml(args: {
+  readonly url: string;
+  readonly feedItemId: FeedItemId;
+  readonly userId: UserId;
+}): AsyncResult<void> {
+  const {url, feedItemId, userId} = args;
+
+  const fetchDataResult = await fetchRawHtml(url);
+
+  if (!fetchDataResult.success) {
+    return makeErrorResult(prefixError(fetchDataResult.error, 'Error fetching raw feed item HTML'));
+  }
+
+  const rawHtml = fetchDataResult.value;
+
+  const saveHtmlResult = await saveRawHtmlToStorage({feedItemId, userId, rawHtml});
+
+  if (!saveHtmlResult.success) {
+    return makeErrorResult(prefixError(saveHtmlResult.error, 'Error saving feed item HTML'));
+  }
+
+  return makeSuccessResult(undefined);
+}
+
+/**
+ * Imports a feed item's Firecrawl data and saves it to storage.
+ */
+export async function importFeedItemFirecrawl(args: {
+  readonly url: string;
+  readonly feedItemId: FeedItemId;
+  readonly userId: UserId;
+}): AsyncResult<void> {
+  const {url, feedItemId, userId} = args;
+
+  const fetchDataResult = await fetchFirecrawlData(url);
+
+  if (!fetchDataResult.success) {
+    return makeErrorResult(
+      prefixError(fetchDataResult.error, 'Error fetching Firecrawl data for feed item')
+    );
+  }
+
+  const firecrawlData = fetchDataResult.value;
+
+  const saveFirecrawlDataResult = await asyncTryAll<[undefined, undefined, undefined]>([
     saveMarkdownToStorage({
-      feedItemId: importQueueItem.feedItemId,
-      userId: importQueueItem.userId,
+      feedItemId: feedItemId,
+      userId: userId,
       markdown: firecrawlData.markdown,
     }),
-    updateImportedFeedItemInFirestore(importQueueItem.feedItemId, {
+    updateImportedFeedItemInFirestore(feedItemId, {
       links: firecrawlData.links,
       title: firecrawlData.title,
       description: firecrawlData.description,
     }),
   ]);
-  if (!saveDataResult.success) {
-    saveDataResult.error.forEach((currentError) => {
-      logger.error(`[IMPORT] Error saving imported feed item data`, {error: currentError});
-    });
-    return makeErrorResult(saveDataResult.error[0]);
+
+  if (!saveFirecrawlDataResult.success) {
+    return makeErrorResult(
+      // TODO: This indexing into errors array is a bit awkward.
+      prefixError(saveFirecrawlDataResult.error[0], 'Error saving Firecrawl data for feed item')
+    );
   }
+
   return makeSuccessResult(undefined);
 }
 

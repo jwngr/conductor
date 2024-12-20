@@ -8,7 +8,8 @@ import {UserId} from '@shared/types/user.types';
 import {deleteFeedItemDocsForUsers, deleteStorageFilesForUser} from '@src/lib/feedItems.func';
 import {
   deleteFeedSubscriptionsDocsForUser,
-  unsubscribeFromFeedSubscriptionsForUser,
+  fetchFeedSubscriptionsForUser,
+  unsubscribeFromFeedSubscriptions,
 } from '@src/lib/feedSubscriptions';
 import {deleteImportQueueDocsForUser} from '@src/lib/importQueue';
 import {deleteUsersDocForUser} from '@src/lib/users';
@@ -22,14 +23,35 @@ export async function wipeoutUser(userId: UserId): AsyncResult<void> {
 
   const logDetails = {userId} as const;
 
-  logger.info('[WIPEOUT] Unsubscribing from feed subscriptions...', logDetails);
-  const unsubscribeResult = await unsubscribeFromFeedSubscriptionsForUser(userId);
-  if (!unsubscribeResult.success) {
-    logger.error(`[WIPEOUT] Failed to unsubscribe from feed subscriptions`, {
-      error: unsubscribeResult.error,
+  logger.info(`[WIPEOUT] Fetching feed subscriptions for user ${userId}...`, logDetails);
+  const feedSubscriptionsForUserResult = await fetchFeedSubscriptionsForUser(userId);
+  if (!feedSubscriptionsForUserResult.success) {
+    logger.error(`[WIPEOUT] Failed to fetch feed subscriptions for user`, {
+      error: feedSubscriptionsForUserResult.error,
       ...logDetails,
     });
-    wasSuccessful = false;
+    return feedSubscriptionsForUserResult;
+  }
+  const feedSubscriptionsForUser = feedSubscriptionsForUserResult.value;
+
+  const feedSubscriptionIds = feedSubscriptionsForUser.map(
+    (feedSubscription) => feedSubscription.feedSubscriptionId
+  );
+
+  logger.info(
+    `[WIPEOUT] Unsubscribing user ${userId} from ${feedSubscriptionsForUser.length} feed subscriptions`,
+    {feedSubscriptionIds, ...logDetails}
+  );
+
+  const unsubscribeFromFeedSubscriptionsResult =
+    await unsubscribeFromFeedSubscriptions(feedSubscriptionsForUser);
+  if (!unsubscribeFromFeedSubscriptionsResult.success) {
+    logger.error(`[WIPEOUT] Failed to unsubscribe from feed subscriptions for user`, {
+      error: unsubscribeFromFeedSubscriptionsResult.error,
+      feedSubscriptionIds,
+      ...logDetails,
+    });
+    return unsubscribeFromFeedSubscriptionsResult;
   }
 
   logger.info('[WIPEOUT] Wiping out Cloud Storage files for user...', logDetails);

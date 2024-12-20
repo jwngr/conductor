@@ -16,7 +16,7 @@ import {Supplier} from '@shared/types/utils.types';
 export function upgradeUnknownError(unknownError: unknown): Error {
   const defaultErrorMessage = 'An unexpected error occurred';
   if (unknownError instanceof Error) {
-    return new Error(`${unknownError.message || defaultErrorMessage}`, {cause: unknownError});
+    return new Error(unknownError.message || defaultErrorMessage, {cause: unknownError});
   }
   if (typeof unknownError === 'string' && unknownError.length > 0) {
     return new Error(unknownError, {cause: unknownError});
@@ -26,6 +26,13 @@ export function upgradeUnknownError(unknownError: unknown): Error {
     `Expected error, but caught \`${String(unknownError)}\` (${typeof unknownError})`,
     {cause: unknownError}
   );
+}
+
+/**
+ * Adds a prefix to the error message for a known `Error`.
+ */
+export function prefixError(error: Error, prefix: string): Error {
+  return new Error(`${prefix}: ${error.message}`, {cause: error});
 }
 
 /**
