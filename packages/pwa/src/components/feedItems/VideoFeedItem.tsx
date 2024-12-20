@@ -2,6 +2,7 @@ import React from 'react';
 
 import {VideoFeedItem} from '@shared/types/feedItems.types';
 
+import {Text} from '@src/components/atoms/Text';
 import {FeedItemHeader, FeedItemWrapper} from '@src/components/feedItems/FeedItem';
 
 export const VideoFeedItemComponent: React.FC<{readonly feedItem: VideoFeedItem}> = ({
@@ -10,7 +11,7 @@ export const VideoFeedItemComponent: React.FC<{readonly feedItem: VideoFeedItem}
   return (
     <FeedItemWrapper>
       <FeedItemHeader feedItem={feedItem} />
-      <pre>{JSON.stringify(feedItem, null, 2)}</pre>
+      <Text as="p">TODO</Text>
     </FeedItemWrapper>
   );
 };

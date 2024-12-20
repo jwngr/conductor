@@ -11,8 +11,6 @@ export const TweetFeedItemComponent: React.FC<{readonly feedItem: TweetFeedItem}
   return (
     <FeedItemWrapper>
       <FeedItemHeader feedItem={feedItem} />
-      <pre>{JSON.stringify(feedItem, null, 2)}</pre>
-      <br />
       <FeedItemMarkdown feedItem={feedItem} />
     </FeedItemWrapper>
   );

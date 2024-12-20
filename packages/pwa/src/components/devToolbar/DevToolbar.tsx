@@ -1,8 +1,12 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {styled} from 'styled-components';
 
+import {ThemeColor} from '@shared/types/theme.types';
+
+import {useDevToolbarStore} from '@shared/stores/DevToolbarStore';
+
+import {Button, ButtonVariant} from '@src/components/atoms/Button';
 import {Divider} from '@src/components/atoms/Divider';
-import {DialogTester} from '@src/components/devToolbar/DialogTester';
 import {FeedItemImportTester} from '@src/components/devToolbar/FeedItemImportTester';
 
 import {IS_DEVELOPMENT} from '@src/lib/environment.pwa';
@@ -11,9 +15,8 @@ const DevToolbarWrapper = styled.div<{readonly $isOpen: boolean}>`
   position: fixed;
   bottom: 16px;
   right: 16px;
-  background-color: ${({theme, $isOpen}) =>
-    $isOpen ? theme.colors.surface : theme.colors.primary};
-  border-radius: ${({$isOpen}) => ($isOpen ? '12px' : '999px')};
+  background-color: ${({theme}) => theme.colors[ThemeColor.Neutral100]};
+  border-radius: ${({$isOpen}) => ($isOpen ? '12px' : '100%')};
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   border: 2px solid ${({theme}) => theme.colors.border};
   cursor: ${({$isOpen}) => ($isOpen ? 'default' : 'pointer')};
@@ -44,6 +47,8 @@ export interface DevToolbarProps {
 export function DevToolbar({isVisible = true}: DevToolbarProps): JSX.Element | null {
   const [isOpen, setIsOpen] = useState(false);
   const toolbarRef = useRef<HTMLDivElement>(null);
+
+  const additionalActions = useDevToolbarStore((state) => state.actions);
 
   // Close the toolbar if the user clicks outside of it.
   useEffect(() => {
@@ -86,8 +91,12 @@ export function DevToolbar({isVisible = true}: DevToolbarProps): JSX.Element | n
       </BugEmoji>
       <DevToolbarContent $isOpen={isOpen}>
         <FeedItemImportTester />
-        <Divider />
-        <DialogTester />
+        {additionalActions.length > 0 && <Divider />}
+        {additionalActions.map((action) => (
+          <Button key={action.actionId} variant={ButtonVariant.Secondary} onClick={action.onClick}>
+            {action.text}
+          </Button>
+        ))}
       </DevToolbarContent>
     </DevToolbarWrapper>
   );
