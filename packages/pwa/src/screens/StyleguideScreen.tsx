@@ -12,6 +12,7 @@ import {ThemeColor} from '@shared/types/theme.types';
 
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
+import {MarkdownStories} from '@src/components/Markdown.stories';
 import {ButtonStories} from '@src/components/styleguide/Button.stories';
 import {ButtonIconStories} from '@src/components/styleguide/ButtonIcon.stories';
 import {DialogStories} from '@src/components/styleguide/Dialog.stories';
@@ -34,11 +35,13 @@ const StyleguideWrapper = styled(FlexRow)`
 const StyleguideSidebarWrapper = styled(FlexColumn).attrs({gap: 20})`
   width: 240px;
   height: 100%;
+  overflow: auto;
   padding: 20px;
   border-right: 1px solid ${({theme}) => theme.colors[ThemeColor.Neutral300]};
 `;
 
 const StyleguideStoryGroupWrapper = styled(FlexColumn).attrs({gap: 32})`
+  flex: 1;
   height: 100%;
   padding: 20px;
   overflow: auto;
@@ -144,6 +147,8 @@ const StyleguideStoryGroupContent: React.FC<{readonly sectionId: StyleguideStory
       return <TooltipStories />;
     case StyleguideStoryGroupId.Typography:
       return <TypographyStories />;
+    case StyleguideStoryGroupId.MarkdownContentViewer:
+      return <MarkdownStories />;
     default: {
       assertNever(sectionId);
     }

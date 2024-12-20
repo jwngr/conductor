@@ -11,6 +11,7 @@ export enum StyleguideStoryGroupId {
   Toast = 'TOAST',
   Tooltip = 'TOOLTIP',
   Typography = 'TYPOGRAPHY',
+  MarkdownContentViewer = 'MARKDOWN_CONTENT_VIEWER',
 }
 
 export const DEFAULT_STYLEGUIDE_STORY_GROUP_ID = StyleguideStoryGroupId.Typography;
@@ -69,6 +70,10 @@ const STYLEGUIDE_STORY_GROUPS_BY_ID: Record<StyleguideStoryGroupId, StyleguideSt
     storyGroupId: StyleguideStoryGroupId.Typography,
     title: 'Typography',
   },
+  [StyleguideStoryGroupId.MarkdownContentViewer]: {
+    storyGroupId: StyleguideStoryGroupId.MarkdownContentViewer,
+    title: 'Markdown',
+  },
 };
 
 const ORDERED_ATOMIC_COMPONENT_STORY_GROUP_IDS: StyleguideStoryGroupId[] = [
@@ -86,7 +91,9 @@ const ORDERED_ATOMIC_COMPONENT_STORY_GROUP_IDS: StyleguideStoryGroupId[] = [
   StyleguideStoryGroupId.Spacer,
 ];
 
-const ORDERED_CONTENT_VIEWER_STORY_GROUP_IDS: StyleguideStoryGroupId[] = [];
+const ORDERED_CONTENT_VIEWER_STORY_GROUP_IDS: StyleguideStoryGroupId[] = [
+  StyleguideStoryGroupId.MarkdownContentViewer,
+];
 
 export class Styleguide {
   public static getSectionById(storyGroupId: StyleguideStoryGroupId): StyleguideStoryGroup {
