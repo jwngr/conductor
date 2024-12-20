@@ -7,6 +7,7 @@ import {batchAsyncResults} from '@shared/lib/utils';
 import {FeedSubscription} from '@shared/types/feedSubscriptions.types';
 import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import {UserId} from '@shared/types/user.types';
+import {Supplier} from '@shared/types/utils.types';
 
 import {
   batchDeleteFirestoreDocuments,
@@ -60,10 +61,12 @@ export async function fetchFeedSubscriptionsForUser(
 export async function unsubscribeFromFeedSubscriptions(
   feedSubscriptions: FeedSubscription[]
 ): AsyncResult<void> {
-  const allUnsubscribeResults: AsyncResult<void>[] = feedSubscriptions.map((feedSubscription) => {
-    logger.info(`Unsubscribing from feed subscription ${feedSubscription.feedSubscriptionId}...`);
-    return unsubscribeFromFeedSubscription(feedSubscription);
-  });
+  const allUnsubscribeResults: Supplier<AsyncResult<void>>[] = feedSubscriptions.map(
+    (feedSubscription) => {
+      logger.info(`Unsubscribing from feed subscription ${feedSubscription.feedSubscriptionId}...`);
+      return () => unsubscribeFromFeedSubscription(feedSubscription);
+    }
+  );
 
   const batchSize = 3;
   return batchAsyncResults(allUnsubscribeResults, batchSize);
