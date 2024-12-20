@@ -5,7 +5,7 @@ import {FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants';
 import {batchAsyncResults} from '@shared/lib/utils';
 
 import {FeedSubscription} from '@shared/types/feedSubscriptions.types';
-import {AsyncResult, makeErrorResult} from '@shared/types/result.types';
+import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import {UserId} from '@shared/types/user.types';
 
 import {
@@ -33,9 +33,11 @@ export async function deleteFeedSubscriptionsDocsForUser(userId: UserId): AsyncR
 }
 
 /**
- * Unsubscribes from all feed subscriptions associated with a user.
+ * Fetches all feed subscriptions associated with a user.
  */
-export async function unsubscribeFromFeedSubscriptionsForUser(userId: UserId): AsyncResult<void> {
+export async function fetchFeedSubscriptionsForUser(
+  userId: UserId
+): AsyncResult<FeedSubscription[]> {
   const subscriptionQuerySnapshotResult = await getFirestoreQuerySnapshot(
     firestore.collection(FEED_SUBSCRIPTIONS_DB_COLLECTION).where('userId', '==', userId)
   );
@@ -45,19 +47,32 @@ export async function unsubscribeFromFeedSubscriptionsForUser(userId: UserId): A
   }
   const subscriptionQuerySnapshot = subscriptionQuerySnapshotResult.value;
 
-  const allUnsubscribeResults: AsyncResult<void>[] = subscriptionQuerySnapshot.docs.map(
-    (doc: DocumentSnapshot) => {
-      const feedSubscription = doc.data() as FeedSubscription;
-      logger.info(`Unsubscribing from feed subscription ${feedSubscription.feedSubscriptionId}...`);
-      return unsubscribeFromFeedSubscription(feedSubscription);
-    }
+  const feedSubscriptionsForUserResult: FeedSubscription[] = subscriptionQuerySnapshot.docs.map(
+    (doc) => doc.data() as FeedSubscription
   );
 
-  return batchAsyncResults(allUnsubscribeResults, 3);
+  return makeSuccessResult(feedSubscriptionsForUserResult);
+}
+
+/**
+ * Unsubscribes from the provided feed subscriptions in batches.
+ */
+export async function unsubscribeFromFeedSubscriptions(
+  feedSubscriptions: FeedSubscription[]
+): AsyncResult<void> {
+  const allUnsubscribeResults: AsyncResult<void>[] = feedSubscriptions.map((feedSubscription) => {
+    logger.info(`Unsubscribing from feed subscription ${feedSubscription.feedSubscriptionId}...`);
+    return unsubscribeFromFeedSubscription(feedSubscription);
+  });
+
+  const batchSize = 3;
+  return batchAsyncResults(allUnsubscribeResults, batchSize);
 }
 
 /**
  * Unsubscribes from an individual feed subscription.
+ *
+ * TODO: Implement feed subscription unsubscribing.
  */
 async function unsubscribeFromFeedSubscription(
   feedSubscription: FeedSubscription
