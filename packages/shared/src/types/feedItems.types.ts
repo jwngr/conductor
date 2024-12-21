@@ -1,11 +1,13 @@
 import {FieldValue} from 'firebase/firestore';
 
-import {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
+import {makeId} from '@shared/lib/utils';
+
 import {IconName} from '@shared/types/icons.types';
 import {makeErrorResult, makeSuccessResult, Result} from '@shared/types/result.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {TagId} from '@shared/types/tags.types';
 import {UserId} from '@shared/types/user.types';
+import {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import {BaseStoreItem, Timestamp} from '@shared/types/utils.types';
 
 /**
@@ -24,7 +26,7 @@ export function isFeedItemId(maybeFeedItemId: unknown): maybeFeedItemId is FeedI
  * Converts a plain string into a strongly-typed `FeedItemId`. Returns an error if the string is
  * not a valid `FeedItemId`.
  */
-export function makeFeedItemId(maybeFeedItemId: string): Result<FeedItemId> {
+export function makeFeedItemId(maybeFeedItemId: string = makeId()): Result<FeedItemId> {
   if (!isFeedItemId(maybeFeedItemId)) {
     return makeErrorResult(new Error(`Invalid feed item ID: "${maybeFeedItemId}"`));
   }
@@ -74,13 +76,15 @@ export const FEED_ITEM_APP_SOURCE: FeedItemAppSource = {
 
 interface FeedItemRSSSource {
   readonly type: FeedItemSourceType.RSS;
-  readonly feedSubscriptionId: FeedSubscriptionId;
+  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
 }
 
-export function makeFeedItemRSSSource(feedSubscriptionId: FeedSubscriptionId): FeedItemRSSSource {
+export function makeFeedItemRSSSource(
+  userFeedSubscriptionId: UserFeedSubscriptionId
+): FeedItemRSSSource {
   return {
     type: FeedItemSourceType.RSS,
-    feedSubscriptionId,
+    userFeedSubscriptionId: userFeedSubscriptionId,
   };
 }
 
@@ -162,6 +166,7 @@ export enum FeedItemActionType {
 
 export interface FeedItemAction {
   readonly type: FeedItemActionType;
+  // TODO: Should this have `feedId` on it? Should it be optional?
   readonly text: string;
   readonly icon: IconName;
   readonly shortcutId: KeyboardShortcutId;

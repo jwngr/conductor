@@ -15,20 +15,19 @@ import {
 
 import {asyncTry} from '@shared/lib/errors';
 import {logger} from '@shared/lib/logger';
-import {makeId} from '@shared/lib/utils';
 
 import {
   EventId,
   EventLogItem,
   EventType,
   FeedItemActionEventLogItem,
-  FeedSubscriptionEventLogItem,
   makeEventId,
+  UserFeedSubscriptionEventLogItem,
 } from '@shared/types/eventLog.types';
 import {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
-import {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
 import {AsyncResult, makeSuccessResult, Result} from '@shared/types/result.types';
 import {UserId} from '@shared/types/user.types';
+import {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
 export class EventLogService {
@@ -121,10 +120,10 @@ export class EventLogService {
     return this.logEvent(eventLogItemResult);
   }
 
-  public async logFeedSubscriptionEvent(args: {
-    readonly feedSubscriptionId: FeedSubscriptionId;
+  public async logUserFeedSubscriptionEvent(args: {
+    readonly userFeedSubscriptionId: UserFeedSubscriptionId;
   }): AsyncResult<EventId | null> {
-    const eventLogItemResult = makeFeedSubscriptionEventLogItem({...args, userId: this.userId});
+    const eventLogItemResult = makeUserFeedSubscriptionEventLogItem({...args, userId: this.userId});
     return this.logEvent(eventLogItemResult);
   }
 
@@ -147,7 +146,7 @@ export class EventLogService {
 export function makeEventLogItem<T extends EventLogItem>(
   eventLogItemWithoutId: Omit<T, 'eventId'>
 ): Result<T> {
-  const eventIdResult = makeEventId(makeId());
+  const eventIdResult = makeEventId();
   if (!eventIdResult.success) {
     return eventIdResult;
   }
@@ -171,16 +170,16 @@ export function makeFeedItemActionEventLogItem(args: {
   });
 }
 
-export function makeFeedSubscriptionEventLogItem(args: {
+export function makeUserFeedSubscriptionEventLogItem(args: {
   readonly userId: UserId;
-  readonly feedSubscriptionId: FeedSubscriptionId;
-}): Result<FeedSubscriptionEventLogItem> {
-  const {userId, feedSubscriptionId} = args;
+  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+}): Result<UserFeedSubscriptionEventLogItem> {
+  const {userId, userFeedSubscriptionId} = args;
 
-  return makeEventLogItem<FeedSubscriptionEventLogItem>({
-    eventType: EventType.FeedSubscription,
+  return makeEventLogItem<UserFeedSubscriptionEventLogItem>({
+    eventType: EventType.UserFeedSubscription,
     userId,
-    data: {feedSubscriptionId},
+    data: {userFeedSubscriptionId},
     createdTime: serverTimestamp(),
     lastUpdatedTime: serverTimestamp(),
   });

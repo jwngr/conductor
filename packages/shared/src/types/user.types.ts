@@ -1,5 +1,7 @@
 import {ActionCodeSettings, User as FirebaseUser, UserCredential} from 'firebase/auth';
 
+import {makeId} from '@shared/lib/utils';
+
 import {AsyncResult, makeErrorResult, makeSuccessResult, Result} from '@shared/types/result.types';
 import {Consumer, Func, Supplier, Task} from '@shared/types/utils.types';
 
@@ -18,7 +20,7 @@ export function isValidUserId(maybeUserId: unknown): maybeUserId is UserId {
 /**
  * Creates a `UserId` from a plain string. Returns an error if the string is not a valid `UserId`.
  */
-export function createUserId(maybeUserId: string): Result<UserId> {
+export function makeUserId(maybeUserId: string = makeId()): Result<UserId> {
   if (!isValidUserId(maybeUserId)) {
     return makeErrorResult(new Error(`Invalid user ID: "${maybeUserId}"`));
   }
@@ -72,7 +74,7 @@ export function makeLoggedInUserFromFirebaseUser(
     return makeErrorResult(emailResult.error);
   }
 
-  const userIdResult = createUserId(firebaseLoggedInUser.uid);
+  const userIdResult = makeUserId(firebaseLoggedInUser.uid);
   if (!userIdResult.success) {
     return makeErrorResult(userIdResult.error);
   }
@@ -100,7 +102,7 @@ interface AuthStateChangedCallbacks {
 export interface AuthService {
   getLoggedInUser: Supplier<LoggedInUser | null>;
   onAuthStateChanged: Func<AuthStateChangedCallbacks, AuthStateChangedUnsubscribe>;
-  isSignInWithEmailLink: (url: string) => boolean;
+  isSignInWithEmailLink: Func<string, boolean>;
   signInWithEmailLink: (email: EmailAddress, emailLink: string) => AsyncResult<UserCredential>;
   sendSignInLinkToEmail: (
     email: EmailAddress,

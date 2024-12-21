@@ -1,3 +1,5 @@
+import {makeId} from '@shared/lib/utils';
+
 import {FeedItemId} from '@shared/types/feedItems.types';
 import {makeErrorResult, makeSuccessResult, Result} from '@shared/types/result.types';
 import {UserId} from '@shared/types/user.types';
@@ -22,7 +24,9 @@ export function isImportQueueItemId(
  * Creates an `ImportQueueItemId` from a plain string. Returns an error if the string is not a valid
  * `ImportQueueItemId`.
  */
-export function createImportQueueItemId(maybeImportQueueItemId: string): Result<ImportQueueItemId> {
+export function makeImportQueueItemId(
+  maybeImportQueueItemId: string = makeId()
+): Result<ImportQueueItemId> {
   if (!isImportQueueItemId(maybeImportQueueItemId)) {
     return makeErrorResult(new Error(`Invalid import queue item ID: "${maybeImportQueueItemId}"`));
   }
