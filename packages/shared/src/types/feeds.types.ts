@@ -6,19 +6,31 @@ import {makeErrorResult, makeSuccessResult, Result} from '@shared/types/result.t
 import {BaseStoreItem} from '@shared/types/utils.types';
 
 /**
- * Strongly-typed type for a feed's unique identifier. Prefer this over plain strings.
+ * Strongly-typed type for a {@link Feed}'s unique identifier. Prefer this over plain strings.
  */
 export type FeedId = string & {readonly __brand: 'FeedIdBrand'};
 
 /**
- * Checks if a value is a valid `FeedId`.
+ * A generator of {@link FeedItem}s over time.
+ *
+ * Use the {@link UserFeedSubscription} object to manage user subscriptions to a {@link Feed}. A
+ * feed is created the first time a user subscribes to a unique feed URL.
+ */
+export interface Feed extends BaseStoreItem {
+  readonly feedId: FeedId;
+  readonly url: string;
+  readonly title: string;
+}
+
+/**
+ * Checks if a value is a valid {@link FeedId}.
  */
 export function isFeedId(feedId: unknown): feedId is FeedId {
   return typeof feedId === 'string' && feedId.length > 0;
 }
 
 /**
- * Creates a `FeedId` from a plain string. Returns an error if the string is not a valid `FeedId`.
+ * Creates a {@link FeedId} from a plain string. Returns an error if the string is not valid.
  */
 export function makeFeedId(maybeFeedId: string = makeId()): Result<FeedId> {
   if (!isFeedId(maybeFeedId)) {
@@ -28,7 +40,7 @@ export function makeFeedId(maybeFeedId: string = makeId()): Result<FeedId> {
 }
 
 /**
- * Creates a `Feed` from a URL and title.
+ * Creates a {@link Feed} object.
  */
 export function makeFeed(
   args: Omit<Feed, 'feedId' | 'createdTime' | 'lastUpdatedTime'>
@@ -46,10 +58,4 @@ export function makeFeed(
   };
 
   return makeSuccessResult(feed);
-}
-
-export interface Feed extends BaseStoreItem {
-  readonly feedId: FeedId;
-  readonly url: string;
-  readonly title: string;
 }

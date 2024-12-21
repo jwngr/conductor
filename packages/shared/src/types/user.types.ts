@@ -6,19 +6,19 @@ import {AsyncResult, makeErrorResult, makeSuccessResult, Result} from '@shared/t
 import {Consumer, Func, Supplier, Task} from '@shared/types/utils.types';
 
 /**
- * Strongly-typed type for a user's unique identifier. Prefer this over plain strings.
+ * Strongly-typed type for a `LoggedInUser`'s unique identifier. Prefer this over plain strings.
  */
 export type UserId = string & {readonly __brand: 'UserIdBrand'};
 
 /**
- * Checks if a value is a valid `UserId`.
+ * Checks if a value is a valid {@link UserId}.
  */
 export function isValidUserId(maybeUserId: unknown): maybeUserId is UserId {
   return typeof maybeUserId === 'string' && maybeUserId.length > 0;
 }
 
 /**
- * Creates a `UserId` from a plain string. Returns an error if the string is not a valid `UserId`.
+ * Creates a {@link UserId} from a plain string. Returns an error if the string is not valid.
  */
 export function makeUserId(maybeUserId: string = makeId()): Result<UserId> {
   if (!isValidUserId(maybeUserId)) {
@@ -40,8 +40,7 @@ export function isValidEmail(maybeEmail: unknown): maybeEmail is EmailAddress {
 }
 
 /**
- * Creates an `EmailAddress` from a plain string. Returns an error if the string is not a valid
- * `EmailAddress`.
+ * Creates an {@link EmailAddress} from a plain string. Returns an error if the string is not valid.
  */
 export function createEmailAddress(maybeEmail: string): Result<EmailAddress> {
   if (!isValidEmail(maybeEmail)) {
@@ -60,7 +59,7 @@ export interface LoggedInUser {
 }
 
 /**
- * Create a generic `LoggedInUser` from a Firebase-specific `FirebaseUser`.
+ * Create a generic {@link LoggedInUser} from a Firebase-specific {@link FirebaseUser}.
  */
 export function makeLoggedInUserFromFirebaseUser(
   firebaseLoggedInUser: FirebaseUser

@@ -8,13 +8,32 @@ import {UserId} from '@shared/types/user.types';
 import {BaseStoreItem, Timestamp} from '@shared/types/utils.types';
 
 /**
- * Strongly-typed type for a user feed subscription's unique identifier. Prefer this over plain
- * strings.
+ * Strongly-typed type for a {@link UserFeedSubscription}'s unique identifier. Prefer this over
+ * plain strings.
  */
 export type UserFeedSubscriptionId = string & {readonly __brand: 'UserFeedSubscriptionIdBrand'};
 
 /**
- * Checks if a value is a valid `UserFeedSubscriptionId`.
+ * An individual user's subscription to a feed.
+ *
+ * A single {@link Feed} can have multiple {@link UserFeedSubscription}s, one for each
+ * {@link User} subscribed to it.
+ *
+ * These are not deleted when a user unsubscribes from a feed. Instead, they are marked as
+ * inactive. They are only deleted when a user is wiped out.
+ */
+export interface UserFeedSubscription extends BaseStoreItem {
+  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+  readonly feedId: FeedId;
+  readonly userId: UserId;
+  readonly url: string;
+  readonly title: string;
+  readonly isActive: boolean;
+  readonly unsubscribedTime?: Timestamp;
+}
+
+/**
+ * Checks if a value is a valid {@link UserFeedSubscriptionId}.
  */
 export function isUserFeedSubscriptionId(
   userFeedSubscriptionId: unknown
@@ -23,8 +42,8 @@ export function isUserFeedSubscriptionId(
 }
 
 /**
- * Creates a `UserFeedSubscriptionId` from a plain string. Returns an error if the string is not a
- * valid `UserFeedSubscriptionId`.
+ * Creates a {@link UserFeedSubscriptionId} from a plain string. Returns an error if the string
+ * is not valid.
  */
 export function makeUserFeedSubscriptionId(
   maybeUserFeedSubscriptionId: string = makeId()
@@ -37,6 +56,9 @@ export function makeUserFeedSubscriptionId(
   return makeSuccessResult(maybeUserFeedSubscriptionId);
 }
 
+/**
+ * Creates a {@link UserFeedSubscription} object.
+ */
 export function makeUserFeedSubscription(args: {
   readonly feed: Feed;
   readonly userId: UserId;
@@ -58,14 +80,4 @@ export function makeUserFeedSubscription(args: {
   };
 
   return makeSuccessResult(userFeedSubscription);
-}
-
-export interface UserFeedSubscription extends BaseStoreItem {
-  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-  readonly feedId: FeedId;
-  readonly userId: UserId;
-  readonly url: string;
-  readonly title: string;
-  readonly isActive: boolean;
-  readonly unsubscribedTime?: Timestamp;
 }
