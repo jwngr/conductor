@@ -1,0 +1,71 @@
+import {serverTimestamp} from 'firebase/firestore';
+
+import {makeId} from '@shared/lib/utils';
+
+import {Feed, FeedId} from '@shared/types/feeds.types';
+import {makeErrorResult, makeSuccessResult, Result} from '@shared/types/result.types';
+import {UserId} from '@shared/types/user.types';
+import {BaseStoreItem, Timestamp} from '@shared/types/utils.types';
+
+/**
+ * Strongly-typed type for a user feed subscription's unique identifier. Prefer this over plain
+ * strings.
+ */
+export type UserFeedSubscriptionId = string & {readonly __brand: 'UserFeedSubscriptionIdBrand'};
+
+/**
+ * Checks if a value is a valid `UserFeedSubscriptionId`.
+ */
+export function isUserFeedSubscriptionId(
+  userFeedSubscriptionId: unknown
+): userFeedSubscriptionId is UserFeedSubscriptionId {
+  return typeof userFeedSubscriptionId === 'string' && userFeedSubscriptionId.length > 0;
+}
+
+/**
+ * Creates a `UserFeedSubscriptionId` from a plain string. Returns an error if the string is not a
+ * valid `UserFeedSubscriptionId`.
+ */
+export function makeUserFeedSubscriptionId(
+  maybeUserFeedSubscriptionId: string = makeId()
+): Result<UserFeedSubscriptionId> {
+  if (!isUserFeedSubscriptionId(maybeUserFeedSubscriptionId)) {
+    return makeErrorResult(
+      new Error(`Invalid user feed subscription ID: "${maybeUserFeedSubscriptionId}"`)
+    );
+  }
+  return makeSuccessResult(maybeUserFeedSubscriptionId);
+}
+
+export function makeUserFeedSubscription(args: {
+  readonly feed: Feed;
+  readonly userId: UserId;
+}): Result<UserFeedSubscription> {
+  const {feed, userId} = args;
+  const userFeedSubscriptionIdResult = makeUserFeedSubscriptionId();
+  if (!userFeedSubscriptionIdResult.success) return userFeedSubscriptionIdResult;
+  const userFeedSubscriptionId = userFeedSubscriptionIdResult.value;
+
+  const userFeedSubscription: UserFeedSubscription = {
+    userFeedSubscriptionId,
+    userId,
+    feedId: feed.feedId,
+    url: feed.url,
+    title: feed.title,
+    isActive: true,
+    createdTime: serverTimestamp(),
+    lastUpdatedTime: serverTimestamp(),
+  };
+
+  return makeSuccessResult(userFeedSubscription);
+}
+
+export interface UserFeedSubscription extends BaseStoreItem {
+  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+  readonly feedId: FeedId;
+  readonly userId: UserId;
+  readonly url: string;
+  readonly title: string;
+  readonly isActive: boolean;
+  readonly unsubscribedTime?: Timestamp;
+}

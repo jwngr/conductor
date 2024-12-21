@@ -1,3 +1,5 @@
+import {serverTimestamp} from 'firebase/firestore';
+
 import {makeId} from '@shared/lib/utils';
 
 import {makeErrorResult, makeSuccessResult, Result} from '@shared/types/result.types';
@@ -23,6 +25,27 @@ export function makeFeedId(maybeFeedId: string = makeId()): Result<FeedId> {
     return makeErrorResult(new Error(`Invalid feed ID: "${maybeFeedId}"`));
   }
   return makeSuccessResult(maybeFeedId);
+}
+
+/**
+ * Creates a `Feed` from a URL and title.
+ */
+export function makeFeed(
+  args: Omit<Feed, 'feedId' | 'createdTime' | 'lastUpdatedTime'>
+): Result<Feed> {
+  const feedIdResult = makeFeedId();
+  if (!feedIdResult.success) return feedIdResult;
+  const feedId = feedIdResult.value;
+
+  const feed: Feed = {
+    feedId,
+    createdTime: serverTimestamp(),
+    lastUpdatedTime: serverTimestamp(),
+    url: args.url,
+    title: args.title,
+  };
+
+  return makeSuccessResult(feed);
 }
 
 export interface Feed extends BaseStoreItem {

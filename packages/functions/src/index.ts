@@ -1,18 +1,27 @@
-import {logger} from 'firebase-functions';
+import {logger, setGlobalOptions} from 'firebase-functions';
 import {auth} from 'firebase-functions/v1';
 import {onDocumentCreated} from 'firebase-functions/v2/firestore';
+import {HttpsError, onCall} from 'firebase-functions/v2/https';
 
 import {IMPORT_QUEUE_DB_COLLECTION} from '@shared/lib/constants';
 
 import {
-  createImportQueueItemId,
   ImportQueueItem,
   ImportQueueItemStatus,
+  makeImportQueueItemId,
 } from '@shared/types/importQueue.types';
-import {createUserId} from '@shared/types/user.types';
+import {makeUserId, UserId} from '@shared/types/user.types';
 
 import {deleteImportQueueItem, importFeedItem, updateImportQueueItem} from '@src/lib/importQueue';
+import {adminUserFeedSubscriptionsService} from '@src/lib/userFeedSubscriptions.func';
 import {wipeoutUser} from '@src/lib/wipeout';
+
+import {adminFeedsService} from './lib/feeds.func';
+
+setGlobalOptions({
+  region: 'us-central1', // TODO: This should probably be an environment variable.
+  invoker: 'private', // Only allow authenticated requests to the functions.
+});
 
 /**
  * Processes an import queue item when it is created.
@@ -22,7 +31,7 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
   async (event) => {
     const {importQueueItemId: maybeImportQueueItemId} = event.params;
 
-    const importQueueItemIdResult = createImportQueueItemId(maybeImportQueueItemId);
+    const importQueueItemIdResult = makeImportQueueItemId(maybeImportQueueItemId);
     if (!importQueueItemIdResult.success) {
       logger.error(
         `[IMPORT] Invalid import queue item ID "${maybeImportQueueItemId}": ${importQueueItemIdResult.error}`
@@ -93,7 +102,7 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
  * Hard-deletes all data associated with a user when their Firebase auth account is deleted.
  */
 export const wipeoutUserOnAuthDelete = auth.user().onDelete(async (firebaseUser) => {
-  const userIdResult = createUserId(firebaseUser.uid);
+  const userIdResult = makeUserId(firebaseUser.uid);
   if (!userIdResult.success) {
     logger.error('[WIPEOUT] Invalid user ID. Not wiping out user.', {
       error: userIdResult.error,
@@ -112,3 +121,91 @@ export const wipeoutUserOnAuthDelete = auth.user().onDelete(async (firebaseUser)
 
   logger.info(`[WIPEOUT] Successfully wiped out user`, {userId});
 });
+
+/**
+ * Subscribes a user to a new feed, creating the new feed if necessary.
+ */
+export const subscribeUserToFeedOnCall = onCall(
+  // TODO: Lock down CORS to only allow requests from my domains.
+  {cors: true},
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'User must be authenticated');
+    } else if (!request.data.url) {
+      // TODO: Use zod to validate the request data.
+      throw new HttpsError('invalid-argument', 'URL is required');
+    }
+
+    const userId = request.auth.uid as UserId;
+    const {url} = request.data;
+
+    const logDetails = {url, userId} as const;
+
+    logger.log(`[SUBSCRIBE] Subscribing user to feed via URL...`, logDetails);
+
+    // Check if the feed already exists in the feeds collection. A single feed can have multiple
+    // users subscribed to it, but we only want to subscribe to it in Superfeedr once. Feeds are
+    // deduped based on exact URL match, although we could probably be smarter in the future.
+    const fetchFeedByUrlResult = await adminFeedsService.fetchByUrl(url);
+    if (!fetchFeedByUrlResult.success) {
+      logger.error(`[SUBSCRIBE] Error fetching existing feed by URL`, {
+        ...logDetails,
+        error: fetchFeedByUrlResult.error,
+      });
+      return fetchFeedByUrlResult;
+    }
+
+    let feed = fetchFeedByUrlResult.value;
+
+    if (feed) {
+      logger.log(`[SUBSCRIBE] Existing feed found`, {...logDetails, feedId: feed.feedId});
+    } else {
+      // If the feed is not already in the feeds collection, create an entry for it and subscribe to
+      // it in Superfeedr.
+      logger.log(`[SUBSCRIBE] Existing feed not found. Adding feed...`, logDetails);
+
+      // TODO: Enrich the feed with a title and image.
+      const addFeedResult = await adminFeedsService.add({url, title: ''});
+      if (!addFeedResult.success) {
+        logger.error(`[SUBSCRIBE] Error adding feed`, {...logDetails, error: addFeedResult.error});
+        return addFeedResult;
+      }
+      feed = addFeedResult.value;
+
+      logger.log(`[SUBSCRIBE] Feed added. Subscribing to feed in Superfeedr...`, {
+        ...logDetails,
+        feedId: feed.feedId,
+      });
+
+      const subscribeToSuperfeedrResult = await adminFeedsService.subscribeToSuperfeedr(feed);
+      if (!subscribeToSuperfeedrResult.success) {
+        logger.error(`[SUBSCRIBE] Error subscribing to feed in Superfeedr`, {
+          ...logDetails,
+          error: subscribeToSuperfeedrResult.error,
+        });
+        return subscribeToSuperfeedrResult;
+      }
+    }
+
+    const logDetailsWithFeedId = {...logDetails, feedId: feed.feedId} as const;
+
+    logger.log(`[SUBSCRIBE] Subscribing user to feed...`, logDetailsWithFeedId);
+
+    const createSubscriptionResult = await adminUserFeedSubscriptionsService.subscribeUserToFeed({
+      feed,
+      userId,
+    });
+    if (!createSubscriptionResult.success) {
+      logger.error(`[SUBSCRIBE] Error subscribing user to feed`, {
+        ...logDetailsWithFeedId,
+        error: createSubscriptionResult.error,
+      });
+      return createSubscriptionResult;
+    }
+
+    logger.log(`[SUBSCRIBE] Successfully subscribed user to feed`, logDetailsWithFeedId);
+
+    // TODO: Is this what I want to return?
+    return;
+  }
+);
