@@ -17,6 +17,7 @@ const Status = styled.div<{readonly $isError?: boolean}>`
   color: ${({theme, $isError}) => ($isError ? theme.colors.error : theme.colors.success)};
 `;
 
+// TODO: Finish merging with `RegisterFeedItemImporterDevTool`.
 export const FeedItemImportTester: React.FC = () => {
   // The dev toolbar is visible even when logged-out, so use hooks which don't require auth state.
   const feedItemsService = useMaybeFeedItemsService();
@@ -67,26 +68,6 @@ export const FeedItemImportTester: React.FC = () => {
       />
       <Button variant={ButtonVariant.Secondary} onClick={() => handleAddItemToQueue(url)}>
         Test URL import
-      </Button>
-      <Button
-        variant={ButtonVariant.Secondary}
-        onClick={() => handleAddItemToQueue('https://jwn.gr/posts/migrating-from-gatsby-to-astro/')}
-      >
-        Test blog import
-      </Button>
-      <Button
-        variant={ButtonVariant.Secondary}
-        onClick={() => handleAddItemToQueue('https://www.youtube.com/watch?v=p_di4Zn4wz4')}
-      >
-        Test YouTube video import
-      </Button>
-      <Button
-        variant={ButtonVariant.Secondary}
-        onClick={() =>
-          handleAddItemToQueue('https://wattenberger.com/thoughts/the-internet-for-the-mind')
-        }
-      >
-        Test complex blog post import
       </Button>
       {status && <Status $isError={status.includes('Error')}>{status}</Status>}
     </>

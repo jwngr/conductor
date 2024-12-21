@@ -5,6 +5,8 @@ import {ThemeProvider} from 'styled-components';
 import {theme} from '@shared/lib/theme';
 import {Urls} from '@shared/lib/urls';
 
+import {useMaybeLoggedInUser} from '@shared/hooks/auth.hooks';
+
 import {ErrorBoundary} from '@src/components/atoms/ErrorBoundary';
 import {Toaster} from '@src/components/atoms/Toaster';
 import {TooltipProvider} from '@src/components/atoms/Tooltip';
@@ -12,6 +14,8 @@ import {AuthSubscriptions} from '@src/components/auth/AuthSubscriptions';
 import {RequireLoggedInUser} from '@src/components/auth/RequireLoggedInUser';
 import {SignOutRedirect} from '@src/components/auth/SignOutRedirect';
 import {DevToolbar} from '@src/components/devToolbar/DevToolbar';
+import {RegisterFeedItemImporterDevTool} from '@src/components/devToolbar/RegisterFeedItemImporterDevTool';
+import {RegisterUserFeedSubscriberDevTool} from '@src/components/devToolbar/RegisterUserFeedSubscriberDevToolbarActions';
 
 import {NotFoundScreen} from '@src/screens/404';
 import {ErrorScreen} from '@src/screens/ErrorScreen';
@@ -70,11 +74,30 @@ const AllRoutes: React.FC = () => {
   );
 };
 
-const AppWideSubscriptions: React.FC = () => {
+/**
+ * Subscriptions that are always active whenever the app is loaded.
+ */
+const PermanentGlobalSubscriptions: React.FC = () => {
   return (
     <>
       <AuthSubscriptions />
     </>
+  );
+};
+
+/**
+ * Subscriptions that are active whenever there is a logged-in user.
+ */
+const LoggedInGlobalSubscriptions: React.FC = () => {
+  const loggedInUser = useMaybeLoggedInUser();
+
+  if (!loggedInUser) return null;
+
+  return (
+    <RequireLoggedInUser>
+      <RegisterFeedItemImporterDevTool />
+      <RegisterUserFeedSubscriberDevTool />
+    </RequireLoggedInUser>
   );
 };
 
@@ -89,7 +112,8 @@ export const App: React.FC = () => {
           >
             <ErrorBoundary fallback={(error) => <ErrorScreen error={error} />}>
               <AllRoutes />
-              <AppWideSubscriptions />
+              <PermanentGlobalSubscriptions />
+              <LoggedInGlobalSubscriptions />
               <DevToolbar />
             </ErrorBoundary>
           </BrowserRouter>

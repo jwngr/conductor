@@ -35,6 +35,10 @@ export function useFeedItemsService(): FeedItemsService {
   return feedItemsService;
 }
 
+/**
+ * @deprecated Use `useFeedItemsService` instead. Remove after merging `FeedItemImportTester` into
+ * `RegisterFeedItemImporterDevTool`.
+ */
 export function useMaybeFeedItemsService(): FeedItemsService | null {
   const {isLoading, loggedInUser} = useMaybeLoggedInUser();
 
