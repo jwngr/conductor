@@ -58,7 +58,7 @@ export async function asyncTry<T>(asyncFn: Supplier<Promise<T>>): AsyncResult<T>
  * results. If any of the results fail, an array of `ErrorResult`s is returned.
  */
 export async function asyncTryAll<T>(
-  asyncResults: AsyncResult<unknown>[]
+  asyncResults: Array<AsyncResult<unknown>>
 ): AsyncResult<T, Error[]> {
   try {
     const results = await Promise.all(asyncResults);
@@ -82,7 +82,7 @@ export async function asyncTryAll<T>(
  * results. If any of the promises fail, a single `ErrorResult` is returned.
  */
 export async function asyncTryAllPromises<T>(
-  asyncFns: Promise<unknown>[]
+  asyncFns: Array<Promise<unknown>>
 ): AsyncResult<T, Error[]> {
   try {
     const results = await Promise.allSettled(asyncFns);

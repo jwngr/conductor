@@ -3,7 +3,7 @@ on:
   pull_request:
     paths:
       - 'firestore.rules'
-      - '.github/actions/setup-firebase-deploy/**'
+      - '.github/actions/setup-workflow/**'
       - '.github/workflows/firestore-rules-pull-request.yml'
 permissions:
   checks: write
@@ -16,8 +16,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: CI setup action for Firebase deploy
-        uses: ./.github/actions/setup-firebase-deploy
+        uses: ./.github/actions/setup-workflow
+        with:
+          install-firebase: 'true'
       - name: Deploy Firestore rules
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-        run: yarn run deploy:rules:firestore --project=stag
+        # Yarn v4 requires installing deps before using `yarn run`, so use `firebase deploy` directly.
+        run: firebase deploy --only firestore:rules --project=stag

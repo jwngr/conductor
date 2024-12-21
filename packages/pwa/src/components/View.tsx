@@ -12,9 +12,8 @@ import {ThemeColor} from '@shared/types/theme.types';
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
-import {FeedItemAdder} from '@src/components/feedItems/FeedItemAdder';
 
-import {useFeedItems} from '@src/lib/feedItems';
+import {useFeedItems} from '@src/lib/feedItems.pwa';
 
 const ViewListItemWrapper = styled(FlexColumn).attrs({justify: 'center', gap: 4})`
   cursor: pointer;
@@ -96,8 +95,6 @@ export const View: React.FC<{viewType: ViewType}> = ({viewType}) => {
         {isSubscribing ? 'Subscribing...' : 'Subscribe to JWN.GR'}
       </button>
       <ViewList viewType={viewType} />
-      {/* TODO: Move into developer toolbar. */}
-      <FeedItemAdder />
     </ViewWrapper>
   );
 };

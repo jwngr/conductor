@@ -16,7 +16,7 @@ import StarIcon from '@shared/icons/star.svg?react';
 
 import {Tooltip, TooltipContent} from '@src/components/atoms/Tooltip';
 
-import {OnClick} from '@src/types/utils';
+import {OnClick} from '@src/types/utils.pwa.types';
 
 interface ButtonIconWrapperProps {
   readonly $color: ThemeColor;

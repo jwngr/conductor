@@ -13,7 +13,7 @@ on:
       - 'package.json'
       - 'tsconfig.json'
       - 'yarn.lock'
-      - '.github/actions/setup-firebase-deploy/**'
+      - '.github/actions/setup-workflow/**'
       - '.github/workflows/firebase-hosting-merge.yml'
 jobs:
   deploy_hosting_prod:
@@ -22,9 +22,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: CI setup action for Firebase deploy
-        uses: ./.github/actions/setup-firebase-deploy
+        uses: ./.github/actions/setup-workflow
         with:
           install-deps: 'true'
+          install-firebase: 'true'
+      - name: Validate PWA
+        run: yarn run validate:pwa
       - name: Build PWA
         run: yarn run build:pwa
         env:

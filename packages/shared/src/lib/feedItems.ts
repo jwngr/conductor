@@ -1,5 +1,4 @@
 import {
-  collection,
   CollectionReference,
   deleteDoc,
   doc,
@@ -13,13 +12,7 @@ import {
 } from 'firebase/firestore';
 import {getDownloadURL, ref as storageRef, StorageReference} from 'firebase/storage';
 
-import {
-  FEED_ITEMS_DB_COLLECTION,
-  FEED_ITEMS_STORAGE_COLLECTION,
-  IMPORT_QUEUE_DB_COLLECTION,
-} from '@shared/lib/constants';
 import {asyncTry, asyncTryAllPromises} from '@shared/lib/errors';
-import {firestore, storage} from '@shared/lib/firebase';
 import {makeImportQueueItem} from '@shared/lib/importQueue';
 import {isValidUrl} from '@shared/lib/urls';
 import {Views} from '@shared/lib/views';
@@ -241,13 +234,3 @@ export function getStarFeedItemActionInfo(): FeedItemAction {
     icon: IconName.Star,
   };
 }
-
-const feedItemsDbRef = collection(firestore, FEED_ITEMS_DB_COLLECTION);
-const importQueueDbRef = collection(firestore, IMPORT_QUEUE_DB_COLLECTION);
-const feedItemsStorageRef = storageRef(storage, FEED_ITEMS_STORAGE_COLLECTION);
-
-export const feedItemsService = new FeedItemsService(
-  feedItemsDbRef,
-  importQueueDbRef,
-  feedItemsStorageRef
-);

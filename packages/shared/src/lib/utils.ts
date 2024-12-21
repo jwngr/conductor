@@ -1,29 +1,36 @@
 import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import {Func} from '@shared/types/utils.types';
 
+/**
+ * Formats a number with commas.
+ *
+ * TODO: Use a more robust solution that works with internationalization.
+ */
 export const formatWithCommas = (val: number): string => {
   return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 };
 
+/**
+ * Throws an error if the provided value is not of type `never`. This is useful for exhaustive
+ * switch statements.
+ */
 export function assertNever(x: never): never {
   // TODO: Add logging. Or a global error handler.
   throw new Error(`Unexpected object: ${x}`);
 }
 
-export function filterNull<T>(arr: (T | null)[]): T[] {
+/**
+ * Filters out all null values from the provided array.
+ */
+export function filterNull<T>(arr: Array<T | null>): T[] {
   return arr.filter(Boolean) as T[];
 }
 
-export function filterUndefined<T>(arr: (T | undefined)[]): T[] {
+/**
+ * Filters out all undefined values from the provided array.
+ */
+export function filterUndefined<T>(arr: Array<T | undefined>): T[] {
   return arr.filter(Boolean) as T[];
-}
-
-export function mapNull<T>(value: T | null): T | undefined {
-  return value === null ? undefined : value;
-}
-
-export function mapUndefined<T>(value: T | undefined): T | null {
-  return value === undefined ? null : value;
 }
 
 /**
@@ -31,14 +38,14 @@ export function mapUndefined<T>(value: T | undefined): T | null {
  * than the batch size, all tasks are run in parallel.
  */
 export async function batchAsyncResults<T>(
-  asyncResults: AsyncResult<unknown>[],
+  asyncResults: Array<AsyncResult<unknown>>,
   batchSize: number
 ): AsyncResult<T> {
   if (batchSize < 1) {
     return makeErrorResult(new Error(`Batch size must be at least 1: ${batchSize}`));
   }
 
-  const resultsPerBatch: AsyncResult<unknown>[][] = [];
+  const resultsPerBatch: Array<Array<AsyncResult<unknown>>> = [];
   for (let i = 0; i < asyncResults.length; i += batchSize) {
     resultsPerBatch.push(asyncResults.slice(i, i + batchSize));
   }
@@ -50,7 +57,10 @@ export async function batchAsyncResults<T>(
   return makeSuccessResult(allResults as T);
 }
 
-export function partition<T, U>(arr: (T | U)[], predicate: Func<T | U, boolean>): [T[], U[]] {
+/**
+ * Partitions an array into two arrays based on the provided predicate.
+ */
+export function partition<T, U>(arr: Array<T | U>, predicate: Func<T | U, boolean>): [T[], U[]] {
   return arr.reduce(
     (acc, item) => {
       if (predicate(item)) {
@@ -62,4 +72,17 @@ export function partition<T, U>(arr: (T | U)[], predicate: Func<T | U, boolean>)
     },
     [[], []] as [T[], U[]]
   );
+}
+
+/**
+ * Generates a random ID of the given length.
+ */
+export function makeId(length = 20): string {
+  const validChars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * validChars.length);
+    result += validChars.charAt(randomIndex);
+  }
+  return result;
 }
