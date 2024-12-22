@@ -33,21 +33,19 @@ export function filterUndefined<T>(arr: Array<T | undefined>): T[] {
   return arr.filter(Boolean) as T[];
 }
 
-type UnknownAsyncResultSupplier = Supplier<AsyncResult<unknown>>;
-
 /**
  * Runs all of the provided async task suppliers in batches of a given size. If the number of tasks is less
  * than the batch size, all tasks are run in parallel. Tasks are not executed until this function is called.
  */
 export async function batchAsyncResults<T>(
-  asyncResultSuppliers: UnknownAsyncResultSupplier[],
+  asyncResultSuppliers: Array<Supplier<AsyncResult<T>>>,
   batchSize: number
 ): AsyncResult<T> {
   if (batchSize < 1) {
     return makeErrorResult(new Error(`Batch size must be at least 1: ${batchSize}`));
   }
 
-  const resultsPerBatch: UnknownAsyncResultSupplier[][] = [];
+  const resultsPerBatch: Array<Array<Supplier<AsyncResult<T>>>> = [];
   for (let i = 0; i < asyncResultSuppliers.length; i += batchSize) {
     resultsPerBatch.push(asyncResultSuppliers.slice(i, i + batchSize));
   }

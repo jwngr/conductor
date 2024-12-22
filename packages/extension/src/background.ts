@@ -10,7 +10,7 @@ import {FeedItemsService} from '@shared/lib/feedItems';
 import {logger} from '@shared/lib/logger';
 
 import {FEED_ITEM_EXTENSION_SOURCE} from '@shared/types/feedItems.types';
-import {createUserId} from '@shared/types/user.types';
+import {makeUserId} from '@shared/types/user.types';
 
 import {firebaseService} from '@src/lib/firebase.ext';
 
@@ -20,7 +20,7 @@ const feedItemsStorageRef = storageRef(firebaseService.storage, FEED_ITEMS_STORA
 
 chrome.action.onClicked.addListener(async (tab) => {
   // TODO: Get the user ID from the extension's auth once it's implemented.
-  const userIdResult = createUserId('TODO');
+  const userIdResult = makeUserId('TODO');
   if (!userIdResult.success) {
     logger.error('Error getting user ID:', {error: userIdResult.error});
     return;

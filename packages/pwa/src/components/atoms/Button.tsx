@@ -10,6 +10,7 @@ export enum ButtonVariant {
 }
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  // TODO: Add a wrapper React.FC so that we can make this a styled component with $variant.
   readonly variant: ButtonVariant;
 }
 

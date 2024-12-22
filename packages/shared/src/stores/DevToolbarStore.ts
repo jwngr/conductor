@@ -4,17 +4,18 @@ import {type DevToolbarStore} from '@shared/types/devToolbar.types';
 
 const createDevToolbarStore: StateCreator<DevToolbarStore> = (set) => ({
   // Initial state.
-  actions: [],
+  sections: [],
 
-  registerAction: (action) => {
+  registerSection: (section) => {
     set((state) => ({
-      actions: [...state.actions, action],
+      ...state,
+      sections: [...state.sections, section],
     }));
 
     return () =>
       set((state) => ({
         ...state,
-        actions: state.actions.filter((a) => a.actionId !== action.actionId),
+        sections: state.sections.filter((s) => s.sectionType !== section.sectionType),
       }));
   },
 });

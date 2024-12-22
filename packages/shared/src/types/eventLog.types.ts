@@ -1,7 +1,9 @@
+import {makeId} from '@shared/lib/utils';
+
 import {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
-import {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
 import {makeErrorResult, makeSuccessResult, Result} from '@shared/types/result.types';
 import {UserId} from '@shared/types/user.types';
+import {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import {BaseStoreItem} from '@shared/types/utils.types';
 
 /**
@@ -20,7 +22,7 @@ export function isEventId(maybeEventId: unknown): maybeEventId is EventId {
  * Converts a plain string into a strongly-typed `FeedItemId`. Returns an error if the string is
  * not a valid `FeedItemId`.
  */
-export function makeEventId(maybeEventId: string): Result<EventId> {
+export function makeEventId(maybeEventId: string = makeId()): Result<EventId> {
   if (!isEventId(maybeEventId)) {
     return makeErrorResult(new Error(`Invalid event ID: "${maybeEventId}"`));
   }
@@ -29,7 +31,7 @@ export function makeEventId(maybeEventId: string): Result<EventId> {
 
 export enum EventType {
   FeedItemAction = 'FEED_ITEM_ACTION',
-  FeedSubscription = 'FEED_SUBSCRIPTION',
+  UserFeedSubscription = 'USER_FEED_SUBSCRIPTION',
 }
 
 interface BaseEventLogItem extends BaseStoreItem {
@@ -48,12 +50,12 @@ export interface FeedItemActionEventLogItem extends BaseEventLogItem {
   };
 }
 
-export interface FeedSubscriptionEventLogItem extends BaseEventLogItem {
-  readonly eventType: EventType.FeedSubscription;
+export interface UserFeedSubscriptionEventLogItem extends BaseEventLogItem {
+  readonly eventType: EventType.UserFeedSubscription;
   readonly data: {
-    readonly feedSubscriptionId: FeedSubscriptionId;
-    // TODO: Add `feedSubscriptionActionType`.
+    readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+    // TODO: Add `userFeedSubscriptionActionType`.
   };
 }
 
-export type EventLogItem = FeedItemActionEventLogItem | FeedSubscriptionEventLogItem;
+export type EventLogItem = FeedItemActionEventLogItem | UserFeedSubscriptionEventLogItem;

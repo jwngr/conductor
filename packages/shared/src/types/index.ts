@@ -1,6 +1,5 @@
 import * as eventLogTypesExports from '@shared/types/eventLog.types';
 import * as feedItemsTypesExports from '@shared/types/feedItems.types';
-import * as feedSubscriptionsTypesExports from '@shared/types/feedSubscriptions.types';
 import * as firebaseTypesExports from '@shared/types/firebase.types';
 import * as firecrawlTypesExports from '@shared/types/firecrawl.types';
 import * as iconsTypesExports from '@shared/types/icons.types';
@@ -12,11 +11,11 @@ import * as shortcutsTypesExports from '@shared/types/shortcuts.types';
 import * as tagsTypesExports from '@shared/types/tags.types';
 import * as themeTypesExports from '@shared/types/theme.types';
 import * as urlsTypesExports from '@shared/types/urls.types';
+import * as userFeedSubscriptionsTypesExports from '@shared/types/userFeedSubscriptions.types';
 import * as utilsTypesExports from '@shared/types/utils.types';
 
 export const eventLog = eventLogTypesExports;
 export const feedItems = feedItemsTypesExports;
-export const feedSubscriptions = feedSubscriptionsTypesExports;
 export const firebase = firebaseTypesExports;
 export const firecrawl = firecrawlTypesExports;
 export const icons = iconsTypesExports;
@@ -28,4 +27,5 @@ export const shortcuts = shortcutsTypesExports;
 export const tags = tagsTypesExports;
 export const theme = themeTypesExports;
 export const urls = urlsTypesExports;
+export const userFeedSubscriptions = userFeedSubscriptionsTypesExports;
 export const utils = utilsTypesExports;

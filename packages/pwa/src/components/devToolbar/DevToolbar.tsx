@@ -5,9 +5,8 @@ import {ThemeColor} from '@shared/types/theme.types';
 
 import {useDevToolbarStore} from '@shared/stores/DevToolbarStore';
 
-import {Button, ButtonVariant} from '@src/components/atoms/Button';
-import {Divider} from '@src/components/atoms/Divider';
-import {FeedItemImportTester} from '@src/components/devToolbar/FeedItemImportTester';
+import {FlexColumn} from '@src/components/atoms/Flex';
+import {Text} from '@src/components/atoms/Text';
 
 import {IS_DEVELOPMENT} from '@src/lib/environment.pwa';
 
@@ -31,6 +30,10 @@ const DevToolbarContent = styled.div<{readonly $isOpen: boolean}>`
   gap: 12px;
 `;
 
+const DevToolbarSectionWrapper = styled(FlexColumn)`
+  gap: 12px;
+`;
+
 const BugEmoji = styled.span<{readonly $isOpen: boolean}>`
   display: ${({$isOpen}) => ($isOpen ? 'none' : 'block')};
   position: absolute;
@@ -48,7 +51,7 @@ export function DevToolbar({isVisible = true}: DevToolbarProps): JSX.Element | n
   const [isOpen, setIsOpen] = useState(false);
   const toolbarRef = useRef<HTMLDivElement>(null);
 
-  const additionalActions = useDevToolbarStore((state) => state.actions);
+  const devToolbarSections = useDevToolbarStore((state) => state.sections);
 
   // Close the toolbar if the user clicks outside of it.
   useEffect(() => {
@@ -90,12 +93,13 @@ export function DevToolbar({isVisible = true}: DevToolbarProps): JSX.Element | n
         🐛
       </BugEmoji>
       <DevToolbarContent $isOpen={isOpen}>
-        <FeedItemImportTester />
-        {additionalActions.length > 0 && <Divider />}
-        {additionalActions.map((action) => (
-          <Button key={action.actionId} variant={ButtonVariant.Secondary} onClick={action.onClick}>
-            {action.text}
-          </Button>
+        {devToolbarSections.map((section) => (
+          <DevToolbarSectionWrapper key={section.sectionType}>
+            <Text as="h4" bold>
+              {section.title}
+            </Text>
+            {section.renderSection()}
+          </DevToolbarSectionWrapper>
         ))}
       </DevToolbarContent>
     </DevToolbarWrapper>

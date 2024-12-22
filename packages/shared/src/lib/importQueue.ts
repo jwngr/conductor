@@ -11,10 +11,10 @@ import {asyncTry} from '@shared/lib/errors';
 
 import {FeedItemId} from '@shared/types/feedItems.types';
 import {
-  createImportQueueItemId,
   ImportQueueItem,
   ImportQueueItemId,
   ImportQueueItemStatus,
+  makeImportQueueItemId,
 } from '@shared/types/importQueue.types';
 import {AsyncResult} from '@shared/types/result.types';
 import {UserId} from '@shared/types/user.types';
@@ -28,7 +28,7 @@ export class ImportQueue {
       return await addDoc(this.collectionRef, item);
     });
     if (!docRefResult.success) return docRefResult;
-    return createImportQueueItemId(docRefResult.value.id);
+    return makeImportQueueItemId(docRefResult.value.id);
   }
 
   async read(importQueueItemId: ImportQueueItemId): AsyncResult<ImportQueueItem | null> {

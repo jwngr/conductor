@@ -12,7 +12,7 @@ import {FeedItemsService} from '@shared/lib/feedItems';
 import {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
 import {ViewType} from '@shared/types/query.types';
 
-import {useLoggedInUser, useMaybeLoggedInUser} from '@shared/hooks/auth.hooks';
+import {useLoggedInUser} from '@shared/hooks/auth.hooks';
 
 import {firebaseService} from '@src/lib/firebase.pwa';
 
@@ -31,22 +31,6 @@ export function useFeedItemsService(): FeedItemsService {
       loggedInUser.userId
     );
   }, [loggedInUser]);
-
-  return feedItemsService;
-}
-
-export function useMaybeFeedItemsService(): FeedItemsService | null {
-  const {isLoading, loggedInUser} = useMaybeLoggedInUser();
-
-  const feedItemsService = useMemo(() => {
-    if (isLoading || !loggedInUser) return null;
-    return new FeedItemsService(
-      feedItemsDbRef,
-      importQueueDbRef,
-      feedItemsStorageRef,
-      loggedInUser.userId
-    );
-  }, [isLoading, loggedInUser]);
 
   return feedItemsService;
 }
