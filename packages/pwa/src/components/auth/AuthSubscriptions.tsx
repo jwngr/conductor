@@ -71,7 +71,8 @@ const PasswordlessAuthSubscription: React.FC = () => {
       // Redirect to the root path.
       navigate(Urls.forRoot());
     };
-    go();
+
+    void go();
   }, [navigate, setLoggedInUser]);
   return null;
 };

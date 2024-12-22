@@ -27,6 +27,7 @@ async function parsePocketExport(): Promise<PocketExportItem[]> {
 }
 
 async function main() {
+  // eslint-disable-next-line no-restricted-syntax
   try {
     const pocketItems = await parsePocketExport();
 
@@ -78,4 +79,4 @@ function escapeTabField(field: string): string {
 //   }
 // }
 
-main();
+void main();

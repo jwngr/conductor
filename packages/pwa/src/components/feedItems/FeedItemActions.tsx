@@ -57,7 +57,7 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
 
     if (result.success) {
       showToast({message: toastText});
-      eventLogService.logFeedItemActionEvent({feedItemId, feedItemActionType});
+      void eventLogService.logFeedItemActionEvent({feedItemId, feedItemActionType});
       return;
     }
 

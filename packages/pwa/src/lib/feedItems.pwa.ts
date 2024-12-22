@@ -114,7 +114,8 @@ export function useFeedItemMarkdown(
         }
       }
     }
-    go();
+
+    void go();
 
     return () => {
       isMounted = false;
