@@ -41,8 +41,11 @@ export async function importFeedItem(importQueueItem: ImportQueueItem): AsyncRes
     }),
   ]);
 
-  if (!importAllDataResult.success) {
-    return makeErrorResult(prefixError(importAllDataResult.error, 'Error importing feed item'));
+  const importAllDataResultError = importAllDataResult.success
+    ? importAllDataResult.value.results.find((result) => !result.success)?.error
+    : importAllDataResult.error;
+  if (importAllDataResultError) {
+    return makeErrorResult(prefixError(importAllDataResultError, 'Error importing feed item'));
   }
 
   return makeSuccessResult(undefined);
@@ -108,9 +111,12 @@ export async function importFeedItemFirecrawl(args: {
     }),
   ]);
 
-  if (!saveFirecrawlDataResult.success) {
+  const saveFirecrawlDataResultError = saveFirecrawlDataResult.success
+    ? saveFirecrawlDataResult.value.results.find((result) => !result.success)?.error
+    : saveFirecrawlDataResult.error;
+  if (saveFirecrawlDataResultError) {
     return makeErrorResult(
-      prefixError(saveFirecrawlDataResult.error, 'Error saving Firecrawl data for feed item')
+      prefixError(saveFirecrawlDataResultError, 'Error saving Firecrawl data for feed item')
     );
   }
 

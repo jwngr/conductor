@@ -83,9 +83,12 @@ export async function wipeoutUser(userId: UserId): AsyncResult<void> {
     deleteImportQueueDocsForUser(userId),
     adminUserFeedSubscriptionsService.deleteAllForUser(userId),
   ]);
-  if (!deleteFirestoreResult.success) {
+  const deleteFirestoreResultError = deleteFirestoreResult.success
+    ? deleteFirestoreResult.value.results.find((result) => !result.success)?.error
+    : deleteFirestoreResult.error;
+  if (deleteFirestoreResultError) {
     logger.error(`[WIPEOUT] Error wiping out Firestore data for user`, {
-      error: deleteFirestoreResult.error,
+      error: deleteFirestoreResultError,
       ...logDetails,
     });
     wasSuccessful = false;
