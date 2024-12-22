@@ -95,11 +95,9 @@ export async function wipeoutUser(userId: UserId): AsyncResult<void> {
   }
 
   if (!wasSuccessful) {
-    return makeErrorResult(
-      new Error(
-        `User not fully wiped out. See error logs for details on failure to wipe out user ${userId}`
-      )
-    );
+    const errorMessage = `User not fully wiped out. See error logs for details on failure to wipe out user ${userId}`;
+    logger.error(errorMessage, logDetails);
+    return makeErrorResult(new Error(errorMessage));
   }
 
   return makeSuccessResult(undefined);
