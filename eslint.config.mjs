@@ -8,22 +8,43 @@ const sharedLanguageOptions = {
   sourceType: 'module',
 };
 
-const sharedRules = {
-  'no-console': 'error',
-  '@typescript-eslint/array-type': ['error', {default: 'array-simple'}],
-  '@typescript-eslint/no-extraneous-class': 'off',
-  'no-restricted-imports': [
-    'error',
-    {
-      patterns: [
-        {
-          group: ['.*'],
-          message: 'Use @src or @shared imports instead of relative paths.',
-        },
-      ],
-    },
-  ],
+const noRelativeImportsPattern = {
+  group: ['.*'],
+  message: 'Use @src or @shared imports instead of relative paths.',
 };
+
+const noFirebaseAdminImportPattern = {
+  group: ['firebase-admin', 'firebase-admin/*'],
+  message:
+    'Importing from the `firebase-admin` library is not allowed in this package. Use the `firebase` client-side library instead.',
+};
+
+const noFirebaseClientImportPattern = {
+  group: ['firebase', 'firebase/*'],
+  message:
+    'Importing from the client-side `firebase` library is not allowed in this package. Use the `firebase-admin` library instead.',
+};
+
+function makeSharedRules({
+  disallowFirebaseAdminImports = false,
+  disallowFirebaseClientImports = false,
+}) {
+  return {
+    'no-console': 'error',
+    '@typescript-eslint/array-type': ['error', {default: 'array-simple'}],
+    '@typescript-eslint/no-extraneous-class': 'off',
+    'no-restricted-imports': [
+      'error',
+      {
+        patterns: [
+          noRelativeImportsPattern,
+          disallowFirebaseAdminImports ? noFirebaseAdminImportPattern : null,
+          disallowFirebaseClientImports ? noFirebaseClientImportPattern : null,
+        ].filter((p) => p !== null),
+      },
+    ],
+  };
+}
 
 export default tseslint.config(
   // ESLint.
@@ -37,7 +58,7 @@ export default tseslint.config(
   {
     files: ['packages/shared/src/**/*.ts'],
     languageOptions: sharedLanguageOptions,
-    rules: sharedRules,
+    rules: makeSharedRules({disallowFirebaseAdminImports: true}),
   },
 
   // PWA package config.
@@ -52,7 +73,7 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      ...sharedRules,
+      ...makeSharedRules({disallowFirebaseAdminImports: true}),
     },
   },
 
@@ -61,7 +82,7 @@ export default tseslint.config(
     files: ['packages/scripts/**/*.ts'],
     languageOptions: sharedLanguageOptions,
     rules: {
-      ...sharedRules,
+      ...makeSharedRules({disallowFirebaseClientImports: true}),
       // TODO: Remove this after getting @src imports working in /scripts.
       'no-restricted-imports': 'off',
     },
@@ -79,7 +100,7 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      ...sharedRules,
+      ...makeSharedRules({disallowFirebaseAdminImports: true}),
     },
   },
 
@@ -87,6 +108,6 @@ export default tseslint.config(
   {
     files: ['packages/functions/**/*.{ts}'],
     languageOptions: sharedLanguageOptions,
-    rules: sharedRules,
+    rules: makeSharedRules({disallowFirebaseClientImports: true}),
   }
 );
