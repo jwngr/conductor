@@ -136,13 +136,13 @@ export class FeedItemsService {
       url: trimmedUrl,
     });
 
-    const addFeedItemResult = await asyncTryAllPromises<[undefined, undefined]>([
+    const addFeedItemResult = await asyncTryAllPromises([
       setDoc(feedItemDoc, feedItem),
       setDoc(doc(this.importQueueDbRef, importQueueItemId), importQueueItem),
     ]);
 
     if (!addFeedItemResult.success) {
-      return makeErrorResult(addFeedItemResult.error[0]);
+      return makeErrorResult(addFeedItemResult.error);
     }
 
     return makeSuccessResult(feedItem.feedItemId);
