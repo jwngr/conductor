@@ -1,34 +1,41 @@
 import {useEffect} from 'react';
 
+import {DevToolbarSectionType} from '@shared/types/devToolbar.types';
+
 import {useDevToolbarStore} from '@shared/stores/DevToolbarStore';
+
+import {Button, ButtonVariant} from '@src/components/atoms/Button';
 
 import {useUserFeedSubscriptionsService} from '@src/lib/userFeedSubscriptions.pwa';
 
-export const RegisterUserFeedSubscriberDevTool: React.FC = () => {
+const UserFeedSubscriber: React.FC = () => {
   const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
 
-  const registerAction = useDevToolbarStore((state) => state.registerAction);
+  return (
+    <>
+      <Button
+        variant={ButtonVariant.Secondary}
+        onClick={() => {
+          userFeedSubscriptionsService.subscribeToFeedUrl('https://jwn.gr/rss.xml');
+        }}
+      >
+        Subscribe to personal website feed
+      </Button>
+      {/* TODO: Add unsubscribe button. */}
+    </>
+  );
+};
+
+export const RegisterUserFeedSubscriberDevToolbarSection: React.FC = () => {
+  const registerSection = useDevToolbarStore((state) => state.registerSection);
 
   useEffect(() => {
-    const unsubscribeA = registerAction({
-      actionId: 'SUBSCRIBE_TO_PERSONAL_FEED',
-      text: 'Subscribe to personal website feed',
-      onClick: () => {
-        userFeedSubscriptionsService.subscribeToFeedUrl('https://jwn.gr/rss.xml');
-      },
+    return registerSection({
+      sectionType: DevToolbarSectionType.UserFeedSubscriber,
+      title: 'User feed subscriber',
+      renderSection: () => <UserFeedSubscriber />,
     });
-    const unsubscribeB = registerAction({
-      actionId: 'UNSUBSCRIBE_FROM_PERSONAL_FEED',
-      text: 'Unsubscribe from personal website feed',
-      onClick: () => {
-        userFeedSubscriptionsService.unsubscribeFromFeedUrl('https://jwn.gr/rss.xml');
-      },
-    });
-    return () => {
-      unsubscribeA();
-      unsubscribeB();
-    };
-  }, [registerAction, userFeedSubscriptionsService]);
+  }, [registerSection]);
 
   return null;
 };

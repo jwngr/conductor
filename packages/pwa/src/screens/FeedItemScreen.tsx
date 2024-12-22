@@ -1,5 +1,5 @@
 import {deleteField} from 'firebase/firestore';
-import {useEffect, useRef, useState} from 'react';
+import {useEffect, useRef} from 'react';
 
 import {FeedItemsService} from '@shared/lib/feedItems';
 import {logger} from '@shared/lib/logger';
@@ -9,11 +9,9 @@ import {assertNever} from '@shared/lib/utils';
 import {FeedItem, FeedItemId, FeedItemType} from '@shared/types/feedItems.types';
 import {SystemTagId} from '@shared/types/tags.types';
 
-import {useDevToolbarStore} from '@shared/stores/DevToolbarStore';
-
 import {AppHeader} from '@src/components/AppHeader';
-import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@src/components/atoms/Dialog';
 import {Text} from '@src/components/atoms/Text';
+import {RegisterIndividualFeedItemDevToolbarSection} from '@src/components/devToolbar/RegisterIndividualFeedItemSection';
 import {ArticleFeedItemComponent} from '@src/components/feedItems/ArticleFeedItem';
 import {TweetFeedItemComponent} from '@src/components/feedItems/TweetFeedItem';
 import {VideoFeedItemComponent} from '@src/components/feedItems/VideoFeedItem';
@@ -118,35 +116,8 @@ const FeedItemScreenMainContent: React.FC<{
   return (
     <>
       {feedItemContent}
-      <RegisterFeedItemScreenDevToolbarActions feedItem={feedItem} />
+      <RegisterIndividualFeedItemDevToolbarSection feedItem={feedItem} />
     </>
-  );
-};
-
-const RegisterFeedItemScreenDevToolbarActions: React.FC<{
-  readonly feedItem: FeedItem;
-}> = ({feedItem}) => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const registerAction = useDevToolbarStore((state) => state.registerAction);
-
-  useEffect(() => {
-    return registerAction({
-      actionId: 'VIEW_FEED_ITEM_JSON',
-      text: 'View feed item as JSON',
-      onClick: () => setIsDialogOpen(true),
-    });
-  }, [registerAction]);
-
-  return (
-    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Feed item JSON</DialogTitle>
-        </DialogHeader>
-        <pre style={{overflow: 'auto', maxHeight: '60vh'}}>{JSON.stringify(feedItem, null, 2)}</pre>
-      </DialogContent>
-    </Dialog>
   );
 };
 

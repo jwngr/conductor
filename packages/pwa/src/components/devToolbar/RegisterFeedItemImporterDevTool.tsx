@@ -1,20 +1,28 @@
 import {useCallback, useEffect, useState} from 'react';
+import styled from 'styled-components';
 
 import {isValidUrl} from '@shared/lib/urls';
 
+import {DevToolbarSectionType} from '@shared/types/devToolbar.types';
 import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems.types';
 
 import {useDevToolbarStore} from '@shared/stores/DevToolbarStore';
 
+import {Button, ButtonVariant} from '@src/components/atoms/Button';
+import {Input} from '@src/components/atoms/Input';
+
 import {useFeedItemsService} from '@src/lib/feedItems.pwa';
 
-export const RegisterFeedItemImporterDevTool: React.FC = () => {
+const Status = styled.div<{readonly $isError?: boolean}>`
+  font-size: 12px;
+  color: ${({theme, $isError}) => ($isError ? theme.colors.error : theme.colors.success)};
+`;
+
+const FeedItemImporter: React.FC = () => {
   const feedItemsService = useFeedItemsService();
 
   const [url, setUrl] = useState('');
   const [status, setStatus] = useState('');
-
-  const registerAction = useDevToolbarStore((state) => state.registerAction);
 
   const handleAddItemToQueue = useCallback(
     async (urlToAdd: string) => {
@@ -41,32 +49,57 @@ export const RegisterFeedItemImporterDevTool: React.FC = () => {
     [feedItemsService]
   );
 
+  return (
+    <>
+      <Input
+        type="text"
+        value={url}
+        placeholder="Enter URL to test"
+        onChange={(e) => setUrl(e.target.value)}
+      />
+      <Button
+        variant={ButtonVariant.Secondary}
+        onClick={() => {
+          handleAddItemToQueue('https://jwn.gr/posts/migrating-from-gatsby-to-astro/');
+        }}
+      >
+        Import personal blog post
+      </Button>
+      <Button
+        variant={ButtonVariant.Secondary}
+        onClick={() => {
+          handleAddItemToQueue('https://www.youtube.com/watch?v=p_di4Zn4wz4');
+        }}
+      >
+        Import YouTube video
+      </Button>
+      <Button
+        variant={ButtonVariant.Secondary}
+        onClick={() => {
+          handleAddItemToQueue('https://wattenberger.com/thoughts/the-internet-for-the-mind');
+        }}
+      >
+        Import complex blog post
+      </Button>
+
+      <Button variant={ButtonVariant.Secondary} onClick={() => handleAddItemToQueue(url)}>
+        Test URL import
+      </Button>
+      {status && <Status $isError={status.includes('Error')}>{status}</Status>}
+    </>
+  );
+};
+
+export const RegisterFeedItemImporterDevToolbarSection: React.FC = () => {
+  const registerSection = useDevToolbarStore((state) => state.registerSection);
+
   useEffect(() => {
-    const unsubscribeA = registerAction({
-      actionId: 'IMPORT_PERSONAL_BLOG_POST',
-      text: 'Import personal blog post',
-      onClick: () => handleAddItemToQueue('https://jwn.gr/posts/migrating-from-gatsby-to-astro/'),
+    return registerSection({
+      sectionType: DevToolbarSectionType.FeedItemImporter,
+      title: 'Feed item importer',
+      renderSection: () => <FeedItemImporter />,
     });
-
-    const unsubscribeB = registerAction({
-      actionId: 'IMPORT_YOUTUBE_VIDEO',
-      text: 'Import YouTube video',
-      onClick: () => handleAddItemToQueue('https://www.youtube.com/watch?v=p_di4Zn4wz4'),
-    });
-
-    const unsubscribeC = registerAction({
-      actionId: 'IMPORT_COMPLEX_BLOG_POST',
-      text: 'Import complex blog post',
-      onClick: () =>
-        handleAddItemToQueue('https://wattenberger.com/thoughts/the-internet-for-the-mind'),
-    });
-
-    return () => {
-      unsubscribeA();
-      unsubscribeB();
-      unsubscribeC();
-    };
-  }, [registerAction, handleAddItemToQueue, url]);
+  }, [registerSection]);
 
   return null;
 };

@@ -33,6 +33,8 @@ import {Consumer, Unsubscribe} from '@shared/types/utils.types';
 export class EventLogService {
   constructor(
     private readonly eventLogDbRef: CollectionReference,
+    // TODO: This should probably be set via a public method so that it can log events even when
+    // logged out.
     private readonly userId: UserId
   ) {}
 

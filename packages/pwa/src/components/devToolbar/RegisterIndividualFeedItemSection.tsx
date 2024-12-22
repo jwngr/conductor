@@ -1,0 +1,46 @@
+import {useEffect} from 'react';
+
+import {DevToolbarSectionType} from '@shared/types/devToolbar.types';
+import {FeedItem} from '@shared/types/feedItems.types';
+
+import {useDevToolbarStore} from '@shared/stores/DevToolbarStore';
+
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@src/components/atoms/Dialog';
+
+const IndividualFeedItemDevToolbarSection: React.FC<{
+  readonly feedItem: FeedItem;
+}> = ({feedItem}) => {
+  return (
+    <Dialog>
+      <DialogTrigger>View feed item as JSON</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Feed item JSON</DialogTitle>
+        </DialogHeader>
+        <pre style={{overflow: 'auto', maxHeight: '60vh'}}>{JSON.stringify(feedItem, null, 2)}</pre>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export const RegisterIndividualFeedItemDevToolbarSection: React.FC<{
+  readonly feedItem: FeedItem;
+}> = ({feedItem}) => {
+  const registerSection = useDevToolbarStore((state) => state.registerSection);
+
+  useEffect(() => {
+    return registerSection({
+      sectionType: DevToolbarSectionType.IndividualFeedItemActions,
+      title: 'Current feed item',
+      renderSection: () => <IndividualFeedItemDevToolbarSection feedItem={feedItem} />,
+    });
+  }, [registerSection, feedItem]);
+
+  return null;
+};

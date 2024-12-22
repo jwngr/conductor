@@ -14,8 +14,8 @@ import {AuthSubscriptions} from '@src/components/auth/AuthSubscriptions';
 import {RequireLoggedInUser} from '@src/components/auth/RequireLoggedInUser';
 import {SignOutRedirect} from '@src/components/auth/SignOutRedirect';
 import {DevToolbar} from '@src/components/devToolbar/DevToolbar';
-import {RegisterFeedItemImporterDevTool} from '@src/components/devToolbar/RegisterFeedItemImporterDevTool';
-import {RegisterUserFeedSubscriberDevTool} from '@src/components/devToolbar/RegisterUserFeedSubscriberDevToolbarActions';
+import {RegisterFeedItemImporterDevToolbarSection} from '@src/components/devToolbar/RegisterFeedItemImporterDevTool';
+import {RegisterUserFeedSubscriberDevToolbarSection} from '@src/components/devToolbar/RegisterUserFeedSubscriberDevToolbarActions';
 
 import {NotFoundScreen} from '@src/screens/404';
 import {ErrorScreen} from '@src/screens/ErrorScreen';
@@ -95,8 +95,8 @@ const LoggedInGlobalSubscriptions: React.FC = () => {
 
   return (
     <RequireLoggedInUser>
-      <RegisterFeedItemImporterDevTool />
-      <RegisterUserFeedSubscriberDevTool />
+      <RegisterFeedItemImporterDevToolbarSection />
+      <RegisterUserFeedSubscriberDevToolbarSection />
     </RequireLoggedInUser>
   );
 };

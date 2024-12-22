@@ -7,7 +7,7 @@ import {EventLogService} from '@shared/lib/eventLog';
 import {EventId, EventLogItem} from '@shared/types/eventLog.types';
 import {ViewType} from '@shared/types/query.types';
 
-import {useLoggedInUser, useMaybeLoggedInUser} from '@shared/hooks/auth.hooks';
+import {useLoggedInUser} from '@shared/hooks/auth.hooks';
 
 import {firebaseService} from '@src/lib/firebase.pwa';
 
@@ -23,17 +23,6 @@ export const useEventLogService = () => {
     () => new EventLogService(eventLogDbRef, loggedInUser.userId),
     [loggedInUser.userId]
   );
-
-  return eventLogService;
-};
-
-export const useMaybeEventLogService = () => {
-  const {isLoading, loggedInUser} = useMaybeLoggedInUser();
-
-  const eventLogService = useMemo(() => {
-    if (isLoading || !loggedInUser) return null;
-    return new EventLogService(eventLogDbRef, loggedInUser.userId);
-  }, [isLoading, loggedInUser]);
 
   return eventLogService;
 };

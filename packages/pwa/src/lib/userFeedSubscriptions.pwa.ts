@@ -83,10 +83,10 @@ export class ClientUserFeedSubscriptionsService {
     return makeSuccessResult(newUserFeedSubscriptionId);
   }
 
-  public async unsubscribeFromFeedUrl(url: string): AsyncResult<void> {
-    console.log('unsubscribeFromFeedUrl', url);
-    return makeSuccessResult(undefined);
-  }
+  // TODO: Implement this.
+  // public async unsubscribeFromFeedUrl(url: string): AsyncResult<void> {
+  //   return makeSuccessResult(undefined);
+  // }
 
   /**
    * Watches updates for an individual user feed subscription.
