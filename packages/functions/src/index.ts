@@ -10,6 +10,7 @@ import {
   ImportQueueItemStatus,
   makeImportQueueItemId,
 } from '@shared/types/importQueue.types';
+import {makeSuccessResult} from '@shared/types/result.types';
 import {makeUserId, UserId} from '@shared/types/user.types';
 
 import {deleteImportQueueItem, importFeedItem, updateImportQueueItem} from '@src/lib/importQueue';
@@ -206,6 +207,6 @@ export const subscribeUserToFeedOnCall = onCall(
     logger.log(`[SUBSCRIBE] Successfully subscribed user to feed`, logDetailsWithFeedId);
 
     // TODO: Is this what I want to return?
-    return;
+    return makeSuccessResult(undefined);
   }
 );

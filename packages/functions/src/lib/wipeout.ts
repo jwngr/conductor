@@ -34,17 +34,18 @@ export async function wipeoutUser(userId: UserId): AsyncResult<void> {
 
   if (userFeedSubscriptionsResult.success) {
     const userFeedSubscriptions = userFeedSubscriptionsResult.value;
-    const userFeedSubscriptionIds = userFeedSubscriptions.map(
+    const activeUserFeedSubscriptions = userFeedSubscriptions.filter(({isActive}) => isActive);
+    const activeUserFeedSubscriptionIds = activeUserFeedSubscriptions.map(
       ({userFeedSubscriptionId}) => userFeedSubscriptionId
     );
 
     logger.info(
-      `[WIPEOUT] Unsubscribing user ${userId} from ${userFeedSubscriptions.length} feed subscriptions`,
-      {userFeedSubscriptionIds, ...logDetails}
+      `[WIPEOUT] Unsubscribing user ${userId} from ${activeUserFeedSubscriptionIds.length} active feed subscriptions`,
+      {activeUserFeedSubscriptionIds, ...logDetails}
     );
 
-    const unsubscribeFromFeedSuppliers: Supplier<AsyncResult<void>>[] = userFeedSubscriptionIds.map(
-      (userFeedSubscriptionId) => async () => {
+    const unsubscribeFromFeedSuppliers: Supplier<AsyncResult<void>>[] =
+      activeUserFeedSubscriptionIds.map((userFeedSubscriptionId) => async () => {
         logger.info(
           `[WIPEOUT] Unsubscribing user ${userId} from feed subscription ${userFeedSubscriptionId}...`,
           {userFeedSubscriptionId, ...logDetails}
@@ -52,30 +53,17 @@ export async function wipeoutUser(userId: UserId): AsyncResult<void> {
         return await adminUserFeedSubscriptionsService.unsubscribeUserFromFeed(
           userFeedSubscriptionId
         );
-      }
-    );
+      });
 
     const unsubscribeUserFromFeedsResult = await batchAsyncResults(unsubscribeFromFeedSuppliers, 3);
     if (!unsubscribeUserFromFeedsResult.success) {
       logger.error(`[WIPEOUT] Failed to unsubscribe from feed subscriptions for user`, {
         error: unsubscribeUserFromFeedsResult.error,
-        userFeedSubscriptionIds,
+        activeUserFeedSubscriptionIds,
         ...logDetails,
       });
       wasSuccessful = false;
     }
-  }
-
-  // TODO: Should I just delete using the list of IDs I already have instead?
-  logger.info('[WIPEOUT] Deleting user feed subscriptions for user...', logDetails);
-  const deleteUserFeedSubscriptionsResult =
-    await adminUserFeedSubscriptionsService.deleteAllForUser(userId);
-  if (!deleteUserFeedSubscriptionsResult.success) {
-    logger.error(`[WIPEOUT] Error deleting feed subscriptions for user`, {
-      error: deleteUserFeedSubscriptionsResult.error,
-      ...logDetails,
-    });
-    wasSuccessful = false;
   }
 
   logger.info('[WIPEOUT] Wiping out Cloud Storage files for user...', logDetails);
@@ -92,8 +80,8 @@ export async function wipeoutUser(userId: UserId): AsyncResult<void> {
   const deleteFirestoreResult = await asyncTryAll<[undefined, undefined, undefined, undefined]>([
     deleteUsersDocForUser(userId),
     deleteFeedItemDocsForUsers(userId),
-    adminUserFeedSubscriptionsService.deleteAllForUser(userId),
     deleteImportQueueDocsForUser(userId),
+    adminUserFeedSubscriptionsService.deleteAllForUser(userId),
   ]);
   if (!deleteFirestoreResult.success) {
     deleteFirestoreResult.error.forEach((currentError) => {

@@ -59,8 +59,7 @@ export class SuperfeedrService {
       );
     }
 
-    const data = await superfeedrResponse.text();
-    return makeSuccessResult(data);
+    return makeSuccessResult(responseText);
   }
 
   public async unsubscribeFromFeed(feedUrl: string): AsyncResult<void> {

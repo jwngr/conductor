@@ -13,7 +13,7 @@ import {Input} from '@src/components/atoms/Input';
 
 import {useFeedItemsService} from '@src/lib/feedItems.pwa';
 
-const Status = styled.div<{readonly $isError?: boolean}>`
+const StatusText = styled.div<{readonly $isError?: boolean}>`
   font-size: 12px;
   color: ${({theme, $isError}) => ($isError ? theme.colors.error : theme.colors.success)};
 `;
@@ -40,7 +40,7 @@ const FeedItemImporter: React.FC = () => {
       });
 
       if (addFeedItemResult.success) {
-        setStatus('URL saved   successfully');
+        setStatus('URL saved successfully');
         setUrl('');
       } else {
         setStatus(`Error: ${addFeedItemResult.error}`);
@@ -85,7 +85,7 @@ const FeedItemImporter: React.FC = () => {
       <Button variant={ButtonVariant.Secondary} onClick={() => handleAddItemToQueue(url)}>
         Test URL import
       </Button>
-      {status && <Status $isError={status.includes('Error')}>{status}</Status>}
+      {status ? <StatusText $isError={status.includes('Error')}>{status}</StatusText> : null}
     </>
   );
 };

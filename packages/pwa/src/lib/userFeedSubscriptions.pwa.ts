@@ -32,7 +32,7 @@ interface SubscribeToFeedRequest {
 }
 
 interface SubscribeToFeedResponse {
-  readonly feedSubscriptionId: string;
+  readonly userFeedSubscriptionId: string;
 }
 
 type CallSubscribeUserToFeedFn = AsyncFunc<
@@ -73,9 +73,11 @@ export class ClientUserFeedSubscriptionsService {
     if (!subscribeResponseResult.success) return subscribeResponseResult;
     const subscribeResponse = subscribeResponseResult.value;
 
+    // TODO: Parse and validate the response from the function.
+
     // Parse the response to get the new user feed subscription ID.
     const newUserFeedSubscriptionIdResult = makeUserFeedSubscriptionId(
-      subscribeResponse.data.feedSubscriptionId
+      subscribeResponse.data.userFeedSubscriptionId
     );
     if (!newUserFeedSubscriptionIdResult.success) return newUserFeedSubscriptionIdResult;
     const newUserFeedSubscriptionId = newUserFeedSubscriptionIdResult.value;
@@ -92,13 +94,13 @@ export class ClientUserFeedSubscriptionsService {
    * Watches updates for an individual user feed subscription.
    */
   public watchSubscription(args: {
-    readonly feedSubscriptionId: UserFeedSubscriptionId;
+    readonly userFeedSubscriptionId: UserFeedSubscriptionId;
     readonly successCallback: Consumer<UserFeedSubscription>;
     readonly errorCallback: Consumer<Error>;
   }): Unsubscribe {
-    const {feedSubscriptionId, successCallback, errorCallback} = args;
+    const {userFeedSubscriptionId, successCallback, errorCallback} = args;
 
-    const userFeedSubscriptionDoc = doc(this.userFeedSubscriptionsDbRef, feedSubscriptionId);
+    const userFeedSubscriptionDoc = doc(this.userFeedSubscriptionsDbRef, userFeedSubscriptionId);
 
     const unsubscribe = onSnapshot(
       userFeedSubscriptionDoc,
