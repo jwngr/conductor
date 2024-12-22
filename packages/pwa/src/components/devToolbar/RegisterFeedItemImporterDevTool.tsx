@@ -59,25 +59,23 @@ const FeedItemImporter: React.FC = () => {
       />
       <Button
         variant={ButtonVariant.Secondary}
-        onClick={() => {
-          void handleAddItemToQueue('https://jwn.gr/posts/migrating-from-gatsby-to-astro/');
-        }}
+        onClick={() =>
+          void handleAddItemToQueue('https://jwn.gr/posts/migrating-from-gatsby-to-astro/')
+        }
       >
         Import personal blog post
       </Button>
       <Button
         variant={ButtonVariant.Secondary}
-        onClick={() => {
-          void handleAddItemToQueue('https://www.youtube.com/watch?v=p_di4Zn4wz4');
-        }}
+        onClick={() => handleAddItemToQueue('https://www.youtube.com/watch?v=p_di4Zn4wz4')}
       >
         Import YouTube video
       </Button>
       <Button
         variant={ButtonVariant.Secondary}
-        onClick={() => {
-          void handleAddItemToQueue('https://wattenberger.com/thoughts/the-internet-for-the-mind');
-        }}
+        onClick={() =>
+          handleAddItemToQueue('https://wattenberger.com/thoughts/the-internet-for-the-mind')
+        }
       >
         Import complex blog post
       </Button>
