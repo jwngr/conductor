@@ -1,13 +1,4 @@
-import {partition} from '@shared/lib/utils';
-
-import {
-  AsyncResult,
-  ErrorResult,
-  makeErrorResult,
-  makeSuccessResult,
-  Result,
-  SuccessResult,
-} from '@shared/types/result.types';
+import {AsyncResult, makeErrorResult, makeSuccessResult, Result} from '@shared/types/result.types';
 import {Supplier} from '@shared/types/utils.types';
 
 /**
@@ -72,53 +63,67 @@ export async function asyncTry<T>(asyncFn: Supplier<Promise<T>>): AsyncResult<T>
 }
 
 /**
- * Executes the given `AsyncResult`s in parallel and returns a single `SuccessResult<T>` with their
- * results. If any of the results fail, an array of `ErrorResult`s is returned.
+ * Executes the given `AsyncResult`s in parallel and returns a single `SuccessResult` with their
+ * results. Returns only once all promises have been resolved.
+ *
+ * Only returns an `ErrorResult` if something unexpected happens. A failed promise is not considered
+ * an error and will not prevent other promises from executing. Use the `success` field to see if
+ * any promises failed.
  */
-export async function asyncTryAll<T>(
-  asyncResults: Array<AsyncResult<unknown>>
-): AsyncResult<T, Error[]> {
+export async function asyncTryAll<T extends readonly unknown[]>(
+  asyncResults: readonly [...{[K in keyof T]: AsyncResult<T[K]>}]
+): AsyncResult<{
+  readonly success: boolean;
+  readonly results: {[K in keyof T]: Result<T[K]>};
+}> {
   // Allow `try` / `catch` block here.
   // eslint-disable-next-line no-restricted-syntax
   try {
-    const results = await Promise.all(asyncResults);
-    const [succeededResults, failedResults] = partition<SuccessResult<unknown>, ErrorResult>(
-      results,
-      (result) => result.success
-    );
-    if (failedResults.length > 0) {
-      return makeErrorResult(failedResults.map((result) => result.error));
-    }
-    const succeededValues = succeededResults.map((result) => result.value);
-    return makeSuccessResult(succeededValues as T);
+    const allResults = await Promise.all(asyncResults);
+    const failedResults = allResults.filter((result) => !result.success);
+    return makeSuccessResult({
+      success: failedResults.length === 0,
+      results: allResults,
+    });
   } catch (error) {
     const betterError = upgradeUnknownError(error);
-    return makeErrorResult([betterError]);
+    return makeErrorResult(betterError);
   }
 }
 
 /**
  * Executes the given `Promise`s in parallel and returns a single `SuccessResult<T>` with their
- * results. If any of the promises fail, a single `ErrorResult` is returned.
+ * results. Returns only once all promises have been resolved.
+ *
+ * Only returns an `ErrorResult` if something unexpected happens. A failed promise is not considered
+ * an error and will not prevent other promises from executing. Use the `success` field to see if
+ * any promises failed.
  */
-export async function asyncTryAllPromises<T>(
-  asyncFns: Array<Promise<unknown>>
-): AsyncResult<T, Error[]> {
+export async function asyncTryAllPromises<T extends readonly unknown[]>(
+  asyncFns: readonly [...{[K in keyof T]: Promise<T[K]>}]
+): AsyncResult<{
+  readonly success: boolean;
+  readonly results: {[K in keyof T]: Result<T[K]>};
+}> {
   // Allow `try` / `catch` block here.
   // eslint-disable-next-line no-restricted-syntax
   try {
-    const results = await Promise.allSettled(asyncFns);
-    const [fulfilled, rejected] = partition(results, (result) => result.status === 'fulfilled');
-    if (rejected.length > 0) {
-      const errors = rejected.map((result) =>
-        upgradeUnknownError((result as PromiseRejectedResult).reason)
-      );
-      return makeErrorResult(errors);
-    }
-    const values = fulfilled.map((result) => (result as PromiseFulfilledResult<unknown>).value);
-    return makeSuccessResult(values as T);
+    const allPromises = await Promise.allSettled(asyncFns);
+    let hasError = false;
+    const allResults = allPromises.map((result) => {
+      if (result.status === 'fulfilled') {
+        return makeSuccessResult(result.value);
+      }
+      hasError = true;
+      return makeErrorResult(upgradeUnknownError(result.reason));
+    }) as {[K in keyof T]: Result<T[K]>};
+
+    return makeSuccessResult({
+      success: !hasError,
+      results: allResults,
+    });
   } catch (error) {
     const betterError = upgradeUnknownError(error);
-    return makeErrorResult([betterError]);
+    return makeErrorResult(betterError);
   }
 }

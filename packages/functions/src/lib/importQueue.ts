@@ -4,7 +4,6 @@ import {IMPORT_QUEUE_DB_COLLECTION} from '@shared/lib/constants';
 import {asyncTryAll, prefixError} from '@shared/lib/errors';
 
 import {FeedItemId} from '@shared/types/feedItems.types';
-import {ParsedFirecrawlData} from '@shared/types/firecrawl.types';
 import {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue.types';
 import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import {UserId} from '@shared/types/user.types';
@@ -29,7 +28,7 @@ import {fetchRawHtml} from '@src/lib/scraper';
  * Imports a feed item, pulling in the raw HTML and LLM context.
  */
 export async function importFeedItem(importQueueItem: ImportQueueItem): AsyncResult<void> {
-  const importAllDataResult = await asyncTryAll<[string, ParsedFirecrawlData]>([
+  const importAllDataResult = await asyncTryAll([
     importFeedItemHtml({
       url: importQueueItem.url,
       feedItemId: importQueueItem.feedItemId,
@@ -43,10 +42,7 @@ export async function importFeedItem(importQueueItem: ImportQueueItem): AsyncRes
   ]);
 
   if (!importAllDataResult.success) {
-    return makeErrorResult(
-      // TODO: This indexing into errors array is a bit awkward.
-      prefixError(importAllDataResult.error[0], 'Error importing feed item')
-    );
+    return makeErrorResult(prefixError(importAllDataResult.error, 'Error importing feed item'));
   }
 
   return makeSuccessResult(undefined);
@@ -99,7 +95,7 @@ export async function importFeedItemFirecrawl(args: {
 
   const firecrawlData = fetchDataResult.value;
 
-  const saveFirecrawlDataResult = await asyncTryAll<[undefined, undefined, undefined]>([
+  const saveFirecrawlDataResult = await asyncTryAll([
     saveMarkdownToStorage({
       feedItemId: feedItemId,
       userId: userId,
@@ -114,8 +110,7 @@ export async function importFeedItemFirecrawl(args: {
 
   if (!saveFirecrawlDataResult.success) {
     return makeErrorResult(
-      // TODO: This indexing into errors array is a bit awkward.
-      prefixError(saveFirecrawlDataResult.error[0], 'Error saving Firecrawl data for feed item')
+      prefixError(saveFirecrawlDataResult.error, 'Error saving Firecrawl data for feed item')
     );
   }
 
