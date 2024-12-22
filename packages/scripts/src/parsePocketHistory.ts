@@ -79,4 +79,4 @@ function escapeTabField(field: string): string {
 //   }
 // }
 
-main();
+void main();

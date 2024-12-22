@@ -60,7 +60,7 @@ const FeedItemImporter: React.FC = () => {
       <Button
         variant={ButtonVariant.Secondary}
         onClick={() => {
-          handleAddItemToQueue('https://jwn.gr/posts/migrating-from-gatsby-to-astro/');
+          void handleAddItemToQueue('https://jwn.gr/posts/migrating-from-gatsby-to-astro/');
         }}
       >
         Import personal blog post
@@ -68,7 +68,7 @@ const FeedItemImporter: React.FC = () => {
       <Button
         variant={ButtonVariant.Secondary}
         onClick={() => {
-          handleAddItemToQueue('https://www.youtube.com/watch?v=p_di4Zn4wz4');
+          void handleAddItemToQueue('https://www.youtube.com/watch?v=p_di4Zn4wz4');
         }}
       >
         Import YouTube video
@@ -76,7 +76,7 @@ const FeedItemImporter: React.FC = () => {
       <Button
         variant={ButtonVariant.Secondary}
         onClick={() => {
-          handleAddItemToQueue('https://wattenberger.com/thoughts/the-internet-for-the-mind');
+          void handleAddItemToQueue('https://wattenberger.com/thoughts/the-internet-for-the-mind');
         }}
       >
         Import complex blog post

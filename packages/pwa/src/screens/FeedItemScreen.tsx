@@ -66,7 +66,8 @@ const useMarkFeedItemRead = (args: {
         // TODO: Show an error toast.
       }
     }
-    go();
+
+    void go();
   }, [feedItemId, isFeedItemNull, isFeedItemImported, feedItemsService]);
 };
 

@@ -6,6 +6,11 @@ import tseslint from 'typescript-eslint';
 const sharedLanguageOptions = {
   ecmaVersion: 2022,
   sourceType: 'module',
+  parser: tseslint.parser,
+  parserOptions: {
+    project: ['./tsconfig.json', './packages/*/tsconfig.json'],
+    tsconfigRootDir: '.',
+  },
 };
 
 const noRelativeImportsPattern = {
@@ -33,6 +38,8 @@ function makeSharedRules({
     'no-console': 'error',
     '@typescript-eslint/array-type': ['error', {default: 'array-simple'}],
     '@typescript-eslint/no-extraneous-class': 'off',
+    '@typescript-eslint/await-thenable': 'error',
+    '@typescript-eslint/no-floating-promises': 'error',
     'no-restricted-syntax': [
       'error',
       {

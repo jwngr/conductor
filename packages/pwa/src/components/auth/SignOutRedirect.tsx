@@ -27,7 +27,8 @@ export const SignOutRedirect: React.FC = () => {
 
       // TODO: Clear other stuff from local storage.
     };
-    go();
+
+    void go();
   }, [navigate]);
 
   return null;
