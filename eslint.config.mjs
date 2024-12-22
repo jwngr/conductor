@@ -33,6 +33,13 @@ function makeSharedRules({
     'no-console': 'error',
     '@typescript-eslint/array-type': ['error', {default: 'array-simple'}],
     '@typescript-eslint/no-extraneous-class': 'off',
+    'no-restricted-syntax': [
+      'error',
+      {
+        selector: 'TryStatement',
+        message: 'Use `syncTry` or `asyncTry` helpers instead of `try` / `catch` blocks.',
+      },
+    ],
     'no-restricted-imports': [
       'error',
       {

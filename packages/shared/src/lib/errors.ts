@@ -42,6 +42,8 @@ export function prefixError(error: Error, prefix: string): Error {
  * For asynchronous functions, see {@link asyncTry}.
  */
 export function syncTry<T>(fn: Supplier<T>): Result<T> {
+  // Allow `try` / `catch` block here.
+  // eslint-disable-next-line no-restricted-syntax
   try {
     const result = fn();
     return makeSuccessResult(result);
@@ -58,6 +60,8 @@ export function syncTry<T>(fn: Supplier<T>): Result<T> {
  * For synchronous functions, see {@link syncTry}.
  */
 export async function asyncTry<T>(asyncFn: Supplier<Promise<T>>): AsyncResult<T> {
+  // Allow `try` / `catch` block here.
+  // eslint-disable-next-line no-restricted-syntax
   try {
     const result = await asyncFn();
     return makeSuccessResult(result);
@@ -74,6 +78,8 @@ export async function asyncTry<T>(asyncFn: Supplier<Promise<T>>): AsyncResult<T>
 export async function asyncTryAll<T>(
   asyncResults: Array<AsyncResult<unknown>>
 ): AsyncResult<T, Error[]> {
+  // Allow `try` / `catch` block here.
+  // eslint-disable-next-line no-restricted-syntax
   try {
     const results = await Promise.all(asyncResults);
     const [succeededResults, failedResults] = partition<SuccessResult<unknown>, ErrorResult>(
@@ -98,6 +104,8 @@ export async function asyncTryAll<T>(
 export async function asyncTryAllPromises<T>(
   asyncFns: Array<Promise<unknown>>
 ): AsyncResult<T, Error[]> {
+  // Allow `try` / `catch` block here.
+  // eslint-disable-next-line no-restricted-syntax
   try {
     const results = await Promise.allSettled(asyncFns);
     const [fulfilled, rejected] = partition(results, (result) => result.status === 'fulfilled');

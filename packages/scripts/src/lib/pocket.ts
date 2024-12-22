@@ -6,6 +6,7 @@ import {PocketExportedItem} from '../types/pocket';
 
 export class PocketService {
   static async parseExportFromFile(path: string): Promise<readonly PocketExportedItem[]> {
+    // eslint-disable-next-line no-restricted-syntax
     try {
       const fileContent = await fs.readFile(path, 'utf-8');
       return this.parseExport(fileContent);
