@@ -26,8 +26,8 @@ export async function wipeoutUser(userId: UserId): AsyncResult<void> {
     await adminUserFeedSubscriptionsService.fetchAllForUser(userId);
   if (!userFeedSubscriptionsResult.success) {
     logger.error(`[WIPEOUT] Failed to fetch user feed subscriptions for user`, {
-      error: userFeedSubscriptionsResult.error,
       ...logDetails,
+      error: userFeedSubscriptionsResult.error,
     });
     wasSuccessful = false;
   }
@@ -58,9 +58,9 @@ export async function wipeoutUser(userId: UserId): AsyncResult<void> {
     const unsubscribeUserFromFeedsResult = await batchAsyncResults(unsubscribeFromFeedSuppliers, 3);
     if (!unsubscribeUserFromFeedsResult.success) {
       logger.error(`[WIPEOUT] Failed to unsubscribe from feed subscriptions for user`, {
+        ...logDetails,
         error: unsubscribeUserFromFeedsResult.error,
         activeUserFeedSubscriptionIds,
-        ...logDetails,
       });
       wasSuccessful = false;
     }
@@ -70,8 +70,8 @@ export async function wipeoutUser(userId: UserId): AsyncResult<void> {
   const deleteStorageFilesResult = await deleteStorageFilesForUser(userId);
   if (!deleteStorageFilesResult.success) {
     logger.error(`[WIPEOUT] Error wiping out Cloud Storage files for user`, {
-      error: deleteStorageFilesResult.error,
       ...logDetails,
+      error: deleteStorageFilesResult.error,
     });
     wasSuccessful = false;
   }
@@ -83,20 +83,21 @@ export async function wipeoutUser(userId: UserId): AsyncResult<void> {
     deleteImportQueueDocsForUser(userId),
     adminUserFeedSubscriptionsService.deleteAllForUser(userId),
   ]);
-  if (!deleteFirestoreResult.success) {
+  const deleteFirestoreResultError = deleteFirestoreResult.success
+    ? deleteFirestoreResult.value.results.find((result) => !result.success)?.error
+    : deleteFirestoreResult.error;
+  if (deleteFirestoreResultError) {
     logger.error(`[WIPEOUT] Error wiping out Firestore data for user`, {
-      error: deleteFirestoreResult.error,
       ...logDetails,
+      error: deleteFirestoreResultError,
     });
     wasSuccessful = false;
   }
 
   if (!wasSuccessful) {
-    return makeErrorResult(
-      new Error(
-        `User not fully wiped out. See error logs for details on failure to wipe out user ${userId}`
-      )
-    );
+    const errorMessage = `User not fully wiped out. See error logs for details on failure to wipe out user ${userId}`;
+    logger.error(errorMessage, logDetails);
+    return makeErrorResult(new Error(errorMessage));
   }
 
   return makeSuccessResult(undefined);

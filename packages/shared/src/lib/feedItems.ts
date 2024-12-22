@@ -141,8 +141,11 @@ export class FeedItemsService {
       setDoc(doc(this.importQueueDbRef, importQueueItemId), importQueueItem),
     ]);
 
-    if (!addFeedItemResult.success) {
-      return makeErrorResult(addFeedItemResult.error);
+    const addFeedItemResultError = addFeedItemResult.success
+      ? addFeedItemResult.value.results.find((result) => !result.success)?.error
+      : addFeedItemResult.error;
+    if (addFeedItemResultError) {
+      return makeErrorResult(addFeedItemResultError);
     }
 
     return makeSuccessResult(feedItem.feedItemId);

@@ -32,11 +32,14 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
   async (event) => {
     const {importQueueItemId: maybeImportQueueItemId} = event.params;
 
+    logger.info(`[IMPORT] Processing import queue item "${maybeImportQueueItemId}"`);
+
     const importQueueItemIdResult = makeImportQueueItemId(maybeImportQueueItemId);
     if (!importQueueItemIdResult.success) {
-      logger.error(
-        `[IMPORT] Invalid import queue item ID "${maybeImportQueueItemId}": ${importQueueItemIdResult.error}`
-      );
+      logger.error(importQueueItemIdResult.error.message, {
+        error: importQueueItemIdResult.error,
+        maybeImportQueueItemId,
+      });
       return;
     }
     const importQueueItemId = importQueueItemIdResult.value;
@@ -65,7 +68,7 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
     } as const;
 
     const handleError = async (errorPrefix: string, error: Error) => {
-      logger.error(`${errorPrefix}: ${error.message}`, logDetails);
+      logger.error(`${errorPrefix}: ${error.message}`, {error, ...logDetails});
       await updateImportQueueItem(importQueueItemId, {status: ImportQueueItemStatus.Failed});
     };
 
