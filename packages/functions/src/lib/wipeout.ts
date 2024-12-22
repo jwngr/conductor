@@ -26,8 +26,8 @@ export async function wipeoutUser(userId: UserId): AsyncResult<void> {
     await adminUserFeedSubscriptionsService.fetchAllForUser(userId);
   if (!userFeedSubscriptionsResult.success) {
     logger.error(`[WIPEOUT] Failed to fetch user feed subscriptions for user`, {
-      error: userFeedSubscriptionsResult.error,
       ...logDetails,
+      error: userFeedSubscriptionsResult.error,
     });
     wasSuccessful = false;
   }
@@ -58,9 +58,9 @@ export async function wipeoutUser(userId: UserId): AsyncResult<void> {
     const unsubscribeUserFromFeedsResult = await batchAsyncResults(unsubscribeFromFeedSuppliers, 3);
     if (!unsubscribeUserFromFeedsResult.success) {
       logger.error(`[WIPEOUT] Failed to unsubscribe from feed subscriptions for user`, {
+        ...logDetails,
         error: unsubscribeUserFromFeedsResult.error,
         activeUserFeedSubscriptionIds,
-        ...logDetails,
       });
       wasSuccessful = false;
     }
@@ -70,8 +70,8 @@ export async function wipeoutUser(userId: UserId): AsyncResult<void> {
   const deleteStorageFilesResult = await deleteStorageFilesForUser(userId);
   if (!deleteStorageFilesResult.success) {
     logger.error(`[WIPEOUT] Error wiping out Cloud Storage files for user`, {
-      error: deleteStorageFilesResult.error,
       ...logDetails,
+      error: deleteStorageFilesResult.error,
     });
     wasSuccessful = false;
   }
@@ -88,8 +88,8 @@ export async function wipeoutUser(userId: UserId): AsyncResult<void> {
     : deleteFirestoreResult.error;
   if (deleteFirestoreResultError) {
     logger.error(`[WIPEOUT] Error wiping out Firestore data for user`, {
-      error: deleteFirestoreResultError,
       ...logDetails,
+      error: deleteFirestoreResultError,
     });
     wasSuccessful = false;
   }
