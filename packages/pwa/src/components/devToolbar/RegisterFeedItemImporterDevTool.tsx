@@ -6,9 +6,9 @@ import {isValidUrl} from '@shared/lib/urls';
 import {DevToolbarSectionType} from '@shared/types/devToolbar.types';
 import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems.types';
 
-import {useFeedItemsService} from '@sharedClient/lib/feedItems.client';
-
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
+
+import {useFeedItemsService} from '@sharedClient/lib/feedItems.client';
 
 import {Button, ButtonVariant} from '@src/components/atoms/Button';
 import {Input} from '@src/components/atoms/Input';
