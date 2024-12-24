@@ -1,6 +1,6 @@
 import styled, {css} from 'styled-components';
 
-import {assertNever} from '@shared/lib/utils';
+import {assertNever} from '@shared/lib/utils.shared';
 
 import {ThemeColor} from '@shared/types/theme.types';
 

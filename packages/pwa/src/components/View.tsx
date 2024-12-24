@@ -1,9 +1,9 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import {logger} from '@shared/services/logger';
+import {logger} from '@shared/services/logger.shared';
 
-import {Urls} from '@shared/lib/urls';
+import {Urls} from '@shared/lib/urls.shared';
 
 import type {FeedItem} from '@shared/types/feedItems.types';
 import type {ViewType} from '@shared/types/query.types';

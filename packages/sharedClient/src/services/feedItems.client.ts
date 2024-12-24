@@ -14,17 +14,17 @@ import type {StorageReference} from 'firebase/storage';
 import {getDownloadURL, ref as storageRef} from 'firebase/storage';
 import {useEffect, useMemo, useState} from 'react';
 
-import {makeImportQueueItem} from '@shared/services/importQueue';
+import {makeImportQueueItem} from '@shared/services/importQueue.shared';
 
 import {
   FEED_ITEMS_DB_COLLECTION,
   FEED_ITEMS_STORAGE_COLLECTION,
   IMPORT_QUEUE_DB_COLLECTION,
-} from '@shared/lib/constants';
-import {asyncTry, asyncTryAllPromises} from '@shared/lib/errors';
+} from '@shared/lib/constants.shared';
+import {asyncTry, asyncTryAllPromises} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
-import {isValidUrl} from '@shared/lib/urls';
-import {Views} from '@shared/lib/views';
+import {isValidUrl} from '@shared/lib/urls.shared';
+import {Views} from '@shared/lib/views.shared';
 
 import {
   FeedItemType,

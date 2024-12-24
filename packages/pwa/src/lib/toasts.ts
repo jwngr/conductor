@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
 
-import {makeId} from '@shared/lib/utils';
+import {makeId} from '@shared/lib/utils.shared';
 
 import type {Consumer, Task} from '@shared/types/utils.types';
 

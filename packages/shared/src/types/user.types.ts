@@ -1,6 +1,6 @@
 import type {ActionCodeSettings, User as FirebaseUser, UserCredential} from 'firebase/auth';
 
-import {makeId} from '@shared/lib/utils';
+import {makeId} from '@shared/lib/utils.shared';
 
 import type {AsyncResult, Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';

@@ -1,6 +1,6 @@
 import type {OrderByDirection, WhereFilterOp} from 'firebase/firestore';
 
-import {assertNever} from '@shared/lib/utils';
+import {assertNever} from '@shared/lib/utils.shared';
 
 export enum ViewType {
   Untriaged = 'UNTRIAGED',

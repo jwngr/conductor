@@ -1,6 +1,6 @@
 import {serverTimestamp} from 'firebase/firestore';
 
-import {makeId} from '@shared/lib/utils';
+import {makeId} from '@shared/lib/utils.shared';
 
 import type {Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';

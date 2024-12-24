@@ -1,8 +1,8 @@
 import React, {useCallback} from 'react';
 import styled from 'styled-components';
 
-import {getIconSizeFromButtonIconSize} from '@shared/lib/icons';
-import {assertNever} from '@shared/lib/utils';
+import {getIconSizeFromButtonIconSize} from '@shared/lib/icons.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 
 import type {ButtonIconSize} from '@shared/types/icons.types';
 import {IconName} from '@shared/types/icons.types';

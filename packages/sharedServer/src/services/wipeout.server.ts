@@ -1,7 +1,7 @@
 import {logger} from 'firebase-functions';
 
-import {asyncTryAll} from '@shared/lib/errors';
-import {batchAsyncResults} from '@shared/lib/utils';
+import {asyncTryAll} from '@shared/lib/errorUtils.shared';
+import {batchAsyncResults} from '@shared/lib/utils.shared';
 
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';

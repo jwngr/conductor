@@ -1,4 +1,4 @@
-import {SharedAuthService} from '@shared/services/auth';
+import {SharedAuthService} from '@shared/services/auth.shared';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';
 

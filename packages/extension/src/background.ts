@@ -1,13 +1,13 @@
 import {collection} from 'firebase/firestore';
 import {ref as storageRef} from 'firebase/storage';
 
-import {logger} from '@shared/services/logger';
+import {logger} from '@shared/services/logger.shared';
 
 import {
   FEED_ITEMS_DB_COLLECTION,
   FEED_ITEMS_STORAGE_COLLECTION,
   IMPORT_QUEUE_DB_COLLECTION,
-} from '@shared/lib/constants';
+} from '@shared/lib/constants.shared';
 
 import {FEED_ITEM_EXTENSION_SOURCE} from '@shared/types/feedItems.types';
 import {makeUserId} from '@shared/types/user.types';

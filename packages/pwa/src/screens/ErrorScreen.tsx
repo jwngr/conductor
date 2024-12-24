@@ -1,4 +1,4 @@
-import {Urls} from '@shared/lib/urls';
+import {Urls} from '@shared/lib/urls.shared';
 
 import {ViewType} from '@shared/types/query.types';
 

@@ -1,6 +1,6 @@
 import {useState} from 'react';
 
-import {asyncTry} from '@shared/lib/errors';
+import {asyncTry} from '@shared/lib/errorUtils.shared';
 
 import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems.types';
 

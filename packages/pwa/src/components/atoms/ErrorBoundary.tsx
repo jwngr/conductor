@@ -1,7 +1,7 @@
 import type {ReactNode} from 'react';
 import React from 'react';
 
-import {prefixError, upgradeUnknownError} from '@shared/lib/errors';
+import {prefixError, upgradeUnknownError} from '@shared/lib/errorUtils.shared';
 
 import type {Func} from '@shared/types/utils.types';
 

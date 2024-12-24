@@ -1,7 +1,7 @@
 import admin from 'firebase-admin';
 import type {DocumentData, DocumentReference, Query, QuerySnapshot} from 'firebase-admin/firestore';
 
-import {asyncTry} from '@shared/lib/errors';
+import {asyncTry} from '@shared/lib/errorUtils.shared';
 
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';

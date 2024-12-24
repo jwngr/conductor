@@ -1,4 +1,4 @@
-import {makeId} from '@shared/lib/utils';
+import {makeId} from '@shared/lib/utils.shared';
 
 import type {FeedItemId} from '@shared/types/feedItems.types';
 import type {Result} from '@shared/types/result.types';

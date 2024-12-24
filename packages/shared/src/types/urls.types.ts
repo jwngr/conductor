@@ -1,6 +1,6 @@
 import type {Params} from 'react-router-dom';
 
-import type {CustomIcon} from '@shared/lib/customIcons';
+import type {CustomIcon} from '@shared/lib/customIcons.shared';
 
 import type {FeedItemId} from '@shared/types/feedItems.types';
 import type {ViewType} from '@shared/types/query.types';

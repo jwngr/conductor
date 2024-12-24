@@ -4,8 +4,8 @@ import type {Functions, HttpsCallableResult} from 'firebase/functions';
 import {httpsCallable} from 'firebase/functions';
 import {useMemo} from 'react';
 
-import {USER_FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants';
-import {asyncTry} from '@shared/lib/errors';
+import {USER_FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants.shared';
+import {asyncTry} from '@shared/lib/errorUtils.shared';
 
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';

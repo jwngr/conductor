@@ -1,6 +1,6 @@
 /// <reference types="jest" />
 
-import {asyncTry, asyncTryAll, asyncTryAllPromises, syncTry} from '@shared/lib/errors';
+import {asyncTry, asyncTryAll, asyncTryAllPromises, syncTry} from '@shared/lib/errorUtils.shared';
 
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
