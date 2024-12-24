@@ -1,5 +1,5 @@
 import {Button, ButtonVariant} from '@src/components/atoms/Button';
-import {ToastActionElement} from '@src/components/atoms/Toast';
+import type {ToastActionElement} from '@src/components/atoms/Toast';
 import {StorySection} from '@src/components/styleguide/StorySection';
 
 import {useToast} from '@src/lib/toasts';

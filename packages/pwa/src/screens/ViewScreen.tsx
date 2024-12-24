@@ -1,4 +1,4 @@
-import {ViewType} from '@shared/types/query.types';
+import type {ViewType} from '@shared/types/query.types';
 
 import {AppHeader} from '@src/components/AppHeader';
 import {ScreenMainContentWrapper, ScreenWrapper} from '@src/components/layout/Screen';

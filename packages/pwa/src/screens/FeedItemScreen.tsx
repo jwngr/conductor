@@ -6,7 +6,8 @@ import {logger} from '@shared/lib/logger';
 import {useFeedItemIdFromUrl} from '@shared/lib/router';
 import {assertNever} from '@shared/lib/utils';
 
-import {FeedItem, FeedItemId, FeedItemType} from '@shared/types/feedItems.types';
+import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
+import {FeedItemType} from '@shared/types/feedItems.types';
 import {SystemTagId} from '@shared/types/tags.types';
 
 import {useFeedItem, useFeedItemsService} from '@sharedClient/lib/feedItems.client';

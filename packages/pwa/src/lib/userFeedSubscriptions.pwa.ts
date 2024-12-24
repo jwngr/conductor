@@ -1,27 +1,21 @@
-import {
-  collection,
-  CollectionReference,
-  doc,
-  limit,
-  onSnapshot,
-  orderBy,
-  query,
-  where,
-} from 'firebase/firestore';
-import {Functions, httpsCallable, HttpsCallableResult} from 'firebase/functions';
+import type {CollectionReference} from 'firebase/firestore';
+import {collection, doc, limit, onSnapshot, orderBy, query, where} from 'firebase/firestore';
+import type {Functions, HttpsCallableResult} from 'firebase/functions';
+import {httpsCallable} from 'firebase/functions';
 import {useMemo} from 'react';
 
 import {USER_FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants';
 import {asyncTry} from '@shared/lib/errors';
 
-import {AsyncResult, makeSuccessResult} from '@shared/types/result.types';
-import {UserId} from '@shared/types/user.types';
-import {
-  makeUserFeedSubscriptionId,
+import type {AsyncResult} from '@shared/types/result.types';
+import {makeSuccessResult} from '@shared/types/result.types';
+import type {UserId} from '@shared/types/user.types';
+import type {
   UserFeedSubscription,
   UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
-import {AsyncFunc, Consumer, Unsubscribe} from '@shared/types/utils.types';
+import {makeUserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
+import type {AsyncFunc, Consumer, Unsubscribe} from '@shared/types/utils.types';
 
 import {firebaseService} from '@sharedClient/lib/firebase.client';
 

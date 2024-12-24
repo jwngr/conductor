@@ -1,4 +1,4 @@
-import {HTMLAttributes} from 'react';
+import type {HTMLAttributes} from 'react';
 import styled, {css} from 'styled-components';
 
 import {assertNever} from '@shared/lib/utils';

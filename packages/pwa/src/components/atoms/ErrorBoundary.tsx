@@ -1,8 +1,9 @@
-import React, {ReactNode} from 'react';
+import type {ReactNode} from 'react';
+import React from 'react';
 
 import {prefixError, upgradeUnknownError} from '@shared/lib/errors';
 
-import {Func} from '@shared/types/utils.types';
+import type {Func} from '@shared/types/utils.types';
 
 interface ErrorBoundaryProps {
   readonly fallback: Func<Error, ReactNode>;
