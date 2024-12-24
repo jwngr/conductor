@@ -15,6 +15,8 @@
     "clean": "rm -rf dist/ tsconfig.tsbuildinfo",
     "ci": "rm -rf node_modules/ && yarn install",
     "build": "yarn run clean && yarn run hack-type && tsc --build",
-    "hack-type": "sed -i.bak '/setCookie(/d' ../../node_modules/@types/request/index.d.ts"
+    "hack-type": "sed -i.bak '/setCookie(/d' ../../node_modules/@types/request/index.d.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   }
 }

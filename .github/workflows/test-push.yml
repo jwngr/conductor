@@ -1,0 +1,14 @@
+name: Run tests on push
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - name: CI setup for yarn install
+        uses: ./.github/actions/setup-workflow
+        with:
+          install-deps: 'true'
+      - name: Run tests
+        run: yarn test
