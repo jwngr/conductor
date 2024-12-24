@@ -1,14 +1,9 @@
 import {asyncTry} from '@shared/lib/errors';
 import {logger} from '@shared/lib/logger';
 
-import {
-  HttpMethod,
-  makeErrorResponse,
-  makeSuccessResponse,
-  RequestBody,
-  RequestOptions,
-} from '@shared/types/requests.types';
-import {AsyncResult} from '@shared/types/result.types';
+import type {RequestBody, RequestOptions} from '@shared/types/requests.types';
+import {HttpMethod, makeErrorResponse, makeSuccessResponse} from '@shared/types/requests.types';
+import type {AsyncResult} from '@shared/types/result.types';
 
 async function request<T extends object>(
   url: string,

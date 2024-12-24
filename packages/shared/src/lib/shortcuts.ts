@@ -2,16 +2,14 @@ import {tinykeys} from 'tinykeys';
 
 import {assertNever} from '@shared/lib/utils';
 
-import {
-  isModifierKey,
+import type {
   KeyboardShortcut,
-  KeyboardShortcutId,
-  ModifierKey,
   RegisteredShortcut,
   ShortcutHandler,
   ShortcutKey,
 } from '@shared/types/shortcuts.types';
-import {Task} from '@shared/types/utils.types';
+import {isModifierKey, KeyboardShortcutId, ModifierKey} from '@shared/types/shortcuts.types';
+import type {Task} from '@shared/types/utils.types';
 
 interface KeyboardShortcutsServiceArgs {
   readonly isMac: boolean;

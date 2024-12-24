@@ -2,13 +2,14 @@ import React from 'react';
 import {useMatch} from 'react-router-dom';
 import styled from 'styled-components';
 
-import {CustomIcon, CustomIconType, makeSystemIcon} from '@shared/lib/customIcons';
+import type {CustomIcon} from '@shared/lib/customIcons';
+import {CustomIconType, makeSystemIcon} from '@shared/lib/customIcons';
 import {Urls} from '@shared/lib/urls';
 import {assertNever} from '@shared/lib/utils';
 
 import {IconName} from '@shared/types/icons.types';
 import {ThemeColor} from '@shared/types/theme.types';
-import {NavItem} from '@shared/types/urls.types';
+import type {NavItem} from '@shared/types/urls.types';
 
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';

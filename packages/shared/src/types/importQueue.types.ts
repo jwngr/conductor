@@ -1,9 +1,10 @@
 import {makeId} from '@shared/lib/utils';
 
-import {FeedItemId} from '@shared/types/feedItems.types';
-import {makeErrorResult, makeSuccessResult, Result} from '@shared/types/result.types';
-import {UserId} from '@shared/types/user.types';
-import {BaseStoreItem} from '@shared/types/utils.types';
+import type {FeedItemId} from '@shared/types/feedItems.types';
+import type {Result} from '@shared/types/result.types';
+import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {UserId} from '@shared/types/user.types';
+import type {BaseStoreItem} from '@shared/types/utils.types';
 
 /**
  * Strongly-typed type for an {@link ImportQueueItem}'s unique identifier. Prefer this over plain

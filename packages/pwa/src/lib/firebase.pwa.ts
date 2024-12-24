@@ -1,7 +1,7 @@
 import {FirebaseService} from '@shared/lib/firebase';
 import {logger} from '@shared/lib/logger';
 
-import {FirebaseConfig} from '@shared/types/firebase.types';
+import type {FirebaseConfig} from '@shared/types/firebase.types';
 
 function validateRequiredEnvVar(name: string): string {
   const value = import.meta.env[name];

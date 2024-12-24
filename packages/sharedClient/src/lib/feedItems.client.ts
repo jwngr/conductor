@@ -9,8 +9,8 @@ import {
 } from '@shared/lib/constants';
 import {FeedItemsService} from '@shared/lib/feedItems';
 
-import {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
-import {ViewType} from '@shared/types/query.types';
+import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
+import type {ViewType} from '@shared/types/query.types';
 
 import {firebaseService} from '@sharedClient/lib/firebase.client';
 

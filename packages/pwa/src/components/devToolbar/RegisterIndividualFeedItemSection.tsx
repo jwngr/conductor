@@ -1,7 +1,7 @@
 import {useEffect} from 'react';
 
 import {DevToolbarSectionType} from '@shared/types/devToolbar.types';
-import {FeedItem} from '@shared/types/feedItems.types';
+import type {FeedItem} from '@shared/types/feedItems.types';
 
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 

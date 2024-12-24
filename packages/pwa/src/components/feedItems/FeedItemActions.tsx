@@ -10,12 +10,13 @@ import {
 } from '@shared/lib/feedItems';
 import {logger} from '@shared/lib/logger';
 
-import {FeedItem, FeedItemActionType, TriageStatus} from '@shared/types/feedItems.types';
-import {IconName} from '@shared/types/icons.types';
-import {Result} from '@shared/types/result.types';
-import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
+import type {FeedItem} from '@shared/types/feedItems.types';
+import {FeedItemActionType, TriageStatus} from '@shared/types/feedItems.types';
+import type {IconName} from '@shared/types/icons.types';
+import type {Result} from '@shared/types/result.types';
+import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
-import {AsyncFunc, Func} from '@shared/types/utils.types';
+import type {AsyncFunc, Func} from '@shared/types/utils.types';
 
 import {useEventLogService} from '@sharedClient/lib/eventLog.client';
 import {useFeedItemsService} from '@sharedClient/lib/feedItems.client';

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import {XkcdFeedItem} from '@shared/types/feedItems.types';
+import type {XkcdFeedItem} from '@shared/types/feedItems.types';
 
 import {FeedItemHeader, FeedItemWrapper} from '@src/components/feedItems/FeedItem';
 import {FeedItemMarkdown} from '@src/components/feedItems/FeedItemMarkdown';

@@ -1,7 +1,7 @@
 import {create} from 'zustand';
 
-import {LoggedInUser} from '@shared/types/user.types';
-import {Consumer} from '@shared/types/utils.types';
+import type {LoggedInUser} from '@shared/types/user.types';
+import type {Consumer} from '@shared/types/utils.types';
 
 interface AuthStoreState {
   readonly loggedInUser: LoggedInUser | null;

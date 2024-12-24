@@ -2,7 +2,7 @@ import {useEffect, useState} from 'react';
 
 import {makeId} from '@shared/lib/utils';
 
-import {Consumer, Task} from '@shared/types/utils.types';
+import type {Consumer, Task} from '@shared/types/utils.types';
 
 import type {ToastActionElement, ToastProps} from '@src/components/atoms/Toast';
 

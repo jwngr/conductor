@@ -1,6 +1,6 @@
 import React from 'react';
 
-import {VideoFeedItem} from '@shared/types/feedItems.types';
+import type {VideoFeedItem} from '@shared/types/feedItems.types';
 
 import {Text} from '@src/components/atoms/Text';
 import {FeedItemHeader, FeedItemWrapper} from '@src/components/feedItems/FeedItem';

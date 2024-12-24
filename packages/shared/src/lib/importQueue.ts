@@ -1,23 +1,13 @@
-import {
-  addDoc,
-  CollectionReference,
-  doc,
-  DocumentReference,
-  getDoc,
-  serverTimestamp,
-} from 'firebase/firestore';
+import type {CollectionReference, DocumentReference} from 'firebase/firestore';
+import {addDoc, doc, getDoc, serverTimestamp} from 'firebase/firestore';
 
 import {asyncTry} from '@shared/lib/errors';
 
-import {FeedItemId} from '@shared/types/feedItems.types';
-import {
-  ImportQueueItem,
-  ImportQueueItemId,
-  ImportQueueItemStatus,
-  makeImportQueueItemId,
-} from '@shared/types/importQueue.types';
-import {AsyncResult} from '@shared/types/result.types';
-import {UserId} from '@shared/types/user.types';
+import type {FeedItemId} from '@shared/types/feedItems.types';
+import type {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue.types';
+import {ImportQueueItemStatus, makeImportQueueItemId} from '@shared/types/importQueue.types';
+import type {AsyncResult} from '@shared/types/result.types';
+import type {UserId} from '@shared/types/user.types';
 
 // TODO: This is not used anywhere.
 export class ImportQueue {

@@ -1,6 +1,7 @@
 import {makeId} from '@shared/lib/utils';
 
-import {makeErrorResult, makeSuccessResult, Result} from '@shared/types/result.types';
+import type {Result} from '@shared/types/result.types';
+import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 
 export enum TagType {
   User = 'USER',

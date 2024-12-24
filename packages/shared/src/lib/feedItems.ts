@@ -1,5 +1,5 @@
+import type {CollectionReference} from 'firebase/firestore';
 import {
-  CollectionReference,
   deleteDoc,
   doc,
   getDoc,
@@ -10,30 +10,31 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore';
-import {getDownloadURL, ref as storageRef, StorageReference} from 'firebase/storage';
+import type {StorageReference} from 'firebase/storage';
+import {getDownloadURL, ref as storageRef} from 'firebase/storage';
 
 import {asyncTry, asyncTryAllPromises} from '@shared/lib/errors';
 import {makeImportQueueItem} from '@shared/lib/importQueue';
 import {isValidUrl} from '@shared/lib/urls';
 import {Views} from '@shared/lib/views';
 
-import {
+import type {
   FeedItem,
   FeedItemAction,
-  FeedItemActionType,
   FeedItemId,
   FeedItemSource,
-  FeedItemType,
-  TriageStatus,
 } from '@shared/types/feedItems.types';
+import {FeedItemActionType, FeedItemType, TriageStatus} from '@shared/types/feedItems.types';
 import {IconName} from '@shared/types/icons.types';
-import {ImportQueueItemId} from '@shared/types/importQueue.types';
-import {fromFilterOperator, ViewType} from '@shared/types/query.types';
-import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {ImportQueueItemId} from '@shared/types/importQueue.types';
+import type {ViewType} from '@shared/types/query.types';
+import {fromFilterOperator} from '@shared/types/query.types';
+import type {AsyncResult} from '@shared/types/result.types';
+import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
-import {AuthStateChangedUnsubscribe, UserId} from '@shared/types/user.types';
-import {Consumer} from '@shared/types/utils.types';
+import type {AuthStateChangedUnsubscribe, UserId} from '@shared/types/user.types';
+import type {Consumer} from '@shared/types/utils.types';
 
 export class FeedItemsService {
   constructor(

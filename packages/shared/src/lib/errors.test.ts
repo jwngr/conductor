@@ -2,7 +2,8 @@
 
 import {asyncTry, asyncTryAll, asyncTryAllPromises, syncTry} from '@shared/lib/errors';
 
-import {AsyncResult, makeSuccessResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/result.types';
+import {makeSuccessResult} from '@shared/types/result.types';
 
 describe('syncTry', () => {
   it('should return success result when function executes successfully', () => {

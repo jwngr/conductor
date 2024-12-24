@@ -1,6 +1,6 @@
 import {logger} from '@shared/lib/logger';
 
-import {LoggedInUser} from '@shared/types/user.types';
+import type {LoggedInUser} from '@shared/types/user.types';
 
 import {useAuthStore} from '@sharedClient/stores/AuthStore';
 

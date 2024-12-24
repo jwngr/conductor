@@ -4,8 +4,8 @@ import {useEffect, useMemo, useState} from 'react';
 import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants';
 import {EventLogService} from '@shared/lib/eventLog';
 
-import {EventId, EventLogItem} from '@shared/types/eventLog.types';
-import {ViewType} from '@shared/types/query.types';
+import type {EventId, EventLogItem} from '@shared/types/eventLog.types';
+import type {ViewType} from '@shared/types/query.types';
 
 import {firebaseService} from '@sharedClient/lib/firebase.client';
 

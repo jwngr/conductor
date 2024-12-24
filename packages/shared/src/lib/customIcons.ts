@@ -1,4 +1,4 @@
-import {IconName} from '@shared/types/icons.types';
+import type {IconName} from '@shared/types/icons.types';
 
 export enum CustomIconType {
   Emoji = 'emoji',

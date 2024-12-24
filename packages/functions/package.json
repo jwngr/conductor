@@ -19,6 +19,7 @@
   "scripts": {
     "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",
     "validate:lint": "eslint src --report-unused-disable-directives --max-warnings 0",
+    "validate:lint:fix": "eslint src --fix",
     "validate:types": "yarn workspace @conductor/shared build && tsc --noEmit",
     "validate:format": "prettier --check 'src/**/*.{js,ts,json}'",
     "format": "prettier --write 'src/**/*.{js,ts,json}'",

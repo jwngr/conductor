@@ -1,4 +1,4 @@
-import {Task} from '@shared/types/utils.types';
+import type {Task} from '@shared/types/utils.types';
 
 /**
  * Unique identifier for a keyboard shortcut.
