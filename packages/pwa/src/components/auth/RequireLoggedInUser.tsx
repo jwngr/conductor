@@ -4,9 +4,9 @@ import {Navigate} from 'react-router-dom';
 
 import {Urls} from '@shared/lib/urls';
 
-import {useMaybeLoggedInUser} from '@shared/hooks/auth.hooks';
-
 import {firebaseService} from '@sharedClient/lib/firebase.client';
+
+import {useMaybeLoggedInUser} from '@sharedClient/hooks/auth.hooks';
 
 export const RequireLoggedInUser: React.FC<{
   readonly children: React.ReactNode;

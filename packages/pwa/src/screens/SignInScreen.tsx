@@ -5,9 +5,9 @@ import {ThemeColor} from '@shared/types/theme.types';
 import {createEmailAddress, isValidEmail} from '@shared/types/user.types';
 import {Consumer} from '@shared/types/utils.types';
 
-import {useMaybeLoggedInUser} from '@shared/hooks/auth.hooks';
-
 import {authService} from '@sharedClient/lib/auth.client';
+
+import {useMaybeLoggedInUser} from '@sharedClient/hooks/auth.hooks';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Input} from '@src/components/atoms/Input';

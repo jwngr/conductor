@@ -9,7 +9,7 @@ import {
 } from '@shared/lib/constants';
 import {FeedItemsService} from '@shared/lib/feedItems';
 
-import {useLoggedInUser} from '@shared/hooks/auth.hooks';
+import {useLoggedInUser} from '@sharedClient/hooks/auth.hooks';
 
 import {firebaseService} from '@src/lib/firebase.ext';
 

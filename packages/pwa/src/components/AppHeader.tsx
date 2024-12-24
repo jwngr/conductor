@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 import {Urls} from '@shared/lib/urls';
 
-import {useMaybeLoggedInUser} from '@shared/hooks/auth.hooks';
+import {useMaybeLoggedInUser} from '@sharedClient/hooks/auth.hooks';
 
 import {FlexRow} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';

@@ -5,7 +5,7 @@ import {ThemeProvider} from 'styled-components';
 import {theme} from '@shared/lib/theme';
 import {Urls} from '@shared/lib/urls';
 
-import {useMaybeLoggedInUser} from '@shared/hooks/auth.hooks';
+import {useMaybeLoggedInUser} from '@sharedClient/hooks/auth.hooks';
 
 import {ErrorBoundary} from '@src/components/atoms/ErrorBoundary';
 import {Toaster} from '@src/components/atoms/Toaster';

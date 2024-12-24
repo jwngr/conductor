@@ -7,9 +7,9 @@ import {EventLogService} from '@shared/lib/eventLog';
 import {EventId, EventLogItem} from '@shared/types/eventLog.types';
 import {ViewType} from '@shared/types/query.types';
 
-import {useLoggedInUser} from '@shared/hooks/auth.hooks';
-
 import {firebaseService} from '@sharedClient/lib/firebase.client';
+
+import {useLoggedInUser} from '@sharedClient/hooks/auth.hooks';
 
 // TODO: This is a somewhat arbitrary limit. Reconsider what the logic should be here.
 const EVENT_LOG_LIMIT = 100;
