@@ -418,7 +418,7 @@ __metadata:
     "@vitejs/plugin-react": "npm:^4.3.4"
     react: "npm:^18.3.1"
     react-dom: "npm:^18.3.1"
-    vite: "npm:^6.0.2"
+    vite: "npm:^6.0.5"
   languageName: unknown
   linkType: soft
 
@@ -426,11 +426,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@conductor/functions@workspace:packages/functions"
   dependencies:
-    "@mendable/firecrawl-js": "npm:^1.9.1"
-    "@types/node": "npm:^22.10.1"
-    esbuild: "npm:^0.24.0"
-    firebase-admin: "npm:^13.0.1"
-    firebase-functions: "npm:^6.1.1"
+    "@mendable/firecrawl-js": "npm:^1.10.0"
+    "@types/node": "npm:^22.10.2"
+    esbuild: "npm:^0.24.2"
+    firebase-admin: "npm:^13.0.2"
+    firebase-functions: "npm:^6.2.0"
   languageName: unknown
   linkType: soft
 
@@ -440,10 +440,10 @@ __metadata:
   dependencies:
     "@conductor/shared": "npm:1.0.0"
     "@conductor/shared-client": "npm:1.0.0"
-    "@radix-ui/react-dialog": "npm:^1.1.2"
+    "@radix-ui/react-dialog": "npm:^1.1.4"
     "@radix-ui/react-icons": "npm:^1.3.2"
-    "@radix-ui/react-toast": "npm:^1.2.2"
-    "@radix-ui/react-tooltip": "npm:^1.1.4"
+    "@radix-ui/react-toast": "npm:^1.2.4"
+    "@radix-ui/react-tooltip": "npm:^1.1.6"
     "@types/react": "npm:^18.3.12"
     "@types/react-dom": "npm:^18.3.1"
     "@vitejs/plugin-react": "npm:^4.3.4"
@@ -454,7 +454,7 @@ __metadata:
     source-map-explorer: "npm:^2.5.3"
     styled-components: "npm:^6.1.13"
     tinykeys: "npm:^3.0.0"
-    vite: "npm:^6.0.2"
+    vite: "npm:^6.0.5"
     vite-plugin-svgr: "npm:^4.3.0"
   languageName: unknown
   linkType: soft
@@ -465,7 +465,7 @@ __metadata:
   dependencies:
     "@conductor/shared": "npm:1.0.0"
     "@types/jsdom": "npm:^21.1.7"
-    "@types/node": "npm:^22.10.1"
+    "@types/node": "npm:^22.10.2"
     jsdom: "npm:^25.0.1"
   languageName: unknown
   linkType: soft
@@ -475,7 +475,7 @@ __metadata:
   resolution: "@conductor/shared-client@workspace:packages/sharedClient"
   dependencies:
     "@conductor/shared": "npm:1.0.0"
-    zustand: "npm:^5.0.1"
+    zustand: "npm:^5.0.2"
   languageName: unknown
   linkType: soft
 
@@ -914,7 +914,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/js@npm:9.17.0, @eslint/js@npm:^9.16.0":
+"@eslint/js@npm:9.17.0, @eslint/js@npm:^9.17.0":
   version: 9.17.0
   resolution: "@eslint/js@npm:9.17.0"
   checksum: 10c0/a0fda8657a01c60aa540f95397754267ba640ffb126e011b97fd65c322a94969d161beeaef57c1441c495da2f31167c34bd38209f7c146c7225072378c3a933d
@@ -1993,7 +1993,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mendable/firecrawl-js@npm:^1.9.1":
+"@mendable/firecrawl-js@npm:^1.10.0":
   version: 1.10.0
   resolution: "@mendable/firecrawl-js@npm:1.10.0"
   dependencies:
@@ -2216,7 +2216,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-dialog@npm:^1.1.2":
+"@radix-ui/react-dialog@npm:^1.1.4":
   version: 1.1.4
   resolution: "@radix-ui/react-dialog@npm:1.1.4"
   dependencies:
@@ -2431,7 +2431,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-toast@npm:^1.2.2":
+"@radix-ui/react-toast@npm:^1.2.4":
   version: 1.2.4
   resolution: "@radix-ui/react-toast@npm:1.2.4"
   dependencies:
@@ -2461,7 +2461,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-tooltip@npm:^1.1.4":
+"@radix-ui/react-tooltip@npm:^1.1.6":
   version: 1.1.6
   resolution: "@radix-ui/react-tooltip@npm:1.1.6"
   dependencies:
@@ -3219,7 +3219,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:>=12.12.47, @types/node@npm:>=13.7.0, @types/node@npm:^22.10.1, @types/node@npm:^22.8.7":
+"@types/node@npm:*, @types/node@npm:>=12.12.47, @types/node@npm:>=13.7.0, @types/node@npm:^22.10.2, @types/node@npm:^22.8.7":
   version: 22.10.2
   resolution: "@types/node@npm:22.10.2"
   dependencies:
@@ -4131,22 +4131,22 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "conductor@workspace:."
   dependencies:
-    "@eslint/js": "npm:^9.16.0"
+    "@eslint/js": "npm:^9.17.0"
     "@ianvs/prettier-plugin-sort-imports": "npm:^4.4.0"
     "@types/eslint__js": "npm:^8.42.3"
     "@types/jest": "npm:^29.5.14"
     "@types/lodash": "npm:^4.17.13"
-    "@types/node": "npm:^22.10.1"
-    eslint: "npm:^9.16.0"
-    eslint-plugin-react-hooks: "npm:^5.0.0"
-    firebase: "npm:^11.0.2"
-    globals: "npm:^15.13.0"
+    "@types/node": "npm:^22.10.2"
+    eslint: "npm:^9.17.0"
+    eslint-plugin-react-hooks: "npm:^5.1.0"
+    firebase: "npm:^11.1.0"
+    globals: "npm:^15.14.0"
     jest: "npm:^29.7.0"
     lodash: "npm:^4.17.21"
-    prettier: "npm:^3.4.1"
+    prettier: "npm:^3.4.2"
     ts-jest: "npm:^29.2.5"
     typescript: "npm:^5.7.2"
-    typescript-eslint: "npm:^8.17.0"
+    typescript-eslint: "npm:^8.18.2"
   languageName: unknown
   linkType: soft
 
@@ -4684,7 +4684,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.24.0":
+"esbuild@npm:^0.24.2":
   version: 0.24.2
   resolution: "esbuild@npm:0.24.2"
   dependencies:
@@ -4798,7 +4798,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-react-hooks@npm:^5.0.0":
+"eslint-plugin-react-hooks@npm:^5.1.0":
   version: 5.1.0
   resolution: "eslint-plugin-react-hooks@npm:5.1.0"
   peerDependencies:
@@ -4831,7 +4831,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:^9.16.0":
+"eslint@npm:^9.17.0":
   version: 9.17.0
   resolution: "eslint@npm:9.17.0"
   dependencies:
@@ -5192,7 +5192,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"firebase-admin@npm:^13.0.1":
+"firebase-admin@npm:^13.0.2":
   version: 13.0.2
   resolution: "firebase-admin@npm:13.0.2"
   dependencies:
@@ -5217,7 +5217,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"firebase-functions@npm:^6.1.1":
+"firebase-functions@npm:^6.2.0":
   version: 6.2.0
   resolution: "firebase-functions@npm:6.2.0"
   dependencies:
@@ -5234,7 +5234,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"firebase@npm:^11.0.2":
+"firebase@npm:^11.1.0":
   version: 11.1.0
   resolution: "firebase@npm:11.1.0"
   dependencies:
@@ -5531,7 +5531,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"globals@npm:^15.13.0":
+"globals@npm:^15.14.0":
   version: 15.14.0
   resolution: "globals@npm:15.14.0"
   checksum: 10c0/039deb8648bd373b7940c15df9f96ab7508fe92b31bbd39cbd1c1a740bd26db12457aa3e5d211553b234f30e9b1db2fee3683012f543a01a6942c9062857facb
@@ -8050,7 +8050,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:^3.4.1":
+"prettier@npm:^3.4.2":
   version: 3.4.2
   resolution: "prettier@npm:3.4.2"
   bin:
@@ -9321,7 +9321,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript-eslint@npm:^8.17.0":
+"typescript-eslint@npm:^8.18.2":
   version: 8.18.2
   resolution: "typescript-eslint@npm:8.18.2"
   dependencies:
@@ -9603,7 +9603,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^6.0.2":
+"vite@npm:^6.0.5":
   version: 6.0.5
   resolution: "vite@npm:6.0.5"
   dependencies:
@@ -9933,7 +9933,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zustand@npm:^5.0.1":
+"zustand@npm:^5.0.2":
   version: 5.0.2
   resolution: "zustand@npm:5.0.2"
   peerDependencies:
