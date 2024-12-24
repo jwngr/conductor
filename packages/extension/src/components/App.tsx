@@ -4,7 +4,8 @@ import {asyncTry} from '@shared/lib/errors';
 
 import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems.types';
 
-import {useFeedItemsService} from '@src/lib/feedItems.ext';
+import {useFeedItemsService} from '@sharedClient/lib/feedItems.client';
+
 import {useCurrentTab} from '@src/lib/tabs.ext';
 
 function App() {

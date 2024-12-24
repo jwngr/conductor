@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 import {DevToolbarSectionType} from '@shared/types/devToolbar.types';
 
-import {useDevToolbarStore} from '@shared/stores/DevToolbarStore';
+import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
 import {Button, ButtonVariant} from '@src/components/atoms/Button';
 

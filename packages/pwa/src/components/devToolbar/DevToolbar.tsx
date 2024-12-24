@@ -3,7 +3,7 @@ import {styled} from 'styled-components';
 
 import {ThemeColor} from '@shared/types/theme.types';
 
-import {useDevToolbarStore} from '@shared/stores/DevToolbarStore';
+import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
