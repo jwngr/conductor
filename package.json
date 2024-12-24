@@ -56,7 +56,8 @@
     "test:pwa": "yarn workspace @conductor/pwa test",
     "test:scripts": "yarn workspace @conductor/scripts test",
     "test:extension": "yarn workspace @conductor/extension test",
-    "test:functions": "yarn workspace @conductor/functions test"
+    "test:functions": "yarn workspace @conductor/functions test",
+    "metrics": "tsx ./packages/scripts/src/metrics/trackCodeMetrics.ts"
   },
   "dependencies": {
     "firebase": "^11.0.2",

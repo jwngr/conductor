@@ -47,6 +47,8 @@ function makeSharedRules({
   disallowSharedServerImports = false,
 }) {
   return {
+    '@typescript-eslint/no-empty-object-type': 'off',
+
     'no-console': 'error',
     '@typescript-eslint/array-type': ['error', {default: 'array-simple'}],
     '@typescript-eslint/consistent-type-imports': 'error',

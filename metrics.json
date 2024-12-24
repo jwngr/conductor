@@ -1,0 +1,261 @@
+{
+  "sharedServer": {
+    "timestamp": "2024-12-24T19:47:32.634Z",
+    "totalFiles": null,
+    "totalBlank": null,
+    "totalComment": null,
+    "totalCode": null,
+    "typeScript": {
+      "nFiles": 10,
+      "blank": 157,
+      "comment": 126,
+      "code": 775
+    },
+    "css": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "json": {
+      "nFiles": 2,
+      "blank": 4,
+      "comment": 0,
+      "code": 42
+    },
+    "markdown": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "yaml": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    }
+  },
+  "sharedClient": {
+    "timestamp": "2024-12-24T19:47:33.686Z",
+    "totalFiles": null,
+    "totalBlank": null,
+    "totalComment": null,
+    "totalCode": null,
+    "typeScript": {
+      "nFiles": 9,
+      "blank": 107,
+      "comment": 43,
+      "code": 520
+    },
+    "css": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "json": {
+      "nFiles": 2,
+      "blank": 4,
+      "comment": 0,
+      "code": 43
+    },
+    "markdown": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "yaml": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    }
+  },
+  "shared": {
+    "timestamp": "2024-12-24T19:47:34.737Z",
+    "totalFiles": null,
+    "totalBlank": null,
+    "totalComment": null,
+    "totalCode": null,
+    "typeScript": {
+      "nFiles": 37,
+      "blank": 391,
+      "comment": 306,
+      "code": 2393
+    },
+    "css": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "json": {
+      "nFiles": 2,
+      "blank": 2,
+      "comment": 0,
+      "code": 39
+    },
+    "markdown": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "yaml": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    }
+  },
+  "scripts": {
+    "timestamp": "2024-12-24T19:47:35.767Z",
+    "totalFiles": null,
+    "totalBlank": null,
+    "totalComment": null,
+    "totalCode": null,
+    "typeScript": {
+      "nFiles": 3,
+      "blank": 25,
+      "comment": 31,
+      "code": 77
+    },
+    "css": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "json": {
+      "nFiles": 2,
+      "blank": 2,
+      "comment": 0,
+      "code": 43
+    },
+    "markdown": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "yaml": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    }
+  },
+  "pwa": {
+    "timestamp": "2024-12-24T19:47:36.845Z",
+    "totalFiles": null,
+    "totalBlank": null,
+    "totalComment": null,
+    "totalCode": null,
+    "typeScript": {
+      "nFiles": 62,
+      "blank": 520,
+      "comment": 66,
+      "code": 3226
+    },
+    "css": {
+      "nFiles": 1,
+      "blank": 12,
+      "comment": 4,
+      "code": 68
+    },
+    "json": {
+      "nFiles": 3,
+      "blank": 5,
+      "comment": 0,
+      "code": 97
+    },
+    "markdown": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "yaml": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    }
+  },
+  "functions": {
+    "timestamp": "2024-12-24T19:47:37.879Z",
+    "totalFiles": null,
+    "totalBlank": null,
+    "totalComment": null,
+    "totalCode": null,
+    "typeScript": {
+      "nFiles": 1,
+      "blank": 43,
+      "comment": 23,
+      "code": 210
+    },
+    "css": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "json": {
+      "nFiles": 2,
+      "blank": 3,
+      "comment": 0,
+      "code": 53
+    },
+    "markdown": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "yaml": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    }
+  },
+  "extension": {
+    "timestamp": "2024-12-24T19:47:38.916Z",
+    "totalFiles": null,
+    "totalBlank": null,
+    "totalComment": null,
+    "totalCode": null,
+    "typeScript": {
+      "nFiles": 5,
+      "blank": 33,
+      "comment": 4,
+      "code": 122
+    },
+    "css": {
+      "nFiles": 1,
+      "blank": 0,
+      "comment": 0,
+      "code": 6
+    },
+    "json": {
+      "nFiles": 3,
+      "blank": 5,
+      "comment": 0,
+      "code": 74
+    },
+    "markdown": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "yaml": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    }
+  }
+}
