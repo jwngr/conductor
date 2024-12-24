@@ -298,7 +298,16 @@ export class ClientFeedItemsService {
       `${this.userId}/${feedItemId}/llmContext.md`
     );
 
-    const downloadUrl = await getDownloadURL(fileRef);
+    const downloadUrlResult = await asyncTry<string>(async () => await getDownloadURL(fileRef));
+    if (!downloadUrlResult.success) {
+      return makeErrorResult(
+        new Error(
+          `Error fetching download URL for feed item "${feedItemId}": ${downloadUrlResult.error}]`
+        )
+      );
+    }
+
+    const downloadUrl = downloadUrlResult.value;
     const responseResult = await requestGet<string>(downloadUrl);
     if (!responseResult.success) {
       return makeErrorResult(

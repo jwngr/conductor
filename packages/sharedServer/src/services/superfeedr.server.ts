@@ -32,7 +32,6 @@ export class SuperfeedrService {
     // TODO Confirm what the return type actually is.
   ): AsyncResult<string> {
     return await requestPost<string>(SUPERFEEDR_BASE_URL, {
-      asdfasdf: true,
       headers: {
         Authorization: this.getSuperfeedrAuthHeader(),
         // TODO: Maybe not needed?
