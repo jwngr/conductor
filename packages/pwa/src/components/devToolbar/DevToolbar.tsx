@@ -47,7 +47,7 @@ export interface DevToolbarProps {
   readonly isVisible?: boolean;
 }
 
-export function DevToolbar({isVisible = true}: DevToolbarProps): JSX.Element | null {
+export const DevToolbar: React.FC<DevToolbarProps> = ({isVisible = true}) => {
   const [isOpen, setIsOpen] = useState(false);
   const toolbarRef = useRef<HTMLDivElement>(null);
 
@@ -104,4 +104,4 @@ export function DevToolbar({isVisible = true}: DevToolbarProps): JSX.Element | n
       </DevToolbarContent>
     </DevToolbarWrapper>
   );
-}
+};
