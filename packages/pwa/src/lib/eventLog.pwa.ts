@@ -9,7 +9,7 @@ import {ViewType} from '@shared/types/query.types';
 
 import {useLoggedInUser} from '@shared/hooks/auth.hooks';
 
-import {firebaseService} from '@src/lib/firebase.pwa';
+import {firebaseService} from '@sharedClient/lib/firebase.client';
 
 // TODO: This is a somewhat arbitrary limit. Reconsider what the logic should be here.
 const EVENT_LOG_LIMIT = 100;

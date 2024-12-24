@@ -25,7 +25,7 @@ import {AsyncFunc, Consumer, Unsubscribe} from '@shared/types/utils.types';
 
 import {useLoggedInUser} from '@shared/hooks/auth.hooks';
 
-import {firebaseService} from '@src/lib/firebase.pwa';
+import {firebaseService} from '@sharedClient/lib/firebase.client';
 
 interface SubscribeToFeedRequest {
   readonly url: string;

@@ -14,7 +14,7 @@ import {ViewType} from '@shared/types/query.types';
 
 import {useLoggedInUser} from '@shared/hooks/auth.hooks';
 
-import {firebaseService} from '@src/lib/firebase.pwa';
+import {firebaseService} from '@sharedClient/lib/firebase.client';
 
 const feedItemsDbRef = collection(firebaseService.firestore, FEED_ITEMS_DB_COLLECTION);
 const importQueueDbRef = collection(firebaseService.firestore, IMPORT_QUEUE_DB_COLLECTION);

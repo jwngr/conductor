@@ -6,7 +6,7 @@ import {Urls} from '@shared/lib/urls';
 
 import {useMaybeLoggedInUser} from '@shared/hooks/auth.hooks';
 
-import {firebaseService} from '@src/lib/firebase.pwa';
+import {firebaseService} from '@sharedClient/lib/firebase.client';
 
 export const RequireLoggedInUser: React.FC<{
   readonly children: React.ReactNode;
