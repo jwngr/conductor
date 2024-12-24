@@ -57,7 +57,13 @@ function makeSharedRules({
       'error',
       {
         selector: 'TryStatement',
-        message: 'Use `syncTry` or `asyncTry` helpers instead of `try` / `catch` blocks.',
+        message:
+          'Using a `try` / `catch` block directly is discouraged. Use `syncTry` or `asyncTry` helpers instead.',
+      },
+      {
+        selector: 'Identifier[name="fetch"]',
+        message:
+          'Using `fetch` directly is discouraged. Use `request*` helpers like `requestGet` or `requestPost` instead.',
       },
     ],
     'no-restricted-imports': [

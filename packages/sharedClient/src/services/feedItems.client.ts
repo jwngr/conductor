@@ -23,6 +23,7 @@ import {
 } from '@shared/lib/constants.shared';
 import {asyncTry, asyncTryAllPromises} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
+import {requestGet} from '@shared/lib/requests.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
 import {Views} from '@shared/lib/views.shared';
 
@@ -293,18 +294,19 @@ export class ClientFeedItemsService {
 
   async getFeedItemMarkdown(feedItemId: FeedItemId): AsyncResult<string> {
     // TODO: Clean up error handling here.
-    return asyncTry<string>(async () => {
-      const fileRef = storageRef(
-        this.feedItemsStorageRef,
-        `${this.userId}/${feedItemId}/llmContext.md`
+    const fileRef = storageRef(
+      this.feedItemsStorageRef,
+      `${this.userId}/${feedItemId}/llmContext.md`
+    );
+
+    const downloadUrl = await getDownloadURL(fileRef);
+    const responseResult = await requestGet<string>(downloadUrl);
+    if (!responseResult.success) {
+      throw new Error(
+        `Error fetching markdown for feed item "${feedItemId}": [${responseResult.statusCode}] ${responseResult.error}]`
       );
-      const downloadUrl = await getDownloadURL(fileRef);
-      // TODO: Use shared `request` helper instead of `fetch`.
-      const response = await fetch(downloadUrl);
-      if (!response.ok) {
-        throw new Error(`Response status ${response.status}: ${response.statusText}`);
-      }
-      return await response.text();
-    });
+    }
+
+    return makeSuccessResult(responseResult.value);
   }
 }

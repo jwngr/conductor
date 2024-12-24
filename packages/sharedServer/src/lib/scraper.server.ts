@@ -1,4 +1,5 @@
 import {asyncTry} from '@shared/lib/errorUtils.shared';
+import {requestGet} from '@shared/lib/requests.shared';
 
 import type {AsyncResult} from '@shared/types/result.types';
 
@@ -11,17 +12,14 @@ import type {AsyncResult} from '@shared/types/result.types';
 // 3. Handle images more gracefully (download and replace links in the HTML?).
 export async function fetchRawHtml(url: string): AsyncResult<string> {
   return await asyncTry<string>(async () => {
-    // TODO: Use shared `request` helper instead of `fetch`.
-    const rawHtmlResponse = await fetch(url);
+    const rawHtmlResponse = await requestGet<string>(url);
 
-    const responseText = await rawHtmlResponse.text();
-
-    if (!rawHtmlResponse.ok) {
+    if (!rawHtmlResponse.success) {
       throw new Error(
-        `Failed fetching HTML for url "${url}" with status "${rawHtmlResponse.status}: ${rawHtmlResponse.statusText}": ${responseText}`
+        `Error fetching HTML for url "${url}": [${rawHtmlResponse.statusCode}] ${rawHtmlResponse.error.message}`
       );
     }
 
-    return responseText;
+    return rawHtmlResponse.value;
   });
 }
