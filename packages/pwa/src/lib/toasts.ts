@@ -2,7 +2,7 @@ import {useEffect, useState} from 'react';
 
 import {makeId} from '@shared/lib/utils';
 
-import {Consumer, Task} from '@shared/types/utils.types';
+import type {Consumer, Task} from '@shared/types/utils.types';
 
 import type {ToastActionElement, ToastProps} from '@src/components/atoms/Toast';
 
@@ -195,7 +195,7 @@ interface UseToastResult {
 }
 
 export function useToast(): UseToastResult {
-  const [state, setState] = useState(memoryState);
+  const [state, setState] = useState<ToastState>(memoryState);
 
   useEffect(() => {
     listeners.push(setState);
@@ -208,7 +208,7 @@ export function useToast(): UseToastResult {
   }, [state]);
 
   return {
-    ...state,
+    toasts: state.toasts,
     showToast,
     showErrorToast: (props) => showToast({...props, type: ToastType.Error}),
     hideToast: (toastId) => dispatch({actionType: ToastActionType.DismissToast, toastId}),

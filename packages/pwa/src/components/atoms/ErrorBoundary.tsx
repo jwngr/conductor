@@ -1,8 +1,9 @@
-import React, {ReactNode} from 'react';
+import type {ReactNode} from 'react';
+import React from 'react';
 
-import {upgradeUnknownError} from '@shared/lib/errors';
+import {prefixError, upgradeUnknownError} from '@shared/lib/errors';
 
-import {Func} from '@shared/types/utils.types';
+import type {Func} from '@shared/types/utils.types';
 
 interface ErrorBoundaryProps {
   readonly fallback: Func<Error, ReactNode>;
@@ -27,7 +28,8 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
   componentDidCatch(error: unknown, info: {componentStack: string}): void {
     const safeError = upgradeUnknownError(error);
-    this.props.onError?.(safeError, info.componentStack);
+    const betterError = prefixError(safeError, 'ErrorBoundary');
+    this.props.onError?.(betterError, info.componentStack);
   }
 
   render(): ReactNode {

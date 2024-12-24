@@ -3,12 +3,12 @@ import styled from 'styled-components';
 
 import {Urls} from '@shared/lib/urls';
 
+import {useMaybeLoggedInUser} from '@sharedClient/hooks/auth.hooks';
+
 import {FlexRow} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
 import {Spacer} from '@src/components/atoms/Spacer';
 import {Text} from '@src/components/atoms/Text';
-
-import {useMaybeLoggedInUser} from '@src/lib/auth.pwa';
 
 const AppHeaderWrapper = styled(FlexRow)`
   height: 60px;

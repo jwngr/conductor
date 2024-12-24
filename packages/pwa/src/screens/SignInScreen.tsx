@@ -1,17 +1,19 @@
-import {ActionCodeSettings} from 'firebase/auth';
+import type {ActionCodeSettings} from 'firebase/auth';
 import {useState} from 'react';
 
 import {ThemeColor} from '@shared/types/theme.types';
 import {createEmailAddress, isValidEmail} from '@shared/types/user.types';
-import {Consumer} from '@shared/types/utils.types';
+import type {Consumer} from '@shared/types/utils.types';
+
+import {authService} from '@sharedClient/services/auth.client';
+
+import {useMaybeLoggedInUser} from '@sharedClient/hooks/auth.hooks';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Input} from '@src/components/atoms/Input';
 import {Text} from '@src/components/atoms/Text';
 
-import {authService, useMaybeLoggedInUser} from '@src/lib/auth.pwa';
-
-import {OnClick} from '@src/types/utils.pwa.types';
+import type {OnClick} from '@src/types/utils.pwa.types';
 
 const PASSWORDLESS_AUTH_ACTION_CODE_SETTINGS: ActionCodeSettings = {
   url: import.meta.env.VITE_CONDUCTOR_URL, // URL to redirect back to.

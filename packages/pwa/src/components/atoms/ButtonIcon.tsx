@@ -4,10 +4,11 @@ import styled from 'styled-components';
 import {getIconSizeFromButtonIconSize} from '@shared/lib/icons';
 import {assertNever} from '@shared/lib/utils';
 
-import {ButtonIconSize, IconName} from '@shared/types/icons.types';
-import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
+import type {ButtonIconSize} from '@shared/types/icons.types';
+import {IconName} from '@shared/types/icons.types';
+import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {ThemeColor} from '@shared/types/theme.types';
-import {StyleAttributes} from '@shared/types/utils.types';
+import type {StyleAttributes} from '@shared/types/utils.types';
 
 import InboxIcon from '@shared/icons/inbox.svg?react';
 import MarkDoneIcon from '@shared/icons/markDone.svg?react';
@@ -15,9 +16,10 @@ import MarkUnreadIcon from '@shared/icons/markUnread.svg?react';
 import SaveIcon from '@shared/icons/save.svg?react';
 import StarIcon from '@shared/icons/star.svg?react';
 
-import {Tooltip, TooltipContent} from '@src/components/atoms/Tooltip';
+import type {TooltipContent} from '@src/components/atoms/Tooltip';
+import {Tooltip} from '@src/components/atoms/Tooltip';
 
-import {OnClick} from '@src/types/utils.pwa.types';
+import type {OnClick} from '@src/types/utils.pwa.types';
 
 interface ButtonIconWrapperProps {
   readonly $color: ThemeColor;

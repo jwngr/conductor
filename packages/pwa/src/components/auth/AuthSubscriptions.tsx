@@ -2,15 +2,16 @@ import {isSignInWithEmailLink} from 'firebase/auth';
 import {useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 
-import {logger} from '@shared/lib/logger';
+import {logger} from '@shared/services/logger';
+
 import {Urls} from '@shared/lib/urls';
 
 import {isValidEmail} from '@shared/types/user.types';
 
-import {authService} from '@src/lib/auth.pwa';
-import {firebaseService} from '@src/lib/firebase.pwa';
+import {useAuthStore} from '@sharedClient/stores/AuthStore';
 
-import {useAuthStore} from '@src/stores/AuthStore';
+import {authService} from '@sharedClient/services/auth.client';
+import {firebaseService} from '@sharedClient/services/firebase.client';
 
 const AuthServiceSubscription: React.FC = () => {
   const {setLoggedInUser} = useAuthStore();
@@ -71,7 +72,8 @@ const PasswordlessAuthSubscription: React.FC = () => {
       // Redirect to the root path.
       navigate(Urls.forRoot());
     };
-    go();
+
+    void go();
   }, [navigate, setLoggedInUser]);
   return null;
 };

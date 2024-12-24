@@ -1,4 +1,7 @@
-import {makeErrorResult, makeSuccessResult, Result} from '@shared/types/result.types';
+import {makeId} from '@shared/lib/utils';
+
+import type {Result} from '@shared/types/result.types';
+import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 
 export enum TagType {
   User = 'USER',
@@ -21,7 +24,7 @@ export function isUserTagId(maybeUserTagId: unknown): maybeUserTagId is UserTagI
  * Creates a `UserTagId` from a plain string. Returns an error if the string is not a valid
  * `UserTagId`.
  */
-export function createUserTagId(maybeUserTagId: string): Result<UserTagId> {
+export function makeUserTagId(maybeUserTagId: string = makeId()): Result<UserTagId> {
   if (!isUserTagId(maybeUserTagId)) {
     return makeErrorResult(new Error(`Invalid user tag ID: "${maybeUserTagId}"`));
   }

@@ -2,8 +2,8 @@
   "include": ["src"],
   "extends": "../../tsconfig.json",
 
-  // This package consumes the shared package.
-  "references": [{"path": "../shared"}],
+  // This package consumes multiple shared packages.
+  "references": [{"path": "../shared"}, {"path": "../sharedClient"}],
 
   "compilerOptions": {
     // Override to include DOM.
@@ -19,7 +19,8 @@
     "baseUrl": ".",
     "paths": {
       "@src/*": ["./src/*"],
-      "@shared/*": ["../shared/src/*"]
+      "@shared/*": ["../shared/src/*"],
+      "@sharedClient/*": ["../sharedClient/src/*"]
     }
   }
 }

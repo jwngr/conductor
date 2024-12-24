@@ -6,6 +6,7 @@ on:
     paths:
       - 'packages/pwa/**'
       - 'packages/shared/**'
+      - 'packages/sharedClient/**'
       - '.firebaserc'
       - '.prettierrc'
       - 'eslint.config.mjs'

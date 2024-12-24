@@ -3,9 +3,10 @@ import styled from 'styled-components';
 
 import {assertNever} from '@shared/lib/utils';
 
-import {IconName, IconSize} from '@shared/types/icons.types';
+import type {IconSize} from '@shared/types/icons.types';
+import {IconName} from '@shared/types/icons.types';
 import {ThemeColor} from '@shared/types/theme.types';
-import {StyleAttributes} from '@shared/types/utils.types';
+import type {StyleAttributes} from '@shared/types/utils.types';
 
 import InboxIcon from '@shared/icons/inbox.svg?react';
 import MarkDoneIcon from '@shared/icons/markDone.svg?react';

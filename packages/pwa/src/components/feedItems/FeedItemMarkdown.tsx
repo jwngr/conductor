@@ -1,13 +1,13 @@
 import React from 'react';
 
-import {logger} from '@shared/lib/logger';
+import {logger} from '@shared/services/logger';
 
-import {FeedItem} from '@shared/types/feedItems.types';
+import type {FeedItem} from '@shared/types/feedItems.types';
+
+import {useFeedItemMarkdown} from '@sharedClient/services/feedItems.client';
 
 import {Text} from '@src/components/atoms/Text';
 import {Markdown} from '@src/components/Markdown';
-
-import {useFeedItemMarkdown} from '@src/lib/feedItems.pwa';
 
 export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
   const isFeedItemImported = Boolean(feedItem?.lastImportedTime);

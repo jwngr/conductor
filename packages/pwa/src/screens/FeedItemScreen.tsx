@@ -1,16 +1,21 @@
 import {deleteField} from 'firebase/firestore';
 import {useEffect, useRef} from 'react';
 
-import {FeedItemsService} from '@shared/lib/feedItems';
-import {logger} from '@shared/lib/logger';
+import {logger} from '@shared/services/logger';
+
+import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {useFeedItemIdFromUrl} from '@shared/lib/router';
 import {assertNever} from '@shared/lib/utils';
 
-import {FeedItem, FeedItemId, FeedItemType} from '@shared/types/feedItems.types';
+import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
+import {FeedItemType} from '@shared/types/feedItems.types';
 import {SystemTagId} from '@shared/types/tags.types';
+
+import {useFeedItem, useFeedItemsService} from '@sharedClient/services/feedItems.client';
 
 import {AppHeader} from '@src/components/AppHeader';
 import {Text} from '@src/components/atoms/Text';
+import {RegisterIndividualFeedItemDevToolbarSection} from '@src/components/devToolbar/RegisterIndividualFeedItemSection';
 import {ArticleFeedItemComponent} from '@src/components/feedItems/ArticleFeedItem';
 import {TweetFeedItemComponent} from '@src/components/feedItems/TweetFeedItem';
 import {VideoFeedItemComponent} from '@src/components/feedItems/VideoFeedItem';
@@ -19,18 +24,17 @@ import {XkcdFeedItemComponent} from '@src/components/feedItems/XkcdFeedItem';
 import {ScreenMainContentWrapper, ScreenWrapper} from '@src/components/layout/Screen';
 import {LeftSidebar} from '@src/components/LeftSidebar';
 
-import {feedItemsService, useFeedItem} from '@src/lib/feedItems.pwa';
-
 import {NotFoundScreen} from '@src/screens/404';
 
-const useMarkFeedItemRead = ({
-  feedItemId,
-  feedItem,
-}: {
+const useMarkFeedItemRead = (args: {
   readonly feedItemId: FeedItemId;
   readonly feedItem: FeedItem | null;
 }) => {
-  const wasAlreadyMarkedReadAtMount = useRef(!FeedItemsService.isUnread(feedItem));
+  const {feedItemId, feedItem} = args;
+
+  const feedItemsService = useFeedItemsService();
+
+  const wasAlreadyMarkedReadAtMount = useRef(!SharedFeedItemHelpers.isUnread(feedItem));
   const wasMarkedReadOnThisMount = useRef(false);
 
   // Variables exist so we don't need to include the entire feed item in the deps array.
@@ -64,14 +68,16 @@ const useMarkFeedItemRead = ({
         // TODO: Show an error toast.
       }
     }
-    go();
-  }, [feedItemId, isFeedItemNull, isFeedItemImported]);
+
+    void go();
+  }, [feedItemId, isFeedItemNull, isFeedItemImported, feedItemsService]);
 };
 
 const FeedItemScreenMainContent: React.FC<{
   readonly feedItemId: FeedItemId;
 }> = ({feedItemId}) => {
   const {feedItem, isLoading: isItemLoading, error: feedItemError} = useFeedItem(feedItemId);
+
   useMarkFeedItemRead({feedItem, feedItemId});
 
   if (isItemLoading) {
@@ -89,20 +95,33 @@ const FeedItemScreenMainContent: React.FC<{
     return <NotFoundScreen message="Feed item not found" />;
   }
 
+  let feedItemContent: React.ReactNode;
   switch (feedItem.type) {
     case FeedItemType.Article:
-      return <ArticleFeedItemComponent feedItem={feedItem} />;
+      feedItemContent = <ArticleFeedItemComponent feedItem={feedItem} />;
+      break;
     case FeedItemType.Video:
-      return <VideoFeedItemComponent feedItem={feedItem} />;
+      feedItemContent = <VideoFeedItemComponent feedItem={feedItem} />;
+      break;
     case FeedItemType.Website:
-      return <WebsiteFeedItemComponent feedItem={feedItem} />;
+      feedItemContent = <WebsiteFeedItemComponent feedItem={feedItem} />;
+      break;
     case FeedItemType.Tweet:
-      return <TweetFeedItemComponent feedItem={feedItem} />;
+      feedItemContent = <TweetFeedItemComponent feedItem={feedItem} />;
+      break;
     case FeedItemType.Xkcd:
-      return <XkcdFeedItemComponent feedItem={feedItem} />;
+      feedItemContent = <XkcdFeedItemComponent feedItem={feedItem} />;
+      break;
     default:
       assertNever(feedItem);
   }
+
+  return (
+    <>
+      {feedItemContent}
+      <RegisterIndividualFeedItemDevToolbarSection feedItem={feedItem} />
+    </>
+  );
 };
 
 export const FeedItemScreen: React.FC = () => {

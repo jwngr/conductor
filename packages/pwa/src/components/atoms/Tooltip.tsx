@@ -2,9 +2,9 @@ import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import React, {useEffect} from 'react';
 import styled from 'styled-components';
 
-import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
+import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {ThemeColor} from '@shared/types/theme.types';
-import {Task} from '@shared/types/utils.types';
+import type {Task} from '@shared/types/utils.types';
 
 import {FlexRow} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';

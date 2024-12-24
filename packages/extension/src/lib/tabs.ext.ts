@@ -22,7 +22,7 @@ export function useCurrentTab() {
       }
     }
 
-    fetchCurrentTab();
+    void fetchCurrentTab();
   }, []);
 
   return {currentTab, isLoading, error};

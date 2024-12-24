@@ -1,28 +1,24 @@
 import {deleteField} from 'firebase/firestore';
 import React from 'react';
 
-import {
-  FeedItemsService,
-  getMarkDoneFeedItemActionInfo,
-  getMarkUnreadFeedItemActionInfo,
-  getSaveFeedItemActionInfo,
-  getStarFeedItemActionInfo,
-} from '@shared/lib/feedItems';
-import {logger} from '@shared/lib/logger';
+import {logger} from '@shared/services/logger';
 
-import {FeedItem, FeedItemActionType, TriageStatus} from '@shared/types/feedItems.types';
-import {IconName} from '@shared/types/icons.types';
-import {Result} from '@shared/types/result.types';
-import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
+import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
+
+import type {FeedItem} from '@shared/types/feedItems.types';
+import {FeedItemActionType, TriageStatus} from '@shared/types/feedItems.types';
+import type {IconName} from '@shared/types/icons.types';
+import type {Result} from '@shared/types/result.types';
+import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
-import {AsyncFunc, Func} from '@shared/types/utils.types';
+import type {AsyncFunc, Func} from '@shared/types/utils.types';
+
+import {useEventLogService} from '@sharedClient/services/eventLog.client';
+import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {FlexRow} from '@src/components/atoms/Flex';
 
-import {useLoggedInUser} from '@src/lib/auth.pwa';
-import {eventLogService} from '@src/lib/eventLog.pwa';
-import {feedItemsService} from '@src/lib/feedItems.pwa';
 import {useToast} from '@src/lib/toasts';
 
 interface GenericFeedItemActionIconProps {
@@ -48,7 +44,8 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
   toastText,
   errorMessage,
 }) => {
-  const loggedInUser = useLoggedInUser();
+  const {feedItemId} = feedItem;
+  const eventLogService = useEventLogService();
   const {showToast, showErrorToast} = useToast();
 
   const handleAction = async () => {
@@ -57,11 +54,7 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
 
     if (result.success) {
       showToast({message: toastText});
-      eventLogService.logFeedItemActionEvent({
-        userId: loggedInUser.userId,
-        feedItemId: feedItem.feedItemId,
-        feedItemActionType,
-      });
+      void eventLogService.logFeedItemActionEvent({feedItemId, feedItemActionType});
       return;
     }
 
@@ -83,8 +76,9 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
 const MarkDoneFeedItemActionIcon: React.FC<{
   readonly feedItem: FeedItem;
 }> = ({feedItem}) => {
-  const actionInfo = getMarkDoneFeedItemActionInfo(feedItem);
-  const isDone = FeedItemsService.isMarkedDone(feedItem);
+  const actionInfo = SharedFeedItemHelpers.getMarkDoneFeedItemActionInfo(feedItem);
+  const isDone = SharedFeedItemHelpers.isMarkedDone(feedItem);
+  const feedItemsService = useFeedItemsService();
 
   return (
     <GenericFeedItemActionIcon
@@ -93,7 +87,7 @@ const MarkDoneFeedItemActionIcon: React.FC<{
       icon={actionInfo.icon}
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}
-      getIsActive={FeedItemsService.isMarkedDone}
+      getIsActive={SharedFeedItemHelpers.isMarkedDone}
       onAction={async (isActive) => {
         const result = await feedItemsService.updateFeedItem(feedItem.feedItemId, {
           triageStatus: isActive ? TriageStatus.Untriaged : TriageStatus.Done,
@@ -111,8 +105,9 @@ const MarkDoneFeedItemActionIcon: React.FC<{
 const SaveFeedItemActionIcon: React.FC<{
   readonly feedItem: FeedItem;
 }> = ({feedItem}) => {
-  const actionInfo = getSaveFeedItemActionInfo(feedItem);
-  const isSaved = FeedItemsService.isSaved(feedItem);
+  const actionInfo = SharedFeedItemHelpers.getSaveFeedItemActionInfo(feedItem);
+  const isSaved = SharedFeedItemHelpers.isSaved(feedItem);
+  const feedItemsService = useFeedItemsService();
 
   return (
     <GenericFeedItemActionIcon
@@ -121,7 +116,7 @@ const SaveFeedItemActionIcon: React.FC<{
       icon={actionInfo.icon}
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}
-      getIsActive={FeedItemsService.isSaved}
+      getIsActive={SharedFeedItemHelpers.isSaved}
       onAction={async (isActive) => {
         const result = await feedItemsService.updateFeedItem(feedItem.feedItemId, {
           triageStatus: isActive ? TriageStatus.Untriaged : TriageStatus.Saved,
@@ -137,8 +132,9 @@ const SaveFeedItemActionIcon: React.FC<{
 const MarkUnreadFeedItemActionIcon: React.FC<{
   readonly feedItem: FeedItem;
 }> = ({feedItem}) => {
-  const actionInfo = getMarkUnreadFeedItemActionInfo(feedItem);
-  const isUnread = FeedItemsService.isUnread(feedItem);
+  const actionInfo = SharedFeedItemHelpers.getMarkUnreadFeedItemActionInfo(feedItem);
+  const isUnread = SharedFeedItemHelpers.isUnread(feedItem);
+  const feedItemsService = useFeedItemsService();
 
   return (
     <GenericFeedItemActionIcon
@@ -147,7 +143,7 @@ const MarkUnreadFeedItemActionIcon: React.FC<{
       icon={actionInfo.icon}
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}
-      getIsActive={FeedItemsService.isUnread}
+      getIsActive={SharedFeedItemHelpers.isUnread}
       onAction={async (isActive) => {
         const result = await feedItemsService.updateFeedItem(feedItem.feedItemId, {
           [`tagIds.${SystemTagId.Unread}`]: isActive ? deleteField() : true,
@@ -165,8 +161,9 @@ const MarkUnreadFeedItemActionIcon: React.FC<{
 const StarFeedItemActionIcon: React.FC<{
   readonly feedItem: FeedItem;
 }> = ({feedItem}) => {
-  const actionInfo = getStarFeedItemActionInfo(feedItem);
-  const isStarred = FeedItemsService.isStarred(feedItem);
+  const actionInfo = SharedFeedItemHelpers.getStarFeedItemActionInfo(feedItem);
+  const isStarred = SharedFeedItemHelpers.isStarred(feedItem);
+  const feedItemsService = useFeedItemsService();
 
   return (
     <GenericFeedItemActionIcon
@@ -175,7 +172,7 @@ const StarFeedItemActionIcon: React.FC<{
       icon={actionInfo.icon}
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}
-      getIsActive={FeedItemsService.isStarred}
+      getIsActive={SharedFeedItemHelpers.isStarred}
       onAction={async (isActive) => {
         const result = await feedItemsService.updateFeedItem(feedItem.feedItemId, {
           [`tagIds.${SystemTagId.Starred}`]: isActive ? deleteField() : true,

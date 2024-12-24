@@ -2,8 +2,8 @@
   "include": ["src"],
   "extends": "../../tsconfig.json",
 
-  // This package consumes the shared package.
-  "references": [{"path": "../shared"}],
+  // This package consumes the `shared` package.
+  "references": [{"path": "../shared"}, {"path": "../sharedServer"}],
 
   "compilerOptions": {
     // Build is handled by esbuild.
@@ -13,7 +13,8 @@
     "baseUrl": ".",
     "paths": {
       "@src/*": ["./src/*"],
-      "@shared/*": ["../shared/src/*"]
+      "@shared/*": ["../shared/src/*"],
+      "@sharedServer/*": ["../sharedServer/src/*"]
     }
   }
 }
