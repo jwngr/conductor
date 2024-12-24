@@ -312,7 +312,7 @@ export class ClientFeedItemsService {
     if (!responseResult.success) {
       return makeErrorResult(
         new Error(
-          `Error fetching markdown for feed item "${feedItemId}": [${responseResult.statusCode}] ${responseResult.error}]`
+          `Error fetching markdown for feed item "${feedItemId}": [${responseResult.statusCode}] ${responseResult.error}`
         )
       );
     }
