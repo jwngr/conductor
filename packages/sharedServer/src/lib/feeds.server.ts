@@ -1,4 +1,5 @@
 import type {CollectionReference} from 'firebase-admin/firestore';
+import {FieldValue} from 'firebase-admin/firestore';
 
 import {asyncTry, prefixError} from '@shared/lib/errors';
 
@@ -7,7 +8,6 @@ import {makeFeed} from '@shared/types/feeds.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 
-import {FieldValue} from '@sharedServer/lib/firebase.server';
 import type {SuperfeedrService} from '@sharedServer/lib/superfeedr.server';
 
 export class ServerFeedsService {

@@ -1,4 +1,5 @@
 import type {CollectionReference, DocumentSnapshot} from 'firebase-admin/firestore';
+import {FieldValue} from 'firebase-admin/firestore';
 
 import {asyncTry, prefixError} from '@shared/lib/errors';
 
@@ -14,7 +15,6 @@ import {makeUserFeedSubscription} from '@shared/types/userFeedSubscriptions.type
 
 import {
   batchDeleteFirestoreDocuments,
-  FieldValue,
   getFirestoreQuerySnapshot,
 } from '@sharedServer/lib/firebase.server';
 

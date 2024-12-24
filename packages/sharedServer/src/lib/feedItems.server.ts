@@ -1,4 +1,5 @@
 import type {CollectionReference, DocumentSnapshot} from 'firebase-admin/firestore';
+import {FieldValue} from 'firebase-admin/firestore';
 
 import {asyncTry} from '@shared/lib/errors';
 
@@ -11,7 +12,6 @@ import type {UserId} from '@shared/types/user.types';
 
 import {
   batchDeleteFirestoreDocuments,
-  FieldValue,
   getFirestoreQuerySnapshot,
   storageBucket,
   updateFirestoreDoc,

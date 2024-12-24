@@ -1,4 +1,5 @@
 import type {CollectionReference, DocumentSnapshot} from 'firebase-admin/firestore';
+import {FieldValue} from 'firebase-admin/firestore';
 
 import {asyncTryAll, prefixError} from '@shared/lib/errors';
 
@@ -12,7 +13,6 @@ import {ServerFeedItemsService} from '@sharedServer/lib/feedItems.server';
 import {
   batchDeleteFirestoreDocuments,
   deleteFirestoreDocPath,
-  FieldValue,
   getFirestoreQuerySnapshot,
   updateFirestoreDoc,
 } from '@sharedServer/lib/firebase.server';

@@ -14,8 +14,6 @@ export const firestore = admin.firestore();
 
 export const storageBucket = admin.storage().bucket();
 
-export const FieldValue = admin.firestore.FieldValue;
-
 export function getFirestoreQuerySnapshot(query: Query): AsyncResult<QuerySnapshot> {
   return asyncTry<QuerySnapshot>(async () => {
     return await query.get();
