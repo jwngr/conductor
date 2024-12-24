@@ -1,14 +1,15 @@
-import {FieldValue} from 'firebase/firestore';
+import type {FieldValue} from 'firebase/firestore';
 
 import {makeId} from '@shared/lib/utils';
 
-import {IconName} from '@shared/types/icons.types';
-import {makeErrorResult, makeSuccessResult, Result} from '@shared/types/result.types';
-import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
-import {TagId} from '@shared/types/tags.types';
-import {UserId} from '@shared/types/user.types';
-import {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
-import {BaseStoreItem, Timestamp} from '@shared/types/utils.types';
+import type {IconName} from '@shared/types/icons.types';
+import type {Result} from '@shared/types/result.types';
+import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
+import type {TagId} from '@shared/types/tags.types';
+import type {UserId} from '@shared/types/user.types';
+import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
+import type {BaseStoreItem, Timestamp} from '@shared/types/utils.types';
 
 /**
  * Strongly-typed type for a {@link FeedItem}'s unique identifier. Prefer this over plain strings.

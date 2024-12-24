@@ -1,24 +1,22 @@
+import type {ActionCodeSettings, Auth as FirebaseAuth, UserCredential} from 'firebase/auth';
 import {
-  ActionCodeSettings,
-  Auth as FirebaseAuth,
   isSignInWithEmailLink as isSignInWithEmailLinkFirebase,
   onAuthStateChanged as onAuthStateChangedFirebase,
   sendSignInLinkToEmail as sendSignInLinkToEmailFirebase,
   signInWithEmailLink as signInWithEmailLinkFirebase,
   signOut as signOutFirebase,
-  UserCredential,
 } from 'firebase/auth';
 
 import {asyncTry} from '@shared/lib/errors';
 
-import {AsyncResult} from '@shared/types/result.types';
-import {
+import type {AsyncResult} from '@shared/types/result.types';
+import type {
   AuthService as AuthServiceType,
   AuthStateChangedCallback,
   LoggedInUser,
-  makeLoggedInUserFromFirebaseUser,
 } from '@shared/types/user.types';
-import {Consumer} from '@shared/types/utils.types';
+import {makeLoggedInUserFromFirebaseUser} from '@shared/types/user.types';
+import type {Consumer} from '@shared/types/utils.types';
 
 export class AuthService implements AuthServiceType {
   private currentUser: LoggedInUser | null = null;

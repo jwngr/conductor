@@ -2,10 +2,11 @@ import {serverTimestamp} from 'firebase/firestore';
 
 import {makeId} from '@shared/lib/utils';
 
-import {Feed, FeedId} from '@shared/types/feeds.types';
-import {makeErrorResult, makeSuccessResult, Result} from '@shared/types/result.types';
-import {UserId} from '@shared/types/user.types';
-import {BaseStoreItem, Timestamp} from '@shared/types/utils.types';
+import type {Feed, FeedId} from '@shared/types/feeds.types';
+import type {Result} from '@shared/types/result.types';
+import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {UserId} from '@shared/types/user.types';
+import type {BaseStoreItem, Timestamp} from '@shared/types/utils.types';
 
 /**
  * Strongly-typed type for a {@link UserFeedSubscription}'s unique identifier. Prefer this over

@@ -1,5 +1,5 @@
+import type {CollectionReference} from 'firebase/firestore';
 import {
-  CollectionReference,
   deleteDoc,
   doc,
   limit as firestoreLimit,
@@ -16,19 +16,19 @@ import {
 import {asyncTry} from '@shared/lib/errors';
 import {logger} from '@shared/lib/logger';
 
-import {
+import type {
   EventId,
   EventLogItem,
-  EventType,
   FeedItemActionEventLogItem,
-  makeEventId,
   UserFeedSubscriptionEventLogItem,
 } from '@shared/types/eventLog.types';
-import {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
-import {AsyncResult, makeSuccessResult, Result} from '@shared/types/result.types';
-import {UserId} from '@shared/types/user.types';
-import {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
-import {Consumer, Unsubscribe} from '@shared/types/utils.types';
+import {EventType, makeEventId} from '@shared/types/eventLog.types';
+import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
+import type {AsyncResult, Result} from '@shared/types/result.types';
+import {makeSuccessResult} from '@shared/types/result.types';
+import type {UserId} from '@shared/types/user.types';
+import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
+import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
 export class EventLogService {
   constructor(

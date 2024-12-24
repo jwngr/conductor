@@ -1,5 +1,6 @@
-import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import {Func, Supplier} from '@shared/types/utils.types';
+import type {AsyncResult} from '@shared/types/result.types';
+import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {Func, Supplier} from '@shared/types/utils.types';
 
 /**
  * Formats a number with commas.

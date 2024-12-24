@@ -1,5 +1,6 @@
-import {AsyncResult, makeErrorResult, makeSuccessResult, Result} from '@shared/types/result.types';
-import {Supplier} from '@shared/types/utils.types';
+import type {AsyncResult, Result} from '@shared/types/result.types';
+import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {Supplier} from '@shared/types/utils.types';
 
 /**
  * Upgrades an unknown error into a proper `Error` object with the best message possible.

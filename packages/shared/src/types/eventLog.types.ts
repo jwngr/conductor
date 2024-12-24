@@ -1,10 +1,11 @@
 import {makeId} from '@shared/lib/utils';
 
-import {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
-import {makeErrorResult, makeSuccessResult, Result} from '@shared/types/result.types';
-import {UserId} from '@shared/types/user.types';
-import {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
-import {BaseStoreItem} from '@shared/types/utils.types';
+import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
+import type {Result} from '@shared/types/result.types';
+import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {UserId} from '@shared/types/user.types';
+import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
+import type {BaseStoreItem} from '@shared/types/utils.types';
 
 /**
  * Strongly-typed type for an event's unique identifier. Prefer this over plain strings.

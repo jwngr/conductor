@@ -2,8 +2,9 @@ import {serverTimestamp} from 'firebase/firestore';
 
 import {makeId} from '@shared/lib/utils';
 
-import {makeErrorResult, makeSuccessResult, Result} from '@shared/types/result.types';
-import {BaseStoreItem} from '@shared/types/utils.types';
+import type {Result} from '@shared/types/result.types';
+import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {BaseStoreItem} from '@shared/types/utils.types';
 
 /**
  * Strongly-typed type for a {@link Feed}'s unique identifier. Prefer this over plain strings.

@@ -1,10 +1,15 @@
-import {FirebaseApp, initializeApp} from 'firebase/app';
-import {Auth, connectAuthEmulator, getAuth} from 'firebase/auth';
-import {connectFirestoreEmulator, Firestore, getFirestore} from 'firebase/firestore';
-import {connectFunctionsEmulator, Functions, getFunctions} from 'firebase/functions';
-import {connectStorageEmulator, FirebaseStorage, getStorage} from 'firebase/storage';
+import type {FirebaseApp} from 'firebase/app';
+import {initializeApp} from 'firebase/app';
+import type {Auth} from 'firebase/auth';
+import {connectAuthEmulator, getAuth} from 'firebase/auth';
+import type {Firestore} from 'firebase/firestore';
+import {connectFirestoreEmulator, getFirestore} from 'firebase/firestore';
+import type {Functions} from 'firebase/functions';
+import {connectFunctionsEmulator, getFunctions} from 'firebase/functions';
+import type {FirebaseStorage} from 'firebase/storage';
+import {connectStorageEmulator, getStorage} from 'firebase/storage';
 
-import {FirebaseConfig} from '@shared/types/firebase.types';
+import type {FirebaseConfig} from '@shared/types/firebase.types';
 
 interface FirebaseServiceConfig {
   readonly config: FirebaseConfig;

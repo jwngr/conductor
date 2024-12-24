@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 
 import {JSDOM} from 'jsdom';
 
-import {PocketExportedItem} from '../types/pocket';
+import type {PocketExportedItem} from '../types/pocket';
 
 export class PocketService {
   static async parseExportFromFile(path: string): Promise<readonly PocketExportedItem[]> {
