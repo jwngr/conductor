@@ -1,9 +1,10 @@
 import admin from 'firebase-admin';
-import {DocumentData, DocumentReference, Query, QuerySnapshot} from 'firebase-admin/firestore';
+import type {DocumentData, DocumentReference, Query, QuerySnapshot} from 'firebase-admin/firestore';
 
 import {asyncTry} from '@shared/lib/errors';
 
-import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/result.types';
+import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 
 const BATCH_DELETE_SIZE = 500;
 
@@ -13,13 +14,12 @@ export const firestore = admin.firestore();
 
 export const storageBucket = admin.storage().bucket();
 
-export const FieldValue = admin.firestore.FieldValue;
-
 export function getFirestoreQuerySnapshot(query: Query): AsyncResult<QuerySnapshot> {
   return asyncTry<QuerySnapshot>(async () => {
     return await query.get();
   });
 }
+
 export function updateFirestoreDoc<T>(
   docRef: DocumentReference,
   updates: Partial<T>
@@ -29,9 +29,15 @@ export function updateFirestoreDoc<T>(
   });
 }
 
-export function deleteFirestoreDoc(docPath: string): AsyncResult<void> {
+export function deleteFirestoreDocPath(docPath: string): AsyncResult<void> {
   return asyncTry<undefined>(async () => {
     await firestore.doc(docPath).delete();
+  });
+}
+
+export function deleteFirestoreDoc(doc: DocumentReference): AsyncResult<void> {
+  return asyncTry<undefined>(async () => {
+    await doc.delete();
   });
 }
 

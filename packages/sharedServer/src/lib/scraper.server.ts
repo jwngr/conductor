@@ -1,6 +1,6 @@
 import {asyncTry} from '@shared/lib/errors';
 
-import {AsyncResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/result.types';
 
 /**
  * Fetches the raw HTML for a given URL.

@@ -1,20 +1,25 @@
-import {CollectionReference} from 'firebase-admin/firestore';
+import type {CollectionReference} from 'firebase-admin/firestore';
+import {FieldValue} from 'firebase-admin/firestore';
 
-import {FEEDS_DB_COLLECTION} from '@shared/lib/constants';
 import {asyncTry, prefixError} from '@shared/lib/errors';
 
-import {Feed, FeedId, makeFeed} from '@shared/types/feeds.types';
-import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {Feed, FeedId} from '@shared/types/feeds.types';
+import {makeFeed} from '@shared/types/feeds.types';
+import type {AsyncResult} from '@shared/types/result.types';
+import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 
-import {FieldValue, firestore} from '@src/lib/firebaseAdmin';
-import {superfeedrService} from '@src/lib/superfeedr';
+import type {SuperfeedrService} from '@sharedServer/lib/superfeedr.server';
 
-class AdminFeedsService {
-  private feedsDbRef: CollectionReference;
+export class ServerFeedsService {
+  private readonly feedsDbRef: CollectionReference;
+  private readonly superfeedrService: SuperfeedrService;
 
-  constructor(args: {readonly feedsDbRef: CollectionReference}) {
-    const {feedsDbRef} = args;
-    this.feedsDbRef = feedsDbRef;
+  constructor(args: {
+    readonly feedsDbRef: CollectionReference;
+    readonly superfeedrService: SuperfeedrService;
+  }) {
+    this.feedsDbRef = args.feedsDbRef;
+    this.superfeedrService = args.superfeedrService;
   }
 
   /**
@@ -117,7 +122,7 @@ class AdminFeedsService {
    * Subscribes to a feed in Superfeedr.
    */
   public async subscribeToSuperfeedr(feed: Feed): AsyncResult<void> {
-    const superfeedrSubscribeResult = await superfeedrService.subscribeToFeed(feed.url);
+    const superfeedrSubscribeResult = await this.superfeedrService.subscribeToFeed(feed.url);
     if (!superfeedrSubscribeResult.success) {
       return makeErrorResult(
         prefixError(superfeedrSubscribeResult.error, 'Error subscribing to feed in Superfeedr')
@@ -130,7 +135,7 @@ class AdminFeedsService {
    * Unsubscribes from a feed in Superfeedr.
    */
   public async unsubscribeFromSuperfeedr(feed: Feed): AsyncResult<void> {
-    const superfeedrUnsubscribeResult = await superfeedrService.unsubscribeFromFeed(feed.url);
+    const superfeedrUnsubscribeResult = await this.superfeedrService.unsubscribeFromFeed(feed.url);
     if (!superfeedrUnsubscribeResult.success) {
       return makeErrorResult(
         prefixError(
@@ -142,7 +147,3 @@ class AdminFeedsService {
     return makeSuccessResult(undefined);
   }
 }
-
-export const adminFeedsService = new AdminFeedsService({
-  feedsDbRef: firestore.collection(FEEDS_DB_COLLECTION),
-});

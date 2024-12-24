@@ -1,10 +1,5 @@
-import {defineString} from 'firebase-functions/params';
-
-import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-
-const SUPERFEEDR_USER = defineString('SUPERFEEDR_USER');
-const SUPERFEEDR_API_KEY = defineString('SUPERFEEDR_API_KEY');
-const SUPERFEEDR_BASE_URL = 'https://push.superfeedr.com/';
+import type {AsyncResult} from '@shared/types/result.types';
+import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 
 // TODO: Confirm if this is actually needed.
 // interface SuperfeedrResponse {
@@ -12,13 +7,14 @@ const SUPERFEEDR_BASE_URL = 'https://push.superfeedr.com/';
 //   readonly message?: string;
 // }
 
+const SUPERFEEDR_BASE_URL = 'https://push.superfeedr.com/';
+
 export class SuperfeedrService {
   private readonly superfeedrUser: string;
   private readonly superfeedrApiKey: string;
   constructor(args: {readonly superfeedrUser: string; readonly superfeedrApiKey: string}) {
-    const {superfeedrUser, superfeedrApiKey} = args;
-    this.superfeedrUser = superfeedrUser;
-    this.superfeedrApiKey = superfeedrApiKey;
+    this.superfeedrUser = args.superfeedrUser;
+    this.superfeedrApiKey = args.superfeedrApiKey;
   }
 
   private getSuperfeedrAuthHeader(): string {
@@ -91,8 +87,3 @@ export class SuperfeedrService {
     return makeSuccessResult(undefined);
   }
 }
-
-export const superfeedrService = new SuperfeedrService({
-  superfeedrUser: SUPERFEEDR_USER.value(),
-  superfeedrApiKey: SUPERFEEDR_API_KEY.value(),
-});

@@ -1,0 +1,25 @@
+{
+  "include": ["src"],
+  "extends": "../../tsconfig.json",
+
+  // This package consumes the `shared` package.
+  "references": [{"path": "../shared"}],
+
+  "compilerOptions": {
+    // This project is referenced by other TypeScript projects, so it must be composite.
+    "composite": true,
+
+    // Build output.
+    "outDir": "./dist",
+    "declaration": true,
+    "declarationMap": true,
+
+    // Import aliases.
+    "paths": {
+      "@shared/*": ["../shared/src/*"],
+      // Despite this being in the `sharedServer` package itself, prefer `@sharedServer` imports
+      // over `@src`. This makes code valid in any package when copy / pasting.
+      "@sharedServer/*": ["./src/*"]
+    }
+  }
+}

@@ -15,7 +15,7 @@ const sharedLanguageOptions = {
 
 const noRelativeImportsPattern = {
   group: ['.*'],
-  message: 'Use @src, @shared, or @sharedClient imports instead of relative paths.',
+  message: 'Use imports like `@src` and `@shared` instead of relative paths.',
 };
 
 const noFirebaseAdminImportPattern = {
@@ -69,6 +69,23 @@ export default tseslint.config(
   ...tseslint.configs.strict,
   ...tseslint.configs.stylistic,
 
+  {
+    // CLI settings.
+    linterOptions: {
+      reportUnusedDisableDirectives: true,
+    },
+    rules: {
+      // This effectively sets max-warnings to 0, but allows TODOs to be ignored.
+      'no-warning-comments': [
+        'error',
+        {
+          terms: ['fixme', 'xxx', 'hack'],
+          location: 'start',
+        },
+      ],
+    },
+  },
+
   // Shared models/lib package config.
   {
     files: ['packages/shared/src/**/*.ts'],
@@ -90,6 +107,14 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       ...makeSharedRules({disallowFirebaseAdminImports: true}),
     },
+  },
+
+  // Shared server package config.
+  // TODO: Figure out why this is not causing lint errors for `type` imports.
+  {
+    files: ['packages/sharedServer/**/*.{ts}'],
+    languageOptions: sharedLanguageOptions,
+    rules: makeSharedRules({disallowFirebaseClientImports: true}),
   },
 
   // PWA package config.

@@ -1,11 +1,10 @@
 {
-  "name": "@conductor/shared-client",
+  "name": "@conductor/shared-server",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "dependencies": {
-    "@conductor/shared": "1.0.0",
-    "zustand": "^5.0.1"
+    "@conductor/shared": "1.0.0"
   },
   "scripts": {
     "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",
