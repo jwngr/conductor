@@ -1,5 +1,3 @@
-import {FieldValue, firestore} from '@sharedServer/lib/firebase.server';
-import {superfeedrService} from '@sharedServer/lib/superfeedr.server';
 import {CollectionReference} from 'firebase-admin/firestore';
 
 import {FEEDS_DB_COLLECTION} from '@shared/lib/constants';
@@ -8,12 +6,14 @@ import {asyncTry, prefixError} from '@shared/lib/errors';
 import {Feed, FeedId, makeFeed} from '@shared/types/feeds.types';
 import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 
-class AdminFeedsService {
+import {FieldValue, firestore} from '@sharedServer/lib/firebase.server';
+import {superfeedrService} from '@sharedServer/lib/superfeedr.server';
+
+class ServerFeedsService {
   private feedsDbRef: CollectionReference;
 
   constructor(args: {readonly feedsDbRef: CollectionReference}) {
-    const {feedsDbRef} = args;
-    this.feedsDbRef = feedsDbRef;
+    this.feedsDbRef = args.feedsDbRef;
   }
 
   /**
@@ -142,6 +142,6 @@ class AdminFeedsService {
   }
 }
 
-export const adminFeedsService = new AdminFeedsService({
+export const adminFeedsService = new ServerFeedsService({
   feedsDbRef: firestore.collection(FEEDS_DB_COLLECTION),
 });

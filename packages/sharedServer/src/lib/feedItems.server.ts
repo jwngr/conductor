@@ -1,11 +1,3 @@
-import {
-  batchDeleteFirestoreDocuments,
-  FieldValue,
-  firestore,
-  getFirestoreQuerySnapshot,
-  storageBucket,
-  updateFirestoreDoc,
-} from '@sharedServer/lib/firebase.server';
 import {DocumentSnapshot} from 'firebase-admin/firestore';
 
 import {FEED_ITEMS_DB_COLLECTION, FEED_ITEMS_STORAGE_COLLECTION} from '@shared/lib/constants';
@@ -15,6 +7,15 @@ import {FeedItem, FeedItemId, FeedItemType} from '@shared/types/feedItems.types'
 import {AsyncResult, makeErrorResult} from '@shared/types/result.types';
 import {SystemTagId} from '@shared/types/tags.types';
 import {UserId} from '@shared/types/user.types';
+
+import {
+  batchDeleteFirestoreDocuments,
+  FieldValue,
+  firestore,
+  getFirestoreQuerySnapshot,
+  storageBucket,
+  updateFirestoreDoc,
+} from '@sharedServer/lib/firebase.server';
 
 interface UpdateImportedFeedItemInFirestoreArgs {
   readonly links: string[] | null;
@@ -59,7 +60,7 @@ export async function updateImportedFeedItemInFirestore(
 }
 
 /**
- * Hard-deletes all feed items associated with a user.
+ * Permanently all feed items associated with a user.
  */
 export async function deleteFeedItemDocsForUsers(userId: UserId): AsyncResult<void> {
   // TOOD: Figure out why Firebase Admin SDK types are not working.
@@ -114,7 +115,7 @@ export async function saveMarkdownToStorage(args: {
 }
 
 /**
- * Hard-deletes all storage files associated with a user.
+ * Permanently all storage files associated with a user.
  */
 export async function deleteStorageFilesForUser(userId: UserId): AsyncResult<void> {
   return await asyncTry<undefined>(async () => {

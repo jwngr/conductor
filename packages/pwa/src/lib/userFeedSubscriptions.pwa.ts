@@ -44,10 +44,9 @@ export class ClientUserFeedSubscriptionsService {
     readonly functions: Functions;
     readonly userFeedSubscriptionsDbRef: CollectionReference;
   }) {
-    const {userId, functions, userFeedSubscriptionsDbRef} = args;
-    this.userId = userId;
-    this.functions = functions;
-    this.userFeedSubscriptionsDbRef = userFeedSubscriptionsDbRef;
+    this.userId = args.userId;
+    this.functions = args.functions;
+    this.userFeedSubscriptionsDbRef = args.userFeedSubscriptionsDbRef;
   }
 
   /**

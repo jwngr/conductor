@@ -29,9 +29,15 @@ export function updateFirestoreDoc<T>(
   });
 }
 
-export function deleteFirestoreDoc(docPath: string): AsyncResult<void> {
+export function deleteFirestoreDocPath(docPath: string): AsyncResult<void> {
   return asyncTry<undefined>(async () => {
     await firestore.doc(docPath).delete();
+  });
+}
+
+export function deleteFirestoreDoc(doc: DocumentReference): AsyncResult<void> {
+  return asyncTry<undefined>(async () => {
+    await doc.delete();
   });
 }
 

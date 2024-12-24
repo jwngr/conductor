@@ -1,12 +1,5 @@
-import {
-  batchDeleteFirestoreDocuments,
-  FieldValue,
-  firestore,
-  getFirestoreQuerySnapshot,
-} from '@sharedServer/lib/firebase.server';
 import {CollectionReference, DocumentSnapshot} from 'firebase-admin/firestore';
 
-import {USER_FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants';
 import {asyncTry, prefixError} from '@shared/lib/errors';
 
 import {Feed} from '@shared/types/feeds.types';
@@ -18,12 +11,17 @@ import {
   UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
 
-class AdminUserFeedSubscriptionsService {
+import {
+  batchDeleteFirestoreDocuments,
+  FieldValue,
+  getFirestoreQuerySnapshot,
+} from '@sharedServer/lib/firebase.server';
+
+export class ServerUserFeedSubscriptionsService {
   private userFeedSubscriptionsDbRef: CollectionReference;
 
   constructor(args: {readonly userFeedSubscriptionsDbRef: CollectionReference}) {
-    const {userFeedSubscriptionsDbRef} = args;
-    this.userFeedSubscriptionsDbRef = userFeedSubscriptionsDbRef;
+    this.userFeedSubscriptionsDbRef = args.userFeedSubscriptionsDbRef;
   }
 
   /**
@@ -149,7 +147,3 @@ class AdminUserFeedSubscriptionsService {
     );
   }
 }
-
-export const adminUserFeedSubscriptionsService = new AdminUserFeedSubscriptionsService({
-  userFeedSubscriptionsDbRef: firestore.collection(USER_FEED_SUBSCRIPTIONS_DB_COLLECTION),
-});

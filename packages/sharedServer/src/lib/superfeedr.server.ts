@@ -16,9 +16,8 @@ export class SuperfeedrService {
   private readonly superfeedrUser: string;
   private readonly superfeedrApiKey: string;
   constructor(args: {readonly superfeedrUser: string; readonly superfeedrApiKey: string}) {
-    const {superfeedrUser, superfeedrApiKey} = args;
-    this.superfeedrUser = superfeedrUser;
-    this.superfeedrApiKey = superfeedrApiKey;
+    this.superfeedrUser = args.superfeedrUser;
+    this.superfeedrApiKey = args.superfeedrApiKey;
   }
 
   private getSuperfeedrAuthHeader(): string {
