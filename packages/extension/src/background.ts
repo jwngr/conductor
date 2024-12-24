@@ -12,7 +12,7 @@ import {logger} from '@shared/lib/logger';
 import {FEED_ITEM_EXTENSION_SOURCE} from '@shared/types/feedItems.types';
 import {makeUserId} from '@shared/types/user.types';
 
-import {firebaseService} from '@src/lib/firebase.ext';
+import {firebaseService} from '@sharedClient/lib/firebase.client';
 
 const feedItemsDbRef = collection(firebaseService.firestore, FEED_ITEMS_DB_COLLECTION);
 const importQueueDbRef = collection(firebaseService.firestore, IMPORT_QUEUE_DB_COLLECTION);

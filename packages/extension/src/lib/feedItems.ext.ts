@@ -9,9 +9,9 @@ import {
 } from '@shared/lib/constants';
 import {FeedItemsService} from '@shared/lib/feedItems';
 
-import {useLoggedInUser} from '@sharedClient/hooks/auth.hooks';
+import {firebaseService} from '@sharedClient/lib/firebase.client';
 
-import {firebaseService} from '@src/lib/firebase.ext';
+import {useLoggedInUser} from '@sharedClient/hooks/auth.hooks';
 
 const feedItemsDbRef = collection(firebaseService.firestore, FEED_ITEMS_DB_COLLECTION);
 const importQueueDbRef = collection(firebaseService.firestore, IMPORT_QUEUE_DB_COLLECTION);
