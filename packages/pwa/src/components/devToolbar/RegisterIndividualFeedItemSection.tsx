@@ -3,7 +3,7 @@ import {useEffect} from 'react';
 import {DevToolbarSectionType} from '@shared/types/devToolbar.types';
 import {FeedItem} from '@shared/types/feedItems.types';
 
-import {useDevToolbarStore} from '@shared/stores/DevToolbarStore';
+import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
 import {
   Dialog,

@@ -1,10 +1,10 @@
 import {assertNever} from '@shared/lib/utils';
 
-import {TriageStatus} from '@shared/types/feedItems.types';
+import {FeedItem, TriageStatus} from '@shared/types/feedItems.types';
 import {FilterOp, View, ViewType} from '@shared/types/query.types';
 import {SystemTagId} from '@shared/types/tags.types';
 
-const ALL_VIEW_CONFIGS: Record<ViewType, View> = {
+const ALL_VIEW_CONFIGS: Record<ViewType, View<FeedItem>> = {
   [ViewType.Untriaged]: {
     name: 'Untriaged',
     type: ViewType.Untriaged,
@@ -70,7 +70,7 @@ const ALL_VIEW_CONFIGS: Record<ViewType, View> = {
 };
 
 export class Views {
-  static get(viewType: ViewType): View {
+  static get(viewType: ViewType): View<FeedItem> {
     switch (viewType) {
       case ViewType.Untriaged:
         return Views.getForInbox();
@@ -93,35 +93,35 @@ export class Views {
     }
   }
 
-  static getForInbox(): View {
+  static getForInbox(): View<FeedItem> {
     return ALL_VIEW_CONFIGS[ViewType.Untriaged];
   }
 
-  static getForSaved(): View {
+  static getForSaved(): View<FeedItem> {
     return ALL_VIEW_CONFIGS[ViewType.Saved];
   }
 
-  static getForDone(): View {
+  static getForDone(): View<FeedItem> {
     return ALL_VIEW_CONFIGS[ViewType.Done];
   }
 
-  static getForTrashed(): View {
+  static getForTrashed(): View<FeedItem> {
     return ALL_VIEW_CONFIGS[ViewType.Trashed];
   }
 
-  static getForUnread(): View {
+  static getForUnread(): View<FeedItem> {
     return ALL_VIEW_CONFIGS[ViewType.Unread];
   }
 
-  static getForStarred(): View {
+  static getForStarred(): View<FeedItem> {
     return ALL_VIEW_CONFIGS[ViewType.Starred];
   }
 
-  static getForAll(): View {
+  static getForAll(): View<FeedItem> {
     return ALL_VIEW_CONFIGS[ViewType.All];
   }
 
-  static getForToday(): View {
+  static getForToday(): View<FeedItem> {
     return ALL_VIEW_CONFIGS[ViewType.Today];
   }
 }
