@@ -65,6 +65,10 @@ function makeSharedRules({
         message:
           'Using `fetch` directly is discouraged. Use `request*` helpers like `requestGet` or `requestPost` instead.',
       },
+      {
+        selector: 'ThrowStatement',
+        message: 'Throwing errors directly is discouraged. Use `ErrorResult` instead.',
+      },
     ],
     'no-restricted-imports': [
       'error',

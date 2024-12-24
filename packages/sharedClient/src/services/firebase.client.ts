@@ -8,6 +8,7 @@ function validateRequiredEnvVar(name: string): string {
   if (!value) {
     const errorMessage = `${name} environment variable is not set.`;
     logger.error(errorMessage);
+    // eslint-disable-next-line no-restricted-syntax
     throw new Error(errorMessage);
   }
   return value;

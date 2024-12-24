@@ -293,7 +293,6 @@ export class ClientFeedItemsService {
   }
 
   async getFeedItemMarkdown(feedItemId: FeedItemId): AsyncResult<string> {
-    // TODO: Clean up error handling here.
     const fileRef = storageRef(
       this.feedItemsStorageRef,
       `${this.userId}/${feedItemId}/llmContext.md`
@@ -302,8 +301,10 @@ export class ClientFeedItemsService {
     const downloadUrl = await getDownloadURL(fileRef);
     const responseResult = await requestGet<string>(downloadUrl);
     if (!responseResult.success) {
-      throw new Error(
-        `Error fetching markdown for feed item "${feedItemId}": [${responseResult.statusCode}] ${responseResult.error}]`
+      return makeErrorResult(
+        new Error(
+          `Error fetching markdown for feed item "${feedItemId}": [${responseResult.statusCode}] ${responseResult.error}]`
+        )
       );
     }
 

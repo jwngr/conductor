@@ -35,6 +35,7 @@ describe('syncTry', () => {
   it('should return error result when function throws an Error', () => {
     const errorMessage = 'Test error';
     const result = syncTry(() => {
+      // eslint-disable-next-line no-restricted-syntax
       throw new Error(errorMessage);
     });
 
@@ -46,6 +47,7 @@ describe('syncTry', () => {
 
   it('should handle non-Error throws by converting them to Error objects', () => {
     const result = syncTry(() => {
+      // eslint-disable-next-line no-restricted-syntax
       throw 'string error';
     });
 
@@ -57,6 +59,7 @@ describe('syncTry', () => {
 
   it('should handle throwing undefined', () => {
     const result = syncTry(() => {
+      // eslint-disable-next-line no-restricted-syntax
       throw undefined;
     });
 
@@ -97,6 +100,7 @@ describe('asyncTry', () => {
   it('should return error result when async function rejects with an Error', async () => {
     const errorMessage = 'Test error';
     const result = await asyncTry(async () => {
+      // eslint-disable-next-line no-restricted-syntax
       throw new Error(errorMessage);
     });
 
@@ -109,6 +113,7 @@ describe('asyncTry', () => {
   it('should handle non-Error rejections by converting them to Error objects', async () => {
     const errorMessage = 'Test error';
     const result = await asyncTry(async () => {
+      // eslint-disable-next-line no-restricted-syntax
       throw errorMessage;
     });
 
@@ -120,6 +125,7 @@ describe('asyncTry', () => {
 
   it('should handle rejecting with undefined', async () => {
     const result = await asyncTry(async () => {
+      // eslint-disable-next-line no-restricted-syntax
       throw undefined;
     });
 
@@ -169,6 +175,7 @@ describe('asyncTryAll', () => {
     const asyncResults = [
       asyncTry(async () => 1),
       asyncTry(async () => {
+        // eslint-disable-next-line no-restricted-syntax
         throw new Error(errorMessage);
       }),
       asyncTry(async () => 3),
