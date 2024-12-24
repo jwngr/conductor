@@ -1,3 +1,9 @@
+import {
+  batchDeleteFirestoreDocuments,
+  FieldValue,
+  firestore,
+  getFirestoreQuerySnapshot,
+} from '@sharedServer/lib/firebase.server';
 import {CollectionReference, DocumentSnapshot} from 'firebase-admin/firestore';
 
 import {USER_FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants';
@@ -11,13 +17,6 @@ import {
   UserFeedSubscription,
   UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
-
-import {
-  batchDeleteFirestoreDocuments,
-  FieldValue,
-  firestore,
-  getFirestoreQuerySnapshot,
-} from '@src/lib/firebaseAdmin';
 
 class AdminUserFeedSubscriptionsService {
   private userFeedSubscriptionsDbRef: CollectionReference;

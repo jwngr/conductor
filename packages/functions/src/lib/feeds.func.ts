@@ -1,3 +1,5 @@
+import {FieldValue, firestore} from '@sharedServer/lib/firebase.server';
+import {superfeedrService} from '@sharedServer/lib/superfeedr.server';
 import {CollectionReference} from 'firebase-admin/firestore';
 
 import {FEEDS_DB_COLLECTION} from '@shared/lib/constants';
@@ -5,9 +7,6 @@ import {asyncTry, prefixError} from '@shared/lib/errors';
 
 import {Feed, FeedId, makeFeed} from '@shared/types/feeds.types';
 import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-
-import {FieldValue, firestore} from '@src/lib/firebaseAdmin';
-import {superfeedrService} from '@src/lib/superfeedr';
 
 class AdminFeedsService {
   private feedsDbRef: CollectionReference;

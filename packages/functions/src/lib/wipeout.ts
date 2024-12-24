@@ -7,7 +7,11 @@ import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/res
 import {UserId} from '@shared/types/user.types';
 import {Supplier} from '@shared/types/utils.types';
 
-import {deleteFeedItemDocsForUsers, deleteStorageFilesForUser} from '@src/lib/feedItems.func';
+import {
+  deleteFeedItemDocsForUsers,
+  deleteStorageFilesForUser,
+} from '@sharedServer/lib/feedItems.server';
+
 import {deleteImportQueueDocsForUser} from '@src/lib/importQueue';
 import {adminUserFeedSubscriptionsService} from '@src/lib/userFeedSubscriptions.func';
 import {deleteUsersDocForUser} from '@src/lib/users';

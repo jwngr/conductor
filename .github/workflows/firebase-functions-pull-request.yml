@@ -4,6 +4,7 @@ on:
     paths:
       - 'packages/functions/**'
       - 'packages/shared/**'
+      - 'packages/sharedServer/**'
       - '.firebaserc'
       - '.prettierrc'
       - 'eslint.config.mjs'

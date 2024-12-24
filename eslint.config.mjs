@@ -15,7 +15,7 @@ const sharedLanguageOptions = {
 
 const noRelativeImportsPattern = {
   group: ['.*'],
-  message: 'Use @src, @shared, or @sharedClient imports instead of relative paths.',
+  message: 'Use imports like `@src` and `@shared` instead of relative paths.',
 };
 
 const noFirebaseAdminImportPattern = {
@@ -92,6 +92,16 @@ export default tseslint.config(
     },
   },
 
+  // Shared server package config.
+  {
+    files: ['packages/sharedServer/**/*.{ts}'],
+    languageOptions: {
+      ...sharedLanguageOptions,
+      globals: globals.node,
+    },
+    rules: makeSharedRules({disallowFirebaseClientImports: true}),
+  },
+
   // PWA package config.
   {
     files: ['packages/pwa/**/*.{ts,tsx}'],
@@ -138,7 +148,10 @@ export default tseslint.config(
   // Functions package config.
   {
     files: ['packages/functions/**/*.{ts}'],
-    languageOptions: sharedLanguageOptions,
+    languageOptions: {
+      ...sharedLanguageOptions,
+      globals: globals.node,
+    },
     rules: makeSharedRules({disallowFirebaseClientImports: true}),
   }
 );
