@@ -13,8 +13,8 @@ import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
 import type {AsyncFunc, Func} from '@shared/types/utils.types';
 
-import {useEventLogService} from '@sharedClient/lib/eventLog.client';
-import {useFeedItemsService} from '@sharedClient/lib/feedItems.client';
+import {useEventLogService} from '@sharedClient/services/eventLog.client';
+import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {FlexRow} from '@src/components/atoms/Flex';

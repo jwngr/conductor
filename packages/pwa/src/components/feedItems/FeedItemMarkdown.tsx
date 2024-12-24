@@ -4,7 +4,7 @@ import {logger} from '@shared/services/logger';
 
 import type {FeedItem} from '@shared/types/feedItems.types';
 
-import {useFeedItemMarkdown} from '@sharedClient/lib/feedItems.client';
+import {useFeedItemMarkdown} from '@sharedClient/services/feedItems.client';
 
 import {Text} from '@src/components/atoms/Text';
 import {Markdown} from '@src/components/Markdown';

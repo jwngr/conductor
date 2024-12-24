@@ -39,7 +39,7 @@ import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import type {AuthStateChangedUnsubscribe, UserId} from '@shared/types/user.types';
 import type {Consumer} from '@shared/types/utils.types';
 
-import {firebaseService} from '@sharedClient/lib/firebase.client';
+import {firebaseService} from '@sharedClient/services/firebase.client';
 
 import {useLoggedInUser} from '@sharedClient/hooks/auth.hooks';
 
@@ -263,6 +263,7 @@ export class ClientFeedItemsService {
       url: trimmedUrl,
     });
 
+    // TODO: Do these in a transaction.
     const addFeedItemResult = await asyncTryAllPromises([
       setDoc(feedItemDoc, feedItem),
       setDoc(doc(this.importQueueDbRef, importQueueItemId), importQueueItem),

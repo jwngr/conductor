@@ -5,7 +5,7 @@ import {DevToolbarSectionType} from '@shared/types/devToolbar.types';
 
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
-import {useUserFeedSubscriptionsService} from '@sharedClient/lib/userFeedSubscriptions.client';
+import {useUserFeedSubscriptionsService} from '@sharedClient/services/userFeedSubscriptions.client';
 
 import {Button, ButtonVariant} from '@src/components/atoms/Button';
 

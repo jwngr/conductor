@@ -9,7 +9,7 @@ import type {FeedItem} from '@shared/types/feedItems.types';
 import type {ViewType} from '@shared/types/query.types';
 import {ThemeColor} from '@shared/types/theme.types';
 
-import {useFeedItems} from '@sharedClient/lib/feedItems.client';
+import {useFeedItems} from '@sharedClient/services/feedItems.client';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';

@@ -10,8 +10,8 @@ import {isValidEmail} from '@shared/types/user.types';
 
 import {useAuthStore} from '@sharedClient/stores/AuthStore';
 
-import {authService} from '@sharedClient/lib/auth.client';
-import {firebaseService} from '@sharedClient/lib/firebase.client';
+import {authService} from '@sharedClient/services/auth.client';
+import {firebaseService} from '@sharedClient/services/firebase.client';
 
 const AuthServiceSubscription: React.FC = () => {
   const {setLoggedInUser} = useAuthStore();

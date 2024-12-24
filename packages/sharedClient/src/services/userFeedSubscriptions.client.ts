@@ -17,7 +17,7 @@ import type {
 import {makeUserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {AsyncFunc, Consumer, Unsubscribe} from '@shared/types/utils.types';
 
-import {firebaseService} from '@sharedClient/lib/firebase.client';
+import {firebaseService} from '@sharedClient/services/firebase.client';
 
 import {useLoggedInUser} from '@sharedClient/hooks/auth.hooks';
 

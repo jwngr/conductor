@@ -11,7 +11,7 @@ import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
 import {FeedItemType} from '@shared/types/feedItems.types';
 import {SystemTagId} from '@shared/types/tags.types';
 
-import {useFeedItem, useFeedItemsService} from '@sharedClient/lib/feedItems.client';
+import {useFeedItem, useFeedItemsService} from '@sharedClient/services/feedItems.client';
 
 import {AppHeader} from '@src/components/AppHeader';
 import {Text} from '@src/components/atoms/Text';

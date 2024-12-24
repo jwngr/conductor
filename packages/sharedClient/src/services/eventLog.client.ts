@@ -8,7 +8,7 @@ import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants';
 import type {EventId, EventLogItem} from '@shared/types/eventLog.types';
 import type {ViewType} from '@shared/types/query.types';
 
-import {firebaseService} from '@sharedClient/lib/firebase.client';
+import {firebaseService} from '@sharedClient/services/firebase.client';
 
 import {useLoggedInUser} from '@sharedClient/hooks/auth.hooks';
 
