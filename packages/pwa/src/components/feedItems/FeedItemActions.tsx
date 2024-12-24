@@ -17,11 +17,12 @@ import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
 import {AsyncFunc, Func} from '@shared/types/utils.types';
 
+import {useEventLogService} from '@sharedClient/lib/eventLog.client';
+import {useFeedItemsService} from '@sharedClient/lib/feedItems.client';
+
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {FlexRow} from '@src/components/atoms/Flex';
 
-import {useEventLogService} from '@src/lib/eventLog.pwa';
-import {useFeedItemsService} from '@src/lib/feedItems.pwa';
 import {useToast} from '@src/lib/toasts';
 
 interface GenericFeedItemActionIconProps {

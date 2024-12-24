@@ -8,11 +8,11 @@ import {FeedItem} from '@shared/types/feedItems.types';
 import {ViewType} from '@shared/types/query.types';
 import {ThemeColor} from '@shared/types/theme.types';
 
+import {useFeedItems} from '@sharedClient/lib/feedItems.client';
+
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
-
-import {useFeedItems} from '@src/lib/feedItems.pwa';
 
 const ViewListItemWrapper = styled(FlexColumn).attrs({justify: 'center', gap: 4})`
   cursor: pointer;

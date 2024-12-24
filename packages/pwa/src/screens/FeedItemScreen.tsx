@@ -9,6 +9,8 @@ import {assertNever} from '@shared/lib/utils';
 import {FeedItem, FeedItemId, FeedItemType} from '@shared/types/feedItems.types';
 import {SystemTagId} from '@shared/types/tags.types';
 
+import {useFeedItem, useFeedItemsService} from '@sharedClient/lib/feedItems.client';
+
 import {AppHeader} from '@src/components/AppHeader';
 import {Text} from '@src/components/atoms/Text';
 import {RegisterIndividualFeedItemDevToolbarSection} from '@src/components/devToolbar/RegisterIndividualFeedItemSection';
@@ -19,8 +21,6 @@ import {WebsiteFeedItemComponent} from '@src/components/feedItems/WebsiteFeedIte
 import {XkcdFeedItemComponent} from '@src/components/feedItems/XkcdFeedItem';
 import {ScreenMainContentWrapper, ScreenWrapper} from '@src/components/layout/Screen';
 import {LeftSidebar} from '@src/components/LeftSidebar';
-
-import {useFeedItem, useFeedItemsService} from '@src/lib/feedItems.pwa';
 
 import {NotFoundScreen} from '@src/screens/404';
 

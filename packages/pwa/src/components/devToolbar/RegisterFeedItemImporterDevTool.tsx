@@ -8,10 +8,10 @@ import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems.types';
 
 import {useDevToolbarStore} from '@shared/stores/DevToolbarStore';
 
+import {useFeedItemsService} from '@sharedClient/lib/feedItems.client';
+
 import {Button, ButtonVariant} from '@src/components/atoms/Button';
 import {Input} from '@src/components/atoms/Input';
-
-import {useFeedItemsService} from '@src/lib/feedItems.pwa';
 
 const StatusText = styled.div<{readonly $isError?: boolean}>`
   font-size: 12px;
