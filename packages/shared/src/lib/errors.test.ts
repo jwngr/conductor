@@ -1,4 +1,4 @@
-import {describe, expect, it} from 'vitest';
+/// <reference types="jest" />
 
 import {asyncTry, syncTry} from '@shared/lib/errors';
 
