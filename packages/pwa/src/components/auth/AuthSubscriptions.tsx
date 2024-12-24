@@ -61,6 +61,7 @@ const PasswordlessAuthSubscription: React.FC = () => {
         // should put them in `AuthStore`?
         // TODO: More gracefully handle common Firebase auth errors.
         // See https://firebase.google.com/docs/reference/js/auth#autherrorcodes.
+        // eslint-disable-next-line no-restricted-syntax
         throw new Error(`Error signing in with email link: ${authCredentialResult.error.message}`, {
           cause: authCredentialResult.error,
         });

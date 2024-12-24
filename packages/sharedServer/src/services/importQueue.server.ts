@@ -2,6 +2,7 @@ import type {CollectionReference, DocumentSnapshot} from 'firebase-admin/firesto
 import {FieldValue} from 'firebase-admin/firestore';
 
 import {asyncTryAll, prefixError} from '@shared/lib/errorUtils.shared';
+import {requestGet} from '@shared/lib/requests.shared';
 
 import type {FeedItemId} from '@shared/types/feedItems.types';
 import type {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue.types';
@@ -18,7 +19,6 @@ import {
   getFirestoreQuerySnapshot,
   updateFirestoreDoc,
 } from '@sharedServer/lib/firebase.server';
-import {fetchRawHtml} from '@sharedServer/lib/scraper.server';
 
 function validateFeedItemUrl(url: string): Result<void> {
   // Parse the URL to validate its structure.
@@ -106,7 +106,11 @@ export class ServerImportQueueService {
   }): AsyncResult<void> {
     const {url, feedItemId, userId} = args;
 
-    const fetchDataResult = await fetchRawHtml(url);
+    // TODO: Extend the import functionality here:
+    // 1. Handle more than just HTML.
+    // 2. Extract a canonical URL (resolving redirects and removing tracking parameters).
+    // 3. Handle images more gracefully (download and replace links in the HTML?).
+    const fetchDataResult = await requestGet<string>(url);
 
     if (!fetchDataResult.success) {
       return makeErrorResult(
