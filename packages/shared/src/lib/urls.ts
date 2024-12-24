@@ -121,10 +121,6 @@ export class Urls {
     }
   }
 
-  static forFeeds(): string {
-    return '/feeds';
-  }
-
   static forFeedItemRoot(): string {
     return '/items';
   }
@@ -135,6 +131,10 @@ export class Urls {
 
   static forFeedItemUnsafe(maybeFeedItemId: string): string {
     return `${this.forFeedItemRoot()}/${maybeFeedItemId}`;
+  }
+
+  static forFeedSubscriptions(): string {
+    return '/feeds';
   }
 
   static getOrderedNavItems(): NavItem[] {

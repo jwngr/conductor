@@ -20,7 +20,7 @@ import {RegisterUserFeedSubscriberDevToolbarSection} from '@src/components/devTo
 import {NotFoundScreen} from '@src/screens/404';
 import {ErrorScreen} from '@src/screens/ErrorScreen';
 import {FeedItemScreen} from '@src/screens/FeedItemScreen';
-import {FeedsScreen} from '@src/screens/FeedsScreen';
+import {FeedSubscriptionsScreen} from '@src/screens/FeedSubscriptionsScreen';
 import {SignInScreen} from '@src/screens/SignInScreen';
 import {StyleguideScreen} from '@src/screens/StyleguideScreen';
 import {ViewScreen} from '@src/screens/ViewScreen';
@@ -60,10 +60,10 @@ const AllRoutes: React.FC = () => {
         }
       />
       <Route
-        path={Urls.forFeeds()}
+        path={Urls.forFeedSubscriptions()}
         element={
           <RequireLoggedInUser>
-            <FeedsScreen />
+            <FeedSubscriptionsScreen />
           </RequireLoggedInUser>
         }
       />

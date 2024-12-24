@@ -5,22 +5,22 @@ import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {ScreenMainContentWrapper, ScreenWrapper} from '@src/components/layout/Screen';
 import {LeftSidebar} from '@src/components/LeftSidebar';
 
-const FeedsScreenMainContentWrapper = styled(FlexColumn)`
+const FeedSubscriptionsScreenMainContentWrapper = styled(FlexColumn)`
   flex: 1;
   padding: 20px;
   overflow: auto;
 `;
 
-const FeedsListWrapper = styled(FlexColumn)`
+const FeedSubscriptionsListWrapper = styled(FlexColumn)`
   border: 1px solid red;
   padding: 20px;
 `;
 
-export const FeedsList: React.FC = () => {
+export const FeedSubscriptionsList: React.FC = () => {
   return (
-    <FeedsListWrapper>
+    <FeedSubscriptionsListWrapper>
       <h2>TODO</h2>
-    </FeedsListWrapper>
+    </FeedSubscriptionsListWrapper>
   );
 };
 
@@ -33,17 +33,17 @@ const FeedAdder: React.FC = () => {
   return <FeedAdderWrapper>TODO</FeedAdderWrapper>;
 };
 
-export const FeedsScreen: React.FC = () => {
+export const FeedSubscriptionsScreen: React.FC = () => {
   return (
     <ScreenWrapper>
       <AppHeader />
       <ScreenMainContentWrapper>
         <LeftSidebar />
-        <FeedsScreenMainContentWrapper>
+        <FeedSubscriptionsScreenMainContentWrapper>
           <h2>Feeds</h2>
-          <FeedsList />
+          <FeedSubscriptionsList />
           <FeedAdder />
-        </FeedsScreenMainContentWrapper>
+        </FeedSubscriptionsScreenMainContentWrapper>
       </ScreenMainContentWrapper>
     </ScreenWrapper>
   );
