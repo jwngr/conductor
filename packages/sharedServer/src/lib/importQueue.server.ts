@@ -1,7 +1,7 @@
 import type {CollectionReference, DocumentSnapshot} from 'firebase-admin/firestore';
 import {FieldValue} from 'firebase-admin/firestore';
 
-import {asyncTryAll, prefixError, syncTry} from '@shared/lib/errors';
+import {asyncTryAll, prefixError} from '@shared/lib/errors';
 
 import type {FeedItemId} from '@shared/types/feedItems.types';
 import type {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue.types';
