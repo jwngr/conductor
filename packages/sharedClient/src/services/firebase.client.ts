@@ -1,5 +1,5 @@
-import {FirebaseService} from '@shared/lib/firebase';
-import {logger} from '@shared/lib/logger';
+import {SharedFirebaseService} from '@shared/services/firebase';
+import {logger} from '@shared/services/logger';
 
 import type {FirebaseConfig} from '@shared/types/firebase.types';
 
@@ -33,7 +33,7 @@ function getIsFirebaseEmulatorEnabled(): boolean {
   return import.meta.env.VITE_FIREBASE_USE_EMULATOR === 'true';
 }
 
-export const firebaseService = new FirebaseService({
+export const firebaseService = new SharedFirebaseService({
   config: getFirebaseConfig(),
   isEmulatorEnabled: getIsFirebaseEmulatorEnabled(),
 });

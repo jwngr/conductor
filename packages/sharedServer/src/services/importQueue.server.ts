@@ -9,14 +9,15 @@ import type {AsyncResult, Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import type {UserId} from '@shared/types/user.types';
 
-import {ServerFeedItemsService} from '@sharedServer/lib/feedItems.server';
+import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
+import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
+
 import {
   batchDeleteFirestoreDocuments,
   deleteFirestoreDocPath,
   getFirestoreQuerySnapshot,
   updateFirestoreDoc,
 } from '@sharedServer/lib/firebase.server';
-import {ServerFirecrawlService} from '@sharedServer/lib/firecrawl.server';
 import {fetchRawHtml} from '@sharedServer/lib/scraper.server';
 
 function validateFeedItemUrl(url: string): Result<void> {

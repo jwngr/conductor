@@ -5,7 +5,7 @@ import {ThemeColor} from '@shared/types/theme.types';
 import {createEmailAddress, isValidEmail} from '@shared/types/user.types';
 import type {Consumer} from '@shared/types/utils.types';
 
-import {authService} from '@sharedClient/lib/auth.client';
+import {authService} from '@sharedClient/services/auth.client';
 
 import {useMaybeLoggedInUser} from '@sharedClient/hooks/auth.hooks';
 

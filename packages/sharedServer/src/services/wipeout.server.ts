@@ -8,10 +8,10 @@ import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import type {UserId} from '@shared/types/user.types';
 import type {Supplier} from '@shared/types/utils.types';
 
-import type {ServerFeedItemsService} from '@sharedServer/lib/feedItems.server';
-import type {ServerImportQueueService} from '@sharedServer/lib/importQueue.server';
-import type {ServerUserFeedSubscriptionsService} from '@sharedServer/lib/userFeedSubscriptions.server';
-import type {ServerUsersService} from '@sharedServer/lib/users.server';
+import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
+import type {ServerImportQueueService} from '@sharedServer/services/importQueue.server';
+import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
+import type {ServerUsersService} from '@sharedServer/services/users.server';
 
 export class WipeoutService {
   private usersService: ServerUsersService;

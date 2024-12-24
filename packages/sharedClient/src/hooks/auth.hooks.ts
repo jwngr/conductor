@@ -1,4 +1,4 @@
-import {logger} from '@shared/lib/logger';
+import {logger} from '@shared/services/logger';
 
 import type {LoggedInUser} from '@shared/types/user.types';
 

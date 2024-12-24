@@ -1,48 +1,174 @@
-import type {CollectionReference} from 'firebase/firestore';
 import {
+  collection,
   deleteDoc,
   doc,
   getDoc,
   onSnapshot,
   query,
-  serverTimestamp,
   setDoc,
   updateDoc,
   where,
 } from 'firebase/firestore';
+import type {CollectionReference} from 'firebase/firestore';
 import type {StorageReference} from 'firebase/storage';
 import {getDownloadURL, ref as storageRef} from 'firebase/storage';
+import {useEffect, useMemo, useState} from 'react';
 
+import {makeImportQueueItem} from '@shared/services/importQueue';
+
+import {
+  FEED_ITEMS_DB_COLLECTION,
+  FEED_ITEMS_STORAGE_COLLECTION,
+  IMPORT_QUEUE_DB_COLLECTION,
+} from '@shared/lib/constants';
 import {asyncTry, asyncTryAllPromises} from '@shared/lib/errors';
-import {makeImportQueueItem} from '@shared/lib/importQueue';
+import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {isValidUrl} from '@shared/lib/urls';
 import {Views} from '@shared/lib/views';
 
-import type {
-  FeedItem,
-  FeedItemAction,
-  FeedItemId,
-  FeedItemSource,
+import {
+  FeedItemType,
+  type FeedItem,
+  type FeedItemId,
+  type FeedItemSource,
 } from '@shared/types/feedItems.types';
-import {FeedItemActionType, FeedItemType, TriageStatus} from '@shared/types/feedItems.types';
-import {IconName} from '@shared/types/icons.types';
 import type {ImportQueueItemId} from '@shared/types/importQueue.types';
-import type {ViewType} from '@shared/types/query.types';
-import {fromFilterOperator} from '@shared/types/query.types';
+import {fromFilterOperator, type ViewType} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
-import {SystemTagId} from '@shared/types/tags.types';
 import type {AuthStateChangedUnsubscribe, UserId} from '@shared/types/user.types';
 import type {Consumer} from '@shared/types/utils.types';
 
-export class FeedItemsService {
-  constructor(
-    private readonly feedItemsDbRef: CollectionReference,
-    private readonly importQueueDbRef: CollectionReference,
-    private readonly feedItemsStorageRef: StorageReference,
-    private readonly userId: UserId
-  ) {}
+import {firebaseService} from '@sharedClient/services/firebase.client';
+
+import {useLoggedInUser} from '@sharedClient/hooks/auth.hooks';
+
+const feedItemsDbRef = collection(firebaseService.firestore, FEED_ITEMS_DB_COLLECTION);
+const importQueueDbRef = collection(firebaseService.firestore, IMPORT_QUEUE_DB_COLLECTION);
+const feedItemsStorageRef = storageRef(firebaseService.storage, FEED_ITEMS_STORAGE_COLLECTION);
+
+export function useFeedItemsService(): ClientFeedItemsService {
+  const loggedInUser = useLoggedInUser();
+
+  const feedItemsService = useMemo(() => {
+    return new ClientFeedItemsService({
+      feedItemsDbRef,
+      importQueueDbRef,
+      feedItemsStorageRef,
+      userId: loggedInUser.userId,
+    });
+  }, [loggedInUser]);
+
+  return feedItemsService;
+}
+
+export function useFeedItem(feedItemId: FeedItemId): {
+  readonly feedItem: FeedItem | null;
+  readonly isLoading: boolean;
+  readonly error: Error | null;
+} {
+  const feedItemsService = useFeedItemsService();
+  const [state, setState] = useState<{
+    readonly feedItem: FeedItem | null;
+    readonly isLoading: boolean;
+    readonly error: Error | null;
+  }>({feedItem: null, isLoading: true, error: null});
+
+  useEffect(() => {
+    const unsubscribe = feedItemsService.watchFeedItem(
+      feedItemId,
+      (feedItem) => setState({feedItem, isLoading: false, error: null}),
+      (error) => setState({feedItem: null, isLoading: false, error})
+    );
+    return () => unsubscribe();
+  }, [feedItemId, feedItemsService]);
+
+  return state;
+}
+
+export function useFeedItems({viewType}: {readonly viewType: ViewType}): {
+  readonly feedItems: FeedItem[];
+  readonly isLoading: boolean;
+  readonly error: Error | null;
+} {
+  const feedItemsService = useFeedItemsService();
+  const [state, setState] = useState<{
+    readonly feedItems: FeedItem[];
+    readonly isLoading: boolean;
+    readonly error: Error | null;
+  }>({feedItems: [], isLoading: true, error: null});
+
+  useEffect(() => {
+    const unsubscribe = feedItemsService.watchFeedItemsQuery({
+      viewType,
+      successCallback: (feedItems) => setState({feedItems, isLoading: false, error: null}),
+      errorCallback: (error) => setState({feedItems: [], isLoading: false, error}),
+    });
+    return () => unsubscribe();
+  }, [viewType, feedItemsService]);
+
+  return state;
+}
+
+export function useFeedItemMarkdown(
+  feedItemId: FeedItemId,
+  isFeedItemImported: boolean
+): {
+  readonly markdown: string | null;
+  readonly isLoading: boolean;
+  readonly error: Error | null;
+} {
+  const feedItemsService = useFeedItemsService();
+  const [state, setState] = useState<{
+    readonly markdown: string | null;
+    readonly isLoading: boolean;
+    readonly error: Error | null;
+  }>({markdown: null, isLoading: true, error: null});
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function go() {
+      // Wait to fetch markdown until the feed item has been imported.
+      if (!isFeedItemImported) return;
+
+      const markdownResult = await feedItemsService.getFeedItemMarkdown(feedItemId);
+      if (isMounted) {
+        if (markdownResult.success) {
+          setState({markdown: markdownResult.value, isLoading: false, error: null});
+        } else {
+          setState({markdown: null, isLoading: false, error: markdownResult.error});
+        }
+      }
+    }
+
+    void go();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [feedItemId, isFeedItemImported, feedItemsService]);
+
+  return state;
+}
+
+export class ClientFeedItemsService {
+  private readonly feedItemsDbRef: CollectionReference;
+  private readonly importQueueDbRef: CollectionReference;
+  private readonly feedItemsStorageRef: StorageReference;
+  private readonly userId: UserId;
+
+  constructor(args: {
+    readonly feedItemsDbRef: CollectionReference;
+    readonly importQueueDbRef: CollectionReference;
+    readonly feedItemsStorageRef: StorageReference;
+    readonly userId: UserId;
+  }) {
+    this.feedItemsDbRef = args.feedItemsDbRef;
+    this.importQueueDbRef = args.importQueueDbRef;
+    this.feedItemsStorageRef = args.feedItemsStorageRef;
+    this.userId = args.userId;
+  }
 
   async getFeedItem(feedItemId: FeedItemId): AsyncResult<FeedItem | null> {
     return asyncTry<FeedItem | null>(async () => {
@@ -116,7 +242,7 @@ export class FeedItemsService {
 
     const feedItemDoc = doc(this.feedItemsDbRef);
 
-    const feedItem = makeFeedItem({
+    const feedItem = SharedFeedItemHelpers.makeFeedItem({
       feedItemId: feedItemDoc.id as FeedItemId,
       type: FeedItemType.Website,
       url: trimmedUrl,
@@ -137,6 +263,7 @@ export class FeedItemsService {
       url: trimmedUrl,
     });
 
+    // TODO: Do these in a transaction.
     const addFeedItemResult = await asyncTryAllPromises([
       setDoc(feedItemDoc, feedItem),
       setDoc(doc(this.importQueueDbRef, importQueueItemId), importQueueItem),
@@ -180,98 +307,4 @@ export class FeedItemsService {
       return await response.text();
     });
   }
-
-  public static isMarkedDone(feedItem: MaybeFeedItem): boolean {
-    return feedItem?.triageStatus === TriageStatus.Done;
-  }
-
-  public static isSaved(feedItem: MaybeFeedItem): boolean {
-    return feedItem?.triageStatus === TriageStatus.Saved;
-  }
-
-  public static isTrashed(feedItem: MaybeFeedItem): boolean {
-    return feedItem?.triageStatus === TriageStatus.Trashed;
-  }
-
-  public static isStarred(feedItem: MaybeFeedItem): boolean {
-    return feedItem?.tagIds[SystemTagId.Starred] === true;
-  }
-
-  public static isImporting(feedItem: MaybeFeedItem): boolean {
-    return feedItem?.tagIds[SystemTagId.Importing] === true;
-  }
-
-  public static isUnread(feedItem: MaybeFeedItem): boolean {
-    return feedItem?.tagIds[SystemTagId.Unread] === true;
-  }
 }
-
-interface MakeFeedItemArgs {
-  readonly feedItemId: FeedItemId;
-  readonly type: FeedItemType;
-  readonly url: string;
-  readonly source: FeedItemSource;
-  readonly userId: UserId;
-}
-
-export function makeFeedItem({feedItemId, type, url, source, userId}: MakeFeedItemArgs): FeedItem {
-  return {
-    feedItemId,
-    userId,
-    url,
-    type,
-    source,
-    title: '',
-    description: '',
-    outgoingLinks: [],
-    triageStatus: TriageStatus.Untriaged,
-    tagIds: {
-      [SystemTagId.Unread]: true,
-      [SystemTagId.Importing]: true,
-    },
-    createdTime: serverTimestamp(),
-    lastUpdatedTime: serverTimestamp(),
-  };
-}
-
-export function getMarkDoneFeedItemActionInfo(feedItem: FeedItem): FeedItemAction {
-  const isAlreadyDone = FeedItemsService.isMarkedDone(feedItem);
-  return {
-    type: FeedItemActionType.MarkDone,
-    text: isAlreadyDone ? 'Mark undone' : 'Mark done',
-    icon: IconName.MarkDone, // TODO: Make icon dynamic.
-    shortcutId: KeyboardShortcutId.ToggleDone,
-  };
-}
-
-export function getSaveFeedItemActionInfo(feedItem: FeedItem): FeedItemAction {
-  const isAlreadySaved = FeedItemsService.isSaved(feedItem);
-  return {
-    type: FeedItemActionType.Save,
-    text: isAlreadySaved ? 'Unsave' : 'Save',
-    icon: IconName.Save,
-    shortcutId: KeyboardShortcutId.ToggleSaved,
-  };
-}
-
-export function getMarkUnreadFeedItemActionInfo(feedItem: FeedItem): FeedItemAction {
-  const isAlreadyUnread = FeedItemsService.isUnread(feedItem);
-  return {
-    type: FeedItemActionType.MarkUnread,
-    text: isAlreadyUnread ? 'Mark read' : 'Mark unread',
-    icon: IconName.MarkUnread,
-    shortcutId: KeyboardShortcutId.ToggleUnread,
-  };
-}
-
-export function getStarFeedItemActionInfo(feedItem: FeedItem): FeedItemAction {
-  const isAlreadyStarred = FeedItemsService.isStarred(feedItem);
-  return {
-    type: FeedItemActionType.Star,
-    text: isAlreadyStarred ? 'Unstar' : 'Star',
-    icon: IconName.Star,
-    shortcutId: KeyboardShortcutId.ToggleStarred,
-  };
-}
-
-type MaybeFeedItem = FeedItem | undefined | null;

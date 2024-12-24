@@ -13,8 +13,9 @@ import {
   where,
 } from 'firebase/firestore';
 
+import {logger} from '@shared/services/logger';
+
 import {asyncTry} from '@shared/lib/errors';
-import {logger} from '@shared/lib/logger';
 
 import type {
   EventId,
@@ -30,13 +31,14 @@ import type {UserId} from '@shared/types/user.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
-export class EventLogService {
-  constructor(
-    private readonly eventLogDbRef: CollectionReference,
-    // TODO: This should probably be set via a public method so that it can log events even when
-    // logged out.
-    private readonly userId: UserId
-  ) {}
+export class SharedEventLogService {
+  private readonly eventLogDbRef: CollectionReference;
+  private readonly userId: UserId;
+
+  constructor(args: {readonly eventLogDbRef: CollectionReference; readonly userId: UserId}) {
+    this.eventLogDbRef = args.eventLogDbRef;
+    this.userId = args.userId;
+  }
 
   public async fetchEventLogItem(eventId: EventId): AsyncResult<EventLogItem | null> {
     return asyncTry<EventLogItem | null>(async () => {

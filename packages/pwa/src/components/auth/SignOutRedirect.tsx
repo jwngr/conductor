@@ -1,10 +1,11 @@
 import {useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 
-import {logger} from '@shared/lib/logger';
+import {logger} from '@shared/services/logger';
+
 import {Urls} from '@shared/lib/urls';
 
-import {authService} from '@sharedClient/lib/auth.client';
+import {authService} from '@sharedClient/services/auth.client';
 
 /**
  * Signs the user out and redirects them to sign in page.

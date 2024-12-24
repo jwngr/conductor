@@ -1,14 +1,15 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import {logger} from '@shared/lib/logger';
+import {logger} from '@shared/services/logger';
+
 import {Urls} from '@shared/lib/urls';
 
 import type {FeedItem} from '@shared/types/feedItems.types';
 import type {ViewType} from '@shared/types/query.types';
 import {ThemeColor} from '@shared/types/theme.types';
 
-import {useFeedItems} from '@sharedClient/lib/feedItems.client';
+import {useFeedItems} from '@sharedClient/services/feedItems.client';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';

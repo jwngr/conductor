@@ -8,7 +8,7 @@ import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems.types';
 
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
-import {useFeedItemsService} from '@sharedClient/lib/feedItems.client';
+import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
 
 import {Button, ButtonVariant} from '@src/components/atoms/Button';
 import {Input} from '@src/components/atoms/Input';

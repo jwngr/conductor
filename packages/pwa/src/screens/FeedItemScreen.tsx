@@ -1,8 +1,9 @@
 import {deleteField} from 'firebase/firestore';
 import {useEffect, useRef} from 'react';
 
-import {FeedItemsService} from '@shared/lib/feedItems';
-import {logger} from '@shared/lib/logger';
+import {logger} from '@shared/services/logger';
+
+import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {useFeedItemIdFromUrl} from '@shared/lib/router';
 import {assertNever} from '@shared/lib/utils';
 
@@ -10,7 +11,7 @@ import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
 import {FeedItemType} from '@shared/types/feedItems.types';
 import {SystemTagId} from '@shared/types/tags.types';
 
-import {useFeedItem, useFeedItemsService} from '@sharedClient/lib/feedItems.client';
+import {useFeedItem, useFeedItemsService} from '@sharedClient/services/feedItems.client';
 
 import {AppHeader} from '@src/components/AppHeader';
 import {Text} from '@src/components/atoms/Text';
@@ -33,7 +34,7 @@ const useMarkFeedItemRead = (args: {
 
   const feedItemsService = useFeedItemsService();
 
-  const wasAlreadyMarkedReadAtMount = useRef(!FeedItemsService.isUnread(feedItem));
+  const wasAlreadyMarkedReadAtMount = useRef(!SharedFeedItemHelpers.isUnread(feedItem));
   const wasMarkedReadOnThisMount = useRef(false);
 
   // Variables exist so we don't need to include the entire feed item in the deps array.

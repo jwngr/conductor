@@ -4,7 +4,7 @@ import {Navigate} from 'react-router-dom';
 
 import {Urls} from '@shared/lib/urls';
 
-import {firebaseService} from '@sharedClient/lib/firebase.client';
+import {firebaseService} from '@sharedClient/services/firebase.client';
 
 import {useMaybeLoggedInUser} from '@sharedClient/hooks/auth.hooks';
 
