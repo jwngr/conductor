@@ -69,6 +69,23 @@ export default tseslint.config(
   ...tseslint.configs.strict,
   ...tseslint.configs.stylistic,
 
+  {
+    // CLI settings.
+    linterOptions: {
+      reportUnusedDisableDirectives: true,
+    },
+    rules: {
+      // This effectively sets max-warnings to 0, but allows TODOs to be ignored.
+      'no-warning-comments': [
+        'error',
+        {
+          terms: ['fixme', 'xxx', 'hack'],
+          location: 'start',
+        },
+      ],
+    },
+  },
+
   // Shared models/lib package config.
   {
     files: ['packages/shared/src/**/*.ts'],
@@ -93,12 +110,10 @@ export default tseslint.config(
   },
 
   // Shared server package config.
+  // TODO: Figure out why this is not causing lint errors for `type` imports.
   {
     files: ['packages/sharedServer/**/*.{ts}'],
-    languageOptions: {
-      ...sharedLanguageOptions,
-      globals: globals.node,
-    },
+    languageOptions: sharedLanguageOptions,
     rules: makeSharedRules({disallowFirebaseClientImports: true}),
   },
 
@@ -148,10 +163,7 @@ export default tseslint.config(
   // Functions package config.
   {
     files: ['packages/functions/**/*.{ts}'],
-    languageOptions: {
-      ...sharedLanguageOptions,
-      globals: globals.node,
-    },
+    languageOptions: sharedLanguageOptions,
     rules: makeSharedRules({disallowFirebaseClientImports: true}),
   }
 );

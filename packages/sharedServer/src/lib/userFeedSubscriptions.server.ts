@@ -1,15 +1,16 @@
-import {CollectionReference, DocumentSnapshot} from 'firebase-admin/firestore';
+import type {CollectionReference, DocumentSnapshot} from 'firebase-admin/firestore';
 
 import {asyncTry, prefixError} from '@shared/lib/errors';
 
-import {Feed} from '@shared/types/feeds.types';
-import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import {UserId} from '@shared/types/user.types';
-import {
-  makeUserFeedSubscription,
+import type {Feed} from '@shared/types/feeds.types';
+import type {AsyncResult} from '@shared/types/result.types';
+import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {UserId} from '@shared/types/user.types';
+import type {
   UserFeedSubscription,
   UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
+import {makeUserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
 import {
   batchDeleteFirestoreDocuments,

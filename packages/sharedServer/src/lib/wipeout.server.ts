@@ -3,31 +3,32 @@ import {logger} from 'firebase-functions';
 import {asyncTryAll} from '@shared/lib/errors';
 import {batchAsyncResults} from '@shared/lib/utils';
 
-import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import {UserId} from '@shared/types/user.types';
-import {Supplier} from '@shared/types/utils.types';
+import type {AsyncResult} from '@shared/types/result.types';
+import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {UserId} from '@shared/types/user.types';
+import type {Supplier} from '@shared/types/utils.types';
 
-import {
-  deleteFeedItemDocsForUsers,
-  deleteStorageFilesForUser,
-} from '@sharedServer/lib/feedItems.server';
-import {ServerImportQueueService} from '@sharedServer/lib/importQueue.server';
-import {ServerUserFeedSubscriptionsService} from '@sharedServer/lib/userFeedSubscriptions.server';
-import {ServerUsersService} from '@sharedServer/lib/users.server';
+import type {ServerFeedItemsService} from '@sharedServer/lib/feedItems.server';
+import type {ServerImportQueueService} from '@sharedServer/lib/importQueue.server';
+import type {ServerUserFeedSubscriptionsService} from '@sharedServer/lib/userFeedSubscriptions.server';
+import type {ServerUsersService} from '@sharedServer/lib/users.server';
 
 export class WipeoutService {
   private usersService: ServerUsersService;
   private userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
+  private feedItemsService: ServerFeedItemsService;
   private importQueueService: ServerImportQueueService;
 
   constructor(args: {
     readonly usersService: ServerUsersService;
     readonly userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
     readonly importQueueService: ServerImportQueueService;
+    readonly feedItemsService: ServerFeedItemsService;
   }) {
     this.usersService = args.usersService;
     this.userFeedSubscriptionsService = args.userFeedSubscriptionsService;
     this.importQueueService = args.importQueueService;
+    this.feedItemsService = args.feedItemsService;
   }
 
   /**
@@ -88,7 +89,7 @@ export class WipeoutService {
     }
 
     logger.info('[WIPEOUT] Wiping out Cloud Storage files for user...', logDetails);
-    const deleteStorageFilesResult = await deleteStorageFilesForUser(userId);
+    const deleteStorageFilesResult = await this.feedItemsService.deleteStorageFilesForUser(userId);
     if (!deleteStorageFilesResult.success) {
       logger.error(`[WIPEOUT] Error wiping out Cloud Storage files for user`, {
         ...logDetails,
@@ -100,7 +101,7 @@ export class WipeoutService {
     logger.info('[WIPEOUT] Wiping out Firestore data for user...', logDetails);
     const deleteFirestoreResult = await asyncTryAll([
       this.usersService.deleteUsersDocForUser(userId),
-      deleteFeedItemDocsForUsers(userId),
+      this.feedItemsService.deleteAllForUser(userId),
       this.importQueueService.deleteAllForUser(userId),
       this.userFeedSubscriptionsService.deleteAllForUser(userId),
     ]);

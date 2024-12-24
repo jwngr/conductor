@@ -1,7 +1,7 @@
 import {CollectionReference} from 'firebase-admin/firestore';
 
-import {AsyncResult} from '@shared/types/result.types';
-import {UserId} from '@shared/types/user.types';
+import type {AsyncResult} from '@shared/types/result.types';
+import type {UserId} from '@shared/types/user.types';
 
 import {deleteFirestoreDoc} from '@sharedServer/lib/firebase.server';
 

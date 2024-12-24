@@ -1,18 +1,14 @@
-import {CollectionReference, DocumentSnapshot} from 'firebase-admin/firestore';
+import type {CollectionReference, DocumentSnapshot} from 'firebase-admin/firestore';
 
-import {IMPORT_QUEUE_DB_COLLECTION} from '@shared/lib/constants';
 import {asyncTryAll, prefixError} from '@shared/lib/errors';
 
-import {FeedItemId} from '@shared/types/feedItems.types';
-import {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue.types';
-import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import {UserId} from '@shared/types/user.types';
+import type {FeedItemId} from '@shared/types/feedItems.types';
+import type {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue.types';
+import type {AsyncResult} from '@shared/types/result.types';
+import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {UserId} from '@shared/types/user.types';
 
-import {
-  saveMarkdownToStorage,
-  saveRawHtmlToStorage,
-  updateImportedFeedItemInFirestore,
-} from '@sharedServer/lib/feedItems.server';
+import {ServerFeedItemsService} from '@sharedServer/lib/feedItems.server';
 import {
   batchDeleteFirestoreDocuments,
   deleteFirestoreDocPath,
@@ -25,13 +21,16 @@ import {fetchRawHtml} from '@sharedServer/lib/scraper.server';
 
 export class ServerImportQueueService {
   private readonly importQueueDbRef: CollectionReference;
+  private readonly feedItemsService: ServerFeedItemsService;
   private readonly firecrawlService: ServerFirecrawlService;
 
   constructor(args: {
     readonly importQueueDbRef: CollectionReference;
+    readonly feedItemsService: ServerFeedItemsService;
     readonly firecrawlService: ServerFirecrawlService;
   }) {
     this.importQueueDbRef = args.importQueueDbRef;
+    this.feedItemsService = args.feedItemsService;
     this.firecrawlService = args.firecrawlService;
   }
 
@@ -82,7 +81,11 @@ export class ServerImportQueueService {
 
     const rawHtml = fetchDataResult.value;
 
-    const saveHtmlResult = await saveRawHtmlToStorage({feedItemId, userId, rawHtml});
+    const saveHtmlResult = await this.feedItemsService.saveRawHtmlToStorage({
+      feedItemId,
+      userId,
+      rawHtml,
+    });
 
     if (!saveHtmlResult.success) {
       return makeErrorResult(prefixError(saveHtmlResult.error, 'Error saving feed item HTML'));
@@ -112,12 +115,12 @@ export class ServerImportQueueService {
     const firecrawlData = fetchDataResult.value;
 
     const saveFirecrawlDataResult = await asyncTryAll([
-      saveMarkdownToStorage({
+      this.feedItemsService.saveMarkdownToStorage({
         feedItemId: feedItemId,
         userId: userId,
         markdown: firecrawlData.markdown,
       }),
-      updateImportedFeedItemInFirestore(feedItemId, {
+      this.feedItemsService.updateImportedFeedItemInFirestore(feedItemId, {
         links: firecrawlData.links,
         title: firecrawlData.title,
         description: firecrawlData.description,
@@ -158,7 +161,7 @@ export class ServerImportQueueService {
    * Permanently deletes an individual import queue item.
    */
   public async deleteImportQueueItem(importQueueItemId: ImportQueueItemId): AsyncResult<void> {
-    return deleteFirestoreDocPath(`${IMPORT_QUEUE_DB_COLLECTION}/${importQueueItemId}`);
+    return deleteFirestoreDocPath(`${this.importQueueDbRef.path}/${importQueueItemId}`);
   }
 
   /**

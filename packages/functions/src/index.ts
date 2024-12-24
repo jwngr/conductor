@@ -7,6 +7,9 @@ import {onDocumentCreated} from 'firebase-functions/v2/firestore';
 import {HttpsError, onCall} from 'firebase-functions/v2/https';
 
 import {
+  FEED_ITEMS_DB_COLLECTION,
+  FEED_ITEMS_STORAGE_COLLECTION,
+  FEEDS_DB_COLLECTION,
   IMPORT_QUEUE_DB_COLLECTION,
   USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
   USERS_DB_COLLECTION,
@@ -20,35 +23,58 @@ import {
 import {makeSuccessResult} from '@shared/types/result.types';
 import {makeUserId, UserId} from '@shared/types/user.types';
 
-import {adminFeedsService} from '@sharedServer/lib/feeds.server';
+import {ServerFeedItemsService} from '@sharedServer/lib/feedItems.server';
+import {ServerFeedsService} from '@sharedServer/lib/feeds.server';
 import {firestore} from '@sharedServer/lib/firebase.server';
 import {ServerFirecrawlService} from '@sharedServer/lib/firecrawl.server';
 import {ServerImportQueueService} from '@sharedServer/lib/importQueue.server';
+import {SuperfeedrService} from '@sharedServer/lib/superfeedr.server';
 import {ServerUserFeedSubscriptionsService} from '@sharedServer/lib/userFeedSubscriptions.server';
 import {ServerUsersService} from '@sharedServer/lib/users.server';
 import {WipeoutService} from '@sharedServer/lib/wipeout.server';
 
 const FIRECRAWL_API_KEY = defineString('FIRECRAWL_API_KEY');
 
+const SUPERFEEDR_USER = defineString('SUPERFEEDR_USER');
+const SUPERFEEDR_API_KEY = defineString('SUPERFEEDR_API_KEY');
+
+let feedsService: ServerFeedsService;
 let userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
 let importQueueService: ServerImportQueueService;
 let wipeoutService: WipeoutService;
 onInit(() => {
   const firecrawlApp = new FirecrawlApp({apiKey: FIRECRAWL_API_KEY.value()});
 
-  importQueueService = new ServerImportQueueService({
-    importQueueDbRef: firestore.collection(IMPORT_QUEUE_DB_COLLECTION),
-    firecrawlService: new ServerFirecrawlService(firecrawlApp),
+  const superfeedrService = new SuperfeedrService({
+    superfeedrUser: SUPERFEEDR_USER.value(),
+    superfeedrApiKey: SUPERFEEDR_API_KEY.value(),
+  });
+
+  feedsService = new ServerFeedsService({
+    feedsDbRef: firestore.collection(FEEDS_DB_COLLECTION),
+    superfeedrService,
   });
 
   userFeedSubscriptionsService = new ServerUserFeedSubscriptionsService({
     userFeedSubscriptionsDbRef: firestore.collection(USER_FEED_SUBSCRIPTIONS_DB_COLLECTION),
   });
 
+  const feedItemsService = new ServerFeedItemsService({
+    feedItemsDbRef: firestore.collection(FEED_ITEMS_DB_COLLECTION),
+    storageCollectionPath: FEED_ITEMS_STORAGE_COLLECTION,
+  });
+
+  importQueueService = new ServerImportQueueService({
+    importQueueDbRef: firestore.collection(IMPORT_QUEUE_DB_COLLECTION),
+    firecrawlService: new ServerFirecrawlService(firecrawlApp),
+    feedItemsService,
+  });
+
   wipeoutService = new WipeoutService({
     usersService: new ServerUsersService({usersDbRef: firestore.collection(USERS_DB_COLLECTION)}),
     userFeedSubscriptionsService,
     importQueueService,
+    feedItemsService,
   });
 });
 
@@ -185,7 +211,7 @@ export const subscribeUserToFeedOnCall = onCall(
     // Check if the feed already exists in the feeds collection. A single feed can have multiple
     // users subscribed to it, but we only want to subscribe to it in Superfeedr once. Feeds are
     // deduped based on exact URL match, although we could probably be smarter in the future.
-    const fetchFeedByUrlResult = await adminFeedsService.fetchByUrl(url);
+    const fetchFeedByUrlResult = await feedsService.fetchByUrl(url);
     if (!fetchFeedByUrlResult.success) {
       logger.error(`[SUBSCRIBE] Error fetching existing feed by URL`, {
         ...logDetails,
@@ -204,7 +230,7 @@ export const subscribeUserToFeedOnCall = onCall(
       logger.log(`[SUBSCRIBE] Existing feed not found. Adding feed...`, logDetails);
 
       // TODO: Enrich the feed with a title and image.
-      const addFeedResult = await adminFeedsService.add({url, title: ''});
+      const addFeedResult = await feedsService.add({url, title: ''});
       if (!addFeedResult.success) {
         logger.error(`[SUBSCRIBE] Error adding feed`, {...logDetails, error: addFeedResult.error});
         return addFeedResult;
@@ -216,7 +242,7 @@ export const subscribeUserToFeedOnCall = onCall(
         feedId: feed.feedId,
       });
 
-      const subscribeToSuperfeedrResult = await adminFeedsService.subscribeToSuperfeedr(feed);
+      const subscribeToSuperfeedrResult = await feedsService.subscribeToSuperfeedr(feed);
       if (!subscribeToSuperfeedrResult.success) {
         logger.error(`[SUBSCRIBE] Error subscribing to feed in Superfeedr`, {
           ...logDetails,
