@@ -2,16 +2,18 @@ import React from 'react';
 import {useMatch} from 'react-router-dom';
 import styled from 'styled-components';
 
-import {CustomIcon, CustomIconType} from '@shared/lib/customIcons';
+import {CustomIcon, CustomIconType, makeSystemIcon} from '@shared/lib/customIcons';
 import {Urls} from '@shared/lib/urls';
 import {assertNever} from '@shared/lib/utils';
 
+import {IconName} from '@shared/types/icons.types';
 import {ThemeColor} from '@shared/types/theme.types';
 import {NavItem} from '@shared/types/urls.types';
 
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
+import {TextIcon} from '@src/components/atoms/TextIcon';
 
 const LeftSidebarItemAvatar: React.FC<{
   readonly icon: CustomIcon;
@@ -20,9 +22,9 @@ const LeftSidebarItemAvatar: React.FC<{
     case CustomIconType.Emoji:
       return <div>{icon.emoji}</div>;
     case CustomIconType.Icon:
-      return <div>{icon.iconName}</div>;
+      return <TextIcon name={icon.iconName} size={16} />;
     case CustomIconType.UserFile:
-      return <img src={icon.srcUrl} alt="User uploaded" />;
+      return <img src={icon.srcUrl} alt="User uploaded image" />;
     default:
       assertNever(icon);
   }
@@ -54,16 +56,17 @@ const LeftSideItemWrapper = styled(FlexRow).attrs({
 `;
 
 const LeftSidebarItemComponent: React.FC<{
-  readonly navItem: NavItem;
-}> = ({navItem}) => {
-  const url = Urls.forView(navItem.viewType);
+  readonly url: string;
+  readonly icon: CustomIcon;
+  readonly title: string;
+}> = ({url, icon, title}) => {
   const match = useMatch(url);
 
   return (
     <Link to={url}>
       <LeftSideItemWrapper $isActive={!!match}>
-        <LeftSidebarItemAvatar icon={navItem.icon} />
-        <Text as="p">{navItem.title}</Text>
+        <LeftSidebarItemAvatar icon={icon} />
+        <Text as="p">{title}</Text>
       </LeftSideItemWrapper>
     </Link>
   );
@@ -80,7 +83,15 @@ const LeftSidebarSection: React.FC<{
       </Text>
       <FlexColumn style={{margin: '0 -12px'}}>
         {navItems.map((navItem) => {
-          return <LeftSidebarItemComponent key={navItem.viewType} navItem={navItem} />;
+          const url = Urls.forView(navItem.viewType);
+          return (
+            <LeftSidebarItemComponent
+              key={navItem.viewType}
+              url={url}
+              icon={navItem.icon}
+              title={navItem.title}
+            />
+          );
         })}
       </FlexColumn>
     </FlexColumn>
@@ -99,6 +110,14 @@ export const LeftSidebar: React.FC = () => {
   return (
     <LeftSidebarWrapper>
       <LeftSidebarSection title="Views" navItems={Urls.getOrderedNavItems()} />
+      <div>
+        <LeftSidebarItemComponent
+          url={Urls.forFeedSubscriptions()}
+          // TODO: Choose a better icon.
+          icon={makeSystemIcon(IconName.Save)}
+          title="Feeds"
+        />
+      </div>
     </LeftSidebarWrapper>
   );
 };
