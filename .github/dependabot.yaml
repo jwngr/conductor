@@ -10,5 +10,6 @@ updates:
       - '/packages/pwa/'
       - '/packages/scripts/'
       - '/packages/shared/'
+      - '/packages/sharedClient/'
     schedule:
       interval: 'monthly'

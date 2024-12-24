@@ -15,7 +15,7 @@ const sharedLanguageOptions = {
 
 const noRelativeImportsPattern = {
   group: ['.*'],
-  message: 'Use @src or @shared imports instead of relative paths.',
+  message: 'Use @src, @shared, or @sharedClient imports instead of relative paths.',
 };
 
 const noFirebaseAdminImportPattern = {
@@ -73,6 +73,22 @@ export default tseslint.config(
     files: ['packages/shared/src/**/*.ts'],
     languageOptions: sharedLanguageOptions,
     rules: makeSharedRules({disallowFirebaseAdminImports: true}),
+  },
+
+  // Shared client package config.
+  {
+    files: ['packages/sharedClient/**/*.{ts,tsx}'],
+    languageOptions: {
+      ...sharedLanguageOptions,
+      globals: globals.browser,
+    },
+    plugins: {
+      'react-hooks': reactHooks,
+    },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      ...makeSharedRules({disallowFirebaseAdminImports: true}),
+    },
   },
 
   // PWA package config.

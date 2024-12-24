@@ -1,10 +1,11 @@
 /** @type {import('jest').Config} */
+// TODO: Unify with other Jest configs.
 export default {
   preset: 'ts-jest',
   // TODO: Switch to browser environment.
   testEnvironment: 'node',
   moduleNameMapper: {
-    '^@shared/(.*)$': '<rootDir>/src/$1',
+    '^@sharedClient/(.*)$': '<rootDir>/src/$1',
   },
   transform: {
     '^.+\\.tsx?$': ['ts-jest', {useESM: true}],

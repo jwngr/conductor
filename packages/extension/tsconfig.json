@@ -3,6 +3,7 @@
   "extends": "../../tsconfig.json",
 
   // This package consumes the shared package.
+  // TODO: Something here?
   "references": [{"path": "../shared"}],
 
   "compilerOptions": {
