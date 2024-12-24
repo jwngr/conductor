@@ -7,13 +7,12 @@
     "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",
     "validate:lint": "eslint src",
     "validate:lint:fix": "eslint src --fix",
-    "validate:types": "yarn run hack-type && tsc --noEmit",
+    "validate:types": "tsc --noEmit",
     "validate:format": "prettier --check 'src/**/*.{js,ts,json,svg}'",
     "format": "prettier --write 'src/**/*.{js,ts,json,svg}'",
     "clean": "rm -rf dist/ tsconfig.tsbuildinfo",
     "ci": "rm -rf node_modules/ && yarn install",
-    "build": "yarn run clean && yarn run hack-type && tsc --build",
-    "hack-type": "sed -i.bak '/setCookie(/d' ../../node_modules/@types/request/index.d.ts",
+    "build": "yarn run clean && tsc --build",
     "test": "jest",
     "test:watch": "jest --watch"
   }
