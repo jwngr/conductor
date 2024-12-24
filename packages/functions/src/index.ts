@@ -138,7 +138,7 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
 );
 
 /**
- * Permanently all data associated with a user when their Firebase auth account is deleted.
+ * Permanently deletes all data associated with a user when their Firebase auth account is deleted.
  */
 export const wipeoutUserOnAuthDelete = auth.user().onDelete(async (firebaseUser) => {
   const userIdResult = makeUserId(firebaseUser.uid);

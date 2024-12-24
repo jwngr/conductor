@@ -62,7 +62,7 @@ export async function updateImportedFeedItemInFirestore(
 }
 
 /**
- * Permanently all feed items associated with a user.
+ * Permanently deletes all feed items associated with a user.
  */
 export async function deleteFeedItemDocsForUsers(userId: UserId): AsyncResult<void> {
   // TOOD: Figure out why Firebase Admin SDK types are not working.
@@ -117,7 +117,7 @@ export async function saveMarkdownToStorage(args: {
 }
 
 /**
- * Permanently all storage files associated with a user.
+ * Permanently deletes all storage files associated with a user.
  */
 export async function deleteStorageFilesForUser(userId: UserId): AsyncResult<void> {
   return await asyncTry<undefined>(async () => {

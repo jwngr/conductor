@@ -31,7 +31,7 @@ export class WipeoutService {
   }
 
   /**
-   * Permanently all data associated with a user when their Firebase auth account is deleted.
+   * Permanently deletes all data associated with a user when their Firebase auth account is deleted.
    */
   public async wipeoutUser(userId: UserId): AsyncResult<void> {
     // Assume success until proven otherwise.
