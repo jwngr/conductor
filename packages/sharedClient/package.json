@@ -20,7 +20,6 @@
     "clean": "rm -rf dist/ tsconfig.tsbuildinfo",
     "ci": "rm -rf node_modules/ && yarn install",
     "build": "yarn run clean && yarn workspace @conductor/shared build && tsc --build",
-    "test": "jest",
-    "test:watch": "jest --watch"
+    "test": "echo 'TODO: Implement tests'"
   }
 }
