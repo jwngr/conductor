@@ -37,7 +37,14 @@
     "deploy:rules:firestore": "firebase deploy --only firestore:rules",
     "deploy:rules:storage": "firebase deploy --only storage",
     "deploy:indexes": "firebase deploy --only firestore:indexes",
-    "update-deps": "npx npm-check-updates -u --packageFile 'package.json' && npx npm-check-updates -u --packageFile 'packages/*/package.json' --reject '@conductor/shared' && yarn ci"
+    "update-deps": "npx npm-check-updates -u --packageFile 'package.json' && npx npm-check-updates -u --packageFile 'packages/*/package.json' --reject '@conductor/shared' && yarn ci",
+    "test": "yarn workspaces foreach --all -p -t run test",
+    "test:shared": "yarn workspace @conductor/shared test",
+    "test:shared:watch": "yarn workspace @conductor/shared test:watch",
+    "test:pwa": "yarn workspace @conductor/pwa test",
+    "test:scripts": "yarn workspace @conductor/scripts test",
+    "test:extension": "yarn workspace @conductor/extension test",
+    "test:functions": "yarn workspace @conductor/functions test"
   },
   "dependencies": {
     "firebase": "^11.0.2",

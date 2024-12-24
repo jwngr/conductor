@@ -6,6 +6,11 @@
   "dependencies": {
     "zustand": "^5.0.1"
   },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5"
+  },
   "scripts": {
     "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",
     "validate:lint": "eslint src --report-unused-disable-directives --max-warnings 0",
@@ -15,6 +20,8 @@
     "clean": "rm -rf dist/ tsconfig.tsbuildinfo",
     "ci": "rm -rf node_modules/ && yarn install",
     "build": "yarn run clean && yarn run hack-type && tsc --build",
-    "hack-type": "sed -i.bak '/setCookie(/d' ../../node_modules/@types/request/index.d.ts"
+    "hack-type": "sed -i.bak '/setCookie(/d' ../../node_modules/@types/request/index.d.ts",
+    "test": "jest",
+    "test:watch": "jest --watch"
   }
 }

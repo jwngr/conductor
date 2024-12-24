@@ -25,7 +25,8 @@
     "clean": "rm -rf dist/",
     "ci": "rm -rf node_modules/ && yarn install",
     "build": "yarn run clean && yarn workspace @conductor/shared build && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "echo 'TODO: Implement tests for extension'"
   },
   "browserslist": [
     ">0.2%",

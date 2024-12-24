@@ -38,7 +38,8 @@
     "ci": "rm -rf node_modules/ && yarn install",
     "build": "yarn run clean && yarn workspace @conductor/shared build && vite build",
     "preview": "vite preview",
-    "deploy": "firebase deploy --only hosting"
+    "deploy": "firebase deploy --only hosting",
+    "test": "echo 'TODO: Implement tests for PWA'"
   },
   "browserslist": [
     ">0.2%",
