@@ -1,6 +1,6 @@
 type ConsoleColor = 'black' | 'green' | 'yellow' | 'red';
 
-class Logger {
+class SharedLoggerService {
   private logInternal(
     message: string,
     data: Record<string, unknown> | undefined,
@@ -42,4 +42,4 @@ class Logger {
   }
 }
 
-export const logger = new Logger();
+export const logger = new SharedLoggerService();

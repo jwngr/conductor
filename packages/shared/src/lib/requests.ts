@@ -1,5 +1,6 @@
+import {logger} from '@shared/services/logger';
+
 import {asyncTry} from '@shared/lib/errors';
-import {logger} from '@shared/lib/logger';
 
 import type {RequestBody, RequestOptions} from '@shared/types/requests.types';
 import {HttpMethod, makeErrorResponse, makeSuccessResponse} from '@shared/types/requests.types';

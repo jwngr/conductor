@@ -8,7 +8,7 @@ import {makeFeed} from '@shared/types/feeds.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 
-import type {SuperfeedrService} from '@sharedServer/lib/superfeedr.server';
+import type {SuperfeedrService} from '@sharedServer/services/superfeedr.server';
 
 export class ServerFeedsService {
   private readonly feedsDbRef: CollectionReference;

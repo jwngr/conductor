@@ -18,7 +18,7 @@ import type {
 import {makeLoggedInUserFromFirebaseUser} from '@shared/types/user.types';
 import type {Consumer} from '@shared/types/utils.types';
 
-export class AuthService implements AuthServiceType {
+export class SharedAuthService implements AuthServiceType {
   private currentUser: LoggedInUser | null = null;
   private subscribers = new Set<{
     readonly successCallback: AuthStateChangedCallback;

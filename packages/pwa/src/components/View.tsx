@@ -1,7 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import {logger} from '@shared/lib/logger';
+import {logger} from '@shared/services/logger';
+
 import {Urls} from '@shared/lib/urls';
 
 import type {FeedItem} from '@shared/types/feedItems.types';

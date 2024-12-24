@@ -1,8 +1,9 @@
 import {collection} from 'firebase/firestore';
 import {useEffect, useMemo, useState} from 'react';
 
+import {SharedEventLogService} from '@shared/services/eventLog';
+
 import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants';
-import {EventLogService} from '@shared/lib/eventLog';
 
 import type {EventId, EventLogItem} from '@shared/types/eventLog.types';
 import type {ViewType} from '@shared/types/query.types';
@@ -20,7 +21,7 @@ export const useEventLogService = () => {
   const loggedInUser = useLoggedInUser();
 
   const eventLogService = useMemo(
-    () => new EventLogService(eventLogDbRef, loggedInUser.userId),
+    () => new SharedEventLogService({eventLogDbRef, userId: loggedInUser.userId}),
     [loggedInUser.userId]
   );
 

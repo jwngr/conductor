@@ -23,15 +23,16 @@ import {
 import {makeSuccessResult} from '@shared/types/result.types';
 import {makeUserId, UserId} from '@shared/types/user.types';
 
-import {ServerFeedItemsService} from '@sharedServer/lib/feedItems.server';
-import {ServerFeedsService} from '@sharedServer/lib/feeds.server';
+import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
+import {ServerFeedsService} from '@sharedServer/services/feeds.server';
+import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
+import {ServerImportQueueService} from '@sharedServer/services/importQueue.server';
+import {SuperfeedrService} from '@sharedServer/services/superfeedr.server';
+import {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
+import {ServerUsersService} from '@sharedServer/services/users.server';
+import {WipeoutService} from '@sharedServer/services/wipeout.server';
+
 import {firestore} from '@sharedServer/lib/firebase.server';
-import {ServerFirecrawlService} from '@sharedServer/lib/firecrawl.server';
-import {ServerImportQueueService} from '@sharedServer/lib/importQueue.server';
-import {SuperfeedrService} from '@sharedServer/lib/superfeedr.server';
-import {ServerUserFeedSubscriptionsService} from '@sharedServer/lib/userFeedSubscriptions.server';
-import {ServerUsersService} from '@sharedServer/lib/users.server';
-import {WipeoutService} from '@sharedServer/lib/wipeout.server';
 
 const FIRECRAWL_API_KEY = defineString('FIRECRAWL_API_KEY');
 const SUPERFEEDR_USER = defineString('SUPERFEEDR_USER');

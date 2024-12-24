@@ -11,12 +11,12 @@ import {connectStorageEmulator, getStorage} from 'firebase/storage';
 
 import type {FirebaseConfig} from '@shared/types/firebase.types';
 
-interface FirebaseServiceConfig {
+interface ClientFirebaseServiceConfig {
   readonly config: FirebaseConfig;
   readonly isEmulatorEnabled: boolean;
 }
 
-export class FirebaseService {
+export class SharedFirebaseService {
   private app: FirebaseApp;
   private config: FirebaseConfig;
   private isEmulatorEnabled: boolean;
@@ -31,11 +31,11 @@ export class FirebaseService {
   private static readonly STORAGE_EMULATOR_PORT = 9199;
   private static readonly AUTH_EMULATOR_PORT = 9099;
 
-  constructor({config, isEmulatorEnabled}: FirebaseServiceConfig) {
-    this.config = config;
+  constructor(args: ClientFirebaseServiceConfig) {
+    this.config = args.config;
     this.app = initializeApp(this.config);
 
-    this.isEmulatorEnabled = isEmulatorEnabled;
+    this.isEmulatorEnabled = args.isEmulatorEnabled;
     if (this.isEmulatorEnabled) {
       this.setupEmulators();
     }
@@ -53,7 +53,7 @@ export class FirebaseService {
       STORAGE_EMULATOR_PORT,
       FUNCTIONS_EMULATOR_PORT,
       FIRESTORE_EMULATOR_PORT,
-    } = FirebaseService;
+    } = SharedFirebaseService;
 
     connectAuthEmulator(auth, `http://${EMULATOR_HOST}:${AUTH_EMULATOR_PORT}`, {
       // Hides the bottom banner warning about using the Firebase emulator.

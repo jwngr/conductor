@@ -1,6 +1,6 @@
 import React from 'react';
 
-import {logger} from '@shared/lib/logger';
+import {logger} from '@shared/services/logger';
 
 import type {FeedItem} from '@shared/types/feedItems.types';
 

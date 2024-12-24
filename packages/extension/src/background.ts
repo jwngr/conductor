@@ -1,17 +1,18 @@
 import {collection} from 'firebase/firestore';
 import {ref as storageRef} from 'firebase/storage';
 
+import {logger} from '@shared/services/logger';
+
 import {
   FEED_ITEMS_DB_COLLECTION,
   FEED_ITEMS_STORAGE_COLLECTION,
   IMPORT_QUEUE_DB_COLLECTION,
 } from '@shared/lib/constants';
-import {FeedItemsService} from '@shared/lib/feedItems';
-import {logger} from '@shared/lib/logger';
 
 import {FEED_ITEM_EXTENSION_SOURCE} from '@shared/types/feedItems.types';
 import {makeUserId} from '@shared/types/user.types';
 
+import {ClientFeedItemsService} from '@sharedClient/lib/feedItems.client';
 import {firebaseService} from '@sharedClient/lib/firebase.client';
 
 const feedItemsDbRef = collection(firebaseService.firestore, FEED_ITEMS_DB_COLLECTION);
@@ -35,12 +36,12 @@ chrome.action.onClicked.addListener(async (tab) => {
 
   // TODO: Ideally I would not need to recreate a one-off FeedItemsService here, but I cannot use
   // `useFeedItemsService` because we are not in a React component.
-  const feedItemsService = new FeedItemsService(
+  const feedItemsService = new ClientFeedItemsService({
     feedItemsDbRef,
     importQueueDbRef,
     feedItemsStorageRef,
-    userId
-  );
+    userId,
+  });
 
   const addFeedItemResult = await feedItemsService.addFeedItem({
     url: tabUrl,

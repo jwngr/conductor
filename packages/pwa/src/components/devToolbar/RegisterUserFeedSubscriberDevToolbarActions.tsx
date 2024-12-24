@@ -5,9 +5,9 @@ import {DevToolbarSectionType} from '@shared/types/devToolbar.types';
 
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
-import {Button, ButtonVariant} from '@src/components/atoms/Button';
+import {useUserFeedSubscriptionsService} from '@sharedClient/lib/userFeedSubscriptions.client';
 
-import {useUserFeedSubscriptionsService} from '@src/lib/userFeedSubscriptions.pwa';
+import {Button, ButtonVariant} from '@src/components/atoms/Button';
 
 const StatusText = styled.div<{readonly $isError?: boolean}>`
   font-size: 12px;
