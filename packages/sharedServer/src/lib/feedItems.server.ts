@@ -17,6 +17,8 @@ import {
   updateFirestoreDoc,
 } from '@sharedServer/lib/firebase.server';
 
+// TODO: Convert this to a class / service.
+
 interface UpdateImportedFeedItemInFirestoreArgs {
   readonly links: string[] | null;
   readonly title: string | null;

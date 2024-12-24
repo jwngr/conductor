@@ -8,7 +8,8 @@ The repo is organized into TypeScript packages which share code and are managed 
 The packages are:
 
 - `/shared` - Common types, libraries, icons, etc. shared across all packages, client and server
-- `/sharedClient` - Common code shared across all client-side packages
+- `/sharedClient` - Common code shared across client-side packages
+- `/sharedServer` - Common code shared across server-side packages
 - `/pwa` - Progressive Web App, for web, desktop, and mobile
 - `/extension` - Browser extension, for Chromium-based browsers
 - `/functions` - Firebase Cloud Functions, for "serverless" server-side actions

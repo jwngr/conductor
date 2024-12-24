@@ -1,18 +1,9 @@
 import FirecrawlApp from '@mendable/firecrawl-js';
-import {defineString} from 'firebase-functions/params';
-import {onInit} from 'firebase-functions/v2/core';
 
-import {asyncTry, asyncTryAll, prefixError} from '@shared/lib/errors';
+import {asyncTry, prefixError} from '@shared/lib/errors';
 
 import {ParsedFirecrawlData, RawFirecrawlResponse} from '@shared/types/firecrawl.types';
 import {AsyncResult, makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-
-// const FIRECRAWL_API_KEY = defineString('FIRECRAWL_API_KEY');
-
-// let firecrawlApp: FirecrawlApp;
-// onInit(() => {
-//   firecrawlApp = new FirecrawlApp({apiKey: FIRECRAWL_API_KEY.value()});
-// });
 
 export class ServerFirecrawlService {
   constructor(private readonly firecrawlApp: FirecrawlApp) {}
