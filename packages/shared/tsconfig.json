@@ -12,8 +12,8 @@
 
     // Import aliases.
     "paths": {
-      // Despite this being in the shared package itself, prefer @shared imports over @src. This
-      // makes code valid in any package when copy / pasting.
+      // Despite this being in the `shared` package itself, prefer `@shared` imports over `@src`.
+      // This makes code valid in any package when copy / pasting.
       // TODO: Disallow relative imports.
       "@shared/*": ["./src/*"]
     }

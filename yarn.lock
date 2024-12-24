@@ -411,6 +411,7 @@ __metadata:
   resolution: "@conductor/extension@workspace:packages/extension"
   dependencies:
     "@conductor/shared": "npm:1.0.0"
+    "@conductor/shared-client": "npm:1.0.0"
     "@types/chrome": "npm:^0.0.287"
     "@types/react": "npm:^18.3.12"
     "@types/react-dom": "npm:^18.3.1"
@@ -483,8 +484,6 @@ __metadata:
 "@conductor/shared@npm:1.0.0, @conductor/shared@workspace:packages/shared":
   version: 0.0.0-use.local
   resolution: "@conductor/shared@workspace:packages/shared"
-  dependencies:
-    zustand: "npm:^5.0.1"
   languageName: unknown
   linkType: soft
 
