@@ -44,7 +44,7 @@ export class WipeoutService {
     const userFeedSubscriptionsResult =
       await this.userFeedSubscriptionsService.fetchAllForUser(userId);
     if (!userFeedSubscriptionsResult.success) {
-      logger.error(`[WIPEOUT] Failed to fetch user feed subscriptions for user`, {
+      logger.error(`[WIPEOUT] Failed to fetch user feed subscriptions for user to wipe out`, {
         ...logDetails,
         error: userFeedSubscriptionsResult.error,
       });
@@ -59,7 +59,7 @@ export class WipeoutService {
       );
 
       logger.info(
-        `[WIPEOUT] Unsubscribing user ${userId} from ${activeUserFeedSubscriptionIds.length} active feed subscriptions`,
+        `[WIPEOUT] Unsubscribing user ${userId} from active feed subscriptions (${activeUserFeedSubscriptionIds.length})`,
         {activeUserFeedSubscriptionIds, ...logDetails}
       );
 

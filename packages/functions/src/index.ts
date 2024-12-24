@@ -34,7 +34,6 @@ import {ServerUsersService} from '@sharedServer/lib/users.server';
 import {WipeoutService} from '@sharedServer/lib/wipeout.server';
 
 const FIRECRAWL_API_KEY = defineString('FIRECRAWL_API_KEY');
-
 const SUPERFEEDR_USER = defineString('SUPERFEEDR_USER');
 const SUPERFEEDR_API_KEY = defineString('SUPERFEEDR_API_KEY');
 
@@ -145,7 +144,7 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
 
     // Actually import the feed item.
     logger.info(`[IMPORT] Importing queue item...`, logDetails);
-    const importItemResult = await importQueueService.improtFeedItem(importQueueItem);
+    const importItemResult = await importQueueService.importFeedItem(importQueueItem);
     if (!importItemResult.success) {
       await handleError('Error importing queue item', importItemResult.error);
       return;

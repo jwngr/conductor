@@ -1,11 +1,11 @@
 import type {CollectionReference, DocumentSnapshot} from 'firebase-admin/firestore';
 import {FieldValue} from 'firebase-admin/firestore';
 
-import {asyncTryAll, prefixError} from '@shared/lib/errors';
+import {asyncTryAll, prefixError, syncTry} from '@shared/lib/errors';
 
 import type {FeedItemId} from '@shared/types/feedItems.types';
 import type {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue.types';
-import type {AsyncResult} from '@shared/types/result.types';
+import type {AsyncResult, Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import type {UserId} from '@shared/types/user.types';
 
@@ -18,6 +18,34 @@ import {
 } from '@sharedServer/lib/firebase.server';
 import {ServerFirecrawlService} from '@sharedServer/lib/firecrawl.server';
 import {fetchRawHtml} from '@sharedServer/lib/scraper.server';
+
+function validateFeedItemUrl(url: string): Result<void> {
+  // Parse the URL to validate its structure.
+  const parsedUrl = new URL(url);
+
+  // Only allow HTTPS protocols.
+  // TODO: Consider allowing other protocols like `http:` and `chrome:` as well.
+  if (!['https:'].includes(parsedUrl.protocol)) {
+    return makeErrorResult(new Error('Only HTTPS URLs allowed'));
+  }
+
+  // Prevent localhost and private IP addresses.
+  const hostname = parsedUrl.hostname.toLowerCase();
+  if (
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname === '0.0.0.0' ||
+    hostname.startsWith('192.168.') ||
+    hostname.startsWith('10.') ||
+    hostname.startsWith('172.16.') ||
+    hostname.startsWith('169.254.') ||
+    hostname.endsWith('.local')
+  ) {
+    return makeErrorResult(new Error('URL cannot point to localhost or private networks'));
+  }
+
+  return makeSuccessResult(undefined);
+}
 
 export class ServerImportQueueService {
   private readonly importQueueDbRef: CollectionReference;
@@ -37,7 +65,13 @@ export class ServerImportQueueService {
   /**
    * Imports a feed item, pulling in the raw HTML and LLM context.
    */
-  async improtFeedItem(importQueueItem: ImportQueueItem): AsyncResult<void> {
+  async importFeedItem(importQueueItem: ImportQueueItem): AsyncResult<void> {
+    const url = importQueueItem.url;
+    const isSafeUrlResult = await validateFeedItemUrl(url);
+    if (!isSafeUrlResult.success) {
+      return makeErrorResult(prefixError(isSafeUrlResult.error, 'Error validating feed item URL'));
+    }
+
     const importAllDataResult = await asyncTryAll([
       this.importFeedItemHtml({
         url: importQueueItem.url,
