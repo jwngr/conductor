@@ -1,9 +1,9 @@
 import {collection} from 'firebase/firestore';
 import {useEffect, useMemo, useState} from 'react';
 
-import {SharedEventLogService} from '@shared/services/eventLog';
+import {SharedEventLogService} from '@shared/services/eventLog.shared';
 
-import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants';
+import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants.shared';
 
 import type {EventId, EventLogItem} from '@shared/types/eventLog.types';
 import type {ViewType} from '@shared/types/query.types';

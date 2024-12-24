@@ -2,10 +2,10 @@ import React from 'react';
 import {useMatch} from 'react-router-dom';
 import styled from 'styled-components';
 
-import type {CustomIcon} from '@shared/lib/customIcons';
-import {CustomIconType, makeSystemIcon} from '@shared/lib/customIcons';
-import {Urls} from '@shared/lib/urls';
-import {assertNever} from '@shared/lib/utils';
+import type {CustomIcon} from '@shared/lib/customIcons.shared';
+import {CustomIconType, makeSystemIcon} from '@shared/lib/customIcons.shared';
+import {Urls} from '@shared/lib/urls.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 
 import {IconName} from '@shared/types/icons.types';
 import {ThemeColor} from '@shared/types/theme.types';

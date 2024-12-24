@@ -1,11 +1,11 @@
 import {deleteField} from 'firebase/firestore';
 import {useEffect, useRef} from 'react';
 
-import {logger} from '@shared/services/logger';
+import {logger} from '@shared/services/logger.shared';
 
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
-import {useFeedItemIdFromUrl} from '@shared/lib/router';
-import {assertNever} from '@shared/lib/utils';
+import {useFeedItemIdFromUrl} from '@shared/lib/router.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 
 import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
 import {FeedItemType} from '@shared/types/feedItems.types';

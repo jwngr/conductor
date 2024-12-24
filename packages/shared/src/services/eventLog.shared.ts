@@ -13,9 +13,9 @@ import {
   where,
 } from 'firebase/firestore';
 
-import {logger} from '@shared/services/logger';
+import {logger} from '@shared/services/logger.shared';
 
-import {asyncTry} from '@shared/lib/errors';
+import {asyncTry} from '@shared/lib/errorUtils.shared';
 
 import type {
   EventId,

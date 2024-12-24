@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import {assertNever} from '@shared/lib/utils';
+import {assertNever} from '@shared/lib/utils.shared';
 
 import type {IconSize} from '@shared/types/icons.types';
 import {IconName} from '@shared/types/icons.types';

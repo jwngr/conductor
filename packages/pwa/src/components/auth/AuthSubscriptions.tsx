@@ -2,9 +2,9 @@ import {isSignInWithEmailLink} from 'firebase/auth';
 import {useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 
-import {logger} from '@shared/services/logger';
+import {logger} from '@shared/services/logger.shared';
 
-import {Urls} from '@shared/lib/urls';
+import {Urls} from '@shared/lib/urls.shared';
 
 import {isValidEmail} from '@shared/types/user.types';
 

@@ -1,7 +1,7 @@
 import type {CollectionReference} from 'firebase-admin/firestore';
 import {FieldValue} from 'firebase-admin/firestore';
 
-import {asyncTry, prefixError} from '@shared/lib/errors';
+import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
 
 import type {Feed, FeedId} from '@shared/types/feeds.types';
 import {makeFeed} from '@shared/types/feeds.types';

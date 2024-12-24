@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import styled from 'styled-components';
 
-import {assertNever} from '@shared/lib/utils';
+import {assertNever} from '@shared/lib/utils.shared';
 
 import {
   DEFAULT_STYLEGUIDE_STORY_GROUP_ID,

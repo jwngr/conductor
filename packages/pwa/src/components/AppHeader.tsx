@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import {Urls} from '@shared/lib/urls';
+import {Urls} from '@shared/lib/urls.shared';
 
 import {useMaybeLoggedInUser} from '@sharedClient/hooks/auth.hooks';
 

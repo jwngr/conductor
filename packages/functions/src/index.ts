@@ -13,7 +13,7 @@ import {
   IMPORT_QUEUE_DB_COLLECTION,
   USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
   USERS_DB_COLLECTION,
-} from '@shared/lib/constants';
+} from '@shared/lib/constants.shared';
 
 import {
   ImportQueueItem,

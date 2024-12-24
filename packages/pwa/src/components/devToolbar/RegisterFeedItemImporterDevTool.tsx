@@ -1,7 +1,7 @@
 import {useCallback, useEffect, useState} from 'react';
 import styled from 'styled-components';
 
-import {isValidUrl} from '@shared/lib/urls';
+import {isValidUrl} from '@shared/lib/urls.shared';
 
 import {DevToolbarSectionType} from '@shared/types/devToolbar.types';
 import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems.types';

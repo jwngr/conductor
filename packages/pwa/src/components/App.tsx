@@ -2,8 +2,8 @@ import React, {StrictMode} from 'react';
 import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import {ThemeProvider} from 'styled-components';
 
-import {theme} from '@shared/lib/theme';
-import {Urls} from '@shared/lib/urls';
+import {theme} from '@shared/lib/theme.shared';
+import {Urls} from '@shared/lib/urls.shared';
 
 import {useMaybeLoggedInUser} from '@sharedClient/hooks/auth.hooks';
 

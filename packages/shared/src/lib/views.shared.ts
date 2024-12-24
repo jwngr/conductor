@@ -1,4 +1,4 @@
-import {assertNever} from '@shared/lib/utils';
+import {assertNever} from '@shared/lib/utils.shared';
 
 import type {FeedItem} from '@shared/types/feedItems.types';
 import {TriageStatus} from '@shared/types/feedItems.types';

@@ -1,6 +1,6 @@
 import {serverTimestamp} from 'firebase/firestore';
 
-import {makeId} from '@shared/lib/utils';
+import {makeId} from '@shared/lib/utils.shared';
 
 import type {Feed, FeedId} from '@shared/types/feeds.types';
 import type {Result} from '@shared/types/result.types';

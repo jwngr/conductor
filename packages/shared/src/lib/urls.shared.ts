@@ -1,6 +1,6 @@
-import {CustomIconType} from '@shared/lib/customIcons';
-import {syncTry} from '@shared/lib/errors';
-import {assertNever} from '@shared/lib/utils';
+import {CustomIconType} from '@shared/lib/customIcons.shared';
+import {syncTry} from '@shared/lib/errorUtils.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 
 import type {FeedItemId} from '@shared/types/feedItems.types';
 import {ViewType} from '@shared/types/query.types';

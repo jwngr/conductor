@@ -1,7 +1,7 @@
 import type {CollectionReference, DocumentReference} from 'firebase/firestore';
 import {addDoc, doc, getDoc, serverTimestamp} from 'firebase/firestore';
 
-import {asyncTry} from '@shared/lib/errors';
+import {asyncTry} from '@shared/lib/errorUtils.shared';
 
 import type {FeedItemId} from '@shared/types/feedItems.types';
 import type {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue.types';

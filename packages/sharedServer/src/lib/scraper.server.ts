@@ -1,4 +1,4 @@
-import {asyncTry} from '@shared/lib/errors';
+import {asyncTry} from '@shared/lib/errorUtils.shared';
 
 import type {AsyncResult} from '@shared/types/result.types';
 

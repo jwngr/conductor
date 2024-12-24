@@ -1,4 +1,4 @@
-import {assertNever} from '@shared/lib/utils';
+import {assertNever} from '@shared/lib/utils.shared';
 
 import type {ButtonIconSize, IconSize} from '@shared/types/icons.types';
 

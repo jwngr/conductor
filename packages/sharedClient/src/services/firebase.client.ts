@@ -1,5 +1,5 @@
-import {SharedFirebaseService} from '@shared/services/firebase';
-import {logger} from '@shared/services/logger';
+import {SharedFirebaseService} from '@shared/services/firebase.shared';
+import {logger} from '@shared/services/logger.shared';
 
 import type {FirebaseConfig} from '@shared/types/firebase.types';
 
