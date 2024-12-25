@@ -9,6 +9,12 @@ import {
   makeSuccessResponseResult,
 } from '@shared/types/requests.types';
 
+const DEFAULT_CONTENT_TYPE = 'application/json';
+
+function isJsonResponse(response: Response): boolean {
+  return response.headers.get('Content-Type') === 'application/json';
+}
+
 async function request<T>(
   url: string,
   method: HttpMethod,
@@ -16,19 +22,21 @@ async function request<T>(
 ): AsyncResponseResult<T> {
   const {headers = {}, body, params = {}} = options;
 
-  const queryString = params ? '?' + new URLSearchParams(params).toString() : '';
+  const queryString =
+    Object.keys(params).length > 0 ? `?${new URLSearchParams(params).toString()}` : `?`;
 
   const rawResponseResult = await asyncTry<Response>(async () => {
     // Allow `fetch` here. We cannot use `request*` since we are inside its implementation.
     // eslint-disable-next-line no-restricted-syntax
-    return await fetch(url + queryString, {
+    const response = await fetch(url + queryString, {
       method,
       headers: {
-        'Content-Type': headers['Content-Type'] ?? 'application/json',
+        'Content-Type': headers['Content-Type'] ?? DEFAULT_CONTENT_TYPE,
         ...headers,
       },
       body: body ? JSON.stringify(body) : undefined,
     });
+    return response;
   });
 
   if (!rawResponseResult.success) {
@@ -41,29 +49,48 @@ async function request<T>(
 
   if (!rawResponse.ok) {
     const defaultErrorMessage = `Error ${statusCode} making ${method} request to ${url}`;
-    const unknownErrorJsonResult = await asyncTry(() => rawResponse.json());
-    if (!unknownErrorJsonResult.success) {
-      const errorPrefix = `${defaultErrorMessage}: Failed to parse error response.`;
-      return makeErrorResponseResult(
-        prefixError(unknownErrorJsonResult.error, errorPrefix),
-        statusCode
-      );
+
+    // Clone the response in case we need to parse it multiple times.
+    const rawResponseClone = rawResponse.clone();
+
+    // Try to parse the error response as JSON.
+    const unknownErrorJsonResult = await asyncTry(() => rawResponseClone.json());
+    if (unknownErrorJsonResult.success) {
+      const betterError = upgradeUnknownError(unknownErrorJsonResult.value ?? defaultErrorMessage);
+      return makeErrorResponseResult(betterError, statusCode);
     }
 
-    const betterError = upgradeUnknownError(unknownErrorJsonResult.value ?? defaultErrorMessage);
-    return makeErrorResponseResult(betterError, statusCode);
+    // Fallback to parsing as text if JSON parsing fails.
+    const unknownErrorTextResult = await asyncTry(() => rawResponseClone.text());
+    if (unknownErrorTextResult.success) {
+      const betterError = upgradeUnknownError(unknownErrorTextResult.value ?? defaultErrorMessage);
+      return makeErrorResponseResult(betterError, statusCode);
+    }
+
+    // Fallback to a default error message if JSON and text parsing both fail.
+    const errorPrefix = `${defaultErrorMessage}: Failed to parse error response.`;
+    logger.error(errorPrefix, {
+      jsonError: unknownErrorJsonResult.error,
+      textError: unknownErrorTextResult.error,
+      url,
+    });
+
+    return makeErrorResponseResult(
+      prefixError(unknownErrorTextResult.error, errorPrefix),
+      statusCode
+    );
   }
 
-  const jsonResponseResult = await asyncTry<T>(async () => {
-    return (await rawResponse.json()) as T;
+  const parsedResponseResult = await asyncTry<T>(async () => {
+    return isJsonResponse(rawResponse) ? rawResponse.json() : rawResponse.text();
   });
 
-  if (!jsonResponseResult.success) {
-    logger.error('Error parsing JSON response', {error: jsonResponseResult.error, url});
-    return makeErrorResponseResult(jsonResponseResult.error, 500);
+  if (!parsedResponseResult.success) {
+    logger.error('Error parsing response from body', {error: parsedResponseResult.error, url});
+    return makeErrorResponseResult(parsedResponseResult.error, 500);
   }
 
-  const jsonResponse = jsonResponseResult.value;
+  const jsonResponse = parsedResponseResult.value;
   return makeSuccessResponseResult(jsonResponse, statusCode);
 }
 

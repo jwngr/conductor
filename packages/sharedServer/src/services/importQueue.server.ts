@@ -110,7 +110,9 @@ export class ServerImportQueueService {
     // 1. Handle more than just HTML.
     // 2. Extract a canonical URL (resolving redirects and removing tracking parameters).
     // 3. Handle images more gracefully (download and replace links in the HTML?).
-    const fetchDataResult = await requestGet<string>(url);
+    const fetchDataResult = await requestGet<string>(url, {
+      headers: {'Content-Type': 'text/html'},
+    });
 
     if (!fetchDataResult.success) {
       return makeErrorResult(

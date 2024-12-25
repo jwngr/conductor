@@ -14,9 +14,9 @@ export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedI
   const {markdown, isLoading, error} = useFeedItemMarkdown(feedItem.feedItemId, isFeedItemImported);
 
   if (error) {
-    logger.error('Error fetching markdown', {error});
+    logger.error('Error fetching markdown for feed item', {feedItemId: feedItem.feedItemId, error});
     // TODO: Introduce proper error screen.
-    return <Text as="p">There was a problem loading the content: {error.message}</Text>;
+    return <Text as="p">Something went wrong: {error.message}</Text>;
   } else if (isLoading) {
     return <Text as="p">Loading markdown...</Text>;
   } else if (markdown) {
