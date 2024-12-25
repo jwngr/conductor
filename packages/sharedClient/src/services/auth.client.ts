@@ -10,7 +10,7 @@ import {
 import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
 
 import type {AsyncResult} from '@shared/types/result.types';
-import type {AuthStateChangedCallback, LoggedInUser} from '@shared/types/user.types';
+import type {AuthStateChangedCallback, EmailAddress, LoggedInUser} from '@shared/types/user.types';
 import {makeLoggedInUserFromFirebaseUser} from '@shared/types/user.types';
 import type {Consumer} from '@shared/types/utils.types';
 
@@ -93,14 +93,17 @@ export class ClientAuthService {
     return isSignInWithEmailLinkFirebase(this.auth, url);
   }
 
-  public async signInWithEmailLink(email: string, emailLink: string): AsyncResult<UserCredential> {
+  public async signInWithEmailLink(
+    email: EmailAddress,
+    emailLink: string
+  ): AsyncResult<UserCredential> {
     return await asyncTry<UserCredential>(async () => {
       return await signInWithEmailLinkFirebase(this.auth, email, emailLink);
     });
   }
 
   public async sendSignInLinkToEmail(
-    email: string,
+    email: EmailAddress,
     actionCodeSettings: ActionCodeSettings
   ): AsyncResult<void> {
     return await asyncTry<undefined>(async () => {
