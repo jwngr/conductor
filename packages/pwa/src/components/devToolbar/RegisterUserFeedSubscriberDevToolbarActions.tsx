@@ -23,7 +23,7 @@ const UserFeedSubscriber: React.FC = () => {
     setStatus('Subscribing to feed...');
     const subscribeResult = await userFeedSubscriptionsService.subscribeToFeedUrl(feedUrl);
     if (!subscribeResult.success) {
-      setStatus(`Error subscribing to feed: ${subscribeResult.error}`);
+      setStatus(`Error subscribing to feed: ${subscribeResult.error.message}`);
       return;
     }
 
