@@ -23,7 +23,7 @@ async function request<T>(
   const {headers = {}, body, params = {}} = options;
 
   const queryString =
-    Object.keys(params).length > 0 ? `?${new URLSearchParams(params).toString()}` : `?`;
+    Object.keys(params).length > 0 ? `?${new URLSearchParams(params).toString()}` : ``;
 
   const rawResponseResult = await asyncTry<Response>(async () => {
     // Allow `fetch` here. We cannot use `request*` since we are inside its implementation.

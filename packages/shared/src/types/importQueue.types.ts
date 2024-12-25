@@ -1,3 +1,5 @@
+import {serverTimestamp} from 'firebase/firestore';
+
 import {makeId} from '@shared/lib/utils.shared';
 
 import type {FeedItemId} from '@shared/types/feedItems.types';
@@ -62,4 +64,23 @@ export interface ImportQueueItem extends BaseStoreItem {
   readonly feedItemId: FeedItemId;
   readonly url: string;
   readonly status: ImportQueueItemStatus;
+}
+
+export function makeImportQueueItem(args: {
+  readonly importQueueItemId: ImportQueueItemId;
+  readonly feedItemId: FeedItemId;
+  readonly userId: UserId;
+  readonly url: string;
+}): ImportQueueItem {
+  const {importQueueItemId, feedItemId, userId, url} = args;
+
+  return {
+    importQueueItemId,
+    feedItemId,
+    userId,
+    url,
+    status: ImportQueueItemStatus.New,
+    createdTime: serverTimestamp(),
+    lastUpdatedTime: serverTimestamp(),
+  };
 }
