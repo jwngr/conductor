@@ -309,7 +309,9 @@ export class ClientFeedItemsService {
     }
 
     const downloadUrl = downloadUrlResult.value;
-    const responseResult = await requestGet<string>(downloadUrl);
+    const responseResult = await requestGet<string>(downloadUrl, {
+      headers: {'Content-Type': 'text/markdown'},
+    });
     if (!responseResult.success) {
       return makeErrorResult(
         prefixError(responseResult.error, `Error fetching markdown for feed item "${feedItemId}"`)
