@@ -20,14 +20,14 @@ const UserFeedSubscriber: React.FC = () => {
   const [status, setStatus] = useState<string>('');
 
   const handleSubscribeToFeedUrl = async (feedUrl: string) => {
-    setStatus('Subscribing to feed...');
-    const subscribeResult = await userFeedSubscriptionsService.subscribeToFeedUrl(feedUrl);
+    setStatus('Subscribing to feed source...');
+    const subscribeResult = await userFeedSubscriptionsService.subscribeToUrl(feedUrl);
     if (!subscribeResult.success) {
-      setStatus(`Error subscribing to feed: ${subscribeResult.error.message}`);
+      setStatus(`Error subscribing to feed source: ${subscribeResult.error.message}`);
       return;
     }
 
-    setStatus(`Successfully subscribed to feed: ${subscribeResult.value}`);
+    setStatus(`Successfully subscribed to feed source: ${subscribeResult.value}`);
   };
 
   return (
@@ -36,7 +36,7 @@ const UserFeedSubscriber: React.FC = () => {
         variant={ButtonVariant.Secondary}
         onClick={() => handleSubscribeToFeedUrl('https://jwn.gr/rss.xml')}
       >
-        Subscribe to personal website feed
+        Subscribe to personal website feed source
       </Button>
       {/* TODO: Add unsubscribe button. */}
       {status ? <StatusText $isError={status.includes('Error')}>{status}</StatusText> : null}
@@ -50,7 +50,7 @@ export const RegisterUserFeedSubscriberDevToolbarSection: React.FC = () => {
   useEffect(() => {
     return registerSection({
       sectionType: DevToolbarSectionType.UserFeedSubscriber,
-      title: 'User feed subscriber',
+      title: 'User feed sourcesubscriber',
       renderSection: () => <UserFeedSubscriber />,
     });
   }, [registerSection]);
