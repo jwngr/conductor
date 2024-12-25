@@ -32,7 +32,7 @@ export function upgradeUnknownError(unknownError: unknown): Error {
 
   // Unknown error has an unexpected type.
   return new Error(
-    `Expected error, but caught ${JSON.stringify(unknownError)} (${typeof unknownError})`,
+    `Expected error, but caught \`${JSON.stringify(unknownError)}\` (${typeof unknownError})`,
     {cause: unknownError}
   );
 }
