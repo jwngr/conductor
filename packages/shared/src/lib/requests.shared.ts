@@ -40,7 +40,7 @@ async function request<T>(
   const statusCode = rawResponse.status;
 
   if (!rawResponse.ok) {
-    const defaultErrorMessage = `Error ${statusCode} fetching request to ${url}`;
+    const defaultErrorMessage = `Error ${statusCode} making ${method} request to ${url}`;
     const unknownErrorJsonResult = await asyncTry(() => rawResponse.json());
     if (!unknownErrorJsonResult.success) {
       const errorPrefix = `${defaultErrorMessage}: Failed to parse error response.`;
