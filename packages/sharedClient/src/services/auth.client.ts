@@ -97,24 +97,20 @@ export class ClientAuthService {
     email: EmailAddress,
     emailLink: string
   ): AsyncResult<UserCredential> {
-    return await asyncTry<UserCredential>(async () => {
-      return await signInWithEmailLinkFirebase(this.auth, email, emailLink);
-    });
+    return await asyncTry(async () => signInWithEmailLinkFirebase(this.auth, email, emailLink));
   }
 
   public async sendSignInLinkToEmail(
     email: EmailAddress,
     actionCodeSettings: ActionCodeSettings
   ): AsyncResult<void> {
-    return await asyncTry<undefined>(async () => {
-      await sendSignInLinkToEmailFirebase(this.auth, email, actionCodeSettings);
-    });
+    return await asyncTry(async () =>
+      sendSignInLinkToEmailFirebase(this.auth, email, actionCodeSettings)
+    );
   }
 
   public async signOut(): AsyncResult<void> {
-    return await asyncTry<undefined>(async () => {
-      await signOutFirebase(this.auth);
-    });
+    return await asyncTry(async () => signOutFirebase(this.auth));
   }
 }
 

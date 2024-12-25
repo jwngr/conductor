@@ -16,7 +16,7 @@ function App() {
   const handleClick = async () => {
     setStatus('Saving URL...');
 
-    const tabResult = await asyncTry<chrome.tabs.Tab>(async () => {
+    const tabResult = await asyncTry(async () => {
       const [tab] = await chrome.tabs.query({active: true, lastFocusedWindow: true});
       return tab;
     });

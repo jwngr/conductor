@@ -171,9 +171,10 @@ export class ClientFeedItemsService {
   }
 
   async getFeedItem(feedItemId: FeedItemId): AsyncResult<FeedItem | null> {
-    return asyncTry<FeedItem | null>(async () => {
+    return asyncTry(async () => {
       const snapshot = await getDoc(doc(this.feedItemsDbRef, feedItemId));
-      return snapshot.exists() ? ({...snapshot.data(), feedItemId: snapshot.id} as FeedItem) : null;
+      if (!snapshot.exists()) return null;
+      return {...snapshot.data(), feedItemId: snapshot.id} as FeedItem;
     });
   }
 
@@ -279,16 +280,12 @@ export class ClientFeedItemsService {
     return makeSuccessResult(feedItem.feedItemId);
   }
 
-  async updateFeedItem(feedItemId: FeedItemId, item: Partial<FeedItem>): AsyncResult<undefined> {
-    return asyncTry<undefined>(async () => {
-      await updateDoc(doc(this.feedItemsDbRef, feedItemId), item);
-    });
+  async updateFeedItem(feedItemId: FeedItemId, item: Partial<FeedItem>): AsyncResult<void> {
+    return asyncTry(async () => updateDoc(doc(this.feedItemsDbRef, feedItemId), item));
   }
 
-  async deleteFeedItem(feedItemId: FeedItemId): AsyncResult<undefined> {
-    return asyncTry<undefined>(async () => {
-      await deleteDoc(doc(this.feedItemsDbRef, feedItemId));
-    });
+  async deleteFeedItem(feedItemId: FeedItemId): AsyncResult<void> {
+    return asyncTry(async () => deleteDoc(doc(this.feedItemsDbRef, feedItemId)));
   }
 
   async getFeedItemMarkdown(feedItemId: FeedItemId): AsyncResult<string> {
@@ -297,7 +294,7 @@ export class ClientFeedItemsService {
       `${this.userId}/${feedItemId}/llmContext.md`
     );
 
-    const downloadUrlResult = await asyncTry<string>(async () => await getDownloadURL(fileRef));
+    const downloadUrlResult = await asyncTry(async () => await getDownloadURL(fileRef));
     if (!downloadUrlResult.success) {
       return makeErrorResult(
         prefixError(

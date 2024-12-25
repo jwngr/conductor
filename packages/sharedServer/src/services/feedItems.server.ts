@@ -46,7 +46,7 @@ export class ServerFeedItemsService {
     feedItemId: FeedItemId,
     {links, title, description}: UpdateImportedFeedItemInFirestoreArgs
   ): AsyncResult<void> {
-    return await asyncTry<undefined>(async () => {
+    return await asyncTry(async () => {
       const update: Omit<
         FeedItem,
         'feedItemId' | 'userId' | 'source' | 'url' | 'createdTime' | 'triageStatus' | 'tagIds'
@@ -84,7 +84,7 @@ export class ServerFeedItemsService {
     readonly userId: UserId;
   }): AsyncResult<void> {
     const {feedItemId, rawHtml, userId} = args;
-    return await asyncTry<undefined>(async () => {
+    return await asyncTry(async () => {
       const rawHtmlFile = storageBucket.file(
         this.getStoragePathForFeedItem(feedItemId, userId) + 'raw.html'
       );
@@ -105,7 +105,7 @@ export class ServerFeedItemsService {
       return makeErrorResult(new Error('Markdown is null'));
     }
 
-    return await asyncTry<undefined>(async () => {
+    return await asyncTry(async () => {
       const llmContextFile = storageBucket.file(
         this.getStoragePathForFeedItem(feedItemId, userId) + 'llmContext.md'
       );
@@ -134,11 +134,11 @@ export class ServerFeedItemsService {
    * Permanently deletes all storage files associated with a user.
    */
   public async deleteStorageFilesForUser(userId: UserId): AsyncResult<void> {
-    return await asyncTry<undefined>(async () => {
-      await storageBucket.deleteFiles({
+    return await asyncTry(async () =>
+      storageBucket.deleteFiles({
         prefix: this.getStoragePathForUser(userId),
-      });
-    });
+      })
+    );
   }
 
   private getStoragePathForUser(userId: UserId): string {

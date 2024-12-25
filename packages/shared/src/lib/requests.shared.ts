@@ -25,19 +25,18 @@ async function request<T>(
   const queryString =
     Object.keys(params).length > 0 ? `?${new URLSearchParams(params).toString()}` : ``;
 
-  const rawResponseResult = await asyncTry<Response>(async () => {
+  const rawResponseResult = await asyncTry(async () =>
     // Allow `fetch` here. We cannot use `request*` since we are inside its implementation.
     // eslint-disable-next-line no-restricted-syntax
-    const response = await fetch(url + queryString, {
+    fetch(url + queryString, {
       method,
       headers: {
         'Content-Type': headers['Content-Type'] ?? DEFAULT_CONTENT_TYPE,
         ...headers,
       },
       body: body ? JSON.stringify(body) : undefined,
-    });
-    return response;
-  });
+    })
+  );
 
   if (!rawResponseResult.success) {
     logger.error('Error fetching request', {error: rawResponseResult.error, url});
@@ -81,9 +80,10 @@ async function request<T>(
     );
   }
 
-  const parsedResponseResult = await asyncTry<T>(async () => {
-    return isJsonResponse(rawResponse) ? rawResponse.json() : rawResponse.text();
-  });
+  const parsedResponseResult = await asyncTry(
+    async () =>
+      (isJsonResponse(rawResponse) ? rawResponse.json() : rawResponse.text()) as Promise<T>
+  );
 
   if (!parsedResponseResult.success) {
     logger.error('Error parsing response from body', {error: parsedResponseResult.error, url});
