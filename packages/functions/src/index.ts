@@ -9,7 +9,7 @@ import {HttpsError, onCall} from 'firebase-functions/v2/https';
 import {
   FEED_ITEMS_DB_COLLECTION,
   FEED_ITEMS_STORAGE_COLLECTION,
-  FEEDS_DB_COLLECTION,
+  FEED_SOURCES_DB_COLLECTION,
   IMPORT_QUEUE_DB_COLLECTION,
   USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
   USERS_DB_COLLECTION,
@@ -24,9 +24,10 @@ import {makeSuccessResult} from '@shared/types/result.types';
 import {makeUserId, UserId} from '@shared/types/user.types';
 
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
-import {ServerFeedsService} from '@sharedServer/services/feeds.server';
+import {ServerFeedSourcesService} from '@sharedServer/services/feedSources.server';
 import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
 import {ServerImportQueueService} from '@sharedServer/services/importQueue.server';
+import {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
 import {SuperfeedrService} from '@sharedServer/services/superfeedr.server';
 import {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
 import {ServerUsersService} from '@sharedServer/services/users.server';
@@ -38,10 +39,11 @@ const FIRECRAWL_API_KEY = defineString('FIRECRAWL_API_KEY');
 const SUPERFEEDR_USER = defineString('SUPERFEEDR_USER');
 const SUPERFEEDR_API_KEY = defineString('SUPERFEEDR_API_KEY');
 
-let feedsService: ServerFeedsService;
+let feedSourcesService: ServerFeedSourcesService;
 let userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
 let importQueueService: ServerImportQueueService;
 let wipeoutService: WipeoutService;
+let rssFeedService: ServerRssFeedService;
 onInit(() => {
   const firecrawlApp = new FirecrawlApp({apiKey: FIRECRAWL_API_KEY.value()});
 
@@ -50,9 +52,8 @@ onInit(() => {
     superfeedrApiKey: SUPERFEEDR_API_KEY.value(),
   });
 
-  feedsService = new ServerFeedsService({
-    feedsDbRef: firestore.collection(FEEDS_DB_COLLECTION),
-    superfeedrService,
+  feedSourcesService = new ServerFeedSourcesService({
+    feedSourcesDbRef: firestore.collection(FEED_SOURCES_DB_COLLECTION),
   });
 
   userFeedSubscriptionsService = new ServerUserFeedSubscriptionsService({
@@ -75,6 +76,12 @@ onInit(() => {
     userFeedSubscriptionsService,
     importQueueService,
     feedItemsService,
+  });
+
+  rssFeedService = new ServerRssFeedService({
+    superfeedrService,
+    feedSourcesService,
+    userFeedSubscriptionsService,
   });
 });
 
@@ -188,7 +195,7 @@ export const wipeoutUserOnAuthDelete = auth.user().onDelete(async (firebaseUser)
 });
 
 /**
- * Subscribes a user to a new feed, creating the new feed if necessary.
+ * Subscribes a user to a feed source, creating it if necessary.
  */
 export const subscribeUserToFeedOnCall = onCall(
   // TODO: Lock down CORS to only allow requests from my domains.
@@ -206,69 +213,24 @@ export const subscribeUserToFeedOnCall = onCall(
 
     const logDetails = {url, userId} as const;
 
-    logger.log(`[SUBSCRIBE] Subscribing user to feed via URL...`, logDetails);
+    logger.log(`[SUBSCRIBE] Subscribing user to feed source via URL...`, logDetails);
 
-    // Check if the feed already exists in the feeds collection. A single feed can have multiple
-    // users subscribed to it, but we only want to subscribe to it in Superfeedr once. Feeds are
-    // deduped based on exact URL match, although we could probably be smarter in the future.
-    const fetchFeedByUrlResult = await feedsService.fetchByUrl(url);
-    if (!fetchFeedByUrlResult.success) {
-      logger.error(`[SUBSCRIBE] Error fetching existing feed by URL`, {
+    const subscribeUserResult = await rssFeedService.subscribeUserToUrl({url, userId});
+    if (!subscribeUserResult.success) {
+      logger.error(`[SUBSCRIBE] Error subscribing user to feed source via URL`, {
         ...logDetails,
-        error: fetchFeedByUrlResult.error,
+        error: subscribeUserResult.error,
       });
-      return fetchFeedByUrlResult;
+      return subscribeUserResult;
     }
 
-    let feed = fetchFeedByUrlResult.value;
+    const userFeedSubscription = subscribeUserResult.value;
 
-    if (feed) {
-      logger.log(`[SUBSCRIBE] Existing feed found`, {...logDetails, feedId: feed.feedId});
-    } else {
-      // If the feed is not already in the feeds collection, create an entry for it and subscribe to
-      // it in Superfeedr.
-      logger.log(`[SUBSCRIBE] Existing feed not found. Adding feed...`, logDetails);
-
-      // TODO: Enrich the feed with a title and image.
-      const addFeedResult = await feedsService.add({url, title: ''});
-      if (!addFeedResult.success) {
-        logger.error(`[SUBSCRIBE] Error adding feed`, {...logDetails, error: addFeedResult.error});
-        return addFeedResult;
-      }
-      feed = addFeedResult.value;
-
-      logger.log(`[SUBSCRIBE] Feed added. Subscribing to feed in Superfeedr...`, {
-        ...logDetails,
-        feedId: feed.feedId,
-      });
-
-      const subscribeToSuperfeedrResult = await feedsService.subscribeToSuperfeedr(feed);
-      if (!subscribeToSuperfeedrResult.success) {
-        logger.error(`[SUBSCRIBE] Error subscribing to feed in Superfeedr`, {
-          ...logDetails,
-          error: subscribeToSuperfeedrResult.error,
-        });
-        return subscribeToSuperfeedrResult;
-      }
-    }
-
-    const logDetailsWithFeedId = {...logDetails, feedId: feed.feedId} as const;
-
-    logger.log(`[SUBSCRIBE] Subscribing user to feed...`, logDetailsWithFeedId);
-
-    const createSubscriptionResult = await userFeedSubscriptionsService.subscribeUserToFeed({
-      feed,
-      userId,
+    logger.log(`[SUBSCRIBE] Successfully subscribed user to feed source`, {
+      ...logDetails,
+      feedSourceId: userFeedSubscription.feedSourceId,
+      userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     });
-    if (!createSubscriptionResult.success) {
-      logger.error(`[SUBSCRIBE] Error subscribing user to feed`, {
-        ...logDetailsWithFeedId,
-        error: createSubscriptionResult.error,
-      });
-      return createSubscriptionResult;
-    }
-
-    logger.log(`[SUBSCRIBE] Successfully subscribed user to feed`, logDetailsWithFeedId);
 
     // TODO: Is this what I want to return?
     return makeSuccessResult(undefined);

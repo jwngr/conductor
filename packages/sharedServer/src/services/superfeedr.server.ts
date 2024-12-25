@@ -27,7 +27,7 @@ export class SuperfeedrService {
     return `https://${process.env.FIREBASE_PROJECT_ID}.firebaseapp.com/api/superfeedr-webhook`;
   }
 
-  public async subscribeToFeed(
+  public async subscribeToUrl(
     feedUrl: string
     // TODO Confirm what the return type actually is.
   ): AsyncResult<string> {
