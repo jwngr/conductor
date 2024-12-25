@@ -157,4 +157,8 @@ export class Urls {
   static forStyleguide(): string {
     return '/styleguide';
   }
+
+  static forError(): string {
+    return '/error';
+  }
 }

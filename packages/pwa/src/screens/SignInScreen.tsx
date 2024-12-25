@@ -72,6 +72,8 @@ export const SignInScreen: React.FC = () => {
     loggedInUserContent = <Text>Already signed in as {loggedInUser.email}</Text>;
   }
 
+  const actualError = authError ?? signInLinkError;
+
   return (
     <FlexColumn gap={12} align="flex-start">
       <Text as="h3" bold>
@@ -104,7 +106,9 @@ export const SignInScreen: React.FC = () => {
           Check <b>{successfulSignInLinkSentTo}</b> for the sign in link.
         </Text>
       ) : null}
-      {signInLinkError ? <Text color={ThemeColor.Red600}>{signInLinkError.message}</Text> : null}
+      {actualError ? (
+        <Text color={ThemeColor.Red600}>Error signing in: {actualError.message}</Text>
+      ) : null}
       {loggedInUserContent}
     </FlexColumn>
   );

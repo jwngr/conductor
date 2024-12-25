@@ -92,11 +92,13 @@ export const RegisterFeedItemImporterDevToolbarSection: React.FC = () => {
   const registerSection = useDevToolbarStore((state) => state.registerSection);
 
   useEffect(() => {
-    return registerSection({
+    const unregister = registerSection({
       sectionType: DevToolbarSectionType.FeedItemImporter,
       title: 'Feed item importer',
       renderSection: () => <FeedItemImporter />,
     });
+
+    return () => unregister();
   }, [registerSection]);
 
   return null;

@@ -68,6 +68,9 @@ const AllRoutes: React.FC = () => {
         }
       />
 
+      {/* Generic error page. */}
+      <Route path={Urls.forError()} element={<ErrorScreen />} />
+
       {/* Catch-all route. */}
       <Route path="*" element={<CatchAllRoute />} />
     </Routes>

@@ -6,6 +6,10 @@ import type {Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import type {Consumer, Task} from '@shared/types/utils.types';
 
+// Source of regex: https://emailregex.com/index.html.
+const EMAIL_REGEX =
+  /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
 /**
  * Strongly-typed type for a `LoggedInUser`'s unique identifier. Prefer this over plain strings.
  */
@@ -37,7 +41,7 @@ export type EmailAddress = string & {readonly __brand: 'EmailAddressBrand'};
  * Checks if a value is a valid `EmailAddress`.
  */
 export function isValidEmail(maybeEmail: unknown): maybeEmail is EmailAddress {
-  return typeof maybeEmail === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(maybeEmail);
+  return typeof maybeEmail === 'string' && EMAIL_REGEX.test(maybeEmail);
 }
 
 /**
@@ -45,7 +49,7 @@ export function isValidEmail(maybeEmail: unknown): maybeEmail is EmailAddress {
  */
 export function createEmailAddress(maybeEmail: string): Result<EmailAddress> {
   if (!isValidEmail(maybeEmail)) {
-    return makeErrorResult(new Error(`Invalid email address format: "${maybeEmail}"`));
+    return makeErrorResult(new Error(`Invalid email address: "${maybeEmail}"`));
   }
   // TODO: Should we normalize email addresses?
   return makeSuccessResult(maybeEmail);

@@ -8,7 +8,7 @@ import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
 
 import {useCurrentTab} from '@src/lib/tabs.ext';
 
-function App() {
+export const App: React.FC = () => {
   const [status, setStatus] = useState<string>('');
   const {currentTab} = useCurrentTab();
   const feedItemsService = useFeedItemsService();
@@ -54,6 +54,4 @@ function App() {
       <p>{status}</p>
     </>
   );
-}
-
-export default App;
+};

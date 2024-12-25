@@ -23,6 +23,7 @@ export const SignOutRedirect: React.FC = () => {
         return;
       }
 
+      console.log('Navigating to root path BBB');
       // Don't strand the user on a page they no longer have access to view.
       navigate(Urls.forSignIn());
 
