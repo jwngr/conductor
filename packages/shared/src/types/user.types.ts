@@ -94,19 +94,3 @@ interface AuthStateChangedCallbacks {
   successCallback: AuthStateChangedCallback;
   errorCallback: Consumer<Error>;
 }
-
-/**
- * Service for interacting with authentication state. It contains limited profile information about
- * the currently logged in user.
- */
-export interface AuthService {
-  getLoggedInUser: Supplier<LoggedInUser | null>;
-  onAuthStateChanged: Func<AuthStateChangedCallbacks, AuthStateChangedUnsubscribe>;
-  isSignInWithEmailLink: Func<string, boolean>;
-  signInWithEmailLink: (email: EmailAddress, emailLink: string) => AsyncResult<UserCredential>;
-  sendSignInLinkToEmail: (
-    email: EmailAddress,
-    actionCodeSettings: ActionCodeSettings
-  ) => AsyncResult<void>;
-  signOut: Supplier<AsyncResult<void>>;
-}

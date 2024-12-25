@@ -14,8 +14,6 @@ import type {StorageReference} from 'firebase/storage';
 import {getDownloadURL, ref as storageRef} from 'firebase/storage';
 import {useEffect, useMemo, useState} from 'react';
 
-import {makeImportQueueItem} from '@shared/services/importQueue.shared';
-
 import {
   FEED_ITEMS_DB_COLLECTION,
   FEED_ITEMS_STORAGE_COLLECTION,
@@ -33,6 +31,7 @@ import {
   type FeedItemId,
   type FeedItemSource,
 } from '@shared/types/feedItems.types';
+import {makeImportQueueItem} from '@shared/types/importQueue.types';
 import type {ImportQueueItemId} from '@shared/types/importQueue.types';
 import {fromFilterOperator, type ViewType} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/result.types';
