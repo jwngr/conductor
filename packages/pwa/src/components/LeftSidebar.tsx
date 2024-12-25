@@ -1,5 +1,4 @@
 import React from 'react';
-import {useMatch} from 'react-router-dom';
 import styled from 'styled-components';
 
 import type {CustomIcon} from '@shared/lib/customIcons.shared';
@@ -10,6 +9,9 @@ import {assertNever} from '@shared/lib/utils.shared';
 import {IconName} from '@shared/types/icons.types';
 import {ThemeColor} from '@shared/types/theme.types';
 import type {NavItem} from '@shared/types/urls.types';
+import type {Task} from '@shared/types/utils.types';
+
+import {useFocusStore} from '@sharedClient/stores/FocusStore';
 
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
@@ -60,12 +62,12 @@ const LeftSidebarItemComponent: React.FC<{
   readonly url: string;
   readonly icon: CustomIcon;
   readonly title: string;
-}> = ({url, icon, title}) => {
-  const match = useMatch(url);
-
+  readonly isActive: boolean;
+  readonly onSelect?: Task;
+}> = ({url, icon, title, isActive, onSelect}) => {
   return (
-    <Link to={url}>
-      <LeftSideItemWrapper $isActive={!!match}>
+    <Link to={url} onClick={() => onSelect?.()}>
+      <LeftSideItemWrapper $isActive={isActive}>
         <LeftSidebarItemAvatar icon={icon} />
         <Text as="p">{title}</Text>
       </LeftSideItemWrapper>
@@ -77,6 +79,7 @@ const LeftSidebarSection: React.FC<{
   readonly title: string;
   readonly navItems: readonly NavItem[];
 }> = ({title, navItems}) => {
+  const {focusedViewType} = useFocusStore();
   return (
     <FlexColumn>
       <Text as="h5" light>
@@ -91,6 +94,7 @@ const LeftSidebarSection: React.FC<{
               url={url}
               icon={navItem.icon}
               title={navItem.title}
+              isActive={focusedViewType === navItem.viewType}
             />
           );
         })}
@@ -108,6 +112,8 @@ const LeftSidebarWrapper = styled(FlexColumn)`
 `;
 
 export const LeftSidebar: React.FC = () => {
+  const {setFocusedViewType} = useFocusStore();
+
   return (
     <LeftSidebarWrapper>
       <LeftSidebarSection title="Views" navItems={Urls.getOrderedNavItems()} />
@@ -117,6 +123,8 @@ export const LeftSidebar: React.FC = () => {
           // TODO: Choose a better icon.
           icon={makeSystemIcon(IconName.Save)}
           title="Feeds"
+          isActive={false}
+          onSelect={() => setFocusedViewType(null)}
         />
       </div>
     </LeftSidebarWrapper>

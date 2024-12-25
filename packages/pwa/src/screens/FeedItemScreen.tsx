@@ -17,6 +17,7 @@ import {AppHeader} from '@src/components/AppHeader';
 import {Text} from '@src/components/atoms/Text';
 import {RegisterIndividualFeedItemDevToolbarSection} from '@src/components/devToolbar/RegisterIndividualFeedItemSection';
 import {ArticleFeedItemComponent} from '@src/components/feedItems/ArticleFeedItem';
+import {FeedItemScreenEscapeHandler} from '@src/components/feedItems/FeedItemScreenEscapeHandler';
 import {TweetFeedItemComponent} from '@src/components/feedItems/TweetFeedItem';
 import {VideoFeedItemComponent} from '@src/components/feedItems/VideoFeedItem';
 import {WebsiteFeedItemComponent} from '@src/components/feedItems/WebsiteFeedItem';
@@ -140,6 +141,7 @@ export const FeedItemScreen: React.FC = () => {
         <LeftSidebar />
         {mainContent}
       </ScreenMainContentWrapper>
+      <FeedItemScreenEscapeHandler />
     </ScreenWrapper>
   );
 };
