@@ -1,10 +1,10 @@
-import type {ActionCodeSettings, User as FirebaseUser, UserCredential} from 'firebase/auth';
+import type {User as FirebaseUser} from 'firebase/auth';
 
 import {makeId} from '@shared/lib/utils.shared';
 
-import type {AsyncResult, Result} from '@shared/types/result.types';
+import type {Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import type {Consumer, Func, Supplier, Task} from '@shared/types/utils.types';
+import type {Consumer, Task} from '@shared/types/utils.types';
 
 /**
  * Strongly-typed type for a `LoggedInUser`'s unique identifier. Prefer this over plain strings.
@@ -89,24 +89,3 @@ export function makeLoggedInUserFromFirebaseUser(
 export type AuthStateChangedCallback = Consumer<LoggedInUser | null>;
 
 export type AuthStateChangedUnsubscribe = Task;
-
-interface AuthStateChangedCallbacks {
-  successCallback: AuthStateChangedCallback;
-  errorCallback: Consumer<Error>;
-}
-
-/**
- * Service for interacting with authentication state. It contains limited profile information about
- * the currently logged in user.
- */
-export interface AuthService {
-  getLoggedInUser: Supplier<LoggedInUser | null>;
-  onAuthStateChanged: Func<AuthStateChangedCallbacks, AuthStateChangedUnsubscribe>;
-  isSignInWithEmailLink: Func<string, boolean>;
-  signInWithEmailLink: (email: EmailAddress, emailLink: string) => AsyncResult<UserCredential>;
-  sendSignInLinkToEmail: (
-    email: EmailAddress,
-    actionCodeSettings: ActionCodeSettings
-  ) => AsyncResult<void>;
-  signOut: Supplier<AsyncResult<void>>;
-}

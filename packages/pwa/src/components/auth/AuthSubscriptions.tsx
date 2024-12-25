@@ -49,7 +49,10 @@ const PasswordlessAuthSubscription: React.FC = () => {
       }
 
       // Do nothing if the user didn't provide a valid email.
-      if (!isValidEmail(email)) return;
+      if (!isValidEmail(email)) {
+        logger.log('Invalid email provided for passwordless sign-in', {email});
+        return;
+      }
 
       const authCredentialResult = await authService.signInWithEmailLink(
         email,
