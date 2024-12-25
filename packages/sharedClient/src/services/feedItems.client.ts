@@ -21,7 +21,7 @@ import {
   FEED_ITEMS_STORAGE_COLLECTION,
   IMPORT_QUEUE_DB_COLLECTION,
 } from '@shared/lib/constants.shared';
-import {asyncTry, asyncTryAllPromises} from '@shared/lib/errorUtils.shared';
+import {asyncTry, asyncTryAllPromises, prefixError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {requestGet} from '@shared/lib/requests.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
@@ -301,8 +301,9 @@ export class ClientFeedItemsService {
     const downloadUrlResult = await asyncTry<string>(async () => await getDownloadURL(fileRef));
     if (!downloadUrlResult.success) {
       return makeErrorResult(
-        new Error(
-          `Error fetching download URL for feed item "${feedItemId}": ${downloadUrlResult.error}]`
+        prefixError(
+          downloadUrlResult.error,
+          `Error fetching download URL for feed item "${feedItemId}"`
         )
       );
     }
@@ -311,9 +312,7 @@ export class ClientFeedItemsService {
     const responseResult = await requestGet<string>(downloadUrl);
     if (!responseResult.success) {
       return makeErrorResult(
-        new Error(
-          `Error fetching markdown for feed item "${feedItemId}": [${responseResult.statusCode}] ${responseResult.error}`
-        )
+        prefixError(responseResult.error, `Error fetching markdown for feed item "${feedItemId}"`)
       );
     }
 

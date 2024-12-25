@@ -7,7 +7,7 @@ import {
   signOut as signOutFirebase,
 } from 'firebase/auth';
 
-import {asyncTry} from '@shared/lib/errorUtils.shared';
+import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
 
 import type {AsyncResult} from '@shared/types/result.types';
 import type {
@@ -41,9 +41,10 @@ export class SharedAuthService implements AuthServiceType {
         const loggedInUserResult = makeLoggedInUserFromFirebaseUser(firebaseUser);
         if (!loggedInUserResult.success) {
           this.currentUser = null;
-          const betterError = new Error('Failed to create logged in user from Firebase user', {
-            cause: loggedInUserResult.error,
-          });
+          const betterError = prefixError(
+            loggedInUserResult.error,
+            'Failed to create logged in user from Firebase user'
+          );
           this.subscribers.forEach((cb) => cb.errorCallback(betterError));
           return;
         }

@@ -1,6 +1,6 @@
 import {logger} from '@shared/services/logger.shared';
 
-import {asyncTry} from '@shared/lib/errorUtils.shared';
+import {asyncTry, prefixError, upgradeUnknownError} from '@shared/lib/errorUtils.shared';
 
 import type {AsyncResponseResult, RequestBody, RequestOptions} from '@shared/types/requests.types';
 import {
@@ -40,9 +40,18 @@ async function request<T>(
   const statusCode = rawResponse.status;
 
   if (!rawResponse.ok) {
-    const errorResponseText = await rawResponse.text();
-    const defaultErrorMessage = `Request failed with ${statusCode} status code`;
-    return makeErrorResponseResult(new Error(errorResponseText || defaultErrorMessage), statusCode);
+    const defaultErrorMessage = `Error ${statusCode} making ${method} request to ${url}`;
+    const unknownErrorJsonResult = await asyncTry(() => rawResponse.json());
+    if (!unknownErrorJsonResult.success) {
+      const errorPrefix = `${defaultErrorMessage}: Failed to parse error response.`;
+      return makeErrorResponseResult(
+        prefixError(unknownErrorJsonResult.error, errorPrefix),
+        statusCode
+      );
+    }
+
+    const betterError = upgradeUnknownError(unknownErrorJsonResult.value ?? defaultErrorMessage);
+    return makeErrorResponseResult(betterError, statusCode);
   }
 
   const jsonResponseResult = await asyncTry<T>(async () => {

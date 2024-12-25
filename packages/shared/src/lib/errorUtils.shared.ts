@@ -7,15 +7,32 @@ import type {Supplier} from '@shared/types/utils.types';
  */
 export function upgradeUnknownError(unknownError: unknown): Error {
   const defaultErrorMessage = 'An unexpected error occurred';
+
+  // Unknown error is already an `Error` object.
   if (unknownError instanceof Error) {
     return new Error(unknownError.message || defaultErrorMessage, {cause: unknownError});
   }
+
+  // Unknown error is a string.
   if (typeof unknownError === 'string' && unknownError.length > 0) {
     return new Error(unknownError, {cause: unknownError});
   }
-  // `String` provides better inspect than `JSON.stringify` for remaining types.
+
+  if (typeof unknownError === 'object' && unknownError !== null) {
+    // Unknown error is an object with a `message` property.
+    if ('message' in unknownError) {
+      return upgradeUnknownError(unknownError.message);
+    }
+
+    // Also recursively check the unknown error's `error` property.
+    if ('error' in unknownError) {
+      return upgradeUnknownError(unknownError.error);
+    }
+  }
+
+  // Unknown error has an unexpected type.
   return new Error(
-    `Expected error, but caught \`${String(unknownError)}\` (${typeof unknownError})`,
+    `Expected error, but caught \`${JSON.stringify(unknownError)}\` (${typeof unknownError})`,
     {cause: unknownError}
   );
 }
