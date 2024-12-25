@@ -32,47 +32,34 @@ export class ServerRssFeedService {
     // Check if the feed source already exists. A single feed source can have multiple users
     // subscribed to it, but we only want to subscribe once to it in Superfeedr. Feed sources are
     // deduped based on exact URL match, although we could probably be smarter in the future.
-    const fetchFeedSourceByUrlResult = await this.feedSourcesService.fetchByUrl(url);
-    if (!fetchFeedSourceByUrlResult.success) {
-      return makeErrorResult(
-        prefixError(fetchFeedSourceByUrlResult.error, 'Error fetching existing feed source by URL')
-      );
-    }
-
-    let feedSource = fetchFeedSourceByUrlResult.value;
-
-    // If the feed source does not already exist, create it in and subscribe to it in Superfeedr.
-    if (!feedSource) {
-      // TODO: Enrich the feed with a title and image.
-      const addFeedSourceResult = await this.feedSourcesService.add({url, title: ''});
-      if (!addFeedSourceResult.success) {
-        return makeErrorResult(
-          prefixError(addFeedSourceResult.error, 'Error creating new feed source')
-        );
-      }
-
-      feedSource = addFeedSourceResult.value;
-
-      const subscribeToSuperfeedrResult = await this.superfeedrService.subscribeToUrl(
-        feedSource.url
-      );
-      if (!subscribeToSuperfeedrResult.success) {
-        return makeErrorResult(
-          prefixError(subscribeToSuperfeedrResult.error, 'Error subscribing to Superfeedr feed')
-        );
-      }
-    }
-
-    const createSubscriptionResult = await this.userFeedSubscriptionsService.add({
-      feedSource,
-      userId,
+    const fetchFeedSourceResult = await this.feedSourcesService.fetchByUrlOrCreate(url, {
+      // TODO: Enrich the feed sourcewith a title and image.
+      title: '',
     });
-    if (!createSubscriptionResult.success) {
+    if (!fetchFeedSourceResult.success) {
       return makeErrorResult(
-        prefixError(createSubscriptionResult.error, 'Error creating user feed subscription')
+        prefixError(fetchFeedSourceResult.error, 'Error fetching existing feed source by URL')
       );
     }
 
-    return createSubscriptionResult;
+    const feedSource = fetchFeedSourceResult.value;
+
+    // Subscribe to the feed source in Superfeedr.
+    const subscribeToSuperfeedrResult = await this.superfeedrService.subscribeToUrl(feedSource.url);
+    if (!subscribeToSuperfeedrResult.success) {
+      return makeErrorResult(
+        prefixError(subscribeToSuperfeedrResult.error, 'Error subscribing to Superfeedr feed')
+      );
+    }
+
+    // Create a user feed subscription in the database.
+    const saveToDbResult = await this.userFeedSubscriptionsService.add({feedSource, userId});
+    if (!saveToDbResult.success) {
+      return makeErrorResult(
+        prefixError(saveToDbResult.error, 'Error creating user feed subscription')
+      );
+    }
+
+    return saveToDbResult;
   }
 }

@@ -63,9 +63,10 @@ export class ServerFeedSourcesService {
   }
 
   /**
-   * Adds a new feed document to Firestore.
+   * Adds a new feed document to Firestore. To check if a feed source with the same URL already
+   * exists, use {@link fetchByUrlOrCreate}.
    */
-  public async add(
+  public async create(
     feedDetails: Omit<FeedSource, 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
   ): AsyncResult<FeedSource> {
     const makeFeedSourceResult = makeFeedSource({
@@ -84,6 +85,30 @@ export class ServerFeedSourcesService {
     }
 
     return makeSuccessResult(newFeedSource);
+  }
+
+  /**
+   * Gets an existing feed source by URL or creates a new one if it doesn't exist. If creating a
+   * new feed source and no title is provided, the URL will be used as the title.
+   */
+  public async fetchByUrlOrCreate(
+    url: string,
+    feedSourceDetails: Partial<Pick<FeedSource, 'title'>>
+  ): AsyncResult<FeedSource> {
+    // First try to fetch the existing feed source.
+    const existingFeedSourceResult = await this.fetchByUrl(url);
+    if (!existingFeedSourceResult.success) return existingFeedSourceResult;
+
+    // If we found an existing feed source, return it
+    if (existingFeedSourceResult.value !== null) {
+      return makeSuccessResult(existingFeedSourceResult.value);
+    }
+
+    // Otherwise create a new feed source.
+    return await this.create({
+      url,
+      title: feedSourceDetails.title ?? url,
+    });
   }
 
   /**
