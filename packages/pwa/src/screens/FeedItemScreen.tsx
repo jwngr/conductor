@@ -88,7 +88,7 @@ const FeedItemScreenMainContent: React.FC<{
   if (feedItemError) {
     logger.error('Error fetching feed item', {error: feedItemError});
     // TODO: Introduce proper error screen.
-    return <Text as="p">There was a problem loading the feed item</Text>;
+    return <Text as="p">Something went wrong while loading this item</Text>;
   }
 
   if (!feedItem) {

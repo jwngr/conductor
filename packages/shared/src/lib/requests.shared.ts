@@ -23,7 +23,7 @@ async function request<T>(
   const {headers = {}, body, params = {}} = options;
 
   const queryString =
-    Object.keys(params).length > 0 ? '?' + new URLSearchParams(params).toString() : '';
+    Object.keys(params).length > 0 ? `?${new URLSearchParams(params).toString()}` : `?`;
 
   const rawResponseResult = await asyncTry<Response>(async () => {
     // Allow `fetch` here. We cannot use `request*` since we are inside its implementation.
@@ -49,19 +49,36 @@ async function request<T>(
 
   if (!rawResponse.ok) {
     const defaultErrorMessage = `Error ${statusCode} making ${method} request to ${url}`;
-    const unknownErrorJsonResult = await asyncTry(() => {
-      return isJsonResponse(rawResponse) ? rawResponse.json() : rawResponse.text();
-    });
-    if (!unknownErrorJsonResult.success) {
-      const errorPrefix = `${defaultErrorMessage}: Failed to parse error response JSON.`;
-      return makeErrorResponseResult(
-        prefixError(unknownErrorJsonResult.error, errorPrefix),
-        statusCode
-      );
+
+    // Clone the response in case we need to parse it multiple times.
+    const rawResponseClone = rawResponse.clone();
+
+    // Try to parse the error response as JSON.
+    const unknownErrorJsonResult = await asyncTry(() => rawResponseClone.json());
+    if (unknownErrorJsonResult.success) {
+      const betterError = upgradeUnknownError(unknownErrorJsonResult.value ?? defaultErrorMessage);
+      return makeErrorResponseResult(betterError, statusCode);
     }
 
-    const betterError = upgradeUnknownError(unknownErrorJsonResult.value ?? defaultErrorMessage);
-    return makeErrorResponseResult(betterError, statusCode);
+    // Fallback to parsing as text if JSON parsing fails.
+    const unknownErrorTextResult = await asyncTry(() => rawResponseClone.text());
+    if (unknownErrorTextResult.success) {
+      const betterError = upgradeUnknownError(unknownErrorTextResult.value ?? defaultErrorMessage);
+      return makeErrorResponseResult(betterError, statusCode);
+    }
+
+    // Fallback to a default error message if JSON and text parsing both fail.
+    const errorPrefix = `${defaultErrorMessage}: Failed to parse error response.`;
+    logger.error(errorPrefix, {
+      jsonError: unknownErrorJsonResult.error,
+      textError: unknownErrorTextResult.error,
+      url,
+    });
+
+    return makeErrorResponseResult(
+      prefixError(unknownErrorTextResult.error, errorPrefix),
+      statusCode
+    );
   }
 
   const parsedResponseResult = await asyncTry<T>(async () => {
