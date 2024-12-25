@@ -1,177 +1,199 @@
+import {deleteField} from 'firebase/firestore';
 import React from 'react';
 
-import {
-  getMarkDoneFeedItemActionInfo,
-  getMarkUnreadFeedItemActionInfo,
-  getSaveFeedItemActionInfo,
-  getStarFeedItemActionInfo,
-} from '@shared/lib/feedItems';
-import {logger} from '@shared/lib/logger';
+import {logger} from '@shared/services/logger.shared';
 
-import {FeedItemId, TriageStatus} from '@shared/types/feedItems.types';
+import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
+
+import type {FeedItem} from '@shared/types/feedItems.types';
+import {FeedItemActionType, TriageStatus} from '@shared/types/feedItems.types';
+import type {IconName} from '@shared/types/icons.types';
+import type {Result} from '@shared/types/result.types';
+import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
+import type {AsyncFunc, Func} from '@shared/types/utils.types';
+
+import {useEventLogService} from '@sharedClient/services/eventLog.client';
+import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {FlexRow} from '@src/components/atoms/Flex';
 
-import {feedItemsService} from '@src/lib/feedItems.pwa';
-import {ToastType, useToast} from '@src/lib/toasts';
+import {useToast} from '@src/lib/toasts';
 
-const MarkDoneFeedItemActionIcon: React.FC<{
-  readonly feedItemId: FeedItemId;
-}> = ({feedItemId}) => {
-  const {showToast} = useToast();
-  const markDoneActionInfo = getMarkDoneFeedItemActionInfo();
+interface GenericFeedItemActionIconProps {
+  readonly feedItem: FeedItem;
+  readonly feedItemActionType: FeedItemActionType;
+  readonly icon: IconName;
+  readonly tooltip: string;
+  readonly shortcutId?: KeyboardShortcutId;
+  readonly getIsActive: Func<FeedItem, boolean>;
+  readonly onAction: AsyncFunc<boolean, Result<void>>;
+  readonly toastText: string;
+  readonly errorMessage: string;
+}
 
-  const handleMarkDoneFeedItem = async () => {
-    const handleMarkDoneFeedItemResult = await feedItemsService.updateFeedItem(feedItemId, {
-      triageStatus: TriageStatus.Done,
-    });
+const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
+  feedItem,
+  feedItemActionType,
+  icon,
+  tooltip,
+  shortcutId,
+  getIsActive,
+  onAction,
+  toastText,
+  errorMessage,
+}) => {
+  const {feedItemId} = feedItem;
+  const eventLogService = useEventLogService();
+  const {showToast, showErrorToast} = useToast();
 
-    if (!handleMarkDoneFeedItemResult.success) {
-      const errorMessagePrefix = 'Error marking feed item as done';
-      showToast({
-        type: ToastType.Error,
-        message: `${errorMessagePrefix}: ${handleMarkDoneFeedItemResult.error.message}`,
-      });
-      logger.error(errorMessagePrefix, {error: handleMarkDoneFeedItemResult.error, feedItemId});
+  const handleAction = async () => {
+    const isCurrentlyActive = getIsActive(feedItem);
+    const result = await onAction(isCurrentlyActive);
+
+    if (result.success) {
+      showToast({message: toastText});
+      void eventLogService.logFeedItemActionEvent({feedItemId, feedItemActionType});
       return;
     }
 
-    // TODO: Update based on if already done.
-    showToast({message: 'Feed item marked as done'});
+    showErrorToast({message: `${errorMessage}: ${result.error.message}`});
+    logger.error(errorMessage, {error: result.error, feedItemId: feedItem.feedItemId});
   };
 
   return (
     <ButtonIcon
-      name={markDoneActionInfo.icon}
-      tooltip={markDoneActionInfo.text}
+      name={icon}
+      tooltip={tooltip}
       size={40}
-      onClick={handleMarkDoneFeedItem}
+      onClick={handleAction}
+      shortcutId={shortcutId}
+    />
+  );
+};
+
+const MarkDoneFeedItemActionIcon: React.FC<{
+  readonly feedItem: FeedItem;
+}> = ({feedItem}) => {
+  const actionInfo = SharedFeedItemHelpers.getMarkDoneFeedItemActionInfo(feedItem);
+  const isDone = SharedFeedItemHelpers.isMarkedDone(feedItem);
+  const feedItemsService = useFeedItemsService();
+
+  return (
+    <GenericFeedItemActionIcon
+      feedItem={feedItem}
+      feedItemActionType={FeedItemActionType.MarkDone}
+      icon={actionInfo.icon}
+      tooltip={actionInfo.text}
+      shortcutId={actionInfo.shortcutId}
+      getIsActive={SharedFeedItemHelpers.isMarkedDone}
+      onAction={async (isActive) => {
+        const result = await feedItemsService.updateFeedItem(feedItem.feedItemId, {
+          triageStatus: isActive ? TriageStatus.Untriaged : TriageStatus.Done,
+        });
+        return result;
+      }}
+      toastText={isDone ? 'Feed item marked as undone' : 'Feed item marked as done'}
+      errorMessage={
+        isDone ? 'Error marking feed item as undone' : 'Error marking feed item as done'
+      }
     />
   );
 };
 
 const SaveFeedItemActionIcon: React.FC<{
-  readonly feedItemId: FeedItemId;
-}> = ({feedItemId}) => {
-  const saveActionInfo = getSaveFeedItemActionInfo();
-  const {showToast} = useToast();
-
-  const handleSaveFeedItem = async () => {
-    const handleSaveFeedItemResult = await feedItemsService.updateFeedItem(feedItemId, {
-      triageStatus: TriageStatus.Saved,
-    });
-
-    if (!handleSaveFeedItemResult.success) {
-      const errorMessagePrefix = 'Error saving feed item';
-      showToast({
-        type: ToastType.Error,
-        message: `${errorMessagePrefix}: ${handleSaveFeedItemResult.error.message}`,
-      });
-      logger.error(errorMessagePrefix, {error: handleSaveFeedItemResult.error, feedItemId});
-      return;
-    }
-
-    // TODO: Update based on if already saved.
-    showToast({message: 'Feed item saved'});
-  };
+  readonly feedItem: FeedItem;
+}> = ({feedItem}) => {
+  const actionInfo = SharedFeedItemHelpers.getSaveFeedItemActionInfo(feedItem);
+  const isSaved = SharedFeedItemHelpers.isSaved(feedItem);
+  const feedItemsService = useFeedItemsService();
 
   return (
-    <ButtonIcon
-      name={saveActionInfo.icon}
-      tooltip={saveActionInfo.text}
-      size={40}
-      onClick={handleSaveFeedItem}
+    <GenericFeedItemActionIcon
+      feedItem={feedItem}
+      feedItemActionType={FeedItemActionType.Save}
+      icon={actionInfo.icon}
+      tooltip={actionInfo.text}
+      shortcutId={actionInfo.shortcutId}
+      getIsActive={SharedFeedItemHelpers.isSaved}
+      onAction={async (isActive) => {
+        const result = await feedItemsService.updateFeedItem(feedItem.feedItemId, {
+          triageStatus: isActive ? TriageStatus.Untriaged : TriageStatus.Saved,
+        });
+        return result;
+      }}
+      toastText={isSaved ? 'Feed item unsaved' : 'Feed item saved'}
+      errorMessage={isSaved ? 'Error unsaving feed item' : 'Error saving feed item'}
     />
   );
 };
 
 const MarkUnreadFeedItemActionIcon: React.FC<{
-  readonly feedItemId: FeedItemId;
-}> = ({feedItemId}) => {
-  const {showToast} = useToast();
-  const markUnreadActionInfo = getMarkUnreadFeedItemActionInfo();
-
-  const handleMarkUnreadFeedItem = async () => {
-    const handleMarkUnreadFeedItemResult =
-      // TODO: Consider using a Firestore converter to handle this.
-      // See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
-      await feedItemsService.updateFeedItem(feedItemId, {
-        [`tagIds.${SystemTagId.Unread}`]: true,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any);
-
-    if (!handleMarkUnreadFeedItemResult.success) {
-      const errorMessagePrefix = 'Error marking feed item as unread';
-      showToast({
-        type: ToastType.Error,
-        message: `${errorMessagePrefix}: ${handleMarkUnreadFeedItemResult.error.message}`,
-      });
-      logger.error(errorMessagePrefix, {error: handleMarkUnreadFeedItemResult.error, feedItemId});
-      return;
-    }
-
-    // TODO: Update based on if already unread.
-    showToast({message: 'Feed item marked as unread'});
-  };
+  readonly feedItem: FeedItem;
+}> = ({feedItem}) => {
+  const actionInfo = SharedFeedItemHelpers.getMarkUnreadFeedItemActionInfo(feedItem);
+  const isUnread = SharedFeedItemHelpers.isUnread(feedItem);
+  const feedItemsService = useFeedItemsService();
 
   return (
-    <ButtonIcon
-      name={markUnreadActionInfo.icon}
-      tooltip={markUnreadActionInfo.text}
-      size={40}
-      onClick={handleMarkUnreadFeedItem}
+    <GenericFeedItemActionIcon
+      feedItem={feedItem}
+      feedItemActionType={FeedItemActionType.MarkUnread}
+      icon={actionInfo.icon}
+      tooltip={actionInfo.text}
+      shortcutId={actionInfo.shortcutId}
+      getIsActive={SharedFeedItemHelpers.isUnread}
+      onAction={async (isActive) => {
+        const result = await feedItemsService.updateFeedItem(feedItem.feedItemId, {
+          [`tagIds.${SystemTagId.Unread}`]: isActive ? deleteField() : true,
+        } as Partial<FeedItem>);
+        return result;
+      }}
+      toastText={isUnread ? 'Feed item marked as read' : 'Feed item marked as unread'}
+      errorMessage={
+        isUnread ? 'Error marking feed item as read' : 'Error marking feed item as unread'
+      }
     />
   );
 };
 
 const StarFeedItemActionIcon: React.FC<{
-  readonly feedItemId: FeedItemId;
-}> = ({feedItemId}) => {
-  const {showToast} = useToast();
-  const starActionInfo = getStarFeedItemActionInfo();
-
-  const handleStarFeedItem = async () => {
-    const handleStarFeedItemResult =
-      // TODO: Consider using a Firestore converter to handle this.
-      // See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
-      await feedItemsService.updateFeedItem(feedItemId, {
-        [`tagIds.${SystemTagId.Starred}`]: true,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any);
-
-    if (!handleStarFeedItemResult.success) {
-      const errorMessagePrefix = 'Error starring feed item';
-      showToast({
-        type: ToastType.Error,
-        message: `${errorMessagePrefix}: ${handleStarFeedItemResult.error.message}`,
-      });
-      logger.error(errorMessagePrefix, {error: handleStarFeedItemResult.error, feedItemId});
-      return;
-    }
-
-    // TODO: Update based on if already starred.
-    showToast({message: 'Feed item starred'});
-  };
+  readonly feedItem: FeedItem;
+}> = ({feedItem}) => {
+  const actionInfo = SharedFeedItemHelpers.getStarFeedItemActionInfo(feedItem);
+  const isStarred = SharedFeedItemHelpers.isStarred(feedItem);
+  const feedItemsService = useFeedItemsService();
 
   return (
-    <ButtonIcon
-      name={starActionInfo.icon}
-      tooltip={starActionInfo.text}
-      size={40}
-      onClick={handleStarFeedItem}
+    <GenericFeedItemActionIcon
+      feedItem={feedItem}
+      feedItemActionType={FeedItemActionType.Star}
+      icon={actionInfo.icon}
+      tooltip={actionInfo.text}
+      shortcutId={actionInfo.shortcutId}
+      getIsActive={SharedFeedItemHelpers.isStarred}
+      onAction={async (isActive) => {
+        const result = await feedItemsService.updateFeedItem(feedItem.feedItemId, {
+          [`tagIds.${SystemTagId.Starred}`]: isActive ? deleteField() : true,
+        } as Partial<FeedItem>);
+        return result;
+      }}
+      toastText={isStarred ? 'Feed item unstarred' : 'Feed item starred'}
+      errorMessage={isStarred ? 'Error unstarring feed item' : 'Error starring feed item'}
     />
   );
 };
 
-export const FeedItemActions: React.FC<{feedItemId: FeedItemId}> = ({feedItemId}) => {
+export const FeedItemActions: React.FC<{
+  readonly feedItem: FeedItem;
+}> = ({feedItem}) => {
   return (
     <FlexRow gap={12}>
-      <MarkDoneFeedItemActionIcon feedItemId={feedItemId} />
-      <SaveFeedItemActionIcon feedItemId={feedItemId} />
-      <MarkUnreadFeedItemActionIcon feedItemId={feedItemId} />
-      <StarFeedItemActionIcon feedItemId={feedItemId} />
+      <MarkDoneFeedItemActionIcon feedItem={feedItem} />
+      <SaveFeedItemActionIcon feedItem={feedItem} />
+      <MarkUnreadFeedItemActionIcon feedItem={feedItem} />
+      <StarFeedItemActionIcon feedItem={feedItem} />
     </FlexRow>
   );
 };

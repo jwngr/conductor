@@ -1,22 +1,22 @@
 import React from 'react';
 
-import {logger} from '@shared/lib/logger';
+import {logger} from '@shared/services/logger.shared';
 
-import {FeedItem} from '@shared/types/feedItems.types';
+import type {FeedItem} from '@shared/types/feedItems.types';
+
+import {useFeedItemMarkdown} from '@sharedClient/services/feedItems.client';
 
 import {Text} from '@src/components/atoms/Text';
 import {Markdown} from '@src/components/Markdown';
-
-import {useFeedItemMarkdown} from '@src/lib/feedItems.pwa';
 
 export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
   const isFeedItemImported = Boolean(feedItem?.lastImportedTime);
   const {markdown, isLoading, error} = useFeedItemMarkdown(feedItem.feedItemId, isFeedItemImported);
 
   if (error) {
-    logger.error('Error fetching markdown', {error});
+    logger.error('Error fetching markdown for feed item', {feedItemId: feedItem.feedItemId, error});
     // TODO: Introduce proper error screen.
-    return <Text as="p">There was a problem loading the content: {error.message}</Text>;
+    return <Text as="p">Something went wrong: {error.message}</Text>;
   } else if (isLoading) {
     return <Text as="p">Loading markdown...</Text>;
   } else if (markdown) {

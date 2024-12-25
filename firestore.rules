@@ -49,16 +49,18 @@ service cloud.firestore {
       request.resource.data.lastUpdatedTime is timestamp;
     }
 
-    function isValidFeedSubscriptionDoc(feedSubscriptionId) {
+    function isValidUserFeedSubscriptionDoc(userFeedSubscriptionId) {
       return request.resource.data.keys().hasAll([
-        'feedSubscriptionId',
+        'userFeedSubscriptionId',
         'userId',
         'url',
+        'title',
+        'isActive',
         'createdTime',
         'lastUpdatedTime'
       ]) &&
-      request.resource.data.feedSubscriptionId is string &&
-      request.resource.data.feedSubscriptionId == feedSubscriptionId &&
+      request.resource.data.userFeedSubscriptionId is string &&
+      request.resource.data.userFeedSubscriptionId == userFeedSubscriptionId &&
       request.resource.data.url is string &&
       request.resource.data.createdTime is timestamp &&
       request.resource.data.lastUpdatedTime is timestamp;
@@ -81,6 +83,20 @@ service cloud.firestore {
       request.resource.data.lastUpdatedTime is timestamp;
     }
 
+    function isValidEventLogItemDoc(eventId) {
+      return request.resource.data.keys().hasAll([
+        'eventId',
+        'eventType',
+        'createdTime',
+        'lastUpdatedTime'
+      ]) &&
+      request.resource.data.eventId is string &&
+      request.resource.data.eventId == eventId &&
+      request.resource.data.eventType is string &&
+      request.resource.data.createdTime is timestamp &&
+      request.resource.data.lastUpdatedTime is timestamp;
+    }
+
     /////////////
     //  Rules  //
     /////////////
@@ -95,6 +111,14 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    match /feeds/{feedId} {
+      // Feeds are publicly readable.
+      allow read: if true;
+
+      // Feeds are only writable via the admin SDK.
+      allow create, update, delete: if false;
+    }
+
     match /feedItems/{feedItemId} {
       // Allow users to manage their own feed items.
       // TODO: Some fields should not be user-editable.
@@ -104,12 +128,12 @@ service cloud.firestore {
       allow delete: if isResourceOwner();
     }
 
-    match /feedSubscriptions/{feedSubscriptionId} {
+    match /userFeedSubscriptions/{userFeedSubscriptionId} {
       // Allow users to manage their own feed subscriptions.
       // TODO: Some fields should not be user-editable.
       allow read: if isResourceOwner();
-      allow create: if isNewResourceOwner() && isValidFeedSubscriptionDoc(feedSubscriptionId);
-      allow update: if isResourceOwner() && isNewResourceOwner() && isValidFeedSubscriptionDoc(feedSubscriptionId);
+      allow create: if isNewResourceOwner() && isValidUserFeedSubscriptionDoc(userFeedSubscriptionId);
+      allow update: if isResourceOwner() && isNewResourceOwner() && isValidUserFeedSubscriptionDoc(userFeedSubscriptionId);
       allow delete: if isResourceOwner();
     }
 
@@ -121,6 +145,18 @@ service cloud.firestore {
       // Only allow reads or writes via the admin SDK - only the import queue server needs access.
       allow read: if false
       allow delete: if false
+    }
+
+    match /eventLog/{eventId} {
+      // Allow users to read their own event log.
+      allow read: if isResourceOwner();
+
+      // Allow creation and deletion if the current user owns the new document.
+      allow create: if isNewResourceOwner() && isValidEventLogItemDoc(eventId);
+      allow delete: if isResourceOwner();
+
+      // Event log items cannot be updated, only created or deleted.
+      allow update: if false;
     }
   }
 }

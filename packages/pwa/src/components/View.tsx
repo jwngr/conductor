@@ -1,18 +1,19 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import {logger} from '@shared/lib/logger';
-import {Urls} from '@shared/lib/urls';
+import {logger} from '@shared/services/logger.shared';
 
-import {FeedItem} from '@shared/types/feedItems.types';
-import {ViewType} from '@shared/types/query.types';
+import {Urls} from '@shared/lib/urls.shared';
+
+import type {FeedItem} from '@shared/types/feedItems.types';
+import type {ViewType} from '@shared/types/query.types';
 import {ThemeColor} from '@shared/types/theme.types';
+
+import {useFeedItems} from '@sharedClient/services/feedItems.client';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
-
-import {useFeedItems} from '@src/lib/feedItems.pwa';
 
 const ViewListItemWrapper = styled(FlexColumn).attrs({justify: 'center', gap: 4})`
   cursor: pointer;

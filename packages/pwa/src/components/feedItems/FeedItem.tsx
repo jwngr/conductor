@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import {FeedItem} from '@shared/types/feedItems.types';
+import type {FeedItem} from '@shared/types/feedItems.types';
 
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Spacer} from '@src/components/atoms/Spacer';
@@ -23,7 +23,7 @@ export const FeedItemHeader: React.FC<{readonly feedItem: FeedItem}> = ({feedIte
         {feedItem.title}
       </Text>
       <Spacer flex />
-      <FeedItemActions feedItemId={feedItem.feedItemId} />
+      <FeedItemActions feedItem={feedItem} />
     </FeedItemHeaderWrapper>
   );
 };

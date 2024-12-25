@@ -1,8 +1,6 @@
-import {OrderByDirection, WhereFilterOp} from 'firebase/firestore';
+import type {OrderByDirection, WhereFilterOp} from 'firebase/firestore';
 
-import {assertNever} from '@shared/lib/utils';
-
-import {FeedItem} from '@shared/types/feedItems.types';
+import {assertNever} from '@shared/lib/utils.shared';
 
 export enum ViewType {
   Untriaged = 'UNTRIAGED',
@@ -15,11 +13,11 @@ export enum ViewType {
   Today = 'TODAY',
 }
 
-export interface View {
+export interface View<T> {
   readonly name: string;
   readonly type: ViewType;
-  readonly filters: readonly Filter[];
-  readonly sort: SortOption;
+  readonly filters: ReadonlyArray<Filter<T>>;
+  readonly sort: SortOption<T>;
 }
 
 export enum FilterOp {
@@ -34,16 +32,16 @@ export enum FilterOp {
   NotIn = 'not-in',
 }
 
-export interface Filter {
-  readonly field: keyof FeedItem;
+export interface Filter<T> {
+  readonly field: keyof T;
   readonly op: FilterOp;
   readonly value: unknown;
 }
 
 export type SortDirection = 'asc' | 'desc';
 
-export interface SortOption {
-  readonly field: keyof FeedItem;
+export interface SortOption<T> {
+  readonly field: keyof T;
   readonly direction: SortDirection;
 }
 

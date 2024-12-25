@@ -1,10 +1,11 @@
 import {useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 
-import {logger} from '@shared/lib/logger';
-import {Urls} from '@shared/lib/urls';
+import {logger} from '@shared/services/logger.shared';
 
-import {authService} from '@src/lib/auth.pwa';
+import {Urls} from '@shared/lib/urls.shared';
+
+import {authService} from '@sharedClient/services/auth.client';
 
 /**
  * Signs the user out and redirects them to sign in page.
@@ -27,7 +28,8 @@ export const SignOutRedirect: React.FC = () => {
 
       // TODO: Clear other stuff from local storage.
     };
-    go();
+
+    void go();
   }, [navigate]);
 
   return null;

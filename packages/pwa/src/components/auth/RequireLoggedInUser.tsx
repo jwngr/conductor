@@ -2,10 +2,11 @@ import {isSignInWithEmailLink} from 'firebase/auth';
 import React from 'react';
 import {Navigate} from 'react-router-dom';
 
-import {Urls} from '@shared/lib/urls';
+import {Urls} from '@shared/lib/urls.shared';
 
-import {useMaybeLoggedInUser} from '@src/lib/auth.pwa';
-import {firebaseService} from '@src/lib/firebase.pwa';
+import {firebaseService} from '@sharedClient/services/firebase.client';
+
+import {useMaybeLoggedInUser} from '@sharedClient/hooks/auth.hooks';
 
 export const RequireLoggedInUser: React.FC<{
   readonly children: React.ReactNode;

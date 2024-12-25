@@ -1,21 +1,28 @@
-import React from 'react';
+import React, {StrictMode} from 'react';
 import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import {ThemeProvider} from 'styled-components';
 
-import {theme} from '@shared/lib/theme';
-import {Urls} from '@shared/lib/urls';
+import {theme} from '@shared/lib/theme.shared';
+import {Urls} from '@shared/lib/urls.shared';
 
+import {useMaybeLoggedInUser} from '@sharedClient/hooks/auth.hooks';
+
+import {ErrorBoundary} from '@src/components/atoms/ErrorBoundary';
 import {Toaster} from '@src/components/atoms/Toaster';
 import {TooltipProvider} from '@src/components/atoms/Tooltip';
 import {AuthSubscriptions} from '@src/components/auth/AuthSubscriptions';
 import {RequireLoggedInUser} from '@src/components/auth/RequireLoggedInUser';
 import {SignOutRedirect} from '@src/components/auth/SignOutRedirect';
 import {DevToolbar} from '@src/components/devToolbar/DevToolbar';
+import {RegisterFeedItemImporterDevToolbarSection} from '@src/components/devToolbar/RegisterFeedItemImporterDevTool';
+import {RegisterUserFeedSubscriberDevToolbarSection} from '@src/components/devToolbar/RegisterUserFeedSubscriberDevToolbarActions';
 
 import {NotFoundScreen} from '@src/screens/404';
+import {ErrorScreen} from '@src/screens/ErrorScreen';
 import {FeedItemScreen} from '@src/screens/FeedItemScreen';
-import {FeedsScreen} from '@src/screens/FeedsScreen';
+import {FeedSubscriptionsScreen} from '@src/screens/FeedSubscriptionsScreen';
 import {SignInScreen} from '@src/screens/SignInScreen';
+import {StyleguideScreen} from '@src/screens/StyleguideScreen';
 import {ViewScreen} from '@src/screens/ViewScreen';
 
 export const CatchAllRoute: React.FC = () => {
@@ -30,6 +37,7 @@ const AllRoutes: React.FC = () => {
       {/* Publicly visible routes. */}
       <Route path={Urls.forSignIn()} element={<SignInScreen />} />
       <Route path={Urls.forSignOut()} element={<SignOutRedirect />} />
+      <Route path={Urls.forStyleguide()} element={<StyleguideScreen />} />
 
       {/* Authenticated routes. */}
       {orderedNavItems.map((item) => (
@@ -52,10 +60,10 @@ const AllRoutes: React.FC = () => {
         }
       />
       <Route
-        path={Urls.forFeeds()}
+        path={Urls.forFeedSubscriptions()}
         element={
           <RequireLoggedInUser>
-            <FeedsScreen />
+            <FeedSubscriptionsScreen />
           </RequireLoggedInUser>
         }
       />
@@ -66,7 +74,10 @@ const AllRoutes: React.FC = () => {
   );
 };
 
-const AppWideSubscriptions: React.FC = () => {
+/**
+ * Subscriptions that are always active whenever the app is loaded.
+ */
+const PermanentGlobalSubscriptions: React.FC = () => {
   return (
     <>
       <AuthSubscriptions />
@@ -74,20 +85,41 @@ const AppWideSubscriptions: React.FC = () => {
   );
 };
 
+/**
+ * Subscriptions that are active whenever there is a logged-in user.
+ */
+const LoggedInGlobalSubscriptions: React.FC = () => {
+  const loggedInUser = useMaybeLoggedInUser();
+
+  if (!loggedInUser) return null;
+
+  return (
+    <RequireLoggedInUser>
+      <RegisterFeedItemImporterDevToolbarSection />
+      <RegisterUserFeedSubscriberDevToolbarSection />
+    </RequireLoggedInUser>
+  );
+};
+
 export const App: React.FC = () => {
   return (
-    <ThemeProvider theme={theme}>
-      <TooltipProvider>
-        <BrowserRouter
-          // Pass flags to silence console logs.
-          future={{v7_startTransition: true, v7_relativeSplatPath: true}}
-        >
-          <AllRoutes />
-          <AppWideSubscriptions />
-          <DevToolbar />
-        </BrowserRouter>
-        <Toaster />
-      </TooltipProvider>
-    </ThemeProvider>
+    <StrictMode>
+      <ThemeProvider theme={theme}>
+        <TooltipProvider>
+          <BrowserRouter
+            // Pass flags to silence console logs.
+            future={{v7_startTransition: true, v7_relativeSplatPath: true}}
+          >
+            <ErrorBoundary fallback={(error) => <ErrorScreen error={error} />}>
+              <AllRoutes />
+              <PermanentGlobalSubscriptions />
+              <LoggedInGlobalSubscriptions />
+              <DevToolbar />
+            </ErrorBoundary>
+          </BrowserRouter>
+          <Toaster />
+        </TooltipProvider>
+      </ThemeProvider>
+    </StrictMode>
   );
 };

@@ -13,6 +13,7 @@ export default defineConfig({
     alias: {
       '@src': path.resolve(__dirname, './src'),
       '@shared': path.resolve(__dirname, '../shared/src'),
+      '@sharedClient': path.resolve(__dirname, '../sharedClient/src'),
     },
   },
   build: {

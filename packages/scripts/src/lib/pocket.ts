@@ -2,10 +2,11 @@ import fs from 'fs/promises';
 
 import {JSDOM} from 'jsdom';
 
-import {PocketExportedItem} from '../types/pocket';
+import type {PocketExportedItem} from '../types/pocket';
 
 export class PocketService {
   static async parseExportFromFile(path: string): Promise<readonly PocketExportedItem[]> {
+    // eslint-disable-next-line no-restricted-syntax
     try {
       const fileContent = await fs.readFile(path, 'utf-8');
       return this.parseExport(fileContent);
@@ -13,6 +14,7 @@ export class PocketService {
       if (error instanceof Error) {
         error.message = `Failed to parse Pocket export: ${error.message}`;
       }
+      // eslint-disable-next-line no-restricted-syntax
       throw error;
     }
   }

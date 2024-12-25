@@ -1,8 +1,8 @@
-import * as React from 'react';
+import {useEffect, useState} from 'react';
 
-import {makeId} from '@shared/lib/utils';
+import {makeId} from '@shared/lib/utils.shared';
 
-import {Consumer, Task} from '@shared/types/utils.types';
+import type {Consumer, Task} from '@shared/types/utils.types';
 
 import type {ToastActionElement, ToastProps} from '@src/components/atoms/Toast';
 
@@ -190,13 +190,14 @@ function showToast({
 interface UseToastResult {
   readonly toasts: ToasterToast[];
   readonly showToast: typeof showToast;
+  readonly showErrorToast: typeof showToast;
   readonly hideToast: Consumer<string>;
 }
 
 export function useToast(): UseToastResult {
-  const [state, setState] = React.useState(memoryState);
+  const [state, setState] = useState<ToastState>(memoryState);
 
-  React.useEffect(() => {
+  useEffect(() => {
     listeners.push(setState);
     return () => {
       const index = listeners.indexOf(setState);
@@ -207,8 +208,9 @@ export function useToast(): UseToastResult {
   }, [state]);
 
   return {
-    ...state,
+    toasts: state.toasts,
     showToast,
+    showErrorToast: (props) => showToast({...props, type: ToastType.Error}),
     hideToast: (toastId) => dispatch({actionType: ToastActionType.DismissToast, toastId}),
   };
 }

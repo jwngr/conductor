@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
 
-import {asyncTry} from '@shared/lib/errors';
+import {asyncTry} from '@shared/lib/errorUtils.shared';
 
 export function useCurrentTab() {
   const [currentTab, setCurrentTab] = useState<chrome.tabs.Tab | null>(null);
@@ -22,7 +22,7 @@ export function useCurrentTab() {
       }
     }
 
-    fetchCurrentTab();
+    void fetchCurrentTab();
   }, []);
 
   return {currentTab, isLoading, error};

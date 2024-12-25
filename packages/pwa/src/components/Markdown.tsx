@@ -2,23 +2,33 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import styled from 'styled-components';
 
-const MarkdownWrapper = styled.div`
-  border: solid 5px green;
+const MarkdownFullWidthWrapper = styled.div`
   max-width: 100%;
+`;
+
+const MarkdownContentWrapper = styled.div`
+  max-width: 960px;
+  margin: auto;
+
+  // Reset spacing back to default (these are set to 0 in global styles).
+  * {
+    margin: revert;
+    padding: revert;
+  }
 
   img {
     max-width: 100%;
   }
 `;
 
-interface MarkdownProps {
+export const Markdown: React.FC<{
   readonly content: string;
-}
-
-export const Markdown: React.FC<MarkdownProps> = ({content}) => {
+}> = ({content}) => {
   return (
-    <MarkdownWrapper>
-      <ReactMarkdown>{content}</ReactMarkdown>
-    </MarkdownWrapper>
+    <MarkdownFullWidthWrapper>
+      <MarkdownContentWrapper>
+        <ReactMarkdown>{content}</ReactMarkdown>
+      </MarkdownContentWrapper>
+    </MarkdownFullWidthWrapper>
   );
 };

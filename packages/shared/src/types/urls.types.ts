@@ -1,9 +1,9 @@
-import {Params} from 'react-router-dom';
+import type {Params} from 'react-router-dom';
 
-import {CustomIcon} from '@shared/lib/customIcons';
+import type {CustomIcon} from '@shared/lib/customIcons.shared';
 
-import {FeedItemId} from '@shared/types/feedItems.types';
-import {ViewType} from '@shared/types/query.types';
+import type {FeedItemId} from '@shared/types/feedItems.types';
+import type {ViewType} from '@shared/types/query.types';
 
 export interface FeedItemScreenParams extends Params {
   readonly feedItemId: FeedItemId;

@@ -2,7 +2,7 @@ import {Cross2Icon} from '@radix-ui/react-icons';
 import * as ToastPrimitives from '@radix-ui/react-toast';
 import * as React from 'react';
 
-import {theme} from '@shared/lib/theme';
+import {theme} from '@shared/lib/theme.shared';
 
 import {ThemeColor} from '@shared/types/theme.types';
 
