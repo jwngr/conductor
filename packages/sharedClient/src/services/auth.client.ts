@@ -16,16 +16,18 @@ import type {Consumer} from '@shared/types/utils.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';
 
+interface AuthServiceSubscriptionCallbacks {
+  successCallback: AuthStateChangedCallback;
+  errorCallback: Consumer<Error>;
+}
+
 /**
  * Service for interacting with authentication state. It contains limited profile information about
  * the currently logged in user.
  */
 export class ClientAuthService {
   private currentUser: LoggedInUser | null = null;
-  private subscribers = new Set<{
-    readonly successCallback: AuthStateChangedCallback;
-    readonly errorCallback: Consumer<Error>;
-  }>();
+  private subscribers = new Set<AuthServiceSubscriptionCallbacks>();
 
   constructor(private auth: FirebaseAuth) {
     onAuthStateChangedFirebase(
@@ -74,10 +76,7 @@ export class ClientAuthService {
    * Registers a callback to be notified of future auth state changes. Fires immediately with
    * the currently logged in user. Fired with null if the user is not logged in.
    */
-  public onAuthStateChanged(callbacks: {
-    readonly successCallback: AuthStateChangedCallback;
-    readonly errorCallback: Consumer<Error>;
-  }): () => void {
+  public onAuthStateChanged(callbacks: AuthServiceSubscriptionCallbacks): () => void {
     // Immediately call with current user if available.
     if (this.currentUser) {
       callbacks.successCallback(this.currentUser);
