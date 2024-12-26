@@ -40,11 +40,10 @@ export class SharedEventLogService {
   }
 
   public async fetchEventLogItem(eventId: EventId): AsyncResult<EventLogItem | null> {
-    return asyncTry<EventLogItem | null>(async () => {
+    return asyncTry(async () => {
       const snapshot = await getDoc(doc(this.eventLogDbRef, eventId));
-      return snapshot.exists()
-        ? ({...snapshot.data(), eventId: snapshot.id} as EventLogItem)
-        : null;
+      if (!snapshot.exists()) return null;
+      return {...snapshot.data(), eventId: snapshot.id} as EventLogItem;
     });
   }
 
@@ -100,9 +99,7 @@ export class SharedEventLogService {
     const eventLogItem = eventLogItemResult.value;
     const eventLogItemDoc = doc(this.eventLogDbRef, eventLogItem.eventId);
 
-    const addEventLogItemResult = await asyncTry<undefined>(async () => {
-      await setDoc(eventLogItemDoc, eventLogItem);
-    });
+    const addEventLogItemResult = await asyncTry(async () => setDoc(eventLogItemDoc, eventLogItem));
 
     if (!addEventLogItemResult.success) {
       logger.error(prefixError(addEventLogItemResult.error, 'Failed to log event'), {eventLogItem});
@@ -145,16 +142,12 @@ export class SharedEventLogService {
   public async updateEventLogItem(
     eventId: EventId,
     item: Partial<EventLogItem>
-  ): AsyncResult<undefined> {
-    return asyncTry<undefined>(async () => {
-      await updateDoc(doc(this.eventLogDbRef, eventId), item);
-    });
+  ): AsyncResult<void> {
+    return asyncTry(async () => await updateDoc(doc(this.eventLogDbRef, eventId), item));
   }
 
-  public async deleteEventLogItem(eventId: EventId): AsyncResult<undefined> {
-    return asyncTry<undefined>(async () => {
-      await deleteDoc(doc(this.eventLogDbRef, eventId));
-    });
+  public async deleteEventLogItem(eventId: EventId): AsyncResult<void> {
+    return asyncTry(async () => await deleteDoc(doc(this.eventLogDbRef, eventId)));
   }
 }
 

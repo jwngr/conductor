@@ -65,8 +65,8 @@ export class ServerUserFeedSubscriptionsService {
     // Add the new user feed subscription to Firestore.
     const userFeedSubscriptionId = newUserFeedSubscription.userFeedSubscriptionId;
     const userFeedSubscriptionDocRef = this.userFeedSubscriptionsDbRef.doc(userFeedSubscriptionId);
-    const saveToDbResult = await asyncTry(
-      async () => await userFeedSubscriptionDocRef.set(newUserFeedSubscription)
+    const saveToDbResult = await asyncTry(async () =>
+      userFeedSubscriptionDocRef.set(newUserFeedSubscription)
     );
     if (!saveToDbResult.success) {
       return makeErrorResult(
@@ -100,12 +100,12 @@ export class ServerUserFeedSubscriptionsService {
     update: Partial<Pick<UserFeedSubscription, 'isActive' | 'unsubscribedTime'>>
   ): AsyncResult<void> {
     const userFeedSubscriptionDocRef = this.userFeedSubscriptionsDbRef.doc(userFeedSubscriptionId);
-    const updateResult = await asyncTry(async () => {
-      await userFeedSubscriptionDocRef.update({
+    const updateResult = await asyncTry(async () =>
+      userFeedSubscriptionDocRef.update({
         ...update,
         lastUpdatedTime: FieldValue.serverTimestamp(),
-      });
-    });
+      })
+    );
 
     if (!updateResult.success) {
       return makeErrorResult(
@@ -121,7 +121,7 @@ export class ServerUserFeedSubscriptionsService {
    */
   public async delete(userFeedSubscriptionId: UserFeedSubscriptionId): AsyncResult<void> {
     const userFeedSubscriptionDocRef = this.userFeedSubscriptionsDbRef.doc(userFeedSubscriptionId);
-    const deleteResult = await asyncTry(async () => await userFeedSubscriptionDocRef.delete());
+    const deleteResult = await asyncTry(async () => userFeedSubscriptionDocRef.delete());
     if (!deleteResult.success) {
       return makeErrorResult(
         prefixError(deleteResult.error, 'Error deleting user feed subscription in Firestore')

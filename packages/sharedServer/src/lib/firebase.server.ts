@@ -17,28 +17,26 @@ export const FIREBASE_STORAGE_BUCKET = admin.storage().bucket();
 export const FIREBASE_PROJECT_ID = admin.instanceId().app.options.projectId;
 
 export function getFirestoreQuerySnapshot(query: Query): AsyncResult<QuerySnapshot> {
-  return asyncTry<QuerySnapshot>(async () => {
-    return await query.get();
-  });
+  return asyncTry(async () => query.get());
 }
 
 export function updateFirestoreDoc<T>(
   docRef: DocumentReference,
   updates: Partial<T>
 ): AsyncResult<void> {
-  return asyncTry<undefined>(async () => {
-    await docRef.update(updates);
+  return asyncTry(async () => {
+    docRef.update(updates);
   });
 }
 
 export function deleteFirestoreDocPath(docPath: string): AsyncResult<void> {
-  return asyncTry<undefined>(async () => {
+  return asyncTry(async () => {
     await firestore.doc(docPath).delete();
   });
 }
 
 export function deleteFirestoreDoc(doc: DocumentReference): AsyncResult<void> {
-  return asyncTry<undefined>(async () => {
+  return asyncTry(async () => {
     await doc.delete();
   });
 }
@@ -59,7 +57,7 @@ export async function batchDeleteFirestoreDocuments<T extends DocumentData>(
 
   // Run one batch at a time.
   for (const currentRefs of refsPerBatch) {
-    const deleteBatchResult = await asyncTry<undefined>(async () => {
+    const deleteBatchResult = await asyncTry(async () => {
       const batch = firestore.batch();
       currentRefs.forEach((ref) => batch.delete(ref));
       await batch.commit();
