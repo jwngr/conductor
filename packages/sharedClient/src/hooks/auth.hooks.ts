@@ -16,10 +16,12 @@ export function useMaybeLoggedInUser(): {
 export function useLoggedInUser(): LoggedInUser {
   const loggedInUser = useAuthStore((state) => state.loggedInUser);
   if (!loggedInUser) {
-    const errorMessage =
-      'No logged-in user exists. `useLoggedInUser` can only be called when there is a logged-in user. Either use `useMaybeLoggedInUser` or fix the bug.';
-    logger.error(errorMessage);
-    throw new Error(errorMessage);
+    const error = new Error(
+      'No logged-in user exists. `useLoggedInUser` can only be called when there is a logged-in user. Either use `useMaybeLoggedInUser` or fix the bug.'
+    );
+    logger.error(error);
+    // eslint-disable-next-line no-restricted-syntax
+    throw error;
   }
   return loggedInUser;
 }

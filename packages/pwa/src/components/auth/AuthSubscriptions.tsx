@@ -4,6 +4,7 @@ import {useNavigate} from 'react-router-dom';
 
 import {logger} from '@shared/services/logger.shared';
 
+import {prefixError} from '@shared/lib/errorUtils.shared';
 import {Urls} from '@shared/lib/urls.shared';
 
 import {isValidEmail} from '@shared/types/user.types';
@@ -22,7 +23,7 @@ const AuthServiceSubscription: React.FC = () => {
         setLoggedInUser(loggedInUser);
       },
       errorCallback: (error) => {
-        logger.error('User service `onAuthStateChanged` listener errored', {error});
+        logger.error(prefixError(error, 'User service `onAuthStateChanged` listener errored'));
       },
     });
     return () => unsubscribe();
@@ -49,7 +50,10 @@ const PasswordlessAuthSubscription: React.FC = () => {
       }
 
       // Do nothing if the user didn't provide a valid email.
-      if (!isValidEmail(email)) return;
+      if (!isValidEmail(email)) {
+        logger.log('Invalid email provided for passwordless sign-in', {email});
+        return;
+      }
 
       const authCredentialResult = await authService.signInWithEmailLink(
         email,
@@ -61,9 +65,8 @@ const PasswordlessAuthSubscription: React.FC = () => {
         // should put them in `AuthStore`?
         // TODO: More gracefully handle common Firebase auth errors.
         // See https://firebase.google.com/docs/reference/js/auth#autherrorcodes.
-        throw new Error(`Error signing in with email link: ${authCredentialResult.error.message}`, {
-          cause: authCredentialResult.error,
-        });
+        // eslint-disable-next-line no-restricted-syntax
+        throw prefixError(authCredentialResult.error, `Error signing in with email link`);
       }
 
       // Clear the email from local storage since we no longer need it.

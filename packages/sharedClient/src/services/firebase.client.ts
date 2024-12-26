@@ -6,9 +6,10 @@ import type {FirebaseConfig} from '@shared/types/firebase.types';
 function validateRequiredEnvVar(name: string): string {
   const value = import.meta.env[name];
   if (!value) {
-    const errorMessage = `${name} environment variable is not set.`;
-    logger.error(errorMessage);
-    throw new Error(errorMessage);
+    const error = new Error(`${name} environment variable is not set`);
+    logger.error(error);
+    // eslint-disable-next-line no-restricted-syntax
+    throw error;
   }
   return value;
 }

@@ -14,6 +14,7 @@ export class PocketService {
       if (error instanceof Error) {
         error.message = `Failed to parse Pocket export: ${error.message}`;
       }
+      // eslint-disable-next-line no-restricted-syntax
       throw error;
     }
   }

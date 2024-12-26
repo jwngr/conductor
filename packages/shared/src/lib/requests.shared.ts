@@ -1,84 +1,124 @@
 import {logger} from '@shared/services/logger.shared';
 
-import {asyncTry} from '@shared/lib/errorUtils.shared';
+import {asyncTry, prefixError, upgradeUnknownError} from '@shared/lib/errorUtils.shared';
 
-import type {RequestBody, RequestOptions} from '@shared/types/requests.types';
-import {HttpMethod, makeErrorResponse, makeSuccessResponse} from '@shared/types/requests.types';
-import type {AsyncResult} from '@shared/types/result.types';
+import type {AsyncResponseResult, RequestBody, RequestOptions} from '@shared/types/requests.types';
+import {
+  HttpMethod,
+  makeErrorResponseResult,
+  makeSuccessResponseResult,
+} from '@shared/types/requests.types';
 
-async function request<T extends object>(
+const DEFAULT_CONTENT_TYPE = 'application/json';
+
+function isJsonResponse(response: Response): boolean {
+  return response.headers.get('Content-Type') === 'application/json';
+}
+
+async function request<T>(
   url: string,
   method: HttpMethod,
   options: RequestOptions = {}
-): AsyncResult<T> {
+): AsyncResponseResult<T> {
   const {headers = {}, body, params = {}} = options;
 
-  const queryString = params ? '?' + new URLSearchParams(params).toString() : '';
+  const queryString =
+    Object.keys(params).length > 0 ? `?${new URLSearchParams(params).toString()}` : ``;
 
   const rawResponseResult = await asyncTry<Response>(async () => {
-    return await fetch(url + queryString, {
+    // Allow `fetch` here. We cannot use `request*` since we are inside its implementation.
+    // eslint-disable-next-line no-restricted-syntax
+    const response = await fetch(url + queryString, {
       method,
       headers: {
-        'Content-Type': headers['Content-Type'] ?? 'application/json',
+        'Content-Type': headers['Content-Type'] ?? DEFAULT_CONTENT_TYPE,
         ...headers,
       },
       body: body ? JSON.stringify(body) : undefined,
     });
+    return response;
   });
 
   if (!rawResponseResult.success) {
-    logger.error('Error fetching request', {error: rawResponseResult.error, url});
-    return makeErrorResponse(rawResponseResult.error, 500);
+    logger.error(prefixError(rawResponseResult.error, 'Error fetching request'), {url});
+    return makeErrorResponseResult(rawResponseResult.error, 500);
   }
 
   const rawResponse = rawResponseResult.value;
   const statusCode = rawResponse.status;
 
   if (!rawResponse.ok) {
-    const errorResponseText = await rawResponse.text();
-    const defaultErrorMessage = `Request failed with ${statusCode} status code`;
-    return makeErrorResponse(new Error(errorResponseText || defaultErrorMessage), statusCode);
+    const defaultErrorMessage = `Error ${statusCode} making ${method} request to ${url}`;
+
+    // Clone the response in case we need to parse it multiple times.
+    const rawResponseClone = rawResponse.clone();
+
+    // Try to parse the error response as JSON.
+    const unknownErrorJsonResult = await asyncTry(() => rawResponse.json());
+    if (unknownErrorJsonResult.success) {
+      const betterError = upgradeUnknownError(unknownErrorJsonResult.value ?? defaultErrorMessage);
+      return makeErrorResponseResult(betterError, statusCode);
+    }
+
+    // Fallback to parsing as text if JSON parsing fails.
+    const unknownErrorTextResult = await asyncTry(() => rawResponseClone.text());
+    if (unknownErrorTextResult.success) {
+      const betterError = upgradeUnknownError(unknownErrorTextResult.value ?? defaultErrorMessage);
+      return makeErrorResponseResult(betterError, statusCode);
+    }
+
+    // Fallback to a default error message if JSON and text parsing both fail.
+    const errorPrefix = `${defaultErrorMessage}: Failed to parse error response.`;
+    logger.error(new Error(errorPrefix), {
+      jsonError: unknownErrorJsonResult.error,
+      textError: unknownErrorTextResult.error,
+      url,
+    });
+
+    return makeErrorResponseResult(
+      prefixError(unknownErrorTextResult.error, errorPrefix),
+      statusCode
+    );
   }
 
-  const jsonResponseResult = await asyncTry<T>(async () => {
-    return (await rawResponse.json()) as T;
+  const parsedResponseResult = await asyncTry<T>(async () => {
+    return isJsonResponse(rawResponse) ? rawResponse.json() : rawResponse.text();
   });
 
-  if (!jsonResponseResult.success) {
-    logger.error('Error parsing JSON response', {error: jsonResponseResult.error, url});
-    return makeErrorResponse(jsonResponseResult.error, 500);
+  if (!parsedResponseResult.success) {
+    logger.error(prefixError(parsedResponseResult.error, 'Error parsing response from body'), {
+      url,
+    });
+    return makeErrorResponseResult(parsedResponseResult.error, 500);
   }
 
-  const jsonResponse = jsonResponseResult.value;
-  return makeSuccessResponse(jsonResponse, statusCode);
+  const jsonResponse = parsedResponseResult.value;
+  return makeSuccessResponseResult(jsonResponse, statusCode);
 }
 
-export async function requestGet<T extends object>(
-  url: string,
-  options?: RequestOptions
-): AsyncResult<T> {
+export async function requestGet<T>(url: string, options?: RequestOptions): AsyncResponseResult<T> {
   return request<T>(url, HttpMethod.GET, options);
 }
 
-export async function requestPost<T extends object>(
+export async function requestPost<T>(
   url: string,
   body: RequestBody,
   options?: RequestOptions
-): AsyncResult<T> {
+): AsyncResponseResult<T> {
   return request<T>(url, HttpMethod.POST, {...options, body});
 }
 
-export async function requestDelete<T extends object>(
+export async function requestDelete<T>(
   url: string,
   options?: RequestOptions
-): AsyncResult<T> {
+): AsyncResponseResult<T> {
   return request<T>(url, HttpMethod.DELETE, options);
 }
 
-export async function requestPut<T extends object>(
+export async function requestPut<T>(
   url: string,
   body: RequestBody,
   options?: RequestOptions
-): AsyncResult<T> {
+): AsyncResponseResult<T> {
   return request<T>(url, HttpMethod.PUT, {...options, body});
 }

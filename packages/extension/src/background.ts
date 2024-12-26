@@ -8,6 +8,7 @@ import {
   FEED_ITEMS_STORAGE_COLLECTION,
   IMPORT_QUEUE_DB_COLLECTION,
 } from '@shared/lib/constants.shared';
+import {prefixError} from '@shared/lib/errorUtils.shared';
 
 import {FEED_ITEM_EXTENSION_SOURCE} from '@shared/types/feedItems.types';
 import {makeUserId} from '@shared/types/user.types';
@@ -23,14 +24,14 @@ chrome.action.onClicked.addListener(async (tab) => {
   // TODO: Get the user ID from the extension's auth once it's implemented.
   const userIdResult = makeUserId('TODO');
   if (!userIdResult.success) {
-    logger.error('Error getting user ID:', {error: userIdResult.error});
+    logger.error(prefixError(userIdResult.error, 'Error getting user ID'));
     return;
   }
   const userId = userIdResult.value;
 
   const tabUrl = tab.url;
   if (!tabUrl) {
-    logger.error('No URL found for tab');
+    logger.error(new Error('No URL found for tab'));
     return;
   }
 
@@ -49,7 +50,7 @@ chrome.action.onClicked.addListener(async (tab) => {
   });
 
   if (!addFeedItemResult.success) {
-    logger.error('Error saving URL:', {error: addFeedItemResult.error, userId});
+    logger.error(prefixError(addFeedItemResult.error, 'Error saving URL'));
     return;
   }
 

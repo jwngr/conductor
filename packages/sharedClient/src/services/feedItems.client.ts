@@ -5,6 +5,7 @@ import {
   getDoc,
   onSnapshot,
   query,
+  serverTimestamp,
   setDoc,
   updateDoc,
   where,
@@ -14,15 +15,14 @@ import type {StorageReference} from 'firebase/storage';
 import {getDownloadURL, ref as storageRef} from 'firebase/storage';
 import {useEffect, useMemo, useState} from 'react';
 
-import {makeImportQueueItem} from '@shared/services/importQueue.shared';
-
 import {
   FEED_ITEMS_DB_COLLECTION,
   FEED_ITEMS_STORAGE_COLLECTION,
   IMPORT_QUEUE_DB_COLLECTION,
 } from '@shared/lib/constants.shared';
-import {asyncTry, asyncTryAllPromises} from '@shared/lib/errorUtils.shared';
+import {asyncTry, asyncTryAllPromises, prefixError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
+import {requestGet} from '@shared/lib/requests.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
 import {Views} from '@shared/lib/views.shared';
 
@@ -32,7 +32,7 @@ import {
   type FeedItemId,
   type FeedItemSource,
 } from '@shared/types/feedItems.types';
-import type {ImportQueueItemId} from '@shared/types/importQueue.types';
+import {makeImportQueueItem} from '@shared/types/importQueue.types';
 import {fromFilterOperator, type ViewType} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
@@ -240,33 +240,34 @@ export class ClientFeedItemsService {
       return makeErrorResult(new Error(`Invalid URL provided for feed item: "${url}"`));
     }
 
-    const feedItemDoc = doc(this.feedItemsDbRef);
-
-    const feedItem = SharedFeedItemHelpers.makeFeedItem({
-      feedItemId: feedItemDoc.id as FeedItemId,
+    const feedItemResult = SharedFeedItemHelpers.makeFeedItem({
       type: FeedItemType.Website,
       url: trimmedUrl,
       // TODO: Make this dynamic based on the actual content. Maybe it should be null initially
       // until we've done the import? Or should we compute this at save time?
       source,
       userId: this.userId,
+      createdTime: serverTimestamp(),
+      lastUpdatedTime: serverTimestamp(),
     });
-
-    // Generate a push ID for the feed item.
-    const importQueueItemId = doc(this.importQueueDbRef).id as ImportQueueItemId;
+    if (!feedItemResult.success) return feedItemResult;
+    const feedItem = feedItemResult.value;
 
     // Add the feed item to the import queue.
-    const importQueueItem = makeImportQueueItem({
-      importQueueItemId,
+    const makeImportQueueItemResult = makeImportQueueItem({
       feedItemId: feedItem.feedItemId,
       userId: this.userId,
       url: trimmedUrl,
+      createdTime: serverTimestamp(),
+      lastUpdatedTime: serverTimestamp(),
     });
+    if (!makeImportQueueItemResult.success) return makeImportQueueItemResult;
+    const importQueueItem = makeImportQueueItemResult.value;
 
     // TODO: Do these in a transaction.
     const addFeedItemResult = await asyncTryAllPromises([
-      setDoc(feedItemDoc, feedItem),
-      setDoc(doc(this.importQueueDbRef, importQueueItemId), importQueueItem),
+      setDoc(doc(this.feedItemsDbRef), feedItem),
+      setDoc(doc(this.importQueueDbRef, importQueueItem.importQueueItemId), importQueueItem),
     ]);
 
     const addFeedItemResultError = addFeedItemResult.success
@@ -292,19 +293,31 @@ export class ClientFeedItemsService {
   }
 
   async getFeedItemMarkdown(feedItemId: FeedItemId): AsyncResult<string> {
-    // TODO: Clean up error handling here.
-    return asyncTry<string>(async () => {
-      const fileRef = storageRef(
-        this.feedItemsStorageRef,
-        `${this.userId}/${feedItemId}/llmContext.md`
+    const fileRef = storageRef(
+      this.feedItemsStorageRef,
+      `${this.userId}/${feedItemId}/llmContext.md`
+    );
+
+    const downloadUrlResult = await asyncTry<string>(async () => await getDownloadURL(fileRef));
+    if (!downloadUrlResult.success) {
+      return makeErrorResult(
+        prefixError(
+          downloadUrlResult.error,
+          `Error fetching download URL for feed item "${feedItemId}"`
+        )
       );
-      const downloadUrl = await getDownloadURL(fileRef);
-      // TODO: Use shared `request` helper instead of `fetch`.
-      const response = await fetch(downloadUrl);
-      if (!response.ok) {
-        throw new Error(`Response status ${response.status}: ${response.statusText}`);
-      }
-      return await response.text();
+    }
+
+    const downloadUrl = downloadUrlResult.value;
+    const responseResult = await requestGet<string>(downloadUrl, {
+      headers: {'Content-Type': 'text/markdown'},
     });
+    if (!responseResult.success) {
+      return makeErrorResult(
+        prefixError(responseResult.error, `Error fetching markdown for feed item "${feedItemId}"`)
+      );
+    }
+
+    return makeSuccessResult(responseResult.value);
   }
 }
