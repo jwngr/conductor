@@ -15,7 +15,7 @@ export class ServerFirecrawlService {
    * 2. Outgoing links referenced by the content (stored in Firestore).
    */
   public async fetch(url: string): AsyncResult<ParsedFirecrawlData> {
-    const rawFirecrawlResult = await asyncTry<RawFirecrawlResponse>(async () => {
+    const rawFirecrawlResult = await asyncTry(async () => {
       const firecrawlScrapeUrlResult = await this.firecrawlApp.scrapeUrl(url, {
         formats: ['markdown', 'links'],
         waitFor: 1000,

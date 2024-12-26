@@ -20,7 +20,7 @@ export class ServerFeedSourcesService {
    */
   public async fetchById(feedSourceId: FeedSourceId): AsyncResult<FeedSource | null> {
     const feedSourceDocRef = this.feedSourcesDbRef.doc(feedSourceId);
-    const feedSourceDocSnap = await asyncTry(async () => await feedSourceDocRef.get());
+    const feedSourceDocSnap = await asyncTry(async () => feedSourceDocRef.get());
     if (!feedSourceDocSnap.success) {
       return makeErrorResult(
         prefixError(feedSourceDocSnap.error, 'Error fetching feed source by ID in Firestore')
@@ -40,9 +40,7 @@ export class ServerFeedSourcesService {
    */
   public async fetchByUrl(feedUrl: string): AsyncResult<FeedSource | null> {
     const feedSourceDocsQuery = this.feedSourcesDbRef.where('url', '==', feedUrl);
-    const feedSourceDocsQuerySnapshotResult = await asyncTry(
-      async () => await feedSourceDocsQuery.get()
-    );
+    const feedSourceDocsQuerySnapshotResult = await asyncTry(async () => feedSourceDocsQuery.get());
     if (!feedSourceDocsQuerySnapshotResult.success) {
       return makeErrorResult(
         prefixError(
@@ -79,7 +77,7 @@ export class ServerFeedSourcesService {
     const newFeedSource = makeFeedSourceResult.value;
 
     const newFeedSourceDocRef = this.feedSourcesDbRef.doc(newFeedSource.feedSourceId);
-    const saveToDbResult = await asyncTry(async () => await newFeedSourceDocRef.set(newFeedSource));
+    const saveToDbResult = await asyncTry(async () => newFeedSourceDocRef.set(newFeedSource));
     if (!saveToDbResult.success) {
       return makeErrorResult(
         prefixError(saveToDbResult.error, 'Error adding feed source to Firestore')
@@ -121,12 +119,12 @@ export class ServerFeedSourcesService {
     update: Partial<Pick<FeedSource, 'title'>>
   ): AsyncResult<void> {
     const feedSourceDocRef = this.feedSourcesDbRef.doc(feedSourceId);
-    const updateResult = await asyncTry(async () => {
-      await feedSourceDocRef.update({
+    const updateResult = await asyncTry(async () =>
+      feedSourceDocRef.update({
         ...update,
         lastUpdatedTime: FieldValue.serverTimestamp(),
-      });
-    });
+      })
+    );
 
     if (!updateResult.success) {
       return makeErrorResult(prefixError(updateResult.error, 'Error updating feed in Firestore'));
@@ -140,7 +138,7 @@ export class ServerFeedSourcesService {
    */
   public async delete(feedSourceId: FeedSourceId): AsyncResult<void> {
     const feedSourceDocRef = this.feedSourcesDbRef.doc(feedSourceId);
-    const deleteResult = await asyncTry(async () => await feedSourceDocRef.delete());
+    const deleteResult = await asyncTry(async () => feedSourceDocRef.delete());
     if (!deleteResult.success) {
       return makeErrorResult(
         prefixError(deleteResult.error, 'Error deleting feed source in Firestore')
