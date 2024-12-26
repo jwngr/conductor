@@ -1,5 +1,3 @@
-import {serverTimestamp} from 'firebase/firestore';
-
 import {makeId} from '@shared/lib/utils.shared';
 
 import type {Result} from '@shared/types/result.types';
@@ -43,19 +41,17 @@ export function makeFeedSourceId(maybeFeedSourceId: string = makeId()): Result<F
 /**
  * Creates a {@link FeedSource} object.
  */
-export function makeFeedSource(
-  args: Omit<FeedSource, 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
-): Result<FeedSource> {
+export function makeFeedSource(args: Omit<FeedSource, 'feedSourceId'>): Result<FeedSource> {
   const feedSourceIdResult = makeFeedSourceId();
   if (!feedSourceIdResult.success) return feedSourceIdResult;
   const feedSourceId = feedSourceIdResult.value;
 
   const feedSource: FeedSource = {
     feedSourceId,
-    createdTime: serverTimestamp(),
-    lastUpdatedTime: serverTimestamp(),
     url: args.url,
     title: args.title,
+    createdTime: args.createdTime,
+    lastUpdatedTime: args.lastUpdatedTime,
   };
 
   return makeSuccessResult(feedSource);

@@ -72,6 +72,8 @@ export class ServerFeedSourcesService {
     const makeFeedSourceResult = makeFeedSource({
       url: feedDetails.url,
       title: feedDetails.title,
+      createdTime: FieldValue.serverTimestamp(),
+      lastUpdatedTime: FieldValue.serverTimestamp(),
     });
     if (!makeFeedSourceResult.success) return makeFeedSourceResult;
     const newFeedSource = makeFeedSourceResult.value;
