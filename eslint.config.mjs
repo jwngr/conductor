@@ -116,6 +116,8 @@ export default tseslint.config(
     languageOptions: SHARED_LANGUAGE_OPTIONS,
     rules: makeSharedRules({
       disallowFirebaseAdminImports: true,
+      // TODO: This should really be turned - we shouldn't assume the client library is available.
+      // disallowFirebaseClientImports: true,
       disallowSharedClientImports: true,
       disallowSharedServerImports: true,
     }),

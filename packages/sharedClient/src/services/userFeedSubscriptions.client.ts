@@ -50,19 +50,18 @@ export class ClientUserFeedSubscriptionsService {
   }
 
   /**
-   * Subscribes to a feed. If the feed does not already exist in the feeds collection, it will be
-   * created.
+   * Subscribes the user to the URL, creating a new feed source if necessary.
+   *
+   * This is done via Firebase Functions since managing feed sources is a privileged operation.
    */
-  public async subscribeToFeedUrl(url: string): AsyncResult<UserFeedSubscriptionId> {
+  public async subscribeToUrl(url: string): AsyncResult<UserFeedSubscriptionId> {
     const callSubscribeUserToFeed: CallSubscribeUserToFeedFn = httpsCallable(
       this.functions,
       'subscribeUserToFeedOnCall'
     );
 
-    // Hit Firebase Functions endpoint to subscribe user to feed.
-    const subscribeResponseResult = await asyncTry(
-      async () => await callSubscribeUserToFeed({url})
-    );
+    // Hit Firebase Functions endpoint to subscribe user to feed source.
+    const subscribeResponseResult = await asyncTry(async () => callSubscribeUserToFeed({url}));
     if (!subscribeResponseResult.success) return subscribeResponseResult;
     const subscribeResponse = subscribeResponseResult.value;
 

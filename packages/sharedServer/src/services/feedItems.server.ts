@@ -12,8 +12,8 @@ import type {UserId} from '@shared/types/user.types';
 
 import {
   batchDeleteFirestoreDocuments,
+  FIREBASE_STORAGE_BUCKET,
   getFirestoreQuerySnapshot,
-  storageBucket,
   updateFirestoreDoc,
 } from '@sharedServer/lib/firebase.server';
 
@@ -85,7 +85,7 @@ export class ServerFeedItemsService {
   }): AsyncResult<void> {
     const {feedItemId, rawHtml, userId} = args;
     return await asyncTry(async () => {
-      const rawHtmlFile = storageBucket.file(
+      const rawHtmlFile = FIREBASE_STORAGE_BUCKET.file(
         this.getStoragePathForFeedItem(feedItemId, userId) + 'raw.html'
       );
       await rawHtmlFile.save(rawHtml, {contentType: 'text/html'});
@@ -106,7 +106,7 @@ export class ServerFeedItemsService {
     }
 
     return await asyncTry(async () => {
-      const llmContextFile = storageBucket.file(
+      const llmContextFile = FIREBASE_STORAGE_BUCKET.file(
         this.getStoragePathForFeedItem(feedItemId, userId) + 'llmContext.md'
       );
       await llmContextFile.save(markdown, {contentType: 'text/markdown'});
@@ -135,7 +135,7 @@ export class ServerFeedItemsService {
    */
   public async deleteStorageFilesForUser(userId: UserId): AsyncResult<void> {
     return await asyncTry(async () =>
-      storageBucket.deleteFiles({
+      FIREBASE_STORAGE_BUCKET.deleteFiles({
         prefix: this.getStoragePathForUser(userId),
       })
     );

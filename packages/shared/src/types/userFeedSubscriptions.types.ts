@@ -1,8 +1,6 @@
-import {serverTimestamp} from 'firebase/firestore';
-
 import {makeId} from '@shared/lib/utils.shared';
 
-import type {Feed, FeedId} from '@shared/types/feeds.types';
+import type {FeedSource, FeedSourceId} from '@shared/types/feedSources.types';
 import type {Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import type {UserId} from '@shared/types/user.types';
@@ -15,9 +13,9 @@ import type {BaseStoreItem, Timestamp} from '@shared/types/utils.types';
 export type UserFeedSubscriptionId = string & {readonly __brand: 'UserFeedSubscriptionIdBrand'};
 
 /**
- * An individual user's subscription to a feed.
+ * An individual user's subscription to a feed source.
  *
- * A single {@link Feed} can have multiple {@link UserFeedSubscription}s, one for each
+ * A single {@link FeedSource} can have multiple {@link UserFeedSubscription}s, one for each
  * {@link User} subscribed to it.
  *
  * These are not deleted when a user unsubscribes from a feed. Instead, they are marked as
@@ -25,7 +23,7 @@ export type UserFeedSubscriptionId = string & {readonly __brand: 'UserFeedSubscr
  */
 export interface UserFeedSubscription extends BaseStoreItem {
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-  readonly feedId: FeedId;
+  readonly feedSourceId: FeedSourceId;
   readonly userId: UserId;
   readonly url: string;
   readonly title: string;
@@ -61,10 +59,12 @@ export function makeUserFeedSubscriptionId(
  * Creates a {@link UserFeedSubscription} object.
  */
 export function makeUserFeedSubscription(args: {
-  readonly feed: Feed;
+  readonly feedSource: FeedSource;
   readonly userId: UserId;
+  readonly createdTime: Timestamp;
+  readonly lastUpdatedTime: Timestamp;
 }): Result<UserFeedSubscription> {
-  const {feed, userId} = args;
+  const {feedSource, userId, createdTime, lastUpdatedTime} = args;
   const userFeedSubscriptionIdResult = makeUserFeedSubscriptionId();
   if (!userFeedSubscriptionIdResult.success) return userFeedSubscriptionIdResult;
   const userFeedSubscriptionId = userFeedSubscriptionIdResult.value;
@@ -72,12 +72,12 @@ export function makeUserFeedSubscription(args: {
   const userFeedSubscription: UserFeedSubscription = {
     userFeedSubscriptionId,
     userId,
-    feedId: feed.feedId,
-    url: feed.url,
-    title: feed.title,
+    feedSourceId: feedSource.feedSourceId,
+    url: feedSource.url,
+    title: feedSource.title,
     isActive: true,
-    createdTime: serverTimestamp(),
-    lastUpdatedTime: serverTimestamp(),
+    createdTime,
+    lastUpdatedTime,
   };
 
   return makeSuccessResult(userFeedSubscription);

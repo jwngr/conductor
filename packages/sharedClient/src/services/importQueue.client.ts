@@ -1,4 +1,4 @@
-import type {CollectionReference, DocumentReference} from 'firebase/firestore';
+import type {CollectionReference} from 'firebase/firestore';
 import {addDoc, collection, doc, getDoc} from 'firebase/firestore';
 
 import {asyncTry} from '@shared/lib/errorUtils.shared';
@@ -23,7 +23,7 @@ export class ClientImportQueueService {
   }
 
   async read(importQueueItemId: ImportQueueItemId): AsyncResult<ImportQueueItem | null> {
-    return asyncTry(async () => {
+    return await asyncTry(async () => {
       const docRef = doc(this.importQueueDbRef, importQueueItemId);
       const docSnap = await getDoc(docRef);
       if (!docSnap.exists()) return null;

@@ -3,7 +3,7 @@ import {FieldValue} from 'firebase-admin/firestore';
 
 import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
 
-import type {Feed} from '@shared/types/feeds.types';
+import type {FeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import type {UserId} from '@shared/types/user.types';
@@ -46,14 +46,19 @@ export class ServerUserFeedSubscriptionsService {
   /**
    * Adds a new user feed subscription document to Firestore.
    */
-  public async subscribeUserToFeed(args: {
-    feed: Feed;
+  public async add(args: {
+    feedSource: FeedSource;
     userId: UserId;
   }): AsyncResult<UserFeedSubscription> {
-    const {feed, userId} = args;
+    const {feedSource, userId} = args;
 
-    // Make a new user feed subscription object.
-    const userFeedSubscriptionResult = makeUserFeedSubscription({feed, userId});
+    // Make a new user feed subscription object locally.
+    const userFeedSubscriptionResult = makeUserFeedSubscription({
+      feedSource,
+      userId,
+      createdTime: FieldValue.serverTimestamp(),
+      lastUpdatedTime: FieldValue.serverTimestamp(),
+    });
     if (!userFeedSubscriptionResult.success) return userFeedSubscriptionResult;
     const newUserFeedSubscription = userFeedSubscriptionResult.value;
 
@@ -73,7 +78,7 @@ export class ServerUserFeedSubscriptionsService {
   }
 
   /**
-   * Deactivates a user's subscription to an individual feed.
+   * Deactivates a user's subscription to an individual feed source.
    */
   public async unsubscribeUserFromFeed(
     userFeedSubscriptionId: UserFeedSubscriptionId

@@ -3,6 +3,7 @@ import {useNavigate} from 'react-router-dom';
 
 import {logger} from '@shared/services/logger.shared';
 
+import {prefixError} from '@shared/lib/errorUtils.shared';
 import {Urls} from '@shared/lib/urls.shared';
 
 import {authService} from '@sharedClient/services/auth.client';
@@ -18,7 +19,7 @@ export const SignOutRedirect: React.FC = () => {
       const signOutResult = await authService.signOut();
       if (!signOutResult.success) {
         // TODO: Filter out error message that are expected user error.
-        logger.error('Failed to sign out user', {error: signOutResult.error});
+        logger.error(prefixError(signOutResult.error, 'Failed to sign out user'));
         // TODO: Surface error to user.
         return;
       }

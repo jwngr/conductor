@@ -1,4 +1,4 @@
-import type {CollectionReference} from 'firebase/firestore';
+import type {CollectionReference, FieldValue} from 'firebase/firestore';
 import {
   deleteDoc,
   doc,
@@ -7,7 +7,6 @@ import {
   onSnapshot,
   orderBy,
   query,
-  serverTimestamp,
   setDoc,
   updateDoc,
   where,
@@ -15,7 +14,7 @@ import {
 
 import {logger} from '@shared/services/logger.shared';
 
-import {asyncTry} from '@shared/lib/errorUtils.shared';
+import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
 
 import type {
   EventId,
@@ -41,7 +40,7 @@ export class SharedEventLogService {
   }
 
   public async fetchEventLogItem(eventId: EventId): AsyncResult<EventLogItem | null> {
-    return asyncTry(async () => {
+    return await asyncTry(async () => {
       const snapshot = await getDoc(doc(this.eventLogDbRef, eventId));
       if (!snapshot.exists()) return null;
       return {...snapshot.data(), eventId: snapshot.id} as EventLogItem;
@@ -103,10 +102,7 @@ export class SharedEventLogService {
     const addEventLogItemResult = await asyncTry(async () => setDoc(eventLogItemDoc, eventLogItem));
 
     if (!addEventLogItemResult.success) {
-      logger.error(`Failed to log event: ${addEventLogItemResult.error.message}`, {
-        eventLogItem,
-        error: addEventLogItemResult.error,
-      });
+      logger.error(prefixError(addEventLogItemResult.error, 'Failed to log event'), {eventLogItem});
       return addEventLogItemResult;
     }
 
@@ -116,15 +112,30 @@ export class SharedEventLogService {
   public async logFeedItemActionEvent(args: {
     readonly feedItemId: FeedItemId;
     readonly feedItemActionType: FeedItemActionType;
+    readonly createdTime: FieldValue;
+    readonly lastUpdatedTime: FieldValue;
   }): AsyncResult<EventId | null> {
-    const eventLogItemResult = makeFeedItemActionEventLogItem({...args, userId: this.userId});
+    const eventLogItemResult = makeFeedItemActionEventLogItem({
+      userId: this.userId,
+      feedItemId: args.feedItemId,
+      feedItemActionType: args.feedItemActionType,
+      createdTime: args.createdTime,
+      lastUpdatedTime: args.lastUpdatedTime,
+    });
     return this.logEvent(eventLogItemResult);
   }
 
   public async logUserFeedSubscriptionEvent(args: {
     readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+    readonly createdTime: FieldValue;
+    readonly lastUpdatedTime: FieldValue;
   }): AsyncResult<EventId | null> {
-    const eventLogItemResult = makeUserFeedSubscriptionEventLogItem({...args, userId: this.userId});
+    const eventLogItemResult = makeUserFeedSubscriptionEventLogItem({
+      userId: this.userId,
+      userFeedSubscriptionId: args.userFeedSubscriptionId,
+      createdTime: args.createdTime,
+      lastUpdatedTime: args.lastUpdatedTime,
+    });
     return this.logEvent(eventLogItemResult);
   }
 
@@ -132,11 +143,11 @@ export class SharedEventLogService {
     eventId: EventId,
     item: Partial<EventLogItem>
   ): AsyncResult<void> {
-    return asyncTry(async () => updateDoc(doc(this.eventLogDbRef, eventId), item));
+    return await asyncTry(async () => updateDoc(doc(this.eventLogDbRef, eventId), item));
   }
 
   public async deleteEventLogItem(eventId: EventId): AsyncResult<void> {
-    return asyncTry(async () => deleteDoc(doc(this.eventLogDbRef, eventId)));
+    return await asyncTry(async () => deleteDoc(doc(this.eventLogDbRef, eventId)));
   }
 }
 
@@ -144,10 +155,7 @@ export function makeEventLogItem<T extends EventLogItem>(
   eventLogItemWithoutId: Omit<T, 'eventId'>
 ): Result<T> {
   const eventIdResult = makeEventId();
-  if (!eventIdResult.success) {
-    return eventIdResult;
-  }
-
+  if (!eventIdResult.success) return eventIdResult;
   return makeSuccessResult({...eventLogItemWithoutId, eventId: eventIdResult.value} as T);
 }
 
@@ -155,29 +163,35 @@ export function makeFeedItemActionEventLogItem(args: {
   readonly userId: UserId;
   readonly feedItemId: FeedItemId;
   readonly feedItemActionType: FeedItemActionType;
+  // TODO: These need to be passed in because server and client have different timestamps. Perhaps
+  // I should just have separate services for server and client.
+  readonly createdTime: FieldValue;
+  readonly lastUpdatedTime: FieldValue;
 }): Result<FeedItemActionEventLogItem> {
-  const {userId, feedItemId, feedItemActionType} = args;
+  const {userId, feedItemId, feedItemActionType, createdTime, lastUpdatedTime} = args;
 
   return makeEventLogItem<FeedItemActionEventLogItem>({
     userId,
     eventType: EventType.FeedItemAction,
     data: {feedItemId, feedItemActionType},
-    createdTime: serverTimestamp(),
-    lastUpdatedTime: serverTimestamp(),
+    createdTime,
+    lastUpdatedTime,
   });
 }
 
 export function makeUserFeedSubscriptionEventLogItem(args: {
   readonly userId: UserId;
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+  readonly createdTime: FieldValue;
+  readonly lastUpdatedTime: FieldValue;
 }): Result<UserFeedSubscriptionEventLogItem> {
-  const {userId, userFeedSubscriptionId} = args;
+  const {userId, userFeedSubscriptionId, createdTime, lastUpdatedTime} = args;
 
   return makeEventLogItem<UserFeedSubscriptionEventLogItem>({
     eventType: EventType.UserFeedSubscription,
     userId,
     data: {userFeedSubscriptionId},
-    createdTime: serverTimestamp(),
-    lastUpdatedTime: serverTimestamp(),
+    createdTime,
+    lastUpdatedTime,
   });
 }

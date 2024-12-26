@@ -1,26 +1,15 @@
-import {serverTimestamp} from 'firebase/firestore';
-
 import {
   FeedItemActionType,
+  makeFeedItemId,
   TriageStatus,
   type FeedItem,
   type FeedItemAction,
-  type FeedItemId,
-  type FeedItemSource,
-  type FeedItemType,
 } from '@shared/types/feedItems.types';
 import {IconName} from '@shared/types/icons.types';
+import type {Result} from '@shared/types/result.types';
+import {makeSuccessResult} from '@shared/types/result.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
-import type {UserId} from '@shared/types/user.types';
-
-interface MakeFeedItemArgs {
-  readonly feedItemId: FeedItemId;
-  readonly type: FeedItemType;
-  readonly url: string;
-  readonly source: FeedItemSource;
-  readonly userId: UserId;
-}
 
 type MaybeFeedItem = FeedItem | undefined | null;
 
@@ -49,13 +38,19 @@ export class SharedFeedItemHelpers {
     return feedItem?.tagIds[SystemTagId.Unread] === true;
   }
 
-  public static makeFeedItem({feedItemId, type, url, source, userId}: MakeFeedItemArgs): FeedItem {
-    return {
+  public static makeFeedItem(
+    args: Pick<FeedItem, 'type' | 'userId' | 'url' | 'source' | 'createdTime' | 'lastUpdatedTime'>
+  ): Result<FeedItem> {
+    const feedItemIdResult = makeFeedItemId();
+    if (!feedItemIdResult.success) return feedItemIdResult;
+    const feedItemId = feedItemIdResult.value;
+
+    return makeSuccessResult({
       feedItemId,
-      userId,
-      url,
-      type,
-      source,
+      userId: args.userId,
+      url: args.url,
+      type: args.type,
+      source: args.source,
       title: '',
       description: '',
       outgoingLinks: [],
@@ -64,9 +59,9 @@ export class SharedFeedItemHelpers {
         [SystemTagId.Unread]: true,
         [SystemTagId.Importing]: true,
       },
-      createdTime: serverTimestamp(),
-      lastUpdatedTime: serverTimestamp(),
-    };
+      createdTime: args.createdTime,
+      lastUpdatedTime: args.lastUpdatedTime,
+    });
   }
 
   public static getMarkDoneFeedItemActionInfo(feedItem: FeedItem): FeedItemAction {

@@ -39,7 +39,7 @@ async function request<T>(
   );
 
   if (!rawResponseResult.success) {
-    logger.error('Error fetching request', {error: rawResponseResult.error, url});
+    logger.error(prefixError(rawResponseResult.error, 'Error fetching request'), {url});
     return makeErrorResponseResult(rawResponseResult.error, 500);
   }
 
@@ -53,7 +53,7 @@ async function request<T>(
     const rawResponseClone = rawResponse.clone();
 
     // Try to parse the error response as JSON.
-    const unknownErrorJsonResult = await asyncTry(() => rawResponseClone.json());
+    const unknownErrorJsonResult = await asyncTry(() => rawResponse.json());
     if (unknownErrorJsonResult.success) {
       const betterError = upgradeUnknownError(unknownErrorJsonResult.value ?? defaultErrorMessage);
       return makeErrorResponseResult(betterError, statusCode);
@@ -68,7 +68,7 @@ async function request<T>(
 
     // Fallback to a default error message if JSON and text parsing both fail.
     const errorPrefix = `${defaultErrorMessage}: Failed to parse error response.`;
-    logger.error(errorPrefix, {
+    logger.error(new Error(errorPrefix), {
       jsonError: unknownErrorJsonResult.error,
       textError: unknownErrorTextResult.error,
       url,
@@ -80,13 +80,14 @@ async function request<T>(
     );
   }
 
-  const parsedResponseResult = await asyncTry(
-    async () =>
-      (isJsonResponse(rawResponse) ? rawResponse.json() : rawResponse.text()) as Promise<T>
+  const parsedResponseResult = await asyncTry(async () =>
+    isJsonResponse(rawResponse) ? rawResponse.json() : rawResponse.text()
   );
 
   if (!parsedResponseResult.success) {
-    logger.error('Error parsing response from body', {error: parsedResponseResult.error, url});
+    logger.error(prefixError(parsedResponseResult.error, 'Error parsing response from body'), {
+      url,
+    });
     return makeErrorResponseResult(parsedResponseResult.error, 500);
   }
 

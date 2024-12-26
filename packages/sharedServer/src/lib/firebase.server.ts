@@ -12,31 +12,30 @@ admin.initializeApp();
 
 export const firestore = admin.firestore();
 
-export const storageBucket = admin.storage().bucket();
+export const FIREBASE_STORAGE_BUCKET = admin.storage().bucket();
 
-export function getFirestoreQuerySnapshot(query: Query): AsyncResult<QuerySnapshot> {
-  return asyncTry(async () => query.get() as Promise<QuerySnapshot>);
+export const FIREBASE_PROJECT_ID = admin.instanceId().app.options.projectId;
+
+export async function getFirestoreQuerySnapshot(query: Query): AsyncResult<QuerySnapshot> {
+  return await asyncTry(async () => query.get());
 }
 
-export function updateFirestoreDoc<T>(
+export async function updateFirestoreDoc<T>(
   docRef: DocumentReference,
   updates: Partial<T>
 ): AsyncResult<void> {
-  return asyncTry(async () => {
-    await docRef.update(updates);
-  });
+  await asyncTry(async () => docRef.update(updates));
+  return makeSuccessResult(undefined);
 }
 
-export function deleteFirestoreDocPath(docPath: string): AsyncResult<void> {
-  return asyncTry(async () => {
-    await firestore.doc(docPath).delete();
-  });
+export async function deleteFirestoreDocPath(docPath: string): AsyncResult<void> {
+  await asyncTry(async () => firestore.doc(docPath).delete());
+  return makeSuccessResult(undefined);
 }
 
-export function deleteFirestoreDoc(doc: DocumentReference): AsyncResult<void> {
-  return asyncTry(async () => {
-    doc.delete();
-  });
+export async function deleteFirestoreDoc(doc: DocumentReference): AsyncResult<void> {
+  await asyncTry(async () => doc.delete());
+  return makeSuccessResult(undefined);
 }
 
 /**
