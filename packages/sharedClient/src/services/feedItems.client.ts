@@ -171,7 +171,7 @@ export class ClientFeedItemsService {
   }
 
   async getFeedItem(feedItemId: FeedItemId): AsyncResult<FeedItem | null> {
-    return await (async () => {
+    return await asyncTry(async () => {
       const snapshot = await getDoc(doc(this.feedItemsDbRef, feedItemId));
       if (!snapshot.exists()) return null;
       return {...snapshot.data(), feedItemId: snapshot.id} as FeedItem;
