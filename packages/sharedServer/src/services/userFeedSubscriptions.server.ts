@@ -53,7 +53,12 @@ export class ServerUserFeedSubscriptionsService {
     const {feedSource, userId} = args;
 
     // Make a new user feed subscription object locally.
-    const userFeedSubscriptionResult = makeUserFeedSubscription({feedSource, userId});
+    const userFeedSubscriptionResult = makeUserFeedSubscription({
+      feedSource,
+      userId,
+      createdTime: FieldValue.serverTimestamp(),
+      lastUpdatedTime: FieldValue.serverTimestamp(),
+    });
     if (!userFeedSubscriptionResult.success) return userFeedSubscriptionResult;
     const newUserFeedSubscription = userFeedSubscriptionResult.value;
 

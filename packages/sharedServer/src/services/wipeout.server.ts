@@ -1,6 +1,6 @@
-import {logger} from 'firebase-functions';
+import {logger} from '@shared/services/logger.shared';
 
-import {asyncTryAll} from '@shared/lib/errorUtils.shared';
+import {asyncTryAll, prefixError} from '@shared/lib/errorUtils.shared';
 import {batchAsyncResults} from '@shared/lib/utils.shared';
 
 import type {AsyncResult} from '@shared/types/result.types';
@@ -40,14 +40,17 @@ export class WipeoutService {
 
     const logDetails = {userId} as const;
 
-    logger.info(`[WIPEOUT] Fetching feed subscriptions for user ${userId}...`, logDetails);
+    logger.log(`[WIPEOUT] Fetching feed subscriptions for user ${userId}...`, logDetails);
     const userFeedSubscriptionsResult =
       await this.userFeedSubscriptionsService.fetchAllForUser(userId);
     if (!userFeedSubscriptionsResult.success) {
-      logger.error(`[WIPEOUT] Failed to fetch user feed subscriptions for user to wipe out`, {
-        ...logDetails,
-        error: userFeedSubscriptionsResult.error,
-      });
+      logger.error(
+        prefixError(
+          userFeedSubscriptionsResult.error,
+          '[WIPEOUT] Failed to fetch user feed subscriptions for user to wipe out'
+        ),
+        logDetails
+      );
       wasSuccessful = false;
     }
 
@@ -58,14 +61,14 @@ export class WipeoutService {
         ({userFeedSubscriptionId}) => userFeedSubscriptionId
       );
 
-      logger.info(
+      logger.log(
         `[WIPEOUT] Unsubscribing user ${userId} from active feed subscriptions (${activeUserFeedSubscriptionIds.length})`,
         {activeUserFeedSubscriptionIds, ...logDetails}
       );
 
       const unsubscribeFromFeedSuppliers: Supplier<AsyncResult<void>>[] =
         activeUserFeedSubscriptionIds.map((userFeedSubscriptionId) => async () => {
-          logger.info(
+          logger.log(
             `[WIPEOUT] Unsubscribing user ${userId} from feed subscription ${userFeedSubscriptionId}...`,
             {userFeedSubscriptionId, ...logDetails}
           );
@@ -79,26 +82,31 @@ export class WipeoutService {
         3
       );
       if (!unsubscribeUserFromFeedsResult.success) {
-        logger.error(`[WIPEOUT] Failed to unsubscribe from feed subscriptions for user`, {
-          ...logDetails,
-          error: unsubscribeUserFromFeedsResult.error,
-          activeUserFeedSubscriptionIds,
-        });
+        logger.error(
+          prefixError(
+            unsubscribeUserFromFeedsResult.error,
+            '[WIPEOUT] Failed to unsubscribe from feed subscriptions for user'
+          ),
+          logDetails
+        );
         wasSuccessful = false;
       }
     }
 
-    logger.info('[WIPEOUT] Wiping out Cloud Storage files for user...', logDetails);
+    logger.log('[WIPEOUT] Wiping out Cloud Storage files for user...', logDetails);
     const deleteStorageFilesResult = await this.feedItemsService.deleteStorageFilesForUser(userId);
     if (!deleteStorageFilesResult.success) {
-      logger.error(`[WIPEOUT] Error wiping out Cloud Storage files for user`, {
-        ...logDetails,
-        error: deleteStorageFilesResult.error,
-      });
+      logger.error(
+        prefixError(
+          deleteStorageFilesResult.error,
+          '[WIPEOUT] Error wiping out Cloud Storage files for user'
+        ),
+        logDetails
+      );
       wasSuccessful = false;
     }
 
-    logger.info('[WIPEOUT] Wiping out Firestore data for user...', logDetails);
+    logger.log('[WIPEOUT] Wiping out Firestore data for user...', logDetails);
     const deleteFirestoreResult = await asyncTryAll([
       this.usersService.deleteUsersDocForUser(userId),
       this.feedItemsService.deleteAllForUser(userId),
@@ -109,17 +117,22 @@ export class WipeoutService {
       ? deleteFirestoreResult.value.results.find((result) => !result.success)?.error
       : deleteFirestoreResult.error;
     if (deleteFirestoreResultError) {
-      logger.error(`[WIPEOUT] Error wiping out Firestore data for user`, {
-        ...logDetails,
-        error: deleteFirestoreResultError,
-      });
+      logger.error(
+        prefixError(
+          deleteFirestoreResultError,
+          '[WIPEOUT] Error wiping out Firestore data for user'
+        ),
+        logDetails
+      );
       wasSuccessful = false;
     }
 
     if (!wasSuccessful) {
-      const errorMessage = `User not fully wiped out. See error logs for details on failure to wipe out user ${userId}`;
-      logger.error(errorMessage, logDetails);
-      return makeErrorResult(new Error(errorMessage));
+      const error = new Error(
+        `User not fully wiped out. See error logs for details on failure to wipe out user`
+      );
+      logger.error(error, logDetails);
+      return makeErrorResult(error);
     }
 
     return makeSuccessResult(undefined);

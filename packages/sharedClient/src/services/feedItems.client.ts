@@ -5,6 +5,7 @@ import {
   getDoc,
   onSnapshot,
   query,
+  serverTimestamp,
   setDoc,
   updateDoc,
   where,
@@ -32,7 +33,6 @@ import {
   type FeedItemSource,
 } from '@shared/types/feedItems.types';
 import {makeImportQueueItem} from '@shared/types/importQueue.types';
-import type {ImportQueueItemId} from '@shared/types/importQueue.types';
 import {fromFilterOperator, type ViewType} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
@@ -240,33 +240,34 @@ export class ClientFeedItemsService {
       return makeErrorResult(new Error(`Invalid URL provided for feed item: "${url}"`));
     }
 
-    const feedItemDoc = doc(this.feedItemsDbRef);
-
-    const feedItem = SharedFeedItemHelpers.makeFeedItem({
-      feedItemId: feedItemDoc.id as FeedItemId,
+    const feedItemResult = SharedFeedItemHelpers.makeFeedItem({
       type: FeedItemType.Website,
       url: trimmedUrl,
       // TODO: Make this dynamic based on the actual content. Maybe it should be null initially
       // until we've done the import? Or should we compute this at save time?
       source,
       userId: this.userId,
+      createdTime: serverTimestamp(),
+      lastUpdatedTime: serverTimestamp(),
     });
-
-    // Generate a push ID for the feed item.
-    const importQueueItemId = doc(this.importQueueDbRef).id as ImportQueueItemId;
+    if (!feedItemResult.success) return feedItemResult;
+    const feedItem = feedItemResult.value;
 
     // Add the feed item to the import queue.
-    const importQueueItem = makeImportQueueItem({
-      importQueueItemId,
+    const makeImportQueueItemResult = makeImportQueueItem({
       feedItemId: feedItem.feedItemId,
       userId: this.userId,
       url: trimmedUrl,
+      createdTime: serverTimestamp(),
+      lastUpdatedTime: serverTimestamp(),
     });
+    if (!makeImportQueueItemResult.success) return makeImportQueueItemResult;
+    const importQueueItem = makeImportQueueItemResult.value;
 
     // TODO: Do these in a transaction.
     const addFeedItemResult = await asyncTryAllPromises([
-      setDoc(feedItemDoc, feedItem),
-      setDoc(doc(this.importQueueDbRef, importQueueItemId), importQueueItem),
+      setDoc(doc(this.feedItemsDbRef), feedItem),
+      setDoc(doc(this.importQueueDbRef, importQueueItem.importQueueItemId), importQueueItem),
     ]);
 
     const addFeedItemResultError = addFeedItemResult.success

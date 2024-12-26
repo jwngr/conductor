@@ -3,6 +3,7 @@ import styled from 'styled-components';
 
 import {logger} from '@shared/services/logger.shared';
 
+import {prefixError} from '@shared/lib/errorUtils.shared';
 import {Urls} from '@shared/lib/urls.shared';
 
 import type {FeedItem} from '@shared/types/feedItems.types';
@@ -49,7 +50,7 @@ const ViewList: React.FC<{viewType: ViewType}> = ({viewType}) => {
 
   if (error) {
     // TODO: Introduce proper error screen.
-    logger.error('Error loading feed items', {error, viewType});
+    logger.error(prefixError(error, 'Error loading feed items'), {viewType});
     return <div>Error: {error.message}</div>;
   }
 

@@ -1,5 +1,3 @@
-import {serverTimestamp} from 'firebase/firestore';
-
 import {makeId} from '@shared/lib/utils.shared';
 
 import type {FeedSource, FeedSourceId} from '@shared/types/feedSources.types';
@@ -63,8 +61,10 @@ export function makeUserFeedSubscriptionId(
 export function makeUserFeedSubscription(args: {
   readonly feedSource: FeedSource;
   readonly userId: UserId;
+  readonly createdTime: Timestamp;
+  readonly lastUpdatedTime: Timestamp;
 }): Result<UserFeedSubscription> {
-  const {feedSource, userId} = args;
+  const {feedSource, userId, createdTime, lastUpdatedTime} = args;
   const userFeedSubscriptionIdResult = makeUserFeedSubscriptionId();
   if (!userFeedSubscriptionIdResult.success) return userFeedSubscriptionIdResult;
   const userFeedSubscriptionId = userFeedSubscriptionIdResult.value;
@@ -76,8 +76,8 @@ export function makeUserFeedSubscription(args: {
     url: feedSource.url,
     title: feedSource.title,
     isActive: true,
-    createdTime: serverTimestamp(),
-    lastUpdatedTime: serverTimestamp(),
+    createdTime,
+    lastUpdatedTime,
   };
 
   return makeSuccessResult(userFeedSubscription);

@@ -1,8 +1,9 @@
-import {deleteField} from 'firebase/firestore';
+import {deleteField, serverTimestamp} from 'firebase/firestore';
 import React from 'react';
 
 import {logger} from '@shared/services/logger.shared';
 
+import {prefixError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 
 import type {FeedItem} from '@shared/types/feedItems.types';
@@ -54,12 +55,17 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
 
     if (result.success) {
       showToast({message: toastText});
-      void eventLogService.logFeedItemActionEvent({feedItemId, feedItemActionType});
+      void eventLogService.logFeedItemActionEvent({
+        feedItemId,
+        feedItemActionType,
+        createdTime: serverTimestamp(),
+        lastUpdatedTime: serverTimestamp(),
+      });
       return;
     }
 
     showErrorToast({message: `${errorMessage}: ${result.error.message}`});
-    logger.error(errorMessage, {error: result.error, feedItemId: feedItem.feedItemId});
+    logger.error(prefixError(result.error, errorMessage), {feedItemId: feedItem.feedItemId});
   };
 
   return (

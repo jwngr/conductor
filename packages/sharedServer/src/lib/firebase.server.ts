@@ -12,7 +12,9 @@ admin.initializeApp();
 
 export const firestore = admin.firestore();
 
-export const storageBucket = admin.storage().bucket();
+export const FIREBASE_STORAGE_BUCKET = admin.storage().bucket();
+
+export const FIREBASE_PROJECT_ID = admin.instanceId().app.options.projectId;
 
 export function getFirestoreQuerySnapshot(query: Query): AsyncResult<QuerySnapshot> {
   return asyncTry<QuerySnapshot>(async () => {

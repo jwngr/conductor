@@ -13,9 +13,16 @@ const SUPERFEEDR_BASE_URL = 'https://push.superfeedr.com/';
 export class SuperfeedrService {
   private readonly superfeedrUser: string;
   private readonly superfeedrApiKey: string;
-  constructor(args: {readonly superfeedrUser: string; readonly superfeedrApiKey: string}) {
+  private readonly webhookBaseUrl: string;
+
+  constructor(args: {
+    readonly superfeedrUser: string;
+    readonly superfeedrApiKey: string;
+    readonly webhookBaseUrl: string;
+  }) {
     this.superfeedrUser = args.superfeedrUser;
     this.superfeedrApiKey = args.superfeedrApiKey;
+    this.webhookBaseUrl = args.webhookBaseUrl;
   }
 
   private getSuperfeedrAuthHeader(): string {
@@ -24,26 +31,27 @@ export class SuperfeedrService {
 
   private getSuperfeedrWebhookUrl(): string {
     // TODO: FIX ME.
-    return `https://${process.env.FIREBASE_PROJECT_ID}.firebaseapp.com/api/superfeedr-webhook`;
+    return `${this.webhookBaseUrl}/api/superfeedr-webhook`;
   }
 
   public async subscribeToUrl(
     feedUrl: string
     // TODO Confirm what the return type actually is.
   ): AsyncResult<string> {
-    return await requestPost<string>(SUPERFEEDR_BASE_URL, {
-      headers: {
-        Authorization: this.getSuperfeedrAuthHeader(),
-        // TODO: Maybe not needed?
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
+    return await requestPost<string>(
+      SUPERFEEDR_BASE_URL,
+      {
         'hub.mode': 'subscribe',
         'hub.topic': feedUrl,
         'hub.callback': this.getSuperfeedrWebhookUrl(),
         format: 'json',
-      }),
-    });
+      },
+      {
+        headers: {
+          Authorization: this.getSuperfeedrAuthHeader(),
+        },
+      }
+    );
   }
 
   public async unsubscribeFromFeed(feedUrl: string): AsyncResult<void> {

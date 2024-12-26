@@ -1,12 +1,10 @@
-import {serverTimestamp} from 'firebase/firestore';
-
 import {makeId} from '@shared/lib/utils.shared';
 
 import type {FeedItemId} from '@shared/types/feedItems.types';
 import type {Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import type {UserId} from '@shared/types/user.types';
-import type {BaseStoreItem} from '@shared/types/utils.types';
+import type {BaseStoreItem, Timestamp} from '@shared/types/utils.types';
 
 /**
  * Strongly-typed type for an {@link ImportQueueItem}'s unique identifier. Prefer this over plain
@@ -67,20 +65,25 @@ export interface ImportQueueItem extends BaseStoreItem {
 }
 
 export function makeImportQueueItem(args: {
-  readonly importQueueItemId: ImportQueueItemId;
   readonly feedItemId: FeedItemId;
   readonly userId: UserId;
   readonly url: string;
-}): ImportQueueItem {
-  const {importQueueItemId, feedItemId, userId, url} = args;
+  readonly createdTime: Timestamp;
+  readonly lastUpdatedTime: Timestamp;
+}): Result<ImportQueueItem> {
+  const {feedItemId, userId, url, createdTime, lastUpdatedTime} = args;
 
-  return {
+  const makeImportQueueItemIdResult = makeImportQueueItemId();
+  if (!makeImportQueueItemIdResult.success) return makeImportQueueItemIdResult;
+  const importQueueItemId = makeImportQueueItemIdResult.value;
+
+  return makeSuccessResult({
     importQueueItemId,
     feedItemId,
     userId,
     url,
     status: ImportQueueItemStatus.New,
-    createdTime: serverTimestamp(),
-    lastUpdatedTime: serverTimestamp(),
-  };
+    createdTime,
+    lastUpdatedTime,
+  });
 }

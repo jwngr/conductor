@@ -10,7 +10,9 @@ export function upgradeUnknownError(unknownError: unknown): Error {
 
   // Unknown error is already an `Error` object.
   if (unknownError instanceof Error) {
-    return new Error(unknownError.message || defaultErrorMessage, {cause: unknownError});
+    return new Error(unknownError.message || defaultErrorMessage, {
+      cause: unknownError.cause instanceof Error ? unknownError.cause : unknownError,
+    });
   }
 
   // Unknown error is a string.
@@ -41,7 +43,10 @@ export function upgradeUnknownError(unknownError: unknown): Error {
  * Adds a prefix to the error message for a known `Error`.
  */
 export function prefixError(error: Error, prefix: string): Error {
-  return new Error(`${prefix}: ${error.message}`, {cause: error});
+  const newError = new Error(`${prefix}: ${error.message}`, {
+    cause: error.cause instanceof Error ? error.cause : error,
+  });
+  return newError;
 }
 
 /**
