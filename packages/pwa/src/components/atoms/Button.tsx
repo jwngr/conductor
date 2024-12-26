@@ -1,3 +1,4 @@
+import {forwardRef} from 'react';
 import styled, {css} from 'styled-components';
 
 import {assertNever} from '@shared/lib/utils.shared';
@@ -9,20 +10,19 @@ export enum ButtonVariant {
   Secondary = 'SECONDARY',
 }
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  // TODO: Add a wrapper React.FC so that we can make this a styled component with $variant.
-  readonly variant: ButtonVariant;
+interface ButtonWrapperProps {
+  readonly $variant: ButtonVariant;
 }
 
-export const Button = styled.button<ButtonProps>`
+const ButtonWrapper = styled.button<ButtonWrapperProps>`
   padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
   border: 1px solid ${({theme}) => theme.colors[ThemeColor.Neutral500]};
 
-  ${({theme, variant}) => {
-    switch (variant) {
+  ${({theme, $variant}) => {
+    switch ($variant) {
       case ButtonVariant.Primary:
         return css`
           background-color: ${theme.colors[ThemeColor.Neutral900]};
@@ -34,7 +34,7 @@ export const Button = styled.button<ButtonProps>`
           color: ${theme.colors[ThemeColor.Neutral900]};
         `;
       default:
-        assertNever(variant);
+        assertNever($variant);
     }
   }}
 
@@ -47,3 +47,13 @@ export const Button = styled.button<ButtonProps>`
     opacity: 0.5;
   }
 `;
+
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  readonly variant: ButtonVariant;
+}
+
+export const Button: React.FC<ButtonProps> = forwardRef<HTMLButtonElement, ButtonProps>(
+  ({variant, ...props}, ref) => {
+    return <ButtonWrapper $variant={variant} {...props} ref={ref} />;
+  }
+);

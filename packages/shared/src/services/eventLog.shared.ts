@@ -40,7 +40,7 @@ export class SharedEventLogService {
   }
 
   public async fetchEventLogItem(eventId: EventId): AsyncResult<EventLogItem | null> {
-    return asyncTry(async () => {
+    return await asyncTry(async () => {
       const snapshot = await getDoc(doc(this.eventLogDbRef, eventId));
       if (!snapshot.exists()) return null;
       return {...snapshot.data(), eventId: snapshot.id} as EventLogItem;
@@ -143,11 +143,11 @@ export class SharedEventLogService {
     eventId: EventId,
     item: Partial<EventLogItem>
   ): AsyncResult<void> {
-    return asyncTry(async () => await updateDoc(doc(this.eventLogDbRef, eventId), item));
+    return await asyncTry(async () => updateDoc(doc(this.eventLogDbRef, eventId), item));
   }
 
   public async deleteEventLogItem(eventId: EventId): AsyncResult<void> {
-    return asyncTry(async () => await deleteDoc(doc(this.eventLogDbRef, eventId)));
+    return await asyncTry(async () => deleteDoc(doc(this.eventLogDbRef, eventId)));
   }
 }
 
@@ -155,10 +155,7 @@ export function makeEventLogItem<T extends EventLogItem>(
   eventLogItemWithoutId: Omit<T, 'eventId'>
 ): Result<T> {
   const eventIdResult = makeEventId();
-  if (!eventIdResult.success) {
-    return eventIdResult;
-  }
-
+  if (!eventIdResult.success) return eventIdResult;
   return makeSuccessResult({...eventLogItemWithoutId, eventId: eventIdResult.value} as T);
 }
 

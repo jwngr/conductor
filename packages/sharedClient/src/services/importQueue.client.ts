@@ -23,7 +23,7 @@ export class ClientImportQueueService {
   }
 
   async read(importQueueItemId: ImportQueueItemId): AsyncResult<ImportQueueItem | null> {
-    return asyncTry(async () => {
+    return await asyncTry(async () => {
       const docRef = doc(this.importQueueDbRef, importQueueItemId);
       const docSnap = await getDoc(docRef);
       if (!docSnap.exists()) return null;

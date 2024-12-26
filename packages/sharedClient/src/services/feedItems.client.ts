@@ -171,7 +171,7 @@ export class ClientFeedItemsService {
   }
 
   async getFeedItem(feedItemId: FeedItemId): AsyncResult<FeedItem | null> {
-    return asyncTry(async () => {
+    return await (async () => {
       const snapshot = await getDoc(doc(this.feedItemsDbRef, feedItemId));
       if (!snapshot.exists()) return null;
       return {...snapshot.data(), feedItemId: snapshot.id} as FeedItem;
@@ -282,11 +282,11 @@ export class ClientFeedItemsService {
   }
 
   async updateFeedItem(feedItemId: FeedItemId, item: Partial<FeedItem>): AsyncResult<void> {
-    return asyncTry(async () => updateDoc(doc(this.feedItemsDbRef, feedItemId), item));
+    return await asyncTry(async () => updateDoc(doc(this.feedItemsDbRef, feedItemId), item));
   }
 
   async deleteFeedItem(feedItemId: FeedItemId): AsyncResult<void> {
-    return asyncTry(async () => deleteDoc(doc(this.feedItemsDbRef, feedItemId)));
+    return await asyncTry(async () => deleteDoc(doc(this.feedItemsDbRef, feedItemId)));
   }
 
   async getFeedItemMarkdown(feedItemId: FeedItemId): AsyncResult<string> {
