@@ -61,11 +61,12 @@ export class ClientUserFeedSubscriptionsService {
     );
 
     // Hit Firebase Functions endpoint to subscribe user to feed source.
-    const subscribeResponseResult = await asyncTry(
-      async () => await callSubscribeUserToFeed({url})
-    );
+    const subscribeResponseResult = await asyncTry(async () => callSubscribeUserToFeed({url}));
     if (!subscribeResponseResult.success) return subscribeResponseResult;
     const subscribeResponse = subscribeResponseResult.value;
+
+    console.log('subscribeResponse', subscribeResponse);
+    console.log('userFeedSubscriptionId', subscribeResponse.data.userFeedSubscriptionId);
 
     // TODO: Parse and validate the response from the function.
 
