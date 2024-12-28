@@ -26,12 +26,12 @@ export const UserFeedSubscriptionSchema = z.object({
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
   feedSourceId: FeedSourceIdSchema,
   userId: UserIdSchema,
-  url: z.string(),
-  title: z.string(),
+  url: z.string().url(),
+  title: z.string().min(1),
   isActive: z.boolean(),
-  unsubscribedTime: z.string().datetime(),
-  createdTime: z.string().datetime(),
-  lastUpdatedTime: z.string().datetime(),
+  unsubscribedTime: z.date().nullable(),
+  createdTime: z.date(),
+  lastUpdatedTime: z.date(),
 });
 
 /**
@@ -50,7 +50,7 @@ export interface UserFeedSubscription extends BaseStoreItem {
   readonly url: string;
   readonly title: string;
   readonly isActive: boolean;
-  readonly unsubscribedTime?: Timestamp;
+  readonly unsubscribedTime?: Timestamp | undefined;
 }
 
 /**
@@ -105,7 +105,9 @@ export function parseUserFeedSubscription(
     url,
     title,
     isActive,
-    unsubscribedTime: new Date(unsubscribedTime) as unknown as Timestamp,
+    unsubscribedTime: unsubscribedTime
+      ? (new Date(unsubscribedTime) as unknown as Timestamp)
+      : undefined,
     createdTime: new Date(createdTime) as unknown as Timestamp,
     lastUpdatedTime: new Date(lastUpdatedTime) as unknown as Timestamp,
   });

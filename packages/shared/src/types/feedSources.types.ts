@@ -16,10 +16,10 @@ export const FeedSourceIdSchema = z.string().uuid();
 
 const FeedSourceSchema = z.object({
   feedSourceId: FeedSourceIdSchema,
-  url: z.string(),
-  title: z.string(),
-  createdTime: z.string().datetime(),
-  lastUpdatedTime: z.string().datetime(),
+  url: z.string().url(),
+  title: z.string().min(1),
+  createdTime: z.date(),
+  lastUpdatedTime: z.date(),
 });
 
 /**

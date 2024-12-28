@@ -67,10 +67,10 @@ export const ImportQueueItemSchema = z.object({
   importQueueItemId: ImportQueueItemIdSchema,
   userId: UserIdSchema,
   feedItemId: FeedItemIdSchema,
-  url: z.string(),
+  url: z.string().url(),
   status: z.nativeEnum(ImportQueueItemStatus),
-  createdTime: z.string().datetime(),
-  lastUpdatedTime: z.string().datetime(),
+  createdTime: z.date(),
+  lastUpdatedTime: z.date(),
 });
 
 /**

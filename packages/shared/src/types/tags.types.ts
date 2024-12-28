@@ -39,7 +39,7 @@ export function makeUserTagId(): UserTagId {
 
 const UserTagSchema = z.object({
   tagId: UserTagIdSchema,
-  name: z.string(),
+  name: z.string().min(1).max(255),
 });
 
 export function parseUserTag(maybeUserTag: unknown): Result<UserTag> {
@@ -82,16 +82,9 @@ export function parseSystemTagId(maybeSystemTagId: string): Result<SystemTagId> 
   return makeSuccessResult(parsedResult.value as SystemTagId);
 }
 
-/**
- * Creates a new random `SystemTagId`.
- */
-export function makeSystemTagId(): SystemTagId {
-  return makeUuid<SystemTagId>();
-}
-
 const SystemTagSchema = z.object({
   tagId: SystemTagIdSchema,
-  name: z.string(),
+  name: z.string().min(1).max(255),
 });
 
 export function parseSystemTag(maybeSystemTag: unknown): Result<SystemTag> {
