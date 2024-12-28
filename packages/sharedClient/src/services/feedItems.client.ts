@@ -273,7 +273,7 @@ export class ClientFeedItemsService {
 
     // TODO: Do these in a transaction.
     const addFeedItemResult = await asyncTryAllPromises([
-      setDoc(doc(this.feedItemsDbRef), feedItem),
+      setDoc(doc(this.feedItemsDbRef, feedItem.feedItemId), feedItem),
       setDoc(doc(this.importQueueDbRef, importQueueItem.importQueueItemId), importQueueItem),
     ]);
 

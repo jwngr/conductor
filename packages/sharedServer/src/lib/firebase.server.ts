@@ -1,6 +1,6 @@
 import admin from 'firebase-admin';
 import type {DocumentData, DocumentReference, Query} from 'firebase-admin/firestore';
-import {CollectionReference} from 'firebase-admin/firestore';
+import {CollectionReference, FieldValue} from 'firebase-admin/firestore';
 
 import {
   asyncTry,
@@ -102,7 +102,7 @@ export async function updateFirestoreDoc<T>(
   const updateResult = await asyncTry(async () =>
     docRef.update({
       ...updates,
-      lastUpdatedTime: admin.firestore.FieldValue.serverTimestamp(),
+      lastUpdatedTime: FieldValue.serverTimestamp(),
     })
   );
   if (!updateResult.success) {
