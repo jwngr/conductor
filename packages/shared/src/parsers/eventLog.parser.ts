@@ -25,8 +25,8 @@ import {makeSuccessResult} from '@shared/types/result.types';
 import type {Timestamp} from '@shared/types/utils.types';
 
 /**
- * Converts a plain string into a strongly-typed `EventId`. Returns an error if the string is
- * not a valid `EventId`.
+ * Parses a {@link EventId} from a plain string. Returns an `ErrorResult` if the string is not
+ * valid.
  */
 export function parseEventId(maybeEventId: string): Result<EventId> {
   const parsedResult = parseZodResult(EventIdSchema, maybeEventId);
@@ -56,6 +56,10 @@ export function parseEventLogItem(maybeEventLogItem: unknown): Result<EventLogIt
   }
 }
 
+/**
+ * Parses a {@link UserFeedSubscriptionEventLogItem} from an unknown value. Returns an `ErrorResult`
+ * if the value is not valid.
+ */
 function parseUserFeedSubscriptionEventLogItem(
   maybeEventLogItem: unknown
 ): Result<UserFeedSubscriptionEventLogItem> {
@@ -84,6 +88,10 @@ function parseUserFeedSubscriptionEventLogItem(
   });
 }
 
+/**
+ * Parses a {@link FeedItemActionEventLogItem} from an unknown value. Returns an `ErrorResult` if the
+ * value is not valid.
+ */
 function parseFeedItemActionEventLogItem(
   maybeEventLogItem: unknown
 ): Result<FeedItemActionEventLogItem> {
@@ -112,6 +120,10 @@ function parseFeedItemActionEventLogItem(
   });
 }
 
+/**
+ * Parses a {@link FeedItemActionEventLogItemData} from an unknown value. Returns an `ErrorResult`
+ * if the value is not valid.
+ */
 function parseFeedItemActionEventLogItemData(
   maybeEventLogItemData: unknown
 ): Result<FeedItemActionEventLogItemData> {
@@ -127,6 +139,10 @@ function parseFeedItemActionEventLogItemData(
   });
 }
 
+/**
+ * Parses a {@link UserFeedSubscriptionEventLogItemData} from an unknown value. Returns an
+ * `ErrorResult` if the value is not valid.
+ */
 function parseUserFeedSubscriptionEventLogItemData(
   maybeEventLogItemData: unknown
 ): Result<UserFeedSubscriptionEventLogItemData> {

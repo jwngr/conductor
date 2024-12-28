@@ -31,7 +31,7 @@ export function parseEmailAddress(maybeEmail: string): Result<EmailAddress> {
 }
 
 /**
- * Parses a generic {@link LoggedInUser} from a Firebase-specific {@link FirebaseUser}.
+ * Parses a generic {@link LoggedInUser} from a Firebase-specific {@link FirebaseUser}. Returns an
  */
 export function parseFirebaseUser(firebaseLoggedInUser: FirebaseUser): Result<LoggedInUser> {
   if (!firebaseLoggedInUser.email) {

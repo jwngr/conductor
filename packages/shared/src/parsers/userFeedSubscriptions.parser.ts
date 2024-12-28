@@ -1,13 +1,10 @@
 import {parseZodResult, prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {makeUuid} from '@shared/lib/utils.shared';
 
 import {parseFeedSourceId} from '@shared/parsers/feedSources.parser';
 import {parseUserId} from '@shared/parsers/user.parser';
 
-import type {FeedSource} from '@shared/types/feedSources.types';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
-import type {UserId} from '@shared/types/user.types';
 import {
   UserFeedSubscriptionIdSchema,
   UserFeedSubscriptionSchema,
@@ -30,13 +27,6 @@ export function parseUserFeedSubscriptionId(
     return prefixErrorResult(parsedResult, 'Invalid user feed subscription ID');
   }
   return makeSuccessResult(parsedResult.value as UserFeedSubscriptionId);
-}
-
-/**
- * Creates a new random {@link UserFeedSubscriptionId}.
- */
-export function makeUserFeedSubscriptionId(): UserFeedSubscriptionId {
-  return makeUuid<UserFeedSubscriptionId>();
 }
 
 /**
@@ -76,29 +66,4 @@ export function parseUserFeedSubscription(
     createdTime: new Date(createdTime) as unknown as Timestamp,
     lastUpdatedTime: new Date(lastUpdatedTime) as unknown as Timestamp,
   });
-}
-
-/**
- * Creates a new {@link UserFeedSubscription} object.
- */
-export function makeUserFeedSubscription(args: {
-  readonly feedSource: FeedSource;
-  readonly userId: UserId;
-  readonly createdTime: Timestamp;
-  readonly lastUpdatedTime: Timestamp;
-}): Result<UserFeedSubscription> {
-  const {feedSource, userId, createdTime, lastUpdatedTime} = args;
-
-  const userFeedSubscription: UserFeedSubscription = {
-    userFeedSubscriptionId: makeUserFeedSubscriptionId(),
-    userId,
-    feedSourceId: feedSource.feedSourceId,
-    url: feedSource.url,
-    title: feedSource.title,
-    isActive: true,
-    createdTime,
-    lastUpdatedTime,
-  };
-
-  return makeSuccessResult(userFeedSubscription);
 }

@@ -24,6 +24,10 @@ export function parseUserTagId(maybeUserTagId: string): Result<UserTagId> {
   return makeSuccessResult(parsedTagIdResult.value as UserTagId);
 }
 
+/**
+ * Parses a {@link UserTag} from an unknown value. Returns an `ErrorResult` if the value is not
+ * valid.
+ */
 export function parseUserTag(maybeUserTag: unknown): Result<UserTag> {
   const parsedTagResult = parseZodResult(UserTagSchema, maybeUserTag);
   if (!parsedTagResult.success) {
@@ -54,6 +58,10 @@ export function parseSystemTagId(maybeSystemTagId: string): Result<SystemTagId> 
   return makeSuccessResult(parsedTagIdResult.value as SystemTagId);
 }
 
+/**
+ * Parses a {@link SystemTag} from an unknown value. Returns an `ErrorResult` if the value is not
+ * valid.
+ */
 export function parseSystemTag(maybeSystemTag: unknown): Result<SystemTag> {
   const parsedTagResult = parseZodResult(SystemTagSchema, maybeSystemTag);
   if (!parsedTagResult.success) {
