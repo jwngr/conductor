@@ -1,8 +1,17 @@
+import {z} from 'zod';
+
+import {
+  parseZodResult,
+  prefixErrorResult,
+  prefixResultIfError,
+} from '@shared/lib/errorUtils.shared';
 import {makeId} from '@shared/lib/utils.shared';
 
+import {FeedItemIdSchema, parseFeedItemId} from '@shared/types/feedItems.types';
 import type {FeedItemId} from '@shared/types/feedItems.types';
 import type {Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import {makeSuccessResult} from '@shared/types/result.types';
+import {parseUserId, UserIdSchema} from '@shared/types/user.types';
 import type {UserId} from '@shared/types/user.types';
 import type {BaseStoreItem, Timestamp} from '@shared/types/utils.types';
 
@@ -12,26 +21,25 @@ import type {BaseStoreItem, Timestamp} from '@shared/types/utils.types';
  */
 export type ImportQueueItemId = string & {readonly __brand: 'ImportQueueItemIdBrand'};
 
+export const ImportQueueItemIdSchema = z.string().uuid();
+
 /**
- * Checks if a value is a valid {@link ImportQueueItemId}.
+ * Parses a {@link ImportQueueItemId} from a plain string. Returns an `ErrorResult` if the string is
+ * not valid.
  */
-export function isImportQueueItemId(
-  maybeImportQueueItemId: unknown
-): maybeImportQueueItemId is ImportQueueItemId {
-  return typeof maybeImportQueueItemId === 'string' && maybeImportQueueItemId.length > 0;
+export function parseImportQueueItemId(maybeImportQueueItemId: string): Result<ImportQueueItemId> {
+  const parsedResult = parseZodResult(ImportQueueItemIdSchema, maybeImportQueueItemId);
+  if (!parsedResult.success) {
+    return prefixErrorResult(parsedResult, 'Invalid import queue item ID');
+  }
+  return makeSuccessResult(parsedResult.value as ImportQueueItemId);
 }
 
 /**
- * Creates an {@link ImportQueueItemId} from a plain string. Returns an error if the string is not
- * valid.
+ * Creates a new random {@link ImportQueueItemId}.
  */
-export function makeImportQueueItemId(
-  maybeImportQueueItemId: string = makeId()
-): Result<ImportQueueItemId> {
-  if (!isImportQueueItemId(maybeImportQueueItemId)) {
-    return makeErrorResult(new Error(`Invalid import queue item ID: "${maybeImportQueueItemId}"`));
-  }
-  return makeSuccessResult(maybeImportQueueItemId);
+export function makeImportQueueItemId(): ImportQueueItemId {
+  return makeId() as ImportQueueItemId;
 }
 
 /**
@@ -51,6 +59,49 @@ export enum ImportQueueItemStatus {
    */
   Failed = 'FAILED',
   // Note: There is no "completed" status because items are deleted once complete.
+}
+
+export const ImportQueueItemSchema = z.object({
+  importQueueItemId: ImportQueueItemIdSchema,
+  userId: UserIdSchema,
+  feedItemId: FeedItemIdSchema,
+  url: z.string(),
+  status: z.nativeEnum(ImportQueueItemStatus),
+  createdTime: z.string().datetime(),
+  lastUpdatedTime: z.string().datetime(),
+});
+
+/**
+ * Parses a {@link FeedSource} from an unknown value. Returns an `ErrorResult` if the value is not
+ * valid.
+ */
+export function parseImportQueueItem(maybeImportQueueItem: unknown): Result<ImportQueueItem> {
+  const parsedImportQueueItemResult = parseZodResult(ImportQueueItemSchema, maybeImportQueueItem);
+  if (!parsedImportQueueItemResult.success) {
+    return prefixResultIfError(parsedImportQueueItemResult, 'Invalid import queue item');
+  }
+
+  const parsedImportQueueItemIdResult = parseImportQueueItemId(
+    parsedImportQueueItemResult.value.importQueueItemId
+  );
+  if (!parsedImportQueueItemIdResult.success) return parsedImportQueueItemIdResult;
+
+  const parsedUserIdResult = parseUserId(parsedImportQueueItemResult.value.userId);
+  if (!parsedUserIdResult.success) return parsedUserIdResult;
+
+  const parsedFeedItemIdResult = parseFeedItemId(parsedImportQueueItemResult.value.feedItemId);
+  if (!parsedFeedItemIdResult.success) return parsedFeedItemIdResult;
+
+  const {url, createdTime, lastUpdatedTime} = parsedImportQueueItemResult.value;
+  return makeSuccessResult({
+    importQueueItemId: parsedImportQueueItemIdResult.value,
+    userId: parsedUserIdResult.value,
+    feedItemId: parsedFeedItemIdResult.value,
+    url,
+    status: parsedImportQueueItemResult.value.status,
+    createdTime: new Date(createdTime) as unknown as Timestamp,
+    lastUpdatedTime: new Date(lastUpdatedTime) as unknown as Timestamp,
+  });
 }
 
 /**
@@ -73,9 +124,7 @@ export function makeImportQueueItem(args: {
 }): Result<ImportQueueItem> {
   const {feedItemId, userId, url, createdTime, lastUpdatedTime} = args;
 
-  const makeImportQueueItemIdResult = makeImportQueueItemId();
-  if (!makeImportQueueItemIdResult.success) return makeImportQueueItemIdResult;
-  const importQueueItemId = makeImportQueueItemIdResult.value;
+  const importQueueItemId = makeImportQueueItemId();
 
   return makeSuccessResult({
     importQueueItemId,

@@ -1,10 +1,14 @@
 import {useParams} from 'react-router-dom';
 
 import type {FeedItemId} from '@shared/types/feedItems.types';
-import {isFeedItemId} from '@shared/types/feedItems.types';
+import {parseFeedItemId} from '@shared/types/feedItems.types';
 import type {FeedItemScreenParams} from '@shared/types/urls.types';
 
-export const useFeedItemIdFromUrl = (): FeedItemId | undefined => {
+export const useFeedItemIdFromUrl = (): FeedItemId | null => {
   const {feedItemId} = useParams<FeedItemScreenParams>();
-  return isFeedItemId(feedItemId) ? feedItemId : undefined;
+  if (!feedItemId) return null;
+
+  const feedItemIdResult = parseFeedItemId(feedItemId);
+  if (!feedItemIdResult.success) return null;
+  return feedItemIdResult.value;
 };

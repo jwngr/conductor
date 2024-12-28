@@ -1,3 +1,5 @@
+import type {ZodSchema} from 'zod';
+
 import type {AsyncResult, ErrorResult, Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import type {Supplier} from '@shared/types/utils.types';
@@ -63,6 +65,24 @@ export function prefixErrorResult(errorResult: ErrorResult, errorPrefix: string)
 export function prefixResultIfError<T>(result: Result<T>, errorPrefix: string): Result<T> {
   if (result.success) return result;
   return makeErrorResult(prefixError(result.error, errorPrefix));
+}
+
+/**
+ * Parses a value using a Zod schema and returns a `Result` with the parsed value if successful,
+ * or an `ErrorResult` if the value is invalid.
+ */
+export function parseZodResult<T>(zodSchema: ZodSchema<T>, value: unknown): Result<T> {
+  const zodResult = zodSchema.safeParse(value);
+
+  if (!zodResult.success) {
+    return makeErrorResult(
+      new Error(`Error parsing value: ${JSON.stringify(zodResult.error.format())}`, {
+        cause: zodResult.error,
+      })
+    );
+  }
+
+  return makeSuccessResult(zodResult.data);
 }
 
 /**

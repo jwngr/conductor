@@ -12,7 +12,8 @@ import type {
 } from '@shared/types/userFeedSubscriptions.types';
 import {
   makeUserFeedSubscription,
-  makeUserFeedSubscriptionId,
+  parseUserFeedSubscription,
+  parseUserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
 
 import {
@@ -36,7 +37,7 @@ export class ServerUserFeedSubscriptionsService {
    */
   public async fetchAllForUser(userId: UserId): AsyncResult<UserFeedSubscription[]> {
     const query = this.userFeedSubscriptionsDbRef.where('userId', '==', userId);
-    const queryResult = await getFirestoreQueryData<UserFeedSubscription>(query);
+    const queryResult = await getFirestoreQueryData(query, parseUserFeedSubscription);
     return prefixResultIfError(queryResult, 'Error fetching user feed subscriptions for user');
   }
 
@@ -105,7 +106,7 @@ export class ServerUserFeedSubscriptionsService {
   public async deleteAllForUser(userId: UserId): AsyncResult<void> {
     // Fetch the IDs for all of the user's feed subscriptions.
     const query = this.userFeedSubscriptionsDbRef.where('userId', '==', userId);
-    const queryResult = await getFirestoreQueryIds(query, makeUserFeedSubscriptionId);
+    const queryResult = await getFirestoreQueryIds(query, parseUserFeedSubscriptionId);
     if (!queryResult.success) {
       return prefixErrorResult(
         queryResult,

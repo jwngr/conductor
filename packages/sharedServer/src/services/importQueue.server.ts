@@ -9,7 +9,7 @@ import {
 import {requestGet} from '@shared/lib/requests.shared';
 
 import type {FeedItemId} from '@shared/types/feedItems.types';
-import {makeImportQueueItemId} from '@shared/types/importQueue.types';
+import {parseImportQueueItemId} from '@shared/types/importQueue.types';
 import type {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue.types';
 import type {AsyncResult, Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
@@ -205,7 +205,7 @@ export class ServerImportQueueService {
   public async deleteAllForUser(userId: UserId): AsyncResult<void> {
     // Fetch the IDs for all of the user's import queue items.
     const query = this.importQueueDbRef.where('userId', '==', userId);
-    const queryResult = await getFirestoreQueryIds(query, makeImportQueueItemId);
+    const queryResult = await getFirestoreQueryIds(query, parseImportQueueItemId);
     if (!queryResult.success) {
       return prefixErrorResult(queryResult, 'Error fetching import queue items to delete for user');
     }

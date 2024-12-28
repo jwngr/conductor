@@ -41,12 +41,8 @@ export class SharedFeedItemHelpers {
   public static makeFeedItem(
     args: Pick<FeedItem, 'type' | 'userId' | 'url' | 'source' | 'createdTime' | 'lastUpdatedTime'>
   ): Result<FeedItem> {
-    const feedItemIdResult = makeFeedItemId();
-    if (!feedItemIdResult.success) return feedItemIdResult;
-    const feedItemId = feedItemIdResult.value;
-
     return makeSuccessResult({
-      feedItemId,
+      feedItemId: makeFeedItemId(),
       userId: args.userId,
       url: args.url,
       type: args.type,

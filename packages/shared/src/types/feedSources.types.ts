@@ -1,13 +1,26 @@
+import {z} from 'zod';
+
+import {parseZodResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {makeId} from '@shared/lib/utils.shared';
 
 import type {Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import type {BaseStoreItem} from '@shared/types/utils.types';
+import {makeSuccessResult} from '@shared/types/result.types';
+import type {BaseStoreItem, Timestamp} from '@shared/types/utils.types';
 
 /**
  * Strongly-typed type for a {@link FeedSource}'s unique identifier. Prefer this over plain strings.
  */
 export type FeedSourceId = string & {readonly __brand: 'FeedSourceIdBrand'};
+
+export const FeedSourceIdSchema = z.string().uuid();
+
+const FeedSourceSchema = z.object({
+  feedSourceId: FeedSourceIdSchema,
+  url: z.string(),
+  title: z.string(),
+  createdTime: z.string().datetime(),
+  lastUpdatedTime: z.string().datetime(),
+});
 
 /**
  * A generator of {@link FeedItem}s over time.
@@ -22,32 +35,30 @@ export interface FeedSource extends BaseStoreItem {
 }
 
 /**
- * Checks if a value is a valid {@link FeedSourceId}.
+ * Parses a {@link FeedSourceId} from a plain string. Returns an `ErrorResult` if the string is not
+ * valid.
  */
-export function isFeedSourceId(feedSourceId: unknown): feedSourceId is FeedSourceId {
-  return typeof feedSourceId === 'string' && feedSourceId.length > 0;
+export function parseFeedSourceId(maybeFeedSourceId: string): Result<FeedSourceId> {
+  const parsedResult = parseZodResult(FeedSourceIdSchema, maybeFeedSourceId);
+  if (!parsedResult.success) {
+    return prefixResultIfError(parsedResult, 'Invalid feed source ID');
+  }
+  return makeSuccessResult(parsedResult.value as FeedSourceId);
 }
 
 /**
- * Creates a {@link FeedSourceId} from a plain string. Returns an error if the string is not valid.
+ * Creates a new random {@link FeedSourceId}.
  */
-export function makeFeedSourceId(maybeFeedSourceId: string = makeId()): Result<FeedSourceId> {
-  if (!isFeedSourceId(maybeFeedSourceId)) {
-    return makeErrorResult(new Error(`Invalid feed source ID: "${maybeFeedSourceId}"`));
-  }
-  return makeSuccessResult(maybeFeedSourceId);
+export function makeFeedSourceId(): FeedSourceId {
+  return makeId() as FeedSourceId;
 }
 
 /**
  * Creates a {@link FeedSource} object.
  */
 export function makeFeedSource(args: Omit<FeedSource, 'feedSourceId'>): Result<FeedSource> {
-  const feedSourceIdResult = makeFeedSourceId();
-  if (!feedSourceIdResult.success) return feedSourceIdResult;
-  const feedSourceId = feedSourceIdResult.value;
-
   const feedSource: FeedSource = {
-    feedSourceId,
+    feedSourceId: makeFeedSourceId(),
     url: args.url,
     title: args.title,
     createdTime: args.createdTime,
@@ -55,4 +66,27 @@ export function makeFeedSource(args: Omit<FeedSource, 'feedSourceId'>): Result<F
   };
 
   return makeSuccessResult(feedSource);
+}
+
+/**
+ * Parses a {@link FeedSource} from an unknown value. Returns an `ErrorResult` if the value is not
+ * valid.
+ */
+export function parseFeedSource(maybeFeedSource: unknown): Result<FeedSource> {
+  const parsedFeedSourceResult = parseZodResult(FeedSourceSchema, maybeFeedSource);
+  if (!parsedFeedSourceResult.success) {
+    return prefixResultIfError(parsedFeedSourceResult, 'Invalid feed source');
+  }
+
+  const parsedIdResult = parseFeedSourceId(parsedFeedSourceResult.value.feedSourceId);
+  if (!parsedIdResult.success) return parsedIdResult;
+
+  const {url, title, createdTime, lastUpdatedTime} = parsedFeedSourceResult.value;
+  return makeSuccessResult({
+    feedSourceId: parsedIdResult.value,
+    url,
+    title,
+    createdTime: new Date(createdTime) as unknown as Timestamp,
+    lastUpdatedTime: new Date(lastUpdatedTime) as unknown as Timestamp,
+  });
 }

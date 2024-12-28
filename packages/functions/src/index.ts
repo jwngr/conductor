@@ -21,10 +21,10 @@ import {prefixError} from '@shared/lib/errorUtils.shared';
 import {
   ImportQueueItem,
   ImportQueueItemStatus,
-  makeImportQueueItemId,
+  parseImportQueueItemId,
 } from '@shared/types/importQueue.types';
 import {makeSuccessResult} from '@shared/types/result.types';
-import {makeUserId, UserId} from '@shared/types/user.types';
+import {parseUserId, UserId} from '@shared/types/user.types';
 
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import {ServerFeedSourcesService} from '@sharedServer/services/feedSources.server';
@@ -104,14 +104,15 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
 
     logger.log(`[IMPORT] Processing import queue item "${maybeImportQueueItemId}"`);
 
-    const importQueueItemIdResult = makeImportQueueItemId(maybeImportQueueItemId);
-    if (!importQueueItemIdResult.success) {
-      logger.error(prefixError(importQueueItemIdResult.error, 'Error making import queue itemId'), {
-        maybeImportQueueItemId,
-      });
+    const parseIdResult = parseImportQueueItemId(maybeImportQueueItemId);
+    if (!parseIdResult.success) {
+      logger.error(
+        prefixError(parseIdResult.error, '[IMPORT] Invalid import queue item ID. Skipping...'),
+        {maybeImportQueueItemId}
+      );
       return;
     }
-    const importQueueItemId = importQueueItemIdResult.value;
+    const importQueueItemId = parseIdResult.value;
 
     const snapshot = event.data;
     if (!snapshot) {
@@ -179,7 +180,9 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
  * Permanently deletes all data associated with a user when their Firebase auth account is deleted.
  */
 export const wipeoutUserOnAuthDelete = auth.user().onDelete(async (firebaseUser) => {
-  const userIdResult = makeUserId(firebaseUser.uid);
+  logger.log(`[WIPEOUT] Wiping out user...`, {userId: firebaseUser.uid});
+
+  const userIdResult = parseUserId(firebaseUser.uid);
   if (!userIdResult.success) {
     logger.error(
       prefixError(userIdResult.error, '[WIPEOUT] Invalid user ID. Not wiping out user.'),
@@ -189,7 +192,6 @@ export const wipeoutUserOnAuthDelete = auth.user().onDelete(async (firebaseUser)
   }
   const userId = userIdResult.value;
 
-  logger.log(`[WIPEOUT] Wiping out user...`, {userId});
   const wipeoutUserResult = await wipeoutService.wipeoutUser(userId);
   if (!wipeoutUserResult.success) {
     logger.error(prefixError(wipeoutUserResult.error, '[WIPEOUT] Failed to wipe out user'), {

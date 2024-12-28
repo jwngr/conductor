@@ -1,5 +1,7 @@
 import type {User as FirebaseUser} from 'firebase/auth';
+import {z} from 'zod';
 
+import {parseZodResult, prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {makeId} from '@shared/lib/utils.shared';
 
 import type {Result} from '@shared/types/result.types';
@@ -11,27 +13,26 @@ import type {Consumer, Task} from '@shared/types/utils.types';
  */
 export type UserId = string & {readonly __brand: 'UserIdBrand'};
 
-/**
- * Checks if a value is a valid {@link UserId}.
- */
-export function isValidUserId(maybeUserId: unknown): maybeUserId is UserId {
-  return typeof maybeUserId === 'string' && maybeUserId.length > 0;
-}
+// TODO: This schema is not correct as UUID.
+export const UserIdSchema = z.string().uuid();
 
 /**
  * Creates a {@link UserId} from a plain string. Returns an error if the string is not valid.
  */
-export function makeUserId(maybeUserId: string = makeId()): Result<UserId> {
-  if (!isValidUserId(maybeUserId)) {
-    return makeErrorResult(new Error(`Invalid user ID: "${maybeUserId}"`));
+export function parseUserId(maybeUserId: string = makeId()): Result<UserId> {
+  const parsedResult = parseZodResult(UserIdSchema, maybeUserId);
+  if (!parsedResult.success) {
+    return prefixErrorResult(parsedResult, 'Invalid user ID');
   }
-  return makeSuccessResult(maybeUserId);
+  return makeSuccessResult(parsedResult.value as UserId);
 }
 
 /**
  * Strongly-typed type for an email address. Prefer this over plain strings.
  */
 export type EmailAddress = string & {readonly __brand: 'EmailAddressBrand'};
+
+// TODO: Should I have a zod schema for these?
 
 /**
  * Checks if a value is a valid `EmailAddress`.
@@ -74,7 +75,7 @@ export function makeLoggedInUserFromFirebaseUser(
     return makeErrorResult(emailResult.error);
   }
 
-  const userIdResult = makeUserId(firebaseLoggedInUser.uid);
+  const userIdResult = parseUserId(firebaseLoggedInUser.uid);
   if (!userIdResult.success) {
     return makeErrorResult(userIdResult.error);
   }

@@ -4,7 +4,7 @@ import {FieldValue} from 'firebase-admin/firestore';
 import {prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
 import type {FeedSource, FeedSourceId} from '@shared/types/feedSources.types';
-import {makeFeedSource} from '@shared/types/feedSources.types';
+import {makeFeedSource, parseFeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
 
@@ -28,7 +28,7 @@ export class ServerFeedSourcesService {
    */
   public async fetchById(feedSourceId: FeedSourceId): AsyncResult<FeedSource | null> {
     const docRef = this.feedSourcesDbRef.doc(feedSourceId);
-    const maybeFeedSource = await getFirestoreDocData<FeedSource>(docRef);
+    const maybeFeedSource = await getFirestoreDocData(docRef, parseFeedSource);
     return prefixResultIfError(maybeFeedSource, 'Error fetching feed source by ID in Firestore');
   }
 
@@ -37,7 +37,7 @@ export class ServerFeedSourcesService {
    */
   public async fetchByUrl(feedUrl: string): AsyncResult<FeedSource | null> {
     const query = this.feedSourcesDbRef.where('url', '==', feedUrl);
-    const maybeFeedSource = await getFirstFirestoreQueryData<FeedSource>(query);
+    const maybeFeedSource = await getFirstFirestoreQueryData(query, parseFeedSource);
     return prefixResultIfError(maybeFeedSource, 'Error fetching feed source by URL in Firestore');
   }
 

@@ -1,7 +1,10 @@
+import {z} from 'zod';
+
+import {parseZodResult, prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {makeId} from '@shared/lib/utils.shared';
 
 import type {Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import {makeSuccessResult} from '@shared/types/result.types';
 
 export enum TagType {
   User = 'USER',
@@ -13,22 +16,46 @@ export enum TagType {
  */
 export type UserTagId = string & {readonly __brand: 'UserTagIdBrand'};
 
-/**
- * Checks if a value is a valid `UserTagId`.
- */
-export function isUserTagId(maybeUserTagId: unknown): maybeUserTagId is UserTagId {
-  return typeof maybeUserTagId === 'string' && maybeUserTagId.length > 0;
-}
+export const UserTagIdSchema = z.string().uuid();
 
 /**
  * Creates a `UserTagId` from a plain string. Returns an error if the string is not a valid
  * `UserTagId`.
  */
-export function makeUserTagId(maybeUserTagId: string = makeId()): Result<UserTagId> {
-  if (!isUserTagId(maybeUserTagId)) {
-    return makeErrorResult(new Error(`Invalid user tag ID: "${maybeUserTagId}"`));
+export function parseUserTagId(maybeUserTagId: string = makeId()): Result<UserTagId> {
+  const parsedResult = parseZodResult(UserTagIdSchema, maybeUserTagId);
+  if (!parsedResult.success) {
+    return prefixErrorResult(parsedResult, 'Invalid user tag ID');
   }
-  return makeSuccessResult(maybeUserTagId);
+  return makeSuccessResult(parsedResult.value as UserTagId);
+}
+
+/**
+ * Creates a new random `UserTagId`.
+ */
+export function makeUserTagId(): UserTagId {
+  return makeId() as UserTagId;
+}
+
+const UserTagSchema = z.object({
+  tagId: UserTagIdSchema,
+  name: z.string(),
+});
+
+export function parseUserTag(maybeUserTag: unknown): Result<UserTag> {
+  const parsedResult = parseZodResult(UserTagSchema, maybeUserTag);
+  if (!parsedResult.success) {
+    return prefixErrorResult(parsedResult, 'Invalid user tag');
+  }
+  const tagIdResult = parseUserTagId(parsedResult.value.tagId);
+  if (!tagIdResult.success) return tagIdResult;
+
+  const {name} = parsedResult.value;
+  return makeSuccessResult({
+    tagId: tagIdResult.value,
+    type: TagType.User,
+    name,
+  });
 }
 
 export enum SystemTagId {
@@ -39,6 +66,48 @@ export enum SystemTagId {
   // TODO: Consider implementing triage status as tags.
   // Untriaged = 'UNTRIAGED',
   // Done = 'DONE',
+}
+
+export const SystemTagIdSchema = z.nativeEnum(SystemTagId);
+
+/**
+ * Creates a `SystemTagId` from a plain string. Returns an error if the string is not a valid
+ * `SystemTagId`.
+ */
+export function parseSystemTagId(maybeSystemTagId: string = makeId()): Result<SystemTagId> {
+  const parsedResult = parseZodResult(SystemTagIdSchema, maybeSystemTagId);
+  if (!parsedResult.success) {
+    return prefixErrorResult(parsedResult, 'Invalid system tag ID');
+  }
+  return makeSuccessResult(parsedResult.value as SystemTagId);
+}
+
+/**
+ * Creates a new random `SystemTagId`.
+ */
+export function makeSystemTagId(): SystemTagId {
+  return makeId() as SystemTagId;
+}
+
+const SystemTagSchema = z.object({
+  tagId: SystemTagIdSchema,
+  name: z.string(),
+});
+
+export function parseSystemTag(maybeSystemTag: unknown): Result<SystemTag> {
+  const parsedResult = parseZodResult(SystemTagSchema, maybeSystemTag);
+  if (!parsedResult.success) {
+    return prefixErrorResult(parsedResult, 'Invalid system tag');
+  }
+  const tagIdResult = parseSystemTagId(parsedResult.value.tagId);
+  if (!tagIdResult.success) return tagIdResult;
+
+  const {name} = parsedResult.value;
+  return makeSuccessResult({
+    tagId: tagIdResult.value,
+    type: TagType.System,
+    name,
+  });
 }
 
 export type TagId = UserTagId | SystemTagId;
@@ -52,6 +121,7 @@ export interface Tag {
 
 export interface UserTag extends Tag {
   readonly type: TagType.User;
+  readonly tagId: UserTagId;
 }
 
 export interface SystemTag extends Tag {
@@ -86,8 +156,9 @@ export class Tags {
 
   static makeUserTag(tagInfo: Omit<UserTag, 'type'>): UserTag {
     return {
-      ...tagInfo,
+      tagId: makeUserTagId(),
       type: TagType.User,
+      name: tagInfo.name,
     };
   }
 }
