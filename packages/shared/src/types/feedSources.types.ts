@@ -1,7 +1,7 @@
 import {z} from 'zod';
 
 import {parseZodResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {makeId} from '@shared/lib/utils.shared';
+import {makeUuid} from '@shared/lib/utils.shared';
 
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
@@ -50,7 +50,7 @@ export function parseFeedSourceId(maybeFeedSourceId: string): Result<FeedSourceI
  * Creates a new random {@link FeedSourceId}.
  */
 export function makeFeedSourceId(): FeedSourceId {
-  return makeId() as FeedSourceId;
+  return makeUuid<FeedSourceId>();
 }
 
 /**

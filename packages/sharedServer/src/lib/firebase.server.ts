@@ -87,9 +87,9 @@ export async function getFirestoreQueryIds<ItemId>(
   const queryIdsResult = await asyncTry(async () => {
     const querySnapshot = await query.get();
     return querySnapshot.docs.map((doc) => {
-      const makeIdResult = parseId(doc.id);
-      if (!makeIdResult.success) throw makeIdResult.error;
-      return makeIdResult.value;
+      const parseIdResult = parseId(doc.id);
+      if (!parseIdResult.success) throw parseIdResult.error;
+      return parseIdResult.value;
     });
   });
 

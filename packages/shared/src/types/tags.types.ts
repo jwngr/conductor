@@ -1,7 +1,7 @@
 import {z} from 'zod';
 
 import {parseZodResult, prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {makeId} from '@shared/lib/utils.shared';
+import {makeUuid} from '@shared/lib/utils.shared';
 
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
@@ -22,7 +22,7 @@ export const UserTagIdSchema = z.string().uuid();
  * Creates a `UserTagId` from a plain string. Returns an error if the string is not a valid
  * `UserTagId`.
  */
-export function parseUserTagId(maybeUserTagId: string = makeId()): Result<UserTagId> {
+export function parseUserTagId(maybeUserTagId: string): Result<UserTagId> {
   const parsedResult = parseZodResult(UserTagIdSchema, maybeUserTagId);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid user tag ID');
@@ -34,7 +34,7 @@ export function parseUserTagId(maybeUserTagId: string = makeId()): Result<UserTa
  * Creates a new random `UserTagId`.
  */
 export function makeUserTagId(): UserTagId {
-  return makeId() as UserTagId;
+  return makeUuid<UserTagId>();
 }
 
 const UserTagSchema = z.object({
@@ -74,7 +74,7 @@ export const SystemTagIdSchema = z.nativeEnum(SystemTagId);
  * Creates a `SystemTagId` from a plain string. Returns an error if the string is not a valid
  * `SystemTagId`.
  */
-export function parseSystemTagId(maybeSystemTagId: string = makeId()): Result<SystemTagId> {
+export function parseSystemTagId(maybeSystemTagId: string): Result<SystemTagId> {
   const parsedResult = parseZodResult(SystemTagIdSchema, maybeSystemTagId);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid system tag ID');
@@ -86,7 +86,7 @@ export function parseSystemTagId(maybeSystemTagId: string = makeId()): Result<Sy
  * Creates a new random `SystemTagId`.
  */
 export function makeSystemTagId(): SystemTagId {
-  return makeId() as SystemTagId;
+  return makeUuid<SystemTagId>();
 }
 
 const SystemTagSchema = z.object({

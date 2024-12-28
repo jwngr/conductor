@@ -1,7 +1,7 @@
 import {z} from 'zod';
 
 import {parseZodResult, prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {makeId} from '@shared/lib/utils.shared';
+import {makeUuid} from '@shared/lib/utils.shared';
 
 import {
   FeedSourceIdSchema,
@@ -71,7 +71,7 @@ export function parseUserFeedSubscriptionId(
  * Creates a new random {@link UserFeedSubscriptionId}.
  */
 export function makeUserFeedSubscriptionId(): UserFeedSubscriptionId {
-  return makeId() as UserFeedSubscriptionId;
+  return makeUuid<UserFeedSubscriptionId>();
 }
 
 /**

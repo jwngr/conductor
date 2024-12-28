@@ -1,7 +1,7 @@
 import {z} from 'zod';
 
 import {parseZodResult, prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {assertNever, makeId} from '@shared/lib/utils.shared';
+import {assertNever, makeUuid} from '@shared/lib/utils.shared';
 
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
 
@@ -29,7 +29,7 @@ export const EventIdSchema = z.string().uuid();
  * Converts a plain string into a strongly-typed `EventId`. Returns an error if the string is
  * not a valid `EventId`.
  */
-export function parseEventId(maybeEventId: string = makeId()): Result<EventId> {
+export function parseEventId(maybeEventId: string): Result<EventId> {
   const parsedResult = parseZodResult(EventIdSchema, maybeEventId);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid event ID');
@@ -41,7 +41,7 @@ export function parseEventId(maybeEventId: string = makeId()): Result<EventId> {
  * Creates a new random {@link EventId}.
  */
 export function makeEventId(): EventId {
-  return makeId() as EventId;
+  return makeUuid<EventId>();
 }
 
 export enum EventType {

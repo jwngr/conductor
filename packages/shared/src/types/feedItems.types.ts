@@ -1,7 +1,7 @@
 import type {FieldValue} from 'firebase/firestore';
 import {z} from 'zod';
 
-import {makeId} from '@shared/lib/utils.shared';
+import {makeUuid} from '@shared/lib/utils.shared';
 
 import type {IconName} from '@shared/types/icons.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
@@ -25,7 +25,7 @@ export const FeedItemIdSchema = z.string().uuid();
  * Creates a new random {@link FeedItemId}.
  */
 export function makeFeedItemId(): FeedItemId {
-  return makeId() as FeedItemId;
+  return makeUuid<FeedItemId>();
 }
 
 // TODO: Do I want to persist this or just compute it on the client?

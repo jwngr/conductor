@@ -2,7 +2,6 @@ import type {User as FirebaseUser} from 'firebase/auth';
 import {z} from 'zod';
 
 import {parseZodResult, prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {makeId} from '@shared/lib/utils.shared';
 
 import type {Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
@@ -13,13 +12,12 @@ import type {Consumer, Task} from '@shared/types/utils.types';
  */
 export type UserId = string & {readonly __brand: 'UserIdBrand'};
 
-// TODO: This schema is not correct as UUID.
-export const UserIdSchema = z.string().uuid();
+export const UserIdSchema = z.string().min(1).max(128);
 
 /**
  * Creates a {@link UserId} from a plain string. Returns an error if the string is not valid.
  */
-export function parseUserId(maybeUserId: string = makeId()): Result<UserId> {
+export function parseUserId(maybeUserId: string): Result<UserId> {
   const parsedResult = parseZodResult(UserIdSchema, maybeUserId);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid user ID');

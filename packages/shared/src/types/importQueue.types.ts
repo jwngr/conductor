@@ -5,7 +5,7 @@ import {
   prefixErrorResult,
   prefixResultIfError,
 } from '@shared/lib/errorUtils.shared';
-import {makeId} from '@shared/lib/utils.shared';
+import {makeUuid} from '@shared/lib/utils.shared';
 
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
 
@@ -41,7 +41,7 @@ export function parseImportQueueItemId(maybeImportQueueItemId: string): Result<I
  * Creates a new random {@link ImportQueueItemId}.
  */
 export function makeImportQueueItemId(): ImportQueueItemId {
-  return makeId() as ImportQueueItemId;
+  return makeUuid<ImportQueueItemId>();
 }
 
 /**
