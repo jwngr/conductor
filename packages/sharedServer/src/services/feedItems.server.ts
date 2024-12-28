@@ -3,7 +3,9 @@ import {FieldValue} from 'firebase-admin/firestore';
 
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
-import {FeedItemType, parseFeedItemId} from '@shared/types/feedItems.types';
+import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
+
+import {FeedItemType} from '@shared/types/feedItems.types';
 import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeErrorResult} from '@shared/types/result.types';

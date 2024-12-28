@@ -7,7 +7,9 @@ import {
 } from '@shared/lib/errorUtils.shared';
 import {makeId} from '@shared/lib/utils.shared';
 
-import {FeedItemIdSchema, parseFeedItemId} from '@shared/types/feedItems.types';
+import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
+
+import {FeedItemIdSchema} from '@shared/types/feedItems.types';
 import type {FeedItemId} from '@shared/types/feedItems.types';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';

@@ -1,7 +1,8 @@
 import {useParams} from 'react-router-dom';
 
+import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
+
 import type {FeedItemId} from '@shared/types/feedItems.types';
-import {parseFeedItemId} from '@shared/types/feedItems.types';
 import type {FeedItemScreenParams} from '@shared/types/urls.types';
 
 export const useFeedItemIdFromUrl = (): FeedItemId | null => {

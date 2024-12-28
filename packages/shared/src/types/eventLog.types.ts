@@ -3,12 +3,10 @@ import {z} from 'zod';
 import {parseZodResult, prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {assertNever, makeId} from '@shared/lib/utils.shared';
 
-import {
-  FeedItemActionType,
-  FeedItemIdSchema,
-  parseFeedItemId,
-  type FeedItemId,
-} from '@shared/types/feedItems.types';
+import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
+
+import {FeedItemActionType, FeedItemIdSchema} from '@shared/types/feedItems.types';
+import type {FeedItemId} from '@shared/types/feedItems.types';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
 import type {UserId} from '@shared/types/user.types';
