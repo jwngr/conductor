@@ -1,10 +1,15 @@
-import type {CollectionReference, DocumentSnapshot} from 'firebase-admin/firestore';
-import {FieldValue} from 'firebase-admin/firestore';
+import type {CollectionReference} from 'firebase-admin/firestore';
 
-import {asyncTryAll, prefixError} from '@shared/lib/errorUtils.shared';
+import {
+  asyncTryAll,
+  prefixError,
+  prefixErrorResult,
+  prefixResultIfError,
+} from '@shared/lib/errorUtils.shared';
 import {requestGet} from '@shared/lib/requests.shared';
 
 import type {FeedItemId} from '@shared/types/feedItems.types';
+import {makeImportQueueItemId} from '@shared/types/importQueue.types';
 import type {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue.types';
 import type {AsyncResult, Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
@@ -14,9 +19,9 @@ import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
 
 import {
-  batchDeleteFirestoreDocuments,
-  deleteFirestoreDocPath,
-  getFirestoreQuerySnapshot,
+  batchDeleteChildIds,
+  deleteFirestoreDoc,
+  getFirestoreQueryIds,
   updateFirestoreDoc,
 } from '@sharedServer/lib/firebase.server';
 
@@ -70,7 +75,7 @@ export class ServerImportQueueService {
     const url = importQueueItem.url;
     const isSafeUrlResult = await validateFeedItemUrl(url);
     if (!isSafeUrlResult.success) {
-      return makeErrorResult(prefixError(isSafeUrlResult.error, 'Error validating feed item URL'));
+      return prefixErrorResult(isSafeUrlResult, 'Error validating feed item URL');
     }
 
     const importAllDataResult = await asyncTryAll([
@@ -86,6 +91,7 @@ export class ServerImportQueueService {
       }),
     ]);
 
+    // TODO: Make this multi-result error handling pattern simpler.
     const importAllDataResultError = importAllDataResult.success
       ? importAllDataResult.value.results.find((result) => !result.success)?.error
       : importAllDataResult.error;
@@ -115,9 +121,7 @@ export class ServerImportQueueService {
     });
 
     if (!fetchDataResult.success) {
-      return makeErrorResult(
-        prefixError(fetchDataResult.error, 'Error fetching raw feed item HTML')
-      );
+      return prefixErrorResult(fetchDataResult, 'Error fetching raw feed item HTML');
     }
 
     const rawHtml = fetchDataResult.value;
@@ -128,11 +132,7 @@ export class ServerImportQueueService {
       rawHtml,
     });
 
-    if (!saveHtmlResult.success) {
-      return makeErrorResult(prefixError(saveHtmlResult.error, 'Error saving feed item HTML'));
-    }
-
-    return makeSuccessResult(undefined);
+    return prefixResultIfError(saveHtmlResult, 'Error saving feed item HTML');
   }
 
   /**
@@ -148,9 +148,7 @@ export class ServerImportQueueService {
     const fetchDataResult = await this.firecrawlService.fetch(url);
 
     if (!fetchDataResult.success) {
-      return makeErrorResult(
-        prefixError(fetchDataResult.error, 'Error fetching Firecrawl data for feed item')
-      );
+      return prefixErrorResult(fetchDataResult, 'Error fetching Firecrawl data for feed item');
     }
 
     const firecrawlData = fetchDataResult.value;
@@ -187,40 +185,33 @@ export class ServerImportQueueService {
     importQueueItemId: ImportQueueItemId,
     updates: Partial<Pick<ImportQueueItem, 'status'>>
   ): AsyncResult<void> {
-    const fullUpdates: Partial<ImportQueueItem> = {
-      ...updates,
-      lastUpdatedTime: FieldValue.serverTimestamp(),
-    };
-
-    return await updateFirestoreDoc<ImportQueueItem>(
-      this.importQueueDbRef.doc(importQueueItemId),
-      fullUpdates
-    );
+    const docRefToUpdate = this.importQueueDbRef.doc(importQueueItemId);
+    const updateResult = await updateFirestoreDoc(docRefToUpdate, updates);
+    return prefixResultIfError(updateResult, 'Error updating import queue item in Firestore');
   }
 
   /**
    * Permanently deletes an individual import queue item.
    */
   public async deleteImportQueueItem(importQueueItemId: ImportQueueItemId): AsyncResult<void> {
-    return deleteFirestoreDocPath(`${this.importQueueDbRef.path}/${importQueueItemId}`);
+    const docRefToDelete = this.importQueueDbRef.doc(importQueueItemId);
+    const deleteResult = await deleteFirestoreDoc(docRefToDelete);
+    return prefixResultIfError(deleteResult, 'Error deleting import queue item in Firestore');
   }
 
   /**
    * Permanently deletes all import queue items associated with a user.
    */
   public async deleteAllForUser(userId: UserId): AsyncResult<void> {
-    // TODO: Can I just use the keys instead of getting the full docs?
-    const userImportQueueItemDocsResult = await getFirestoreQuerySnapshot(
-      this.importQueueDbRef.where('userId', '==', userId)
-    );
-
-    if (!userImportQueueItemDocsResult.success) {
-      return userImportQueueItemDocsResult;
+    // Fetch the IDs for all of the user's import queue items.
+    const query = this.importQueueDbRef.where('userId', '==', userId);
+    const queryResult = await getFirestoreQueryIds(query, makeImportQueueItemId);
+    if (!queryResult.success) {
+      return prefixErrorResult(queryResult, 'Error fetching import queue items to delete for user');
     }
-    const userImportQueueItemDocs = userImportQueueItemDocsResult.value;
 
-    return await batchDeleteFirestoreDocuments(
-      userImportQueueItemDocs.docs.map((doc: DocumentSnapshot) => doc.ref)
-    );
+    // Delete all of the user's import queue items.
+    const docIdsToDelete = queryResult.value;
+    return await batchDeleteChildIds(this.importQueueDbRef, docIdsToDelete);
   }
 }

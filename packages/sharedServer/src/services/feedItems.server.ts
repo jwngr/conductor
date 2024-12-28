@@ -1,9 +1,9 @@
-import type {CollectionReference, DocumentSnapshot} from 'firebase-admin/firestore';
+import type {CollectionReference} from 'firebase-admin/firestore';
 import {FieldValue} from 'firebase-admin/firestore';
 
-import {asyncTry} from '@shared/lib/errorUtils.shared';
+import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
-import {FeedItemType} from '@shared/types/feedItems.types';
+import {FeedItemType, makeFeedItemId} from '@shared/types/feedItems.types';
 import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeErrorResult} from '@shared/types/result.types';
@@ -11,9 +11,9 @@ import {SystemTagId} from '@shared/types/tags.types';
 import type {UserId} from '@shared/types/user.types';
 
 import {
-  batchDeleteFirestoreDocuments,
+  batchDeleteChildIds,
   FIREBASE_STORAGE_BUCKET,
-  getFirestoreQuerySnapshot,
+  getFirestoreQueryIds,
   updateFirestoreDoc,
 } from '@sharedServer/lib/firebase.server';
 
@@ -46,33 +46,38 @@ export class ServerFeedItemsService {
     feedItemId: FeedItemId,
     {links, title, description}: UpdateImportedFeedItemInFirestoreArgs
   ): AsyncResult<void> {
-    return await asyncTry(async () => {
-      const update: Omit<
-        FeedItem,
-        'feedItemId' | 'userId' | 'source' | 'url' | 'createdTime' | 'triageStatus' | 'tagIds'
-      > = {
-        // TODO: Determine the type based on the URL or fetched content.
-        type: FeedItemType.Website,
-        // TODO: Reconsider how to handle empty titles, descriptions, and links.
-        title: title ?? '',
-        description: description ?? '',
-        outgoingLinks: links ?? [],
-        lastImportedTime: FieldValue.serverTimestamp(),
-        lastUpdatedTime: FieldValue.serverTimestamp(),
-      };
+    const update: Omit<
+      FeedItem,
+      | 'feedItemId'
+      | 'userId'
+      | 'source'
+      | 'url'
+      | 'tagIds'
+      | 'triageStatus'
+      | 'createdTime'
+      | 'lastUpdatedTime'
+    > = {
+      // TODO: Determine the type based on the URL or fetched content.
+      type: FeedItemType.Website,
+      // TODO: Reconsider how to handle empty titles, descriptions, and links.
+      title: title ?? '',
+      description: description ?? '',
+      outgoingLinks: links ?? [],
+      lastImportedTime: FieldValue.serverTimestamp(),
+    };
 
-      const itemDoc = this.feedItemsDbRef.doc(feedItemId);
+    // The types are not quite right here since we are updating a deeply nested object.
+    // TODO: Consider using a Firestore converter to handle this. Ideally this would be part of
+    // the object above.
+    // See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
+    const actualUpdates = {
+      ...update,
+      [`tagIds.${SystemTagId.Importing}`]: FieldValue.delete(),
+    } as Partial<FeedItem>;
 
-      // TODO: Fix the type here.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await updateFirestoreDoc<any>(itemDoc, {
-        ...update,
-        // TODO: Consider using a Firestore converter to handle this. Ideally this would be part of the
-        // object above.
-        // See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
-        [`tagIds.${SystemTagId.Importing}`]: FieldValue.delete(),
-      });
-    });
+    const docRef = this.feedItemsDbRef.doc(feedItemId);
+    const updateResult = await updateFirestoreDoc(docRef, actualUpdates);
+    return prefixResultIfError(updateResult, 'Error updating imported feed item in Firestore');
   }
 
   /**
@@ -117,17 +122,16 @@ export class ServerFeedItemsService {
    * Permanently deletes all feed items associated with a user.
    */
   public async deleteAllForUser(userId: UserId): AsyncResult<void> {
-    // TOOD: Figure out why Firebase Admin SDK types are not working.
-    const userFeedItemDocsResult = await getFirestoreQuerySnapshot(
-      this.feedItemsDbRef.where('userId', '==', userId)
-    );
+    // Fetch the IDs for all of the user's feed items.
+    const query = this.feedItemsDbRef.where('userId', '==', userId);
+    const queryResult = await getFirestoreQueryIds(query, makeFeedItemId);
+    if (!queryResult.success) {
+      return prefixErrorResult(queryResult, 'Error fetching feed items to delete for user');
+    }
 
-    if (!userFeedItemDocsResult.success) return userFeedItemDocsResult;
-    const userFeedItemDocs = userFeedItemDocsResult.value;
-
-    return await batchDeleteFirestoreDocuments(
-      userFeedItemDocs.docs.map((doc: DocumentSnapshot) => doc.ref)
-    );
+    // Delete all of the user's feed items.
+    const docIdsToDelete = queryResult.value;
+    return await batchDeleteChildIds(this.feedItemsDbRef, docIdsToDelete);
   }
 
   /**
