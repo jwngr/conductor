@@ -1,6 +1,5 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseZodResult} from '@shared/lib/parser.shared';
-import {assertNever} from '@shared/lib/utils.shared';
 
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
 import {parseUserId} from '@shared/parsers/user.parser';
@@ -22,7 +21,7 @@ import type {
   UserFeedSubscriptionEventLogItemData,
 } from '@shared/types/eventLog.types';
 import type {Result} from '@shared/types/result.types';
-import {makeSuccessResult} from '@shared/types/result.types';
+import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import type {Timestamp} from '@shared/types/utils.types';
 
 /**
@@ -53,7 +52,9 @@ export function parseEventLogItem(maybeEventLogItem: unknown): Result<EventLogIt
     case EventType.UserFeedSubscription:
       return parseUserFeedSubscriptionEventLogItem(maybeEventLogItem);
     default:
-      assertNever(parsedResult.value.eventType);
+      return makeErrorResult(
+        new Error(`Unknown event log item type: ${parsedResult.value.eventType}`)
+      );
   }
 }
 

@@ -2,7 +2,6 @@ import type {z} from 'zod';
 
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {parseZodResult} from '@shared/lib/parser.shared';
-import {assertNever} from '@shared/lib/utils.shared';
 
 import {parseUserId} from '@shared/parsers/user.parser';
 import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions.parser';
@@ -25,7 +24,7 @@ import {
   RssFeedItemSourceSchema,
 } from '@shared/types/feedItems.types';
 import type {Result} from '@shared/types/result.types';
-import {makeSuccessResult} from '@shared/types/result.types';
+import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import type {Timestamp} from '@shared/types/utils.types';
 
 /**
@@ -45,7 +44,8 @@ export function parseFeedItemId(maybeFeedItemId: string): Result<FeedItemId> {
  * not valid.
  */
 function parseFeedItemSource(source: z.infer<typeof FeedItemSourceSchema>): Result<FeedItemSource> {
-  switch (source.type) {
+  const sourceType = source.type;
+  switch (sourceType) {
     case FeedItemSourceType.App:
       return parseAppFeedItemSource(source);
     case FeedItemSourceType.Extension:
@@ -53,7 +53,7 @@ function parseFeedItemSource(source: z.infer<typeof FeedItemSourceSchema>): Resu
     case FeedItemSourceType.RSS:
       return parseRssFeedItemSource(source);
     default:
-      assertNever(source);
+      return makeErrorResult(new Error(`Unknown feed item source type: ${sourceType}`));
   }
 }
 
