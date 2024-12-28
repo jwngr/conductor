@@ -57,6 +57,10 @@ function parseFeedItemSource(source: z.infer<typeof FeedItemSourceSchema>): Resu
   }
 }
 
+/**
+ * Parses a {@link FeedItemAppSource} from an unknown value. Returns an `ErrorResult` if the value
+ * is not valid.
+ */
 function parseAppFeedItemSource(source: unknown): Result<FeedItemAppSource> {
   const parsedResult = parseZodResult(AppFeedItemSourceSchema, source);
   if (!parsedResult.success) {
@@ -65,6 +69,10 @@ function parseAppFeedItemSource(source: unknown): Result<FeedItemAppSource> {
   return makeSuccessResult(parsedResult.value);
 }
 
+/**
+ * Parses a {@link FeedItemExtensionSource} from an unknown value. Returns an `ErrorResult` if the
+ * value is not valid.
+ */
 function parseExtensionFeedItemSource(source: unknown): Result<FeedItemExtensionSource> {
   const parsedResult = parseZodResult(ExtensionFeedItemSourceSchema, source);
   if (!parsedResult.success) {
@@ -73,6 +81,10 @@ function parseExtensionFeedItemSource(source: unknown): Result<FeedItemExtension
   return makeSuccessResult(parsedResult.value);
 }
 
+/**
+ * Parses a {@link FeedItemRSSSource} from an unknown value. Returns an `ErrorResult` if the value
+ * is not valid.
+ */
 function parseRssFeedItemSource(source: unknown): Result<FeedItemRSSSource> {
   const parsedResult = parseZodResult(RssFeedItemSourceSchema, source);
   if (!parsedResult.success) {
