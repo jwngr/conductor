@@ -19,19 +19,17 @@ import type {BaseStoreItem, Timestamp} from '@shared/types/utils.types';
  */
 export type UserFeedSubscriptionId = string & {readonly __brand: 'UserFeedSubscriptionIdBrand'};
 
+/**
+ * Zod schema for a {@link UserFeedSubscriptionId}.
+ */
 export const UserFeedSubscriptionIdSchema = z.string().uuid();
 
-export const UserFeedSubscriptionSchema = z.object({
-  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
-  feedSourceId: FeedSourceIdSchema,
-  userId: UserIdSchema,
-  url: z.string().url(),
-  title: z.string().min(1),
-  isActive: z.boolean(),
-  unsubscribedTime: z.date().nullable(),
-  createdTime: z.date(),
-  lastUpdatedTime: z.date(),
-});
+/**
+ * Creates a new random {@link UserFeedSubscriptionId}.
+ */
+export function makeUserFeedSubscriptionId(): UserFeedSubscriptionId {
+  return makeUuid<UserFeedSubscriptionId>();
+}
 
 /**
  * An individual user's subscription to a feed source.
@@ -53,14 +51,22 @@ export interface UserFeedSubscription extends BaseStoreItem {
 }
 
 /**
- * Creates a new random {@link UserFeedSubscriptionId}.
+ * Zod schema for a {@link UserFeedSubscription}.
  */
-export function makeUserFeedSubscriptionId(): UserFeedSubscriptionId {
-  return makeUuid<UserFeedSubscriptionId>();
-}
+export const UserFeedSubscriptionSchema = z.object({
+  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
+  feedSourceId: FeedSourceIdSchema,
+  userId: UserIdSchema,
+  url: z.string().url(),
+  title: z.string().min(1),
+  isActive: z.boolean(),
+  unsubscribedTime: z.date().nullable(),
+  createdTime: z.date(),
+  lastUpdatedTime: z.date(),
+});
 
 /**
- * Creates a {@link UserFeedSubscription} object.
+ * Creates a new {@link UserFeedSubscription} object.
  */
 export function makeUserFeedSubscription(args: {
   readonly feedSource: FeedSource;

@@ -70,8 +70,8 @@ export function prefixResultIfError<T>(result: Result<T>, errorPrefix: string): 
 }
 
 /**
- * Parses a value using a Zod schema and returns a `Result` with the parsed value if successful,
- * or an `ErrorResult` if the value is invalid.
+ * Parses a value using a Zod schema and returns a `SuccessResult` with the parsed value if
+ * successful, or an `ErrorResult` if the value is invalid.
  */
 export function parseZodResult<T>(zodSchema: ZodSchema<T>, value: unknown): Result<T> {
   const zodResult = zodSchema.safeParse(value);

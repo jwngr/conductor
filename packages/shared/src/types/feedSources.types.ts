@@ -11,15 +11,17 @@ import type {BaseStoreItem} from '@shared/types/utils.types';
  */
 export type FeedSourceId = string & {readonly __brand: 'FeedSourceIdBrand'};
 
+/**
+ * Zod schema for a {@link FeedSourceId}.
+ */
 export const FeedSourceIdSchema = z.string().uuid();
 
-export const FeedSourceSchema = z.object({
-  feedSourceId: FeedSourceIdSchema,
-  url: z.string().url(),
-  title: z.string().min(1),
-  createdTime: z.date(),
-  lastUpdatedTime: z.date(),
-});
+/**
+ * Creates a new random {@link FeedSourceId}.
+ */
+export function makeFeedSourceId(): FeedSourceId {
+  return makeUuid<FeedSourceId>();
+}
 
 /**
  * A generator of {@link FeedItem}s over time.
@@ -34,14 +36,18 @@ export interface FeedSource extends BaseStoreItem {
 }
 
 /**
- * Creates a new random {@link FeedSourceId}.
+ * Zod schema for a {@link FeedSource}.
  */
-export function makeFeedSourceId(): FeedSourceId {
-  return makeUuid<FeedSourceId>();
-}
+export const FeedSourceSchema = z.object({
+  feedSourceId: FeedSourceIdSchema,
+  url: z.string().url(),
+  title: z.string().min(1),
+  createdTime: z.date(),
+  lastUpdatedTime: z.date(),
+});
 
 /**
- * Creates a {@link FeedSource} object.
+ * Creates a new {@link FeedSource} object.
  */
 export function makeFeedSource(args: Omit<FeedSource, 'feedSourceId'>): Result<FeedSource> {
   const feedSource: FeedSource = {

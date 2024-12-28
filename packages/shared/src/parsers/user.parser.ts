@@ -8,7 +8,7 @@ import type {EmailAddress, LoggedInUser, UserId} from '@shared/types/user.types'
 import {EmailAddressSchema, UserIdSchema} from '@shared/types/user.types';
 
 /**
- * Creates a {@link UserId} from a plain string. Returns an error if the string is not valid.
+ * Parses a {@link UserId} from a plain string. Returns an `ErrorResult` if the string is not valid.
  */
 export function parseUserId(maybeUserId: string): Result<UserId> {
   const parsedResult = parseZodResult(UserIdSchema, maybeUserId);
@@ -19,7 +19,8 @@ export function parseUserId(maybeUserId: string): Result<UserId> {
 }
 
 /**
- * Creates an {@link EmailAddress} from a plain string. Returns an error if the string is not valid.
+ * Parses an {@link EmailAddress} from a plain string. Returns an `ErrorResult` if the string is not
+ * valid.
  */
 export function parseEmailAddress(maybeEmail: string): Result<EmailAddress> {
   const parsedResult = parseZodResult(EmailAddressSchema, maybeEmail);
@@ -30,7 +31,7 @@ export function parseEmailAddress(maybeEmail: string): Result<EmailAddress> {
 }
 
 /**
- * Create a generic {@link LoggedInUser} from a Firebase-specific {@link FirebaseUser}.
+ * Parses a generic {@link LoggedInUser} from a Firebase-specific {@link FirebaseUser}.
  */
 export function parseFirebaseUser(firebaseLoggedInUser: FirebaseUser): Result<LoggedInUser> {
   if (!firebaseLoggedInUser.email) {

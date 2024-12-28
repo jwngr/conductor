@@ -13,8 +13,8 @@ import {
 import type {Timestamp} from '@shared/types/utils.types';
 
 /**
- * Creates a {@link UserTagId} from a plain string. Returns an error if the string is not a valid
- * {@link UserTagId}.
+ * Parses a {@link UserTagId} from a plain string. Returns an `ErrorResult` if the string is not
+ * valid.
  */
 export function parseUserTagId(maybeUserTagId: string): Result<UserTagId> {
   const parsedTagIdResult = parseZodResult(UserTagIdSchema, maybeUserTagId);
@@ -43,8 +43,8 @@ export function parseUserTag(maybeUserTag: unknown): Result<UserTag> {
 }
 
 /**
- * Creates a {@link SystemTagId} from a plain string. Returns an error if the string is not a valid
- * {@link SystemTagId}.
+ * Parses a {@link SystemTagId} from a plain string. Returns an `ErrorResult` if the string is not
+ * valid.
  */
 export function parseSystemTagId(maybeSystemTagId: string): Result<SystemTagId> {
   const parsedTagIdResult = parseZodResult(SystemTagIdSchema, maybeSystemTagId);
