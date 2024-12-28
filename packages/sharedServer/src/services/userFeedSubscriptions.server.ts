@@ -3,6 +3,11 @@ import {FieldValue} from 'firebase-admin/firestore';
 
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
+import {
+  parseUserFeedSubscription,
+  parseUserFeedSubscriptionId,
+} from '@shared/parsers/userFeedSubscriptions.parser';
+
 import type {FeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import type {UserId} from '@shared/types/user.types';
@@ -10,11 +15,7 @@ import type {
   UserFeedSubscription,
   UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
-import {
-  makeUserFeedSubscription,
-  parseUserFeedSubscription,
-  parseUserFeedSubscriptionId,
-} from '@shared/types/userFeedSubscriptions.types';
+import {makeUserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
 import {
   batchDeleteChildIds,

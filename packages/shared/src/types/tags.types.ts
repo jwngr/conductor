@@ -1,10 +1,8 @@
 import {z} from 'zod';
 
-import {parseZodResult, prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {makeUuid} from '@shared/lib/utils.shared';
 
-import type {Result} from '@shared/types/result.types';
-import {makeSuccessResult} from '@shared/types/result.types';
+import type {BaseStoreItem} from '@shared/types/utils.types';
 
 export enum TagType {
   User = 'USER',
@@ -12,52 +10,25 @@ export enum TagType {
 }
 
 /**
- * Strongly-typed type for a user tag's unique identifier. Prefer this over plain strings.
+ * Strongly-typed type for a {@link UserTag}'s unique identifier. Prefer this over plain strings.
  */
 export type UserTagId = string & {readonly __brand: 'UserTagIdBrand'};
 
+/**
+ * Zod schema for a {@link UserTagId}.
+ */
 export const UserTagIdSchema = z.string().uuid();
 
 /**
- * Creates a `UserTagId` from a plain string. Returns an error if the string is not a valid
- * `UserTagId`.
- */
-export function parseUserTagId(maybeUserTagId: string): Result<UserTagId> {
-  const parsedResult = parseZodResult(UserTagIdSchema, maybeUserTagId);
-  if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid user tag ID');
-  }
-  return makeSuccessResult(parsedResult.value as UserTagId);
-}
-
-/**
- * Creates a new random `UserTagId`.
+ * Creates a new random {@link UserTagId}.
  */
 export function makeUserTagId(): UserTagId {
   return makeUuid<UserTagId>();
 }
 
-const UserTagSchema = z.object({
-  tagId: UserTagIdSchema,
-  name: z.string().min(1).max(255),
-});
-
-export function parseUserTag(maybeUserTag: unknown): Result<UserTag> {
-  const parsedResult = parseZodResult(UserTagSchema, maybeUserTag);
-  if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid user tag');
-  }
-  const tagIdResult = parseUserTagId(parsedResult.value.tagId);
-  if (!tagIdResult.success) return tagIdResult;
-
-  const {name} = parsedResult.value;
-  return makeSuccessResult({
-    tagId: tagIdResult.value,
-    type: TagType.User,
-    name,
-  });
-}
-
+/**
+ * Unique IDs for {@link SystemTag}s, which are tags whose lifecycle is managed by the system.
+ */
 export enum SystemTagId {
   Unread = 'UNREAD',
   Starred = 'STARRED',
@@ -68,43 +39,18 @@ export enum SystemTagId {
   // Done = 'DONE',
 }
 
-export const SystemTagIdSchema = z.nativeEnum(SystemTagId);
-
 /**
- * Creates a `SystemTagId` from a plain string. Returns an error if the string is not a valid
- * `SystemTagId`.
+ * Zod schema for a {@link SystemTagId}.
  */
-export function parseSystemTagId(maybeSystemTagId: string): Result<SystemTagId> {
-  const parsedResult = parseZodResult(SystemTagIdSchema, maybeSystemTagId);
-  if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid system tag ID');
-  }
-  return makeSuccessResult(parsedResult.value as SystemTagId);
-}
-
-const SystemTagSchema = z.object({
-  tagId: SystemTagIdSchema,
-  name: z.string().min(1).max(255),
-});
-
-export function parseSystemTag(maybeSystemTag: unknown): Result<SystemTag> {
-  const parsedResult = parseZodResult(SystemTagSchema, maybeSystemTag);
-  if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid system tag');
-  }
-  const tagIdResult = parseSystemTagId(parsedResult.value.tagId);
-  if (!tagIdResult.success) return tagIdResult;
-
-  const {name} = parsedResult.value;
-  return makeSuccessResult({
-    tagId: tagIdResult.value,
-    type: TagType.System,
-    name,
-  });
-}
+export const SystemTagIdSchema = z.nativeEnum(SystemTagId);
 
 export type TagId = UserTagId | SystemTagId;
 
+/**
+ * An arbitrary string which is either present or not for each {@link FeedItem}. Tags can have
+ * associated metadata, such as a color and icon. They can also be used as filter criteria for
+ * views and searches.
+ */
 export interface Tag {
   readonly tagId: TagId;
   readonly type: TagType;
@@ -112,15 +58,36 @@ export interface Tag {
   // TODO: Add color.
 }
 
-export interface UserTag extends Tag {
+/**
+ * A tag whose lifecycle is managed by the user.
+ */
+export interface UserTag extends Tag, BaseStoreItem {
   readonly type: TagType.User;
   readonly tagId: UserTagId;
 }
 
+/**
+ * Zod schema for a {@link UserTag}.
+ */
+export const UserTagSchema = z.object({
+  tagId: UserTagIdSchema,
+  name: z.string().min(1).max(255),
+  createdTime: z.date(),
+  lastUpdatedTime: z.date(),
+});
+
+/**
+ * A tag whose lifecycle is managed by the system.
+ */
 export interface SystemTag extends Tag {
   readonly type: TagType.System;
   readonly tagId: SystemTagId;
 }
+
+export const SystemTagSchema = z.object({
+  tagId: SystemTagIdSchema,
+  name: z.string().min(1).max(255),
+});
 
 export class Tags {
   static readonly UNREAD_TAG: Tag = {
@@ -147,11 +114,13 @@ export class Tags {
     name: 'Importing',
   };
 
-  static makeUserTag(tagInfo: Omit<UserTag, 'type'>): UserTag {
+  static makeUserTag(tagInfo: Omit<UserTag, 'tagId' | 'type'>): UserTag {
     return {
       tagId: makeUserTagId(),
       type: TagType.User,
       name: tagInfo.name,
+      createdTime: tagInfo.createdTime,
+      lastUpdatedTime: tagInfo.lastUpdatedTime,
     };
   }
 }

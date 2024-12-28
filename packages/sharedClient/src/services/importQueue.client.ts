@@ -3,8 +3,9 @@ import {addDoc, collection, doc, getDoc} from 'firebase/firestore';
 
 import {asyncTry} from '@shared/lib/errorUtils.shared';
 
+import {parseImportQueueItemId} from '@shared/parsers/importQueue.parser';
+
 import type {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue.types';
-import {parseImportQueueItemId} from '@shared/types/importQueue.types';
 import type {AsyncResult} from '@shared/types/result.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';

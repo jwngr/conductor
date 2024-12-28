@@ -9,9 +9,10 @@ import {
 
 import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
 
+import {parseFirebaseUser} from '@shared/parsers/user.parser';
+
 import type {AsyncResult} from '@shared/types/result.types';
 import type {AuthStateChangedCallback, EmailAddress, LoggedInUser} from '@shared/types/user.types';
-import {makeLoggedInUserFromFirebaseUser} from '@shared/types/user.types';
 import type {Consumer} from '@shared/types/utils.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';
@@ -42,7 +43,7 @@ export class ClientAuthService {
 
         // Validate a logged in user can be created from the Firebase user. Fire subscriber's
         // callbacks with an error if we cannot.
-        const loggedInUserResult = makeLoggedInUserFromFirebaseUser(firebaseUser);
+        const loggedInUserResult = parseFirebaseUser(firebaseUser);
         if (!loggedInUserResult.success) {
           this.currentUser = null;
           const betterError = prefixError(

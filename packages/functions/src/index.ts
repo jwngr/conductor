@@ -18,13 +18,12 @@ import {
 } from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 
-import {
-  ImportQueueItem,
-  ImportQueueItemStatus,
-  parseImportQueueItemId,
-} from '@shared/types/importQueue.types';
+import {parseImportQueueItemId} from '@shared/parsers/importQueue.parser';
+import {parseUserId} from '@shared/parsers/user.parser';
+
+import {ImportQueueItem, ImportQueueItemStatus} from '@shared/types/importQueue.types';
 import {makeSuccessResult} from '@shared/types/result.types';
-import {parseUserId, UserId} from '@shared/types/user.types';
+import {UserId} from '@shared/types/user.types';
 
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import {ServerFeedSourcesService} from '@sharedServer/services/feedSources.server';

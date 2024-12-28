@@ -10,8 +10,9 @@ import {
 } from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 
+import {parseUserId} from '@shared/parsers/user.parser';
+
 import {FEED_ITEM_EXTENSION_SOURCE} from '@shared/types/feedItems.types';
-import {parseUserId} from '@shared/types/user.types';
 
 import {ClientFeedItemsService} from '@sharedClient/services/feedItems.client';
 import {firebaseService} from '@sharedClient/services/firebase.client';

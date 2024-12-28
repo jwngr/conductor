@@ -7,6 +7,9 @@ import {
 } from '@shared/lib/errorUtils.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
+import {parseUserId} from '@shared/parsers/user.parser';
+import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions.parser';
+
 import type {
   FeedItem,
   FeedItemAppSource,
@@ -26,8 +29,6 @@ import {
 } from '@shared/types/feedItems.types';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
-import {parseUserId} from '@shared/types/user.types';
-import {parseUserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {Timestamp} from '@shared/types/utils.types';
 
 /**

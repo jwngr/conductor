@@ -7,13 +7,14 @@ import {useMemo} from 'react';
 import {USER_FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {asyncTry, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
+import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions.parser';
+
 import type {AsyncResult} from '@shared/types/result.types';
 import type {UserId} from '@shared/types/user.types';
 import type {
   UserFeedSubscription,
   UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
-import {parseUserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {AsyncFunc, Consumer, Unsubscribe} from '@shared/types/utils.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';

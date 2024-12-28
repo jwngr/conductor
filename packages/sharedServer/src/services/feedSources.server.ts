@@ -3,8 +3,10 @@ import {FieldValue} from 'firebase-admin/firestore';
 
 import {prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
+import {parseFeedSource} from '@shared/parsers/feedSources.parser';
+
 import type {FeedSource, FeedSourceId} from '@shared/types/feedSources.types';
-import {makeFeedSource, parseFeedSource} from '@shared/types/feedSources.types';
+import {makeFeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
 

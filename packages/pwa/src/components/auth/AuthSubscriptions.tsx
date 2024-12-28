@@ -7,7 +7,7 @@ import {logger} from '@shared/services/logger.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 import {Urls} from '@shared/lib/urls.shared';
 
-import {isValidEmail} from '@shared/types/user.types';
+import {parseEmailAddress} from '@shared/parsers/user.parser';
 
 import {useAuthStore} from '@sharedClient/stores/AuthStore';
 
@@ -41,19 +41,23 @@ const PasswordlessAuthSubscription: React.FC = () => {
 
       // The sign in screen persisted the email to login in local storage. If the user opened the
       // link on the same browser as the one used to sign in, this value will be present.
-      let email = window.localStorage.getItem('emailForSignIn');
+      let maybeEmail = window.localStorage.getItem('emailForSignIn');
 
-      if (!email) {
+      if (!maybeEmail) {
         // If the user opened the link on a different device, ask them for the email again.
         // TODO: Replace this prompt with something nicer.
-        email = window.prompt('Please provide your email for confirmation');
+        maybeEmail = window.prompt('Please provide your email for confirmation');
       }
 
+      const emailResult = parseEmailAddress(maybeEmail ?? '');
+
       // Do nothing if the user didn't provide a valid email.
-      if (!isValidEmail(email)) {
-        logger.log('Invalid email provided for passwordless sign-in', {email});
+      if (!emailResult.success) {
+        logger.log('Invalid email provided for passwordless sign-in', {email: maybeEmail});
         return;
       }
+
+      const email = emailResult.value;
 
       const authCredentialResult = await authService.signInWithEmailLink(
         email,

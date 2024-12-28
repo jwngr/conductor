@@ -8,9 +8,10 @@ import {
 } from '@shared/lib/errorUtils.shared';
 import {requestGet} from '@shared/lib/requests.shared';
 
+import {parseImportQueueItemId} from '@shared/parsers/importQueue.parser';
+
 import type {FeedItemId} from '@shared/types/feedItems.types';
-import {parseImportQueueItemId} from '@shared/types/importQueue.types';
-import type {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue.types';
+import {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue.types';
 import type {AsyncResult, Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import type {UserId} from '@shared/types/user.types';
