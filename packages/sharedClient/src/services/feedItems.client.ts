@@ -20,7 +20,12 @@ import {
   FEED_ITEMS_STORAGE_COLLECTION,
   IMPORT_QUEUE_DB_COLLECTION,
 } from '@shared/lib/constants.shared';
-import {asyncTry, asyncTryAllPromises, prefixError} from '@shared/lib/errorUtils.shared';
+import {
+  asyncTry,
+  asyncTryAllPromises,
+  prefixErrorResult,
+  prefixResultIfError,
+} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {requestGet} from '@shared/lib/requests.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
@@ -170,15 +175,16 @@ export class ClientFeedItemsService {
     this.userId = args.userId;
   }
 
-  async getFeedItem(feedItemId: FeedItemId): AsyncResult<FeedItem | null> {
+  public async getFeedItem(feedItemId: FeedItemId): AsyncResult<FeedItem | null> {
     return await asyncTry(async () => {
+      // TODO: Use Firebase helper.
       const snapshot = await getDoc(doc(this.feedItemsDbRef, feedItemId));
       if (!snapshot.exists()) return null;
       return {...snapshot.data(), feedItemId: snapshot.id} as FeedItem;
     });
   }
 
-  watchFeedItem(
+  public watchFeedItem(
     feedItemId: FeedItemId,
     successCallback: Consumer<FeedItem | null>, // null means feed item does not exist.
     errorCallback: Consumer<Error>
@@ -197,7 +203,7 @@ export class ClientFeedItemsService {
     return () => unsubscribe();
   }
 
-  watchFeedItemsQuery(args: {
+  public watchFeedItemsQuery(args: {
     readonly viewType: ViewType;
     readonly successCallback: Consumer<FeedItem[]>;
     readonly errorCallback: Consumer<Error>;
@@ -230,7 +236,7 @@ export class ClientFeedItemsService {
     return () => unsubscribe();
   }
 
-  async addFeedItem(args: {
+  public async addFeedItem(args: {
     readonly url: string;
     readonly source: FeedItemSource;
   }): AsyncResult<FeedItemId | null> {
@@ -267,7 +273,7 @@ export class ClientFeedItemsService {
 
     // TODO: Do these in a transaction.
     const addFeedItemResult = await asyncTryAllPromises([
-      setDoc(doc(this.feedItemsDbRef), feedItem),
+      setDoc(doc(this.feedItemsDbRef, feedItem.feedItemId), feedItem),
       setDoc(doc(this.importQueueDbRef, importQueueItem.importQueueItemId), importQueueItem),
     ]);
 
@@ -281,40 +287,39 @@ export class ClientFeedItemsService {
     return makeSuccessResult(feedItem.feedItemId);
   }
 
-  async updateFeedItem(feedItemId: FeedItemId, item: Partial<FeedItem>): AsyncResult<void> {
+  public async updateFeedItem(feedItemId: FeedItemId, item: Partial<FeedItem>): AsyncResult<void> {
     return await asyncTry(async () => updateDoc(doc(this.feedItemsDbRef, feedItemId), item));
   }
 
-  async deleteFeedItem(feedItemId: FeedItemId): AsyncResult<void> {
+  // public async updateFeedItem(feedItemId: FeedItemId, item: Partial<FeedItem>): AsyncResult<void> {
+  //   const docRefToUpdate = doc(this.feedItemsDbRef, feedItemId);
+  //   const updateResult = await updateFirestoreDoc(docRefToUpdate, item);
+  //   return prefixResultIfError(updateResult, 'Error updating feed item');
+  // }
+
+  public async deleteFeedItem(feedItemId: FeedItemId): AsyncResult<void> {
     return await asyncTry(async () => deleteDoc(doc(this.feedItemsDbRef, feedItemId)));
   }
 
-  async getFeedItemMarkdown(feedItemId: FeedItemId): AsyncResult<string> {
+  public async getFeedItemMarkdown(feedItemId: FeedItemId): AsyncResult<string> {
     const fileRef = storageRef(
       this.feedItemsStorageRef,
       `${this.userId}/${feedItemId}/llmContext.md`
     );
 
+    // Fetch the download URL for the file.
     const downloadUrlResult = await asyncTry(async () => getDownloadURL(fileRef));
     if (!downloadUrlResult.success) {
-      return makeErrorResult(
-        prefixError(
-          downloadUrlResult.error,
-          `Error fetching download URL for feed item "${feedItemId}"`
-        )
-      );
+      return prefixErrorResult(downloadUrlResult, 'Error fetching feed item download URL');
     }
 
+    // Fetch the markdown content from the file.
     const downloadUrl = downloadUrlResult.value;
     const responseResult = await requestGet<string>(downloadUrl, {
       headers: {'Content-Type': 'text/markdown'},
     });
-    if (!responseResult.success) {
-      return makeErrorResult(
-        prefixError(responseResult.error, `Error fetching markdown for feed item "${feedItemId}"`)
-      );
-    }
 
-    return makeSuccessResult(responseResult.value);
+    // Return the markdown content.
+    return prefixResultIfError(responseResult, 'Error fetching feed item markdown content');
   }
 }

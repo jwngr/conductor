@@ -41,6 +41,7 @@ export class SharedEventLogService {
 
   public async fetchEventLogItem(eventId: EventId): AsyncResult<EventLogItem | null> {
     return await asyncTry(async () => {
+      // TODO: Use Firebase helper.
       const snapshot = await getDoc(doc(this.eventLogDbRef, eventId));
       if (!snapshot.exists()) return null;
       return {...snapshot.data(), eventId: snapshot.id} as EventLogItem;

@@ -8,7 +8,6 @@ import {USER_FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants.share
 import {asyncTry} from '@shared/lib/errorUtils.shared';
 
 import type {AsyncResult} from '@shared/types/result.types';
-import {makeSuccessResult} from '@shared/types/result.types';
 import type {UserId} from '@shared/types/user.types';
 import type {
   UserFeedSubscription,
@@ -68,13 +67,7 @@ export class ClientUserFeedSubscriptionsService {
     // TODO: Parse and validate the response from the function.
 
     // Parse the response to get the new user feed subscription ID.
-    const newUserFeedSubscriptionIdResult = makeUserFeedSubscriptionId(
-      subscribeResponse.data.userFeedSubscriptionId
-    );
-    if (!newUserFeedSubscriptionIdResult.success) return newUserFeedSubscriptionIdResult;
-    const newUserFeedSubscriptionId = newUserFeedSubscriptionIdResult.value;
-
-    return makeSuccessResult(newUserFeedSubscriptionId);
+    return makeUserFeedSubscriptionId(subscribeResponse.data.userFeedSubscriptionId);
   }
 
   // TODO: Implement this.

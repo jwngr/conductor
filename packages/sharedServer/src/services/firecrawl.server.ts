@@ -1,6 +1,6 @@
 import type FirecrawlApp from '@mendable/firecrawl-js';
 
-import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
+import {asyncTry, prefixErrorResult} from '@shared/lib/errorUtils.shared';
 
 import type {ParsedFirecrawlData, RawFirecrawlResponse} from '@shared/types/firecrawl.types';
 import type {AsyncResult} from '@shared/types/result.types';
@@ -27,9 +27,7 @@ export class ServerFirecrawlService {
     });
 
     if (!rawFirecrawlResult.success) {
-      return makeErrorResult(
-        prefixError(rawFirecrawlResult.error, 'Error fetching Firecrawl data')
-      );
+      return prefixErrorResult(rawFirecrawlResult, 'Error fetching Firecrawl data');
     }
 
     const rawFirecrawlData = rawFirecrawlResult.value;
