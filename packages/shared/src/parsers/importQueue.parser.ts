@@ -1,8 +1,5 @@
-import {
-  parseZodResult,
-  prefixErrorResult,
-  prefixResultIfError,
-} from '@shared/lib/errorUtils.shared';
+import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {parseZodResult} from '@shared/lib/parser.shared';
 
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
 import {parseUserId} from '@shared/parsers/user.parser';

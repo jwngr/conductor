@@ -1,4 +1,5 @@
-import {parseZodResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {parseZodResult} from '@shared/lib/parser.shared';
 
 import type {FeedSource, FeedSourceId} from '@shared/types/feedSources.types';
 import {FeedSourceIdSchema, FeedSourceSchema} from '@shared/types/feedSources.types';

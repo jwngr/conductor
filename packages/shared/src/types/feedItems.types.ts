@@ -73,27 +73,6 @@ export const FeedItemSourceSchema = z.discriminatedUnion('type', [
   RssFeedItemSourceSchema,
 ]);
 
-/**
- * Zod schema for a {@link FeedItem}. This should be kept in sync with that interface.
- */
-export const FeedItemSchema = z.object({
-  feedItemId: FeedItemIdSchema,
-  userId: UserIdSchema,
-  type: z.nativeEnum(FeedItemType),
-  source: FeedItemSourceSchema,
-  url: z.string().url(),
-  title: z.string().min(1),
-  description: z.string(),
-  outgoingLinks: z.array(z.string().url()),
-  triageStatus: z.nativeEnum(TriageStatus),
-  tagIds: z.record(z.string(), z.boolean()),
-  // lastImportedTime: z.string().datetime(),
-  // createdTime: z.string().datetime(),
-  // lastUpdatedTime: z.string().datetime(),
-  lastImportedTime: z.date(),
-  createdTime: z.date(),
-  lastUpdatedTime: z.date(),
-});
 interface BaseFeedItemSource {
   // TODO: Consider renaming this to `sourceType`.
   readonly type: FeedItemSourceType;
@@ -167,6 +146,28 @@ interface BaseFeedItem extends BaseStoreItem {
   // Timestamps.
   readonly lastImportedTime?: Timestamp;
 }
+
+/**
+ * Zod schema for a {@link FeedItem}.
+ */
+export const FeedItemSchema = z.object({
+  feedItemId: FeedItemIdSchema,
+  userId: UserIdSchema,
+  type: z.nativeEnum(FeedItemType),
+  source: FeedItemSourceSchema,
+  url: z.string().url(),
+  title: z.string().min(1),
+  description: z.string(),
+  outgoingLinks: z.array(z.string().url()),
+  triageStatus: z.nativeEnum(TriageStatus),
+  tagIds: z.record(z.string(), z.boolean()),
+  // lastImportedTime: z.string().datetime(),
+  // createdTime: z.string().datetime(),
+  // lastUpdatedTime: z.string().datetime(),
+  lastImportedTime: z.date(),
+  createdTime: z.date(),
+  lastUpdatedTime: z.date(),
+});
 
 export interface ArticleFeedItem extends BaseFeedItem {
   readonly type: FeedItemType.Article;

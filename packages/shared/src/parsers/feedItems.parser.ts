@@ -1,10 +1,7 @@
 import type {z} from 'zod';
 
-import {
-  parseZodResult,
-  prefixErrorResult,
-  prefixResultIfError,
-} from '@shared/lib/errorUtils.shared';
+import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {parseZodResult} from '@shared/lib/parser.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {parseUserId} from '@shared/parsers/user.parser';

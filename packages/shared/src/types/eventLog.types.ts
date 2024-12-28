@@ -15,6 +15,9 @@ import type {BaseStoreItem} from '@shared/types/utils.types';
  */
 export type EventId = string & {readonly __brand: 'EventIdBrand'};
 
+/**
+ * Zod schema for an {@link EventId}.
+ */
 export const EventIdSchema = z.string().uuid();
 
 /**
@@ -29,48 +32,33 @@ export enum EventType {
   UserFeedSubscription = 'USER_FEED_SUBSCRIPTION',
 }
 
-export const UserFeedSubscriptionEventLogItemDataSchema = z.object({
-  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
-});
+export interface FeedItemActionEventLogItemData extends Record<string, unknown> {
+  readonly feedItemId: FeedItemId;
+  readonly feedItemActionType: FeedItemActionType;
+}
 
 export const FeedItemActionEventLogItemDataSchema = z.object({
   feedItemId: FeedItemIdSchema,
   feedItemActionType: z.nativeEnum(FeedItemActionType),
 });
 
-export interface FeedItemActionEventLogItemData extends Record<string, unknown> {
-  readonly feedItemId: FeedItemId;
-  readonly feedItemActionType: FeedItemActionType;
-}
-
 export interface UserFeedSubscriptionEventLogItemData extends Record<string, unknown> {
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
   // TODO: Add `userFeedSubscriptionActionType`.
 }
 
+export const UserFeedSubscriptionEventLogItemDataSchema = z.object({
+  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
+});
+
 const EventLogItemDataSchema = FeedItemActionEventLogItemDataSchema.or(
   UserFeedSubscriptionEventLogItemDataSchema
 );
 
-export const EventLogItemSchema = z.object({
-  eventId: EventIdSchema,
-  userId: UserIdSchema,
-  eventType: z.nativeEnum(EventType),
-  data: EventLogItemDataSchema,
-  // createdTime: z.string().datetime(),
-  // lastUpdatedTime: z.string().datetime(),
-  createdTime: z.date(),
-  lastUpdatedTime: z.date(),
-});
-
-// type GeneratedEventLogItemSchema = z.infer<typeof EventLogItemSchema>;
-
-// interface BaseEventLogItem
-//   extends Omit<GeneratedEventLogItemSchema, 'createdTime' | 'lastUpdatedTime'>,
-//     BaseStoreItem {
-//   //
-// }
-
+/**
+ * Base interface for all event log items. Most things that happen in the app are logged and tracked
+ * as an event.
+ */
 interface BaseEventLogItem extends BaseStoreItem {
   readonly eventType: EventType;
   readonly eventId: EventId;
@@ -78,6 +66,18 @@ interface BaseEventLogItem extends BaseStoreItem {
   /** Arbitrary data associated with the event. */
   readonly data?: Record<string, unknown>;
 }
+
+/**
+ * Zod schema for an {@link EventLogItem}.
+ */
+export const EventLogItemSchema = z.object({
+  eventId: EventIdSchema,
+  userId: UserIdSchema,
+  eventType: z.nativeEnum(EventType),
+  data: EventLogItemDataSchema,
+  createdTime: z.date(),
+  lastUpdatedTime: z.date(),
+});
 
 export interface FeedItemActionEventLogItem extends BaseEventLogItem {
   readonly eventType: EventType.FeedItemAction;

@@ -16,6 +16,9 @@ import type {BaseStoreItem, Timestamp} from '@shared/types/utils.types';
  */
 export type ImportQueueItemId = string & {readonly __brand: 'ImportQueueItemIdBrand'};
 
+/**
+ * Zod schema for an {@link ImportQueueItemId}.
+ */
 export const ImportQueueItemIdSchema = z.string().uuid();
 
 /**
@@ -44,16 +47,6 @@ export enum ImportQueueItemStatus {
   // Note: There is no "completed" status because items are deleted once complete.
 }
 
-export const ImportQueueItemSchema = z.object({
-  importQueueItemId: ImportQueueItemIdSchema,
-  userId: UserIdSchema,
-  feedItemId: FeedItemIdSchema,
-  url: z.string().url(),
-  status: z.nativeEnum(ImportQueueItemStatus),
-  createdTime: z.date(),
-  lastUpdatedTime: z.date(),
-});
-
 /**
  * An item in the feed import queue.
  */
@@ -65,6 +58,22 @@ export interface ImportQueueItem extends BaseStoreItem {
   readonly status: ImportQueueItemStatus;
 }
 
+/**
+ * Zod schema for an {@link ImportQueueItem}.
+ */
+export const ImportQueueItemSchema = z.object({
+  importQueueItemId: ImportQueueItemIdSchema,
+  userId: UserIdSchema,
+  feedItemId: FeedItemIdSchema,
+  url: z.string().url(),
+  status: z.nativeEnum(ImportQueueItemStatus),
+  createdTime: z.date(),
+  lastUpdatedTime: z.date(),
+});
+
+/**
+ * Creates a new {@link ImportQueueItem}.
+ */
 export function makeImportQueueItem(args: {
   readonly feedItemId: FeedItemId;
   readonly userId: UserId;
