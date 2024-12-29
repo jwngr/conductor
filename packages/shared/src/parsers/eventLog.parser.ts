@@ -117,8 +117,8 @@ function parseFeedItemActionEventLogItem(
     userId: parsedUserIdResult.value,
     eventType: EventType.FeedItemAction,
     data: parsedDataResult.value,
-    createdTime: new Date(createdTime) as unknown as Timestamp,
-    lastUpdatedTime: new Date(lastUpdatedTime) as unknown as Timestamp,
+    createdTime: createdTime.toDate(),
+    lastUpdatedTime: lastUpdatedTime.toDate(),
   });
 }
 

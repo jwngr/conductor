@@ -2,6 +2,7 @@ import {z} from 'zod';
 
 import {makeUuid} from '@shared/lib/utils.shared';
 
+import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 
 export enum TagType {
@@ -72,8 +73,8 @@ export interface UserTag extends Tag, BaseStoreItem {
 export const UserTagSchema = z.object({
   tagId: UserTagIdSchema,
   name: z.string().min(1).max(255),
-  createdTime: z.date(),
-  lastUpdatedTime: z.date(),
+  createdTime: FirestoreTimestampSchema,
+  lastUpdatedTime: FirestoreTimestampSchema,
 });
 
 /**

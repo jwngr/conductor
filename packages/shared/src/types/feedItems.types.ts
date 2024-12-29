@@ -3,6 +3,7 @@ import {z} from 'zod';
 
 import {makeUuid} from '@shared/lib/utils.shared';
 
+import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {IconName} from '@shared/types/icons.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import type {TagId} from '@shared/types/tags.types';
@@ -161,12 +162,9 @@ export const FeedItemSchema = z.object({
   outgoingLinks: z.array(z.string().url()),
   triageStatus: z.nativeEnum(TriageStatus),
   tagIds: z.record(z.string(), z.boolean()),
-  // lastImportedTime: z.string().datetime(),
-  // createdTime: z.string().datetime(),
-  // lastUpdatedTime: z.string().datetime(),
-  lastImportedTime: z.date(),
-  createdTime: z.date(),
-  lastUpdatedTime: z.date(),
+  lastImportedTime: FirestoreTimestampSchema.optional(),
+  createdTime: FirestoreTimestampSchema,
+  lastUpdatedTime: FirestoreTimestampSchema,
 });
 
 export interface ArticleFeedItem extends BaseFeedItem {

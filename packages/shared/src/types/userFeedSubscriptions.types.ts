@@ -7,6 +7,7 @@ import {
   type FeedSource,
   type FeedSourceId,
 } from '@shared/types/feedSources.types';
+import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
 import type {UserId} from '@shared/types/user.types';
@@ -60,9 +61,9 @@ export const UserFeedSubscriptionSchema = z.object({
   url: z.string().url(),
   title: z.string().min(1),
   isActive: z.boolean(),
-  unsubscribedTime: z.date().nullable(),
-  createdTime: z.date(),
-  lastUpdatedTime: z.date(),
+  unsubscribedTime: FirestoreTimestampSchema.optional(),
+  createdTime: FirestoreTimestampSchema,
+  lastUpdatedTime: FirestoreTimestampSchema,
 });
 
 /**

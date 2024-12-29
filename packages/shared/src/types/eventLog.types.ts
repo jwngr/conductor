@@ -4,6 +4,7 @@ import {makeUuid} from '@shared/lib/utils.shared';
 
 import {FeedItemActionType, FeedItemIdSchema} from '@shared/types/feedItems.types';
 import type {FeedItemId} from '@shared/types/feedItems.types';
+import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {UserId} from '@shared/types/user.types';
 import {UserIdSchema} from '@shared/types/user.types';
 import {UserFeedSubscriptionIdSchema} from '@shared/types/userFeedSubscriptions.types';
@@ -75,8 +76,8 @@ export const EventLogItemSchema = z.object({
   userId: UserIdSchema,
   eventType: z.nativeEnum(EventType),
   data: EventLogItemDataSchema,
-  createdTime: z.date(),
-  lastUpdatedTime: z.date(),
+  createdTime: FirestoreTimestampSchema,
+  lastUpdatedTime: FirestoreTimestampSchema,
 });
 
 export interface FeedItemActionEventLogItem extends BaseEventLogItem {

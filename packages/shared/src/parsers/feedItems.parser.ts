@@ -129,12 +129,14 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
     source: parsedSourceResult.value,
     feedItemId: parsedIdResult.value,
     url,
-    title: 'Test title',
-    description: 'Test description',
+    title: 'Test title from parseFeedItem',
+    description: 'Test description from parseFeedItem',
     outgoingLinks: [],
     triageStatus,
     tagIds: {},
-    lastImportedTime: new Date(lastImportedTime) as unknown as Timestamp,
+    lastImportedTime: lastImportedTime
+      ? (new Date(lastImportedTime) as unknown as Timestamp)
+      : undefined,
     createdTime: new Date(createdTime) as unknown as Timestamp,
     lastUpdatedTime: new Date(lastUpdatedTime) as unknown as Timestamp,
   });

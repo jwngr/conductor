@@ -4,6 +4,7 @@ import {makeUuid} from '@shared/lib/utils.shared';
 
 import {FeedItemIdSchema} from '@shared/types/feedItems.types';
 import type {FeedItemId} from '@shared/types/feedItems.types';
+import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
 import {UserIdSchema} from '@shared/types/user.types';
@@ -67,8 +68,8 @@ export const ImportQueueItemSchema = z.object({
   feedItemId: FeedItemIdSchema,
   url: z.string().url(),
   status: z.nativeEnum(ImportQueueItemStatus),
-  createdTime: z.date(),
-  lastUpdatedTime: z.date(),
+  createdTime: FirestoreTimestampSchema,
+  lastUpdatedTime: FirestoreTimestampSchema,
 });
 
 /**

@@ -9,8 +9,7 @@ import type {EventId, EventLogItem} from '@shared/types/eventLog.types';
 import {makeSuccessResult, type AsyncResult, type Result} from '@shared/types/result.types';
 
 import {firebaseService} from '@sharedServer/services/firebase.server';
-
-import {ServerFirestoreCollectionService} from './firestore.server';
+import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
 type ServerEventLogCollectionService = ServerFirestoreCollectionService<EventId, EventLogItem>;
 

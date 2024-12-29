@@ -12,7 +12,7 @@ import {Text} from '@src/components/atoms/Text';
 import {Markdown} from '@src/components/Markdown';
 
 export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
-  const isFeedItemImported = Boolean(feedItem?.lastImportedTime);
+  const isFeedItemImported = Boolean(feedItem.lastImportedTime);
   const {markdown, isLoading, error} = useFeedItemMarkdown(feedItem.feedItemId, isFeedItemImported);
 
   if (error) {

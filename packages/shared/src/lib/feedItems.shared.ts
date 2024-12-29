@@ -47,8 +47,8 @@ export class SharedFeedItemHelpers {
       url: args.url,
       type: args.type,
       source: args.source,
-      title: '',
-      description: '',
+      title: 'Test title from makeFeedItem',
+      description: 'Test description from makeFeedItem',
       outgoingLinks: [],
       triageStatus: TriageStatus.Untriaged,
       tagIds: {

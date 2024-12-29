@@ -2,6 +2,7 @@ import type {ZodSchema} from 'zod';
 
 import {logger} from '@shared/services/logger.shared';
 
+import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 
@@ -13,10 +14,11 @@ export function parseZodResult<T>(zodSchema: ZodSchema<T>, value: unknown): Resu
   const zodResult = zodSchema.safeParse(value);
 
   if (!zodResult.success) {
-    logger.error(new Error('Error parsing value with Zod'), {
-      value,
+    const keysWithErrors = Object.keys(zodResult.error.format()).filter((key) => key !== '_errors');
+    logger.error(new Error(`Error parsing value with Zod: ${keysWithErrors.join(', ')}`), {
+      value, // TODO: Probably should not be logging raw values here.
       error: zodResult.error,
-      issues: zodResult.error.issues,
+      format: zodResult.error.format(),
     });
     return makeErrorResult(
       new Error(
@@ -27,4 +29,13 @@ export function parseZodResult<T>(zodSchema: ZodSchema<T>, value: unknown): Resu
   }
 
   return makeSuccessResult(zodResult.data);
+}
+
+export function parseFirestoreTimestamp(value: unknown): Result<Date> {
+  const zodResult = FirestoreTimestampSchema.safeParse(value);
+  if (!zodResult.success) {
+    return makeErrorResult(new Error('Invalid Firestore timestamp'));
+  }
+
+  return makeSuccessResult(new Date(zodResult.data.seconds * 1000));
 }

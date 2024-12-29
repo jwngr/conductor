@@ -39,7 +39,7 @@ export interface User {
 export const UserSchema = z.object({
   userId: UserIdSchema,
   email: EmailAddressSchema,
-  displayName: z.string().nullable(),
+  displayName: z.string().optional(),
 });
 
 export type AuthStateChangedCallback = Consumer<User | null>;
