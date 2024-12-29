@@ -1,6 +1,5 @@
-import admin from 'firebase-admin';
-import type {DocumentData, Query} from 'firebase-admin/firestore';
-import {CollectionReference, FieldValue} from 'firebase-admin/firestore';
+import type {CollectionReference, DocumentData, Query} from 'firebase-admin/firestore';
+import {FieldValue} from 'firebase-admin/firestore';
 
 import {
   asyncTry,
@@ -11,18 +10,16 @@ import {
 
 import type {AsyncResult, Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import {Func} from '@shared/types/utils.types';
+import type {Func} from '@shared/types/utils.types';
+
+import {firebaseService} from '@sharedServer/services/firebase.server';
 
 const BATCH_DELETE_SIZE = 500;
 
-admin.initializeApp();
-
-export const firestore = admin.firestore();
-
-export const FIREBASE_STORAGE_BUCKET = admin.storage().bucket();
-export const FIREBASE_PROJECT_ID = admin.instanceId().app.options.projectId;
-
-export class FirestoreCollectionService<ItemId extends string, ItemData extends DocumentData> {
+export class ServerFirestoreCollectionService<
+  ItemId extends string,
+  ItemData extends DocumentData,
+> {
   private readonly collectionRef: CollectionReference;
   private readonly parseData: Func<DocumentData, Result<ItemData>>;
   private readonly parseId: Func<string, Result<ItemId>>;
@@ -54,6 +51,8 @@ export class FirestoreCollectionService<ItemId extends string, ItemData extends 
       const data = docSnap.data();
       if (!data) return null;
       const parseDataResult = this.parseData(data);
+      // Allow throwing here since we are inside `asyncTry`.
+      // eslint-disable-next-line no-restricted-syntax
       if (!parseDataResult.success) throw parseDataResult.error;
       return parseDataResult.value;
     });
@@ -69,6 +68,8 @@ export class FirestoreCollectionService<ItemId extends string, ItemData extends 
       return querySnapshot.docs.map((doc) => {
         const data = doc.data();
         const parseDataResult = this.parseData(data);
+        // Allow throwing here since we are inside `asyncTry`.
+        // eslint-disable-next-line no-restricted-syntax
         if (!parseDataResult.success) throw parseDataResult.error;
         return parseDataResult.value;
       });
@@ -86,6 +87,8 @@ export class FirestoreCollectionService<ItemId extends string, ItemData extends 
       if (querySnapshot.empty) return null;
       const data = querySnapshot.docs[0].data();
       const parseDataResult = this.parseData(data);
+      // Allow throwing here since we are inside `asyncTry`.
+      // eslint-disable-next-line no-restricted-syntax
       if (!parseDataResult.success) throw parseDataResult.error;
       return parseDataResult.value;
     });
@@ -100,6 +103,8 @@ export class FirestoreCollectionService<ItemId extends string, ItemData extends 
       const querySnapshot = await query.get();
       return querySnapshot.docs.map((doc) => {
         const parseIdResult = this.parseId(doc.id);
+        // Allow throwing here since we are inside `asyncTry`.
+        // eslint-disable-next-line no-restricted-syntax
         if (!parseIdResult.success) throw parseIdResult.error;
         return parseIdResult.value;
       });
@@ -171,7 +176,7 @@ export class FirestoreCollectionService<ItemId extends string, ItemData extends 
     // Run one batch at a time.
     for (const currentIds of idsPerBatch) {
       const deleteBatchResult = await asyncTry(async () => {
-        const batch = firestore.batch();
+        const batch = firebaseService.firestore.batch();
         currentIds.forEach((id) => batch.delete(this.collectionRef.doc(id)));
         await batch.commit();
       });

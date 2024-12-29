@@ -1,9 +1,9 @@
 import type {AsyncResult} from '@shared/types/result.types';
 import type {User, UserId} from '@shared/types/user.types';
 
-import {FirestoreCollectionService} from '@sharedServer/lib/firebase.server';
+import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
-type UsersCollectionService = FirestoreCollectionService<UserId, User>;
+type UsersCollectionService = ServerFirestoreCollectionService<UserId, User>;
 
 export class ServerUsersService {
   private usersCollectionService: UsersCollectionService;

@@ -9,10 +9,9 @@ import {makeErrorResult} from '@shared/types/result.types';
 import {SystemTagId} from '@shared/types/tags.types';
 import type {UserId} from '@shared/types/user.types';
 
-import {
-  FIREBASE_STORAGE_BUCKET,
-  FirestoreCollectionService,
-} from '@sharedServer/lib/firebase.server';
+import {FIREBASE_STORAGE_BUCKET} from '@sharedServer/services/firebase.server';
+
+import {ServerFirestoreCollectionService} from './firestore.server';
 
 interface UpdateImportedFeedItemInFirestoreArgs {
   readonly links: string[] | null;
@@ -20,7 +19,7 @@ interface UpdateImportedFeedItemInFirestoreArgs {
   readonly description: string | null;
 }
 
-type FeedItemCollectionService = FirestoreCollectionService<FeedItemId, FeedItem>;
+type FeedItemCollectionService = ServerFirestoreCollectionService<FeedItemId, FeedItem>;
 
 export class ServerFeedItemsService {
   private readonly storageCollectionPath: string;
