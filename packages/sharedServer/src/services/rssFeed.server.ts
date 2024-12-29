@@ -4,9 +4,9 @@ import {AsyncResult} from '@shared/types/result.types';
 import {UserId} from '@shared/types/user.types';
 import {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
-import {ServerFeedSourcesService} from './feedSources.server';
-import {SuperfeedrService} from './superfeedr.server';
-import {ServerUserFeedSubscriptionsService} from './userFeedSubscriptions.server';
+import {ServerFeedSourcesService} from '@sharedServer/services/feedSources.server';
+import {SuperfeedrService} from '@sharedServer/services/superfeedr.server';
+import {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
 
 export class ServerRssFeedService {
   private readonly superfeedrService: SuperfeedrService;

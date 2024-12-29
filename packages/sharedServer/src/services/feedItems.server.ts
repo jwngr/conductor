@@ -10,8 +10,7 @@ import {SystemTagId} from '@shared/types/tags.types';
 import type {UserId} from '@shared/types/user.types';
 
 import {FIREBASE_STORAGE_BUCKET} from '@sharedServer/services/firebase.server';
-
-import {ServerFirestoreCollectionService} from './firestore.server';
+import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
 interface UpdateImportedFeedItemInFirestoreArgs {
   readonly links: string[] | null;
