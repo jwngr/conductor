@@ -119,7 +119,7 @@ export class ServerFeedItemsService {
    */
   public async deleteAllForUser(userId: UserId): AsyncResult<void> {
     // Fetch the IDs for all of the user's feed items.
-    const query = this.feedItemsCollectionService.getRef().where('userId', '==', userId);
+    const query = this.feedItemsCollectionService.getCollectionRef().where('userId', '==', userId);
     const queryResult = await this.feedItemsCollectionService.fetchQueryIds(query);
     if (!queryResult.success) {
       return prefixErrorResult(queryResult, 'Error fetching feed items to delete for user');

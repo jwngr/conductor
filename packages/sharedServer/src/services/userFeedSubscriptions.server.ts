@@ -32,7 +32,7 @@ export class ServerUserFeedSubscriptionsService {
    */
   public async fetchAllForUser(userId: UserId): AsyncResult<UserFeedSubscription[]> {
     const query = this.userFeedSubscriptionsCollectionService
-      .getRef()
+      .getCollectionRef()
       .where('userId', '==', userId);
     const queryResult = await this.userFeedSubscriptionsCollectionService.fetchQueryDocs(query);
     return prefixResultIfError(queryResult, 'Error fetching user feed subscriptions for user');
@@ -107,7 +107,7 @@ export class ServerUserFeedSubscriptionsService {
   public async deleteAllForUser(userId: UserId): AsyncResult<void> {
     // Fetch the IDs for all of the user's feed subscriptions.
     const query = this.userFeedSubscriptionsCollectionService
-      .getRef()
+      .getCollectionRef()
       .where('userId', '==', userId);
     const queryResult = await this.userFeedSubscriptionsCollectionService.fetchQueryIds(query);
     if (!queryResult.success) {

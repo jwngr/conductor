@@ -1,4 +1,9 @@
-import type {CollectionReference, DocumentData, Query} from 'firebase-admin/firestore';
+import type {
+  CollectionReference,
+  DocumentData,
+  DocumentReference,
+  Query,
+} from 'firebase-admin/firestore';
 import {FieldValue} from 'firebase-admin/firestore';
 
 import {
@@ -37,8 +42,15 @@ export class ServerFirestoreCollectionService<
   /**
    * Returns the underlying Firestore collection reference.
    */
-  public getRef(): CollectionReference {
+  public getCollectionRef(): CollectionReference {
     return this.collectionRef;
+  }
+
+  /**
+   * Returns a Firestore document reference for the given child ID.
+   */
+  public getDocRef(docId: ItemId): DocumentReference {
+    return this.collectionRef.doc(docId);
   }
 
   /**
@@ -61,9 +73,9 @@ export class ServerFirestoreCollectionService<
   /**
    * Fetches all documents matching the Firestore query.
    */
-  async fetchQueryDocs(query: Query): AsyncResult<ItemData[]> {
+  async fetchQueryDocs(queryToFetch: Query): AsyncResult<ItemData[]> {
     const queryDataResult = await asyncTry(async () => {
-      const querySnapshot = await query.get();
+      const querySnapshot = await queryToFetch.get();
       return querySnapshot.docs.map((doc) => {
         const data = doc.data();
         const parseDataResult = this.parseData(data);
@@ -79,9 +91,9 @@ export class ServerFirestoreCollectionService<
    * Fetches data from the first document matching a Firestore query. If no documents match, returns
    * `null`.
    */
-  async fetchFirstQueryDoc(query: Query): AsyncResult<ItemData | null> {
+  async fetchFirstQueryDoc(queryToFetch: Query): AsyncResult<ItemData | null> {
     const queryDataResult = await asyncTry(async () => {
-      const querySnapshot = await query.limit(1).get();
+      const querySnapshot = await queryToFetch.limit(1).get();
       if (querySnapshot.empty) return null;
       const data = querySnapshot.docs[0].data();
       const parseDataResult = this.parseData(data);

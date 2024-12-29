@@ -30,7 +30,7 @@ export class ServerFeedSourcesService {
    * Fetches an existing feed source document from Firestore by its URL.
    */
   public async fetchByUrl(feedUrl: string): AsyncResult<FeedSource | null> {
-    const query = this.feedSourcesCollectionService.getRef().where('url', '==', feedUrl);
+    const query = this.feedSourcesCollectionService.getCollectionRef().where('url', '==', feedUrl);
     const maybeFeedSource = await this.feedSourcesCollectionService.fetchFirstQueryDoc(query);
     return prefixResultIfError(maybeFeedSource, 'Error fetching feed source by URL in Firestore');
   }
