@@ -5,7 +5,7 @@ import {parseZodResult} from '@shared/lib/parser.shared';
 
 import type {Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import type {EmailAddress, LoggedInUser, UserId} from '@shared/types/user.types';
+import type {EmailAddress, User, UserId} from '@shared/types/user.types';
 import {EmailAddressSchema, UserIdSchema, UserSchema} from '@shared/types/user.types';
 
 /**
@@ -20,10 +20,10 @@ export function parseUserId(maybeUserId: string): Result<UserId> {
 }
 
 /**
- * Parses a generic {@link LoggedInUser} from a an unknown object. Returns an `ErrorResult` if the
+ * Parses a generic {@link User} from a an unknown object. Returns an `ErrorResult` if the
  * object is not valid.
  */
-export function parseUser(maybeUser: unknown): Result<LoggedInUser> {
+export function parseUser(maybeUser: unknown): Result<User> {
   const parsedResult = parseZodResult(UserSchema, maybeUser);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid user');
@@ -55,9 +55,9 @@ export function parseEmailAddress(maybeEmail: string): Result<EmailAddress> {
 }
 
 /**
- * Parses a generic {@link LoggedInUser} from a Firebase-specific {@link FirebaseUser}. Returns an
+ * Parses a generic {@link User} from a Firebase-specific {@link FirebaseUser}. Returns an
  */
-export function parseFirebaseUser(firebaseLoggedInUser: FirebaseUser): Result<LoggedInUser> {
+export function parseFirebaseUser(firebaseLoggedInUser: FirebaseUser): Result<User> {
   if (!firebaseLoggedInUser.email) {
     return makeErrorResult(new Error('No email address associated with Firebase user'));
   }

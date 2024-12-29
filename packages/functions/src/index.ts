@@ -65,20 +65,24 @@ onInit(() => {
     webhookBaseUrl: `https://${FIREBASE_PROJECT_ID}.firebaseapp.com`,
   });
 
+  const feedSourcesCollectionService = new FirestoreCollectionService({
+    collectionRef: firestore.collection(FEED_SOURCES_DB_COLLECTION),
+    parseId: parseFeedSourceId,
+    parseData: parseFeedSource,
+  });
+
   feedSourcesService = new ServerFeedSourcesService({
-    feedSourcesCollectionService: new FirestoreCollectionService({
-      collectionRef: firestore.collection(FEED_SOURCES_DB_COLLECTION),
-      parseId: parseFeedSourceId,
-      parseData: parseFeedSource,
-    }),
+    feedSourcesCollectionService,
+  });
+
+  const userFeedSubscriptionsCollectionService = new FirestoreCollectionService({
+    collectionRef: firestore.collection(USER_FEED_SUBSCRIPTIONS_DB_COLLECTION),
+    parseId: parseUserFeedSubscriptionId,
+    parseData: parseUserFeedSubscription,
   });
 
   userFeedSubscriptionsService = new ServerUserFeedSubscriptionsService({
-    userFeedSubscriptionsCollectionService: new FirestoreCollectionService({
-      collectionRef: firestore.collection(USER_FEED_SUBSCRIPTIONS_DB_COLLECTION),
-      parseId: parseUserFeedSubscriptionId,
-      parseData: parseUserFeedSubscription,
-    }),
+    userFeedSubscriptionsCollectionService,
   });
 
   const feedItemsCollectionService = new FirestoreCollectionService({

@@ -20,9 +20,11 @@ interface UpdateImportedFeedItemInFirestoreArgs {
   readonly description: string | null;
 }
 
+type FeedItemCollectionService = FirestoreCollectionService<FeedItemId, FeedItem>;
+
 export class ServerFeedItemsService {
   private readonly storageCollectionPath: string;
-  private readonly feedItemsCollectionService: FirestoreCollectionService<FeedItemId, FeedItem>;
+  private readonly feedItemsCollectionService: FeedItemCollectionService;
   // TODO: `storageBucket` should probably be passed in via the constructor, but there is no type
   // for it from the Firebase Admin SDK. We could use a type from @google-cloud/storage instead, but
   // we currently don't list that as a dependency.
@@ -30,7 +32,7 @@ export class ServerFeedItemsService {
 
   constructor(args: {
     readonly storageCollectionPath: string;
-    readonly feedItemsCollectionService: FirestoreCollectionService<FeedItemId, FeedItem>;
+    readonly feedItemsCollectionService: FeedItemCollectionService;
   }) {
     this.storageCollectionPath = args.storageCollectionPath;
     this.feedItemsCollectionService = args.feedItemsCollectionService;

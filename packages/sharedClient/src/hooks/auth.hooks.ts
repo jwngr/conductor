@@ -1,19 +1,19 @@
 import {logger} from '@shared/services/logger.shared';
 
-import type {LoggedInUser} from '@shared/types/user.types';
+import type {User} from '@shared/types/user.types';
 
 import {useAuthStore} from '@sharedClient/stores/AuthStore';
 
 export function useMaybeLoggedInUser(): {
   readonly isLoading: boolean;
-  readonly loggedInUser: LoggedInUser | null;
+  readonly loggedInUser: User | null;
 } {
   const isLoading = useAuthStore((state) => state.isLoading);
   const loggedInUser = useAuthStore((state) => state.loggedInUser);
   return {isLoading, loggedInUser};
 }
 
-export function useLoggedInUser(): LoggedInUser {
+export function useLoggedInUser(): User {
   const loggedInUser = useAuthStore((state) => state.loggedInUser);
   if (!loggedInUser) {
     const error = new Error(
