@@ -1,12 +1,5 @@
 import admin from 'firebase-admin';
 
-admin.initializeApp();
-
-export const firestore = admin.firestore();
-
-export const FIREBASE_STORAGE_BUCKET = admin.storage().bucket();
-export const FIREBASE_PROJECT_ID = admin.instanceId().app.options.projectId;
-
 export class ServerFirebaseService {
   private appInstance: admin.app.App;
   private storageInstance: admin.storage.Storage | null = null;
@@ -18,6 +11,10 @@ export class ServerFirebaseService {
 
   public get app(): admin.app.App {
     return this.appInstance;
+  }
+
+  public get projectId(): string | undefined {
+    return this.appInstance.options.projectId;
   }
 
   public get storage(): admin.storage.Storage {

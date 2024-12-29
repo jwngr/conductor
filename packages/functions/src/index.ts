@@ -33,7 +33,7 @@ import {UserId} from '@shared/types/user.types';
 
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import {ServerFeedSourcesService} from '@sharedServer/services/feedSources.server';
-import {FIREBASE_PROJECT_ID, firestore} from '@sharedServer/services/firebase.server';
+import {firebaseService} from '@sharedServer/services/firebase.server';
 import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
 import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 import {ServerImportQueueService} from '@sharedServer/services/importQueue.server';
@@ -58,11 +58,11 @@ onInit(() => {
   const superfeedrService = new SuperfeedrService({
     superfeedrUser: SUPERFEEDR_USER.value(),
     superfeedrApiKey: SUPERFEEDR_API_KEY.value(),
-    webhookBaseUrl: `https://${FIREBASE_PROJECT_ID}.firebaseapp.com`,
+    webhookBaseUrl: `https://${firebaseService.projectId}.firebaseapp.com`,
   });
 
   const feedSourcesCollectionService = new ServerFirestoreCollectionService({
-    collectionRef: firestore.collection(FEED_SOURCES_DB_COLLECTION),
+    collectionRef: firebaseService.firestore.collection(FEED_SOURCES_DB_COLLECTION),
     parseId: parseFeedSourceId,
     parseData: parseFeedSource,
   });
@@ -72,7 +72,7 @@ onInit(() => {
   });
 
   const userFeedSubscriptionsCollectionService = new ServerFirestoreCollectionService({
-    collectionRef: firestore.collection(USER_FEED_SUBSCRIPTIONS_DB_COLLECTION),
+    collectionRef: firebaseService.firestore.collection(USER_FEED_SUBSCRIPTIONS_DB_COLLECTION),
     parseId: parseUserFeedSubscriptionId,
     parseData: parseUserFeedSubscription,
   });
@@ -82,7 +82,7 @@ onInit(() => {
   });
 
   const feedItemsCollectionService = new ServerFirestoreCollectionService({
-    collectionRef: firestore.collection(FEED_ITEMS_DB_COLLECTION),
+    collectionRef: firebaseService.firestore.collection(FEED_ITEMS_DB_COLLECTION),
     parseId: parseFeedItemId,
     parseData: parseFeedItem,
   });
@@ -93,7 +93,7 @@ onInit(() => {
   });
 
   const importQueueCollectionService = new ServerFirestoreCollectionService({
-    collectionRef: firestore.collection(IMPORT_QUEUE_DB_COLLECTION),
+    collectionRef: firebaseService.firestore.collection(IMPORT_QUEUE_DB_COLLECTION),
     parseId: parseImportQueueItemId,
     parseData: parseImportQueueItem,
   });
@@ -105,7 +105,7 @@ onInit(() => {
   });
 
   const usersCollectionService = new ServerFirestoreCollectionService({
-    collectionRef: firestore.collection(USERS_DB_COLLECTION),
+    collectionRef: firebaseService.firestore.collection(USERS_DB_COLLECTION),
     parseId: parseUserId,
     parseData: parseUser,
   });

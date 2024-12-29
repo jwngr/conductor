@@ -9,7 +9,7 @@ import {makeErrorResult} from '@shared/types/result.types';
 import {SystemTagId} from '@shared/types/tags.types';
 import type {UserId} from '@shared/types/user.types';
 
-import {FIREBASE_STORAGE_BUCKET} from '@sharedServer/services/firebase.server';
+import {firebaseService} from '@sharedServer/services/firebase.server';
 import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
 interface UpdateImportedFeedItemInFirestoreArgs {
@@ -86,9 +86,9 @@ export class ServerFeedItemsService {
   }): AsyncResult<void> {
     const {feedItemId, rawHtml, userId} = args;
     return await asyncTry(async () => {
-      const rawHtmlFile = FIREBASE_STORAGE_BUCKET.file(
-        this.getStoragePathForFeedItem(feedItemId, userId) + 'raw.html'
-      );
+      const rawHtmlFile = firebaseService.storage
+        .bucket()
+        .file(this.getStoragePathForFeedItem(feedItemId, userId) + 'raw.html');
       await rawHtmlFile.save(rawHtml, {contentType: 'text/html'});
     });
   }
@@ -107,9 +107,9 @@ export class ServerFeedItemsService {
     }
 
     return await asyncTry(async () => {
-      const llmContextFile = FIREBASE_STORAGE_BUCKET.file(
-        this.getStoragePathForFeedItem(feedItemId, userId) + 'llmContext.md'
-      );
+      const llmContextFile = firebaseService.storage
+        .bucket()
+        .file(this.getStoragePathForFeedItem(feedItemId, userId) + 'llmContext.md');
       await llmContextFile.save(markdown, {contentType: 'text/markdown'});
     });
   }
@@ -135,7 +135,7 @@ export class ServerFeedItemsService {
    */
   public async deleteStorageFilesForUser(userId: UserId): AsyncResult<void> {
     return await asyncTry(async () =>
-      FIREBASE_STORAGE_BUCKET.deleteFiles({
+      firebaseService.storage.bucket().deleteFiles({
         prefix: this.getStoragePathForUser(userId),
       })
     );

@@ -52,7 +52,6 @@ export class ServerFirestoreCollectionService<
       if (!data) return null;
       const parseDataResult = this.parseData(data);
       // Allow throwing here since we are inside `asyncTry`.
-      // eslint-disable-next-line no-restricted-syntax
       if (!parseDataResult.success) throw parseDataResult.error;
       return parseDataResult.value;
     });
@@ -69,7 +68,6 @@ export class ServerFirestoreCollectionService<
         const data = doc.data();
         const parseDataResult = this.parseData(data);
         // Allow throwing here since we are inside `asyncTry`.
-        // eslint-disable-next-line no-restricted-syntax
         if (!parseDataResult.success) throw parseDataResult.error;
         return parseDataResult.value;
       });
@@ -88,7 +86,6 @@ export class ServerFirestoreCollectionService<
       const data = querySnapshot.docs[0].data();
       const parseDataResult = this.parseData(data);
       // Allow throwing here since we are inside `asyncTry`.
-      // eslint-disable-next-line no-restricted-syntax
       if (!parseDataResult.success) throw parseDataResult.error;
       return parseDataResult.value;
     });
@@ -104,7 +101,6 @@ export class ServerFirestoreCollectionService<
       return querySnapshot.docs.map((doc) => {
         const parseIdResult = this.parseId(doc.id);
         // Allow throwing here since we are inside `asyncTry`.
-        // eslint-disable-next-line no-restricted-syntax
         if (!parseIdResult.success) throw parseIdResult.error;
         return parseIdResult.value;
       });
