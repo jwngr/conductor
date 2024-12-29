@@ -18,8 +18,14 @@ import {
 } from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 
-import {parseImportQueueItemId} from '@shared/parsers/importQueue.parser';
-import {parseUserId} from '@shared/parsers/user.parser';
+import {parseFeedItem, parseFeedItemId} from '@shared/parsers/feedItems.parser';
+import {parseFeedSource, parseFeedSourceId} from '@shared/parsers/feedSources.parser';
+import {parseImportQueueItem, parseImportQueueItemId} from '@shared/parsers/importQueue.parser';
+import {parseUser, parseUserId} from '@shared/parsers/user.parser';
+import {
+  parseUserFeedSubscription,
+  parseUserFeedSubscriptionId,
+} from '@shared/parsers/userFeedSubscriptions.parser';
 
 import {ImportQueueItem, ImportQueueItemStatus} from '@shared/types/importQueue.types';
 import {makeSuccessResult} from '@shared/types/result.types';
@@ -35,7 +41,11 @@ import {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFee
 import {ServerUsersService} from '@sharedServer/services/users.server';
 import {WipeoutService} from '@sharedServer/services/wipeout.server';
 
-import {FIREBASE_PROJECT_ID, firestore} from '@sharedServer/lib/firebase.server';
+import {
+  FIREBASE_PROJECT_ID,
+  firestore,
+  FirestoreCollectionService,
+} from '@sharedServer/lib/firebase.server';
 
 const FIRECRAWL_API_KEY = defineString('FIRECRAWL_API_KEY');
 const SUPERFEEDR_USER = defineString('SUPERFEEDR_USER');
@@ -55,27 +65,57 @@ onInit(() => {
     webhookBaseUrl: `https://${FIREBASE_PROJECT_ID}.firebaseapp.com`,
   });
 
+  const feedSourcesCollectionService = new FirestoreCollectionService({
+    collectionRef: firestore.collection(FEED_SOURCES_DB_COLLECTION),
+    parseId: parseFeedSourceId,
+    parseData: parseFeedSource,
+  });
+
   feedSourcesService = new ServerFeedSourcesService({
-    feedSourcesDbRef: firestore.collection(FEED_SOURCES_DB_COLLECTION),
+    feedSourcesCollectionService,
+  });
+
+  const userFeedSubscriptionsCollectionService = new FirestoreCollectionService({
+    collectionRef: firestore.collection(USER_FEED_SUBSCRIPTIONS_DB_COLLECTION),
+    parseId: parseUserFeedSubscriptionId,
+    parseData: parseUserFeedSubscription,
   });
 
   userFeedSubscriptionsService = new ServerUserFeedSubscriptionsService({
-    userFeedSubscriptionsDbRef: firestore.collection(USER_FEED_SUBSCRIPTIONS_DB_COLLECTION),
+    userFeedSubscriptionsCollectionService,
+  });
+
+  const feedItemsCollectionService = new FirestoreCollectionService({
+    collectionRef: firestore.collection(FEED_ITEMS_DB_COLLECTION),
+    parseId: parseFeedItemId,
+    parseData: parseFeedItem,
   });
 
   const feedItemsService = new ServerFeedItemsService({
-    feedItemsDbRef: firestore.collection(FEED_ITEMS_DB_COLLECTION),
+    feedItemsCollectionService,
     storageCollectionPath: FEED_ITEMS_STORAGE_COLLECTION,
   });
 
+  const importQueueCollectionService = new FirestoreCollectionService({
+    collectionRef: firestore.collection(IMPORT_QUEUE_DB_COLLECTION),
+    parseId: parseImportQueueItemId,
+    parseData: parseImportQueueItem,
+  });
+
   importQueueService = new ServerImportQueueService({
-    importQueueDbRef: firestore.collection(IMPORT_QUEUE_DB_COLLECTION),
+    importQueueCollectionService,
     firecrawlService: new ServerFirecrawlService(firecrawlApp),
     feedItemsService,
   });
 
+  const usersCollectionService = new FirestoreCollectionService({
+    collectionRef: firestore.collection(USERS_DB_COLLECTION),
+    parseId: parseUserId,
+    parseData: parseUser,
+  });
+
   wipeoutService = new WipeoutService({
-    usersService: new ServerUsersService({usersDbRef: firestore.collection(USERS_DB_COLLECTION)}),
+    usersService: new ServerUsersService({usersCollectionService}),
     userFeedSubscriptionsService,
     importQueueService,
     feedItemsService,

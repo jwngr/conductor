@@ -1,5 +1,3 @@
-import type {CollectionReference} from 'firebase-admin/firestore';
-
 import {
   asyncTryAll,
   prefixError,
@@ -7,8 +5,6 @@ import {
   prefixResultIfError,
 } from '@shared/lib/errorUtils.shared';
 import {requestGet} from '@shared/lib/requests.shared';
-
-import {parseImportQueueItemId} from '@shared/parsers/importQueue.parser';
 
 import type {FeedItemId} from '@shared/types/feedItems.types';
 import {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue.types';
@@ -19,12 +15,7 @@ import type {UserId} from '@shared/types/user.types';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
 
-import {
-  batchDeleteChildIds,
-  deleteFirestoreDoc,
-  getFirestoreQueryIds,
-  updateFirestoreDoc,
-} from '@sharedServer/lib/firebase.server';
+import {FirestoreCollectionService} from '@sharedServer/lib/firebase.server';
 
 function validateFeedItemUrl(url: string): Result<void> {
   // Parse the URL to validate its structure.
@@ -54,17 +45,19 @@ function validateFeedItemUrl(url: string): Result<void> {
   return makeSuccessResult(undefined);
 }
 
+type ImportQueueCollectionService = FirestoreCollectionService<ImportQueueItemId, ImportQueueItem>;
+
 export class ServerImportQueueService {
-  private readonly importQueueDbRef: CollectionReference;
+  private readonly importQueueCollectionService: ImportQueueCollectionService;
   private readonly feedItemsService: ServerFeedItemsService;
   private readonly firecrawlService: ServerFirecrawlService;
 
   constructor(args: {
-    readonly importQueueDbRef: CollectionReference;
+    readonly importQueueCollectionService: ImportQueueCollectionService;
     readonly feedItemsService: ServerFeedItemsService;
     readonly firecrawlService: ServerFirecrawlService;
   }) {
-    this.importQueueDbRef = args.importQueueDbRef;
+    this.importQueueCollectionService = args.importQueueCollectionService;
     this.feedItemsService = args.feedItemsService;
     this.firecrawlService = args.firecrawlService;
   }
@@ -186,8 +179,10 @@ export class ServerImportQueueService {
     importQueueItemId: ImportQueueItemId,
     updates: Partial<Pick<ImportQueueItem, 'status'>>
   ): AsyncResult<void> {
-    const docRefToUpdate = this.importQueueDbRef.doc(importQueueItemId);
-    const updateResult = await updateFirestoreDoc(docRefToUpdate, updates);
+    const updateResult = await this.importQueueCollectionService.updateDoc(
+      importQueueItemId,
+      updates
+    );
     return prefixResultIfError(updateResult, 'Error updating import queue item in Firestore');
   }
 
@@ -195,8 +190,7 @@ export class ServerImportQueueService {
    * Permanently deletes an individual import queue item.
    */
   public async deleteImportQueueItem(importQueueItemId: ImportQueueItemId): AsyncResult<void> {
-    const docRefToDelete = this.importQueueDbRef.doc(importQueueItemId);
-    const deleteResult = await deleteFirestoreDoc(docRefToDelete);
+    const deleteResult = await this.importQueueCollectionService.deleteDoc(importQueueItemId);
     return prefixResultIfError(deleteResult, 'Error deleting import queue item in Firestore');
   }
 
@@ -204,15 +198,17 @@ export class ServerImportQueueService {
    * Permanently deletes all import queue items associated with a user.
    */
   public async deleteAllForUser(userId: UserId): AsyncResult<void> {
+    // TODO: Consider introducing a `batchDeleteAllForUser` method.
+
     // Fetch the IDs for all of the user's import queue items.
-    const query = this.importQueueDbRef.where('userId', '==', userId);
-    const queryResult = await getFirestoreQueryIds(query, parseImportQueueItemId);
+    const query = this.importQueueCollectionService.getRef().where('userId', '==', userId);
+    const queryResult = await this.importQueueCollectionService.fetchQueryIds(query);
     if (!queryResult.success) {
       return prefixErrorResult(queryResult, 'Error fetching import queue items to delete for user');
     }
 
     // Delete all of the user's import queue items.
     const docIdsToDelete = queryResult.value;
-    return await batchDeleteChildIds(this.importQueueDbRef, docIdsToDelete);
+    return await this.importQueueCollectionService.batchDeleteDocs(docIdsToDelete);
   }
 }

@@ -3,8 +3,7 @@ import {z} from 'zod';
 import type {Consumer, Task} from '@shared/types/utils.types';
 
 /**
- * Strongly-typed type for a {@link LoggedInUser}'s unique identifier. Prefer this over plain
- * strings.
+ * Strongly-typed type for a {@link User}'s unique identifier. Prefer this over plain strings.
  */
 export type UserId = string & {readonly __brand: 'UserIdBrand'};
 
@@ -23,7 +22,10 @@ export type EmailAddress = string & {readonly __brand: 'EmailAddressBrand'};
  */
 export const EmailAddressSchema = z.string().email();
 
-export interface LoggedInUser {
+/**
+ * A generic type representing a user.
+ */
+export interface User {
   readonly userId: UserId;
   readonly email: EmailAddress;
   readonly displayName: string | null;
@@ -31,6 +33,15 @@ export interface LoggedInUser {
   // readonly photoUrl: string;
 }
 
-export type AuthStateChangedCallback = Consumer<LoggedInUser | null>;
+/**
+ * A Zod schema for a {@link User}.
+ */
+export const UserSchema = z.object({
+  userId: UserIdSchema,
+  email: EmailAddressSchema,
+  displayName: z.string().nullable(),
+});
+
+export type AuthStateChangedCallback = Consumer<User | null>;
 
 export type AuthStateChangedUnsubscribe = Task;

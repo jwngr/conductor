@@ -1,21 +1,21 @@
-import {CollectionReference} from 'firebase-admin/firestore';
-
 import type {AsyncResult} from '@shared/types/result.types';
-import type {UserId} from '@shared/types/user.types';
+import type {User, UserId} from '@shared/types/user.types';
 
-import {deleteFirestoreDoc} from '@sharedServer/lib/firebase.server';
+import {FirestoreCollectionService} from '@sharedServer/lib/firebase.server';
+
+type UsersCollectionService = FirestoreCollectionService<UserId, User>;
 
 export class ServerUsersService {
-  private usersDbRef: CollectionReference;
+  private usersCollectionService: UsersCollectionService;
 
-  constructor(args: {readonly usersDbRef: CollectionReference}) {
-    this.usersDbRef = args.usersDbRef;
+  constructor(args: {readonly usersCollectionService: UsersCollectionService}) {
+    this.usersCollectionService = args.usersCollectionService;
   }
 
   /**
    * Permanently deletes a user document from Firestore.
    */
   public async deleteUsersDocForUser(userId: UserId): AsyncResult<void> {
-    return deleteFirestoreDoc(this.usersDbRef.doc(userId));
+    return this.usersCollectionService.deleteDoc(userId);
   }
 }
