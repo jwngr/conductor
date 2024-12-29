@@ -1,6 +1,9 @@
+import {v4 as uuidv4} from 'uuid';
+
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import type {Func, Supplier} from '@shared/types/utils.types';
+import type {EmailAddress} from '@shared/types/user.types';
+import type {Func, Supplier, UUID} from '@shared/types/utils.types';
 
 /**
  * Formats a number with commas.
@@ -78,16 +81,17 @@ export function partition<T, U>(arr: Array<T | U>, predicate: Func<T | U, boolea
 }
 
 /**
- * Generates a random ID of the given length.
- *
- * TODO: Switch to UUIDs.
+ * Generates a random v4 UUID.
  */
-export function makeId(length = 20): string {
-  const validChars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-  for (let i = 0; i < length; i++) {
-    const randomIndex = Math.floor(Math.random() * validChars.length);
-    result += validChars.charAt(randomIndex);
-  }
-  return result;
+export function makeUuid<T = UUID>(): T {
+  return uuidv4() as T;
+}
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * Checks if a value is a valid `EmailAddress`.
+ */
+export function isValidEmail(maybeEmail: unknown): maybeEmail is EmailAddress {
+  return typeof maybeEmail === 'string' && EMAIL_REGEX.test(maybeEmail);
 }

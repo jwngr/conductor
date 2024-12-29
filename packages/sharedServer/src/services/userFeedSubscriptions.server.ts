@@ -3,6 +3,11 @@ import {FieldValue} from 'firebase-admin/firestore';
 
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
+import {
+  parseUserFeedSubscription,
+  parseUserFeedSubscriptionId,
+} from '@shared/parsers/userFeedSubscriptions.parser';
+
 import type {FeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import type {UserId} from '@shared/types/user.types';
@@ -10,10 +15,7 @@ import type {
   UserFeedSubscription,
   UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
-import {
-  makeUserFeedSubscription,
-  makeUserFeedSubscriptionId,
-} from '@shared/types/userFeedSubscriptions.types';
+import {makeUserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
 import {
   batchDeleteChildIds,
@@ -36,7 +38,7 @@ export class ServerUserFeedSubscriptionsService {
    */
   public async fetchAllForUser(userId: UserId): AsyncResult<UserFeedSubscription[]> {
     const query = this.userFeedSubscriptionsDbRef.where('userId', '==', userId);
-    const queryResult = await getFirestoreQueryData<UserFeedSubscription>(query);
+    const queryResult = await getFirestoreQueryData(query, parseUserFeedSubscription);
     return prefixResultIfError(queryResult, 'Error fetching user feed subscriptions for user');
   }
 
@@ -105,7 +107,7 @@ export class ServerUserFeedSubscriptionsService {
   public async deleteAllForUser(userId: UserId): AsyncResult<void> {
     // Fetch the IDs for all of the user's feed subscriptions.
     const query = this.userFeedSubscriptionsDbRef.where('userId', '==', userId);
-    const queryResult = await getFirestoreQueryIds(query, makeUserFeedSubscriptionId);
+    const queryResult = await getFirestoreQueryIds(query, parseUserFeedSubscriptionId);
     if (!queryResult.success) {
       return prefixErrorResult(
         queryResult,

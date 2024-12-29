@@ -3,7 +3,9 @@ import {FieldValue} from 'firebase-admin/firestore';
 
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
-import {FeedItemType, makeFeedItemId} from '@shared/types/feedItems.types';
+import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
+
+import {FeedItemType} from '@shared/types/feedItems.types';
 import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeErrorResult} from '@shared/types/result.types';
@@ -124,7 +126,7 @@ export class ServerFeedItemsService {
   public async deleteAllForUser(userId: UserId): AsyncResult<void> {
     // Fetch the IDs for all of the user's feed items.
     const query = this.feedItemsDbRef.where('userId', '==', userId);
-    const queryResult = await getFirestoreQueryIds(query, makeFeedItemId);
+    const queryResult = await getFirestoreQueryIds(query, parseFeedItemId);
     if (!queryResult.success) {
       return prefixErrorResult(queryResult, 'Error fetching feed items to delete for user');
     }

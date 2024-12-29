@@ -5,7 +5,9 @@ import {httpsCallable} from 'firebase/functions';
 import {useMemo} from 'react';
 
 import {USER_FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants.shared';
-import {asyncTry} from '@shared/lib/errorUtils.shared';
+import {asyncTry, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+
+import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions.parser';
 
 import type {AsyncResult} from '@shared/types/result.types';
 import type {UserId} from '@shared/types/user.types';
@@ -13,7 +15,6 @@ import type {
   UserFeedSubscription,
   UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
-import {makeUserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {AsyncFunc, Consumer, Unsubscribe} from '@shared/types/utils.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';
@@ -67,7 +68,8 @@ export class ClientUserFeedSubscriptionsService {
     // TODO: Parse and validate the response from the function.
 
     // Parse the response to get the new user feed subscription ID.
-    return makeUserFeedSubscriptionId(subscribeResponse.data.userFeedSubscriptionId);
+    const idResult = parseUserFeedSubscriptionId(subscribeResponse.data.userFeedSubscriptionId);
+    return prefixResultIfError(idResult, 'New user feed subscription ID did not parse correctly');
   }
 
   // TODO: Implement this.

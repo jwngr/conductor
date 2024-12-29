@@ -123,6 +123,21 @@ export default tseslint.config(
     }),
   },
 
+  // Parser-specific config.
+  {
+    files: ['packages/shared/src/parsers/**/*.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'ImportSpecifier[imported.name="assertNever"]',
+          message:
+            'Using `assertNever` is not allowed in parsers. Methods in parsers should not throw.',
+        },
+      ],
+    },
+  },
+
   // Shared client package config.
   {
     files: ['packages/sharedClient/**/*.{ts,tsx}'],

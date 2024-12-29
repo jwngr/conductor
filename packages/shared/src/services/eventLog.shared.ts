@@ -152,14 +152,6 @@ export class SharedEventLogService {
   }
 }
 
-export function makeEventLogItem<T extends EventLogItem>(
-  eventLogItemWithoutId: Omit<T, 'eventId'>
-): Result<T> {
-  const eventIdResult = makeEventId();
-  if (!eventIdResult.success) return eventIdResult;
-  return makeSuccessResult({...eventLogItemWithoutId, eventId: eventIdResult.value} as T);
-}
-
 export function makeFeedItemActionEventLogItem(args: {
   readonly userId: UserId;
   readonly feedItemId: FeedItemId;
@@ -171,7 +163,8 @@ export function makeFeedItemActionEventLogItem(args: {
 }): Result<FeedItemActionEventLogItem> {
   const {userId, feedItemId, feedItemActionType, createdTime, lastUpdatedTime} = args;
 
-  return makeEventLogItem<FeedItemActionEventLogItem>({
+  return makeSuccessResult({
+    eventId: makeEventId(),
     userId,
     eventType: EventType.FeedItemAction,
     data: {feedItemId, feedItemActionType},
@@ -188,9 +181,10 @@ export function makeUserFeedSubscriptionEventLogItem(args: {
 }): Result<UserFeedSubscriptionEventLogItem> {
   const {userId, userFeedSubscriptionId, createdTime, lastUpdatedTime} = args;
 
-  return makeEventLogItem<UserFeedSubscriptionEventLogItem>({
-    eventType: EventType.UserFeedSubscription,
+  return makeSuccessResult({
+    eventId: makeEventId(),
     userId,
+    eventType: EventType.UserFeedSubscription,
     data: {userFeedSubscriptionId},
     createdTime,
     lastUpdatedTime,

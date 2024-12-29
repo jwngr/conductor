@@ -25,11 +25,17 @@ export const FIREBASE_PROJECT_ID = admin.instanceId().app.options.projectId;
 /**
  * Fetches the data from a single Firestore document.
  */
-export async function getFirestoreDocData<T>(docRef: DocumentReference): AsyncResult<T | null> {
+export async function getFirestoreDocData<T>(
+  docRef: DocumentReference,
+  parseData: Func<DocumentData, Result<T>>
+): AsyncResult<T | null> {
   const docDataResult = await asyncTry(async () => {
     const docSnap = await docRef.get();
-    if (!docSnap.exists) return null;
-    return docSnap.data() as T;
+    const data = docSnap.data();
+    if (!data) return null;
+    const parseDataResult = parseData(data);
+    if (!parseDataResult.success) throw parseDataResult.error;
+    return parseDataResult.value;
   });
   return prefixResultIfError(docDataResult, 'Error fetching Firestore document data');
 }
@@ -37,10 +43,18 @@ export async function getFirestoreDocData<T>(docRef: DocumentReference): AsyncRe
 /**
  * Fetches all documents matching a Firestore query.
  */
-export async function getFirestoreQueryData<T>(query: Query): AsyncResult<T[]> {
+export async function getFirestoreQueryData<T>(
+  query: Query,
+  parseData: Func<DocumentData, Result<T>>
+): AsyncResult<T[]> {
   const queryDataResult = await asyncTry(async () => {
     const querySnapshot = await query.get();
-    return querySnapshot.docs.map((doc) => doc.data() as T);
+    return querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      const parseDataResult = parseData(data);
+      if (!parseDataResult.success) throw parseDataResult.error;
+      return parseDataResult.value;
+    });
   });
   return prefixResultIfError(queryDataResult, 'Error fetching Firestore query data');
 }
@@ -48,11 +62,17 @@ export async function getFirestoreQueryData<T>(query: Query): AsyncResult<T[]> {
 /**
  * Fetches the first document matching a Firestore query. If no documents match, returns `null`.
  */
-export async function getFirstFirestoreQueryData<T>(query: Query): AsyncResult<T | null> {
+export async function getFirstFirestoreQueryData<T>(
+  query: Query,
+  parseData: Func<DocumentData, Result<T>>
+): AsyncResult<T | null> {
   const queryDataResult = await asyncTry(async () => {
     const querySnapshot = await query.limit(1).get();
     if (querySnapshot.empty) return null;
-    return querySnapshot.docs[0].data() as T;
+    const data = querySnapshot.docs[0].data();
+    const parseDataResult = parseData(data);
+    if (!parseDataResult.success) throw parseDataResult.error;
+    return parseDataResult.value;
   });
   return prefixResultIfError(queryDataResult, 'Error fetching Firestore query data');
 }
@@ -62,14 +82,14 @@ export async function getFirstFirestoreQueryData<T>(query: Query): AsyncResult<T
  */
 export async function getFirestoreQueryIds<ItemId>(
   query: Query,
-  makeId: Func<string, Result<ItemId>>
+  parseId: Func<string, Result<ItemId>>
 ): AsyncResult<ItemId[]> {
   const queryIdsResult = await asyncTry(async () => {
     const querySnapshot = await query.get();
     return querySnapshot.docs.map((doc) => {
-      const makeIdResult = makeId(doc.id);
-      if (!makeIdResult.success) throw makeIdResult.error;
-      return makeIdResult.value;
+      const parseIdResult = parseId(doc.id);
+      if (!parseIdResult.success) throw parseIdResult.error;
+      return parseIdResult.value;
     });
   });
 

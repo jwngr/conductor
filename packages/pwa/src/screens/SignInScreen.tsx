@@ -1,8 +1,11 @@
 import type {ActionCodeSettings} from 'firebase/auth';
 import {useState} from 'react';
 
+import {isValidEmail} from '@shared/lib/utils.shared';
+
+import {parseEmailAddress} from '@shared/parsers/user.parser';
+
 import {ThemeColor} from '@shared/types/theme.types';
-import {createEmailAddress, isValidEmail} from '@shared/types/user.types';
 import type {Consumer} from '@shared/types/utils.types';
 
 import {authService} from '@sharedClient/services/auth.client';
@@ -29,7 +32,7 @@ const PasswordlessAuthButton: React.FC<{
   const handleSignInButtonClick: OnClick<HTMLButtonElement> = async (event) => {
     onClick(event);
 
-    const emailResult = createEmailAddress(maybeEmail);
+    const emailResult = parseEmailAddress(maybeEmail);
     if (!emailResult.success) {
       onError(emailResult.error);
       return;
