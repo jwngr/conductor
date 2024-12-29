@@ -1,5 +1,5 @@
 import admin from 'firebase-admin';
-import type {DocumentData, DocumentReference, Query} from 'firebase-admin/firestore';
+import type {DocumentData, Query} from 'firebase-admin/firestore';
 import {CollectionReference, FieldValue} from 'firebase-admin/firestore';
 
 import {
@@ -160,22 +160,19 @@ export class FirebaseCollectionService<ItemId extends string, ItemData extends D
    * batches from being deleted.
    */
   async batchDeleteDocs(idsToDelete: ItemId[]): AsyncResult<void> {
-    const refs = idsToDelete.map((id) => this.collectionRef.doc(id));
     const errors: Error[] = [];
 
-    const totalBatches = Math.ceil(refs.length / BATCH_DELETE_SIZE);
+    const totalBatches = Math.ceil(idsToDelete.length / BATCH_DELETE_SIZE);
 
-    const refsPerBatch: DocumentReference<ItemData>[][] = Array.from({length: totalBatches}).map(
-      (_, i) => {
-        return refs.slice(i * BATCH_DELETE_SIZE, (i + 1) * BATCH_DELETE_SIZE);
-      }
+    const idsPerBatch = Array.from({length: totalBatches}).map((_, i) =>
+      idsToDelete.slice(i * BATCH_DELETE_SIZE, (i + 1) * BATCH_DELETE_SIZE)
     );
 
     // Run one batch at a time.
-    for (const currentRefs of refsPerBatch) {
+    for (const currentIds of idsPerBatch) {
       const deleteBatchResult = await asyncTry(async () => {
         const batch = firestore.batch();
-        currentRefs.forEach((ref) => batch.delete(ref));
+        currentIds.forEach((id) => batch.delete(this.collectionRef.doc(id)));
         await batch.commit();
       });
       if (!deleteBatchResult.success) {

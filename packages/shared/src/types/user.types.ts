@@ -23,6 +23,7 @@ export type EmailAddress = string & {readonly __brand: 'EmailAddressBrand'};
  */
 export const EmailAddressSchema = z.string().email();
 
+// TODO: Consider renaming to `User` or introducing a separate, more generic `User` type.
 export interface LoggedInUser {
   readonly userId: UserId;
   readonly email: EmailAddress;
@@ -30,6 +31,15 @@ export interface LoggedInUser {
   // TODO: Add photo URL.
   // readonly photoUrl: string;
 }
+
+/**
+ * A Zod schema for a {@link LoggedInUser}.
+ */
+export const UserSchema = z.object({
+  userId: UserIdSchema,
+  email: EmailAddressSchema,
+  displayName: z.string().nullable(),
+});
 
 export type AuthStateChangedCallback = Consumer<LoggedInUser | null>;
 

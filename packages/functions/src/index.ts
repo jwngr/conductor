@@ -18,9 +18,10 @@ import {
 } from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 
+import {parseFeedItem, parseFeedItemId} from '@shared/parsers/feedItems.parser';
 import {parseFeedSource, parseFeedSourceId} from '@shared/parsers/feedSources.parser';
 import {parseImportQueueItem, parseImportQueueItemId} from '@shared/parsers/importQueue.parser';
-import {parseUserId} from '@shared/parsers/user.parser';
+import {parseUser, parseUserId} from '@shared/parsers/user.parser';
 import {
   parseUserFeedSubscription,
   parseUserFeedSubscriptionId,
@@ -80,23 +81,37 @@ onInit(() => {
     }),
   });
 
+  const feedItemsCollectionService = new FirebaseCollectionService({
+    collectionRef: firestore.collection(FEED_ITEMS_DB_COLLECTION),
+    parseId: parseFeedItemId,
+    parseData: parseFeedItem,
+  });
+
   const feedItemsService = new ServerFeedItemsService({
-    feedItemsDbRef: firestore.collection(FEED_ITEMS_DB_COLLECTION),
+    feedItemsCollectionService,
     storageCollectionPath: FEED_ITEMS_STORAGE_COLLECTION,
   });
 
+  const importQueueCollectionService = new FirebaseCollectionService({
+    collectionRef: firestore.collection(IMPORT_QUEUE_DB_COLLECTION),
+    parseId: parseImportQueueItemId,
+    parseData: parseImportQueueItem,
+  });
+
   importQueueService = new ServerImportQueueService({
-    importQueueCollectionService: new FirebaseCollectionService({
-      collectionRef: firestore.collection(IMPORT_QUEUE_DB_COLLECTION),
-      parseId: parseImportQueueItemId,
-      parseData: parseImportQueueItem,
-    }),
+    importQueueCollectionService,
     firecrawlService: new ServerFirecrawlService(firecrawlApp),
     feedItemsService,
   });
 
+  const usersCollectionService = new FirebaseCollectionService({
+    collectionRef: firestore.collection(USERS_DB_COLLECTION),
+    parseId: parseUserId,
+    parseData: parseUser,
+  });
+
   wipeoutService = new WipeoutService({
-    usersService: new ServerUsersService({usersDbRef: firestore.collection(USERS_DB_COLLECTION)}),
+    usersService: new ServerUsersService({usersCollectionService}),
     userFeedSubscriptionsService,
     importQueueService,
     feedItemsService,
