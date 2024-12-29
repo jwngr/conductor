@@ -7,9 +7,9 @@ import {makeFeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
 
-import {FirebaseCollectionService} from '@sharedServer/lib/firebase.server';
+import {FirestoreCollectionService} from '@sharedServer/lib/firebase.server';
 
-type FeedSourceCollectionService = FirebaseCollectionService<FeedSourceId, FeedSource>;
+type FeedSourceCollectionService = FirestoreCollectionService<FeedSourceId, FeedSource>;
 
 export class ServerFeedSourcesService {
   private readonly feedSourcesCollectionService: FeedSourceCollectionService;

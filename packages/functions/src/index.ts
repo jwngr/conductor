@@ -43,8 +43,8 @@ import {WipeoutService} from '@sharedServer/services/wipeout.server';
 
 import {
   FIREBASE_PROJECT_ID,
-  FirebaseCollectionService,
   firestore,
+  FirestoreCollectionService,
 } from '@sharedServer/lib/firebase.server';
 
 const FIRECRAWL_API_KEY = defineString('FIRECRAWL_API_KEY');
@@ -66,7 +66,7 @@ onInit(() => {
   });
 
   feedSourcesService = new ServerFeedSourcesService({
-    feedSourcesCollectionService: new FirebaseCollectionService({
+    feedSourcesCollectionService: new FirestoreCollectionService({
       collectionRef: firestore.collection(FEED_SOURCES_DB_COLLECTION),
       parseId: parseFeedSourceId,
       parseData: parseFeedSource,
@@ -74,14 +74,14 @@ onInit(() => {
   });
 
   userFeedSubscriptionsService = new ServerUserFeedSubscriptionsService({
-    userFeedSubscriptionsCollectionService: new FirebaseCollectionService({
+    userFeedSubscriptionsCollectionService: new FirestoreCollectionService({
       collectionRef: firestore.collection(USER_FEED_SUBSCRIPTIONS_DB_COLLECTION),
       parseId: parseUserFeedSubscriptionId,
       parseData: parseUserFeedSubscription,
     }),
   });
 
-  const feedItemsCollectionService = new FirebaseCollectionService({
+  const feedItemsCollectionService = new FirestoreCollectionService({
     collectionRef: firestore.collection(FEED_ITEMS_DB_COLLECTION),
     parseId: parseFeedItemId,
     parseData: parseFeedItem,
@@ -92,7 +92,7 @@ onInit(() => {
     storageCollectionPath: FEED_ITEMS_STORAGE_COLLECTION,
   });
 
-  const importQueueCollectionService = new FirebaseCollectionService({
+  const importQueueCollectionService = new FirestoreCollectionService({
     collectionRef: firestore.collection(IMPORT_QUEUE_DB_COLLECTION),
     parseId: parseImportQueueItemId,
     parseData: parseImportQueueItem,
@@ -104,7 +104,7 @@ onInit(() => {
     feedItemsService,
   });
 
-  const usersCollectionService = new FirebaseCollectionService({
+  const usersCollectionService = new FirestoreCollectionService({
     collectionRef: firestore.collection(USERS_DB_COLLECTION),
     parseId: parseUserId,
     parseData: parseUser,

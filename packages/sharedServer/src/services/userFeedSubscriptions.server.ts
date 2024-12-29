@@ -11,9 +11,9 @@ import type {
 } from '@shared/types/userFeedSubscriptions.types';
 import {makeUserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
-import {FirebaseCollectionService} from '@sharedServer/lib/firebase.server';
+import {FirestoreCollectionService} from '@sharedServer/lib/firebase.server';
 
-type UserFeedSubscriptionsCollectionService = FirebaseCollectionService<
+type UserFeedSubscriptionsCollectionService = FirestoreCollectionService<
   UserFeedSubscriptionId,
   UserFeedSubscription
 >;
@@ -22,7 +22,7 @@ export class ServerUserFeedSubscriptionsService {
   private readonly userFeedSubscriptionsCollectionService: UserFeedSubscriptionsCollectionService;
 
   constructor(args: {
-    readonly userFeedSubscriptionsCollectionService: FirebaseCollectionService<
+    readonly userFeedSubscriptionsCollectionService: FirestoreCollectionService<
       UserFeedSubscriptionId,
       UserFeedSubscription
     >;

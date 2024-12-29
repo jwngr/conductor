@@ -22,7 +22,7 @@ export const firestore = admin.firestore();
 export const FIREBASE_STORAGE_BUCKET = admin.storage().bucket();
 export const FIREBASE_PROJECT_ID = admin.instanceId().app.options.projectId;
 
-export class FirebaseCollectionService<ItemId extends string, ItemData extends DocumentData> {
+export class FirestoreCollectionService<ItemId extends string, ItemData extends DocumentData> {
   private readonly collectionRef: CollectionReference;
   private readonly parseData: Func<DocumentData, Result<ItemData>>;
   private readonly parseId: Func<string, Result<ItemId>>;

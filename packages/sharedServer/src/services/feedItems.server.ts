@@ -11,7 +11,7 @@ import type {UserId} from '@shared/types/user.types';
 
 import {
   FIREBASE_STORAGE_BUCKET,
-  FirebaseCollectionService,
+  FirestoreCollectionService,
 } from '@sharedServer/lib/firebase.server';
 
 interface UpdateImportedFeedItemInFirestoreArgs {
@@ -22,7 +22,7 @@ interface UpdateImportedFeedItemInFirestoreArgs {
 
 export class ServerFeedItemsService {
   private readonly storageCollectionPath: string;
-  private readonly feedItemsCollectionService: FirebaseCollectionService<FeedItemId, FeedItem>;
+  private readonly feedItemsCollectionService: FirestoreCollectionService<FeedItemId, FeedItem>;
   // TODO: `storageBucket` should probably be passed in via the constructor, but there is no type
   // for it from the Firebase Admin SDK. We could use a type from @google-cloud/storage instead, but
   // we currently don't list that as a dependency.
@@ -30,7 +30,7 @@ export class ServerFeedItemsService {
 
   constructor(args: {
     readonly storageCollectionPath: string;
-    readonly feedItemsCollectionService: FirebaseCollectionService<FeedItemId, FeedItem>;
+    readonly feedItemsCollectionService: FirestoreCollectionService<FeedItemId, FeedItem>;
   }) {
     this.storageCollectionPath = args.storageCollectionPath;
     this.feedItemsCollectionService = args.feedItemsCollectionService;

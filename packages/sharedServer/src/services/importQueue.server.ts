@@ -15,7 +15,7 @@ import type {UserId} from '@shared/types/user.types';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
 
-import {FirebaseCollectionService} from '@sharedServer/lib/firebase.server';
+import {FirestoreCollectionService} from '@sharedServer/lib/firebase.server';
 
 function validateFeedItemUrl(url: string): Result<void> {
   // Parse the URL to validate its structure.
@@ -45,7 +45,7 @@ function validateFeedItemUrl(url: string): Result<void> {
   return makeSuccessResult(undefined);
 }
 
-type ImportQueueCollectionService = FirebaseCollectionService<ImportQueueItemId, ImportQueueItem>;
+type ImportQueueCollectionService = FirestoreCollectionService<ImportQueueItemId, ImportQueueItem>;
 
 export class ServerImportQueueService {
   private readonly importQueueCollectionService: ImportQueueCollectionService;
