@@ -5,7 +5,6 @@ import type {FeedSource, FeedSourceId} from '@shared/types/feedSources.types';
 import {FeedSourceIdSchema, FeedSourceSchema} from '@shared/types/feedSources.types';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
-import type {Timestamp} from '@shared/types/utils.types';
 
 /**
  * Parses a {@link FeedSourceId} from a plain string. Returns an `ErrorResult` if the string is not
@@ -37,7 +36,7 @@ export function parseFeedSource(maybeFeedSource: unknown): Result<FeedSource> {
     feedSourceId: parsedIdResult.value,
     url,
     title,
-    createdTime: new Date(createdTime) as unknown as Timestamp,
-    lastUpdatedTime: new Date(lastUpdatedTime) as unknown as Timestamp,
+    createdTime: createdTime.toDate(),
+    lastUpdatedTime: lastUpdatedTime.toDate(),
   });
 }

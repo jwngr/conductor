@@ -11,7 +11,7 @@ import type {UserId} from '@shared/types/user.types';
 import {UserIdSchema} from '@shared/types/user.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import {UserFeedSubscriptionIdSchema} from '@shared/types/userFeedSubscriptions.types';
-import type {BaseStoreItem, Timestamp} from '@shared/types/utils.types';
+import type {BaseStoreItem} from '@shared/types/utils.types';
 
 /**
  * Strongly-typed type for a {@link FeedItem}'s unique identifier. Prefer this over plain strings.
@@ -145,7 +145,7 @@ interface BaseFeedItem extends BaseStoreItem {
   readonly tagIds: Partial<Record<TagId, true | FieldValue>>;
 
   // Timestamps.
-  readonly lastImportedTime?: Timestamp;
+  readonly lastImportedTime?: Date;
 }
 
 /**

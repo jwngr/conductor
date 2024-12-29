@@ -1,5 +1,3 @@
-import type {FieldValue} from 'firebase/firestore';
-
 export type Task = () => void;
 export type Func<T, R> = (arg: T) => R;
 export type Supplier<T> = () => T;
@@ -14,16 +12,9 @@ export type Unsubscribe = Task;
 
 /** Generic interface for all persisted items. */
 export interface BaseStoreItem {
-  readonly createdTime: Timestamp;
-  readonly lastUpdatedTime: Timestamp;
+  readonly createdTime: Date;
+  readonly lastUpdatedTime: Date;
 }
-
-/**
- * Generic timestamp type, for use with `createdTime`, `lastUpdatedTime`, and all other timestamps.
- * This is set to be Firebase's `FieldValue` type, a special type allowing for Firestore's server
- * timestamp functionality.
- */
-export type Timestamp = FieldValue;
 
 export interface StyleAttributes {
   readonly style?: React.CSSProperties;

@@ -22,7 +22,6 @@ import type {
 } from '@shared/types/eventLog.types';
 import type {Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import type {Timestamp} from '@shared/types/utils.types';
 
 /**
  * Parses a {@link EventId} from a plain string. Returns an `ErrorResult` if the string is not
@@ -85,8 +84,8 @@ function parseUserFeedSubscriptionEventLogItem(
     userId: parsedUserIdResult.value,
     eventType: EventType.UserFeedSubscription,
     data: parsedDataResult.value,
-    createdTime: new Date(createdTime) as unknown as Timestamp,
-    lastUpdatedTime: new Date(lastUpdatedTime) as unknown as Timestamp,
+    createdTime: createdTime.toDate(),
+    lastUpdatedTime: lastUpdatedTime.toDate(),
   });
 }
 

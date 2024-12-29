@@ -50,13 +50,15 @@ export const FeedSourceSchema = z.object({
 /**
  * Creates a new {@link FeedSource} object.
  */
-export function makeFeedSource(args: Omit<FeedSource, 'feedSourceId'>): Result<FeedSource> {
+export function makeFeedSource(
+  args: Omit<FeedSource, 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
+): Result<FeedSource> {
   const feedSource: FeedSource = {
     feedSourceId: makeFeedSourceId(),
     url: args.url,
     title: args.title,
-    createdTime: args.createdTime,
-    lastUpdatedTime: args.lastUpdatedTime,
+    createdTime: new Date(),
+    lastUpdatedTime: new Date(),
   };
 
   return makeSuccessResult(feedSource);

@@ -60,7 +60,6 @@ export class ServerFeedItemsService {
       title: title ?? '',
       description: description ?? '',
       outgoingLinks: links ?? [],
-      lastImportedTime: FieldValue.serverTimestamp(),
     };
 
     // The types are not quite right here since we are updating a deeply nested object.
@@ -69,6 +68,8 @@ export class ServerFeedItemsService {
     // See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
     const actualUpdates = {
       ...update,
+      // TODO: Remove this super hack.
+      lastImportedTime: FieldValue.serverTimestamp() as unknown as Date,
       [`tagIds.${SystemTagId.Importing}`]: FieldValue.delete(),
     } as Partial<FeedItem>;
 

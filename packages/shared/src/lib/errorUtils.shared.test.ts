@@ -197,6 +197,7 @@ describe('asyncTryAll', () => {
 
   it('should handle unexpected errors during execution', async () => {
     const errorMessage = 'Test error';
+    // TODO: Fix this type error.
     const asyncResults = [Promise.reject(errorMessage)] as unknown as readonly [
       AsyncResult<unknown>,
     ];

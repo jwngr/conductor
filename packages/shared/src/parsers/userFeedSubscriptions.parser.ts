@@ -14,7 +14,6 @@ import type {
   UserFeedSubscription,
   UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
-import type {Timestamp} from '@shared/types/utils.types';
 
 /**
  * Parses a {@link UserFeedSubscriptionId} from a plain string. Returns an `ErrorResult` if the
@@ -61,10 +60,8 @@ export function parseUserFeedSubscription(
     url,
     title,
     isActive,
-    unsubscribedTime: unsubscribedTime
-      ? (new Date(unsubscribedTime) as unknown as Timestamp)
-      : undefined,
-    createdTime: new Date(createdTime) as unknown as Timestamp,
-    lastUpdatedTime: new Date(lastUpdatedTime) as unknown as Timestamp,
+    unsubscribedTime: unsubscribedTime?.toDate(),
+    createdTime: createdTime.toDate(),
+    lastUpdatedTime: lastUpdatedTime.toDate(),
   });
 }

@@ -39,7 +39,7 @@ export class SharedFeedItemHelpers {
   }
 
   public static makeFeedItem(
-    args: Pick<FeedItem, 'type' | 'userId' | 'url' | 'source' | 'createdTime' | 'lastUpdatedTime'>
+    args: Pick<FeedItem, 'type' | 'userId' | 'url' | 'source'>
   ): Result<FeedItem> {
     return makeSuccessResult({
       feedItemId: makeFeedItemId(),
@@ -55,8 +55,8 @@ export class SharedFeedItemHelpers {
         [SystemTagId.Unread]: true,
         [SystemTagId.Importing]: true,
       },
-      createdTime: args.createdTime,
-      lastUpdatedTime: args.lastUpdatedTime,
+      createdTime: new Date(),
+      lastUpdatedTime: new Date(),
     });
   }
 

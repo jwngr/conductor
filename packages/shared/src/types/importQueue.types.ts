@@ -76,9 +76,9 @@ export const ImportQueueItemSchema = z.object({
  * Creates a new {@link ImportQueueItem}.
  */
 export function makeImportQueueItem(
-  args: Omit<ImportQueueItem, 'importQueueItemId' | 'status'>
+  args: Omit<ImportQueueItem, 'importQueueItemId' | 'status' | 'createdTime' | 'lastUpdatedTime'>
 ): Result<ImportQueueItem> {
-  const {feedItemId, userId, url, createdTime, lastUpdatedTime} = args;
+  const {feedItemId, userId, url} = args;
 
   return makeSuccessResult({
     importQueueItemId: makeImportQueueItemId(),
@@ -86,7 +86,7 @@ export function makeImportQueueItem(
     userId,
     url,
     status: ImportQueueItemStatus.New,
-    createdTime,
-    lastUpdatedTime,
+    createdTime: new Date(),
+    lastUpdatedTime: new Date(),
   });
 }

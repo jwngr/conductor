@@ -8,7 +8,6 @@ import type {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue
 import {ImportQueueItemIdSchema, ImportQueueItemSchema} from '@shared/types/importQueue.types';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
-import type {Timestamp} from '@shared/types/utils.types';
 
 /**
  * Parses a {@link ImportQueueItemId} from a plain string. Returns an `ErrorResult` if the string is
@@ -50,7 +49,7 @@ export function parseImportQueueItem(maybeImportQueueItem: unknown): Result<Impo
     feedItemId: parsedFeedItemIdResult.value,
     url,
     status: parsedImportQueueItemResult.value.status,
-    createdTime: new Date(createdTime) as unknown as Timestamp,
-    lastUpdatedTime: new Date(lastUpdatedTime) as unknown as Timestamp,
+    createdTime: createdTime.toDate(),
+    lastUpdatedTime: lastUpdatedTime.toDate(),
   });
 }

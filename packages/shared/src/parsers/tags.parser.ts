@@ -11,7 +11,6 @@ import {
   UserTagIdSchema,
   UserTagSchema,
 } from '@shared/types/tags.types';
-import type {Timestamp} from '@shared/types/utils.types';
 
 /**
  * Parses a {@link UserTagId} from a plain string. Returns an `ErrorResult` if the string is not
@@ -42,8 +41,8 @@ export function parseUserTag(maybeUserTag: unknown): Result<UserTag> {
     tagId: parsedTagIdResult.value,
     type: TagType.User,
     name,
-    createdTime: new Date(createdTime) as unknown as Timestamp,
-    lastUpdatedTime: new Date(lastUpdatedTime) as unknown as Timestamp,
+    createdTime: createdTime.toDate(),
+    lastUpdatedTime: lastUpdatedTime.toDate(),
   });
 }
 

@@ -25,7 +25,6 @@ import {
 } from '@shared/types/feedItems.types';
 import type {Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import type {Timestamp} from '@shared/types/utils.types';
 
 /**
  * Parses a {@link FeedItemId} from a plain string. Returns an `ErrorResult` if the string is not
@@ -134,10 +133,8 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
     outgoingLinks: [],
     triageStatus,
     tagIds: {},
-    lastImportedTime: lastImportedTime
-      ? (new Date(lastImportedTime) as unknown as Timestamp)
-      : undefined,
-    createdTime: new Date(createdTime) as unknown as Timestamp,
-    lastUpdatedTime: new Date(lastUpdatedTime) as unknown as Timestamp,
+    lastImportedTime: lastImportedTime?.toDate(),
+    createdTime: createdTime.toDate(),
+    lastUpdatedTime: lastUpdatedTime.toDate(),
   });
 }

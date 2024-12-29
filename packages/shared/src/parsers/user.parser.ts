@@ -71,6 +71,6 @@ export function parseFirebaseUser(firebaseLoggedInUser: FirebaseUser): Result<Us
   return makeSuccessResult({
     userId: userIdResult.value,
     email: emailResult.value,
-    displayName: firebaseLoggedInUser.displayName,
+    displayName: firebaseLoggedInUser.displayName ?? undefined,
   });
 }

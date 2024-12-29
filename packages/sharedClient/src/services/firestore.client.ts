@@ -6,6 +6,7 @@ import type {
   Query,
   QueryConstraint,
   QuerySnapshot,
+  WithFieldValue,
 } from 'firebase/firestore';
 import {
   deleteDoc,
@@ -30,12 +31,12 @@ export class ClientFirestoreCollectionService<
   ItemId extends string,
   ItemData extends DocumentData,
 > {
-  private readonly collectionRef: CollectionReference;
+  private readonly collectionRef: CollectionReference<ItemData>;
   private readonly parseData: Func<DocumentData, Result<ItemData>>;
   private readonly parseId: Func<string, Result<ItemId>>;
 
   constructor(args: {
-    collectionRef: CollectionReference;
+    collectionRef: CollectionReference<ItemData>;
     parseData: Func<DocumentData, Result<ItemData>>;
     parseId: Func<string, Result<ItemId>>;
   }) {
@@ -47,14 +48,14 @@ export class ClientFirestoreCollectionService<
   /**
    * Returns the underlying Firestore collection reference.
    */
-  public getCollectionRef(): CollectionReference {
+  public getCollectionRef(): CollectionReference<ItemData> {
     return this.collectionRef;
   }
 
   /**
    * Returns a Firestore document reference for the given child ID.
    */
-  public getDocRef(docId: ItemId): DocumentReference {
+  public getDocRef(docId: ItemId): DocumentReference<ItemData> {
     return doc(this.collectionRef, docId);
   }
 
@@ -203,15 +204,12 @@ export class ClientFirestoreCollectionService<
   /**
    * Sets a Firestore document. The entire document is replaced.
    */
-  public async setDoc(docId: ItemId, data: ItemData): AsyncResult<ItemData> {
-    const docRef = doc(this.collectionRef, docId);
-    const setResult = await asyncTry(async () => setDoc(docRef, data));
+  public async setDoc(docId: ItemId, data: WithFieldValue<ItemData>): AsyncResult<void> {
+    const setResult = await asyncTry(async () => setDoc(this.getDocRef(docId), data));
     if (!setResult.success) {
       return prefixErrorResult(setResult, 'Error setting Firestore document');
     }
-    // Return the data that was set as a convenience since consumers of this function may want to
-    // return it in a single line as well.
-    return makeSuccessResult(data);
+    return makeSuccessResult(undefined);
   }
 
   /**

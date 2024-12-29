@@ -56,7 +56,7 @@ export class ServerFirestoreCollectionService<
   /**
    * Fetches data from the single Firestore document with the given ID.
    */
-  async fetchById(id: ItemId): AsyncResult<ItemData | null> {
+  public async fetchById(id: ItemId): AsyncResult<ItemData | null> {
     const docRef = this.collectionRef.doc(id);
     const docDataResult = await asyncTry(async () => {
       const docSnap = await docRef.get();
@@ -73,7 +73,7 @@ export class ServerFirestoreCollectionService<
   /**
    * Fetches all documents matching the Firestore query.
    */
-  async fetchQueryDocs(queryToFetch: Query): AsyncResult<ItemData[]> {
+  public async fetchQueryDocs(queryToFetch: Query): AsyncResult<ItemData[]> {
     const queryDataResult = await asyncTry(async () => {
       const querySnapshot = await queryToFetch.get();
       return querySnapshot.docs.map((doc) => {
@@ -91,7 +91,7 @@ export class ServerFirestoreCollectionService<
    * Fetches data from the first document matching a Firestore query. If no documents match, returns
    * `null`.
    */
-  async fetchFirstQueryDoc(queryToFetch: Query): AsyncResult<ItemData | null> {
+  public async fetchFirstQueryDoc(queryToFetch: Query): AsyncResult<ItemData | null> {
     const queryDataResult = await asyncTry(async () => {
       const querySnapshot = await queryToFetch.limit(1).get();
       if (querySnapshot.empty) return null;
@@ -107,7 +107,7 @@ export class ServerFirestoreCollectionService<
   /**
    * Fetches the IDs of all documents matching the Firestore query.
    */
-  async fetchQueryIds(query: Query): AsyncResult<ItemId[]> {
+  public async fetchQueryIds(query: Query): AsyncResult<ItemId[]> {
     const queryIdsResult = await asyncTry(async () => {
       const querySnapshot = await query.get();
       return querySnapshot.docs.map((doc) => {
@@ -124,25 +124,39 @@ export class ServerFirestoreCollectionService<
   /**
    * Sets a Firestore document. The entire document is replaced.
    */
-  async setDoc(docId: ItemId, data: ItemData): AsyncResult<ItemData> {
-    const docRef = this.collectionRef.doc(docId);
-    const setResult = await asyncTry(async () => docRef.set(data));
+  public async setDoc(
+    docId: ItemId,
+    data: Omit<ItemData, 'createdTime' | 'lastUpdatedTime'>
+  ): AsyncResult<ItemData> {
+    const setResult = await asyncTry(async () =>
+      this.getDocRef(docId).set({
+        ...data,
+        // Doc creation always sets the created and last updated times.
+        createdTime: FieldValue.serverTimestamp(),
+        lastUpdatedTime: FieldValue.serverTimestamp(),
+      })
+    );
     if (!setResult.success) {
       return prefixErrorResult(setResult, 'Error setting Firestore document');
     }
     // Return the data that was set as a convenience since consumers of this function may want to
     // return it in a single line as well.
-    return makeSuccessResult(data);
+    return makeSuccessResult({
+      ...data,
+      createdTime: new Date(),
+      lastUpdatedTime: new Date(),
+    });
   }
 
   /**
    * Updates a Firestore document. Updates are merged with the existing document.
    */
-  async updateDoc(docId: ItemId, updates: Partial<ItemData>): AsyncResult<void> {
+  public async updateDoc(docId: ItemId, updates: Partial<ItemData>): AsyncResult<void> {
     const docRef = this.collectionRef.doc(docId);
     const updateResult = await asyncTry(async () =>
       docRef.update({
         ...updates,
+        // Doc updates always set the last updated time.
         lastUpdatedTime: FieldValue.serverTimestamp(),
       })
     );
@@ -156,7 +170,7 @@ export class ServerFirestoreCollectionService<
   /**
    * Deletes a Firestore document.
    */
-  async deleteDoc(docId: ItemId): AsyncResult<void> {
+  public async deleteDoc(docId: ItemId): AsyncResult<void> {
     const docRef = this.collectionRef.doc(docId);
     const deleteResult = await asyncTry(async () => docRef.delete());
     if (!deleteResult.success) {
@@ -172,7 +186,7 @@ export class ServerFirestoreCollectionService<
    * Errors are returned if any batch fails to delete. A failure to one batch does not prevent other
    * batches from being deleted.
    */
-  async batchDeleteDocs(idsToDelete: ItemId[]): AsyncResult<void> {
+  public async batchDeleteDocs(idsToDelete: ItemId[]): AsyncResult<void> {
     const errors: Error[] = [];
 
     const totalBatches = Math.ceil(idsToDelete.length / BATCH_DELETE_SIZE);

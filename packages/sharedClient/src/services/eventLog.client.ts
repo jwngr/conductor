@@ -19,7 +19,7 @@ import type {ViewType} from '@shared/types/query.types';
 import {makeSuccessResult, type AsyncResult, type Result} from '@shared/types/result.types';
 import type {UserId} from '@shared/types/user.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
-import type {Consumer, Timestamp, Unsubscribe} from '@shared/types/utils.types';
+import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';
 import {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
@@ -178,35 +178,27 @@ export class ClientEventLogService {
       return createResult;
     }
 
-    return makeSuccessResult(createResult.value.eventId);
+    return makeSuccessResult(eventLogItem.eventId);
   }
 
   public async logFeedItemActionEvent(args: {
     readonly feedItemId: FeedItemId;
     readonly feedItemActionType: FeedItemActionType;
-    readonly createdTime: Timestamp;
-    readonly lastUpdatedTime: Timestamp;
   }): AsyncResult<EventId | null> {
     const eventLogItemResult = makeFeedItemActionEventLogItem({
       userId: this.userId,
       feedItemId: args.feedItemId,
       feedItemActionType: args.feedItemActionType,
-      createdTime: args.createdTime,
-      lastUpdatedTime: args.lastUpdatedTime,
     });
     return this.logEvent(eventLogItemResult);
   }
 
   public async logUserFeedSubscriptionEvent(args: {
     readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-    readonly createdTime: Timestamp;
-    readonly lastUpdatedTime: Timestamp;
   }): AsyncResult<EventId | null> {
     const eventLogItemResult = makeUserFeedSubscriptionEventLogItem({
       userId: this.userId,
       userFeedSubscriptionId: args.userFeedSubscriptionId,
-      createdTime: args.createdTime,
-      lastUpdatedTime: args.lastUpdatedTime,
     });
     return this.logEvent(eventLogItemResult);
   }

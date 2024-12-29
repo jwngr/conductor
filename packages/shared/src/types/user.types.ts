@@ -28,7 +28,7 @@ export const EmailAddressSchema = z.string().email();
 export interface User {
   readonly userId: UserId;
   readonly email: EmailAddress;
-  readonly displayName: string | null;
+  readonly displayName?: string;
   // TODO: Add photo URL.
   // readonly photoUrl: string;
 }

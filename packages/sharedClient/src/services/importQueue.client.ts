@@ -1,4 +1,4 @@
-import {collection, serverTimestamp} from 'firebase/firestore';
+import {collection} from 'firebase/firestore';
 
 import {IMPORT_QUEUE_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
@@ -41,8 +41,6 @@ export class ClientImportQueueService {
       feedItemId: importQueueItemDetails.feedItemId,
       userId: importQueueItemDetails.userId,
       url: importQueueItemDetails.url,
-      createdTime: serverTimestamp(),
-      lastUpdatedTime: serverTimestamp(),
     });
     if (!makeImportQueueItemResult.success) return makeImportQueueItemResult;
     const newImportQueueItem = makeImportQueueItemResult.value;

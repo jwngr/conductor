@@ -1,6 +1,4 @@
-import {FieldValue} from 'firebase-admin/firestore';
-
-import {prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
 import type {FeedSource, FeedSourceId} from '@shared/types/feedSources.types';
 import {makeFeedSource} from '@shared/types/feedSources.types';
@@ -46,8 +44,6 @@ export class ServerFeedSourcesService {
     const makeFeedSourceResult = makeFeedSource({
       url: feedDetails.url,
       title: feedDetails.title,
-      createdTime: FieldValue.serverTimestamp(),
-      lastUpdatedTime: FieldValue.serverTimestamp(),
     });
     if (!makeFeedSourceResult.success) return makeFeedSourceResult;
     const newFeedSource = makeFeedSourceResult.value;
@@ -57,7 +53,10 @@ export class ServerFeedSourcesService {
       newFeedSource.feedSourceId,
       newFeedSource
     );
-    return prefixResultIfError(createResult, 'Error adding feed source to Firestore');
+    if (!createResult.success) {
+      return prefixErrorResult(createResult, 'Error adding feed source to Firestore');
+    }
+    return makeSuccessResult(newFeedSource);
   }
 
   /**

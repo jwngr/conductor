@@ -40,7 +40,7 @@ export class ServerEventLogService {
       return createResult;
     }
 
-    return makeSuccessResult(createResult.value.eventId);
+    return makeSuccessResult(eventLogItem.eventId);
   }
 
   public async updateEventLogItem(

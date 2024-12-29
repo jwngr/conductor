@@ -1,4 +1,4 @@
-import {collection, serverTimestamp, where} from 'firebase/firestore';
+import {collection, where} from 'firebase/firestore';
 import type {StorageReference} from 'firebase/storage';
 import {getDownloadURL, ref as storageRef} from 'firebase/storage';
 import {useEffect, useMemo, useState} from 'react';
@@ -235,8 +235,6 @@ export class ClientFeedItemsService {
       // until we've done the import? Or should we compute this at save time?
       source,
       userId: this.userId,
-      createdTime: serverTimestamp(),
-      lastUpdatedTime: serverTimestamp(),
     });
     if (!feedItemResult.success) return feedItemResult;
     const feedItem = feedItemResult.value;
@@ -246,8 +244,6 @@ export class ClientFeedItemsService {
       feedItemId: feedItem.feedItemId,
       userId: this.userId,
       url: trimmedUrl,
-      createdTime: serverTimestamp(),
-      lastUpdatedTime: serverTimestamp(),
     });
     if (!makeImportQueueItemResult.success) return makeImportQueueItemResult;
 
