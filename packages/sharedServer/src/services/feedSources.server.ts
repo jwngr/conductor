@@ -1,36 +1,28 @@
-import type {CollectionReference} from 'firebase-admin/firestore';
 import {FieldValue} from 'firebase-admin/firestore';
 
 import {prefixResultIfError} from '@shared/lib/errorUtils.shared';
-
-import {parseFeedSource} from '@shared/parsers/feedSources.parser';
 
 import type {FeedSource, FeedSourceId} from '@shared/types/feedSources.types';
 import {makeFeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
 
-import {
-  deleteFirestoreDoc,
-  getFirestoreDocData,
-  getFirstFirestoreQueryData,
-  setFirestoreDoc,
-  updateFirestoreDoc,
-} from '@sharedServer/lib/firebase.server';
+import {FirebaseCollectionService} from '@sharedServer/lib/firebase.server';
+
+type FeedSourceCollectionService = FirebaseCollectionService<FeedSourceId, FeedSource>;
 
 export class ServerFeedSourcesService {
-  private readonly feedSourcesDbRef: CollectionReference;
+  private readonly feedSourcesCollectionService: FeedSourceCollectionService;
 
-  constructor(args: {readonly feedSourcesDbRef: CollectionReference}) {
-    this.feedSourcesDbRef = args.feedSourcesDbRef;
+  constructor(args: {readonly feedSourcesCollectionService: FeedSourceCollectionService}) {
+    this.feedSourcesCollectionService = args.feedSourcesCollectionService;
   }
 
   /**
    * Fetches an existing feed by its ID.
    */
   public async fetchById(feedSourceId: FeedSourceId): AsyncResult<FeedSource | null> {
-    const docRef = this.feedSourcesDbRef.doc(feedSourceId);
-    const maybeFeedSource = await getFirestoreDocData(docRef, parseFeedSource);
+    const maybeFeedSource = await this.feedSourcesCollectionService.fetchById(feedSourceId);
     return prefixResultIfError(maybeFeedSource, 'Error fetching feed source by ID in Firestore');
   }
 
@@ -38,8 +30,8 @@ export class ServerFeedSourcesService {
    * Fetches an existing feed source document from Firestore by its URL.
    */
   public async fetchByUrl(feedUrl: string): AsyncResult<FeedSource | null> {
-    const query = this.feedSourcesDbRef.where('url', '==', feedUrl);
-    const maybeFeedSource = await getFirstFirestoreQueryData(query, parseFeedSource);
+    const query = this.feedSourcesCollectionService.getRef().where('url', '==', feedUrl);
+    const maybeFeedSource = await this.feedSourcesCollectionService.fetchFirstQueryDoc(query);
     return prefixResultIfError(maybeFeedSource, 'Error fetching feed source by URL in Firestore');
   }
 
@@ -61,8 +53,10 @@ export class ServerFeedSourcesService {
     const newFeedSource = makeFeedSourceResult.value;
 
     // Create the new feed source in Firestore.
-    const newDocRef = this.feedSourcesDbRef.doc(newFeedSource.feedSourceId);
-    const createResult = await setFirestoreDoc(newDocRef, newFeedSource);
+    const createResult = await this.feedSourcesCollectionService.setDoc(
+      newFeedSource.feedSourceId,
+      newFeedSource
+    );
     return prefixResultIfError(createResult, 'Error adding feed source to Firestore');
   }
 
@@ -97,8 +91,7 @@ export class ServerFeedSourcesService {
     feedSourceId: FeedSourceId,
     update: Partial<Pick<FeedSource, 'title'>>
   ): AsyncResult<void> {
-    const docRefToUpdate = this.feedSourcesDbRef.doc(feedSourceId);
-    const updateResult = await updateFirestoreDoc(docRefToUpdate, update);
+    const updateResult = await this.feedSourcesCollectionService.updateDoc(feedSourceId, update);
     return prefixResultIfError(updateResult, 'Error updating feed source in Firestore');
   }
 
@@ -106,8 +99,7 @@ export class ServerFeedSourcesService {
    * Permanently deletes a feed source document from Firestore.
    */
   public async delete(feedSourceId: FeedSourceId): AsyncResult<void> {
-    const docRefToDelete = this.feedSourcesDbRef.doc(feedSourceId);
-    const deleteResult = await deleteFirestoreDoc(docRefToDelete);
+    const deleteResult = await this.feedSourcesCollectionService.deleteDoc(feedSourceId);
     return prefixResultIfError(deleteResult, 'Error deleting feed source in Firestore');
   }
 }

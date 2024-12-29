@@ -1,9 +1,6 @@
-import type {CollectionReference} from 'firebase-admin/firestore';
 import {FieldValue} from 'firebase-admin/firestore';
 
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-
-import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
 
 import {FeedItemType} from '@shared/types/feedItems.types';
 import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
@@ -13,10 +10,8 @@ import {SystemTagId} from '@shared/types/tags.types';
 import type {UserId} from '@shared/types/user.types';
 
 import {
-  batchDeleteChildIds,
   FIREBASE_STORAGE_BUCKET,
-  getFirestoreQueryIds,
-  updateFirestoreDoc,
+  FirebaseCollectionService,
 } from '@sharedServer/lib/firebase.server';
 
 interface UpdateImportedFeedItemInFirestoreArgs {
@@ -27,7 +22,7 @@ interface UpdateImportedFeedItemInFirestoreArgs {
 
 export class ServerFeedItemsService {
   private readonly storageCollectionPath: string;
-  private readonly feedItemsDbRef: CollectionReference;
+  private readonly feedItemsCollectionService: FirebaseCollectionService<FeedItemId, FeedItem>;
   // TODO: `storageBucket` should probably be passed in via the constructor, but there is no type
   // for it from the Firebase Admin SDK. We could use a type from @google-cloud/storage instead, but
   // we currently don't list that as a dependency.
@@ -35,10 +30,10 @@ export class ServerFeedItemsService {
 
   constructor(args: {
     readonly storageCollectionPath: string;
-    readonly feedItemsDbRef: CollectionReference;
+    readonly feedItemsCollectionService: FirebaseCollectionService<FeedItemId, FeedItem>;
   }) {
     this.storageCollectionPath = args.storageCollectionPath;
-    this.feedItemsDbRef = args.feedItemsDbRef;
+    this.feedItemsCollectionService = args.feedItemsCollectionService;
   }
 
   /**
@@ -77,8 +72,7 @@ export class ServerFeedItemsService {
       [`tagIds.${SystemTagId.Importing}`]: FieldValue.delete(),
     } as Partial<FeedItem>;
 
-    const docRef = this.feedItemsDbRef.doc(feedItemId);
-    const updateResult = await updateFirestoreDoc(docRef, actualUpdates);
+    const updateResult = await this.feedItemsCollectionService.updateDoc(feedItemId, actualUpdates);
     return prefixResultIfError(updateResult, 'Error updating imported feed item in Firestore');
   }
 
@@ -125,15 +119,15 @@ export class ServerFeedItemsService {
    */
   public async deleteAllForUser(userId: UserId): AsyncResult<void> {
     // Fetch the IDs for all of the user's feed items.
-    const query = this.feedItemsDbRef.where('userId', '==', userId);
-    const queryResult = await getFirestoreQueryIds(query, parseFeedItemId);
+    const query = this.feedItemsCollectionService.getRef().where('userId', '==', userId);
+    const queryResult = await this.feedItemsCollectionService.fetchQueryIds(query);
     if (!queryResult.success) {
       return prefixErrorResult(queryResult, 'Error fetching feed items to delete for user');
     }
 
     // Delete all of the user's feed items.
     const docIdsToDelete = queryResult.value;
-    return await batchDeleteChildIds(this.feedItemsDbRef, docIdsToDelete);
+    return await this.feedItemsCollectionService.batchDeleteDocs(docIdsToDelete);
   }
 
   /**
