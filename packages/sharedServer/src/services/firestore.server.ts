@@ -25,12 +25,12 @@ export class ServerFirestoreCollectionService<
   ItemId extends string,
   ItemData extends DocumentData,
 > {
-  private readonly collectionRef: CollectionReference;
+  private readonly collectionRef: CollectionReference<ItemData>;
   private readonly parseData: Func<DocumentData, Result<ItemData>>;
   private readonly parseId: Func<string, Result<ItemId>>;
 
   constructor(args: {
-    collectionRef: CollectionReference;
+    collectionRef: CollectionReference<ItemData>;
     parseData: Func<DocumentData, Result<ItemData>>;
     parseId: Func<string, Result<ItemId>>;
   }) {
@@ -127,7 +127,7 @@ export class ServerFirestoreCollectionService<
   public async setDoc(
     docId: ItemId,
     data: Omit<ItemData, 'createdTime' | 'lastUpdatedTime'>
-  ): AsyncResult<ItemData> {
+  ): AsyncResult<void> {
     const setResult = await asyncTry(async () =>
       this.getDocRef(docId).set({
         ...data,
@@ -139,13 +139,7 @@ export class ServerFirestoreCollectionService<
     if (!setResult.success) {
       return prefixErrorResult(setResult, 'Error setting Firestore document');
     }
-    // Return the data that was set as a convenience since consumers of this function may want to
-    // return it in a single line as well.
-    return makeSuccessResult({
-      ...data,
-      createdTime: new Date(),
-      lastUpdatedTime: new Date(),
-    });
+    return makeSuccessResult(undefined);
   }
 
   /**
