@@ -17,9 +17,6 @@ export class ServerFirebaseService {
   }
 
   public get app(): admin.app.App {
-    if (!this.appInstance) {
-      this.appInstance = admin.initializeApp();
-    }
     return this.appInstance;
   }
 
