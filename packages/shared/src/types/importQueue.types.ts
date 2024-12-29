@@ -8,7 +8,7 @@ import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
 import {UserIdSchema} from '@shared/types/user.types';
 import type {UserId} from '@shared/types/user.types';
-import type {BaseStoreItem, Timestamp} from '@shared/types/utils.types';
+import type {BaseStoreItem} from '@shared/types/utils.types';
 
 /**
  * Strongly-typed type for an {@link ImportQueueItem}'s unique identifier. Prefer this over plain
@@ -74,19 +74,13 @@ export const ImportQueueItemSchema = z.object({
 /**
  * Creates a new {@link ImportQueueItem}.
  */
-export function makeImportQueueItem(args: {
-  readonly feedItemId: FeedItemId;
-  readonly userId: UserId;
-  readonly url: string;
-  readonly createdTime: Timestamp;
-  readonly lastUpdatedTime: Timestamp;
-}): Result<ImportQueueItem> {
+export function makeImportQueueItem(
+  args: Omit<ImportQueueItem, 'importQueueItemId' | 'status'>
+): Result<ImportQueueItem> {
   const {feedItemId, userId, url, createdTime, lastUpdatedTime} = args;
 
-  const importQueueItemId = makeImportQueueItemId();
-
   return makeSuccessResult({
-    importQueueItemId,
+    importQueueItemId: makeImportQueueItemId(),
     feedItemId,
     userId,
     url,

@@ -1,5 +1,4 @@
-import type {CollectionReference} from 'firebase/firestore';
-import {collection, doc, limit, onSnapshot, orderBy, query, where} from 'firebase/firestore';
+import {collection, limit, orderBy, where} from 'firebase/firestore';
 import type {Functions, HttpsCallableResult} from 'firebase/functions';
 import {httpsCallable} from 'firebase/functions';
 import {useMemo} from 'react';
@@ -7,7 +6,10 @@ import {useMemo} from 'react';
 import {USER_FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {asyncTry, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
-import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions.parser';
+import {
+  parseUserFeedSubscription,
+  parseUserFeedSubscriptionId,
+} from '@shared/parsers/userFeedSubscriptions.parser';
 
 import type {AsyncResult} from '@shared/types/result.types';
 import type {UserId} from '@shared/types/user.types';
@@ -18,6 +20,7 @@ import type {
 import type {AsyncFunc, Consumer, Unsubscribe} from '@shared/types/utils.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';
+import {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
 
 import {useLoggedInUser} from '@sharedClient/hooks/auth.hooks';
 
@@ -34,19 +37,24 @@ type CallSubscribeUserToFeedFn = AsyncFunc<
   HttpsCallableResult<SubscribeToFeedResponse>
 >;
 
+type UserFeedSubscriptionsCollectionService = ClientFirestoreCollectionService<
+  UserFeedSubscriptionId,
+  UserFeedSubscription
+>;
+
 export class ClientUserFeedSubscriptionsService {
   private userId: UserId;
   private functions: Functions;
-  private userFeedSubscriptionsDbRef: CollectionReference;
+  private userFeedSubscriptionsCollectionService: UserFeedSubscriptionsCollectionService;
 
   constructor(args: {
     readonly userId: UserId;
     readonly functions: Functions;
-    readonly userFeedSubscriptionsDbRef: CollectionReference;
+    readonly userFeedSubscriptionsCollectionService: UserFeedSubscriptionsCollectionService;
   }) {
     this.userId = args.userId;
     this.functions = args.functions;
-    this.userFeedSubscriptionsDbRef = args.userFeedSubscriptionsDbRef;
+    this.userFeedSubscriptionsCollectionService = args.userFeedSubscriptionsCollectionService;
   }
 
   /**
@@ -82,19 +90,14 @@ export class ClientUserFeedSubscriptionsService {
    */
   public watchSubscription(args: {
     readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-    readonly successCallback: Consumer<UserFeedSubscription>;
+    readonly successCallback: Consumer<UserFeedSubscription | null>;
     readonly errorCallback: Consumer<Error>;
   }): Unsubscribe {
     const {userFeedSubscriptionId, successCallback, errorCallback} = args;
 
-    const userFeedSubscriptionDoc = doc(this.userFeedSubscriptionsDbRef, userFeedSubscriptionId);
-
-    const unsubscribe = onSnapshot(
-      userFeedSubscriptionDoc,
-      (snapshot) => {
-        const feedItem = snapshot.data() as UserFeedSubscription;
-        successCallback(feedItem);
-      },
+    const unsubscribe = this.userFeedSubscriptionsCollectionService.watchDoc(
+      userFeedSubscriptionId,
+      successCallback,
       errorCallback
     );
     return () => unsubscribe();
@@ -109,19 +112,15 @@ export class ClientUserFeedSubscriptionsService {
   }): Unsubscribe {
     const {successCallback, errorCallback} = args;
 
-    const itemsQuery = query(
-      this.userFeedSubscriptionsDbRef,
+    const itemsQuery = this.userFeedSubscriptionsCollectionService.query([
       where('userId', '==', this.userId),
       orderBy('createdTime', 'desc'),
-      limit(100)
-    );
+      limit(100),
+    ]);
 
-    const unsubscribe = onSnapshot(
+    const unsubscribe = this.userFeedSubscriptionsCollectionService.watchDocs(
       itemsQuery,
-      (snapshot) => {
-        const feedItems = snapshot.docs.map((doc) => doc.data() as UserFeedSubscription);
-        successCallback(feedItems);
-      },
+      successCallback,
       errorCallback
     );
     return () => unsubscribe();
@@ -133,6 +132,12 @@ const userFeedSubscriptionsDbRef = collection(
   USER_FEED_SUBSCRIPTIONS_DB_COLLECTION
 );
 
+const userFeedSubscriptionsCollectionService = new ClientFirestoreCollectionService({
+  collectionRef: userFeedSubscriptionsDbRef,
+  parseId: parseUserFeedSubscriptionId,
+  parseData: parseUserFeedSubscription,
+});
+
 export function useUserFeedSubscriptionsService(): ClientUserFeedSubscriptionsService {
   const loggedInUser = useLoggedInUser();
 
@@ -140,7 +145,7 @@ export function useUserFeedSubscriptionsService(): ClientUserFeedSubscriptionsSe
     return new ClientUserFeedSubscriptionsService({
       userId: loggedInUser.userId,
       functions: firebaseService.functions,
-      userFeedSubscriptionsDbRef,
+      userFeedSubscriptionsCollectionService,
     });
   }, [loggedInUser]);
 

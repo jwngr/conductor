@@ -203,7 +203,9 @@ export class ServerImportQueueService {
     // TODO: Consider introducing a `batchDeleteAllForUser` method.
 
     // Fetch the IDs for all of the user's import queue items.
-    const query = this.importQueueCollectionService.getRef().where('userId', '==', userId);
+    const query = this.importQueueCollectionService
+      .getCollectionRef()
+      .where('userId', '==', userId);
     const queryResult = await this.importQueueCollectionService.fetchQueryIds(query);
     if (!queryResult.success) {
       return prefixErrorResult(queryResult, 'Error fetching import queue items to delete for user');

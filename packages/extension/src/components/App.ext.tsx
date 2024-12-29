@@ -33,7 +33,7 @@ export const App: React.FC = () => {
       return;
     }
 
-    const addFeedItemResult = await feedItemsService.addFeedItem({
+    const addFeedItemResult = await feedItemsService.createFeedItem({
       url: tabUrl,
       source: FEED_ITEM_APP_SOURCE,
     });
