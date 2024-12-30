@@ -15,7 +15,7 @@
     // React JSX requires this.
     "jsx": "react-jsx",
 
-    // Build is handled by Vite.
+    // Build output.
     "moduleResolution": "bundler",
     "outDir": "./dist",
     "declaration": true,
