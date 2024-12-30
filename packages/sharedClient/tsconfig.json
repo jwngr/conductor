@@ -1,31 +1,22 @@
 {
   "include": ["src"],
+  "extends": "../../tsconfig.json",
 
   // This package consumes the `shared` package.
   "references": [{"path": "../shared"}],
 
   "compilerOptions": {
-    // Target latest ECMAScript.
-    "target": "ESNext",
-    "lib": ["ESNext", "DOM", "DOM.Iterable"], // Override to include DOM.
-    "module": "ESNext",
+    // This project is referenced by other TypeScript projects, so it must be composite.
+    "composite": true,
 
-    // Enable strict type checking.
-    "strict": true,
-
-    // Module resolution.
-    "moduleResolution": "bundler", // Assume browser environment.
-    "esModuleInterop": true, // Allow importing CommonJS modules.
-    "isolatedModules": true, // Ensure each file is its own module.
-    "resolveJsonModule": true, // Allow importing JSON files.
+    // Override to include DOM.
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
 
     // React JSX requires this.
     "jsx": "react-jsx",
 
-    // This project is referenced by other TypeScript projects, so it must be composite.
-    "composite": true,
-
-    // Build output.
+    // Build is handled by Vite.
+    "moduleResolution": "bundler",
     "outDir": "./dist",
     "declaration": true,
     "declarationMap": true,
