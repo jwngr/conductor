@@ -1,7 +1,20 @@
 {
   "include": ["src"],
-  "extends": "../../tsconfig.json",
   "compilerOptions": {
+    // Target latest ECMAScript.
+    "target": "ESNext",
+    "lib": ["ESNext"],
+    "module": "ESNext",
+
+    // Enable strict type checking.
+    "strict": true,
+
+    // Module resolution.
+    "moduleResolution": "node", // Don't assume a browser environment.
+    "esModuleInterop": true, // Allow importing CommonJS modules.
+    "isolatedModules": true, // Ensure each file is its own module.
+    "resolveJsonModule": true, // Allow importing JSON files.
+
     // This project is referenced by other TypeScript projects, so it must be composite.
     "composite": true,
 

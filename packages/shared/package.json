@@ -10,7 +10,7 @@
     "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",
     "validate:lint": "eslint src",
     "validate:lint:fix": "eslint src --fix",
-    "validate:types": "yarn run hack-type && tsc --noEmit",
+    "validate:types": "yarn run hack-type && tsc",
     "validate:format": "prettier --check 'src/**/*.{js,ts,json,svg}'",
     "format": "prettier --write 'src/**/*.{js,ts,json,svg}'",
     "clean": "rm -rf dist/ tsconfig.tsbuildinfo",
