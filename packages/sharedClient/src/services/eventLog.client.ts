@@ -1,4 +1,4 @@
-import {collection, limit as firestoreLimit, orderBy, where} from 'firebase/firestore';
+import {limit as firestoreLimit, orderBy, where} from 'firebase/firestore';
 import {useEffect, useMemo, useState} from 'react';
 
 import {
@@ -11,7 +11,7 @@ import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 import {filterNull} from '@shared/lib/utils.shared';
 
-import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
+import {eventLogItemFirestoreConverter, parseEventId} from '@shared/parsers/eventLog.parser';
 
 import type {EventId, EventLogItem} from '@shared/types/eventLog.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
@@ -21,23 +21,24 @@ import type {UserId} from '@shared/types/user.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
-import {firebaseService} from '@sharedClient/services/firebase.client';
-import {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+import {ClientFirestoreCollectionService} from '@sharedClient/services/firestore2.client';
 
 import {useLoggedInUser} from '@sharedClient/hooks/auth.hooks';
 
 // TODO: This is a somewhat arbitrary limit. Reconsider what the logic should be here.
 const EVENT_LOG_LIMIT = 100;
 
-const eventLogDbRef = collection(firebaseService.firestore, EVENT_LOG_DB_COLLECTION);
+// const eventLogDbRef = collection(firebaseService.firestore, EVENT_LOG_DB_COLLECTION).withConverter(
+//   eventLogItemFirestoreConverter
+// );
 
 export const useEventLogService = () => {
   const loggedInUser = useLoggedInUser();
 
   const eventLogService = useMemo(() => {
     const eventLogCollectionService = new ClientFirestoreCollectionService({
-      collectionRef: eventLogDbRef,
-      parseData: parseEventLogItem,
+      collectionPath: EVENT_LOG_DB_COLLECTION,
+      converter: eventLogItemFirestoreConverter,
       parseId: parseEventId,
     });
 

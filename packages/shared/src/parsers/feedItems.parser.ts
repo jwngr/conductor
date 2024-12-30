@@ -1,3 +1,9 @@
+import {
+  DocumentData,
+  FirestoreDataConverter,
+  QueryDocumentSnapshot,
+  SnapshotOptions,
+} from 'firebase/firestore';
 import type {z} from 'zod';
 
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
@@ -138,3 +144,28 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
     lastUpdatedTime: lastUpdatedTime.toDate(),
   });
 }
+
+export const feedItemFirestoreConverter: FirestoreDataConverter<FeedItem> = {
+  toFirestore(feedItem: FeedItem): DocumentData {
+    return {
+      feedItemId: feedItem.feedItemId,
+      userId: feedItem.userId,
+      source: feedItem.source,
+      url: feedItem.url,
+      title: feedItem.title,
+      description: feedItem.description,
+      outgoingLinks: feedItem.outgoingLinks,
+      triageStatus: feedItem.triageStatus,
+      tagIds: feedItem.tagIds,
+      createdTime: feedItem.createdTime,
+      lastUpdatedTime: feedItem.lastUpdatedTime,
+    };
+  },
+  fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): FeedItem {
+    const data = snapshot.data(options);
+    if (!data) throw new Error('Feed item document data is null');
+    const parseResult = parseFeedItem(data);
+    if (!parseResult.success) throw parseResult.error;
+    return parseResult.value;
+  },
+};

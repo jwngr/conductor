@@ -77,3 +77,22 @@ export function parseSystemTag(maybeSystemTag: unknown): Result<SystemTag> {
     name,
   });
 }
+
+// export const tagFirestoreConverter: FirestoreDataConverter<Tag> = {
+//   toFirestore(tag) {
+//     return {
+//       tagId: tag.tagId,
+//       type: tag.type,
+//       name: tag.name,
+//       createdTime: tag.createdTime,
+//       lastUpdatedTime: tag.lastUpdatedTime,
+//     };
+//   },
+//   fromFirestore(snapshot, options) {
+//     const data = snapshot.data(options);
+//     if (!data) throw new Error('Tag document data is null');
+//     const parseResult = parseTag(data);
+//     if (!parseResult.success) throw parseResult.error;
+//     return parseResult.value;
+//   },
+// };

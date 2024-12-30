@@ -1,3 +1,10 @@
+import type {
+  DocumentData,
+  FirestoreDataConverter,
+  QueryDocumentSnapshot,
+  SnapshotOptions,
+} from 'firebase/firestore';
+
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseZodResult} from '@shared/lib/parser.shared';
 
@@ -162,3 +169,23 @@ function parseUserFeedSubscriptionEventLogItemData(
     userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
   });
 }
+
+export const eventLogItemFirestoreConverter: FirestoreDataConverter<EventLogItem> = {
+  toFirestore(eventLogItem: EventLogItem): DocumentData {
+    return {
+      eventId: eventLogItem.eventId,
+      userId: eventLogItem.userId,
+      eventType: eventLogItem.eventType,
+      data: eventLogItem.data,
+      createdTime: eventLogItem.createdTime,
+      lastUpdatedTime: eventLogItem.lastUpdatedTime,
+    };
+  },
+  fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): EventLogItem {
+    const data = snapshot.data(options);
+    if (!data) throw new Error('Event log item document data is null');
+    const parseResult = parseEventLogItem(data);
+    if (!parseResult.success) throw parseResult.error;
+    return parseResult.value;
+  },
+};

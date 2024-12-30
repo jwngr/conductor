@@ -1,9 +1,10 @@
-import {collection} from 'firebase/firestore';
-
 import {IMPORT_QUEUE_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 
-import {parseImportQueueItem, parseImportQueueItemId} from '@shared/parsers/importQueue.parser';
+import {
+  importQueueItemFirestoreConverter,
+  parseImportQueueItemId,
+} from '@shared/parsers/importQueue.parser';
 
 import {
   makeImportQueueItem,
@@ -12,8 +13,7 @@ import {
 } from '@shared/types/importQueue.types';
 import {makeSuccessResult, type AsyncResult} from '@shared/types/result.types';
 
-import {firebaseService} from '@sharedClient/services/firebase.client';
-import {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+import {ClientFirestoreCollectionService} from '@sharedClient/services/firestore2.client';
 
 type ImportQueueCollectionService = ClientFirestoreCollectionService<
   ImportQueueItemId,
@@ -66,12 +66,10 @@ export class ClientImportQueueService {
   }
 }
 
-const importQueueDbRef = collection(firebaseService.firestore, IMPORT_QUEUE_DB_COLLECTION);
-
 const importQueueCollectionService = new ClientFirestoreCollectionService({
-  collectionRef: importQueueDbRef,
+  collectionPath: IMPORT_QUEUE_DB_COLLECTION,
+  converter: importQueueItemFirestoreConverter,
   parseId: parseImportQueueItemId,
-  parseData: parseImportQueueItem,
 });
 
 export const importQueueService = new ClientImportQueueService({

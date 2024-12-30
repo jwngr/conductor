@@ -1,4 +1,4 @@
-import {collection, where} from 'firebase/firestore';
+import {where} from 'firebase/firestore';
 import type {StorageReference} from 'firebase/storage';
 import {getDownloadURL, ref as storageRef} from 'firebase/storage';
 import {useEffect, useMemo, useState} from 'react';
@@ -18,7 +18,7 @@ import {requestGet} from '@shared/lib/requests.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
 import {Views} from '@shared/lib/views.shared';
 
-import {parseFeedItem, parseFeedItemId} from '@shared/parsers/feedItems.parser';
+import {feedItemFirestoreConverter, parseFeedItemId} from '@shared/parsers/feedItems.parser';
 
 import {
   FeedItemType,
@@ -34,13 +34,12 @@ import type {AuthStateChangedUnsubscribe, UserId} from '@shared/types/user.types
 import type {Consumer} from '@shared/types/utils.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';
-import {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+import {ClientFirestoreCollectionService} from '@sharedClient/services/firestore2.client';
 import {useImportQueueService} from '@sharedClient/services/importQueue.client';
 import type {ClientImportQueueService} from '@sharedClient/services/importQueue.client';
 
 import {useLoggedInUser} from '@sharedClient/hooks/auth.hooks';
 
-const feedItemsDbRef = collection(firebaseService.firestore, FEED_ITEMS_DB_COLLECTION);
 const feedItemsStorageRef = storageRef(firebaseService.storage, FEED_ITEMS_STORAGE_COLLECTION);
 
 export function useFeedItemsService(): ClientFeedItemsService {
@@ -49,9 +48,9 @@ export function useFeedItemsService(): ClientFeedItemsService {
 
   const feedItemsService = useMemo(() => {
     const feedItemsCollectionService = new ClientFirestoreCollectionService({
-      collectionRef: feedItemsDbRef,
+      collectionPath: FEED_ITEMS_DB_COLLECTION,
+      converter: feedItemFirestoreConverter,
       parseId: parseFeedItemId,
-      parseData: parseFeedItem,
     });
 
     return new ClientFeedItemsService({

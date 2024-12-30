@@ -63,4 +63,6 @@ const eventLogCollectionService = new ServerFirestoreCollectionService({
   parseId: parseEventId,
 });
 
-export const eventLogService = new ServerEventLogService({eventLogCollectionService});
+export const eventLogService = new ServerEventLogService({
+  eventLogCollectionService,
+});

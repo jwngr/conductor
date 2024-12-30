@@ -18,13 +18,26 @@ import {
 } from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 
-import {parseFeedItem, parseFeedItemId} from '@shared/parsers/feedItems.parser';
-import {parseFeedSource, parseFeedSourceId} from '@shared/parsers/feedSources.parser';
-import {parseImportQueueItem, parseImportQueueItemId} from '@shared/parsers/importQueue.parser';
+import {
+  feedItemFirestoreConverter,
+  parseFeedItem,
+  parseFeedItemId,
+} from '@shared/parsers/feedItems.parser';
+import {
+  feedSourceFirestoreConverter,
+  parseFeedSource,
+  parseFeedSourceId,
+} from '@shared/parsers/feedSources.parser';
+import {
+  importQueueItemFirestoreConverter,
+  parseImportQueueItem,
+  parseImportQueueItemId,
+} from '@shared/parsers/importQueue.parser';
 import {parseUser, parseUserId} from '@shared/parsers/user.parser';
 import {
   parseUserFeedSubscription,
   parseUserFeedSubscriptionId,
+  userFeedSubscriptionFirestoreConverter,
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
 import {ImportQueueItem, ImportQueueItemStatus} from '@shared/types/importQueue.types';
@@ -35,7 +48,7 @@ import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import {ServerFeedSourcesService} from '@sharedServer/services/feedSources.server';
 import {firebaseService} from '@sharedServer/services/firebase.server';
 import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
-import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
+import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore2.server';
 import {ServerImportQueueService} from '@sharedServer/services/importQueue.server';
 import {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
 import {SuperfeedrService} from '@sharedServer/services/superfeedr.server';
@@ -62,9 +75,9 @@ onInit(() => {
   });
 
   const feedSourcesCollectionService = new ServerFirestoreCollectionService({
-    collectionRef: firebaseService.firestore.collection(FEED_SOURCES_DB_COLLECTION),
+    collectionPath: FEED_SOURCES_DB_COLLECTION,
+    converter: feedSourceFirestoreConverter,
     parseId: parseFeedSourceId,
-    parseData: parseFeedSource,
   });
 
   feedSourcesService = new ServerFeedSourcesService({
@@ -72,9 +85,9 @@ onInit(() => {
   });
 
   const userFeedSubscriptionsCollectionService = new ServerFirestoreCollectionService({
-    collectionRef: firebaseService.firestore.collection(USER_FEED_SUBSCRIPTIONS_DB_COLLECTION),
+    collectionPath: USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
+    converter: userFeedSubscriptionFirestoreConverter,
     parseId: parseUserFeedSubscriptionId,
-    parseData: parseUserFeedSubscription,
   });
 
   userFeedSubscriptionsService = new ServerUserFeedSubscriptionsService({
@@ -82,9 +95,9 @@ onInit(() => {
   });
 
   const feedItemsCollectionService = new ServerFirestoreCollectionService({
-    collectionRef: firebaseService.firestore.collection(FEED_ITEMS_DB_COLLECTION),
+    collectionPath: FEED_ITEMS_DB_COLLECTION,
+    converter: feedItemFirestoreConverter,
     parseId: parseFeedItemId,
-    parseData: parseFeedItem,
   });
 
   const feedItemsService = new ServerFeedItemsService({
@@ -93,9 +106,9 @@ onInit(() => {
   });
 
   const importQueueCollectionService = new ServerFirestoreCollectionService({
-    collectionRef: firebaseService.firestore.collection(IMPORT_QUEUE_DB_COLLECTION),
+    collectionPath: IMPORT_QUEUE_DB_COLLECTION,
+    converter: importQueueItemFirestoreConverter,
     parseId: parseImportQueueItemId,
-    parseData: parseImportQueueItem,
   });
 
   importQueueService = new ServerImportQueueService({
@@ -105,9 +118,9 @@ onInit(() => {
   });
 
   const usersCollectionService = new ServerFirestoreCollectionService({
-    collectionRef: firebaseService.firestore.collection(USERS_DB_COLLECTION),
+    collectionPath: USERS_DB_COLLECTION,
+    converter: userFirestoreConverter,
     parseId: parseUserId,
-    parseData: parseUser,
   });
 
   wipeoutService = new WipeoutService({

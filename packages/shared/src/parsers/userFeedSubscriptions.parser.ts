@@ -1,3 +1,10 @@
+import {
+  DocumentData,
+  FirestoreDataConverter,
+  QueryDocumentSnapshot,
+  SnapshotOptions,
+} from 'firebase/firestore';
+
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseZodResult} from '@shared/lib/parser.shared';
 
@@ -65,3 +72,27 @@ export function parseUserFeedSubscription(
     lastUpdatedTime: lastUpdatedTime.toDate(),
   });
 }
+
+export const userFeedSubscriptionFirestoreConverter: FirestoreDataConverter<UserFeedSubscription> =
+  {
+    toFirestore(userFeedSubscription: UserFeedSubscription): DocumentData {
+      return {
+        userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
+        feedSourceId: userFeedSubscription.feedSourceId,
+        userId: userFeedSubscription.userId,
+        url: userFeedSubscription.url,
+        title: userFeedSubscription.title,
+        isActive: userFeedSubscription.isActive,
+        unsubscribedTime: userFeedSubscription.unsubscribedTime,
+        createdTime: userFeedSubscription.createdTime,
+        lastUpdatedTime: userFeedSubscription.lastUpdatedTime,
+      };
+    },
+    fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): UserFeedSubscription {
+      const data = snapshot.data(options);
+      if (!data) throw new Error('User feed subscription document data is null');
+      const parseResult = parseUserFeedSubscription(data);
+      if (!parseResult.success) throw parseResult.error;
+      return parseResult.value;
+    },
+  };
