@@ -1,17 +1,16 @@
-import type {
-  DocumentData,
-  FirestoreDataConverter,
-  QueryDocumentSnapshot,
-  SnapshotOptions,
-} from 'firebase/firestore';
+import type {WithFieldValue} from 'firebase/firestore';
 
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {parseZodResult} from '@shared/lib/parser.shared';
+import {parseZodResult, toFirestoreDate} from '@shared/lib/parser.shared';
 
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
 import {parseUserId} from '@shared/parsers/user.parser';
 
-import type {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue.types';
+import type {
+  ImportQueueItem,
+  ImportQueueItemFromSchema,
+  ImportQueueItemId,
+} from '@shared/types/importQueue.types';
 import {ImportQueueItemIdSchema, ImportQueueItemSchema} from '@shared/types/importQueue.types';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
@@ -61,23 +60,16 @@ export function parseImportQueueItem(maybeImportQueueItem: unknown): Result<Impo
   });
 }
 
-export const importQueueItemFirestoreConverter: FirestoreDataConverter<ImportQueueItem> = {
-  toFirestore(importQueueItem: ImportQueueItem): DocumentData {
-    return {
-      importQueueItemId: importQueueItem.importQueueItemId,
-      userId: importQueueItem.userId,
-      feedItemId: importQueueItem.feedItemId,
-      url: importQueueItem.url,
-      status: importQueueItem.status,
-      createdTime: importQueueItem.createdTime,
-      lastUpdatedTime: importQueueItem.lastUpdatedTime,
-    };
-  },
-  fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): ImportQueueItem {
-    const data = snapshot.data(options);
-    if (!data) throw new Error('Import queue item document data is null');
-    const parseResult = parseImportQueueItem(data);
-    if (!parseResult.success) throw parseResult.error;
-    return parseResult.value;
-  },
-};
+export function toFirestoreImportQueueItem(
+  importQueueItem: ImportQueueItem
+): WithFieldValue<ImportQueueItemFromSchema> {
+  return {
+    importQueueItemId: importQueueItem.importQueueItemId,
+    userId: importQueueItem.userId,
+    feedItemId: importQueueItem.feedItemId,
+    url: importQueueItem.url,
+    status: importQueueItem.status,
+    createdTime: toFirestoreDate(importQueueItem.createdTime),
+    lastUpdatedTime: toFirestoreDate(importQueueItem.lastUpdatedTime),
+  };
+}

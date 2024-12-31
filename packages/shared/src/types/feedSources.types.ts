@@ -47,6 +47,8 @@ export const FeedSourceSchema = z.object({
   lastUpdatedTime: FirestoreTimestampSchema,
 });
 
+export type FeedSourceFromSchema = z.infer<typeof FeedSourceSchema>;
+
 /**
  * Creates a new {@link FeedSource} object.
  */

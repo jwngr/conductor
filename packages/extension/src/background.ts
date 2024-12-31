@@ -9,10 +9,15 @@ import {
 } from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 
-import {feedItemFirestoreConverter, parseFeedItemId} from '@shared/parsers/feedItems.parser';
 import {
-  importQueueItemFirestoreConverter,
+  parseFeedItem,
+  parseFeedItemId,
+  toFirestoreFeedItem,
+} from '@shared/parsers/feedItems.parser';
+import {
+  parseImportQueueItem,
   parseImportQueueItemId,
+  toFirestoreImportQueueItem,
 } from '@shared/parsers/importQueue.parser';
 import {parseUserId} from '@shared/parsers/user.parser';
 
@@ -20,7 +25,10 @@ import {FEED_ITEM_EXTENSION_SOURCE} from '@shared/types/feedItems.types';
 
 import {ClientFeedItemsService} from '@sharedClient/services/feedItems.client';
 import {firebaseService} from '@sharedClient/services/firebase.client';
-import {ClientFirestoreCollectionService} from '@sharedClient/services/firestore2.client';
+import {
+  ClientFirestoreCollectionService,
+  makeFirestoreDataConverter,
+} from '@sharedClient/services/firestore.client';
 import {ClientImportQueueService} from '@sharedClient/services/importQueue.client';
 
 // TODO: Refactor into a `FirebaseStorageCollectionService`.
@@ -41,11 +49,18 @@ chrome.action.onClicked.addListener(async (tab) => {
     return;
   }
 
+  const feedItemFirestoreConverter = makeFirestoreDataConverter(toFirestoreFeedItem, parseFeedItem);
+
   const feedItemsCollectionService = new ClientFirestoreCollectionService({
     collectionPath: FEED_ITEMS_DB_COLLECTION,
     converter: feedItemFirestoreConverter,
     parseId: parseFeedItemId,
   });
+
+  const importQueueItemFirestoreConverter = makeFirestoreDataConverter(
+    toFirestoreImportQueueItem,
+    parseImportQueueItem
+  );
 
   const importQueueService = new ClientImportQueueService({
     importQueueCollectionService: new ClientFirestoreCollectionService({

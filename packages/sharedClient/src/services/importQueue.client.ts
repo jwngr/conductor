@@ -2,8 +2,9 @@ import {IMPORT_QUEUE_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 
 import {
-  importQueueItemFirestoreConverter,
+  parseImportQueueItem,
   parseImportQueueItemId,
+  toFirestoreImportQueueItem,
 } from '@shared/parsers/importQueue.parser';
 
 import {
@@ -11,9 +12,13 @@ import {
   type ImportQueueItem,
   type ImportQueueItemId,
 } from '@shared/types/importQueue.types';
-import {makeSuccessResult, type AsyncResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/result.types';
+import {makeSuccessResult} from '@shared/types/result.types';
 
-import {ClientFirestoreCollectionService} from '@sharedClient/services/firestore2.client';
+import {
+  ClientFirestoreCollectionService,
+  makeFirestoreDataConverter,
+} from '@sharedClient/services/firestore.client';
 
 type ImportQueueCollectionService = ClientFirestoreCollectionService<
   ImportQueueItemId,
@@ -65,6 +70,13 @@ export class ClientImportQueueService {
     return this.importQueueCollectionService.fetchById(importQueueItemId);
   }
 }
+
+// Initialize a singleton instance of the import queue service.
+
+const importQueueItemFirestoreConverter = makeFirestoreDataConverter(
+  toFirestoreImportQueueItem,
+  parseImportQueueItem
+);
 
 const importQueueCollectionService = new ClientFirestoreCollectionService({
   collectionPath: IMPORT_QUEUE_DB_COLLECTION,

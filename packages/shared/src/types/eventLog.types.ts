@@ -19,6 +19,7 @@ export type EventId = string & {readonly __brand: 'EventIdBrand'};
 /**
  * Zod schema for an {@link EventId}.
  */
+// TODO: Consider adding `brand()` and defining `EventId` based on this schema.
 export const EventIdSchema = z.string().uuid();
 
 /**
@@ -80,6 +81,7 @@ export const EventLogItemSchema = z.object({
   lastUpdatedTime: FirestoreTimestampSchema,
 });
 
+export type EventLogItemFromSchema = z.infer<typeof EventLogItemSchema>;
 export interface FeedItemActionEventLogItem extends BaseEventLogItem {
   readonly eventType: EventType.FeedItemAction;
   readonly data: FeedItemActionEventLogItemData;

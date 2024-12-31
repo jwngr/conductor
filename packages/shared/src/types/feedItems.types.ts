@@ -1,4 +1,3 @@
-import type {FieldValue} from 'firebase/firestore';
 import {z} from 'zod';
 
 import {makeUuid} from '@shared/lib/utils.shared';
@@ -137,12 +136,8 @@ interface BaseFeedItem extends BaseStoreItem {
    * - indexing of arbitrary boolean user states.
    *
    * To accomplish this, most state is stored as tags that either exist in this map or not.
-   *
-   * Note: FieldValue is used to delete tags.
-   * TODO: Consider abstracting this strange type way with a Firestore converter.
-   * See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
    */
-  readonly tagIds: Partial<Record<TagId, true | FieldValue>>;
+  readonly tagIds: Record<TagId, true>;
 
   // Timestamps.
   readonly lastImportedTime?: Date;
@@ -166,6 +161,8 @@ export const FeedItemSchema = z.object({
   createdTime: FirestoreTimestampSchema,
   lastUpdatedTime: FirestoreTimestampSchema,
 });
+
+export type FeedItemFromSchema = z.infer<typeof FeedItemSchema>;
 
 export interface ArticleFeedItem extends BaseFeedItem {
   readonly type: FeedItemType.Article;

@@ -42,6 +42,8 @@ export const UserSchema = z.object({
   displayName: z.string().optional(),
 });
 
+export type UserFromSchema = z.infer<typeof UserSchema>;
+
 export type AuthStateChangedCallback = Consumer<User | null>;
 
 export type AuthStateChangedUnsubscribe = Task;

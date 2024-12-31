@@ -7,8 +7,9 @@ import {USER_FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants.share
 import {asyncTry, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
 import {
+  parseUserFeedSubscription,
   parseUserFeedSubscriptionId,
-  userFeedSubscriptionFirestoreConverter,
+  toFirestoreUserFeedSubscription,
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
 import type {AsyncResult} from '@shared/types/result.types';
@@ -20,7 +21,10 @@ import type {
 import type {AsyncFunc, Consumer, Unsubscribe} from '@shared/types/utils.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';
-import {ClientFirestoreCollectionService} from '@sharedClient/services/firestore2.client';
+import {
+  ClientFirestoreCollectionService,
+  makeFirestoreDataConverter,
+} from '@sharedClient/services/firestore.client';
 
 import {useLoggedInUser} from '@sharedClient/hooks/auth.hooks';
 
@@ -126,6 +130,11 @@ export class ClientUserFeedSubscriptionsService {
     return () => unsubscribe();
   }
 }
+
+const userFeedSubscriptionFirestoreConverter = makeFirestoreDataConverter(
+  toFirestoreUserFeedSubscription,
+  parseUserFeedSubscription
+);
 
 const userFeedSubscriptionsCollectionService = new ClientFirestoreCollectionService({
   collectionPath: USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,

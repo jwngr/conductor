@@ -72,6 +72,8 @@ export const ImportQueueItemSchema = z.object({
   lastUpdatedTime: FirestoreTimestampSchema,
 });
 
+export type ImportQueueItemFromSchema = z.infer<typeof ImportQueueItemSchema>;
+
 /**
  * Creates a new {@link ImportQueueItem}.
  */

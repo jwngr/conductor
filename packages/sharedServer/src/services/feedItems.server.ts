@@ -3,7 +3,7 @@ import {FieldValue} from 'firebase-admin/firestore';
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
 import {FeedItemType} from '@shared/types/feedItems.types';
-import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
+import type {FeedItem, FeedItemFromSchema, FeedItemId} from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeErrorResult} from '@shared/types/result.types';
 import {SystemTagId} from '@shared/types/tags.types';
@@ -18,7 +18,11 @@ interface UpdateImportedFeedItemInFirestoreArgs {
   readonly description: string | null;
 }
 
-type FeedItemCollectionService = ServerFirestoreCollectionService<FeedItemId, FeedItem>;
+type FeedItemCollectionService = ServerFirestoreCollectionService<
+  FeedItemId,
+  FeedItem,
+  FeedItemFromSchema
+>;
 
 export class ServerFeedItemsService {
   private readonly storageCollectionPath: string;

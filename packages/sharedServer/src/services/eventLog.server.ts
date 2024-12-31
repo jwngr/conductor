@@ -3,15 +3,25 @@ import {logger} from '@shared/services/logger.shared';
 import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 
-import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
+import {
+  parseEventId,
+  parseEventLogItem,
+  toFirestoreEventLogItem,
+} from '@shared/parsers/eventLog.parser';
 
-import type {EventId, EventLogItem} from '@shared/types/eventLog.types';
+import type {EventId, EventLogItem, EventLogItemFromSchema} from '@shared/types/eventLog.types';
 import {makeSuccessResult, type AsyncResult, type Result} from '@shared/types/result.types';
 
-import {firebaseService} from '@sharedServer/services/firebase.server';
-import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
+import {
+  makeFirestoreDataConverter,
+  ServerFirestoreCollectionService,
+} from '@sharedServer/services/firestore.server';
 
-type ServerEventLogCollectionService = ServerFirestoreCollectionService<EventId, EventLogItem>;
+type ServerEventLogCollectionService = ServerFirestoreCollectionService<
+  EventId,
+  EventLogItem,
+  EventLogItemFromSchema
+>;
 
 export class ServerEventLogService {
   private readonly eventLogCollectionService: ServerEventLogCollectionService;
@@ -55,11 +65,15 @@ export class ServerEventLogService {
   }
 }
 
-const eventLogDbRef = firebaseService.firestore.collection(EVENT_LOG_DB_COLLECTION);
+// Initialize a singleton instance of the event log service
+const eventLogItemFirestoreConverter = makeFirestoreDataConverter(
+  toFirestoreEventLogItem,
+  parseEventLogItem
+);
 
 const eventLogCollectionService = new ServerFirestoreCollectionService({
-  collectionRef: eventLogDbRef,
-  parseData: parseEventLogItem,
+  collectionPath: EVENT_LOG_DB_COLLECTION,
+  converter: eventLogItemFirestoreConverter,
   parseId: parseEventId,
 });
 

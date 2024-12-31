@@ -3,12 +3,16 @@ import type {
   DocumentData,
   DocumentReference,
   DocumentSnapshot,
+  FirestoreDataConverter,
   Query,
   QueryConstraint,
+  QueryDocumentSnapshot,
   QuerySnapshot,
+  SnapshotOptions,
   WithFieldValue,
 } from 'firebase/firestore';
 import {
+  collection,
   deleteDoc,
   doc,
   getDoc,
@@ -21,27 +25,57 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 
-import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {asyncTry, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
 import type {AsyncResult, Result} from '@shared/types/result.types';
-import {makeSuccessResult} from '@shared/types/result.types';
 import type {Consumer, Func, Unsubscribe} from '@shared/types/utils.types';
+
+import {firebaseService} from '@sharedClient/services/firebase.client';
+
+/**
+ * Parses a Firestore document into a strongly-typed item.
+ */
+function makeFromFirestoreItemFunc<Item, ItemFromSchema>(
+  parseItem: Func<ItemFromSchema, Result<Item>>
+) {
+  return (snapshot: QueryDocumentSnapshot, options: SnapshotOptions): Item => {
+    const data = snapshot.data(options) as ItemFromSchema;
+    // TODO: Should I be throwing here?
+    // eslint-disable-next-line no-restricted-syntax
+    if (!data) throw new Error('Firestore document data is unexpectedly null');
+    const parseResult = parseItem(data);
+    // TODO: Should I be throwing here?
+    // eslint-disable-next-line no-restricted-syntax
+    if (!parseResult.success) throw parseResult.error;
+    return parseResult.value;
+  };
+}
+
+/**
+ * Creates a strongly-typed Firestore data converter.
+ */
+export function makeFirestoreDataConverter<ItemData, FirestoreItemData extends DocumentData>(
+  toFirestore: Func<ItemData, WithFieldValue<FirestoreItemData>>,
+  parseData: Func<FirestoreItemData, Result<ItemData>>
+): FirestoreDataConverter<ItemData, FirestoreItemData> {
+  return {toFirestore, fromFirestore: makeFromFirestoreItemFunc(parseData)};
+}
 
 export class ClientFirestoreCollectionService<
   ItemId extends string,
   ItemData extends DocumentData,
 > {
-  private readonly collectionRef: CollectionReference<ItemData>;
-  private readonly parseData: Func<DocumentData, Result<ItemData>>;
+  private readonly collectionPath: string;
+  private readonly converter: FirestoreDataConverter<ItemData>;
   private readonly parseId: Func<string, Result<ItemId>>;
 
   constructor(args: {
-    collectionRef: CollectionReference<ItemData>;
-    parseData: Func<DocumentData, Result<ItemData>>;
+    collectionPath: string;
+    converter: FirestoreDataConverter<ItemData>;
     parseId: Func<string, Result<ItemId>>;
   }) {
-    this.collectionRef = args.collectionRef;
-    this.parseData = args.parseData;
+    this.collectionPath = args.collectionPath;
+    this.converter = args.converter;
     this.parseId = args.parseId;
   }
 
@@ -49,37 +83,31 @@ export class ClientFirestoreCollectionService<
    * Returns the underlying Firestore collection reference.
    */
   public getCollectionRef(): CollectionReference<ItemData> {
-    return this.collectionRef;
+    return collection(firebaseService.firestore, this.collectionPath).withConverter(this.converter);
   }
 
   /**
    * Returns a Firestore document reference for the given child ID.
    */
   public getDocRef(docId: ItemId): DocumentReference<ItemData> {
-    return doc(this.collectionRef, docId);
+    return doc(this.getCollectionRef(), docId);
   }
 
   /**
    * Constructs a Firestore query from the given filters.
    */
-  public query(filters: QueryConstraint[]): Query {
-    return query(this.collectionRef, ...filters);
+  public query(filters: QueryConstraint[]): Query<ItemData> {
+    return query(this.getCollectionRef(), ...filters);
   }
 
   /**
    * Fetches data from the single Firestore document with the given ID.
    */
-  public async fetchById(id: ItemId): AsyncResult<ItemData | null> {
-    const docRef = doc(this.collectionRef, id);
+  public async fetchById(docId: ItemId): AsyncResult<ItemData | null> {
+    const docRef = this.getDocRef(docId);
     const docDataResult = await asyncTry(async () => {
       const docSnap = await getDoc(docRef);
-      const data = docSnap.data();
-      if (!data) return null;
-      const parseDataResult = this.parseData(data);
-      // Allow throwing here since we are inside `asyncTry`.
-      // eslint-disable-next-line no-restricted-syntax
-      if (!parseDataResult.success) throw parseDataResult.error;
-      return parseDataResult.value;
+      return docSnap.data() ?? null;
     });
     return prefixResultIfError(docDataResult, 'Error fetching Firestore document data');
   }
@@ -87,17 +115,10 @@ export class ClientFirestoreCollectionService<
   /**
    * Fetches all documents matching the Firestore query.
    */
-  public async fetchQueryDocs(queryToFetch: Query): AsyncResult<ItemData[]> {
+  public async fetchQueryDocs(queryToFetch: Query<ItemData>): AsyncResult<ItemData[]> {
     const queryDataResult = await asyncTry(async () => {
       const querySnapshot = await getDocs(queryToFetch);
-      return querySnapshot.docs.map((doc) => {
-        const data = doc.data();
-        const parseDataResult = this.parseData(data);
-        // Allow throwing here since we are inside `asyncTry`.
-        // eslint-disable-next-line no-restricted-syntax
-        if (!parseDataResult.success) throw parseDataResult.error;
-        return parseDataResult.value;
-      });
+      return querySnapshot.docs.map((doc) => doc.data());
     });
     return prefixResultIfError(queryDataResult, 'Error fetching Firestore query data');
   }
@@ -109,25 +130,20 @@ export class ClientFirestoreCollectionService<
   public async fetchFirstQueryDoc(filters: QueryConstraint[]): AsyncResult<ItemData | null> {
     const queryDataResult = await asyncTry(async () => {
       const queryToFetch = this.query(filters.concat(limit(1)));
-      const querySnapshot = await this.fetchQueryDocs(queryToFetch);
+      const queryDocsResult = await this.fetchQueryDocs(queryToFetch);
       // Allow throwing here since we are inside `asyncTry`.
       // eslint-disable-next-line no-restricted-syntax
-      if (!querySnapshot.success) throw querySnapshot.error;
-      const firstDoc = querySnapshot.value[0];
-      if (!firstDoc) return null;
-      const parseDataResult = this.parseData(firstDoc);
-      // Allow throwing here since we are inside `asyncTry`.
-      // eslint-disable-next-line no-restricted-syntax
-      if (!parseDataResult.success) throw parseDataResult.error;
-      return parseDataResult.value;
+      if (!queryDocsResult.success) throw queryDocsResult.error;
+      if (queryDocsResult.value.length === 0) return null;
+      return queryDocsResult.value[0];
     });
-    return prefixResultIfError(queryDataResult, 'Error fetching Firestore query data');
+    return prefixResultIfError(queryDataResult, 'Error fetching first doc in Firestore query');
   }
 
   /**
    * Fetches the IDs of all documents matching the Firestore query.
    */
-  public async fetchQueryIds(queryToFetch: Query): AsyncResult<ItemId[]> {
+  public async fetchQueryIds(queryToFetch: Query<ItemData>): AsyncResult<ItemId[]> {
     const queryIdsResult = await asyncTry(async () => {
       const querySnapshot = await getDocs(queryToFetch);
       return querySnapshot.docs.map((doc) => {
@@ -150,18 +166,9 @@ export class ClientFirestoreCollectionService<
     onData: Consumer<ItemData | null>,
     onError: Consumer<Error>
   ): Unsubscribe {
-    const handleSnapshot = (docSnap: DocumentSnapshot<DocumentData>) => {
+    const handleSnapshot: Consumer<DocumentSnapshot<ItemData>> = (docSnap) => {
       const data = docSnap.data();
-      if (!data) {
-        onData(null);
-        return;
-      }
-      const parseDataResult = this.parseData(data);
-      if (!parseDataResult.success) {
-        onError(parseDataResult.error);
-        return;
-      }
-      onData(parseDataResult.value);
+      onData(data ?? null);
     };
 
     const handleError: Consumer<Error> = (error) => {
@@ -175,23 +182,13 @@ export class ClientFirestoreCollectionService<
    * Subscribes to changes to the given Firestore document.
    */
   public watchDocs(
-    query: Query,
+    query: Query<ItemData>,
     onData: Consumer<ItemData[]>,
     onError: Consumer<Error>
   ): Unsubscribe {
-    const handleSnapshot = (querySnap: QuerySnapshot<DocumentData>) => {
+    const handleSnapshot: Consumer<QuerySnapshot<ItemData>> = (querySnap) => {
       const docsData = querySnap.docs.map((doc) => doc.data());
-      const parseDataResults = docsData.map(this.parseData);
-
-      // TODO: Clean this up.
-      if (!parseDataResults.every((result) => result.success)) {
-        const error = parseDataResults.find((result) => !result.success)?.error;
-        if (error) {
-          onError(error);
-        }
-        return;
-      }
-      onData(parseDataResults.map((result) => result.value));
+      onData(docsData);
     };
 
     const handleError: Consumer<Error> = (error) => {
@@ -204,42 +201,32 @@ export class ClientFirestoreCollectionService<
   /**
    * Sets a Firestore document. The entire document is replaced.
    */
-  public async setDoc(docId: ItemId, data: WithFieldValue<ItemData>): AsyncResult<void> {
+  public async setDoc(docId: ItemId, data: ItemData): AsyncResult<void> {
     const setResult = await asyncTry(async () => setDoc(this.getDocRef(docId), data));
-    if (!setResult.success) {
-      return prefixErrorResult(setResult, 'Error setting Firestore document');
-    }
-    return makeSuccessResult(undefined);
+    return prefixResultIfError(setResult, 'Error setting Firestore document');
   }
 
   /**
    * Updates a Firestore document. Updates are merged with the existing document.
    */
   public async updateDoc(docId: ItemId, updates: Partial<ItemData>): AsyncResult<void> {
-    const docRef = doc(this.collectionRef, docId);
+    const docRef = this.getDocRef(docId);
     const updateResult = await asyncTry(async () =>
       updateDoc(docRef, {
         ...updates,
+        // Always update the `lastUpdatedTime` field.
         lastUpdatedTime: serverTimestamp(),
       })
     );
-    if (!updateResult.success) {
-      return prefixErrorResult(updateResult, 'Error updating Firestore document');
-    }
-    // Firebase's method returns a `WriteResult` object, but we don't need to return it.
-    return makeSuccessResult(undefined);
+    return prefixResultIfError(updateResult, 'Error updating Firestore document');
   }
 
   /**
    * Deletes a Firestore document.
    */
   public async deleteDoc(docId: ItemId): AsyncResult<void> {
-    const docRef = doc(this.collectionRef, docId);
+    const docRef = this.getDocRef(docId);
     const deleteResult = await asyncTry(async () => deleteDoc(docRef));
-    if (!deleteResult.success) {
-      return prefixErrorResult(deleteResult, 'Error deleting Firestore document');
-    }
-    // Firebase's method returns a `WriteResult` object, but we don't need to return it.
-    return makeSuccessResult(undefined);
+    return prefixResultIfError(deleteResult, 'Error deleting Firestore document');
   }
 }

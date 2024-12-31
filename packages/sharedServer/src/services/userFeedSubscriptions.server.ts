@@ -7,6 +7,7 @@ import {makeSuccessResult, type AsyncResult} from '@shared/types/result.types';
 import type {UserId} from '@shared/types/user.types';
 import type {
   UserFeedSubscription,
+  UserFeedSubscriptionFromSchema,
   UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
 import {makeUserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
@@ -15,7 +16,8 @@ import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore
 
 type UserFeedSubscriptionsCollectionService = ServerFirestoreCollectionService<
   UserFeedSubscriptionId,
-  UserFeedSubscription
+  UserFeedSubscription,
+  UserFeedSubscriptionFromSchema
 >;
 
 export class ServerUserFeedSubscriptionsService {

@@ -1,3 +1,4 @@
+import {Timestamp} from 'firebase/firestore';
 import type {ZodSchema} from 'zod';
 
 import {logger} from '@shared/services/logger.shared';
@@ -38,4 +39,18 @@ export function parseFirestoreTimestamp(value: unknown): Result<Date> {
   }
 
   return makeSuccessResult(new Date(zodResult.data.seconds * 1000));
+}
+
+/**
+ * Converts a normal `Date` used by the app into a `Timestamp` that can be stored in Firestore.
+ */
+export function toFirestoreDate(appDate: Date): Timestamp {
+  return Timestamp.fromDate(appDate);
+}
+
+/**
+ * Converts a Firestore `Timestamp` to a normal `Date` used by the app.
+ */
+export function fromFirestoreDate(firestoreDate: Timestamp): Date {
+  return firestoreDate.toDate();
 }

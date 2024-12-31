@@ -1,13 +1,8 @@
-import {
-  DocumentData,
-  FirestoreDataConverter,
-  QueryDocumentSnapshot,
-  SnapshotOptions,
-} from 'firebase/firestore';
+import type {WithFieldValue} from 'firebase/firestore';
 import type {z} from 'zod';
 
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {parseZodResult} from '@shared/lib/parser.shared';
+import {parseZodResult, toFirestoreDate} from '@shared/lib/parser.shared';
 
 import {parseUserId} from '@shared/parsers/user.parser';
 import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions.parser';
@@ -16,6 +11,7 @@ import type {
   FeedItem,
   FeedItemAppSource,
   FeedItemExtensionSource,
+  FeedItemFromSchema,
   FeedItemId,
   FeedItemRSSSource,
   FeedItemSource,
@@ -145,27 +141,22 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
   });
 }
 
-export const feedItemFirestoreConverter: FirestoreDataConverter<FeedItem> = {
-  toFirestore(feedItem: FeedItem): DocumentData {
-    return {
-      feedItemId: feedItem.feedItemId,
-      userId: feedItem.userId,
-      source: feedItem.source,
-      url: feedItem.url,
-      title: feedItem.title,
-      description: feedItem.description,
-      outgoingLinks: feedItem.outgoingLinks,
-      triageStatus: feedItem.triageStatus,
-      tagIds: feedItem.tagIds,
-      createdTime: feedItem.createdTime,
-      lastUpdatedTime: feedItem.lastUpdatedTime,
-    };
-  },
-  fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): FeedItem {
-    const data = snapshot.data(options);
-    if (!data) throw new Error('Feed item document data is null');
-    const parseResult = parseFeedItem(data);
-    if (!parseResult.success) throw parseResult.error;
-    return parseResult.value;
-  },
-};
+export function toFirestoreFeedItem(feedItem: FeedItem): WithFieldValue<FeedItemFromSchema> {
+  return {
+    feedItemId: feedItem.feedItemId,
+    userId: feedItem.userId,
+    type: feedItem.type,
+    source: feedItem.source,
+    url: feedItem.url,
+    title: feedItem.title,
+    description: feedItem.description,
+    outgoingLinks: feedItem.outgoingLinks,
+    triageStatus: feedItem.triageStatus,
+    tagIds: feedItem.tagIds,
+    lastImportedTime: feedItem.lastImportedTime
+      ? toFirestoreDate(feedItem.lastImportedTime)
+      : undefined,
+    createdTime: toFirestoreDate(feedItem.createdTime),
+    lastUpdatedTime: toFirestoreDate(feedItem.lastUpdatedTime),
+  };
+}

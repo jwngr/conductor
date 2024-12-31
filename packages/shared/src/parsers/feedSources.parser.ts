@@ -1,14 +1,9 @@
-import {
-  DocumentData,
-  FirestoreDataConverter,
-  QueryDocumentSnapshot,
-  SnapshotOptions,
-} from 'firebase/firestore';
+import type {WithFieldValue} from 'firebase/firestore';
 
 import {prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {parseZodResult} from '@shared/lib/parser.shared';
+import {parseZodResult, toFirestoreDate} from '@shared/lib/parser.shared';
 
-import type {FeedSource, FeedSourceId} from '@shared/types/feedSources.types';
+import type {FeedSource, FeedSourceFromSchema, FeedSourceId} from '@shared/types/feedSources.types';
 import {FeedSourceIdSchema, FeedSourceSchema} from '@shared/types/feedSources.types';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
@@ -48,21 +43,14 @@ export function parseFeedSource(maybeFeedSource: unknown): Result<FeedSource> {
   });
 }
 
-export const feedSourceFirestoreConverter: FirestoreDataConverter<FeedSource> = {
-  toFirestore(feedSource: FeedSource): DocumentData {
-    return {
-      feedSourceId: feedSource.feedSourceId,
-      url: feedSource.url,
-      title: feedSource.title,
-      createdTime: feedSource.createdTime,
-      lastUpdatedTime: feedSource.lastUpdatedTime,
-    };
-  },
-  fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): FeedSource {
-    const data = snapshot.data(options);
-    if (!data) throw new Error('Feed source document data is null');
-    const parseResult = parseFeedSource(data);
-    if (!parseResult.success) throw parseResult.error;
-    return parseResult.value;
-  },
-};
+export function toFirestoreFeedSource(
+  feedSource: FeedSource
+): WithFieldValue<FeedSourceFromSchema> {
+  return {
+    feedSourceId: feedSource.feedSourceId,
+    url: feedSource.url,
+    title: feedSource.title,
+    createdTime: toFirestoreDate(feedSource.createdTime),
+    lastUpdatedTime: toFirestoreDate(feedSource.lastUpdatedTime),
+  };
+}

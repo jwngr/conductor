@@ -1,13 +1,26 @@
-import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import type {
+  FirestoreDataConverter,
+  QueryDocumentSnapshot,
+  WithFieldValue,
+} from 'firebase-admin/firestore';
 
-import type {FeedSource, FeedSourceId} from '@shared/types/feedSources.types';
+import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {toFirestoreDate} from '@shared/lib/parser.shared';
+
+import {parseFeedSource} from '@shared/parsers/feedSources.parser';
+
+import type {FeedSource, FeedSourceFromSchema, FeedSourceId} from '@shared/types/feedSources.types';
 import {makeFeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
 
 import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
-type FeedSourceCollectionService = ServerFirestoreCollectionService<FeedSourceId, FeedSource>;
+type FeedSourceCollectionService = ServerFirestoreCollectionService<
+  FeedSourceId,
+  FeedSource,
+  FeedSourceFromSchema
+>;
 
 export class ServerFeedSourcesService {
   private readonly feedSourcesCollectionService: FeedSourceCollectionService;

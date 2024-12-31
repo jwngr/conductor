@@ -66,6 +66,8 @@ export const UserFeedSubscriptionSchema = z.object({
   lastUpdatedTime: FirestoreTimestampSchema,
 });
 
+export type UserFeedSubscriptionFromSchema = z.infer<typeof UserFeedSubscriptionSchema>;
+
 /**
  * Creates a new {@link UserFeedSubscription} object.
  */

@@ -1,12 +1,7 @@
-import {
-  DocumentData,
-  FirestoreDataConverter,
-  QueryDocumentSnapshot,
-  SnapshotOptions,
-} from 'firebase/firestore';
+import type {WithFieldValue} from 'firebase/firestore';
 
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {parseZodResult} from '@shared/lib/parser.shared';
+import {parseZodResult, toFirestoreDate} from '@shared/lib/parser.shared';
 
 import {parseFeedSourceId} from '@shared/parsers/feedSources.parser';
 import {parseUserId} from '@shared/parsers/user.parser';
@@ -19,6 +14,7 @@ import {
 } from '@shared/types/userFeedSubscriptions.types';
 import type {
   UserFeedSubscription,
+  UserFeedSubscriptionFromSchema,
   UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
 
@@ -73,26 +69,20 @@ export function parseUserFeedSubscription(
   });
 }
 
-export const userFeedSubscriptionFirestoreConverter: FirestoreDataConverter<UserFeedSubscription> =
-  {
-    toFirestore(userFeedSubscription: UserFeedSubscription): DocumentData {
-      return {
-        userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
-        feedSourceId: userFeedSubscription.feedSourceId,
-        userId: userFeedSubscription.userId,
-        url: userFeedSubscription.url,
-        title: userFeedSubscription.title,
-        isActive: userFeedSubscription.isActive,
-        unsubscribedTime: userFeedSubscription.unsubscribedTime,
-        createdTime: userFeedSubscription.createdTime,
-        lastUpdatedTime: userFeedSubscription.lastUpdatedTime,
-      };
-    },
-    fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): UserFeedSubscription {
-      const data = snapshot.data(options);
-      if (!data) throw new Error('User feed subscription document data is null');
-      const parseResult = parseUserFeedSubscription(data);
-      if (!parseResult.success) throw parseResult.error;
-      return parseResult.value;
-    },
+export function toFirestoreUserFeedSubscription(
+  userFeedSubscription: UserFeedSubscription
+): WithFieldValue<UserFeedSubscriptionFromSchema> {
+  return {
+    userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
+    feedSourceId: userFeedSubscription.feedSourceId,
+    userId: userFeedSubscription.userId,
+    url: userFeedSubscription.url,
+    title: userFeedSubscription.title,
+    isActive: userFeedSubscription.isActive,
+    unsubscribedTime: userFeedSubscription.unsubscribedTime
+      ? toFirestoreDate(userFeedSubscription.unsubscribedTime)
+      : undefined,
+    createdTime: toFirestoreDate(userFeedSubscription.createdTime),
+    lastUpdatedTime: toFirestoreDate(userFeedSubscription.lastUpdatedTime),
   };
+}

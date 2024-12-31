@@ -1,3 +1,4 @@
+import {Timestamp} from 'firebase/firestore';
 import {z} from 'zod';
 
 export interface FirebaseConfig {
@@ -10,8 +11,10 @@ export interface FirebaseConfig {
   readonly measurementId?: string;
 }
 
-export const FirestoreTimestampSchema = z.object({
-  seconds: z.number(),
-  nanoseconds: z.number(),
-  toDate: z.function().args().returns(z.date()),
-});
+// export const FirestoreTimestampSchema = z.object({
+//   seconds: z.number(),
+//   nanoseconds: z.number(),
+//   toDate: z.function().args().returns(z.date()),
+// });
+
+export const FirestoreTimestampSchema = z.custom<Timestamp>((value) => value instanceof Timestamp);

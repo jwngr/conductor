@@ -11,7 +11,11 @@ import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 import {filterNull} from '@shared/lib/utils.shared';
 
-import {eventLogItemFirestoreConverter, parseEventId} from '@shared/parsers/eventLog.parser';
+import {
+  parseEventId,
+  parseEventLogItem,
+  toFirestoreEventLogItem,
+} from '@shared/parsers/eventLog.parser';
 
 import type {EventId, EventLogItem} from '@shared/types/eventLog.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
@@ -21,16 +25,20 @@ import type {UserId} from '@shared/types/user.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
-import {ClientFirestoreCollectionService} from '@sharedClient/services/firestore2.client';
+import {
+  ClientFirestoreCollectionService,
+  makeFirestoreDataConverter,
+} from '@sharedClient/services/firestore.client';
 
 import {useLoggedInUser} from '@sharedClient/hooks/auth.hooks';
 
 // TODO: This is a somewhat arbitrary limit. Reconsider what the logic should be here.
 const EVENT_LOG_LIMIT = 100;
 
-// const eventLogDbRef = collection(firebaseService.firestore, EVENT_LOG_DB_COLLECTION).withConverter(
-//   eventLogItemFirestoreConverter
-// );
+const eventLogItemFirestoreConverter = makeFirestoreDataConverter(
+  toFirestoreEventLogItem,
+  parseEventLogItem
+);
 
 export const useEventLogService = () => {
   const loggedInUser = useLoggedInUser();
