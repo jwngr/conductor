@@ -7,7 +7,9 @@
   "compilerOptions": {
     // Build is handled by esbuild.
     "moduleResolution": "bundler",
-    "outDir": "./dist",
+
+    // Emit `tsc` output to an ignored directory to not override the esbuild build output.
+    "outDir": "./distIgnore",
 
     // Import aliases.
     "baseUrl": ".",
