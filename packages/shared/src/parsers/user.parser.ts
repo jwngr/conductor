@@ -1,5 +1,4 @@
 import type {User as FirebaseUser} from 'firebase/auth';
-import type {WithFieldValue} from 'firebase/firestore';
 
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseZodResult} from '@shared/lib/parser.shared';
@@ -76,7 +75,7 @@ export function parseFirebaseUser(firebaseLoggedInUser: FirebaseUser): Result<Us
   });
 }
 
-export function toFirestoreUser(user: User): WithFieldValue<UserFromSchema> {
+export function toFirestoreUser(user: User): UserFromSchema {
   return {
     userId: user.userId,
     email: user.email,

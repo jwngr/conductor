@@ -9,7 +9,6 @@ import type {
   QueryDocumentSnapshot,
   QuerySnapshot,
   SnapshotOptions,
-  WithFieldValue,
 } from 'firebase/firestore';
 import {
   collection,
@@ -55,7 +54,7 @@ function makeFromFirestoreItemFunc<Item, ItemFromSchema>(
  * Creates a strongly-typed Firestore data converter.
  */
 export function makeFirestoreDataConverter<ItemData, FirestoreItemData extends DocumentData>(
-  toFirestore: Func<ItemData, WithFieldValue<FirestoreItemData>>,
+  toFirestore: Func<ItemData, FirestoreItemData>,
   parseData: Func<FirestoreItemData, Result<ItemData>>
 ): FirestoreDataConverter<ItemData, FirestoreItemData> {
   return {toFirestore, fromFirestore: makeFromFirestoreItemFunc(parseData)};

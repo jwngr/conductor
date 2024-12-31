@@ -1,5 +1,3 @@
-import type {WithFieldValue} from 'firebase/firestore';
-
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {fromFirestoreDate, parseZodResult, toFirestoreDate} from '@shared/lib/parser.shared';
 
@@ -166,9 +164,7 @@ function parseUserFeedSubscriptionEventLogItemData(
   });
 }
 
-export function toFirestoreEventLogItem(
-  eventLogItem: EventLogItem
-): WithFieldValue<EventLogItemFromSchema> {
+export function toFirestoreEventLogItem(eventLogItem: EventLogItem): EventLogItemFromSchema {
   return {
     eventId: eventLogItem.eventId,
     userId: eventLogItem.userId,

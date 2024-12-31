@@ -1,5 +1,3 @@
-import type {WithFieldValue} from 'firebase/firestore';
-
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {parseZodResult, toFirestoreDate} from '@shared/lib/parser.shared';
 
@@ -62,7 +60,7 @@ export function parseImportQueueItem(maybeImportQueueItem: unknown): Result<Impo
 
 export function toFirestoreImportQueueItem(
   importQueueItem: ImportQueueItem
-): WithFieldValue<ImportQueueItemFromSchema> {
+): ImportQueueItemFromSchema {
   return {
     importQueueItemId: importQueueItem.importQueueItemId,
     userId: importQueueItem.userId,

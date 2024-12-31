@@ -1,13 +1,4 @@
-import type {
-  FirestoreDataConverter,
-  QueryDocumentSnapshot,
-  WithFieldValue,
-} from 'firebase-admin/firestore';
-
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {toFirestoreDate} from '@shared/lib/parser.shared';
-
-import {parseFeedSource} from '@shared/parsers/feedSources.parser';
 
 import type {FeedSource, FeedSourceFromSchema, FeedSourceId} from '@shared/types/feedSources.types';
 import {makeFeedSource} from '@shared/types/feedSources.types';

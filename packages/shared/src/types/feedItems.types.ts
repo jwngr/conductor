@@ -137,7 +137,7 @@ interface BaseFeedItem extends BaseStoreItem {
    *
    * To accomplish this, most state is stored as tags that either exist in this map or not.
    */
-  readonly tagIds: Record<TagId, true>;
+  readonly tagIds: Partial<Record<TagId, true>>;
 
   // Timestamps.
   readonly lastImportedTime?: Date;
@@ -156,7 +156,7 @@ export const FeedItemSchema = z.object({
   description: z.string(),
   outgoingLinks: z.array(z.string().url()),
   triageStatus: z.nativeEnum(TriageStatus),
-  tagIds: z.record(z.string(), z.boolean()),
+  tagIds: z.record(z.string(), z.boolean().optional()),
   lastImportedTime: FirestoreTimestampSchema.optional(),
   createdTime: FirestoreTimestampSchema,
   lastUpdatedTime: FirestoreTimestampSchema,

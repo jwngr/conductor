@@ -1,5 +1,3 @@
-import type {WithFieldValue} from 'firebase/firestore';
-
 import {prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {parseZodResult, toFirestoreDate} from '@shared/lib/parser.shared';
 
@@ -43,9 +41,7 @@ export function parseFeedSource(maybeFeedSource: unknown): Result<FeedSource> {
   });
 }
 
-export function toFirestoreFeedSource(
-  feedSource: FeedSource
-): WithFieldValue<FeedSourceFromSchema> {
+export function toFirestoreFeedSource(feedSource: FeedSource): FeedSourceFromSchema {
   return {
     feedSourceId: feedSource.feedSourceId,
     url: feedSource.url,

@@ -1,5 +1,3 @@
-import type {WithFieldValue} from 'firebase/firestore';
-
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseZodResult, toFirestoreDate} from '@shared/lib/parser.shared';
 
@@ -71,7 +69,7 @@ export function parseUserFeedSubscription(
 
 export function toFirestoreUserFeedSubscription(
   userFeedSubscription: UserFeedSubscription
-): WithFieldValue<UserFeedSubscriptionFromSchema> {
+): UserFeedSubscriptionFromSchema {
   return {
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     feedSourceId: userFeedSubscription.feedSourceId,

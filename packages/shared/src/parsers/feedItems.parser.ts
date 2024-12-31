@@ -1,4 +1,3 @@
-import type {WithFieldValue} from 'firebase/firestore';
 import type {z} from 'zod';
 
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
@@ -141,7 +140,7 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
   });
 }
 
-export function toFirestoreFeedItem(feedItem: FeedItem): WithFieldValue<FeedItemFromSchema> {
+export function toFirestoreFeedItem(feedItem: FeedItem): FeedItemFromSchema {
   return {
     feedItemId: feedItem.feedItemId,
     userId: feedItem.userId,
