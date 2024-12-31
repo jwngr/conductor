@@ -1,5 +1,9 @@
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {parseZodResult, toFirestoreDate} from '@shared/lib/parser.shared';
+import {
+  parseFirestoreTimestamp,
+  parseZodResult,
+  toFirestoreTimestamp,
+} from '@shared/lib/parser.shared';
 
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
 import {parseUserId} from '@shared/parsers/user.parser';
@@ -53,8 +57,8 @@ export function parseImportQueueItem(maybeImportQueueItem: unknown): Result<Impo
     feedItemId: parsedFeedItemIdResult.value,
     url,
     status: parsedImportQueueItemResult.value.status,
-    createdTime: createdTime.toDate(),
-    lastUpdatedTime: lastUpdatedTime.toDate(),
+    createdTime: parseFirestoreTimestamp(createdTime),
+    lastUpdatedTime: parseFirestoreTimestamp(lastUpdatedTime),
   });
 }
 
@@ -67,7 +71,7 @@ export function toFirestoreImportQueueItem(
     feedItemId: importQueueItem.feedItemId,
     url: importQueueItem.url,
     status: importQueueItem.status,
-    createdTime: toFirestoreDate(importQueueItem.createdTime),
-    lastUpdatedTime: toFirestoreDate(importQueueItem.lastUpdatedTime),
+    createdTime: toFirestoreTimestamp(importQueueItem.createdTime),
+    lastUpdatedTime: toFirestoreTimestamp(importQueueItem.lastUpdatedTime),
   };
 }

@@ -1,5 +1,9 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {fromFirestoreDate, parseZodResult, toFirestoreDate} from '@shared/lib/parser.shared';
+import {
+  parseFirestoreTimestamp,
+  parseZodResult,
+  toFirestoreTimestamp,
+} from '@shared/lib/parser.shared';
 
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
 import {parseUserId} from '@shared/parsers/user.parser';
@@ -85,8 +89,8 @@ function parseUserFeedSubscriptionEventLogItem(
     userId: parsedUserIdResult.value,
     eventType: EventType.UserFeedSubscription,
     data: parsedDataResult.value,
-    createdTime: createdTime.toDate(),
-    lastUpdatedTime: lastUpdatedTime.toDate(),
+    createdTime: parseFirestoreTimestamp(createdTime),
+    lastUpdatedTime: parseFirestoreTimestamp(lastUpdatedTime),
   });
 }
 
@@ -117,8 +121,8 @@ function parseFeedItemActionEventLogItem(
     userId: parsedUserIdResult.value,
     eventType: EventType.FeedItemAction,
     data: parsedDataResult.value,
-    createdTime: fromFirestoreDate(createdTime),
-    lastUpdatedTime: fromFirestoreDate(lastUpdatedTime),
+    createdTime: parseFirestoreTimestamp(createdTime),
+    lastUpdatedTime: parseFirestoreTimestamp(lastUpdatedTime),
   });
 }
 
@@ -170,7 +174,7 @@ export function toFirestoreEventLogItem(eventLogItem: EventLogItem): EventLogIte
     userId: eventLogItem.userId,
     eventType: eventLogItem.eventType,
     data: eventLogItem.data,
-    createdTime: toFirestoreDate(eventLogItem.createdTime),
-    lastUpdatedTime: toFirestoreDate(eventLogItem.lastUpdatedTime),
+    createdTime: toFirestoreTimestamp(eventLogItem.createdTime),
+    lastUpdatedTime: toFirestoreTimestamp(eventLogItem.lastUpdatedTime),
   };
 }

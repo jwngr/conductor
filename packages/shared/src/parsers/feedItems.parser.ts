@@ -1,7 +1,11 @@
 import type {z} from 'zod';
 
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {parseZodResult, toFirestoreDate} from '@shared/lib/parser.shared';
+import {
+  parseFirestoreTimestamp,
+  parseZodResult,
+  toFirestoreTimestamp,
+} from '@shared/lib/parser.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
 
 import {parseUserId} from '@shared/parsers/user.parser';
@@ -124,21 +128,23 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
   const {url, triageStatus, lastImportedTime, createdTime, lastUpdatedTime} =
     parsedFeedItemResult.value;
 
-  return makeSuccessResult({
-    type: parsedFeedItemResult.value.type,
-    userId: parsedUserIdResult.value,
-    source: parsedSourceResult.value,
-    feedItemId: parsedIdResult.value,
-    url,
-    title: 'Test title from parseFeedItem',
-    description: 'Test description from parseFeedItem',
-    outgoingLinks: [],
-    triageStatus,
-    tagIds: {},
-    lastImportedTime: lastImportedTime?.toDate(),
-    createdTime: createdTime.toDate(),
-    lastUpdatedTime: lastUpdatedTime.toDate(),
-  });
+  return makeSuccessResult(
+    omitUndefined({
+      type: parsedFeedItemResult.value.type,
+      userId: parsedUserIdResult.value,
+      source: parsedSourceResult.value,
+      feedItemId: parsedIdResult.value,
+      url,
+      title: 'Test title from parseFeedItem',
+      description: 'Test description from parseFeedItem',
+      outgoingLinks: [],
+      triageStatus,
+      tagIds: {},
+      lastImportedTime: lastImportedTime ? parseFirestoreTimestamp(lastImportedTime) : undefined,
+      createdTime: parseFirestoreTimestamp(createdTime),
+      lastUpdatedTime: parseFirestoreTimestamp(lastUpdatedTime),
+    })
+  );
 }
 
 export function toFirestoreFeedItem(feedItem: FeedItem): FeedItemFromSchema {
@@ -154,9 +160,9 @@ export function toFirestoreFeedItem(feedItem: FeedItem): FeedItemFromSchema {
     triageStatus: feedItem.triageStatus,
     tagIds: feedItem.tagIds,
     lastImportedTime: feedItem.lastImportedTime
-      ? toFirestoreDate(feedItem.lastImportedTime)
+      ? toFirestoreTimestamp(feedItem.lastImportedTime)
       : undefined,
-    createdTime: toFirestoreDate(feedItem.createdTime),
-    lastUpdatedTime: toFirestoreDate(feedItem.lastUpdatedTime),
+    createdTime: toFirestoreTimestamp(feedItem.createdTime),
+    lastUpdatedTime: toFirestoreTimestamp(feedItem.lastUpdatedTime),
   });
 }

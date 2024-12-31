@@ -1,5 +1,9 @@
 import {prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {parseZodResult, toFirestoreDate} from '@shared/lib/parser.shared';
+import {
+  parseFirestoreTimestamp,
+  parseZodResult,
+  toFirestoreTimestamp,
+} from '@shared/lib/parser.shared';
 
 import type {FeedSource, FeedSourceFromSchema, FeedSourceId} from '@shared/types/feedSources.types';
 import {FeedSourceIdSchema, FeedSourceSchema} from '@shared/types/feedSources.types';
@@ -36,8 +40,8 @@ export function parseFeedSource(maybeFeedSource: unknown): Result<FeedSource> {
     feedSourceId: parsedIdResult.value,
     url,
     title,
-    createdTime: createdTime.toDate(),
-    lastUpdatedTime: lastUpdatedTime.toDate(),
+    createdTime: parseFirestoreTimestamp(createdTime),
+    lastUpdatedTime: parseFirestoreTimestamp(lastUpdatedTime),
   });
 }
 
@@ -46,7 +50,7 @@ export function toFirestoreFeedSource(feedSource: FeedSource): FeedSourceFromSch
     feedSourceId: feedSource.feedSourceId,
     url: feedSource.url,
     title: feedSource.title,
-    createdTime: toFirestoreDate(feedSource.createdTime),
-    lastUpdatedTime: toFirestoreDate(feedSource.lastUpdatedTime),
+    createdTime: toFirestoreTimestamp(feedSource.createdTime),
+    lastUpdatedTime: toFirestoreTimestamp(feedSource.lastUpdatedTime),
   };
 }

@@ -47,6 +47,7 @@ export class SharedFeedItemHelpers {
       url: args.url,
       type: args.type,
       source: args.source,
+      // TODO: Update these and figure out a better solution. Maybe a better discriminated union.
       title: 'Test title from makeFeedItem',
       description: 'Test description from makeFeedItem',
       outgoingLinks: [],

@@ -32,25 +32,16 @@ export function parseZodResult<T>(zodSchema: ZodSchema<T>, value: unknown): Resu
   return makeSuccessResult(zodResult.data);
 }
 
-export function parseFirestoreTimestamp(value: unknown): Result<Date> {
-  const zodResult = FirestoreTimestampSchema.safeParse(value);
-  if (!zodResult.success) {
-    return makeErrorResult(new Error('Invalid Firestore timestamp'));
-  }
-
-  return makeSuccessResult(new Date(zodResult.data.seconds * 1000));
-}
-
 /**
- * Converts a normal `Date` used by the app into a `Timestamp` that can be stored in Firestore.
+ * Converts a Firestore `Timestamp` to a normal `Date`.
  */
-export function toFirestoreDate(appDate: Date): Timestamp {
-  return Timestamp.fromDate(appDate);
-}
-
-/**
- * Converts a Firestore `Timestamp` to a normal `Date` used by the app.
- */
-export function fromFirestoreDate(firestoreDate: Timestamp): Date {
+export function parseFirestoreTimestamp(firestoreDate: Timestamp): Date {
   return firestoreDate.toDate();
+}
+
+/**
+ * Converts a normal `Date` into a Firestore `Timestamp`.
+ */
+export function toFirestoreTimestamp(appDate: Date): Timestamp {
+  return Timestamp.fromDate(appDate);
 }

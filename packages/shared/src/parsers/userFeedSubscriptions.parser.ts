@@ -1,5 +1,10 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {parseZodResult, toFirestoreDate} from '@shared/lib/parser.shared';
+import {
+  parseFirestoreTimestamp,
+  parseZodResult,
+  toFirestoreTimestamp,
+} from '@shared/lib/parser.shared';
+import {omitUndefined} from '@shared/lib/utils.shared';
 
 import {parseFeedSourceId} from '@shared/parsers/feedSources.parser';
 import {parseUserId} from '@shared/parsers/user.parser';
@@ -54,17 +59,19 @@ export function parseUserFeedSubscription(
   if (!parsedUserFeedSubscriptionIdResult.success) return parsedUserFeedSubscriptionIdResult;
 
   const {url, title, isActive, unsubscribedTime, createdTime, lastUpdatedTime} = parsedResult.value;
-  return makeSuccessResult({
-    userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
-    feedSourceId: parsedFeedSourceIdResult.value,
-    userId: parsedUserIdResult.value,
-    url,
-    title,
-    isActive,
-    unsubscribedTime: unsubscribedTime?.toDate(),
-    createdTime: createdTime.toDate(),
-    lastUpdatedTime: lastUpdatedTime.toDate(),
-  });
+  return makeSuccessResult(
+    omitUndefined({
+      userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
+      feedSourceId: parsedFeedSourceIdResult.value,
+      userId: parsedUserIdResult.value,
+      url,
+      title,
+      isActive,
+      unsubscribedTime: unsubscribedTime ? parseFirestoreTimestamp(unsubscribedTime) : undefined,
+      createdTime: parseFirestoreTimestamp(createdTime),
+      lastUpdatedTime: parseFirestoreTimestamp(lastUpdatedTime),
+    })
+  );
 }
 
 export function toFirestoreUserFeedSubscription(
@@ -78,9 +85,9 @@ export function toFirestoreUserFeedSubscription(
     title: userFeedSubscription.title,
     isActive: userFeedSubscription.isActive,
     unsubscribedTime: userFeedSubscription.unsubscribedTime
-      ? toFirestoreDate(userFeedSubscription.unsubscribedTime)
+      ? toFirestoreTimestamp(userFeedSubscription.unsubscribedTime)
       : undefined,
-    createdTime: toFirestoreDate(userFeedSubscription.createdTime),
-    lastUpdatedTime: toFirestoreDate(userFeedSubscription.lastUpdatedTime),
+    createdTime: toFirestoreTimestamp(userFeedSubscription.createdTime),
+    lastUpdatedTime: toFirestoreTimestamp(userFeedSubscription.lastUpdatedTime),
   };
 }
