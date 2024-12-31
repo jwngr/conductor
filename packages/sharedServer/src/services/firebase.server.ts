@@ -1,12 +1,14 @@
 import admin from 'firebase-admin';
 
+admin.initializeApp();
+
 export class ServerFirebaseService {
   private appInstance: admin.app.App;
   private storageInstance: admin.storage.Storage | null = null;
   private firestoreInstance: admin.firestore.Firestore | null = null;
 
   constructor() {
-    this.appInstance = admin.initializeApp();
+    this.appInstance = admin.app();
   }
 
   public get app(): admin.app.App {
