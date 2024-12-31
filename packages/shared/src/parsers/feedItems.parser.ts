@@ -2,6 +2,7 @@ import type {z} from 'zod';
 
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {parseZodResult, toFirestoreDate} from '@shared/lib/parser.shared';
+import {omitUndefined} from '@shared/lib/utils.shared';
 
 import {parseUserId} from '@shared/parsers/user.parser';
 import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions.parser';
@@ -141,7 +142,7 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
 }
 
 export function toFirestoreFeedItem(feedItem: FeedItem): FeedItemFromSchema {
-  return {
+  return omitUndefined({
     feedItemId: feedItem.feedItemId,
     userId: feedItem.userId,
     type: feedItem.type,
@@ -157,5 +158,5 @@ export function toFirestoreFeedItem(feedItem: FeedItem): FeedItemFromSchema {
       : undefined,
     createdTime: toFirestoreDate(feedItem.createdTime),
     lastUpdatedTime: toFirestoreDate(feedItem.lastUpdatedTime),
-  };
+  });
 }

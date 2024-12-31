@@ -39,6 +39,13 @@ export function filterUndefined<T>(arr: Array<T | undefined>): T[] {
 }
 
 /**
+ * Omits all undefined values from the provided object.
+ */
+export function omitUndefined<T extends object>(obj: T): T {
+  return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined)) as T;
+}
+
+/**
  * Runs all of the provided async task suppliers in batches of a given size. If the number of tasks is less
  * than the batch size, all tasks are run in parallel. Tasks are not executed until this function is called.
  */
