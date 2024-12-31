@@ -1,6 +1,6 @@
 import FirecrawlApp from '@mendable/firecrawl-js';
 import {setGlobalOptions} from 'firebase-functions';
-import {defineString} from 'firebase-functions/params';
+import {defineString, projectID} from 'firebase-functions/params';
 import {auth} from 'firebase-functions/v1';
 import {onInit} from 'firebase-functions/v2/core';
 import {onDocumentCreated} from 'firebase-functions/v2/firestore';
@@ -46,7 +46,6 @@ import {UserId} from '@shared/types/user.types';
 
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import {ServerFeedSourcesService} from '@sharedServer/services/feedSources.server';
-import {firebaseService} from '@sharedServer/services/firebase.server';
 import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
 import {
   makeFirestoreDataConverter,
@@ -75,7 +74,7 @@ onInit(() => {
   const superfeedrService = new SuperfeedrService({
     superfeedrUser: SUPERFEEDR_USER.value(),
     superfeedrApiKey: SUPERFEEDR_API_KEY.value(),
-    webhookBaseUrl: `https://${firebaseService.projectId}.firebaseapp.com`,
+    webhookBaseUrl: `https://${projectID.value()}.firebaseapp.com`,
   });
 
   const feedSourceFirestoreConverter = makeFirestoreDataConverter(

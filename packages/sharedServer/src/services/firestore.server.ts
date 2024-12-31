@@ -20,7 +20,7 @@ import type {AsyncResult, Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import type {Func} from '@shared/types/utils.types';
 
-import {firebaseService} from '@sharedServer/services/firebase.server';
+import {firestore} from '@sharedServer/services/firebase.server';
 
 const BATCH_DELETE_SIZE = 500;
 
@@ -74,7 +74,7 @@ export class ServerFirestoreCollectionService<
    * Returns the underlying Firestore collection reference.
    */
   public getCollectionRef(): CollectionReference<ItemData> {
-    return firebaseService.firestore.collection(this.collectionPath).withConverter(this.converter);
+    return firestore.collection(this.collectionPath).withConverter(this.converter);
   }
 
   /**
@@ -212,7 +212,7 @@ export class ServerFirestoreCollectionService<
     // Run one batch at a time.
     for (const currentIds of idsPerBatch) {
       const deleteBatchResult = await asyncTry(async () => {
-        const batch = firebaseService.firestore.batch();
+        const batch = firestore.batch();
         currentIds.forEach((id) => batch.delete(this.getDocRef(id)));
         await batch.commit();
       });
