@@ -64,6 +64,7 @@ const EventLogItemDataSchema = FeedItemActionEventLogItemDataSchema.or(
 interface BaseEventLogItem extends BaseStoreItem {
   readonly eventType: EventType;
   readonly eventId: EventId;
+  // TODO: Replace this with an `actor` field so that admin logs can be integrated as well.
   readonly userId: UserId;
   /** Arbitrary data associated with the event. */
   readonly data?: Record<string, unknown>;

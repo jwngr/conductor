@@ -3,7 +3,6 @@ import type {ZodSchema} from 'zod';
 
 import {logger} from '@shared/services/logger.shared';
 
-import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 

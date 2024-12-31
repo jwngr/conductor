@@ -275,18 +275,19 @@ export class ClientFeedItemsService {
     return makeSuccessResult(feedItem.feedItemId);
   }
 
-  public async updateFeedItem(feedItemId: FeedItemId, item: Partial<FeedItem>): AsyncResult<void> {
-    return this.feedItemsCollectionService.updateDoc(feedItemId, item);
+  public async updateFeedItem(
+    feedItemId: FeedItemId,
+    item: Partial<
+      Pick<FeedItem, 'url' | 'title' | 'description' | 'outgoingLinks' | 'triageStatus' | 'tagIds'>
+    >
+  ): AsyncResult<void> {
+    const updateResult = await this.feedItemsCollectionService.updateDoc(feedItemId, item);
+    return prefixResultIfError(updateResult, 'Error updating feed item');
   }
 
-  // public async updateFeedItem(feedItemId: FeedItemId, item: Partial<FeedItem>): AsyncResult<void> {
-  //   const docRefToUpdate = doc(this.feedItemsDbRef, feedItemId);
-  //   const updateResult = await updateFirestoreDoc(docRefToUpdate, item);
-  //   return prefixResultIfError(updateResult, 'Error updating feed item');
-  // }
-
   public async deleteFeedItem(feedItemId: FeedItemId): AsyncResult<void> {
-    return this.feedItemsCollectionService.deleteDoc(feedItemId);
+    const deleteResult = await this.feedItemsCollectionService.deleteDoc(feedItemId);
+    return prefixResultIfError(deleteResult, 'Error deleting feed item');
   }
 
   public async getFeedItemMarkdown(feedItemId: FeedItemId): AsyncResult<string> {

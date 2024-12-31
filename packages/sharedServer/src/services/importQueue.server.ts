@@ -1,3 +1,5 @@
+import type {WithFieldValue} from 'firebase-admin/firestore';
+
 import {
   asyncTryAll,
   prefixError,
@@ -184,7 +186,7 @@ export class ServerImportQueueService {
    */
   public async updateImportQueueItem(
     importQueueItemId: ImportQueueItemId,
-    updates: Partial<Pick<ImportQueueItem, 'status'>>
+    updates: Partial<WithFieldValue<Pick<ImportQueueItem, 'status'>>>
   ): AsyncResult<void> {
     const updateResult = await this.importQueueCollectionService.updateDoc(
       importQueueItemId,

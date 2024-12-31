@@ -5,6 +5,7 @@ import type {
   FirestoreDataConverter,
   Query,
   QueryDocumentSnapshot,
+  WithFieldValue,
 } from 'firebase-admin/firestore';
 import {FieldValue} from 'firebase-admin/firestore';
 
@@ -149,7 +150,7 @@ export class ServerFirestoreCollectionService<
   /**
    * Sets a Firestore document. The entire document is replaced.
    */
-  public async setDoc(docId: ItemId, data: ItemData): AsyncResult<void> {
+  public async setDoc(docId: ItemId, data: WithFieldValue<ItemData>): AsyncResult<void> {
     const setResult = await asyncTry(async () => this.getDocRef(docId).set(data));
     if (!setResult.success) {
       return prefixErrorResult(setResult, 'Error setting Firestore document');
@@ -161,12 +162,15 @@ export class ServerFirestoreCollectionService<
   /**
    * Updates a Firestore document. Updates are merged with the existing document.
    */
-  public async updateDoc(docId: ItemId, updates: Partial<ItemData>): AsyncResult<void> {
+  public async updateDoc(
+    docId: ItemId,
+    updates: Partial<WithFieldValue<Omit<ItemData, 'lastUpdatedTime'>>>
+  ): AsyncResult<void> {
     const docRef = this.getDocRef(docId);
     const updateResult = await asyncTry(async () =>
       docRef.update({
         ...updates,
-        // Doc updates always set the last updated time.
+        // Always update the `lastUpdatedTime` field.
         lastUpdatedTime: FieldValue.serverTimestamp(),
       })
     );

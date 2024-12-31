@@ -1,3 +1,5 @@
+import type {WithFieldValue} from 'firebase-admin/firestore';
+
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
 import type {FeedSource, FeedSourceFromSchema, FeedSourceId} from '@shared/types/feedSources.types';
@@ -92,7 +94,7 @@ export class ServerFeedSourcesService {
    */
   public async update(
     feedSourceId: FeedSourceId,
-    update: Partial<Pick<FeedSource, 'title'>>
+    update: Partial<WithFieldValue<Pick<FeedSource, 'title'>>>
   ): AsyncResult<void> {
     const updateResult = await this.feedSourcesCollectionService.updateDoc(feedSourceId, update);
     return prefixResultIfError(updateResult, 'Error updating feed source in Firestore');

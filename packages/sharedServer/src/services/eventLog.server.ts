@@ -1,16 +1,13 @@
-import {logger} from '@shared/services/logger.shared';
+import type {WithFieldValue} from 'firebase-admin/firestore';
 
 import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants.shared';
-import {prefixError} from '@shared/lib/errorUtils.shared';
+import {prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {toFirestoreTimestamp} from '@shared/lib/parser.shared';
 
-import {
-  parseEventId,
-  parseEventLogItem,
-  toFirestoreEventLogItem,
-} from '@shared/parsers/eventLog.parser';
+import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
 
 import type {EventId, EventLogItem, EventLogItemFromSchema} from '@shared/types/eventLog.types';
-import {makeSuccessResult, type AsyncResult, type Result} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/result.types';
 
 import {
   makeFirestoreDataConverter,
@@ -34,34 +31,44 @@ export class ServerEventLogService {
     return this.eventLogCollectionService.fetchById(eventId);
   }
 
-  public async logEvent(eventLogItemResult: Result<EventLogItem>): AsyncResult<EventId | null> {
-    if (!eventLogItemResult.success) {
-      return eventLogItemResult;
-    }
+  // public async logEvent(
+  //   eventLogItem: Omit<EventLogItem, 'createdTime' | 'lastUpdatedTime'>
+  // ): AsyncResult<EventId | null> {
+  //   const eventId = makeEventId();
+  //   const createResult = await this.eventLogCollectionService.setDoc(eventId, {
+  //     eventId,
+  //     actor: adminActor,
+  //     eventType: EventType.FeedItemAction,
+  //     data: {
+  //       feedItemId: args.feedItemId,
+  //       feedItemActionType: args.feedItemActionType,
+  //     },
+  //     createdTime: FieldValue.serverTimestamp(),
+  //     lastUpdatedTime: FieldValue.serverTimestamp(),
+  //   });
 
-    const eventLogItem = eventLogItemResult.value;
-    const createResult = await this.eventLogCollectionService.setDoc(
-      eventLogItem.eventId,
-      eventLogItem
-    );
+  //   if (!createResult.success) {
+  //     logger.error(prefixError(createResult.error, 'Failed to log feed item action event'), {
+  //       feedItemId: args.feedItemId,
+  //       feedItemActionType: args.feedItemActionType,
+  //     });
+  //     return createResult;
+  //   }
 
-    if (!createResult.success) {
-      logger.error(prefixError(createResult.error, 'Failed to log event'), {eventLogItem});
-      return createResult;
-    }
-
-    return makeSuccessResult(eventLogItem.eventId);
-  }
+  //   return makeSuccessResult(eventId);
+  // }
 
   public async updateEventLogItem(
     eventId: EventId,
-    item: Partial<EventLogItem>
+    item: Partial<WithFieldValue<Pick<EventLogItem, 'data'>>>
   ): AsyncResult<void> {
-    return this.eventLogCollectionService.updateDoc(eventId, item);
+    const updateResult = await this.eventLogCollectionService.updateDoc(eventId, item);
+    return prefixResultIfError(updateResult, 'Error updating event log item');
   }
 
   public async deleteEventLogItem(eventId: EventId): AsyncResult<void> {
-    return this.eventLogCollectionService.deleteDoc(eventId);
+    const deleteResult = await this.eventLogCollectionService.deleteDoc(eventId);
+    return prefixResultIfError(deleteResult, 'Error deleting event log item');
   }
 }
 
@@ -80,3 +87,13 @@ const eventLogCollectionService = new ServerFirestoreCollectionService({
 export const eventLogService = new ServerEventLogService({
   eventLogCollectionService,
 });
+export function toFirestoreEventLogItem(eventLogItem: EventLogItem): EventLogItemFromSchema {
+  return {
+    eventId: eventLogItem.eventId,
+    userId: eventLogItem.userId,
+    eventType: eventLogItem.eventType,
+    data: eventLogItem.data,
+    createdTime: toFirestoreTimestamp(eventLogItem.createdTime),
+    lastUpdatedTime: toFirestoreTimestamp(eventLogItem.lastUpdatedTime),
+  };
+}

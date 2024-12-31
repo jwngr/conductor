@@ -9,6 +9,7 @@ import type {
   QueryDocumentSnapshot,
   QuerySnapshot,
   SnapshotOptions,
+  WithFieldValue,
 } from 'firebase/firestore';
 import {
   collection,
@@ -200,7 +201,7 @@ export class ClientFirestoreCollectionService<
   /**
    * Sets a Firestore document. The entire document is replaced.
    */
-  public async setDoc(docId: ItemId, data: ItemData): AsyncResult<void> {
+  public async setDoc(docId: ItemId, data: WithFieldValue<ItemData>): AsyncResult<void> {
     const setResult = await asyncTry(async () => setDoc(this.getDocRef(docId), data));
     return prefixResultIfError(setResult, 'Error setting Firestore document');
   }
@@ -208,7 +209,10 @@ export class ClientFirestoreCollectionService<
   /**
    * Updates a Firestore document. Updates are merged with the existing document.
    */
-  public async updateDoc(docId: ItemId, updates: Partial<ItemData>): AsyncResult<void> {
+  public async updateDoc(
+    docId: ItemId,
+    updates: Partial<WithFieldValue<Omit<ItemData, 'lastUpdatedTime'>>>
+  ): AsyncResult<void> {
     const docRef = this.getDocRef(docId);
     const updateResult = await asyncTry(async () =>
       updateDoc(docRef, {

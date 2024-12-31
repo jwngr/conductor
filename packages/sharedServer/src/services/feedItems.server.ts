@@ -47,37 +47,21 @@ export class ServerFeedItemsService {
     feedItemId: FeedItemId,
     {links, title, description}: UpdateImportedFeedItemInFirestoreArgs
   ): AsyncResult<void> {
-    const update: Omit<
-      FeedItem,
-      | 'feedItemId'
-      | 'userId'
-      | 'source'
-      | 'url'
-      | 'tagIds'
-      | 'triageStatus'
-      | 'createdTime'
-      | 'lastUpdatedTime'
-    > = {
+    // TODO: Consider switching to array unions so I can use FieldValue.arrayRemove.
+    const untypedUpdates = {
+      [`tagIds.${SystemTagId.Importing}`]: FieldValue.delete(),
+    };
+
+    const updateResult = await this.feedItemsCollectionService.updateDoc(feedItemId, {
       // TODO: Determine the type based on the URL or fetched content.
       type: FeedItemType.Website,
       // TODO: Reconsider how to handle empty titles, descriptions, and links.
       title: title ?? '',
       description: description ?? '',
       outgoingLinks: links ?? [],
-    };
-
-    // The types are not quite right here since we are updating a deeply nested object.
-    // TODO: Consider using a Firestore converter to handle this. Ideally this would be part of
-    // the object above.
-    // See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
-    const actualUpdates = {
-      ...update,
-      // TODO: Remove this super hack.
-      lastImportedTime: FieldValue.serverTimestamp() as unknown as Date,
-      [`tagIds.${SystemTagId.Importing}`]: FieldValue.delete(),
-    } as Partial<FeedItem>;
-
-    const updateResult = await this.feedItemsCollectionService.updateDoc(feedItemId, actualUpdates);
+      lastImportedTime: FieldValue.serverTimestamp(),
+      ...untypedUpdates,
+    });
     return prefixResultIfError(updateResult, 'Error updating imported feed item in Firestore');
   }
 
