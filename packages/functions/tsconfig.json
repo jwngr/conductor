@@ -2,12 +2,14 @@
   "include": ["src"],
   "extends": "../../tsconfig.json",
 
-  // This package consumes the `shared` package.
+  // This package consumes some shared packages.
   "references": [{"path": "../shared"}, {"path": "../sharedServer"}],
-
   "compilerOptions": {
     // Build is handled by esbuild.
     "moduleResolution": "bundler",
+
+    // Emit `tsc` output to an ignored directory to not override the esbuild build output.
+    "outDir": "./distIgnore",
 
     // Import aliases.
     "baseUrl": ".",

@@ -6,6 +6,9 @@
   "references": [{"path": "../shared"}],
 
   "compilerOptions": {
+    // Emit `tsc` output to an ignored directory since we run scripts directly.
+    "outDir": "./distIgnore"
+
     // TODO: Get import aliases working by adding some build step.
     // Import aliases.
     // "baseUrl": ".",

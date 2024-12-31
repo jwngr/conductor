@@ -15,6 +15,9 @@
     // Build is handled by Vite.
     "moduleResolution": "bundler",
 
+    // Emit `tsc` output to an ignored directory to not override the Vite build output.
+    "outDir": "./distIgnore",
+
     // Import aliases.
     "baseUrl": ".",
     "paths": {
