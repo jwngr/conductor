@@ -6,6 +6,7 @@
   "references": [{"path": "../shared"}],
 
   "compilerOptions": {
+    "outDir": "./dist"
     // TODO: Get import aliases working by adding some build step.
     // Import aliases.
     // "baseUrl": ".",
