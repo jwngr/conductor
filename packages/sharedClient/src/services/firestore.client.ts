@@ -22,10 +22,8 @@ import {
   query,
   serverTimestamp,
   setDoc,
-  Timestamp,
   updateDoc,
 } from 'firebase/firestore';
-import {z} from 'zod';
 
 import {asyncTry, prefixError, prefixResultIfError, syncTry} from '@shared/lib/errorUtils.shared';
 
@@ -33,8 +31,6 @@ import type {AsyncResult, Result} from '@shared/types/result.types';
 import type {Consumer, Func, Unsubscribe} from '@shared/types/utils.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';
-
-export const FirestoreTimestampSchema = z.custom<Timestamp>((value) => value instanceof Timestamp);
 
 /**
  * Creates a strongly-typed converter between a Firestore data type and a client data type.

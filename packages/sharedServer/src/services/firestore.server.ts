@@ -7,8 +7,7 @@ import type {
   QueryDocumentSnapshot,
   WithFieldValue,
 } from 'firebase-admin/firestore';
-import {FieldValue, Timestamp} from 'firebase-admin/firestore';
-import {z} from 'zod';
+import {FieldValue} from 'firebase-admin/firestore';
 
 import {
   asyncTry,
@@ -24,8 +23,6 @@ import type {Func} from '@shared/types/utils.types';
 import {firestore} from '@sharedServer/services/firebase.server';
 
 const BATCH_DELETE_SIZE = 500;
-
-export const FirestoreTimestampSchema = z.custom<Timestamp>((value) => value instanceof Timestamp);
 
 /**
  * Creates a strongly-typed Firestore data converter.
