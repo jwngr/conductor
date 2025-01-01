@@ -59,6 +59,7 @@ export function makeFeedSource(
     feedSourceId: makeFeedSourceId(),
     url: args.url,
     title: args.title,
+    // TODO: Should use server timestamps instead.
     createdTime: new Date(),
     lastUpdatedTime: new Date(),
   };

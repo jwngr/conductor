@@ -84,6 +84,7 @@ export function makeUserFeedSubscription(args: {
     url: feedSource.url,
     title: feedSource.title,
     isActive: true,
+    // TODO: Should use server timestamps instead.
     createdTime: new Date(),
     lastUpdatedTime: new Date(),
   };

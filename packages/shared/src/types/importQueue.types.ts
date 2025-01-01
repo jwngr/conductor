@@ -88,6 +88,7 @@ export function makeImportQueueItem(
     userId,
     url,
     status: ImportQueueItemStatus.New,
+      // TODO: Should use server timestamps instead.
     createdTime: new Date(),
     lastUpdatedTime: new Date(),
   });
