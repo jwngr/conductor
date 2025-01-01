@@ -40,7 +40,7 @@ import {
   toFirestoreUserFeedSubscription,
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
-import {ImportQueueItemStatus} from '@shared/types/importQueue.types';
+import {ImportQueueItem, ImportQueueItemStatus} from '@shared/types/importQueue.types';
 import {makeSuccessResult} from '@shared/types/result.types';
 import {UserId} from '@shared/types/user.types';
 
@@ -190,15 +190,18 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
       return;
     }
 
-    const importQueueItemResult = parseImportQueueItem(snapshot.data());
-    if (!importQueueItemResult.success) {
-      logger.error(
-        prefixError(importQueueItemResult.error, '[IMPORT] Invalid import queue item data'),
-        {importQueueItemId}
-      );
-      return;
-    }
-    const importQueueItem = importQueueItemResult.value;
+    // const importQueueItemResult = parseImportQueueItem(snapshot.data());
+    // if (!importQueueItemResult.success) {
+    //   logger.error(
+    //     prefixError(importQueueItemResult.error, '[IMPORT] Invalid import queue item data'),
+    //     {importQueueItemId}
+    //   );
+    //   return;
+    // }
+    // const importQueueItem = importQueueItemResult.value;
+    // TODO: This cast is a lie and it is really a `ImportQueueItemFromSchema` since functions don't
+    // seem to auto-convert the data from the snapshot correctly.
+    const importQueueItem = snapshot.data() as ImportQueueItem;
 
     // Avoid double processing by only processing items with a "new" status.
     if (importQueueItem.status !== ImportQueueItemStatus.New) {
