@@ -40,7 +40,7 @@ import {
   toFirestoreUserFeedSubscription,
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
-import {ImportQueueItem, ImportQueueItemStatus} from '@shared/types/importQueue.types';
+import {ImportQueueItemStatus} from '@shared/types/importQueue.types';
 import {makeSuccessResult} from '@shared/types/result.types';
 import {UserId} from '@shared/types/user.types';
 
@@ -190,8 +190,15 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
       return;
     }
 
-    // TODO: Properly validate the import item schema.
-    const importQueueItem = {importQueueItemId, ...snapshot.data()} as ImportQueueItem;
+    const importQueueItemResult = parseImportQueueItem(snapshot.data());
+    if (!importQueueItemResult.success) {
+      logger.error(
+        prefixError(importQueueItemResult.error, '[IMPORT] Invalid import queue item data'),
+        {importQueueItemId}
+      );
+      return;
+    }
+    const importQueueItem = importQueueItemResult.value;
 
     // Avoid double processing by only processing items with a "new" status.
     if (importQueueItem.status !== ImportQueueItemStatus.New) {
