@@ -3,6 +3,7 @@ import type {ZodSchema} from 'zod';
 
 import {logger} from '@shared/services/logger.shared';
 
+import type {FirestoreTimestamp} from '@shared/types/firebase.types';
 import type {Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 
@@ -34,13 +35,17 @@ export function parseZodResult<T>(zodSchema: ZodSchema<T>, value: unknown): Resu
 /**
  * Converts a Firestore `Timestamp` to a normal `Date`.
  */
-export function parseFirestoreTimestamp(firestoreDate: Timestamp): Date {
+export function parseFirestoreTimestamp(firestoreDate: FirestoreTimestamp): Date {
+  // TODO: For some reason this returns "Invalid date" when used from the server, but the function
+  // does exist.
   return firestoreDate.toDate();
 }
 
 /**
  * Converts a normal `Date` into a Firestore `Timestamp`.
  */
-export function toFirestoreTimestamp(appDate: Date): Timestamp {
+export function toFirestoreTimestamp(appDate: Date): FirestoreTimestamp {
+  // TODO: This uses an import from the client library and could be wrong from the server. Ideally
+  // this method would not rely on the client library.
   return Timestamp.fromDate(appDate);
 }
