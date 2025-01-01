@@ -206,7 +206,7 @@ export class ClientEventLogService {
   }): AsyncResult<EventId | null> {
     const eventId = makeEventId();
     const createResult = await this.eventLogCollectionService.setDoc(eventId, {
-      eventId: makeEventId(),
+      eventId,
       userId: this.userId,
       eventType: EventType.UserFeedSubscription,
       data: {
