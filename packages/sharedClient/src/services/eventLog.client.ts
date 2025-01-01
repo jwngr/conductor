@@ -1,43 +1,54 @@
-import {collection, limit as firestoreLimit, orderBy, where} from 'firebase/firestore';
+import {limit as firestoreLimit, orderBy, serverTimestamp, where} from 'firebase/firestore';
 import {useEffect, useMemo, useState} from 'react';
 
-import {
-  makeFeedItemActionEventLogItem,
-  makeUserFeedSubscriptionEventLogItem,
-} from '@shared/services/eventLog.shared';
 import {logger} from '@shared/services/logger.shared';
 
 import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants.shared';
-import {prefixError} from '@shared/lib/errorUtils.shared';
+import {prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {filterNull} from '@shared/lib/utils.shared';
 
-import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
+import {
+  parseEventId,
+  parseEventLogItem,
+  toFirestoreEventLogItem,
+} from '@shared/parsers/eventLog.parser';
 
-import type {EventId, EventLogItem} from '@shared/types/eventLog.types';
+import {
+  EventType,
+  makeEventId,
+  type EventId,
+  type EventLogItem,
+} from '@shared/types/eventLog.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
 import type {ViewType} from '@shared/types/query.types';
-import {makeSuccessResult, type AsyncResult, type Result} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/result.types';
+import {makeSuccessResult} from '@shared/types/result.types';
 import type {UserId} from '@shared/types/user.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
-import type {Consumer, Timestamp, Unsubscribe} from '@shared/types/utils.types';
+import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
-import {firebaseService} from '@sharedClient/services/firebase.client';
-import {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+import {
+  ClientFirestoreCollectionService,
+  makeFirestoreDataConverter,
+} from '@sharedClient/services/firestore.client';
 
 import {useLoggedInUser} from '@sharedClient/hooks/auth.hooks';
 
 // TODO: This is a somewhat arbitrary limit. Reconsider what the logic should be here.
 const EVENT_LOG_LIMIT = 100;
 
-const eventLogDbRef = collection(firebaseService.firestore, EVENT_LOG_DB_COLLECTION);
+const eventLogItemFirestoreConverter = makeFirestoreDataConverter(
+  toFirestoreEventLogItem,
+  parseEventLogItem
+);
 
 export const useEventLogService = () => {
   const loggedInUser = useLoggedInUser();
 
   const eventLogService = useMemo(() => {
     const eventLogCollectionService = new ClientFirestoreCollectionService({
-      collectionRef: eventLogDbRef,
-      parseData: parseEventLogItem,
+      collectionPath: EVENT_LOG_DB_COLLECTION,
+      converter: eventLogItemFirestoreConverter,
       parseId: parseEventId,
     });
 
@@ -162,63 +173,69 @@ export class ClientEventLogService {
     return () => unsubscribe();
   }
 
-  public async logEvent(eventLogItemResult: Result<EventLogItem>): AsyncResult<EventId | null> {
-    if (!eventLogItemResult.success) {
-      return eventLogItemResult;
-    }
-
-    const eventLogItem = eventLogItemResult.value;
-    const createResult = await this.eventLogCollectionService.setDoc(
-      eventLogItem.eventId,
-      eventLogItem
-    );
-
-    if (!createResult.success) {
-      logger.error(prefixError(createResult.error, 'Failed to log event'), {eventLogItem});
-      return createResult;
-    }
-
-    return makeSuccessResult(createResult.value.eventId);
-  }
-
   public async logFeedItemActionEvent(args: {
     readonly feedItemId: FeedItemId;
     readonly feedItemActionType: FeedItemActionType;
-    readonly createdTime: Timestamp;
-    readonly lastUpdatedTime: Timestamp;
   }): AsyncResult<EventId | null> {
-    const eventLogItemResult = makeFeedItemActionEventLogItem({
+    const eventId = makeEventId();
+    const createResult = await this.eventLogCollectionService.setDoc(eventId, {
+      eventId,
       userId: this.userId,
-      feedItemId: args.feedItemId,
-      feedItemActionType: args.feedItemActionType,
-      createdTime: args.createdTime,
-      lastUpdatedTime: args.lastUpdatedTime,
+      eventType: EventType.FeedItemAction,
+      data: {
+        feedItemId: args.feedItemId,
+        feedItemActionType: args.feedItemActionType,
+      },
+      createdTime: serverTimestamp(),
+      lastUpdatedTime: serverTimestamp(),
     });
-    return this.logEvent(eventLogItemResult);
+
+    if (!createResult.success) {
+      logger.error(prefixError(createResult.error, 'Failed to log feed item action event'), {
+        feedItemId: args.feedItemId,
+        feedItemActionType: args.feedItemActionType,
+      });
+      return createResult;
+    }
+
+    return makeSuccessResult(eventId);
   }
 
   public async logUserFeedSubscriptionEvent(args: {
     readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-    readonly createdTime: Timestamp;
-    readonly lastUpdatedTime: Timestamp;
   }): AsyncResult<EventId | null> {
-    const eventLogItemResult = makeUserFeedSubscriptionEventLogItem({
+    const eventId = makeEventId();
+    const createResult = await this.eventLogCollectionService.setDoc(eventId, {
+      eventId,
       userId: this.userId,
-      userFeedSubscriptionId: args.userFeedSubscriptionId,
-      createdTime: args.createdTime,
-      lastUpdatedTime: args.lastUpdatedTime,
+      eventType: EventType.UserFeedSubscription,
+      data: {
+        userFeedSubscriptionId: args.userFeedSubscriptionId,
+      },
+      createdTime: serverTimestamp(),
+      lastUpdatedTime: serverTimestamp(),
     });
-    return this.logEvent(eventLogItemResult);
+
+    if (!createResult.success) {
+      logger.error(prefixError(createResult.error, 'Failed to log user feed subscription event'), {
+        userFeedSubscriptionId: args.userFeedSubscriptionId,
+      });
+      return createResult;
+    }
+
+    return makeSuccessResult(eventId);
   }
 
   public async updateEventLogItem(
     eventId: EventId,
-    item: Partial<EventLogItem>
+    item: Partial<Pick<EventLogItem, 'data'>>
   ): AsyncResult<void> {
-    return this.eventLogCollectionService.updateDoc(eventId, item);
+    const updateResult = await this.eventLogCollectionService.updateDoc(eventId, item);
+    return prefixResultIfError(updateResult, 'Error updating event log item');
   }
 
   public async deleteEventLogItem(eventId: EventId): AsyncResult<void> {
-    return this.eventLogCollectionService.deleteDoc(eventId);
+    const deleteResult = await this.eventLogCollectionService.deleteDoc(eventId);
+    return prefixResultIfError(deleteResult, 'Error deleting event log item');
   }
 }

@@ -1,4 +1,4 @@
-import {collection, limit, orderBy, where} from 'firebase/firestore';
+import {limit, orderBy, where} from 'firebase/firestore';
 import type {Functions, HttpsCallableResult} from 'firebase/functions';
 import {httpsCallable} from 'firebase/functions';
 import {useMemo} from 'react';
@@ -9,6 +9,7 @@ import {asyncTry, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {
   parseUserFeedSubscription,
   parseUserFeedSubscriptionId,
+  toFirestoreUserFeedSubscription,
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
 import type {AsyncResult} from '@shared/types/result.types';
@@ -20,7 +21,10 @@ import type {
 import type {AsyncFunc, Consumer, Unsubscribe} from '@shared/types/utils.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';
-import {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+import {
+  ClientFirestoreCollectionService,
+  makeFirestoreDataConverter,
+} from '@sharedClient/services/firestore.client';
 
 import {useLoggedInUser} from '@sharedClient/hooks/auth.hooks';
 
@@ -127,15 +131,15 @@ export class ClientUserFeedSubscriptionsService {
   }
 }
 
-const userFeedSubscriptionsDbRef = collection(
-  firebaseService.firestore,
-  USER_FEED_SUBSCRIPTIONS_DB_COLLECTION
+const userFeedSubscriptionFirestoreConverter = makeFirestoreDataConverter(
+  toFirestoreUserFeedSubscription,
+  parseUserFeedSubscription
 );
 
 const userFeedSubscriptionsCollectionService = new ClientFirestoreCollectionService({
-  collectionRef: userFeedSubscriptionsDbRef,
+  collectionPath: USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
+  converter: userFeedSubscriptionFirestoreConverter,
   parseId: parseUserFeedSubscriptionId,
-  parseData: parseUserFeedSubscription,
 });
 
 export function useUserFeedSubscriptionsService(): ClientUserFeedSubscriptionsService {

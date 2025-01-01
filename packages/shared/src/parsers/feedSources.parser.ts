@@ -1,11 +1,14 @@
 import {prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {parseZodResult} from '@shared/lib/parser.shared';
+import {
+  parseFirestoreTimestamp,
+  parseZodResult,
+  toFirestoreTimestamp,
+} from '@shared/lib/parser.shared';
 
-import type {FeedSource, FeedSourceId} from '@shared/types/feedSources.types';
+import type {FeedSource, FeedSourceFromSchema, FeedSourceId} from '@shared/types/feedSources.types';
 import {FeedSourceIdSchema, FeedSourceSchema} from '@shared/types/feedSources.types';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
-import type {Timestamp} from '@shared/types/utils.types';
 
 /**
  * Parses a {@link FeedSourceId} from a plain string. Returns an `ErrorResult` if the string is not
@@ -32,12 +35,21 @@ export function parseFeedSource(maybeFeedSource: unknown): Result<FeedSource> {
   const parsedIdResult = parseFeedSourceId(parsedFeedSourceResult.value.feedSourceId);
   if (!parsedIdResult.success) return parsedIdResult;
 
-  const {url, title, createdTime, lastUpdatedTime} = parsedFeedSourceResult.value;
   return makeSuccessResult({
     feedSourceId: parsedIdResult.value,
-    url,
-    title,
-    createdTime: new Date(createdTime) as unknown as Timestamp,
-    lastUpdatedTime: new Date(lastUpdatedTime) as unknown as Timestamp,
+    url: parsedFeedSourceResult.value.url,
+    title: parsedFeedSourceResult.value.title,
+    createdTime: parseFirestoreTimestamp(parsedFeedSourceResult.value.createdTime),
+    lastUpdatedTime: parseFirestoreTimestamp(parsedFeedSourceResult.value.lastUpdatedTime),
   });
+}
+
+export function toFirestoreFeedSource(feedSource: FeedSource): FeedSourceFromSchema {
+  return {
+    feedSourceId: feedSource.feedSourceId,
+    url: feedSource.url,
+    title: feedSource.title,
+    createdTime: toFirestoreTimestamp(feedSource.createdTime),
+    lastUpdatedTime: toFirestoreTimestamp(feedSource.lastUpdatedTime),
+  };
 }

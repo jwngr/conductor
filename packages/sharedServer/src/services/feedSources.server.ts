@@ -1,15 +1,19 @@
-import {FieldValue} from 'firebase-admin/firestore';
+import type {WithFieldValue} from 'firebase-admin/firestore';
 
-import {prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
-import type {FeedSource, FeedSourceId} from '@shared/types/feedSources.types';
+import type {FeedSource, FeedSourceFromSchema, FeedSourceId} from '@shared/types/feedSources.types';
 import {makeFeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
 
 import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
-type FeedSourceCollectionService = ServerFirestoreCollectionService<FeedSourceId, FeedSource>;
+type FeedSourceCollectionService = ServerFirestoreCollectionService<
+  FeedSourceId,
+  FeedSource,
+  FeedSourceFromSchema
+>;
 
 export class ServerFeedSourcesService {
   private readonly feedSourcesCollectionService: FeedSourceCollectionService;
@@ -46,8 +50,6 @@ export class ServerFeedSourcesService {
     const makeFeedSourceResult = makeFeedSource({
       url: feedDetails.url,
       title: feedDetails.title,
-      createdTime: FieldValue.serverTimestamp(),
-      lastUpdatedTime: FieldValue.serverTimestamp(),
     });
     if (!makeFeedSourceResult.success) return makeFeedSourceResult;
     const newFeedSource = makeFeedSourceResult.value;
@@ -57,7 +59,10 @@ export class ServerFeedSourcesService {
       newFeedSource.feedSourceId,
       newFeedSource
     );
-    return prefixResultIfError(createResult, 'Error adding feed source to Firestore');
+    if (!createResult.success) {
+      return prefixErrorResult(createResult, 'Error adding feed source to Firestore');
+    }
+    return makeSuccessResult(newFeedSource);
   }
 
   /**
@@ -89,7 +94,7 @@ export class ServerFeedSourcesService {
    */
   public async update(
     feedSourceId: FeedSourceId,
-    update: Partial<Pick<FeedSource, 'title'>>
+    update: Partial<WithFieldValue<Pick<FeedSource, 'title'>>>
   ): AsyncResult<void> {
     const updateResult = await this.feedSourcesCollectionService.updateDoc(feedSourceId, update);
     return prefixResultIfError(updateResult, 'Error updating feed source in Firestore');

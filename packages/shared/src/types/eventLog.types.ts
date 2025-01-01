@@ -4,6 +4,7 @@ import {makeUuid} from '@shared/lib/utils.shared';
 
 import {FeedItemActionType, FeedItemIdSchema} from '@shared/types/feedItems.types';
 import type {FeedItemId} from '@shared/types/feedItems.types';
+import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {UserId} from '@shared/types/user.types';
 import {UserIdSchema} from '@shared/types/user.types';
 import {UserFeedSubscriptionIdSchema} from '@shared/types/userFeedSubscriptions.types';
@@ -18,6 +19,7 @@ export type EventId = string & {readonly __brand: 'EventIdBrand'};
 /**
  * Zod schema for an {@link EventId}.
  */
+// TODO: Consider adding `brand()` and defining `EventId` based on this schema.
 export const EventIdSchema = z.string().uuid();
 
 /**
@@ -62,6 +64,7 @@ const EventLogItemDataSchema = FeedItemActionEventLogItemDataSchema.or(
 interface BaseEventLogItem extends BaseStoreItem {
   readonly eventType: EventType;
   readonly eventId: EventId;
+  // TODO: Replace this with an `actor` field so that admin logs can be integrated as well.
   readonly userId: UserId;
   /** Arbitrary data associated with the event. */
   readonly data?: Record<string, unknown>;
@@ -75,10 +78,11 @@ export const EventLogItemSchema = z.object({
   userId: UserIdSchema,
   eventType: z.nativeEnum(EventType),
   data: EventLogItemDataSchema,
-  createdTime: z.date(),
-  lastUpdatedTime: z.date(),
+  createdTime: FirestoreTimestampSchema,
+  lastUpdatedTime: FirestoreTimestampSchema,
 });
 
+export type EventLogItemFromSchema = z.infer<typeof EventLogItemSchema>;
 export interface FeedItemActionEventLogItem extends BaseEventLogItem {
   readonly eventType: EventType.FeedItemAction;
   readonly data: FeedItemActionEventLogItemData;

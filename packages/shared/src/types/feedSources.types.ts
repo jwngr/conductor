@@ -2,6 +2,7 @@ import {z} from 'zod';
 
 import {makeUuid} from '@shared/lib/utils.shared';
 
+import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
@@ -42,20 +43,25 @@ export const FeedSourceSchema = z.object({
   feedSourceId: FeedSourceIdSchema,
   url: z.string().url(),
   title: z.string().min(1),
-  createdTime: z.date(),
-  lastUpdatedTime: z.date(),
+  createdTime: FirestoreTimestampSchema,
+  lastUpdatedTime: FirestoreTimestampSchema,
 });
+
+export type FeedSourceFromSchema = z.infer<typeof FeedSourceSchema>;
 
 /**
  * Creates a new {@link FeedSource} object.
  */
-export function makeFeedSource(args: Omit<FeedSource, 'feedSourceId'>): Result<FeedSource> {
+export function makeFeedSource(
+  args: Omit<FeedSource, 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
+): Result<FeedSource> {
   const feedSource: FeedSource = {
     feedSourceId: makeFeedSourceId(),
     url: args.url,
     title: args.title,
-    createdTime: args.createdTime,
-    lastUpdatedTime: args.lastUpdatedTime,
+    // TODO: Should use server timestamps instead.
+    createdTime: new Date(),
+    lastUpdatedTime: new Date(),
   };
 
   return makeSuccessResult(feedSource);

@@ -1,5 +1,10 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {parseZodResult} from '@shared/lib/parser.shared';
+import {
+  parseFirestoreTimestamp,
+  parseZodResult,
+  toFirestoreTimestamp,
+} from '@shared/lib/parser.shared';
+import {omitUndefined} from '@shared/lib/utils.shared';
 
 import {parseFeedSourceId} from '@shared/parsers/feedSources.parser';
 import {parseUserId} from '@shared/parsers/user.parser';
@@ -12,9 +17,9 @@ import {
 } from '@shared/types/userFeedSubscriptions.types';
 import type {
   UserFeedSubscription,
+  UserFeedSubscriptionFromSchema,
   UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
-import type {Timestamp} from '@shared/types/utils.types';
 
 /**
  * Parses a {@link UserFeedSubscriptionId} from a plain string. Returns an `ErrorResult` if the
@@ -53,18 +58,37 @@ export function parseUserFeedSubscription(
   );
   if (!parsedUserFeedSubscriptionIdResult.success) return parsedUserFeedSubscriptionIdResult;
 
-  const {url, title, isActive, unsubscribedTime, createdTime, lastUpdatedTime} = parsedResult.value;
-  return makeSuccessResult({
-    userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
-    feedSourceId: parsedFeedSourceIdResult.value,
-    userId: parsedUserIdResult.value,
-    url,
-    title,
-    isActive,
-    unsubscribedTime: unsubscribedTime
-      ? (new Date(unsubscribedTime) as unknown as Timestamp)
+  return makeSuccessResult(
+    omitUndefined({
+      userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
+      feedSourceId: parsedFeedSourceIdResult.value,
+      userId: parsedUserIdResult.value,
+      url: parsedResult.value.url,
+      title: parsedResult.value.title,
+      isActive: parsedResult.value.isActive,
+      unsubscribedTime: parsedResult.value.unsubscribedTime
+        ? parseFirestoreTimestamp(parsedResult.value.unsubscribedTime)
+        : undefined,
+      createdTime: parseFirestoreTimestamp(parsedResult.value.createdTime),
+      lastUpdatedTime: parseFirestoreTimestamp(parsedResult.value.lastUpdatedTime),
+    })
+  );
+}
+
+export function toFirestoreUserFeedSubscription(
+  userFeedSubscription: UserFeedSubscription
+): UserFeedSubscriptionFromSchema {
+  return {
+    userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
+    feedSourceId: userFeedSubscription.feedSourceId,
+    userId: userFeedSubscription.userId,
+    url: userFeedSubscription.url,
+    title: userFeedSubscription.title,
+    isActive: userFeedSubscription.isActive,
+    unsubscribedTime: userFeedSubscription.unsubscribedTime
+      ? toFirestoreTimestamp(userFeedSubscription.unsubscribedTime)
       : undefined,
-    createdTime: new Date(createdTime) as unknown as Timestamp,
-    lastUpdatedTime: new Date(lastUpdatedTime) as unknown as Timestamp,
-  });
+    createdTime: toFirestoreTimestamp(userFeedSubscription.createdTime),
+    lastUpdatedTime: toFirestoreTimestamp(userFeedSubscription.lastUpdatedTime),
+  };
 }

@@ -1,8 +1,8 @@
-import type {FieldValue} from 'firebase/firestore';
 import {z} from 'zod';
 
 import {makeUuid} from '@shared/lib/utils.shared';
 
+import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {IconName} from '@shared/types/icons.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import type {TagId} from '@shared/types/tags.types';
@@ -10,7 +10,7 @@ import type {UserId} from '@shared/types/user.types';
 import {UserIdSchema} from '@shared/types/user.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import {UserFeedSubscriptionIdSchema} from '@shared/types/userFeedSubscriptions.types';
-import type {BaseStoreItem, Timestamp} from '@shared/types/utils.types';
+import type {BaseStoreItem} from '@shared/types/utils.types';
 
 /**
  * Strongly-typed type for a {@link FeedItem}'s unique identifier. Prefer this over plain strings.
@@ -136,15 +136,11 @@ interface BaseFeedItem extends BaseStoreItem {
    * - indexing of arbitrary boolean user states.
    *
    * To accomplish this, most state is stored as tags that either exist in this map or not.
-   *
-   * Note: FieldValue is used to delete tags.
-   * TODO: Consider abstracting this strange type way with a Firestore converter.
-   * See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
    */
-  readonly tagIds: Partial<Record<TagId, true | FieldValue>>;
+  readonly tagIds: Partial<Record<TagId, true>>;
 
   // Timestamps.
-  readonly lastImportedTime?: Timestamp;
+  readonly lastImportedTime?: Date;
 }
 
 /**
@@ -160,14 +156,13 @@ export const FeedItemSchema = z.object({
   description: z.string(),
   outgoingLinks: z.array(z.string().url()),
   triageStatus: z.nativeEnum(TriageStatus),
-  tagIds: z.record(z.string(), z.boolean()),
-  // lastImportedTime: z.string().datetime(),
-  // createdTime: z.string().datetime(),
-  // lastUpdatedTime: z.string().datetime(),
-  lastImportedTime: z.date(),
-  createdTime: z.date(),
-  lastUpdatedTime: z.date(),
+  tagIds: z.record(z.string(), z.literal(true).optional()),
+  lastImportedTime: FirestoreTimestampSchema.optional(),
+  createdTime: FirestoreTimestampSchema,
+  lastUpdatedTime: FirestoreTimestampSchema,
 });
+
+export type FeedItemFromSchema = z.infer<typeof FeedItemSchema>;
 
 export interface ArticleFeedItem extends BaseFeedItem {
   readonly type: FeedItemType.Article;

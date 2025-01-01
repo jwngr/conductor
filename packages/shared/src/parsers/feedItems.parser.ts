@@ -1,7 +1,12 @@
 import type {z} from 'zod';
 
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {parseZodResult} from '@shared/lib/parser.shared';
+import {
+  parseFirestoreTimestamp,
+  parseZodResult,
+  toFirestoreTimestamp,
+} from '@shared/lib/parser.shared';
+import {omitUndefined} from '@shared/lib/utils.shared';
 
 import {parseUserId} from '@shared/parsers/user.parser';
 import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions.parser';
@@ -10,6 +15,7 @@ import type {
   FeedItem,
   FeedItemAppSource,
   FeedItemExtensionSource,
+  FeedItemFromSchema,
   FeedItemId,
   FeedItemRSSSource,
   FeedItemSource,
@@ -25,7 +31,6 @@ import {
 } from '@shared/types/feedItems.types';
 import type {Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import type {Timestamp} from '@shared/types/utils.types';
 
 /**
  * Parses a {@link FeedItemId} from a plain string. Returns an `ErrorResult` if the string is not
@@ -120,22 +125,43 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
   const parsedSourceResult = parseFeedItemSource(parsedFeedItemResult.value.source);
   if (!parsedSourceResult.success) return parsedSourceResult;
 
-  const {url, triageStatus, lastImportedTime, createdTime, lastUpdatedTime} =
-    parsedFeedItemResult.value;
+  return makeSuccessResult(
+    omitUndefined({
+      type: parsedFeedItemResult.value.type,
+      userId: parsedUserIdResult.value,
+      source: parsedSourceResult.value,
+      feedItemId: parsedIdResult.value,
+      url: parsedFeedItemResult.value.url,
+      title: parsedFeedItemResult.value.title,
+      description: parsedFeedItemResult.value.description,
+      outgoingLinks: parsedFeedItemResult.value.outgoingLinks,
+      triageStatus: parsedFeedItemResult.value.triageStatus,
+      tagIds: parsedFeedItemResult.value.tagIds,
+      lastImportedTime: parsedFeedItemResult.value.lastImportedTime
+        ? parseFirestoreTimestamp(parsedFeedItemResult.value.lastImportedTime)
+        : undefined,
+      createdTime: parseFirestoreTimestamp(parsedFeedItemResult.value.createdTime),
+      lastUpdatedTime: parseFirestoreTimestamp(parsedFeedItemResult.value.lastUpdatedTime),
+    })
+  );
+}
 
-  return makeSuccessResult({
-    type: parsedFeedItemResult.value.type,
-    userId: parsedUserIdResult.value,
-    source: parsedSourceResult.value,
-    feedItemId: parsedIdResult.value,
-    url,
-    title: 'Test title',
-    description: 'Test description',
-    outgoingLinks: [],
-    triageStatus,
-    tagIds: {},
-    lastImportedTime: new Date(lastImportedTime) as unknown as Timestamp,
-    createdTime: new Date(createdTime) as unknown as Timestamp,
-    lastUpdatedTime: new Date(lastUpdatedTime) as unknown as Timestamp,
+export function toFirestoreFeedItem(feedItem: FeedItem): FeedItemFromSchema {
+  return omitUndefined({
+    feedItemId: feedItem.feedItemId,
+    userId: feedItem.userId,
+    type: feedItem.type,
+    source: feedItem.source,
+    url: feedItem.url,
+    title: feedItem.title,
+    description: feedItem.description,
+    outgoingLinks: feedItem.outgoingLinks,
+    triageStatus: feedItem.triageStatus,
+    tagIds: feedItem.tagIds,
+    lastImportedTime: feedItem.lastImportedTime
+      ? toFirestoreTimestamp(feedItem.lastImportedTime)
+      : undefined,
+    createdTime: toFirestoreTimestamp(feedItem.createdTime),
+    lastUpdatedTime: toFirestoreTimestamp(feedItem.lastUpdatedTime),
   });
 }

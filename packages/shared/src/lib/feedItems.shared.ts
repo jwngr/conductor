@@ -39,7 +39,7 @@ export class SharedFeedItemHelpers {
   }
 
   public static makeFeedItem(
-    args: Pick<FeedItem, 'type' | 'userId' | 'url' | 'source' | 'createdTime' | 'lastUpdatedTime'>
+    args: Pick<FeedItem, 'type' | 'userId' | 'url' | 'source'>
   ): Result<FeedItem> {
     return makeSuccessResult({
       feedItemId: makeFeedItemId(),
@@ -47,16 +47,18 @@ export class SharedFeedItemHelpers {
       url: args.url,
       type: args.type,
       source: args.source,
-      title: '',
-      description: '',
+      // TODO: Update these and figure out a better solution. Maybe a better discriminated union.
+      title: 'Test title from makeFeedItem',
+      description: 'Test description from makeFeedItem',
       outgoingLinks: [],
       triageStatus: TriageStatus.Untriaged,
       tagIds: {
         [SystemTagId.Unread]: true,
         [SystemTagId.Importing]: true,
       },
-      createdTime: args.createdTime,
-      lastUpdatedTime: args.lastUpdatedTime,
+      // TODO: Should use server timestamps instead.
+      createdTime: new Date(),
+      lastUpdatedTime: new Date(),
     });
   }
 

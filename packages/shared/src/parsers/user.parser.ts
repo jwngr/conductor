@@ -5,7 +5,7 @@ import {parseZodResult} from '@shared/lib/parser.shared';
 
 import type {Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import type {EmailAddress, User, UserId} from '@shared/types/user.types';
+import type {EmailAddress, User, UserFromSchema, UserId} from '@shared/types/user.types';
 import {EmailAddressSchema, UserIdSchema, UserSchema} from '@shared/types/user.types';
 
 /**
@@ -71,6 +71,14 @@ export function parseFirebaseUser(firebaseLoggedInUser: FirebaseUser): Result<Us
   return makeSuccessResult({
     userId: userIdResult.value,
     email: emailResult.value,
-    displayName: firebaseLoggedInUser.displayName,
+    displayName: firebaseLoggedInUser.displayName ?? undefined,
   });
+}
+
+export function toFirestoreUser(user: User): UserFromSchema {
+  return {
+    userId: user.userId,
+    email: user.email,
+    displayName: user.displayName,
+  };
 }

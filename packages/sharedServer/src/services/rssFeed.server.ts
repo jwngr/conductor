@@ -34,7 +34,7 @@ export class ServerRssFeedService {
     // deduped based on exact URL match, although we could probably be smarter in the future.
     const fetchFeedSourceResult = await this.feedSourcesService.fetchByUrlOrCreate(url, {
       // TODO: Enrich the feed sourcewith a title and image.
-      title: '',
+      title: 'Test title from subscribeUserToUrl',
     });
     if (!fetchFeedSourceResult.success) {
       return prefixErrorResult(fetchFeedSourceResult, 'Error fetching existing feed source by URL');

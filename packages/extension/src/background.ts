@@ -1,4 +1,3 @@
-import {collection} from 'firebase/firestore';
 import {ref as storageRef} from 'firebase/storage';
 
 import {logger} from '@shared/services/logger.shared';
@@ -10,19 +9,29 @@ import {
 } from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 
-import {parseFeedItem, parseFeedItemId} from '@shared/parsers/feedItems.parser';
-import {parseImportQueueItem, parseImportQueueItemId} from '@shared/parsers/importQueue.parser';
+import {
+  parseFeedItem,
+  parseFeedItemId,
+  toFirestoreFeedItem,
+} from '@shared/parsers/feedItems.parser';
+import {
+  parseImportQueueItem,
+  parseImportQueueItemId,
+  toFirestoreImportQueueItem,
+} from '@shared/parsers/importQueue.parser';
 import {parseUserId} from '@shared/parsers/user.parser';
 
 import {FEED_ITEM_EXTENSION_SOURCE} from '@shared/types/feedItems.types';
 
 import {ClientFeedItemsService} from '@sharedClient/services/feedItems.client';
 import {firebaseService} from '@sharedClient/services/firebase.client';
-import {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+import {
+  ClientFirestoreCollectionService,
+  makeFirestoreDataConverter,
+} from '@sharedClient/services/firestore.client';
 import {ClientImportQueueService} from '@sharedClient/services/importQueue.client';
 
-const feedItemsDbRef = collection(firebaseService.firestore, FEED_ITEMS_DB_COLLECTION);
-const importQueueDbRef = collection(firebaseService.firestore, IMPORT_QUEUE_DB_COLLECTION);
+// TODO: Refactor into a `FirebaseStorageCollectionService`.
 const feedItemsStorageRef = storageRef(firebaseService.storage, FEED_ITEMS_STORAGE_COLLECTION);
 
 chrome.action.onClicked.addListener(async (tab) => {
@@ -40,16 +49,23 @@ chrome.action.onClicked.addListener(async (tab) => {
     return;
   }
 
+  const feedItemFirestoreConverter = makeFirestoreDataConverter(toFirestoreFeedItem, parseFeedItem);
+
   const feedItemsCollectionService = new ClientFirestoreCollectionService({
-    collectionRef: feedItemsDbRef,
-    parseData: parseFeedItem,
+    collectionPath: FEED_ITEMS_DB_COLLECTION,
+    converter: feedItemFirestoreConverter,
     parseId: parseFeedItemId,
   });
 
+  const importQueueItemFirestoreConverter = makeFirestoreDataConverter(
+    toFirestoreImportQueueItem,
+    parseImportQueueItem
+  );
+
   const importQueueService = new ClientImportQueueService({
     importQueueCollectionService: new ClientFirestoreCollectionService({
-      collectionRef: importQueueDbRef,
-      parseData: parseImportQueueItem,
+      collectionPath: IMPORT_QUEUE_DB_COLLECTION,
+      converter: importQueueItemFirestoreConverter,
       parseId: parseImportQueueItemId,
     }),
   });

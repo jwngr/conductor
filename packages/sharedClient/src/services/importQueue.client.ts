@@ -1,19 +1,24 @@
-import {collection, serverTimestamp} from 'firebase/firestore';
-
 import {IMPORT_QUEUE_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 
-import {parseImportQueueItem, parseImportQueueItemId} from '@shared/parsers/importQueue.parser';
+import {
+  parseImportQueueItem,
+  parseImportQueueItemId,
+  toFirestoreImportQueueItem,
+} from '@shared/parsers/importQueue.parser';
 
 import {
   makeImportQueueItem,
   type ImportQueueItem,
   type ImportQueueItemId,
 } from '@shared/types/importQueue.types';
-import {makeSuccessResult, type AsyncResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/result.types';
+import {makeSuccessResult} from '@shared/types/result.types';
 
-import {firebaseService} from '@sharedClient/services/firebase.client';
-import {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+import {
+  ClientFirestoreCollectionService,
+  makeFirestoreDataConverter,
+} from '@sharedClient/services/firestore.client';
 
 type ImportQueueCollectionService = ClientFirestoreCollectionService<
   ImportQueueItemId,
@@ -41,8 +46,6 @@ export class ClientImportQueueService {
       feedItemId: importQueueItemDetails.feedItemId,
       userId: importQueueItemDetails.userId,
       url: importQueueItemDetails.url,
-      createdTime: serverTimestamp(),
-      lastUpdatedTime: serverTimestamp(),
     });
     if (!makeImportQueueItemResult.success) return makeImportQueueItemResult;
     const newImportQueueItem = makeImportQueueItemResult.value;
@@ -68,12 +71,17 @@ export class ClientImportQueueService {
   }
 }
 
-const importQueueDbRef = collection(firebaseService.firestore, IMPORT_QUEUE_DB_COLLECTION);
+// Initialize a singleton instance of the import queue service.
+
+const importQueueItemFirestoreConverter = makeFirestoreDataConverter(
+  toFirestoreImportQueueItem,
+  parseImportQueueItem
+);
 
 const importQueueCollectionService = new ClientFirestoreCollectionService({
-  collectionRef: importQueueDbRef,
+  collectionPath: IMPORT_QUEUE_DB_COLLECTION,
+  converter: importQueueItemFirestoreConverter,
   parseId: parseImportQueueItemId,
-  parseData: parseImportQueueItem,
 });
 
 export const importQueueService = new ClientImportQueueService({

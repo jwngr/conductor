@@ -7,11 +7,12 @@ import {
   type FeedSource,
   type FeedSourceId,
 } from '@shared/types/feedSources.types';
+import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
 import type {UserId} from '@shared/types/user.types';
 import {UserIdSchema} from '@shared/types/user.types';
-import type {BaseStoreItem, Timestamp} from '@shared/types/utils.types';
+import type {BaseStoreItem} from '@shared/types/utils.types';
 
 /**
  * Strongly-typed type for a {@link UserFeedSubscription}'s unique identifier. Prefer this over
@@ -47,7 +48,7 @@ export interface UserFeedSubscription extends BaseStoreItem {
   readonly url: string;
   readonly title: string;
   readonly isActive: boolean;
-  readonly unsubscribedTime?: Timestamp | undefined;
+  readonly unsubscribedTime?: Date | undefined;
 }
 
 /**
@@ -60,10 +61,12 @@ export const UserFeedSubscriptionSchema = z.object({
   url: z.string().url(),
   title: z.string().min(1),
   isActive: z.boolean(),
-  unsubscribedTime: z.date().nullable(),
-  createdTime: z.date(),
-  lastUpdatedTime: z.date(),
+  unsubscribedTime: FirestoreTimestampSchema.optional(),
+  createdTime: FirestoreTimestampSchema,
+  lastUpdatedTime: FirestoreTimestampSchema,
 });
+
+export type UserFeedSubscriptionFromSchema = z.infer<typeof UserFeedSubscriptionSchema>;
 
 /**
  * Creates a new {@link UserFeedSubscription} object.
@@ -71,10 +74,8 @@ export const UserFeedSubscriptionSchema = z.object({
 export function makeUserFeedSubscription(args: {
   readonly feedSource: FeedSource;
   readonly userId: UserId;
-  readonly createdTime: Timestamp;
-  readonly lastUpdatedTime: Timestamp;
 }): Result<UserFeedSubscription> {
-  const {feedSource, userId, createdTime, lastUpdatedTime} = args;
+  const {feedSource, userId} = args;
 
   const userFeedSubscription: UserFeedSubscription = {
     userFeedSubscriptionId: makeUserFeedSubscriptionId(),
@@ -83,8 +84,9 @@ export function makeUserFeedSubscription(args: {
     url: feedSource.url,
     title: feedSource.title,
     isActive: true,
-    createdTime,
-    lastUpdatedTime,
+    // TODO: Should use server timestamps instead.
+    createdTime: new Date(),
+    lastUpdatedTime: new Date(),
   };
 
   return makeSuccessResult(userFeedSubscription);

@@ -28,7 +28,7 @@ export const EmailAddressSchema = z.string().email();
 export interface User {
   readonly userId: UserId;
   readonly email: EmailAddress;
-  readonly displayName: string | null;
+  readonly displayName?: string;
   // TODO: Add photo URL.
   // readonly photoUrl: string;
 }
@@ -39,8 +39,10 @@ export interface User {
 export const UserSchema = z.object({
   userId: UserIdSchema,
   email: EmailAddressSchema,
-  displayName: z.string().nullable(),
+  displayName: z.string().optional(),
 });
+
+export type UserFromSchema = z.infer<typeof UserSchema>;
 
 export type AuthStateChangedCallback = Consumer<User | null>;
 

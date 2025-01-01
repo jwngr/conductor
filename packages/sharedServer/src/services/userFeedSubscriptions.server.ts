@@ -1,12 +1,14 @@
 import {FieldValue} from 'firebase-admin/firestore';
+import type {WithFieldValue} from 'firebase-admin/firestore';
 
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
 import type {FeedSource} from '@shared/types/feedSources.types';
-import type {AsyncResult} from '@shared/types/result.types';
+import {makeSuccessResult, type AsyncResult} from '@shared/types/result.types';
 import type {UserId} from '@shared/types/user.types';
 import type {
   UserFeedSubscription,
+  UserFeedSubscriptionFromSchema,
   UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
 import {makeUserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
@@ -15,7 +17,8 @@ import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore
 
 type UserFeedSubscriptionsCollectionService = ServerFirestoreCollectionService<
   UserFeedSubscriptionId,
-  UserFeedSubscription
+  UserFeedSubscription,
+  UserFeedSubscriptionFromSchema
 >;
 
 export class ServerUserFeedSubscriptionsService {
@@ -48,12 +51,7 @@ export class ServerUserFeedSubscriptionsService {
     const {feedSource, userId} = args;
 
     // Make a new user feed subscription object locally.
-    const userFeedSubscriptionResult = makeUserFeedSubscription({
-      feedSource,
-      userId,
-      createdTime: FieldValue.serverTimestamp(),
-      lastUpdatedTime: FieldValue.serverTimestamp(),
-    });
+    const userFeedSubscriptionResult = makeUserFeedSubscription({feedSource, userId});
     if (!userFeedSubscriptionResult.success) return userFeedSubscriptionResult;
     const newUserFeedSubscription = userFeedSubscriptionResult.value;
 
@@ -63,7 +61,10 @@ export class ServerUserFeedSubscriptionsService {
       userFeedSubscriptionId,
       newUserFeedSubscription
     );
-    return prefixResultIfError(createResult, 'Error creating user feed subscription in Firestore');
+    if (!createResult.success) {
+      return prefixErrorResult(createResult, 'Error creating user feed subscription in Firestore');
+    }
+    return makeSuccessResult(newUserFeedSubscription);
   }
 
   /**
@@ -83,7 +84,7 @@ export class ServerUserFeedSubscriptionsService {
    */
   public async update(
     userFeedSubscriptionId: UserFeedSubscriptionId,
-    update: Partial<Pick<UserFeedSubscription, 'isActive' | 'unsubscribedTime'>>
+    update: Partial<WithFieldValue<Pick<UserFeedSubscription, 'isActive' | 'unsubscribedTime'>>>
   ): AsyncResult<void> {
     const updateResult = await this.userFeedSubscriptionsCollectionService.updateDoc(
       userFeedSubscriptionId,

@@ -1,14 +1,21 @@
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {parseZodResult} from '@shared/lib/parser.shared';
+import {
+  parseFirestoreTimestamp,
+  parseZodResult,
+  toFirestoreTimestamp,
+} from '@shared/lib/parser.shared';
 
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
 import {parseUserId} from '@shared/parsers/user.parser';
 
-import type {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue.types';
+import type {
+  ImportQueueItem,
+  ImportQueueItemFromSchema,
+  ImportQueueItemId,
+} from '@shared/types/importQueue.types';
 import {ImportQueueItemIdSchema, ImportQueueItemSchema} from '@shared/types/importQueue.types';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
-import type {Timestamp} from '@shared/types/utils.types';
 
 /**
  * Parses a {@link ImportQueueItemId} from a plain string. Returns an `ErrorResult` if the string is
@@ -43,14 +50,27 @@ export function parseImportQueueItem(maybeImportQueueItem: unknown): Result<Impo
   const parsedFeedItemIdResult = parseFeedItemId(parsedImportQueueItemResult.value.feedItemId);
   if (!parsedFeedItemIdResult.success) return parsedFeedItemIdResult;
 
-  const {url, createdTime, lastUpdatedTime} = parsedImportQueueItemResult.value;
   return makeSuccessResult({
     importQueueItemId: parsedImportQueueItemIdResult.value,
     userId: parsedUserIdResult.value,
     feedItemId: parsedFeedItemIdResult.value,
-    url,
+    url: parsedImportQueueItemResult.value.url,
     status: parsedImportQueueItemResult.value.status,
-    createdTime: new Date(createdTime) as unknown as Timestamp,
-    lastUpdatedTime: new Date(lastUpdatedTime) as unknown as Timestamp,
+    createdTime: parseFirestoreTimestamp(parsedImportQueueItemResult.value.createdTime),
+    lastUpdatedTime: parseFirestoreTimestamp(parsedImportQueueItemResult.value.lastUpdatedTime),
   });
+}
+
+export function toFirestoreImportQueueItem(
+  importQueueItem: ImportQueueItem
+): ImportQueueItemFromSchema {
+  return {
+    importQueueItemId: importQueueItem.importQueueItemId,
+    userId: importQueueItem.userId,
+    feedItemId: importQueueItem.feedItemId,
+    url: importQueueItem.url,
+    status: importQueueItem.status,
+    createdTime: toFirestoreTimestamp(importQueueItem.createdTime),
+    lastUpdatedTime: toFirestoreTimestamp(importQueueItem.lastUpdatedTime),
+  };
 }

@@ -3,13 +3,13 @@ import {FieldValue} from 'firebase-admin/firestore';
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
 import {FeedItemType} from '@shared/types/feedItems.types';
-import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
+import type {FeedItem, FeedItemFromSchema, FeedItemId} from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeErrorResult} from '@shared/types/result.types';
 import {SystemTagId} from '@shared/types/tags.types';
 import type {UserId} from '@shared/types/user.types';
 
-import {firebaseService} from '@sharedServer/services/firebase.server';
+import {storage} from '@sharedServer/services/firebase.server';
 import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
 interface UpdateImportedFeedItemInFirestoreArgs {
@@ -18,7 +18,11 @@ interface UpdateImportedFeedItemInFirestoreArgs {
   readonly description: string | null;
 }
 
-type FeedItemCollectionService = ServerFirestoreCollectionService<FeedItemId, FeedItem>;
+type FeedItemCollectionService = ServerFirestoreCollectionService<
+  FeedItemId,
+  FeedItem,
+  FeedItemFromSchema
+>;
 
 export class ServerFeedItemsService {
   private readonly storageCollectionPath: string;
@@ -43,17 +47,12 @@ export class ServerFeedItemsService {
     feedItemId: FeedItemId,
     {links, title, description}: UpdateImportedFeedItemInFirestoreArgs
   ): AsyncResult<void> {
-    const update: Omit<
-      FeedItem,
-      | 'feedItemId'
-      | 'userId'
-      | 'source'
-      | 'url'
-      | 'tagIds'
-      | 'triageStatus'
-      | 'createdTime'
-      | 'lastUpdatedTime'
-    > = {
+    // TODO: Consider switching to array unions so I can use FieldValue.arrayRemove.
+    const untypedUpdates = {
+      [`tagIds.${SystemTagId.Importing}`]: FieldValue.delete(),
+    };
+
+    const updateResult = await this.feedItemsCollectionService.updateDoc(feedItemId, {
       // TODO: Determine the type based on the URL or fetched content.
       type: FeedItemType.Website,
       // TODO: Reconsider how to handle empty titles, descriptions, and links.
@@ -61,18 +60,8 @@ export class ServerFeedItemsService {
       description: description ?? '',
       outgoingLinks: links ?? [],
       lastImportedTime: FieldValue.serverTimestamp(),
-    };
-
-    // The types are not quite right here since we are updating a deeply nested object.
-    // TODO: Consider using a Firestore converter to handle this. Ideally this would be part of
-    // the object above.
-    // See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
-    const actualUpdates = {
-      ...update,
-      [`tagIds.${SystemTagId.Importing}`]: FieldValue.delete(),
-    } as Partial<FeedItem>;
-
-    const updateResult = await this.feedItemsCollectionService.updateDoc(feedItemId, actualUpdates);
+      ...untypedUpdates,
+    });
     return prefixResultIfError(updateResult, 'Error updating imported feed item in Firestore');
   }
 
@@ -86,7 +75,7 @@ export class ServerFeedItemsService {
   }): AsyncResult<void> {
     const {feedItemId, rawHtml, userId} = args;
     return await asyncTry(async () => {
-      const rawHtmlFile = firebaseService.storage
+      const rawHtmlFile = storage
         .bucket()
         .file(this.getStoragePathForFeedItem(feedItemId, userId) + 'raw.html');
       await rawHtmlFile.save(rawHtml, {contentType: 'text/html'});
@@ -107,7 +96,7 @@ export class ServerFeedItemsService {
     }
 
     return await asyncTry(async () => {
-      const llmContextFile = firebaseService.storage
+      const llmContextFile = storage
         .bucket()
         .file(this.getStoragePathForFeedItem(feedItemId, userId) + 'llmContext.md');
       await llmContextFile.save(markdown, {contentType: 'text/markdown'});
@@ -135,7 +124,7 @@ export class ServerFeedItemsService {
    */
   public async deleteStorageFilesForUser(userId: UserId): AsyncResult<void> {
     return await asyncTry(async () =>
-      firebaseService.storage.bucket().deleteFiles({
+      storage.bucket().deleteFiles({
         prefix: this.getStoragePathForUser(userId),
       })
     );

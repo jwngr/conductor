@@ -4,6 +4,7 @@ import {makeUuid} from '@shared/lib/utils.shared';
 
 import {FeedItemIdSchema} from '@shared/types/feedItems.types';
 import type {FeedItemId} from '@shared/types/feedItems.types';
+import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
 import {UserIdSchema} from '@shared/types/user.types';
@@ -67,17 +68,19 @@ export const ImportQueueItemSchema = z.object({
   feedItemId: FeedItemIdSchema,
   url: z.string().url(),
   status: z.nativeEnum(ImportQueueItemStatus),
-  createdTime: z.date(),
-  lastUpdatedTime: z.date(),
+  createdTime: FirestoreTimestampSchema,
+  lastUpdatedTime: FirestoreTimestampSchema,
 });
+
+export type ImportQueueItemFromSchema = z.infer<typeof ImportQueueItemSchema>;
 
 /**
  * Creates a new {@link ImportQueueItem}.
  */
 export function makeImportQueueItem(
-  args: Omit<ImportQueueItem, 'importQueueItemId' | 'status'>
+  args: Omit<ImportQueueItem, 'importQueueItemId' | 'status' | 'createdTime' | 'lastUpdatedTime'>
 ): Result<ImportQueueItem> {
-  const {feedItemId, userId, url, createdTime, lastUpdatedTime} = args;
+  const {feedItemId, userId, url} = args;
 
   return makeSuccessResult({
     importQueueItemId: makeImportQueueItemId(),
@@ -85,7 +88,8 @@ export function makeImportQueueItem(
     userId,
     url,
     status: ImportQueueItemStatus.New,
-    createdTime,
-    lastUpdatedTime,
+    // TODO: Should use server timestamps instead.
+    createdTime: new Date(),
+    lastUpdatedTime: new Date(),
   });
 }

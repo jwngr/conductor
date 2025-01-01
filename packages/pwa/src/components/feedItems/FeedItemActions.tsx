@@ -1,4 +1,4 @@
-import {deleteField, serverTimestamp} from 'firebase/firestore';
+import {deleteField} from 'firebase/firestore';
 import React from 'react';
 
 import {logger} from '@shared/services/logger.shared';
@@ -55,12 +55,7 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
 
     if (result.success) {
       showToast({message: toastText});
-      void eventLogService.logFeedItemActionEvent({
-        feedItemId,
-        feedItemActionType,
-        createdTime: serverTimestamp(),
-        lastUpdatedTime: serverTimestamp(),
-      });
+      void eventLogService.logFeedItemActionEvent({feedItemId, feedItemActionType});
       return;
     }
 

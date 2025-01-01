@@ -1,5 +1,5 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {parseZodResult} from '@shared/lib/parser.shared';
+import {parseFirestoreTimestamp, parseZodResult} from '@shared/lib/parser.shared';
 
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
@@ -11,7 +11,6 @@ import {
   UserTagIdSchema,
   UserTagSchema,
 } from '@shared/types/tags.types';
-import type {Timestamp} from '@shared/types/utils.types';
 
 /**
  * Parses a {@link UserTagId} from a plain string. Returns an `ErrorResult` if the string is not
@@ -42,8 +41,8 @@ export function parseUserTag(maybeUserTag: unknown): Result<UserTag> {
     tagId: parsedTagIdResult.value,
     type: TagType.User,
     name,
-    createdTime: new Date(createdTime) as unknown as Timestamp,
-    lastUpdatedTime: new Date(lastUpdatedTime) as unknown as Timestamp,
+    createdTime: parseFirestoreTimestamp(createdTime),
+    lastUpdatedTime: parseFirestoreTimestamp(lastUpdatedTime),
   });
 }
 
@@ -71,10 +70,28 @@ export function parseSystemTag(maybeSystemTag: unknown): Result<SystemTag> {
   const tagIdResult = parseSystemTagId(parsedTagResult.value.tagId);
   if (!tagIdResult.success) return tagIdResult;
 
-  const {name} = parsedTagResult.value;
   return makeSuccessResult({
     tagId: tagIdResult.value,
     type: TagType.System,
-    name,
+    name: parsedTagResult.value.name,
   });
 }
+
+// export const tagFirestoreConverter: FirestoreDataConverter<Tag> = {
+//   toFirestore(tag) {
+//     return {
+//       tagId: tag.tagId,
+//       type: tag.type,
+//       name: tag.name,
+//       createdTime: tag.createdTime,
+//       lastUpdatedTime: tag.lastUpdatedTime,
+//     };
+//   },
+//   fromFirestore(snapshot, options) {
+//     const data = snapshot.data(options);
+//     if (!data) throw new Error('Tag document data is null');
+//     const parseResult = parseTag(data);
+//     if (!parseResult.success) throw parseResult.error;
+//     return parseResult.value;
+//   },
+// };

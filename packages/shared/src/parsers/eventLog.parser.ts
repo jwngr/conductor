@@ -1,5 +1,9 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {parseZodResult} from '@shared/lib/parser.shared';
+import {
+  parseFirestoreTimestamp,
+  parseZodResult,
+  toFirestoreTimestamp,
+} from '@shared/lib/parser.shared';
 
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
 import {parseUserId} from '@shared/parsers/user.parser';
@@ -15,6 +19,7 @@ import {
 import type {
   EventId,
   EventLogItem,
+  EventLogItemFromSchema,
   FeedItemActionEventLogItem,
   FeedItemActionEventLogItemData,
   UserFeedSubscriptionEventLogItem,
@@ -22,7 +27,6 @@ import type {
 } from '@shared/types/eventLog.types';
 import type {Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import type {Timestamp} from '@shared/types/utils.types';
 
 /**
  * Parses a {@link EventId} from a plain string. Returns an `ErrorResult` if the string is not
@@ -85,8 +89,8 @@ function parseUserFeedSubscriptionEventLogItem(
     userId: parsedUserIdResult.value,
     eventType: EventType.UserFeedSubscription,
     data: parsedDataResult.value,
-    createdTime: new Date(createdTime) as unknown as Timestamp,
-    lastUpdatedTime: new Date(lastUpdatedTime) as unknown as Timestamp,
+    createdTime: parseFirestoreTimestamp(createdTime),
+    lastUpdatedTime: parseFirestoreTimestamp(lastUpdatedTime),
   });
 }
 
@@ -117,8 +121,8 @@ function parseFeedItemActionEventLogItem(
     userId: parsedUserIdResult.value,
     eventType: EventType.FeedItemAction,
     data: parsedDataResult.value,
-    createdTime: new Date(createdTime) as unknown as Timestamp,
-    lastUpdatedTime: new Date(lastUpdatedTime) as unknown as Timestamp,
+    createdTime: parseFirestoreTimestamp(createdTime),
+    lastUpdatedTime: parseFirestoreTimestamp(lastUpdatedTime),
   });
 }
 
@@ -162,4 +166,15 @@ function parseUserFeedSubscriptionEventLogItemData(
   return makeSuccessResult({
     userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
   });
+}
+
+export function toFirestoreEventLogItem(eventLogItem: EventLogItem): EventLogItemFromSchema {
+  return {
+    eventId: eventLogItem.eventId,
+    userId: eventLogItem.userId,
+    eventType: eventLogItem.eventType,
+    data: eventLogItem.data,
+    createdTime: toFirestoreTimestamp(eventLogItem.createdTime),
+    lastUpdatedTime: toFirestoreTimestamp(eventLogItem.lastUpdatedTime),
+  };
 }
