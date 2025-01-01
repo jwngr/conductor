@@ -70,11 +70,10 @@ export function parseSystemTag(maybeSystemTag: unknown): Result<SystemTag> {
   const tagIdResult = parseSystemTagId(parsedTagResult.value.tagId);
   if (!tagIdResult.success) return tagIdResult;
 
-  const {name} = parsedTagResult.value;
   return makeSuccessResult({
     tagId: tagIdResult.value,
     type: TagType.System,
-    name,
+    name: parsedTagResult.value.name,
   });
 }
 

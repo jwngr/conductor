@@ -58,18 +58,19 @@ export function parseUserFeedSubscription(
   );
   if (!parsedUserFeedSubscriptionIdResult.success) return parsedUserFeedSubscriptionIdResult;
 
-  const {url, title, isActive, unsubscribedTime, createdTime, lastUpdatedTime} = parsedResult.value;
   return makeSuccessResult(
     omitUndefined({
       userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
       feedSourceId: parsedFeedSourceIdResult.value,
       userId: parsedUserIdResult.value,
-      url,
-      title,
-      isActive,
-      unsubscribedTime: unsubscribedTime ? parseFirestoreTimestamp(unsubscribedTime) : undefined,
-      createdTime: parseFirestoreTimestamp(createdTime),
-      lastUpdatedTime: parseFirestoreTimestamp(lastUpdatedTime),
+      url: parsedResult.value.url,
+      title: parsedResult.value.title,
+      isActive: parsedResult.value.isActive,
+      unsubscribedTime: parsedResult.value.unsubscribedTime
+        ? parseFirestoreTimestamp(parsedResult.value.unsubscribedTime)
+        : undefined,
+      createdTime: parseFirestoreTimestamp(parsedResult.value.createdTime),
+      lastUpdatedTime: parseFirestoreTimestamp(parsedResult.value.lastUpdatedTime),
     })
   );
 }

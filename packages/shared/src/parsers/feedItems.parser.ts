@@ -27,6 +27,7 @@ import {
   FeedItemIdSchema,
   FeedItemSchema,
   FeedItemSourceType,
+  FeedItemType,
   RssFeedItemSourceSchema,
 } from '@shared/types/feedItems.types';
 import type {Result} from '@shared/types/result.types';
@@ -125,24 +126,23 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
   const parsedSourceResult = parseFeedItemSource(parsedFeedItemResult.value.source);
   if (!parsedSourceResult.success) return parsedSourceResult;
 
-  const {url, triageStatus, lastImportedTime, createdTime, lastUpdatedTime} =
-    parsedFeedItemResult.value;
-
   return makeSuccessResult(
     omitUndefined({
       type: parsedFeedItemResult.value.type,
       userId: parsedUserIdResult.value,
       source: parsedSourceResult.value,
       feedItemId: parsedIdResult.value,
-      url,
-      title: 'Test title from parseFeedItem',
-      description: 'Test description from parseFeedItem',
-      outgoingLinks: [],
-      triageStatus,
-      tagIds: {},
-      lastImportedTime: lastImportedTime ? parseFirestoreTimestamp(lastImportedTime) : undefined,
-      createdTime: parseFirestoreTimestamp(createdTime),
-      lastUpdatedTime: parseFirestoreTimestamp(lastUpdatedTime),
+      url: parsedFeedItemResult.value.url,
+      title: parsedFeedItemResult.value.title,
+      description: parsedFeedItemResult.value.description,
+      outgoingLinks: parsedFeedItemResult.value.outgoingLinks,
+      triageStatus: parsedFeedItemResult.value.triageStatus,
+      tagIds: parsedFeedItemResult.value.tagIds,
+      lastImportedTime: parsedFeedItemResult.value.lastImportedTime
+        ? parseFirestoreTimestamp(parsedFeedItemResult.value.lastImportedTime)
+        : undefined,
+      createdTime: parseFirestoreTimestamp(parsedFeedItemResult.value.createdTime),
+      lastUpdatedTime: parseFirestoreTimestamp(parsedFeedItemResult.value.lastUpdatedTime),
     })
   );
 }

@@ -50,15 +50,14 @@ export function parseImportQueueItem(maybeImportQueueItem: unknown): Result<Impo
   const parsedFeedItemIdResult = parseFeedItemId(parsedImportQueueItemResult.value.feedItemId);
   if (!parsedFeedItemIdResult.success) return parsedFeedItemIdResult;
 
-  const {url, createdTime, lastUpdatedTime} = parsedImportQueueItemResult.value;
   return makeSuccessResult({
     importQueueItemId: parsedImportQueueItemIdResult.value,
     userId: parsedUserIdResult.value,
     feedItemId: parsedFeedItemIdResult.value,
-    url,
+    url: parsedImportQueueItemResult.value.url,
     status: parsedImportQueueItemResult.value.status,
-    createdTime: parseFirestoreTimestamp(createdTime),
-    lastUpdatedTime: parseFirestoreTimestamp(lastUpdatedTime),
+    createdTime: parseFirestoreTimestamp(parsedImportQueueItemResult.value.createdTime),
+    lastUpdatedTime: parseFirestoreTimestamp(parsedImportQueueItemResult.value.lastUpdatedTime),
   });
 }
 

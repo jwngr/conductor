@@ -35,13 +35,12 @@ export function parseFeedSource(maybeFeedSource: unknown): Result<FeedSource> {
   const parsedIdResult = parseFeedSourceId(parsedFeedSourceResult.value.feedSourceId);
   if (!parsedIdResult.success) return parsedIdResult;
 
-  const {url, title, createdTime, lastUpdatedTime} = parsedFeedSourceResult.value;
   return makeSuccessResult({
     feedSourceId: parsedIdResult.value,
-    url,
-    title,
-    createdTime: parseFirestoreTimestamp(createdTime),
-    lastUpdatedTime: parseFirestoreTimestamp(lastUpdatedTime),
+    url: parsedFeedSourceResult.value.url,
+    title: parsedFeedSourceResult.value.title,
+    createdTime: parseFirestoreTimestamp(parsedFeedSourceResult.value.createdTime),
+    lastUpdatedTime: parseFirestoreTimestamp(parsedFeedSourceResult.value.lastUpdatedTime),
   });
 }
 
