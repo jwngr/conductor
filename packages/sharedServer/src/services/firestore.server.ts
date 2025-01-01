@@ -7,7 +7,8 @@ import type {
   QueryDocumentSnapshot,
   WithFieldValue,
 } from 'firebase-admin/firestore';
-import {FieldValue} from 'firebase-admin/firestore';
+import {FieldValue, Timestamp} from 'firebase-admin/firestore';
+import {z} from 'zod';
 
 import {
   asyncTry,
@@ -24,31 +25,33 @@ import {firestore} from '@sharedServer/services/firebase.server';
 
 const BATCH_DELETE_SIZE = 500;
 
-/**
- * Parses a Firestore document into a strongly-typed item.
- */
-function makeFromFirestoreItemFunc<Item, ItemFromSchema>(
-  parseItem: Func<ItemFromSchema, Result<Item>>
-) {
-  return (snapshot: QueryDocumentSnapshot): Item => {
-    const data = snapshot.data() as ItemFromSchema;
-    // TODO: Should I be throwing here?
-    if (!data) throw new Error('Firestore document data is unexpectedly null');
-    const parseResult = parseItem(data);
-    // TODO: Should I be throwing here?
-    if (!parseResult.success) throw parseResult.error;
-    return parseResult.value;
-  };
-}
+export const FirestoreTimestampSchema = z.custom<Timestamp>((value) => value instanceof Timestamp);
 
 /**
  * Creates a strongly-typed Firestore data converter.
  */
 export function makeFirestoreDataConverter<ItemData, FirestoreItemData extends DocumentData>(
   toFirestore: Func<ItemData, FirestoreItemData>,
-  parseData: Func<FirestoreItemData, Result<ItemData>>
+  fromFirestore: Func<FirestoreItemData, Result<ItemData>>
 ): FirestoreDataConverter<ItemData, FirestoreItemData> {
-  return {toFirestore, fromFirestore: makeFromFirestoreItemFunc(parseData)};
+  return {
+    toFirestore,
+    fromFirestore: (snapshot: QueryDocumentSnapshot): ItemData => {
+      const data = snapshot.data() as FirestoreItemData;
+
+      const parseResult = fromFirestore(data);
+      if (!parseResult.success) {
+        // The error thrown here is caught by the global error handler. Throwing here is safer than
+        // trying to gracefully handle invalid state.
+        throw prefixError(
+          parseResult.error,
+          `Error parsing Firestore document data with path ${snapshot.ref.path}`
+        );
+      }
+
+      return parseResult.value;
+    },
+  };
 }
 
 export class ServerFirestoreCollectionService<

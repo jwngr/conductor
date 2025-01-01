@@ -22,43 +22,46 @@ import {
   query,
   serverTimestamp,
   setDoc,
+  Timestamp,
   updateDoc,
 } from 'firebase/firestore';
+import {z} from 'zod';
 
-import {asyncTry, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {asyncTry, prefixError, prefixResultIfError, syncTry} from '@shared/lib/errorUtils.shared';
 
 import type {AsyncResult, Result} from '@shared/types/result.types';
 import type {Consumer, Func, Unsubscribe} from '@shared/types/utils.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';
 
-/**
- * Parses a Firestore document into a strongly-typed item.
- */
-function makeFromFirestoreItemFunc<Item, ItemFromSchema>(
-  parseItem: Func<ItemFromSchema, Result<Item>>
-) {
-  return (snapshot: QueryDocumentSnapshot, options: SnapshotOptions): Item => {
-    const data = snapshot.data(options) as ItemFromSchema;
-    // TODO: Should I be throwing here?
-    // eslint-disable-next-line no-restricted-syntax
-    if (!data) throw new Error('Firestore document data is unexpectedly null');
-    const parseResult = parseItem(data);
-    // TODO: Should I be throwing here?
-    // eslint-disable-next-line no-restricted-syntax
-    if (!parseResult.success) throw parseResult.error;
-    return parseResult.value;
-  };
-}
+export const FirestoreTimestampSchema = z.custom<Timestamp>((value) => value instanceof Timestamp);
 
 /**
- * Creates a strongly-typed Firestore data converter.
+ * Creates a strongly-typed converter between a Firestore data type and a client data type.
  */
 export function makeFirestoreDataConverter<ItemData, FirestoreItemData extends DocumentData>(
   toFirestore: Func<ItemData, FirestoreItemData>,
-  parseData: Func<FirestoreItemData, Result<ItemData>>
+  fromFirestore: Func<FirestoreItemData, Result<ItemData>>
 ): FirestoreDataConverter<ItemData, FirestoreItemData> {
-  return {toFirestore, fromFirestore: makeFromFirestoreItemFunc(parseData)};
+  return {
+    toFirestore,
+    fromFirestore: (snapshot: QueryDocumentSnapshot, options: SnapshotOptions): ItemData => {
+      const data = snapshot.data(options) as FirestoreItemData;
+
+      const parseResult = fromFirestore(data);
+      if (!parseResult.success) {
+        // The error thrown here is caught by the global error handler. Throwing here is safer than
+        // trying to gracefully handle invalid state.
+        // eslint-disable-next-line no-restricted-syntax
+        throw prefixError(
+          parseResult.error,
+          `Error parsing Firestore document data with path ${snapshot.ref.path}`
+        );
+      }
+
+      return parseResult.value;
+    },
+  };
 }
 
 export class ClientFirestoreCollectionService<
@@ -167,8 +170,12 @@ export class ClientFirestoreCollectionService<
     onError: Consumer<Error>
   ): Unsubscribe {
     const handleSnapshot: Consumer<DocumentSnapshot<ItemData>> = (docSnap) => {
-      const data = docSnap.data();
-      onData(data ?? null);
+      const parsedDataResult = syncTry(() => docSnap.data());
+      if (parsedDataResult.success) {
+        onData(parsedDataResult.value ?? null);
+      } else {
+        onError(parsedDataResult.error);
+      }
     };
 
     const handleError: Consumer<Error> = (error) => {
@@ -187,8 +194,12 @@ export class ClientFirestoreCollectionService<
     onError: Consumer<Error>
   ): Unsubscribe {
     const handleSnapshot: Consumer<QuerySnapshot<ItemData>> = (querySnap) => {
-      const docsData = querySnap.docs.map((doc) => doc.data());
-      onData(docsData);
+      const parsedDataResult = syncTry(() => querySnap.docs.map((doc) => doc.data()));
+      if (parsedDataResult.success) {
+        onData(parsedDataResult.value);
+      } else {
+        onError(parsedDataResult.error);
+      }
     };
 
     const handleError: Consumer<Error> = (error) => {

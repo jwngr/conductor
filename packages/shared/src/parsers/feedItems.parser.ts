@@ -27,7 +27,6 @@ import {
   FeedItemIdSchema,
   FeedItemSchema,
   FeedItemSourceType,
-  FeedItemType,
   RssFeedItemSourceSchema,
 } from '@shared/types/feedItems.types';
 import type {Result} from '@shared/types/result.types';
