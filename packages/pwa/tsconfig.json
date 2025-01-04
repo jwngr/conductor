@@ -1,6 +1,6 @@
 {
   "include": ["src"],
-  "extends": "../../tsconfig.json",
+  "extends": "../../tsconfig.base.json",
 
   // This package consumes some shared packages.
   "references": [{"path": "../shared"}, {"path": "../sharedClient"}],
