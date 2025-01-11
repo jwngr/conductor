@@ -1,12 +1,12 @@
-import {prefixError} from '@shared/lib/errorUtils.shared';
+import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
-import {AsyncResult, makeErrorResult} from '@shared/types/result.types';
-import {UserId} from '@shared/types/user.types';
+import {AccountId} from '@shared/types/accounts.types';
+import {AsyncResult} from '@shared/types/result.types';
 import {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
-import {ServerFeedSourcesService} from './feedSources.server';
-import {SuperfeedrService} from './superfeedr.server';
-import {ServerUserFeedSubscriptionsService} from './userFeedSubscriptions.server';
+import {ServerFeedSourcesService} from '@sharedServer/services/feedSources.server';
+import {SuperfeedrService} from '@sharedServer/services/superfeedr.server';
+import {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
 
 export class ServerRssFeedService {
   private readonly superfeedrService: SuperfeedrService;
@@ -23,23 +23,21 @@ export class ServerRssFeedService {
     this.userFeedSubscriptionsService = args.userFeedSubscriptionsService;
   }
 
-  async subscribeUserToUrl(args: {
+  async subscribeAccountToUrl(args: {
     readonly url: string;
-    readonly userId: UserId;
+    readonly accountId: AccountId;
   }): AsyncResult<UserFeedSubscription> {
-    const {url, userId} = args;
+    const {url, accountId} = args;
 
-    // Check if the feed source already exists. A single feed source can have multiple users
+    // Check if the feed source already exists. A single feed source can have multiple accounts
     // subscribed to it, but we only want to subscribe once to it in Superfeedr. Feed sources are
     // deduped based on exact URL match, although we could probably be smarter in the future.
     const fetchFeedSourceResult = await this.feedSourcesService.fetchByUrlOrCreate(url, {
       // TODO: Enrich the feed sourcewith a title and image.
-      title: '',
+      title: 'Test title from subscribeAccountToUrl',
     });
     if (!fetchFeedSourceResult.success) {
-      return makeErrorResult(
-        prefixError(fetchFeedSourceResult.error, 'Error fetching existing feed source by URL')
-      );
+      return prefixErrorResult(fetchFeedSourceResult, 'Error fetching existing feed source by URL');
     }
 
     const feedSource = fetchFeedSourceResult.value;
@@ -47,19 +45,11 @@ export class ServerRssFeedService {
     // Subscribe to the feed source in Superfeedr.
     const subscribeToSuperfeedrResult = await this.superfeedrService.subscribeToUrl(feedSource.url);
     if (!subscribeToSuperfeedrResult.success) {
-      return makeErrorResult(
-        prefixError(subscribeToSuperfeedrResult.error, 'Error subscribing to Superfeedr feed')
-      );
+      return prefixErrorResult(subscribeToSuperfeedrResult, 'Error subscribing to Superfeedr feed');
     }
 
     // Create a user feed subscription in the database.
-    const saveToDbResult = await this.userFeedSubscriptionsService.add({feedSource, userId});
-    if (!saveToDbResult.success) {
-      return makeErrorResult(
-        prefixError(saveToDbResult.error, 'Error creating user feed subscription')
-      );
-    }
-
-    return saveToDbResult;
+    const saveToDbResult = await this.userFeedSubscriptionsService.create({feedSource, accountId});
+    return prefixResultIfError(saveToDbResult, 'Error creating user feed subscription');
   }
 }

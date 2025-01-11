@@ -1,4 +1,8 @@
-import type {ActionCodeSettings, Auth as FirebaseAuth, UserCredential} from 'firebase/auth';
+import type {
+  ActionCodeSettings,
+  Auth as FirebaseAuth,
+  UserCredential as FirebaseUserCredential,
+} from 'firebase/auth';
 import {
   isSignInWithEmailLink as isSignInWithEmailLinkFirebase,
   onAuthStateChanged as onAuthStateChangedFirebase,
@@ -9,12 +13,14 @@ import {
 
 import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
 
+import type {AuthStateChangedCallback} from '@shared/types/accounts.types';
 import type {AsyncResult} from '@shared/types/result.types';
-import type {AuthStateChangedCallback, EmailAddress, LoggedInUser} from '@shared/types/user.types';
-import {makeLoggedInUserFromFirebaseUser} from '@shared/types/user.types';
-import type {Consumer} from '@shared/types/utils.types';
+import type {Consumer, EmailAddress} from '@shared/types/utils.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';
+
+import {parseLoggedInAccount} from '@sharedClient/types/accounts.client.types';
+import type {LoggedInAccount} from '@sharedClient/types/accounts.client.types';
 
 interface AuthServiceSubscriptionCallbacks {
   successCallback: AuthStateChangedCallback;
@@ -23,63 +29,63 @@ interface AuthServiceSubscriptionCallbacks {
 
 /**
  * Service for interacting with authentication state. It contains limited profile information about
- * the currently logged in user.
+ * the currently logged in account.
  */
 export class ClientAuthService {
-  private currentUser: LoggedInUser | null = null;
+  private currentAccount: LoggedInAccount | null = null;
   private subscribers = new Set<AuthServiceSubscriptionCallbacks>();
 
   constructor(private auth: FirebaseAuth) {
     onAuthStateChangedFirebase(
       this.auth,
       (firebaseUser) => {
-        // Fire subscriber's callbacks with null if the user is not logged in.
+        // Fire subscriber's callbacks with null if not logged in.
         if (firebaseUser === null) {
-          this.currentUser = null;
+          this.currentAccount = null;
           this.subscribers.forEach((cb) => cb.successCallback(null));
           return;
         }
 
-        // Validate a logged in user can be created from the Firebase user. Fire subscriber's
+        // Validate a logged in account can be created from the Firebase user. Fire subscriber's
         // callbacks with an error if we cannot.
-        const loggedInUserResult = makeLoggedInUserFromFirebaseUser(firebaseUser);
-        if (!loggedInUserResult.success) {
-          this.currentUser = null;
+        const loggedInAccountResult = parseLoggedInAccount(firebaseUser);
+        if (!loggedInAccountResult.success) {
+          this.currentAccount = null;
           const betterError = prefixError(
-            loggedInUserResult.error,
-            'Failed to create logged in user from Firebase user'
+            loggedInAccountResult.error,
+            'Failed to parse logged in account from Firebase user'
           );
           this.subscribers.forEach((cb) => cb.errorCallback(betterError));
           return;
         }
 
-        // Otherwise, fire subscriber's success callbacks with the logged in user.
-        this.currentUser = loggedInUserResult.value;
-        this.subscribers.forEach((cb) => cb.successCallback(loggedInUserResult.value));
+        // Otherwise, fire subscriber's success callbacks with the logged in account.
+        this.currentAccount = loggedInAccountResult.value;
+        this.subscribers.forEach((cb) => cb.successCallback(loggedInAccountResult.value));
       },
       (error) => {
         // Fire each subscriber's error callback when auth state errors occur in Firebase.
-        this.currentUser = null;
+        this.currentAccount = null;
         this.subscribers.forEach((cb) => cb.errorCallback(error));
       }
     );
   }
 
   /**
-   * Returns the logged in user. Returns null if the user is not logged in.
+   * Returns the currently logged-in account. Returns `null` if not logged in.
    */
-  public getLoggedInUser(): LoggedInUser | null {
-    return this.currentUser;
+  public getLoggedInAccount(): LoggedInAccount | null {
+    return this.currentAccount;
   }
 
   /**
    * Registers a callback to be notified of future auth state changes. Fires immediately with
-   * the currently logged in user. Fired with null if the user is not logged in.
+   * the currently logged in account. Fired with `null` if not logged in.
    */
   public onAuthStateChanged(callbacks: AuthServiceSubscriptionCallbacks): () => void {
-    // Immediately call with current user if available.
-    if (this.currentUser) {
-      callbacks.successCallback(this.currentUser);
+    // Immediately call with current account if available.
+    if (this.currentAccount) {
+      callbacks.successCallback(this.currentAccount);
     }
 
     // Register callback to be notified of future auth state changes.
@@ -96,25 +102,21 @@ export class ClientAuthService {
   public async signInWithEmailLink(
     email: EmailAddress,
     emailLink: string
-  ): AsyncResult<UserCredential> {
-    return await asyncTry<UserCredential>(async () => {
-      return await signInWithEmailLinkFirebase(this.auth, email, emailLink);
-    });
+  ): AsyncResult<FirebaseUserCredential> {
+    return await asyncTry(async () => signInWithEmailLinkFirebase(this.auth, email, emailLink));
   }
 
   public async sendSignInLinkToEmail(
     email: EmailAddress,
     actionCodeSettings: ActionCodeSettings
   ): AsyncResult<void> {
-    return await asyncTry<undefined>(async () => {
-      await sendSignInLinkToEmailFirebase(this.auth, email, actionCodeSettings);
-    });
+    return await asyncTry(async () =>
+      sendSignInLinkToEmailFirebase(this.auth, email, actionCodeSettings)
+    );
   }
 
   public async signOut(): AsyncResult<void> {
-    return await asyncTry<undefined>(async () => {
-      await signOutFirebase(this.auth);
-    });
+    return await asyncTry(async () => signOutFirebase(this.auth));
   }
 }
 

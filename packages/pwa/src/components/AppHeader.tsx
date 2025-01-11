@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 import {Urls} from '@shared/lib/urls.shared';
 
-import {useMaybeLoggedInUser} from '@sharedClient/hooks/auth.hooks';
+import {useMaybeLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
 import {FlexRow} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
@@ -17,13 +17,13 @@ const AppHeaderWrapper = styled(FlexRow)`
 `;
 
 export const AppHeader: React.FC = () => {
-  const {isLoading, loggedInUser} = useMaybeLoggedInUser();
+  const {isLoading, loggedInAccount} = useMaybeLoggedInAccount();
 
   let authContent: React.ReactNode = null;
-  if (!isLoading && loggedInUser) {
+  if (!isLoading && loggedInAccount) {
     authContent = (
       <>
-        <Text light>{loggedInUser.email}</Text>
+        <Text light>{loggedInAccount.email}</Text>
         <Spacer x={12} />
         <Link to={Urls.forSignOut()}>
           <Text underline="hover">Sign out</Text>

@@ -1,6 +1,6 @@
 {
   "include": ["src"],
-  "extends": "../../tsconfig.json",
+  "extends": "../../tsconfig.base.json",
 
   // This package consumes the `shared` package.
   "references": [{"path": "../shared"}],
@@ -10,6 +10,7 @@
     "composite": true,
 
     // Build output.
+    "moduleResolution": "bundler",
     "outDir": "./dist",
     "declaration": true,
     "declarationMap": true,

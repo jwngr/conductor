@@ -1,6 +1,6 @@
 import type FirecrawlApp from '@mendable/firecrawl-js';
 
-import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
+import {asyncTry, prefixErrorResult} from '@shared/lib/errorUtils.shared';
 
 import type {ParsedFirecrawlData, RawFirecrawlResponse} from '@shared/types/firecrawl.types';
 import type {AsyncResult} from '@shared/types/result.types';
@@ -15,7 +15,7 @@ export class ServerFirecrawlService {
    * 2. Outgoing links referenced by the content (stored in Firestore).
    */
   public async fetch(url: string): AsyncResult<ParsedFirecrawlData> {
-    const rawFirecrawlResult = await asyncTry<RawFirecrawlResponse>(async () => {
+    const rawFirecrawlResult = await asyncTry(async () => {
       const firecrawlScrapeUrlResult = await this.firecrawlApp.scrapeUrl(url, {
         formats: ['markdown', 'links'],
         waitFor: 1000,
@@ -27,9 +27,7 @@ export class ServerFirecrawlService {
     });
 
     if (!rawFirecrawlResult.success) {
-      return makeErrorResult(
-        prefixError(rawFirecrawlResult.error, 'Error fetching Firecrawl data')
-      );
+      return prefixErrorResult(rawFirecrawlResult, 'Error fetching Firecrawl data');
     }
 
     const rawFirecrawlData = rawFirecrawlResult.value;

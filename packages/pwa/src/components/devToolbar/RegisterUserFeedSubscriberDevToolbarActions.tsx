@@ -14,7 +14,7 @@ const StatusText = styled.div<{readonly $isError?: boolean}>`
   color: ${({theme, $isError}) => ($isError ? theme.colors.error : theme.colors.success)};
 `;
 
-const UserFeedSubscriber: React.FC = () => {
+const AccountFeedSubscriber: React.FC = () => {
   const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
 
   const [status, setStatus] = useState<string>('');
@@ -53,14 +53,14 @@ const UserFeedSubscriber: React.FC = () => {
   );
 };
 
-export const RegisterUserFeedSubscriberDevToolbarSection: React.FC = () => {
+export const RegisterAccountFeedSubscriberDevToolbarSection: React.FC = () => {
   const registerSection = useDevToolbarStore((state) => state.registerSection);
 
   useEffect(() => {
     return registerSection({
-      sectionType: DevToolbarSectionType.UserFeedSubscriber,
-      title: 'User feed sourcesubscriber',
-      renderSection: () => <UserFeedSubscriber />,
+      sectionType: DevToolbarSectionType.AccountFeedSubscriber,
+      title: 'Account feed subscriber',
+      renderSection: () => <AccountFeedSubscriber />,
     });
   }, [registerSection]);
 

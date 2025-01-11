@@ -1,16 +1,4 @@
-import {
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  onSnapshot,
-  query,
-  serverTimestamp,
-  setDoc,
-  updateDoc,
-  where,
-} from 'firebase/firestore';
-import type {CollectionReference} from 'firebase/firestore';
+import {where} from 'firebase/firestore';
 import type {StorageReference} from 'firebase/storage';
 import {getDownloadURL, ref as storageRef} from 'firebase/storage';
 import {useEffect, useMemo, useState} from 'react';
@@ -18,14 +6,21 @@ import {useEffect, useMemo, useState} from 'react';
 import {
   FEED_ITEMS_DB_COLLECTION,
   FEED_ITEMS_STORAGE_COLLECTION,
-  IMPORT_QUEUE_DB_COLLECTION,
 } from '@shared/lib/constants.shared';
-import {asyncTry, asyncTryAllPromises, prefixError} from '@shared/lib/errorUtils.shared';
+import {
+  asyncTry,
+  asyncTryAll,
+  prefixErrorResult,
+  prefixResultIfError,
+} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {requestGet} from '@shared/lib/requests.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
 import {Views} from '@shared/lib/views.shared';
 
+import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
+
+import type {AccountId, AuthStateChangedUnsubscribe} from '@shared/types/accounts.types';
 import {
   FeedItemType,
   type FeedItem,
@@ -36,28 +31,40 @@ import {makeImportQueueItem} from '@shared/types/importQueue.types';
 import {fromFilterOperator, type ViewType} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import type {AuthStateChangedUnsubscribe, UserId} from '@shared/types/user.types';
 import type {Consumer} from '@shared/types/utils.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';
+import {
+  ClientFirestoreCollectionService,
+  makeFirestoreDataConverter,
+} from '@sharedClient/services/firestore.client';
+import {useImportQueueService} from '@sharedClient/services/importQueue.client';
+import type {ClientImportQueueService} from '@sharedClient/services/importQueue.client';
 
-import {useLoggedInUser} from '@sharedClient/hooks/auth.hooks';
+import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
-const feedItemsDbRef = collection(firebaseService.firestore, FEED_ITEMS_DB_COLLECTION);
-const importQueueDbRef = collection(firebaseService.firestore, IMPORT_QUEUE_DB_COLLECTION);
 const feedItemsStorageRef = storageRef(firebaseService.storage, FEED_ITEMS_STORAGE_COLLECTION);
 
+const feedItemFirestoreConverter = makeFirestoreDataConverter(toStorageFeedItem, parseFeedItem);
+
 export function useFeedItemsService(): ClientFeedItemsService {
-  const loggedInUser = useLoggedInUser();
+  const loggedInAccount = useLoggedInAccount();
+  const importQueueService = useImportQueueService();
 
   const feedItemsService = useMemo(() => {
-    return new ClientFeedItemsService({
-      feedItemsDbRef,
-      importQueueDbRef,
-      feedItemsStorageRef,
-      userId: loggedInUser.userId,
+    const feedItemsCollectionService = new ClientFirestoreCollectionService({
+      collectionPath: FEED_ITEMS_DB_COLLECTION,
+      converter: feedItemFirestoreConverter,
+      parseId: parseFeedItemId,
     });
-  }, [loggedInUser]);
+
+    return new ClientFeedItemsService({
+      feedItemsCollectionService,
+      importQueueService,
+      feedItemsStorageRef,
+      accountId: loggedInAccount.accountId,
+    });
+  }, [loggedInAccount.accountId, importQueueService]);
 
   return feedItemsService;
 }
@@ -152,51 +159,44 @@ export function useFeedItemMarkdown(
   return state;
 }
 
+type FeedItemsCollectionService = ClientFirestoreCollectionService<FeedItemId, FeedItem>;
+
 export class ClientFeedItemsService {
-  private readonly feedItemsDbRef: CollectionReference;
-  private readonly importQueueDbRef: CollectionReference;
+  private readonly feedItemsCollectionService: FeedItemsCollectionService;
+  private readonly importQueueService: ClientImportQueueService;
   private readonly feedItemsStorageRef: StorageReference;
-  private readonly userId: UserId;
+  private readonly accountId: AccountId;
 
   constructor(args: {
-    readonly feedItemsDbRef: CollectionReference;
-    readonly importQueueDbRef: CollectionReference;
+    readonly feedItemsCollectionService: FeedItemsCollectionService;
+    readonly importQueueService: ClientImportQueueService;
     readonly feedItemsStorageRef: StorageReference;
-    readonly userId: UserId;
+    readonly accountId: AccountId;
   }) {
-    this.feedItemsDbRef = args.feedItemsDbRef;
-    this.importQueueDbRef = args.importQueueDbRef;
+    this.feedItemsCollectionService = args.feedItemsCollectionService;
+    this.importQueueService = args.importQueueService;
     this.feedItemsStorageRef = args.feedItemsStorageRef;
-    this.userId = args.userId;
+    this.accountId = args.accountId;
   }
 
-  async getFeedItem(feedItemId: FeedItemId): AsyncResult<FeedItem | null> {
-    return asyncTry<FeedItem | null>(async () => {
-      const snapshot = await getDoc(doc(this.feedItemsDbRef, feedItemId));
-      return snapshot.exists() ? ({...snapshot.data(), feedItemId: snapshot.id} as FeedItem) : null;
-    });
+  public async fetchById(feedItemId: FeedItemId): AsyncResult<FeedItem | null> {
+    return this.feedItemsCollectionService.fetchById(feedItemId);
   }
 
-  watchFeedItem(
+  public watchFeedItem(
     feedItemId: FeedItemId,
     successCallback: Consumer<FeedItem | null>, // null means feed item does not exist.
     errorCallback: Consumer<Error>
   ): AuthStateChangedUnsubscribe {
-    const unsubscribe = onSnapshot(
-      doc(this.feedItemsDbRef, feedItemId),
-      (snapshot) => {
-        if (snapshot.exists()) {
-          successCallback({...snapshot.data(), feedItemId: snapshot.id} as FeedItem);
-        } else {
-          successCallback(null);
-        }
-      },
+    const unsubscribe = this.feedItemsCollectionService.watchDoc(
+      feedItemId,
+      successCallback,
       errorCallback
     );
     return () => unsubscribe();
   }
 
-  watchFeedItemsQuery(args: {
+  public watchFeedItemsQuery(args: {
     readonly viewType: ViewType;
     readonly successCallback: Consumer<FeedItem[]>;
     readonly errorCallback: Consumer<Error>;
@@ -206,30 +206,22 @@ export class ClientFeedItemsService {
     // Construct Firestore queries from the view config.
     const viewConfig = Views.get(viewType);
     const whereClauses = [
-      where('userId', '==', this.userId),
+      where('accountId', '==', this.accountId),
       ...viewConfig.filters.map((filter) =>
         where(filter.field, fromFilterOperator(filter.op), filter.value)
       ),
     ];
-    const itemsQuery = query(
-      this.feedItemsDbRef,
-      ...whereClauses
-      // TODO: Add order by condition.
-      // orderBy(viewConfig.sort.field, fromSortDirection(viewConfig.sort.direction))
-    );
+    const itemsQuery = this.feedItemsCollectionService.query(whereClauses);
 
-    const unsubscribe = onSnapshot(
+    const unsubscribe = this.feedItemsCollectionService.watchDocs(
       itemsQuery,
-      (snapshot) => {
-        const feedItems = snapshot.docs.map((doc) => doc.data() as FeedItem);
-        successCallback(feedItems);
-      },
+      successCallback,
       errorCallback
     );
     return () => unsubscribe();
   }
 
-  async addFeedItem(args: {
+  public async createFeedItem(args: {
     readonly url: string;
     readonly source: FeedItemSource;
   }): AsyncResult<FeedItemId | null> {
@@ -246,9 +238,7 @@ export class ClientFeedItemsService {
       // TODO: Make this dynamic based on the actual content. Maybe it should be null initially
       // until we've done the import? Or should we compute this at save time?
       source,
-      userId: this.userId,
-      createdTime: serverTimestamp(),
-      lastUpdatedTime: serverTimestamp(),
+      accountId: this.accountId,
     });
     if (!feedItemResult.success) return feedItemResult;
     const feedItem = feedItemResult.value;
@@ -256,18 +246,19 @@ export class ClientFeedItemsService {
     // Add the feed item to the import queue.
     const makeImportQueueItemResult = makeImportQueueItem({
       feedItemId: feedItem.feedItemId,
-      userId: this.userId,
+      accountId: this.accountId,
       url: trimmedUrl,
-      createdTime: serverTimestamp(),
-      lastUpdatedTime: serverTimestamp(),
     });
     if (!makeImportQueueItemResult.success) return makeImportQueueItemResult;
-    const importQueueItem = makeImportQueueItemResult.value;
 
     // TODO: Do these in a transaction.
-    const addFeedItemResult = await asyncTryAllPromises([
-      setDoc(doc(this.feedItemsDbRef), feedItem),
-      setDoc(doc(this.importQueueDbRef, importQueueItem.importQueueItemId), importQueueItem),
+    const addFeedItemResult = await asyncTryAll([
+      this.feedItemsCollectionService.setDoc(feedItem.feedItemId, feedItem),
+      this.importQueueService.create({
+        feedItemId: feedItem.feedItemId,
+        accountId: this.accountId,
+        url: trimmedUrl,
+      }),
     ]);
 
     const addFeedItemResultError = addFeedItemResult.success
@@ -280,44 +271,40 @@ export class ClientFeedItemsService {
     return makeSuccessResult(feedItem.feedItemId);
   }
 
-  async updateFeedItem(feedItemId: FeedItemId, item: Partial<FeedItem>): AsyncResult<undefined> {
-    return asyncTry<undefined>(async () => {
-      await updateDoc(doc(this.feedItemsDbRef, feedItemId), item);
-    });
+  public async updateFeedItem(
+    feedItemId: FeedItemId,
+    item: Partial<
+      Pick<FeedItem, 'url' | 'title' | 'description' | 'outgoingLinks' | 'triageStatus' | 'tagIds'>
+    >
+  ): AsyncResult<void> {
+    const updateResult = await this.feedItemsCollectionService.updateDoc(feedItemId, item);
+    return prefixResultIfError(updateResult, 'Error updating feed item');
   }
 
-  async deleteFeedItem(feedItemId: FeedItemId): AsyncResult<undefined> {
-    return asyncTry<undefined>(async () => {
-      await deleteDoc(doc(this.feedItemsDbRef, feedItemId));
-    });
+  public async deleteFeedItem(feedItemId: FeedItemId): AsyncResult<void> {
+    const deleteResult = await this.feedItemsCollectionService.deleteDoc(feedItemId);
+    return prefixResultIfError(deleteResult, 'Error deleting feed item');
   }
 
-  async getFeedItemMarkdown(feedItemId: FeedItemId): AsyncResult<string> {
+  public async getFeedItemMarkdown(feedItemId: FeedItemId): AsyncResult<string> {
     const fileRef = storageRef(
       this.feedItemsStorageRef,
-      `${this.userId}/${feedItemId}/llmContext.md`
+      `${this.accountId}/${feedItemId}/llmContext.md`
     );
 
-    const downloadUrlResult = await asyncTry<string>(async () => await getDownloadURL(fileRef));
+    // Fetch the download URL for the file.
+    const downloadUrlResult = await asyncTry(async () => getDownloadURL(fileRef));
     if (!downloadUrlResult.success) {
-      return makeErrorResult(
-        prefixError(
-          downloadUrlResult.error,
-          `Error fetching download URL for feed item "${feedItemId}"`
-        )
-      );
+      return prefixErrorResult(downloadUrlResult, 'Error fetching feed item download URL');
     }
 
+    // Fetch the markdown content from the file.
     const downloadUrl = downloadUrlResult.value;
     const responseResult = await requestGet<string>(downloadUrl, {
       headers: {'Content-Type': 'text/markdown'},
     });
-    if (!responseResult.success) {
-      return makeErrorResult(
-        prefixError(responseResult.error, `Error fetching markdown for feed item "${feedItemId}"`)
-      );
-    }
 
-    return makeSuccessResult(responseResult.value);
+    // Return the markdown content.
+    return prefixResultIfError(responseResult, 'Error fetching feed item markdown content');
   }
 }

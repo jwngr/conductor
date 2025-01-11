@@ -20,6 +20,7 @@ packages/scripts/src/resources/
 
 # Build output.
 dist/
+distIgnore/
 
 # Environment variables.
 .env

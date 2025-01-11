@@ -1,65 +1,46 @@
-import type {CollectionReference} from 'firebase-admin/firestore';
-import {FieldValue} from 'firebase-admin/firestore';
+import type {WithFieldValue} from 'firebase-admin/firestore';
 
-import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
+import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
-import type {FeedSource, FeedSourceId} from '@shared/types/feedSources.types';
+import type {
+  FeedSource,
+  FeedSourceFromStorage,
+  FeedSourceId,
+} from '@shared/types/feedSources.types';
 import {makeFeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import {makeSuccessResult} from '@shared/types/result.types';
+
+import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
+
+type FeedSourceCollectionService = ServerFirestoreCollectionService<
+  FeedSourceId,
+  FeedSource,
+  FeedSourceFromStorage
+>;
 
 export class ServerFeedSourcesService {
-  private readonly feedSourcesDbRef: CollectionReference;
+  private readonly feedSourcesCollectionService: FeedSourceCollectionService;
 
-  constructor(args: {readonly feedSourcesDbRef: CollectionReference}) {
-    this.feedSourcesDbRef = args.feedSourcesDbRef;
+  constructor(args: {readonly feedSourcesCollectionService: FeedSourceCollectionService}) {
+    this.feedSourcesCollectionService = args.feedSourcesCollectionService;
   }
 
   /**
    * Fetches an existing feed by its ID.
    */
   public async fetchById(feedSourceId: FeedSourceId): AsyncResult<FeedSource | null> {
-    const feedSourceDocRef = this.feedSourcesDbRef.doc(feedSourceId);
-    const feedSourceDocSnap = await asyncTry(async () => await feedSourceDocRef.get());
-    if (!feedSourceDocSnap.success) {
-      return makeErrorResult(
-        prefixError(feedSourceDocSnap.error, 'Error fetching feed source by ID in Firestore')
-      );
-    }
-
-    if (!feedSourceDocSnap.value.exists) {
-      return makeSuccessResult(null);
-    }
-
-    const feedSource = feedSourceDocSnap.value.data() as FeedSource;
-    return makeSuccessResult(feedSource);
+    const maybeFeedSource = await this.feedSourcesCollectionService.fetchById(feedSourceId);
+    return prefixResultIfError(maybeFeedSource, 'Error fetching feed source by ID in Firestore');
   }
 
   /**
    * Fetches an existing feed source document from Firestore by its URL.
    */
   public async fetchByUrl(feedUrl: string): AsyncResult<FeedSource | null> {
-    const feedSourceDocsQuery = this.feedSourcesDbRef.where('url', '==', feedUrl);
-    const feedSourceDocsQuerySnapshotResult = await asyncTry(
-      async () => await feedSourceDocsQuery.get()
-    );
-    if (!feedSourceDocsQuerySnapshotResult.success) {
-      return makeErrorResult(
-        prefixError(
-          feedSourceDocsQuerySnapshotResult.error,
-          'Error fetching feed source by URL in Firestore'
-        )
-      );
-    }
-
-    const feedSourceDocsQuerySnapshot = feedSourceDocsQuerySnapshotResult.value;
-
-    if (feedSourceDocsQuerySnapshot.docs.length === 0) {
-      return makeSuccessResult(null);
-    }
-
-    const feedSource = feedSourceDocsQuerySnapshot.docs[0].data() as FeedSource;
-    return makeSuccessResult(feedSource);
+    const query = this.feedSourcesCollectionService.getCollectionRef().where('url', '==', feedUrl);
+    const maybeFeedSource = await this.feedSourcesCollectionService.fetchFirstQueryDoc(query);
+    return prefixResultIfError(maybeFeedSource, 'Error fetching feed source by URL in Firestore');
   }
 
   /**
@@ -69,23 +50,22 @@ export class ServerFeedSourcesService {
   public async create(
     feedDetails: Omit<FeedSource, 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
   ): AsyncResult<FeedSource> {
+    // Create the new feed source in memory.
     const makeFeedSourceResult = makeFeedSource({
       url: feedDetails.url,
       title: feedDetails.title,
-      createdTime: FieldValue.serverTimestamp(),
-      lastUpdatedTime: FieldValue.serverTimestamp(),
     });
     if (!makeFeedSourceResult.success) return makeFeedSourceResult;
     const newFeedSource = makeFeedSourceResult.value;
 
-    const newFeedSourceDocRef = this.feedSourcesDbRef.doc(newFeedSource.feedSourceId);
-    const saveToDbResult = await asyncTry(async () => await newFeedSourceDocRef.set(newFeedSource));
-    if (!saveToDbResult.success) {
-      return makeErrorResult(
-        prefixError(saveToDbResult.error, 'Error adding feed source to Firestore')
-      );
+    // Create the new feed source in Firestore.
+    const createResult = await this.feedSourcesCollectionService.setDoc(
+      newFeedSource.feedSourceId,
+      newFeedSource
+    );
+    if (!createResult.success) {
+      return prefixErrorResult(createResult, 'Error adding feed source to Firestore');
     }
-
     return makeSuccessResult(newFeedSource);
   }
 
@@ -101,7 +81,7 @@ export class ServerFeedSourcesService {
     const existingFeedSourceResult = await this.fetchByUrl(url);
     if (!existingFeedSourceResult.success) return existingFeedSourceResult;
 
-    // If we found an existing feed source, return it
+    // If we found an existing feed source, return it.
     if (existingFeedSourceResult.value !== null) {
       return makeSuccessResult(existingFeedSourceResult.value);
     }
@@ -118,35 +98,17 @@ export class ServerFeedSourcesService {
    */
   public async update(
     feedSourceId: FeedSourceId,
-    update: Partial<Pick<FeedSource, 'title'>>
+    update: Partial<WithFieldValue<Pick<FeedSource, 'title'>>>
   ): AsyncResult<void> {
-    const feedSourceDocRef = this.feedSourcesDbRef.doc(feedSourceId);
-    const updateResult = await asyncTry(async () => {
-      await feedSourceDocRef.update({
-        ...update,
-        lastUpdatedTime: FieldValue.serverTimestamp(),
-      });
-    });
-
-    if (!updateResult.success) {
-      return makeErrorResult(prefixError(updateResult.error, 'Error updating feed in Firestore'));
-    }
-
-    return makeSuccessResult(undefined);
+    const updateResult = await this.feedSourcesCollectionService.updateDoc(feedSourceId, update);
+    return prefixResultIfError(updateResult, 'Error updating feed source in Firestore');
   }
 
   /**
    * Permanently deletes a feed source document from Firestore.
    */
   public async delete(feedSourceId: FeedSourceId): AsyncResult<void> {
-    const feedSourceDocRef = this.feedSourcesDbRef.doc(feedSourceId);
-    const deleteResult = await asyncTry(async () => await feedSourceDocRef.delete());
-    if (!deleteResult.success) {
-      return makeErrorResult(
-        prefixError(deleteResult.error, 'Error deleting feed source in Firestore')
-      );
-    }
-
-    return makeSuccessResult(undefined);
+    const deleteResult = await this.feedSourcesCollectionService.deleteDoc(feedSourceId);
+    return prefixResultIfError(deleteResult, 'Error deleting feed source in Firestore');
   }
 }

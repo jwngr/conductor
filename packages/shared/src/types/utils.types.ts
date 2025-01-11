@@ -1,4 +1,4 @@
-import type {FieldValue} from 'firebase/firestore';
+import {z} from 'zod';
 
 export type Task = () => void;
 export type Func<T, R> = (arg: T) => R;
@@ -14,18 +14,26 @@ export type Unsubscribe = Task;
 
 /** Generic interface for all persisted items. */
 export interface BaseStoreItem {
-  readonly createdTime: Timestamp;
-  readonly lastUpdatedTime: Timestamp;
+  readonly createdTime: Date;
+  readonly lastUpdatedTime: Date;
 }
-
-/**
- * Generic timestamp type, for use with `createdTime`, `lastUpdatedTime`, and all other timestamps.
- * This is set to be Firebase's `FieldValue` type, a special type allowing for Firestore's server
- * timestamp functionality.
- */
-export type Timestamp = FieldValue;
 
 export interface StyleAttributes {
   readonly style?: React.CSSProperties;
   readonly className?: string;
 }
+
+/**
+ * Strongly-typed type for a UUID. Prefer this over plain strings.
+ */
+export type UUID = string & {readonly __brand: 'UUIDBrand'};
+
+/**
+ * Strongly-typed type for an {@link EmailAddress}. Prefer this over plain strings.
+ */
+export type EmailAddress = string & {readonly __brand: 'EmailAddressBrand'};
+
+/**
+ * A Zod schema for an {@link EmailAddress}.
+ */
+export const EmailAddressSchema = z.string().email();

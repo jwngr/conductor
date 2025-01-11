@@ -1,7 +1,10 @@
-import {makeId} from '@shared/lib/utils.shared';
+import {z} from 'zod';
 
+import {makeUuid} from '@shared/lib/utils.shared';
+
+import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import {makeSuccessResult} from '@shared/types/result.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 
 /**
@@ -10,10 +13,22 @@ import type {BaseStoreItem} from '@shared/types/utils.types';
 export type FeedSourceId = string & {readonly __brand: 'FeedSourceIdBrand'};
 
 /**
+ * Zod schema for a {@link FeedSourceId}.
+ */
+export const FeedSourceIdSchema = z.string().uuid();
+
+/**
+ * Creates a new random {@link FeedSourceId}.
+ */
+export function makeFeedSourceId(): FeedSourceId {
+  return makeUuid<FeedSourceId>();
+}
+
+/**
  * A generator of {@link FeedItem}s over time.
  *
  * Use the {@link UserFeedSubscription} object to manage user subscriptions to a {@link FeedSource}.
- * A feed source is created the first time a user subscribes to a unique feed URL.
+ * A feed source is created the first time an account subscribes to a unique feed URL.
  */
 export interface FeedSource extends BaseStoreItem {
   readonly feedSourceId: FeedSourceId;
@@ -22,36 +37,34 @@ export interface FeedSource extends BaseStoreItem {
 }
 
 /**
- * Checks if a value is a valid {@link FeedSourceId}.
+ * Zod schema for a {@link FeedSource} persisted to Firestore.
  */
-export function isFeedSourceId(feedSourceId: unknown): feedSourceId is FeedSourceId {
-  return typeof feedSourceId === 'string' && feedSourceId.length > 0;
-}
+export const FeedSourceFromStorageSchema = z.object({
+  feedSourceId: FeedSourceIdSchema,
+  url: z.string().url(),
+  title: z.string().min(1),
+  createdTime: FirestoreTimestampSchema,
+  lastUpdatedTime: FirestoreTimestampSchema,
+});
 
 /**
- * Creates a {@link FeedSourceId} from a plain string. Returns an error if the string is not valid.
+ * Type for a {@link FeedSource} persisted to Firestore.
  */
-export function makeFeedSourceId(maybeFeedSourceId: string = makeId()): Result<FeedSourceId> {
-  if (!isFeedSourceId(maybeFeedSourceId)) {
-    return makeErrorResult(new Error(`Invalid feed source ID: "${maybeFeedSourceId}"`));
-  }
-  return makeSuccessResult(maybeFeedSourceId);
-}
+export type FeedSourceFromStorage = z.infer<typeof FeedSourceFromStorageSchema>;
 
 /**
- * Creates a {@link FeedSource} object.
+ * Creates a new {@link FeedSource} object.
  */
-export function makeFeedSource(args: Omit<FeedSource, 'feedSourceId'>): Result<FeedSource> {
-  const feedSourceIdResult = makeFeedSourceId();
-  if (!feedSourceIdResult.success) return feedSourceIdResult;
-  const feedSourceId = feedSourceIdResult.value;
-
+export function makeFeedSource(
+  args: Omit<FeedSource, 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
+): Result<FeedSource> {
   const feedSource: FeedSource = {
-    feedSourceId,
+    feedSourceId: makeFeedSourceId(),
     url: args.url,
     title: args.title,
-    createdTime: args.createdTime,
-    lastUpdatedTime: args.lastUpdatedTime,
+    // TODO: Should use server timestamps instead.
+    createdTime: new Date(),
+    lastUpdatedTime: new Date(),
   };
 
   return makeSuccessResult(feedSource);
