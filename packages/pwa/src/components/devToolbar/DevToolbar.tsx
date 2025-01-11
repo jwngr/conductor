@@ -1,7 +1,7 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {styled} from 'styled-components';
 
-import {DevToolbarSectionInfo} from '@shared/types/devToolbar.types';
+import type {DevToolbarSectionInfo} from '@shared/types/devToolbar.types';
 import {ThemeColor} from '@shared/types/theme.types';
 
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
