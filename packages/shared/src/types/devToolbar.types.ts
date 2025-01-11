@@ -6,7 +6,7 @@ export enum DevToolbarSectionType {
   IndividualFeedItemActions = 'INDIVIDUAL_FEED_ITEM_ACTIONS',
 }
 
-interface DevToolbarSectionInfo {
+export interface DevToolbarSectionInfo {
   readonly sectionType: DevToolbarSectionType;
   readonly title: string;
   readonly renderSection: Supplier<React.ReactNode>;

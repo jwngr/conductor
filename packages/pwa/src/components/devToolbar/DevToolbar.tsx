@@ -1,6 +1,7 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {styled} from 'styled-components';
 
+import {DevToolbarSectionInfo} from '@shared/types/devToolbar.types';
 import {ThemeColor} from '@shared/types/theme.types';
 
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
@@ -45,7 +46,7 @@ const BugEmoji = styled.span<{readonly $isOpen: boolean}>`
 `;
 
 const DevToolbarSectionComponent: React.FC<{
-  readonly section: DevToolbarSection;
+  readonly section: DevToolbarSectionInfo;
 }> = ({section}) => {
   return (
     <DevToolbarSectionWrapper>
