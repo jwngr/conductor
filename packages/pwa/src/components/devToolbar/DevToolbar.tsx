@@ -10,6 +10,8 @@ import {Text} from '@src/components/atoms/Text';
 
 import {IS_DEVELOPMENT} from '@src/lib/environment.pwa';
 
+import {RequireLoggedInAccount} from '../auth/RequireLoggedInAccount';
+
 const DevToolbarWrapper = styled.div<{readonly $isOpen: boolean}>`
   position: fixed;
   bottom: 16px;
@@ -43,11 +45,22 @@ const BugEmoji = styled.span<{readonly $isOpen: boolean}>`
   font-size: 16px;
 `;
 
-export interface DevToolbarProps {
-  readonly isVisible?: boolean;
-}
+const DevToolbarSectionComponent: React.FC<{
+  readonly section: DevToolbarSection;
+}> = ({section}) => {
+  return (
+    <DevToolbarSectionWrapper>
+      <Text as="h4" bold>
+        {section.title}
+      </Text>
+      {section.renderSection()}
+    </DevToolbarSectionWrapper>
+  );
+};
 
-export const DevToolbar: React.FC<DevToolbarProps> = ({isVisible = true}) => {
+export const DevToolbar: React.FC<{
+  readonly isVisible?: boolean;
+}> = ({isVisible = true}) => {
   const [isOpen, setIsOpen] = useState(false);
   const toolbarRef = useRef<HTMLDivElement>(null);
 
@@ -93,14 +106,15 @@ export const DevToolbar: React.FC<DevToolbarProps> = ({isVisible = true}) => {
         🐛
       </BugEmoji>
       <DevToolbarContent $isOpen={isOpen}>
-        {devToolbarSections.map((section) => (
-          <DevToolbarSectionWrapper key={section.sectionType}>
-            <Text as="h4" bold>
-              {section.title}
-            </Text>
-            {section.renderSection()}
-          </DevToolbarSectionWrapper>
-        ))}
+        {devToolbarSections.map((section) =>
+          section.requiresAuth ? (
+            <RequireLoggedInAccount>
+              <DevToolbarSectionComponent key={section.sectionType} section={section} />
+            </RequireLoggedInAccount>
+          ) : (
+            <DevToolbarSectionComponent key={section.sectionType} section={section} />
+          )
+        )}
       </DevToolbarContent>
     </DevToolbarWrapper>
   );

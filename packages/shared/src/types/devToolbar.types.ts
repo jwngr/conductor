@@ -6,13 +6,14 @@ export enum DevToolbarSectionType {
   IndividualFeedItemActions = 'INDIVIDUAL_FEED_ITEM_ACTIONS',
 }
 
-export interface DevToolbarSection {
+interface DevToolbarSectionInfo {
   readonly sectionType: DevToolbarSectionType;
   readonly title: string;
   readonly renderSection: Supplier<React.ReactNode>;
+  readonly requiresAuth: boolean;
 }
 
 export interface DevToolbarStore {
-  readonly sections: readonly DevToolbarSection[];
-  readonly registerSection: Func<DevToolbarSection, Unsubscribe>;
+  readonly sections: readonly DevToolbarSectionInfo[];
+  readonly registerSection: Func<DevToolbarSectionInfo, Unsubscribe>;
 }

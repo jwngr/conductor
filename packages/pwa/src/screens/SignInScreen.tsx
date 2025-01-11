@@ -1,7 +1,9 @@
 import type {ActionCodeSettings} from 'firebase/auth';
 import {useState} from 'react';
+import {Navigate} from 'react-router-dom';
 import styled from 'styled-components';
 
+import {Urls} from '@shared/lib/urls.shared';
 import {isValidEmail} from '@shared/lib/utils.shared';
 
 import {parseEmailAddress} from '@shared/parsers/accounts.parser';
@@ -83,9 +85,8 @@ export const SignInScreen: React.FC = () => {
   const [emailInputVal, setEmailInputVal] = useState('');
   const [successfulSignInLinkSentTo, setSuccessfulSignInLinkSentTo] = useState<string | null>(null);
   const [signInLinkError, setSignInLinkError] = useState<Error | null>(null);
-  let loggedInAccountContent: React.ReactNode = null;
   if (loggedInAccount) {
-    loggedInAccountContent = <Text>Already signed in as {loggedInAccount.email}</Text>;
+    return <Navigate to={Urls.forRoot()} replace />;
   }
 
   return (
@@ -151,7 +152,6 @@ export const SignInScreen: React.FC = () => {
             {signInLinkError.message}
           </Text>
         ) : null}
-        {loggedInAccountContent}
       </SignInContentWrapper>
     </SignInScreenWrapper>
   );
