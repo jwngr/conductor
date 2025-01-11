@@ -9,15 +9,11 @@ import {
 } from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 
-import {
-  parseFeedItem,
-  parseFeedItemId,
-  toFirestoreFeedItem,
-} from '@shared/parsers/feedItems.parser';
+import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 import {
   parseImportQueueItem,
   parseImportQueueItemId,
-  toFirestoreImportQueueItem,
+  toStorageImportQueueItem,
 } from '@shared/parsers/importQueue.parser';
 import {parseUserId} from '@shared/parsers/user.parser';
 
@@ -49,7 +45,7 @@ chrome.action.onClicked.addListener(async (tab) => {
     return;
   }
 
-  const feedItemFirestoreConverter = makeFirestoreDataConverter(toFirestoreFeedItem, parseFeedItem);
+  const feedItemFirestoreConverter = makeFirestoreDataConverter(toStorageFeedItem, parseFeedItem);
 
   const feedItemsCollectionService = new ClientFirestoreCollectionService({
     collectionPath: FEED_ITEMS_DB_COLLECTION,
@@ -58,7 +54,7 @@ chrome.action.onClicked.addListener(async (tab) => {
   });
 
   const importQueueItemFirestoreConverter = makeFirestoreDataConverter(
-    toFirestoreImportQueueItem,
+    toStorageImportQueueItem,
     parseImportQueueItem
   );
 

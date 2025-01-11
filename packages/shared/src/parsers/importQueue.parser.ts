@@ -1,9 +1,5 @@
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {
-  parseFirestoreTimestamp,
-  parseZodResult,
-  toFirestoreTimestamp,
-} from '@shared/lib/parser.shared';
+import {parseStorageTimestamp, parseZodResult, toStorageTimestamp} from '@shared/lib/parser.shared';
 
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
 import {parseUserId} from '@shared/parsers/user.parser';
@@ -62,12 +58,16 @@ export function parseImportQueueItem(maybeImportQueueItem: unknown): Result<Impo
     feedItemId: parsedFeedItemIdResult.value,
     url: parsedImportQueueItemResult.value.url,
     status: parsedImportQueueItemResult.value.status,
-    createdTime: parseFirestoreTimestamp(parsedImportQueueItemResult.value.createdTime),
-    lastUpdatedTime: parseFirestoreTimestamp(parsedImportQueueItemResult.value.lastUpdatedTime),
+    createdTime: parseStorageTimestamp(parsedImportQueueItemResult.value.createdTime),
+    lastUpdatedTime: parseStorageTimestamp(parsedImportQueueItemResult.value.lastUpdatedTime),
   });
 }
 
-export function toFirestoreImportQueueItem(
+/**
+ * Converts a {@link ImportQueueItem} to a {@link ImportQueueItemFromStorage} object that can be
+ * persisted to Firestore.
+ */
+export function toStorageImportQueueItem(
   importQueueItem: ImportQueueItem
 ): ImportQueueItemFromStorage {
   return {
@@ -76,7 +76,7 @@ export function toFirestoreImportQueueItem(
     feedItemId: importQueueItem.feedItemId,
     url: importQueueItem.url,
     status: importQueueItem.status,
-    createdTime: toFirestoreTimestamp(importQueueItem.createdTime),
-    lastUpdatedTime: toFirestoreTimestamp(importQueueItem.lastUpdatedTime),
+    createdTime: toStorageTimestamp(importQueueItem.createdTime),
+    lastUpdatedTime: toStorageTimestamp(importQueueItem.lastUpdatedTime),
   };
 }

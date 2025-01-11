@@ -75,7 +75,10 @@ export function parseFirebaseUser(firebaseLoggedInUser: FirebaseUser): Result<Us
   });
 }
 
-export function toFirestoreUser(user: User): UserFromStorage {
+/**
+ * Converts a {@link User} to a {@link UserFromStorage} object that can be persisted to Firestore.
+ */
+export function toStorageUser(user: User): UserFromStorage {
   return {
     userId: user.userId,
     email: user.email,

@@ -9,7 +9,7 @@ import {asyncTry, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {
   parseUserFeedSubscription,
   parseUserFeedSubscriptionId,
-  toFirestoreUserFeedSubscription,
+  toStorageUserFeedSubscription,
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
 import type {AsyncResult} from '@shared/types/result.types';
@@ -132,7 +132,7 @@ export class ClientUserFeedSubscriptionsService {
 }
 
 const userFeedSubscriptionFirestoreConverter = makeFirestoreDataConverter(
-  toFirestoreUserFeedSubscription,
+  toStorageUserFeedSubscription,
   parseUserFeedSubscription
 );
 

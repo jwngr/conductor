@@ -4,7 +4,7 @@ import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {
   parseImportQueueItem,
   parseImportQueueItemId,
-  toFirestoreImportQueueItem,
+  toStorageImportQueueItem,
 } from '@shared/parsers/importQueue.parser';
 
 import {
@@ -74,7 +74,7 @@ export class ClientImportQueueService {
 // Initialize a singleton instance of the import queue service.
 
 const importQueueItemFirestoreConverter = makeFirestoreDataConverter(
-  toFirestoreImportQueueItem,
+  toStorageImportQueueItem,
   parseImportQueueItem
 );
 

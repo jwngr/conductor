@@ -10,7 +10,7 @@ import {filterNull} from '@shared/lib/utils.shared';
 import {
   parseEventId,
   parseEventLogItem,
-  toFirestoreEventLogItem,
+  toStorageEventLogItem,
 } from '@shared/parsers/eventLog.parser';
 
 import {
@@ -38,7 +38,7 @@ import {useLoggedInUser} from '@sharedClient/hooks/auth.hooks';
 const EVENT_LOG_LIMIT = 100;
 
 const eventLogItemFirestoreConverter = makeFirestoreDataConverter(
-  toFirestoreEventLogItem,
+  toStorageEventLogItem,
   parseEventLogItem
 );
 

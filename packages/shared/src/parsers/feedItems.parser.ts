@@ -1,9 +1,5 @@
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {
-  parseFirestoreTimestamp,
-  parseZodResult,
-  toFirestoreTimestamp,
-} from '@shared/lib/parser.shared';
+import {parseStorageTimestamp, parseZodResult, toStorageTimestamp} from '@shared/lib/parser.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
 
 import {parseUserId} from '@shared/parsers/user.parser';
@@ -138,15 +134,19 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
       triageStatus: parsedFeedItemResult.value.triageStatus,
       tagIds: parsedFeedItemResult.value.tagIds,
       lastImportedTime: parsedFeedItemResult.value.lastImportedTime
-        ? parseFirestoreTimestamp(parsedFeedItemResult.value.lastImportedTime)
+        ? parseStorageTimestamp(parsedFeedItemResult.value.lastImportedTime)
         : undefined,
-      createdTime: parseFirestoreTimestamp(parsedFeedItemResult.value.createdTime),
-      lastUpdatedTime: parseFirestoreTimestamp(parsedFeedItemResult.value.lastUpdatedTime),
+      createdTime: parseStorageTimestamp(parsedFeedItemResult.value.createdTime),
+      lastUpdatedTime: parseStorageTimestamp(parsedFeedItemResult.value.lastUpdatedTime),
     })
   );
 }
 
-export function toFirestoreFeedItem(feedItem: FeedItem): FeedItemFromStorage {
+/**
+ * Converts a {@link FeedItem} to a {@link FeedItemFromStorage} object that can be persisted to
+ * Firestore.
+ */
+export function toStorageFeedItem(feedItem: FeedItem): FeedItemFromStorage {
   return omitUndefined({
     feedItemId: feedItem.feedItemId,
     userId: feedItem.userId,
@@ -159,9 +159,9 @@ export function toFirestoreFeedItem(feedItem: FeedItem): FeedItemFromStorage {
     triageStatus: feedItem.triageStatus,
     tagIds: feedItem.tagIds,
     lastImportedTime: feedItem.lastImportedTime
-      ? toFirestoreTimestamp(feedItem.lastImportedTime)
+      ? toStorageTimestamp(feedItem.lastImportedTime)
       : undefined,
-    createdTime: toFirestoreTimestamp(feedItem.createdTime),
-    lastUpdatedTime: toFirestoreTimestamp(feedItem.lastUpdatedTime),
+    createdTime: toStorageTimestamp(feedItem.createdTime),
+    lastUpdatedTime: toStorageTimestamp(feedItem.lastUpdatedTime),
   });
 }

@@ -18,11 +18,7 @@ import {requestGet} from '@shared/lib/requests.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
 import {Views} from '@shared/lib/views.shared';
 
-import {
-  parseFeedItem,
-  parseFeedItemId,
-  toFirestoreFeedItem,
-} from '@shared/parsers/feedItems.parser';
+import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 
 import {
   FeedItemType,
@@ -49,7 +45,7 @@ import {useLoggedInUser} from '@sharedClient/hooks/auth.hooks';
 
 const feedItemsStorageRef = storageRef(firebaseService.storage, FEED_ITEMS_STORAGE_COLLECTION);
 
-const feedItemFirestoreConverter = makeFirestoreDataConverter(toFirestoreFeedItem, parseFeedItem);
+const feedItemFirestoreConverter = makeFirestoreDataConverter(toStorageFeedItem, parseFeedItem);
 
 export function useFeedItemsService(): ClientFeedItemsService {
   const loggedInUser = useLoggedInUser();

@@ -1,9 +1,5 @@
 import {prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {
-  parseFirestoreTimestamp,
-  parseZodResult,
-  toFirestoreTimestamp,
-} from '@shared/lib/parser.shared';
+import {parseStorageTimestamp, parseZodResult, toStorageTimestamp} from '@shared/lib/parser.shared';
 
 import type {
   FeedSource,
@@ -43,17 +39,21 @@ export function parseFeedSource(maybeFeedSource: unknown): Result<FeedSource> {
     feedSourceId: parsedIdResult.value,
     url: parsedFeedSourceResult.value.url,
     title: parsedFeedSourceResult.value.title,
-    createdTime: parseFirestoreTimestamp(parsedFeedSourceResult.value.createdTime),
-    lastUpdatedTime: parseFirestoreTimestamp(parsedFeedSourceResult.value.lastUpdatedTime),
+    createdTime: parseStorageTimestamp(parsedFeedSourceResult.value.createdTime),
+    lastUpdatedTime: parseStorageTimestamp(parsedFeedSourceResult.value.lastUpdatedTime),
   });
 }
 
-export function toFirestoreFeedSource(feedSource: FeedSource): FeedSourceFromStorage {
+/**
+ * Converts a {@link FeedSource} to a {@link FeedSourceFromStorage} object that can be persisted to
+ * Firestore.
+ */
+export function toStorageFeedSource(feedSource: FeedSource): FeedSourceFromStorage {
   return {
     feedSourceId: feedSource.feedSourceId,
     url: feedSource.url,
     title: feedSource.title,
-    createdTime: toFirestoreTimestamp(feedSource.createdTime),
-    lastUpdatedTime: toFirestoreTimestamp(feedSource.lastUpdatedTime),
+    createdTime: toStorageTimestamp(feedSource.createdTime),
+    lastUpdatedTime: toStorageTimestamp(feedSource.lastUpdatedTime),
   };
 }

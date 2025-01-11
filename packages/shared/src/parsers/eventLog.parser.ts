@@ -1,9 +1,5 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {
-  parseFirestoreTimestamp,
-  parseZodResult,
-  toFirestoreTimestamp,
-} from '@shared/lib/parser.shared';
+import {parseStorageTimestamp, parseZodResult, toStorageTimestamp} from '@shared/lib/parser.shared';
 
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
 import {parseUserId} from '@shared/parsers/user.parser';
@@ -89,8 +85,8 @@ function parseUserFeedSubscriptionEventLogItem(
     userId: parsedUserIdResult.value,
     eventType: EventType.UserFeedSubscription,
     data: parsedDataResult.value,
-    createdTime: parseFirestoreTimestamp(createdTime),
-    lastUpdatedTime: parseFirestoreTimestamp(lastUpdatedTime),
+    createdTime: parseStorageTimestamp(createdTime),
+    lastUpdatedTime: parseStorageTimestamp(lastUpdatedTime),
   });
 }
 
@@ -121,8 +117,8 @@ function parseFeedItemActionEventLogItem(
     userId: parsedUserIdResult.value,
     eventType: EventType.FeedItemAction,
     data: parsedDataResult.value,
-    createdTime: parseFirestoreTimestamp(createdTime),
-    lastUpdatedTime: parseFirestoreTimestamp(lastUpdatedTime),
+    createdTime: parseStorageTimestamp(createdTime),
+    lastUpdatedTime: parseStorageTimestamp(lastUpdatedTime),
   });
 }
 
@@ -168,13 +164,17 @@ function parseUserFeedSubscriptionEventLogItemData(
   });
 }
 
-export function toFirestoreEventLogItem(eventLogItem: EventLogItem): EventLogItemFromStorage {
+/**
+ * Converts a {@link EventLogItem} to a {@link EventLogItemFromStorage} object that can be persisted
+ * to Firestore.
+ */
+export function toStorageEventLogItem(eventLogItem: EventLogItem): EventLogItemFromStorage {
   return {
     eventId: eventLogItem.eventId,
     userId: eventLogItem.userId,
     eventType: eventLogItem.eventType,
     data: eventLogItem.data,
-    createdTime: toFirestoreTimestamp(eventLogItem.createdTime),
-    lastUpdatedTime: toFirestoreTimestamp(eventLogItem.lastUpdatedTime),
+    createdTime: toStorageTimestamp(eventLogItem.createdTime),
+    lastUpdatedTime: toStorageTimestamp(eventLogItem.lastUpdatedTime),
   };
 }

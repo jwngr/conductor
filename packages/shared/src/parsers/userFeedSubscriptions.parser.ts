@@ -1,9 +1,5 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {
-  parseFirestoreTimestamp,
-  parseZodResult,
-  toFirestoreTimestamp,
-} from '@shared/lib/parser.shared';
+import {parseStorageTimestamp, parseZodResult, toStorageTimestamp} from '@shared/lib/parser.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
 
 import {parseFeedSourceId} from '@shared/parsers/feedSources.parser';
@@ -70,15 +66,19 @@ export function parseUserFeedSubscription(
       title: parsedResult.value.title,
       isActive: parsedResult.value.isActive,
       unsubscribedTime: parsedResult.value.unsubscribedTime
-        ? parseFirestoreTimestamp(parsedResult.value.unsubscribedTime)
+        ? parseStorageTimestamp(parsedResult.value.unsubscribedTime)
         : undefined,
-      createdTime: parseFirestoreTimestamp(parsedResult.value.createdTime),
-      lastUpdatedTime: parseFirestoreTimestamp(parsedResult.value.lastUpdatedTime),
+      createdTime: parseStorageTimestamp(parsedResult.value.createdTime),
+      lastUpdatedTime: parseStorageTimestamp(parsedResult.value.lastUpdatedTime),
     })
   );
 }
 
-export function toFirestoreUserFeedSubscription(
+/**
+ * Converts a {@link UserFeedSubscription} to a {@link UserFeedSubscriptionFromStorage} object that can
+ * be persisted to Firestore.
+ */
+export function toStorageUserFeedSubscription(
   userFeedSubscription: UserFeedSubscription
 ): UserFeedSubscriptionFromStorage {
   return {
@@ -89,9 +89,9 @@ export function toFirestoreUserFeedSubscription(
     title: userFeedSubscription.title,
     isActive: userFeedSubscription.isActive,
     unsubscribedTime: userFeedSubscription.unsubscribedTime
-      ? toFirestoreTimestamp(userFeedSubscription.unsubscribedTime)
+      ? toStorageTimestamp(userFeedSubscription.unsubscribedTime)
       : undefined,
-    createdTime: toFirestoreTimestamp(userFeedSubscription.createdTime),
-    lastUpdatedTime: toFirestoreTimestamp(userFeedSubscription.lastUpdatedTime),
+    createdTime: toStorageTimestamp(userFeedSubscription.createdTime),
+    lastUpdatedTime: toStorageTimestamp(userFeedSubscription.lastUpdatedTime),
   };
 }
