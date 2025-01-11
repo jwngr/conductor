@@ -425,13 +425,13 @@ __metadata:
   dependencies:
     "@conductor/shared": "npm:1.0.0"
     "@conductor/shared-client": "npm:1.0.0"
-    "@types/chrome": "npm:^0.0.287"
-    "@types/react": "npm:^19.0.2"
+    "@types/chrome": "npm:^0.0.293"
+    "@types/react": "npm:^19.0.4"
     "@types/react-dom": "npm:^19.0.2"
     "@vitejs/plugin-react": "npm:^4.3.4"
     react: "npm:^19.0.0"
     react-dom: "npm:^19.0.0"
-    vite: "npm:^6.0.5"
+    vite: "npm:^6.0.7"
   languageName: unknown
   linkType: soft
 
@@ -439,8 +439,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@conductor/functions@workspace:packages/functions"
   dependencies:
-    "@mendable/firecrawl-js": "npm:^1.10.0"
-    "@types/node": "npm:^22.10.2"
+    "@mendable/firecrawl-js": "npm:^1.12.0"
+    "@types/node": "npm:^22.10.5"
     esbuild: "npm:^0.24.2"
     firebase-admin: "npm:^13.0.2"
     firebase-functions: "npm:^6.2.0"
@@ -457,7 +457,7 @@ __metadata:
     "@radix-ui/react-icons": "npm:^1.3.2"
     "@radix-ui/react-toast": "npm:^1.2.4"
     "@radix-ui/react-tooltip": "npm:^1.1.6"
-    "@types/react": "npm:^19.0.2"
+    "@types/react": "npm:^19.0.4"
     "@types/react-dom": "npm:^19.0.2"
     "@vitejs/plugin-react": "npm:^4.3.4"
     react: "npm:^19.0.0"
@@ -467,7 +467,7 @@ __metadata:
     source-map-explorer: "npm:^2.5.3"
     styled-components: "npm:^6.1.14"
     tinykeys: "npm:^3.0.0"
-    vite: "npm:^6.0.5"
+    vite: "npm:^6.0.7"
     vite-plugin-svgr: "npm:^4.3.0"
   languageName: unknown
   linkType: soft
@@ -478,8 +478,8 @@ __metadata:
   dependencies:
     "@conductor/shared": "npm:1.0.0"
     "@types/jsdom": "npm:^21.1.7"
-    "@types/node": "npm:^22.10.2"
-    jsdom: "npm:^25.0.1"
+    "@types/node": "npm:^22.10.5"
+    jsdom: "npm:^26.0.0"
   languageName: unknown
   linkType: soft
 
@@ -488,7 +488,7 @@ __metadata:
   resolution: "@conductor/shared-client@workspace:packages/sharedClient"
   dependencies:
     "@conductor/shared": "npm:1.0.0"
-    zustand: "npm:^5.0.2"
+    zustand: "npm:^5.0.3"
   languageName: unknown
   linkType: soft
 
@@ -504,7 +504,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@conductor/shared@workspace:packages/shared"
   dependencies:
-    uuid: "npm:^11.0.3"
+    uuid: "npm:^11.0.5"
   languageName: unknown
   linkType: soft
 
@@ -807,7 +807,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/js@npm:9.18.0, @eslint/js@npm:^9.17.0":
+"@eslint/js@npm:9.18.0, @eslint/js@npm:^9.18.0":
   version: 9.18.0
   resolution: "@eslint/js@npm:9.18.0"
   checksum: 10c0/3938344c5ac7feef4b73fcb30f3c3e753570cea74c24904bb5d07e9c42fcd34fcbc40f545b081356a299e11f360c9c274b348c05fb0113fc3d492e5175eee140
@@ -1887,7 +1887,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mendable/firecrawl-js@npm:^1.10.0":
+"@mendable/firecrawl-js@npm:^1.12.0":
   version: 1.12.0
   resolution: "@mendable/firecrawl-js@npm:1.12.0"
   dependencies:
@@ -2870,13 +2870,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/chrome@npm:^0.0.287":
-  version: 0.0.287
-  resolution: "@types/chrome@npm:0.0.287"
+"@types/chrome@npm:^0.0.293":
+  version: 0.0.293
+  resolution: "@types/chrome@npm:0.0.293"
   dependencies:
     "@types/filesystem": "npm:*"
     "@types/har-format": "npm:*"
-  checksum: 10c0/3c3c3b9a1e79f0f92f2fc254971985517aba95d8bc1355cbae2309e9cb001cd961a2edde764b6b88a9189d3a496602db3329da6aad0a90aff600fca832bc88e4
+  checksum: 10c0/d39233c60af7b06cd7867379f3e5085a34e505d758fcc62fc9be5ed88cd7d716d39fd1b6a40093565ac461b04a49419631cb7e4cdedcc180e4803c4a40ea2b90
   languageName: node
   linkType: hard
 
@@ -3076,7 +3076,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/lodash@npm:^4.17.13":
+"@types/lodash@npm:^4.17.14":
   version: 4.17.14
   resolution: "@types/lodash@npm:4.17.14"
   checksum: 10c0/343c6f722e0b39969036a885ad5aad6578479ead83987128c9b994e6b7f2fb9808244d802d4d332396bb09096f720a6c7060de16a492f5460e06a44560360322
@@ -3113,7 +3113,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:>=12.12.47, @types/node@npm:>=13.7.0, @types/node@npm:^22.10.2, @types/node@npm:^22.8.7":
+"@types/node@npm:*, @types/node@npm:>=12.12.47, @types/node@npm:>=13.7.0, @types/node@npm:^22.10.5, @types/node@npm:^22.8.7":
   version: 22.10.5
   resolution: "@types/node@npm:22.10.5"
   dependencies:
@@ -3145,7 +3145,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:^19.0.2":
+"@types/react@npm:^19.0.4":
   version: 19.0.4
   resolution: "@types/react@npm:19.0.4"
   dependencies:
@@ -4017,13 +4017,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "conductor@workspace:."
   dependencies:
-    "@eslint/js": "npm:^9.17.0"
+    "@eslint/js": "npm:^9.18.0"
     "@ianvs/prettier-plugin-sort-imports": "npm:^4.4.0"
     "@types/eslint__js": "npm:^8.42.3"
     "@types/jest": "npm:^29.5.14"
-    "@types/lodash": "npm:^4.17.13"
-    "@types/node": "npm:^22.10.2"
-    eslint: "npm:^9.17.0"
+    "@types/lodash": "npm:^4.17.14"
+    "@types/node": "npm:^22.10.5"
+    eslint: "npm:^9.18.0"
     eslint-plugin-react-hooks: "npm:^5.1.0"
     firebase: "npm:^11.1.0"
     globals: "npm:^15.14.0"
@@ -4031,8 +4031,8 @@ __metadata:
     lodash: "npm:^4.17.21"
     prettier: "npm:^3.4.2"
     ts-jest: "npm:^29.2.5"
-    typescript: "npm:^5.7.2"
-    typescript-eslint: "npm:^8.18.2"
+    typescript: "npm:^5.7.3"
+    typescript-eslint: "npm:^8.19.1"
     zod: "npm:^3.24.1"
   languageName: unknown
   linkType: soft
@@ -4154,7 +4154,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cssstyle@npm:^4.1.0":
+"cssstyle@npm:^4.2.1":
   version: 4.2.1
   resolution: "cssstyle@npm:4.2.1"
   dependencies:
@@ -4636,7 +4636,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:^9.17.0":
+"eslint@npm:^9.18.0":
   version: 9.18.0
   resolution: "eslint@npm:9.18.0"
   dependencies:
@@ -5124,7 +5124,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"form-data@npm:^4.0.0":
+"form-data@npm:^4.0.0, form-data@npm:^4.0.1":
   version: 4.0.1
   resolution: "form-data@npm:4.0.1"
   dependencies:
@@ -5570,7 +5570,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"https-proxy-agent@npm:^7.0.1, https-proxy-agent@npm:^7.0.5":
+"https-proxy-agent@npm:^7.0.1, https-proxy-agent@npm:^7.0.6":
   version: 7.0.6
   resolution: "https-proxy-agent@npm:7.0.6"
   dependencies:
@@ -6410,21 +6410,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsdom@npm:^25.0.1":
-  version: 25.0.1
-  resolution: "jsdom@npm:25.0.1"
+"jsdom@npm:^26.0.0":
+  version: 26.0.0
+  resolution: "jsdom@npm:26.0.0"
   dependencies:
-    cssstyle: "npm:^4.1.0"
+    cssstyle: "npm:^4.2.1"
     data-urls: "npm:^5.0.0"
     decimal.js: "npm:^10.4.3"
-    form-data: "npm:^4.0.0"
+    form-data: "npm:^4.0.1"
     html-encoding-sniffer: "npm:^4.0.0"
     http-proxy-agent: "npm:^7.0.2"
-    https-proxy-agent: "npm:^7.0.5"
+    https-proxy-agent: "npm:^7.0.6"
     is-potential-custom-element-name: "npm:^1.0.1"
-    nwsapi: "npm:^2.2.12"
-    parse5: "npm:^7.1.2"
-    rrweb-cssom: "npm:^0.7.1"
+    nwsapi: "npm:^2.2.16"
+    parse5: "npm:^7.2.1"
+    rrweb-cssom: "npm:^0.8.0"
     saxes: "npm:^6.0.0"
     symbol-tree: "npm:^3.2.4"
     tough-cookie: "npm:^5.0.0"
@@ -6432,15 +6432,15 @@ __metadata:
     webidl-conversions: "npm:^7.0.0"
     whatwg-encoding: "npm:^3.1.1"
     whatwg-mimetype: "npm:^4.0.0"
-    whatwg-url: "npm:^14.0.0"
+    whatwg-url: "npm:^14.1.0"
     ws: "npm:^8.18.0"
     xml-name-validator: "npm:^5.0.0"
   peerDependencies:
-    canvas: ^2.11.2
+    canvas: ^3.0.0
   peerDependenciesMeta:
     canvas:
       optional: true
-  checksum: 10c0/6bda32a6dfe4e37a30568bf51136bdb3ba9c0b72aadd6356280404275a34c9e097c8c25b5eb3c742e602623741e172da977ff456684befd77c9042ed9bf8c2b4
+  checksum: 10c0/e48725ba4027edcfc9bca5799eaec72c6561ecffe3675a8ff87fe9c3541ca4ff9f82b4eff5b3d9c527302da0d859b2f60e9364347a5d42b77f5c76c436c569dc
   languageName: node
   linkType: hard
 
@@ -7548,7 +7548,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nwsapi@npm:^2.2.12":
+"nwsapi@npm:^2.2.16":
   version: 2.2.16
   resolution: "nwsapi@npm:2.2.16"
   checksum: 10c0/0aa0637f4d51043d0183d994e08336bae996b03b42984381bf09ebdf3ff4909c018eda6b2a8aba0a08f3ea8303db8a0dad0608b38dc0bff15fd87017286ae21a
@@ -7720,7 +7720,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"parse5@npm:^7.0.0, parse5@npm:^7.1.2":
+"parse5@npm:^7.0.0, parse5@npm:^7.2.1":
   version: 7.2.1
   resolution: "parse5@npm:7.2.1"
   dependencies:
@@ -8360,13 +8360,6 @@ __metadata:
   bin:
     rollup: dist/bin/rollup
   checksum: 10c0/a318c57e2ca9741e1503bcd75483949c6e83edd72234a468010a3098a34248f523e44f7ad4fde90dc5c2da56abc1b78ac42a9329e1dbd708682728adbd8df7cc
-  languageName: node
-  linkType: hard
-
-"rrweb-cssom@npm:^0.7.1":
-  version: 0.7.1
-  resolution: "rrweb-cssom@npm:0.7.1"
-  checksum: 10c0/127b8ca6c8aac45e2755abbae6138d4a813b1bedc2caabf79466ae83ab3cfc84b5bfab513b7033f0aa4561c7753edf787d0dd01163ceacdee2e8eb1b6bf7237e
   languageName: node
   linkType: hard
 
@@ -9134,7 +9127,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript-eslint@npm:^8.18.2":
+"typescript-eslint@npm:^8.19.1":
   version: 8.19.1
   resolution: "typescript-eslint@npm:8.19.1"
   dependencies:
@@ -9155,7 +9148,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^5.7.2":
+"typescript@npm:^5.7.3":
   version: 5.7.3
   resolution: "typescript@npm:5.7.3"
   bin:
@@ -9165,7 +9158,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A^5.7.2#optional!builtin<compat/typescript>":
+"typescript@patch:typescript@npm%3A^5.7.3#optional!builtin<compat/typescript>":
   version: 5.7.3
   resolution: "typescript@patch:typescript@npm%3A5.7.3#optional!builtin<compat/typescript>::version=5.7.3&hash=cef18b"
   bin:
@@ -9338,7 +9331,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:^11.0.2, uuid@npm:^11.0.3":
+"uuid@npm:^11.0.2, uuid@npm:^11.0.5":
   version: 11.0.5
   resolution: "uuid@npm:11.0.5"
   bin:
@@ -9416,7 +9409,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^6.0.5":
+"vite@npm:^6.0.7":
   version: 6.0.7
   resolution: "vite@npm:6.0.7"
   dependencies:
@@ -9534,7 +9527,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"whatwg-url@npm:^14.0.0":
+"whatwg-url@npm:^14.0.0, whatwg-url@npm:^14.1.0":
   version: 14.1.0
   resolution: "whatwg-url@npm:14.1.0"
   dependencies:
@@ -9746,7 +9739,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zustand@npm:^5.0.2":
+"zustand@npm:^5.0.3":
   version: 5.0.3
   resolution: "zustand@npm:5.0.3"
   peerDependencies:
