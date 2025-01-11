@@ -18,11 +18,11 @@
     "tinykeys": "^3.0.0"
   },
   "devDependencies": {
-    "@types/react": "^19.0.2",
+    "@types/react": "^19.0.4",
     "@types/react-dom": "^19.0.2",
     "@vitejs/plugin-react": "^4.3.4",
     "source-map-explorer": "^2.5.3",
-    "vite": "^6.0.5",
+    "vite": "^6.0.7",
     "vite-plugin-svgr": "^4.3.0"
   },
   "scripts": {

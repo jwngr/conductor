@@ -10,11 +10,11 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@types/chrome": "^0.0.287",
-    "@types/react": "^19.0.2",
+    "@types/chrome": "^0.0.293",
+    "@types/react": "^19.0.4",
     "@types/react-dom": "^19.0.2",
     "@vitejs/plugin-react": "^4.3.4",
-    "vite": "^6.0.5"
+    "vite": "^6.0.7"
   },
   "scripts": {
     "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",

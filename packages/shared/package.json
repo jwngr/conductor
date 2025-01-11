@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "uuid": "^11.0.3"
+    "uuid": "^11.0.5"
   },
   "scripts": {
     "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",
