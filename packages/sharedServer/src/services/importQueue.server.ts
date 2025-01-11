@@ -8,6 +8,7 @@ import {
 } from '@shared/lib/errorUtils.shared';
 import {requestGet} from '@shared/lib/requests.shared';
 
+import type {AccountId} from '@shared/types/accounts.types';
 import type {FeedItemId} from '@shared/types/feedItems.types';
 import {
   ImportQueueItem,
@@ -16,7 +17,6 @@ import {
 } from '@shared/types/importQueue.types';
 import type {AsyncResult, Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import type {UserId} from '@shared/types/user.types';
 
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
@@ -85,12 +85,12 @@ export class ServerImportQueueService {
       this.importFeedItemHtml({
         url: importQueueItem.url,
         feedItemId: importQueueItem.feedItemId,
-        userId: importQueueItem.userId,
+        accountId: importQueueItem.accountId,
       }),
       this.importFeedItemFirecrawl({
         url: importQueueItem.url,
         feedItemId: importQueueItem.feedItemId,
-        userId: importQueueItem.userId,
+        accountId: importQueueItem.accountId,
       }),
     ]);
 
@@ -111,9 +111,9 @@ export class ServerImportQueueService {
   private async importFeedItemHtml(args: {
     readonly url: string;
     readonly feedItemId: FeedItemId;
-    readonly userId: UserId;
+    readonly accountId: AccountId;
   }): AsyncResult<void> {
-    const {url, feedItemId, userId} = args;
+    const {url, feedItemId, accountId} = args;
 
     // TODO: Extend the import functionality here:
     // 1. Handle more than just HTML.
@@ -131,7 +131,7 @@ export class ServerImportQueueService {
 
     const saveHtmlResult = await this.feedItemsService.saveRawHtmlToStorage({
       feedItemId,
-      userId,
+      accountId,
       rawHtml,
     });
 
@@ -144,9 +144,9 @@ export class ServerImportQueueService {
   private async importFeedItemFirecrawl(args: {
     readonly url: string;
     readonly feedItemId: FeedItemId;
-    readonly userId: UserId;
+    readonly accountId: AccountId;
   }): AsyncResult<void> {
-    const {url, feedItemId, userId} = args;
+    const {url, feedItemId, accountId} = args;
 
     const fetchDataResult = await this.firecrawlService.fetch(url);
 
@@ -158,8 +158,8 @@ export class ServerImportQueueService {
 
     const saveFirecrawlDataResult = await asyncTryAll([
       this.feedItemsService.saveMarkdownToStorage({
-        feedItemId: feedItemId,
-        userId: userId,
+        feedItemId,
+        accountId,
         markdown: firecrawlData.markdown,
       }),
       this.feedItemsService.updateImportedFeedItemInFirestore(feedItemId, {
@@ -204,21 +204,24 @@ export class ServerImportQueueService {
   }
 
   /**
-   * Permanently deletes all import queue items associated with a user.
+   * Permanently deletes all import queue items associated with an account.
    */
-  public async deleteAllForUser(userId: UserId): AsyncResult<void> {
-    // TODO: Consider introducing a `batchDeleteAllForUser` method.
+  public async deleteAllForAccount(accountId: AccountId): AsyncResult<void> {
+    // TODO: Consider introducing a `batchDeleteAllForAccount` method.
 
-    // Fetch the IDs for all of the user's import queue items.
+    // Fetch the IDs for all of the account's import queue items.
     const query = this.importQueueCollectionService
       .getCollectionRef()
-      .where('userId', '==', userId);
+      .where('accountId', '==', accountId);
     const queryResult = await this.importQueueCollectionService.fetchQueryIds(query);
     if (!queryResult.success) {
-      return prefixErrorResult(queryResult, 'Error fetching import queue items to delete for user');
+      return prefixErrorResult(
+        queryResult,
+        'Error fetching import queue items to delete for account'
+      );
     }
 
-    // Delete all of the user's import queue items.
+    // Delete all of the account's import queue items.
     const docIdsToDelete = queryResult.value;
     return await this.importQueueCollectionService.batchDeleteDocs(docIdsToDelete);
   }

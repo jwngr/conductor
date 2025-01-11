@@ -9,16 +9,16 @@ service firebase.storage {
       return request.auth != null;
     }
 
-    function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
+    function isOwner(accountId) {
+      return isAuthenticated() && request.auth.uid == accountId;
     }
 
     /////////////
     //  Rules  //
     /////////////
-    // Allow users to manage their own files.
-    match /feedItems/{userId}/{allPaths=**} {
-      allow read, write: if isOwner(userId);
+    // Allow accounts to manage their own files.
+    match /feedItems/{accountId}/{allPaths=**} {
+      allow read, write: if isOwner(accountId);
     }
 
     // Disallow all other operations.

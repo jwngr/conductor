@@ -24,8 +24,8 @@ const LeftSidebarItemAvatar: React.FC<{
       return <div>{icon.emoji}</div>;
     case CustomIconType.Icon:
       return <TextIcon name={icon.iconName} size={16} />;
-    case CustomIconType.UserFile:
-      return <img src={icon.srcUrl} alt="User uploaded image" />;
+    case CustomIconType.CustomFile:
+      return <img src={icon.srcUrl} alt="Custom uploaded image" />;
     default:
       assertNever(icon);
   }

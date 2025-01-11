@@ -3,9 +3,9 @@ import type {WithFieldValue} from 'firebase-admin/firestore';
 
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
+import type {AccountId} from '@shared/types/accounts.types';
 import type {FeedSource} from '@shared/types/feedSources.types';
 import {makeSuccessResult, type AsyncResult} from '@shared/types/result.types';
-import type {UserId} from '@shared/types/user.types';
 import type {
   UserFeedSubscription,
   UserFeedSubscriptionFromStorage,
@@ -31,14 +31,14 @@ export class ServerUserFeedSubscriptionsService {
   }
 
   /**
-   * Fetches all user feed subscription documents for an individual user from Firestore.
+   * Fetches all user feed subscription documents for an individual account from Firestore.
    */
-  public async fetchAllForUser(userId: UserId): AsyncResult<UserFeedSubscription[]> {
+  public async fetchAllForAccount(accountId: AccountId): AsyncResult<UserFeedSubscription[]> {
     const query = this.userFeedSubscriptionsCollectionService
       .getCollectionRef()
-      .where('userId', '==', userId);
+      .where('accountId', '==', accountId);
     const queryResult = await this.userFeedSubscriptionsCollectionService.fetchQueryDocs(query);
-    return prefixResultIfError(queryResult, 'Error fetching user feed subscriptions for user');
+    return prefixResultIfError(queryResult, 'Error fetching user feed subscriptions for account');
   }
 
   /**
@@ -46,12 +46,12 @@ export class ServerUserFeedSubscriptionsService {
    */
   public async create(args: {
     feedSource: FeedSource;
-    userId: UserId;
+    accountId: AccountId;
   }): AsyncResult<UserFeedSubscription> {
-    const {feedSource, userId} = args;
+    const {feedSource, accountId} = args;
 
     // Make a new user feed subscription object locally.
-    const userFeedSubscriptionResult = makeUserFeedSubscription({feedSource, userId});
+    const userFeedSubscriptionResult = makeUserFeedSubscription({feedSource, accountId});
     if (!userFeedSubscriptionResult.success) return userFeedSubscriptionResult;
     const newUserFeedSubscription = userFeedSubscriptionResult.value;
 
@@ -68,9 +68,11 @@ export class ServerUserFeedSubscriptionsService {
   }
 
   /**
-   * Deactivates a user's subscription to an individual feed source.
+   * Deactivates an account's subscription to an individual feed source. New subscription items will
+   * no longer be added to the subscribed account. The feed source may still be subscribed to by
+   * another account.
    */
-  public async unsubscribeUserFromFeed(
+  public async deactivateFeedSubscription(
     userFeedSubscriptionId: UserFeedSubscriptionId
   ): AsyncResult<void> {
     return this.update(userFeedSubscriptionId, {
@@ -103,22 +105,22 @@ export class ServerUserFeedSubscriptionsService {
   }
 
   /**
-   * Permanently deletes all user feed subscription documents associated with a user from Firestore.
+   * Permanently deletes all user feed subscription Firestore documents associated with an account.
    */
-  public async deleteAllForUser(userId: UserId): AsyncResult<void> {
-    // Fetch the IDs for all of the user's feed subscriptions.
+  public async deleteAllForAccount(accountId: AccountId): AsyncResult<void> {
+    // Fetch the IDs for all of the account's feed subscriptions.
     const query = this.userFeedSubscriptionsCollectionService
       .getCollectionRef()
-      .where('userId', '==', userId);
+      .where('accountId', '==', accountId);
     const queryResult = await this.userFeedSubscriptionsCollectionService.fetchQueryIds(query);
     if (!queryResult.success) {
       return prefixErrorResult(
         queryResult,
-        'Error fetching user feed subscriptions to delete in Firestore'
+        'Error fetching user feed subscriptions to delete for account in Firestore'
       );
     }
 
-    // Delete all of the user's feed subscriptions.
+    // Delete all of the account's feed subscriptions.
     const docIdsToDelete = queryResult.value;
     return await this.userFeedSubscriptionsCollectionService.batchDeleteDocs(docIdsToDelete);
   }

@@ -7,7 +7,7 @@ import {logger} from '@shared/services/logger.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 import {Urls} from '@shared/lib/urls.shared';
 
-import {parseEmailAddress} from '@shared/parsers/user.parser';
+import {parseEmailAddress} from '@shared/parsers/accounts.parser';
 
 import {useAuthStore} from '@sharedClient/stores/AuthStore';
 
@@ -15,45 +15,49 @@ import {authService} from '@sharedClient/services/auth.client';
 import {firebaseService} from '@sharedClient/services/firebase.client';
 
 const AuthServiceSubscription: React.FC = () => {
-  const {setLoggedInUser} = useAuthStore();
+  const {setLoggedInAccount} = useAuthStore();
   useEffect(() => {
     const unsubscribe = authService.onAuthStateChanged({
-      successCallback: (loggedInUser) => {
-        logger.log('User service auth state changed', {loggedInUser});
-        setLoggedInUser(loggedInUser);
+      successCallback: (loggedInAccount) => {
+        logger.log('Auth service auth state changed', {loggedInAccount});
+        setLoggedInAccount(loggedInAccount);
       },
       errorCallback: (error) => {
-        logger.error(prefixError(error, 'User service `onAuthStateChanged` listener errored'));
+        logger.error(prefixError(error, 'Auth service `onAuthStateChanged` listener errored'));
       },
     });
     return () => unsubscribe();
-  }, [setLoggedInUser]);
+  }, [setLoggedInAccount]);
   return null;
 };
 
 const PasswordlessAuthSubscription: React.FC = () => {
   const navigate = useNavigate();
-  const {setLoggedInUser} = useAuthStore();
+  const {setLoggedInAccount} = useAuthStore();
   useEffect(() => {
     const go = async () => {
       // Only do something if the current URL is a "sign-in with email" link.
       if (!isSignInWithEmailLink(firebaseService.auth, window.location.href)) return;
 
-      // The sign in screen persisted the email to login in local storage. If the user opened the
-      // link on the same browser as the one used to sign in, this value will be present.
+      // The sign in screen persisted the email to login in local storage. If the sign-in link was
+      // opened using the same browser as the one used to sign in, this value will be present.
       let maybeEmail = window.localStorage.getItem('emailForSignIn');
 
       if (!maybeEmail) {
-        // If the user opened the link on a different device, ask them for the email again.
+        // The email is not available in local storage. Most likely, the sign-in link was opened on
+        // a different device or browser session than it was generated from. In this scenario,
+        // re-prompt for the email.
         // TODO: Replace this prompt with something nicer.
         maybeEmail = window.prompt('Please provide your email for confirmation');
       }
 
       const emailResult = parseEmailAddress(maybeEmail ?? '');
 
-      // Do nothing if the user didn't provide a valid email.
+      // Log and error, but do nothing else if we don't have a valid email.
       if (!emailResult.success) {
-        logger.log('Invalid email provided for passwordless sign-in', {email: maybeEmail});
+        logger.error(new Error('Invalid email provided for passwordless sign-in'), {
+          email: maybeEmail,
+        });
         return;
       }
 
@@ -81,7 +85,7 @@ const PasswordlessAuthSubscription: React.FC = () => {
     };
 
     void go();
-  }, [navigate, setLoggedInUser]);
+  }, [navigate, setLoggedInAccount]);
   return null;
 };
 

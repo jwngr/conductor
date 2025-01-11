@@ -5,17 +5,17 @@ import {ThemeProvider} from 'styled-components';
 import {theme} from '@shared/lib/theme.shared';
 import {Urls} from '@shared/lib/urls.shared';
 
-import {useMaybeLoggedInUser} from '@sharedClient/hooks/auth.hooks';
+import {useMaybeLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
 import {ErrorBoundary} from '@src/components/atoms/ErrorBoundary';
 import {Toaster} from '@src/components/atoms/Toaster';
 import {TooltipProvider} from '@src/components/atoms/Tooltip';
 import {AuthSubscriptions} from '@src/components/auth/AuthSubscriptions';
-import {RequireLoggedInUser} from '@src/components/auth/RequireLoggedInUser';
+import {RequireLoggedInAccount} from '@src/components/auth/RequireLoggedInAccount';
 import {SignOutRedirect} from '@src/components/auth/SignOutRedirect';
 import {DevToolbar} from '@src/components/devToolbar/DevToolbar';
 import {RegisterFeedItemImporterDevToolbarSection} from '@src/components/devToolbar/RegisterFeedItemImporterDevTool';
-import {RegisterUserFeedSubscriberDevToolbarSection} from '@src/components/devToolbar/RegisterUserFeedSubscriberDevToolbarActions';
+import {RegisterAccountFeedSubscriberDevToolbarSection} from '@src/components/devToolbar/RegisterUserFeedSubscriberDevToolbarActions';
 
 import {NotFoundScreen} from '@src/screens/404';
 import {ErrorScreen} from '@src/screens/ErrorScreen';
@@ -45,26 +45,26 @@ const AllRoutes: React.FC = () => {
           key={item.viewType}
           path={Urls.forView(item.viewType)}
           element={
-            <RequireLoggedInUser>
+            <RequireLoggedInAccount>
               <ViewScreen viewType={item.viewType} />
-            </RequireLoggedInUser>
+            </RequireLoggedInAccount>
           }
         />
       ))}
       <Route
         path={Urls.forFeedItemUnsafe(':feedItemId')}
         element={
-          <RequireLoggedInUser>
+          <RequireLoggedInAccount>
             <FeedItemScreen />
-          </RequireLoggedInUser>
+          </RequireLoggedInAccount>
         }
       />
       <Route
         path={Urls.forFeedSubscriptions()}
         element={
-          <RequireLoggedInUser>
+          <RequireLoggedInAccount>
             <FeedSubscriptionsScreen />
-          </RequireLoggedInUser>
+          </RequireLoggedInAccount>
         }
       />
 
@@ -86,18 +86,18 @@ const PermanentGlobalSubscriptions: React.FC = () => {
 };
 
 /**
- * Subscriptions that are active whenever there is a logged-in user.
+ * Subscriptions that are active whenever there is a logged-in account.
  */
 const LoggedInGlobalSubscriptions: React.FC = () => {
-  const loggedInUser = useMaybeLoggedInUser();
+  const loggedInAccount = useMaybeLoggedInAccount();
 
-  if (!loggedInUser) return null;
+  if (!loggedInAccount) return null;
 
   return (
-    <RequireLoggedInUser>
+    <RequireLoggedInAccount>
       <RegisterFeedItemImporterDevToolbarSection />
-      <RegisterUserFeedSubscriberDevToolbarSection />
-    </RequireLoggedInUser>
+      <RegisterAccountFeedSubscriberDevToolbarSection />
+    </RequireLoggedInAccount>
   );
 };
 

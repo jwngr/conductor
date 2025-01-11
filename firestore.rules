@@ -9,16 +9,16 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
+    function isOwner(accountId) {
+      return isAuthenticated() && request.auth.uid == accountId;
     }
 
     function isResourceOwner() {
-      return isOwner(resource.data.userId);
+      return isOwner(resource.data.accountId);
     }
 
     function isNewResourceOwner() {
-      return isOwner(request.resource.data.userId);
+      return isOwner(request.resource.data.accountId);
     }
 
     function isValidFeedItemDoc(feedItemId) {
@@ -52,7 +52,7 @@ service cloud.firestore {
     function isValidUserFeedSubscriptionDoc(userFeedSubscriptionId) {
       return request.resource.data.keys().hasAll([
         'userFeedSubscriptionId',
-        'userId',
+        'accountId',
         'url',
         'title',
         'isActive',
@@ -69,7 +69,7 @@ service cloud.firestore {
     function isValidImportQueueDoc(importQueueItemId) {
       return request.resource.data.keys().hasAll([
         'importQueueItemId',
-        'userId',
+        'accountId',
         'feedItemId', 
         'url',
         'createdTime',
@@ -100,10 +100,10 @@ service cloud.firestore {
     /////////////
     //  Rules  //
     /////////////
-    match /users/{userId} {
-      // Allow users to manage their own user data.
+    match /accounts/{accountId} {
+      // Allow accounts to manage their own data.
       // TODO: Some fields should not be user-editable.
-      allow read: if isOwner(userId) && isResourceOwner();
+      allow read: if isOwner(accountId) && isResourceOwner();
       allow create: if isNewResourceOwner();
       allow update: if isResourceOwner() && isNewResourceOwner();
 
@@ -120,7 +120,7 @@ service cloud.firestore {
     }
 
     match /feedItems/{feedItemId} {
-      // Allow users to manage their own feed items.
+      // Allow accounts to manage their own feed items.
       // TODO: Some fields should not be user-editable.
       allow read: if isResourceOwner();
       allow create: if isNewResourceOwner() && isValidFeedItemDoc(feedItemId);
@@ -129,7 +129,7 @@ service cloud.firestore {
     }
 
     match /userFeedSubscriptions/{userFeedSubscriptionId} {
-      // Allow users to manage their own feed subscriptions.
+      // Allow accounts to manage their own feed subscriptions.
       // TODO: Some fields should not be user-editable.
       allow read: if isResourceOwner();
       allow create: if isNewResourceOwner() && isValidUserFeedSubscriptionDoc(userFeedSubscriptionId);
@@ -138,7 +138,7 @@ service cloud.firestore {
     }
 
     match /importQueue/{importQueueItemId} {
-      // Allow creation if the current user owns the new document.
+      // Allow creation if the current account owns the new document.
       allow create: if isNewResourceOwner() && isValidImportQueueDoc(importQueueItemId);
       allow update: if isNewResourceOwner() && isValidImportQueueDoc(importQueueItemId);
 
@@ -148,10 +148,10 @@ service cloud.firestore {
     }
 
     match /eventLog/{eventId} {
-      // Allow users to read their own event log.
+      // Allow accounts to read their own events.
       allow read: if isResourceOwner();
 
-      // Allow creation and deletion if the current user owns the new document.
+      // Allow creation and deletion if the current account owns the new document.
       allow create: if isNewResourceOwner() && isValidEventLogItemDoc(eventId);
       allow delete: if isResourceOwner();
 

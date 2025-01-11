@@ -28,7 +28,7 @@ export function makeFeedSourceId(): FeedSourceId {
  * A generator of {@link FeedItem}s over time.
  *
  * Use the {@link UserFeedSubscription} object to manage user subscriptions to a {@link FeedSource}.
- * A feed source is created the first time a user subscribes to a unique feed URL.
+ * A feed source is created the first time an account subscribes to a unique feed URL.
  */
 export interface FeedSource extends BaseStoreItem {
   readonly feedSourceId: FeedSourceId;

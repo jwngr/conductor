@@ -2,8 +2,8 @@ import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseStorageTimestamp, parseZodResult, toStorageTimestamp} from '@shared/lib/parser.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
 
+import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseFeedSourceId} from '@shared/parsers/feedSources.parser';
-import {parseUserId} from '@shared/parsers/user.parser';
 
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
@@ -46,8 +46,8 @@ export function parseUserFeedSubscription(
     return prefixErrorResult(parsedResult, 'Invalid user feed subscription');
   }
 
-  const parsedUserIdResult = parseUserId(parsedResult.value.userId);
-  if (!parsedUserIdResult.success) return parsedUserIdResult;
+  const parsedAccountIdResult = parseAccountId(parsedResult.value.accountId);
+  if (!parsedAccountIdResult.success) return parsedAccountIdResult;
 
   const parsedFeedSourceIdResult = parseFeedSourceId(parsedResult.value.feedSourceId);
   if (!parsedFeedSourceIdResult.success) return parsedFeedSourceIdResult;
@@ -61,7 +61,7 @@ export function parseUserFeedSubscription(
     omitUndefined({
       userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
       feedSourceId: parsedFeedSourceIdResult.value,
-      userId: parsedUserIdResult.value,
+      accountId: parsedAccountIdResult.value,
       url: parsedResult.value.url,
       title: parsedResult.value.title,
       isActive: parsedResult.value.isActive,
@@ -84,7 +84,7 @@ export function toStorageUserFeedSubscription(
   return {
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     feedSourceId: userFeedSubscription.feedSourceId,
-    userId: userFeedSubscription.userId,
+    accountId: userFeedSubscription.accountId,
     url: userFeedSubscription.url,
     title: userFeedSubscription.title,
     isActive: userFeedSubscription.isActive,

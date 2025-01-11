@@ -20,6 +20,7 @@ import {Views} from '@shared/lib/views.shared';
 
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 
+import type {AccountId, AuthStateChangedUnsubscribe} from '@shared/types/accounts.types';
 import {
   FeedItemType,
   type FeedItem,
@@ -30,7 +31,6 @@ import {makeImportQueueItem} from '@shared/types/importQueue.types';
 import {fromFilterOperator, type ViewType} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import type {AuthStateChangedUnsubscribe, UserId} from '@shared/types/user.types';
 import type {Consumer} from '@shared/types/utils.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';
@@ -41,14 +41,14 @@ import {
 import {useImportQueueService} from '@sharedClient/services/importQueue.client';
 import type {ClientImportQueueService} from '@sharedClient/services/importQueue.client';
 
-import {useLoggedInUser} from '@sharedClient/hooks/auth.hooks';
+import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
 const feedItemsStorageRef = storageRef(firebaseService.storage, FEED_ITEMS_STORAGE_COLLECTION);
 
 const feedItemFirestoreConverter = makeFirestoreDataConverter(toStorageFeedItem, parseFeedItem);
 
 export function useFeedItemsService(): ClientFeedItemsService {
-  const loggedInUser = useLoggedInUser();
+  const loggedInAccount = useLoggedInAccount();
   const importQueueService = useImportQueueService();
 
   const feedItemsService = useMemo(() => {
@@ -62,9 +62,9 @@ export function useFeedItemsService(): ClientFeedItemsService {
       feedItemsCollectionService,
       importQueueService,
       feedItemsStorageRef,
-      userId: loggedInUser.userId,
+      accountId: loggedInAccount.accountId,
     });
-  }, [loggedInUser.userId, importQueueService]);
+  }, [loggedInAccount.accountId, importQueueService]);
 
   return feedItemsService;
 }
@@ -165,18 +165,18 @@ export class ClientFeedItemsService {
   private readonly feedItemsCollectionService: FeedItemsCollectionService;
   private readonly importQueueService: ClientImportQueueService;
   private readonly feedItemsStorageRef: StorageReference;
-  private readonly userId: UserId;
+  private readonly accountId: AccountId;
 
   constructor(args: {
     readonly feedItemsCollectionService: FeedItemsCollectionService;
     readonly importQueueService: ClientImportQueueService;
     readonly feedItemsStorageRef: StorageReference;
-    readonly userId: UserId;
+    readonly accountId: AccountId;
   }) {
     this.feedItemsCollectionService = args.feedItemsCollectionService;
     this.importQueueService = args.importQueueService;
     this.feedItemsStorageRef = args.feedItemsStorageRef;
-    this.userId = args.userId;
+    this.accountId = args.accountId;
   }
 
   public async fetchById(feedItemId: FeedItemId): AsyncResult<FeedItem | null> {
@@ -206,7 +206,7 @@ export class ClientFeedItemsService {
     // Construct Firestore queries from the view config.
     const viewConfig = Views.get(viewType);
     const whereClauses = [
-      where('userId', '==', this.userId),
+      where('accountId', '==', this.accountId),
       ...viewConfig.filters.map((filter) =>
         where(filter.field, fromFilterOperator(filter.op), filter.value)
       ),
@@ -238,7 +238,7 @@ export class ClientFeedItemsService {
       // TODO: Make this dynamic based on the actual content. Maybe it should be null initially
       // until we've done the import? Or should we compute this at save time?
       source,
-      userId: this.userId,
+      accountId: this.accountId,
     });
     if (!feedItemResult.success) return feedItemResult;
     const feedItem = feedItemResult.value;
@@ -246,7 +246,7 @@ export class ClientFeedItemsService {
     // Add the feed item to the import queue.
     const makeImportQueueItemResult = makeImportQueueItem({
       feedItemId: feedItem.feedItemId,
-      userId: this.userId,
+      accountId: this.accountId,
       url: trimmedUrl,
     });
     if (!makeImportQueueItemResult.success) return makeImportQueueItemResult;
@@ -256,7 +256,7 @@ export class ClientFeedItemsService {
       this.feedItemsCollectionService.setDoc(feedItem.feedItemId, feedItem),
       this.importQueueService.create({
         feedItemId: feedItem.feedItemId,
-        userId: this.userId,
+        accountId: this.accountId,
         url: trimmedUrl,
       }),
     ]);
@@ -289,7 +289,7 @@ export class ClientFeedItemsService {
   public async getFeedItemMarkdown(feedItemId: FeedItemId): AsyncResult<string> {
     const fileRef = storageRef(
       this.feedItemsStorageRef,
-      `${this.userId}/${feedItemId}/llmContext.md`
+      `${this.accountId}/${feedItemId}/llmContext.md`
     );
 
     // Fetch the download URL for the file.
