@@ -30,7 +30,7 @@
     "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",
     "validate:lint": "eslint src",
     "validate:lint:fix": "eslint src --fix",
-    "validate:types": "yarn run hack-type && tsc --build",
+    "validate:types": "yarn run hack-cookie-type && yarn run hack-styled-components-type && tsc --build",
     "validate:format": "prettier --check 'src/**/*.{js,jsx,ts,tsx,json,css,svg}'",
     "format": "prettier --write 'src/**/*.{js,jsx,ts,tsx,json,css,svg}'",
     "start": "vite",
