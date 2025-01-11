@@ -107,8 +107,8 @@ export const DevToolbar: React.FC<{
       <DevToolbarContent $isOpen={isOpen}>
         {devToolbarSections.map((section) =>
           section.requiresAuth ? (
-            <RequireLoggedInAccount>
-              <DevToolbarSectionComponent key={section.sectionType} section={section} />
+            <RequireLoggedInAccount key={section.sectionType}>
+              <DevToolbarSectionComponent section={section} />
             </RequireLoggedInAccount>
           ) : (
             <DevToolbarSectionComponent key={section.sectionType} section={section} />
