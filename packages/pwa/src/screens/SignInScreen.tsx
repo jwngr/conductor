@@ -4,14 +4,14 @@ import styled from 'styled-components';
 
 import {isValidEmail} from '@shared/lib/utils.shared';
 
-import {parseEmailAddress} from '@shared/parsers/user.parser';
+import {parseEmailAddress} from '@shared/parsers/accounts.parser';
 
 import {ThemeColor} from '@shared/types/theme.types';
 import type {Consumer} from '@shared/types/utils.types';
 
 import {authService} from '@sharedClient/services/auth.client';
 
-import {useMaybeLoggedInUser} from '@sharedClient/hooks/auth.hooks';
+import {useMaybeLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
 import {Button, ButtonVariant} from '@src/components/atoms/Button';
 import {FlexColumn} from '@src/components/atoms/Flex';
@@ -78,14 +78,14 @@ const PasswordlessAuthButton: React.FC<{
 };
 
 export const SignInScreen: React.FC = () => {
-  const {loggedInUser} = useMaybeLoggedInUser();
+  const {loggedInAccount} = useMaybeLoggedInAccount();
 
   const [emailInputVal, setEmailInputVal] = useState('');
   const [successfulSignInLinkSentTo, setSuccessfulSignInLinkSentTo] = useState<string | null>(null);
   const [signInLinkError, setSignInLinkError] = useState<Error | null>(null);
-  let loggedInUserContent: React.ReactNode = null;
-  if (loggedInUser) {
-    loggedInUserContent = <Text>Already signed in as {loggedInUser.email}</Text>;
+  let loggedInAccountContent: React.ReactNode = null;
+  if (loggedInAccount) {
+    loggedInAccountContent = <Text>Already signed in as {loggedInAccount.email}</Text>;
   }
 
   return (
@@ -151,7 +151,7 @@ export const SignInScreen: React.FC = () => {
             {signInLinkError.message}
           </Text>
         ) : null}
-        {loggedInUserContent}
+        {loggedInAccountContent}
       </SignInContentWrapper>
     </SignInScreenWrapper>
   );

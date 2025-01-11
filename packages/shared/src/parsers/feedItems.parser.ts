@@ -2,7 +2,7 @@ import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.sha
 import {parseStorageTimestamp, parseZodResult, toStorageTimestamp} from '@shared/lib/parser.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
 
-import {parseUserId} from '@shared/parsers/user.parser';
+import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions.parser';
 
 import type {
@@ -115,8 +115,8 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
   const parsedIdResult = parseFeedItemId(parsedFeedItemResult.value.feedItemId);
   if (!parsedIdResult.success) return parsedIdResult;
 
-  const parsedUserIdResult = parseUserId(parsedFeedItemResult.value.userId);
-  if (!parsedUserIdResult.success) return parsedUserIdResult;
+  const parsedAccountIdReult = parseAccountId(parsedFeedItemResult.value.accountId);
+  if (!parsedAccountIdReult.success) return parsedAccountIdReult;
 
   const parsedSourceResult = parseFeedItemSource(parsedFeedItemResult.value.source);
   if (!parsedSourceResult.success) return parsedSourceResult;
@@ -124,7 +124,7 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
   return makeSuccessResult(
     omitUndefined({
       type: parsedFeedItemResult.value.type,
-      userId: parsedUserIdResult.value,
+      accountId: parsedAccountIdReult.value,
       source: parsedSourceResult.value,
       feedItemId: parsedIdResult.value,
       url: parsedFeedItemResult.value.url,
@@ -149,7 +149,7 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
 export function toStorageFeedItem(feedItem: FeedItem): FeedItemFromStorage {
   return omitUndefined({
     feedItemId: feedItem.feedItemId,
-    userId: feedItem.userId,
+    accountId: feedItem.accountId,
     type: feedItem.type,
     source: feedItem.source,
     url: feedItem.url,

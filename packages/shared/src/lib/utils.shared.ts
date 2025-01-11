@@ -2,8 +2,7 @@ import {v4 as uuidv4} from 'uuid';
 
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import type {EmailAddress} from '@shared/types/user.types';
-import type {Func, Supplier, UUID} from '@shared/types/utils.types';
+import type {EmailAddress, Func, Supplier, UUID} from '@shared/types/utils.types';
 
 /**
  * Formats a number with commas.

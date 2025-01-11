@@ -2,12 +2,12 @@ import {z} from 'zod';
 
 import {makeUuid} from '@shared/lib/utils.shared';
 
+import type {AccountId} from '@shared/types/accounts.types';
+import {AccountIdSchema} from '@shared/types/accounts.types';
 import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {IconName} from '@shared/types/icons.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import type {TagId} from '@shared/types/tags.types';
-import type {UserId} from '@shared/types/user.types';
-import {UserIdSchema} from '@shared/types/user.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import {UserFeedSubscriptionIdSchema} from '@shared/types/userFeedSubscriptions.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
@@ -114,7 +114,7 @@ export type FeedItemSource = FeedItemAppSource | FeedItemExtensionSource | FeedI
 
 interface BaseFeedItem extends BaseStoreItem {
   readonly feedItemId: FeedItemId;
-  readonly userId: UserId;
+  readonly accountId: AccountId;
   readonly type: FeedItemType;
   readonly source: FeedItemSource;
 
@@ -135,7 +135,7 @@ interface BaseFeedItem extends BaseStoreItem {
   /**
    * Feed item state needs to allow for:
    * - quick reads and writes.
-   * - indexing of arbitrary boolean user states.
+   * - indexing of arbitrary boolean states.
    *
    * To accomplish this, most state is stored as tags that either exist in this map or not.
    */
@@ -150,7 +150,7 @@ interface BaseFeedItem extends BaseStoreItem {
  */
 export const FeedItemFromStorageSchema = z.object({
   feedItemId: FeedItemIdSchema,
-  userId: UserIdSchema,
+  accountId: AccountIdSchema,
   type: z.nativeEnum(FeedItemType),
   source: FeedItemSourceFromStorageSchema,
   url: z.string().url(),

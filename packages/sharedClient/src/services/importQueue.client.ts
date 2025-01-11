@@ -44,7 +44,7 @@ export class ClientImportQueueService {
     // Create the new feed source in memory.
     const makeImportQueueItemResult = makeImportQueueItem({
       feedItemId: importQueueItemDetails.feedItemId,
-      userId: importQueueItemDetails.userId,
+      accountId: importQueueItemDetails.accountId,
       url: importQueueItemDetails.url,
     });
     if (!makeImportQueueItemResult.success) return makeImportQueueItemResult;

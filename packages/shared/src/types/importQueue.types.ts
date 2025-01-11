@@ -2,13 +2,13 @@ import {z} from 'zod';
 
 import {makeUuid} from '@shared/lib/utils.shared';
 
+import {AccountIdSchema} from '@shared/types/accounts.types';
+import type {AccountId} from '@shared/types/accounts.types';
 import {FeedItemIdSchema} from '@shared/types/feedItems.types';
 import type {FeedItemId} from '@shared/types/feedItems.types';
 import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
-import {UserIdSchema} from '@shared/types/user.types';
-import type {UserId} from '@shared/types/user.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 
 /**
@@ -53,7 +53,7 @@ export enum ImportQueueItemStatus {
  */
 export interface ImportQueueItem extends BaseStoreItem {
   readonly importQueueItemId: ImportQueueItemId;
-  readonly userId: UserId;
+  readonly accountId: AccountId;
   readonly feedItemId: FeedItemId;
   readonly url: string;
   readonly status: ImportQueueItemStatus;
@@ -64,7 +64,7 @@ export interface ImportQueueItem extends BaseStoreItem {
  */
 export const ImportQueueItemFromStrageSchema = z.object({
   importQueueItemId: ImportQueueItemIdSchema,
-  userId: UserIdSchema,
+  accountId: AccountIdSchema,
   feedItemId: FeedItemIdSchema,
   url: z.string().url(),
   status: z.nativeEnum(ImportQueueItemStatus),
@@ -83,12 +83,12 @@ export type ImportQueueItemFromStorage = z.infer<typeof ImportQueueItemFromStrag
 export function makeImportQueueItem(
   args: Omit<ImportQueueItem, 'importQueueItemId' | 'status' | 'createdTime' | 'lastUpdatedTime'>
 ): Result<ImportQueueItem> {
-  const {feedItemId, userId, url} = args;
+  const {feedItemId, accountId, url} = args;
 
   return makeSuccessResult({
     importQueueItemId: makeImportQueueItemId(),
     feedItemId,
-    userId,
+    accountId,
     url,
     status: ImportQueueItemStatus.New,
     // TODO: Should use server timestamps instead.

@@ -9,13 +9,13 @@ import {
 } from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 
+import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 import {
   parseImportQueueItem,
   parseImportQueueItemId,
   toStorageImportQueueItem,
 } from '@shared/parsers/importQueue.parser';
-import {parseUserId} from '@shared/parsers/user.parser';
 
 import {FEED_ITEM_EXTENSION_SOURCE} from '@shared/types/feedItems.types';
 
@@ -31,13 +31,13 @@ import {ClientImportQueueService} from '@sharedClient/services/importQueue.clien
 const feedItemsStorageRef = storageRef(firebaseService.storage, FEED_ITEMS_STORAGE_COLLECTION);
 
 chrome.action.onClicked.addListener(async (tab) => {
-  // TODO: Get the user ID from the extension's auth once it's implemented.
-  const userIdResult = parseUserId('TODO');
-  if (!userIdResult.success) {
-    logger.error(prefixError(userIdResult.error, 'Error getting user ID'));
+  // TODO: Get the account ID from the extension's auth once it's implemented.
+  const accountIdResult = parseAccountId('TODO');
+  if (!accountIdResult.success) {
+    logger.error(prefixError(accountIdResult.error, 'Error getting account ID'));
     return;
   }
-  const userId = userIdResult.value;
+  const accountId = accountIdResult.value;
 
   const tabUrl = tab.url;
   if (!tabUrl) {
@@ -72,7 +72,7 @@ chrome.action.onClicked.addListener(async (tab) => {
     feedItemsCollectionService: feedItemsCollectionService,
     importQueueService: importQueueService,
     feedItemsStorageRef,
-    userId,
+    accountId,
   });
 
   const addFeedItemResult = await feedItemsService.createFeedItem({
@@ -85,5 +85,5 @@ chrome.action.onClicked.addListener(async (tab) => {
     return;
   }
 
-  logger.log('URL saved successfully!', {userId});
+  logger.log('URL saved successfully!', {});
 });

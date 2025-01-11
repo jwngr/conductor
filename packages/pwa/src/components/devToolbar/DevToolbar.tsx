@@ -53,7 +53,7 @@ export const DevToolbar: React.FC<DevToolbarProps> = ({isVisible = true}) => {
 
   const devToolbarSections = useDevToolbarStore((state) => state.sections);
 
-  // Close the toolbar if the user clicks outside of it.
+  // Close the toolbar on clicks outside of it.
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (isOpen && toolbarRef.current && !toolbarRef.current.contains(event.target as Node)) {

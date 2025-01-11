@@ -1,8 +1,8 @@
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {parseStorageTimestamp, parseZodResult, toStorageTimestamp} from '@shared/lib/parser.shared';
 
+import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
-import {parseUserId} from '@shared/parsers/user.parser';
 
 import type {
   ImportQueueItem,
@@ -46,15 +46,15 @@ export function parseImportQueueItem(maybeImportQueueItem: unknown): Result<Impo
   );
   if (!parsedImportQueueItemIdResult.success) return parsedImportQueueItemIdResult;
 
-  const parsedUserIdResult = parseUserId(parsedImportQueueItemResult.value.userId);
-  if (!parsedUserIdResult.success) return parsedUserIdResult;
+  const parsedAccountIdResult = parseAccountId(parsedImportQueueItemResult.value.accountId);
+  if (!parsedAccountIdResult.success) return parsedAccountIdResult;
 
   const parsedFeedItemIdResult = parseFeedItemId(parsedImportQueueItemResult.value.feedItemId);
   if (!parsedFeedItemIdResult.success) return parsedFeedItemIdResult;
 
   return makeSuccessResult({
     importQueueItemId: parsedImportQueueItemIdResult.value,
-    userId: parsedUserIdResult.value,
+    accountId: parsedAccountIdResult.value,
     feedItemId: parsedFeedItemIdResult.value,
     url: parsedImportQueueItemResult.value.url,
     status: parsedImportQueueItemResult.value.status,
@@ -72,7 +72,7 @@ export function toStorageImportQueueItem(
 ): ImportQueueItemFromStorage {
   return {
     importQueueItemId: importQueueItem.importQueueItemId,
-    userId: importQueueItem.userId,
+    accountId: importQueueItem.accountId,
     feedItemId: importQueueItem.feedItemId,
     url: importQueueItem.url,
     status: importQueueItem.status,

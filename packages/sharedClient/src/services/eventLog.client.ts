@@ -13,6 +13,7 @@ import {
   toStorageEventLogItem,
 } from '@shared/parsers/eventLog.parser';
 
+import type {AccountId} from '@shared/types/accounts.types';
 import {
   EventType,
   makeEventId,
@@ -23,7 +24,6 @@ import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types
 import type {ViewType} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
-import type {UserId} from '@shared/types/user.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
@@ -32,7 +32,7 @@ import {
   makeFirestoreDataConverter,
 } from '@sharedClient/services/firestore.client';
 
-import {useLoggedInUser} from '@sharedClient/hooks/auth.hooks';
+import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
 // TODO: This is a somewhat arbitrary limit. Reconsider what the logic should be here.
 const EVENT_LOG_LIMIT = 100;
@@ -43,7 +43,7 @@ const eventLogItemFirestoreConverter = makeFirestoreDataConverter(
 );
 
 export const useEventLogService = () => {
-  const loggedInUser = useLoggedInUser();
+  const loggedInAccount = useLoggedInAccount();
 
   const eventLogService = useMemo(() => {
     const eventLogCollectionService = new ClientFirestoreCollectionService({
@@ -54,9 +54,9 @@ export const useEventLogService = () => {
 
     return new ClientEventLogService({
       eventLogCollectionService,
-      userId: loggedInUser.userId,
+      accountId: loggedInAccount.accountId,
     });
-  }, [loggedInUser.userId]);
+  }, [loggedInAccount.accountId]);
 
   return eventLogService;
 };
@@ -123,14 +123,14 @@ type ClientEventLogCollectionService = ClientFirestoreCollectionService<EventId,
 
 export class ClientEventLogService {
   private readonly eventLogCollectionService: ClientEventLogCollectionService;
-  private readonly userId: UserId;
+  private readonly accountId: AccountId;
 
   constructor(args: {
     readonly eventLogCollectionService: ClientEventLogCollectionService;
-    readonly userId: UserId;
+    readonly accountId: AccountId;
   }) {
     this.eventLogCollectionService = args.eventLogCollectionService;
-    this.userId = args.userId;
+    this.accountId = args.accountId;
   }
 
   public async fetchById(eventId: EventId): AsyncResult<EventLogItem | null> {
@@ -159,7 +159,7 @@ export class ClientEventLogService {
 
     const itemsQuery = this.eventLogCollectionService.query(
       filterNull([
-        where('userId', '==', this.userId),
+        where('accountId', '==', this.accountId),
         limit ? firestoreLimit(limit) : null,
         orderBy('createdTime', 'desc'),
       ])
@@ -180,7 +180,7 @@ export class ClientEventLogService {
     const eventId = makeEventId();
     const createResult = await this.eventLogCollectionService.setDoc(eventId, {
       eventId,
-      userId: this.userId,
+      accountId: this.accountId,
       eventType: EventType.FeedItemAction,
       data: {
         feedItemId: args.feedItemId,
@@ -207,7 +207,7 @@ export class ClientEventLogService {
     const eventId = makeEventId();
     const createResult = await this.eventLogCollectionService.setDoc(eventId, {
       eventId,
-      userId: this.userId,
+      accountId: this.accountId,
       eventType: EventType.UserFeedSubscription,
       data: {
         userFeedSubscriptionId: args.userFeedSubscriptionId,
