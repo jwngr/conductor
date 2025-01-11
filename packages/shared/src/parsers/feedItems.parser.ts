@@ -1,5 +1,3 @@
-import type {z} from 'zod';
-
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {
   parseFirestoreTimestamp,
@@ -15,17 +13,17 @@ import type {
   FeedItem,
   FeedItemAppSource,
   FeedItemExtensionSource,
-  FeedItemFromSchema,
+  FeedItemFromStorage,
   FeedItemId,
   FeedItemRSSSource,
   FeedItemSource,
-  FeedItemSourceSchema,
+  FeedItemSourceFromStorage,
 } from '@shared/types/feedItems.types';
 import {
   AppFeedItemSourceSchema,
   ExtensionFeedItemSourceSchema,
+  FeedItemFromStorageSchema,
   FeedItemIdSchema,
-  FeedItemSchema,
   FeedItemSourceType,
   RssFeedItemSourceSchema,
 } from '@shared/types/feedItems.types';
@@ -48,7 +46,9 @@ export function parseFeedItemId(maybeFeedItemId: string): Result<FeedItemId> {
  * Parses a {@link FeedItemSource} from an unknown value. Returns an `ErrorResult` if the value is
  * not valid.
  */
-function parseFeedItemSource(source: z.infer<typeof FeedItemSourceSchema>): Result<FeedItemSource> {
+// TODO: I'm not sure if this is the best way to do this. All other parsers take in an `unknown`
+// value instead of a discriminated union.
+function parseFeedItemSource(source: FeedItemSourceFromStorage): Result<FeedItemSource> {
   const sourceType = source.type;
   switch (sourceType) {
     case FeedItemSourceType.App:
@@ -111,7 +111,7 @@ function parseRssFeedItemSource(source: unknown): Result<FeedItemRSSSource> {
  * valid.
  */
 export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
-  const parsedFeedItemResult = parseZodResult(FeedItemSchema, maybeFeedItem);
+  const parsedFeedItemResult = parseZodResult(FeedItemFromStorageSchema, maybeFeedItem);
   if (!parsedFeedItemResult.success) {
     return prefixResultIfError(parsedFeedItemResult, 'Invalid feed item');
   }
@@ -146,7 +146,7 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
   );
 }
 
-export function toFirestoreFeedItem(feedItem: FeedItem): FeedItemFromSchema {
+export function toFirestoreFeedItem(feedItem: FeedItem): FeedItemFromStorage {
   return omitUndefined({
     feedItemId: feedItem.feedItemId,
     userId: feedItem.userId,

@@ -10,10 +10,13 @@ import {parseUserId} from '@shared/parsers/user.parser';
 
 import type {
   ImportQueueItem,
-  ImportQueueItemFromSchema,
+  ImportQueueItemFromStorage,
   ImportQueueItemId,
 } from '@shared/types/importQueue.types';
-import {ImportQueueItemIdSchema, ImportQueueItemSchema} from '@shared/types/importQueue.types';
+import {
+  ImportQueueItemFromStrageSchema,
+  ImportQueueItemIdSchema,
+} from '@shared/types/importQueue.types';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
 
@@ -34,7 +37,10 @@ export function parseImportQueueItemId(maybeImportQueueItemId: string): Result<I
  * valid.
  */
 export function parseImportQueueItem(maybeImportQueueItem: unknown): Result<ImportQueueItem> {
-  const parsedImportQueueItemResult = parseZodResult(ImportQueueItemSchema, maybeImportQueueItem);
+  const parsedImportQueueItemResult = parseZodResult(
+    ImportQueueItemFromStrageSchema,
+    maybeImportQueueItem
+  );
   if (!parsedImportQueueItemResult.success) {
     return prefixResultIfError(parsedImportQueueItemResult, 'Invalid import queue item');
   }
@@ -63,7 +69,7 @@ export function parseImportQueueItem(maybeImportQueueItem: unknown): Result<Impo
 
 export function toFirestoreImportQueueItem(
   importQueueItem: ImportQueueItem
-): ImportQueueItemFromSchema {
+): ImportQueueItemFromStorage {
   return {
     importQueueItemId: importQueueItem.importQueueItemId,
     userId: importQueueItem.userId,

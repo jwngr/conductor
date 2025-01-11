@@ -60,9 +60,9 @@ export interface ImportQueueItem extends BaseStoreItem {
 }
 
 /**
- * Zod schema for an {@link ImportQueueItem}.
+ * Zod schema for an {@link ImportQueueItem} persisted to Firestore.
  */
-export const ImportQueueItemSchema = z.object({
+export const ImportQueueItemFromStrageSchema = z.object({
   importQueueItemId: ImportQueueItemIdSchema,
   userId: UserIdSchema,
   feedItemId: FeedItemIdSchema,
@@ -72,7 +72,10 @@ export const ImportQueueItemSchema = z.object({
   lastUpdatedTime: FirestoreTimestampSchema,
 });
 
-export type ImportQueueItemFromSchema = z.infer<typeof ImportQueueItemSchema>;
+/**
+ * Type for an {@link ImportQueueItem} persisted to Firestore.
+ */
+export type ImportQueueItemFromStorage = z.infer<typeof ImportQueueItemFromStrageSchema>;
 
 /**
  * Creates a new {@link ImportQueueItem}.

@@ -6,7 +6,7 @@ import {toFirestoreTimestamp} from '@shared/lib/parser.shared';
 
 import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
 
-import type {EventId, EventLogItem, EventLogItemFromSchema} from '@shared/types/eventLog.types';
+import type {EventId, EventLogItem, EventLogItemFromStorage} from '@shared/types/eventLog.types';
 import type {AsyncResult} from '@shared/types/result.types';
 
 import {
@@ -17,7 +17,7 @@ import {
 type ServerEventLogCollectionService = ServerFirestoreCollectionService<
   EventId,
   EventLogItem,
-  EventLogItemFromSchema
+  EventLogItemFromStorage
 >;
 
 export class ServerEventLogService {
@@ -87,7 +87,7 @@ const eventLogCollectionService = new ServerFirestoreCollectionService({
 export const eventLogService = new ServerEventLogService({
   eventLogCollectionService,
 });
-export function toFirestoreEventLogItem(eventLogItem: EventLogItem): EventLogItemFromSchema {
+export function toFirestoreEventLogItem(eventLogItem: EventLogItem): EventLogItemFromStorage {
   return {
     eventId: eventLogItem.eventId,
     userId: eventLogItem.userId,

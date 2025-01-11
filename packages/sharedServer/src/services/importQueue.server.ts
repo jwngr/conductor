@@ -11,7 +11,7 @@ import {requestGet} from '@shared/lib/requests.shared';
 import type {FeedItemId} from '@shared/types/feedItems.types';
 import {
   ImportQueueItem,
-  ImportQueueItemFromSchema,
+  ImportQueueItemFromStorage,
   ImportQueueItemId,
 } from '@shared/types/importQueue.types';
 import type {AsyncResult, Result} from '@shared/types/result.types';
@@ -53,7 +53,7 @@ function validateFeedItemUrl(url: string): Result<void> {
 type ImportQueueCollectionService = ServerFirestoreCollectionService<
   ImportQueueItemId,
   ImportQueueItem,
-  ImportQueueItemFromSchema
+  ImportQueueItemFromStorage
 >;
 
 export class ServerImportQueueService {

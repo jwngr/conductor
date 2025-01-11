@@ -11,7 +11,7 @@ import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions
 
 import {
   EventIdSchema,
-  EventLogItemSchema,
+  EventLogItemFromStorageSchema,
   EventType,
   FeedItemActionEventLogItemDataSchema,
   UserFeedSubscriptionEventLogItemDataSchema,
@@ -19,7 +19,7 @@ import {
 import type {
   EventId,
   EventLogItem,
-  EventLogItemFromSchema,
+  EventLogItemFromStorage,
   FeedItemActionEventLogItem,
   FeedItemActionEventLogItemData,
   UserFeedSubscriptionEventLogItem,
@@ -45,7 +45,7 @@ export function parseEventId(maybeEventId: string): Result<EventId> {
  * value is not valid.
  */
 export function parseEventLogItem(maybeEventLogItem: unknown): Result<EventLogItem> {
-  const parsedResult = parseZodResult(EventLogItemSchema, maybeEventLogItem);
+  const parsedResult = parseZodResult(EventLogItemFromStorageSchema, maybeEventLogItem);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid event log item');
   }
@@ -69,7 +69,7 @@ export function parseEventLogItem(maybeEventLogItem: unknown): Result<EventLogIt
 function parseUserFeedSubscriptionEventLogItem(
   maybeEventLogItem: unknown
 ): Result<UserFeedSubscriptionEventLogItem> {
-  const parsedResult = parseZodResult(EventLogItemSchema, maybeEventLogItem);
+  const parsedResult = parseZodResult(EventLogItemFromStorageSchema, maybeEventLogItem);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid event log item');
   }
@@ -101,7 +101,7 @@ function parseUserFeedSubscriptionEventLogItem(
 function parseFeedItemActionEventLogItem(
   maybeEventLogItem: unknown
 ): Result<FeedItemActionEventLogItem> {
-  const parsedResult = parseZodResult(EventLogItemSchema, maybeEventLogItem);
+  const parsedResult = parseZodResult(EventLogItemFromStorageSchema, maybeEventLogItem);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid event log item');
   }
@@ -168,7 +168,7 @@ function parseUserFeedSubscriptionEventLogItemData(
   });
 }
 
-export function toFirestoreEventLogItem(eventLogItem: EventLogItem): EventLogItemFromSchema {
+export function toFirestoreEventLogItem(eventLogItem: EventLogItem): EventLogItemFromStorage {
   return {
     eventId: eventLogItem.eventId,
     userId: eventLogItem.userId,

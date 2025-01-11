@@ -52,9 +52,9 @@ export interface UserFeedSubscription extends BaseStoreItem {
 }
 
 /**
- * Zod schema for a {@link UserFeedSubscription}.
+ * Zod schema for a {@link UserFeedSubscription} persisted to Firestore.
  */
-export const UserFeedSubscriptionSchema = z.object({
+export const UserFeedSubscriptionFromStorageSchema = z.object({
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
   feedSourceId: FeedSourceIdSchema,
   userId: UserIdSchema,
@@ -66,7 +66,10 @@ export const UserFeedSubscriptionSchema = z.object({
   lastUpdatedTime: FirestoreTimestampSchema,
 });
 
-export type UserFeedSubscriptionFromSchema = z.infer<typeof UserFeedSubscriptionSchema>;
+/**
+ * Type for a {@link UserFeedSubscription} persisted to Firestore.
+ */
+export type UserFeedSubscriptionFromStorage = z.infer<typeof UserFeedSubscriptionFromStorageSchema>;
 
 /**
  * Creates a new {@link UserFeedSubscription} object.

@@ -34,15 +34,18 @@ export interface User {
 }
 
 /**
- * A Zod schema for a {@link User}.
+ * A Zod schema for a {@link User} persisted to Firestore.
  */
-export const UserSchema = z.object({
+export const UserFromStorageSchema = z.object({
   userId: UserIdSchema,
   email: EmailAddressSchema,
   displayName: z.string().optional(),
 });
 
-export type UserFromSchema = z.infer<typeof UserSchema>;
+/**
+ * Type for a {@link User} persisted to Firestore.
+ */
+export type UserFromStorage = z.infer<typeof UserFromStorageSchema>;
 
 export type AuthStateChangedCallback = Consumer<User | null>;
 

@@ -67,11 +67,13 @@ export const RssFeedItemSourceSchema = z.object({
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
 });
 
-export const FeedItemSourceSchema = z.discriminatedUnion('type', [
+export const FeedItemSourceFromStorageSchema = z.discriminatedUnion('type', [
   AppFeedItemSourceSchema,
   ExtensionFeedItemSourceSchema,
   RssFeedItemSourceSchema,
 ]);
+
+export type FeedItemSourceFromStorage = z.infer<typeof FeedItemSourceFromStorageSchema>;
 
 interface BaseFeedItemSource {
   // TODO: Consider renaming this to `sourceType`.
@@ -144,13 +146,13 @@ interface BaseFeedItem extends BaseStoreItem {
 }
 
 /**
- * Zod schema for a {@link FeedItem}.
+ * Zod schema for a {@link FeedItem} persisted to Firestore.
  */
-export const FeedItemSchema = z.object({
+export const FeedItemFromStorageSchema = z.object({
   feedItemId: FeedItemIdSchema,
   userId: UserIdSchema,
   type: z.nativeEnum(FeedItemType),
-  source: FeedItemSourceSchema,
+  source: FeedItemSourceFromStorageSchema,
   url: z.string().url(),
   title: z.string().min(1),
   description: z.string(),
@@ -162,7 +164,10 @@ export const FeedItemSchema = z.object({
   lastUpdatedTime: FirestoreTimestampSchema,
 });
 
-export type FeedItemFromSchema = z.infer<typeof FeedItemSchema>;
+/**
+ * Type for a {@link FeedItem} persisted to Firestore.
+ */
+export type FeedItemFromStorage = z.infer<typeof FeedItemFromStorageSchema>;
 
 export interface ArticleFeedItem extends BaseFeedItem {
   readonly type: FeedItemType.Article;

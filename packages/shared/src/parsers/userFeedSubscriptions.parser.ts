@@ -12,12 +12,12 @@ import {parseUserId} from '@shared/parsers/user.parser';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
 import {
+  UserFeedSubscriptionFromStorageSchema,
   UserFeedSubscriptionIdSchema,
-  UserFeedSubscriptionSchema,
 } from '@shared/types/userFeedSubscriptions.types';
 import type {
   UserFeedSubscription,
-  UserFeedSubscriptionFromSchema,
+  UserFeedSubscriptionFromStorage,
   UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
 
@@ -42,7 +42,10 @@ export function parseUserFeedSubscriptionId(
 export function parseUserFeedSubscription(
   maybeUserFeedSubscription: unknown
 ): Result<UserFeedSubscription> {
-  const parsedResult = parseZodResult(UserFeedSubscriptionSchema, maybeUserFeedSubscription);
+  const parsedResult = parseZodResult(
+    UserFeedSubscriptionFromStorageSchema,
+    maybeUserFeedSubscription
+  );
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid user feed subscription');
   }
@@ -77,7 +80,7 @@ export function parseUserFeedSubscription(
 
 export function toFirestoreUserFeedSubscription(
   userFeedSubscription: UserFeedSubscription
-): UserFeedSubscriptionFromSchema {
+): UserFeedSubscriptionFromStorage {
   return {
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     feedSourceId: userFeedSubscription.feedSourceId,

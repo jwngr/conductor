@@ -71,9 +71,9 @@ interface BaseEventLogItem extends BaseStoreItem {
 }
 
 /**
- * Zod schema for an {@link EventLogItem}.
+ * Zod schema for an {@link EventLogItem} persisted to Firestore.
  */
-export const EventLogItemSchema = z.object({
+export const EventLogItemFromStorageSchema = z.object({
   eventId: EventIdSchema,
   userId: UserIdSchema,
   eventType: z.nativeEnum(EventType),
@@ -82,7 +82,11 @@ export const EventLogItemSchema = z.object({
   lastUpdatedTime: FirestoreTimestampSchema,
 });
 
-export type EventLogItemFromSchema = z.infer<typeof EventLogItemSchema>;
+/**
+ * Type for an {@link EventLogItem} persisted to Firestore.
+ */
+export type EventLogItemFromStorage = z.infer<typeof EventLogItemFromStorageSchema>;
+
 export interface FeedItemActionEventLogItem extends BaseEventLogItem {
   readonly eventType: EventType.FeedItemAction;
   readonly data: FeedItemActionEventLogItemData;
