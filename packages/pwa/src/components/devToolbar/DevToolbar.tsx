@@ -7,10 +7,9 @@ import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
+import {RequireLoggedInAccount} from '@src/components/auth/RequireLoggedInAccount';
 
 import {IS_DEVELOPMENT} from '@src/lib/environment.pwa';
-
-import {RequireLoggedInAccount} from '../auth/RequireLoggedInAccount';
 
 const DevToolbarWrapper = styled.div<{readonly $isOpen: boolean}>`
   position: fixed;
