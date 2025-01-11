@@ -14,7 +14,7 @@
     "react-dom": "^19.0.0",
     "react-markdown": "^9.0.3",
     "react-router-dom": "^6.28.0",
-    "styled-components": "^6.1.13",
+    "styled-components": "^6.1.14",
     "tinykeys": "^3.0.0"
   },
   "devDependencies": {
@@ -36,11 +36,12 @@
     "start": "vite",
     "clean": "rm -rf dist/ distIgnore/",
     "ci": "rm -rf node_modules/ && yarn install",
-    "build": "yarn run clean && yarn run hack-type && vite build",
+    "build": "yarn run clean && yarn run hack-cookie-type && yarn run hack-styled-components-type && vite build",
     "preview": "vite preview",
     "deploy": "firebase deploy --only hosting",
     "test": "echo 'TODO: Implement tests for PWA'",
-    "hack-type": "test -f ../../node_modules/@types/request/index.d.ts && sed -i.bak '/setCookie(/d' ../../node_modules/@types/request/index.d.ts || true"
+    "hack-cookie-type": "test -f ../../node_modules/@types/request/index.d.ts && sed -i.bak '/setCookie(/d' ../../node_modules/@types/request/index.d.ts || true",
+    "hack-styled-components-type": "test -f ../../node_modules/styled-components/dist/hoc/withTheme.d.ts && (sed -i.bak '/withTheme(/d' ../../node_modules/styled-components/dist/hoc/withTheme.d.ts && sed -i.bak 's/JSX\\.LibraryManagedAttributes/React.JSX.LibraryManagedAttributes/g' ../../node_modules/styled-components/dist/hoc/withTheme.d.ts) || true"
   },
   "browserslist": [
     ">0.2%",

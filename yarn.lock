@@ -465,7 +465,7 @@ __metadata:
     react-markdown: "npm:^9.0.3"
     react-router-dom: "npm:^6.28.0"
     source-map-explorer: "npm:^2.5.3"
-    styled-components: "npm:^6.1.13"
+    styled-components: "npm:^6.1.14"
     tinykeys: "npm:^3.0.0"
     vite: "npm:^6.0.5"
     vite-plugin-svgr: "npm:^4.3.0"
@@ -8840,7 +8840,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"styled-components@npm:^6.1.13":
+"styled-components@npm:^6.1.14":
   version: 6.1.14
   resolution: "styled-components@npm:6.1.14"
   dependencies:
