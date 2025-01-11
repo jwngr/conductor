@@ -1,5 +1,5 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {parseFirestoreTimestamp, parseZodResult} from '@shared/lib/parser.shared';
+import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
 
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
@@ -41,8 +41,8 @@ export function parseUserTag(maybeUserTag: unknown): Result<UserTag> {
     tagId: parsedTagIdResult.value,
     type: TagType.User,
     name,
-    createdTime: parseFirestoreTimestamp(createdTime),
-    lastUpdatedTime: parseFirestoreTimestamp(lastUpdatedTime),
+    createdTime: parseStorageTimestamp(createdTime),
+    lastUpdatedTime: parseStorageTimestamp(lastUpdatedTime),
   });
 }
 

@@ -5,8 +5,8 @@ import {parseZodResult} from '@shared/lib/parser.shared';
 
 import type {Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import type {EmailAddress, User, UserFromSchema, UserId} from '@shared/types/user.types';
-import {EmailAddressSchema, UserIdSchema, UserSchema} from '@shared/types/user.types';
+import type {EmailAddress, User, UserFromStorage, UserId} from '@shared/types/user.types';
+import {EmailAddressSchema, UserFromStorageSchema, UserIdSchema} from '@shared/types/user.types';
 
 /**
  * Parses a {@link UserId} from a plain string. Returns an `ErrorResult` if the string is not valid.
@@ -24,7 +24,7 @@ export function parseUserId(maybeUserId: string): Result<UserId> {
  * object is not valid.
  */
 export function parseUser(maybeUser: unknown): Result<User> {
-  const parsedResult = parseZodResult(UserSchema, maybeUser);
+  const parsedResult = parseZodResult(UserFromStorageSchema, maybeUser);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid user');
   }
@@ -75,7 +75,10 @@ export function parseFirebaseUser(firebaseLoggedInUser: FirebaseUser): Result<Us
   });
 }
 
-export function toFirestoreUser(user: User): UserFromSchema {
+/**
+ * Converts a {@link User} to a {@link UserFromStorage} object that can be persisted to Firestore.
+ */
+export function toStorageUser(user: User): UserFromStorage {
   return {
     userId: user.userId,
     email: user.email,

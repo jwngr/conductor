@@ -1,12 +1,12 @@
 import {prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {
-  parseFirestoreTimestamp,
-  parseZodResult,
-  toFirestoreTimestamp,
-} from '@shared/lib/parser.shared';
+import {parseStorageTimestamp, parseZodResult, toStorageTimestamp} from '@shared/lib/parser.shared';
 
-import type {FeedSource, FeedSourceFromSchema, FeedSourceId} from '@shared/types/feedSources.types';
-import {FeedSourceIdSchema, FeedSourceSchema} from '@shared/types/feedSources.types';
+import type {
+  FeedSource,
+  FeedSourceFromStorage,
+  FeedSourceId,
+} from '@shared/types/feedSources.types';
+import {FeedSourceFromStorageSchema, FeedSourceIdSchema} from '@shared/types/feedSources.types';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
 
@@ -27,7 +27,7 @@ export function parseFeedSourceId(maybeFeedSourceId: string): Result<FeedSourceI
  * valid.
  */
 export function parseFeedSource(maybeFeedSource: unknown): Result<FeedSource> {
-  const parsedFeedSourceResult = parseZodResult(FeedSourceSchema, maybeFeedSource);
+  const parsedFeedSourceResult = parseZodResult(FeedSourceFromStorageSchema, maybeFeedSource);
   if (!parsedFeedSourceResult.success) {
     return prefixResultIfError(parsedFeedSourceResult, 'Invalid feed source');
   }
@@ -39,17 +39,21 @@ export function parseFeedSource(maybeFeedSource: unknown): Result<FeedSource> {
     feedSourceId: parsedIdResult.value,
     url: parsedFeedSourceResult.value.url,
     title: parsedFeedSourceResult.value.title,
-    createdTime: parseFirestoreTimestamp(parsedFeedSourceResult.value.createdTime),
-    lastUpdatedTime: parseFirestoreTimestamp(parsedFeedSourceResult.value.lastUpdatedTime),
+    createdTime: parseStorageTimestamp(parsedFeedSourceResult.value.createdTime),
+    lastUpdatedTime: parseStorageTimestamp(parsedFeedSourceResult.value.lastUpdatedTime),
   });
 }
 
-export function toFirestoreFeedSource(feedSource: FeedSource): FeedSourceFromSchema {
+/**
+ * Converts a {@link FeedSource} to a {@link FeedSourceFromStorage} object that can be persisted to
+ * Firestore.
+ */
+export function toStorageFeedSource(feedSource: FeedSource): FeedSourceFromStorage {
   return {
     feedSourceId: feedSource.feedSourceId,
     url: feedSource.url,
     title: feedSource.title,
-    createdTime: toFirestoreTimestamp(feedSource.createdTime),
-    lastUpdatedTime: toFirestoreTimestamp(feedSource.lastUpdatedTime),
+    createdTime: toStorageTimestamp(feedSource.createdTime),
+    lastUpdatedTime: toStorageTimestamp(feedSource.lastUpdatedTime),
   };
 }

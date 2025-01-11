@@ -1,9 +1,5 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {
-  parseFirestoreTimestamp,
-  parseZodResult,
-  toFirestoreTimestamp,
-} from '@shared/lib/parser.shared';
+import {parseStorageTimestamp, parseZodResult, toStorageTimestamp} from '@shared/lib/parser.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
 
 import {parseFeedSourceId} from '@shared/parsers/feedSources.parser';
@@ -12,12 +8,12 @@ import {parseUserId} from '@shared/parsers/user.parser';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
 import {
+  UserFeedSubscriptionFromStorageSchema,
   UserFeedSubscriptionIdSchema,
-  UserFeedSubscriptionSchema,
 } from '@shared/types/userFeedSubscriptions.types';
 import type {
   UserFeedSubscription,
-  UserFeedSubscriptionFromSchema,
+  UserFeedSubscriptionFromStorage,
   UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
 
@@ -42,7 +38,10 @@ export function parseUserFeedSubscriptionId(
 export function parseUserFeedSubscription(
   maybeUserFeedSubscription: unknown
 ): Result<UserFeedSubscription> {
-  const parsedResult = parseZodResult(UserFeedSubscriptionSchema, maybeUserFeedSubscription);
+  const parsedResult = parseZodResult(
+    UserFeedSubscriptionFromStorageSchema,
+    maybeUserFeedSubscription
+  );
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid user feed subscription');
   }
@@ -67,17 +66,21 @@ export function parseUserFeedSubscription(
       title: parsedResult.value.title,
       isActive: parsedResult.value.isActive,
       unsubscribedTime: parsedResult.value.unsubscribedTime
-        ? parseFirestoreTimestamp(parsedResult.value.unsubscribedTime)
+        ? parseStorageTimestamp(parsedResult.value.unsubscribedTime)
         : undefined,
-      createdTime: parseFirestoreTimestamp(parsedResult.value.createdTime),
-      lastUpdatedTime: parseFirestoreTimestamp(parsedResult.value.lastUpdatedTime),
+      createdTime: parseStorageTimestamp(parsedResult.value.createdTime),
+      lastUpdatedTime: parseStorageTimestamp(parsedResult.value.lastUpdatedTime),
     })
   );
 }
 
-export function toFirestoreUserFeedSubscription(
+/**
+ * Converts a {@link UserFeedSubscription} to a {@link UserFeedSubscriptionFromStorage} object that can
+ * be persisted to Firestore.
+ */
+export function toStorageUserFeedSubscription(
   userFeedSubscription: UserFeedSubscription
-): UserFeedSubscriptionFromSchema {
+): UserFeedSubscriptionFromStorage {
   return {
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     feedSourceId: userFeedSubscription.feedSourceId,
@@ -86,9 +89,9 @@ export function toFirestoreUserFeedSubscription(
     title: userFeedSubscription.title,
     isActive: userFeedSubscription.isActive,
     unsubscribedTime: userFeedSubscription.unsubscribedTime
-      ? toFirestoreTimestamp(userFeedSubscription.unsubscribedTime)
+      ? toStorageTimestamp(userFeedSubscription.unsubscribedTime)
       : undefined,
-    createdTime: toFirestoreTimestamp(userFeedSubscription.createdTime),
-    lastUpdatedTime: toFirestoreTimestamp(userFeedSubscription.lastUpdatedTime),
+    createdTime: toStorageTimestamp(userFeedSubscription.createdTime),
+    lastUpdatedTime: toStorageTimestamp(userFeedSubscription.lastUpdatedTime),
   };
 }

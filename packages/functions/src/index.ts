@@ -18,26 +18,22 @@ import {
 } from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 
-import {
-  parseFeedItem,
-  parseFeedItemId,
-  toFirestoreFeedItem,
-} from '@shared/parsers/feedItems.parser';
+import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 import {
   parseFeedSource,
   parseFeedSourceId,
-  toFirestoreFeedSource,
+  toStorageFeedSource,
 } from '@shared/parsers/feedSources.parser';
 import {
   parseImportQueueItem,
   parseImportQueueItemId,
-  toFirestoreImportQueueItem,
+  toStorageImportQueueItem,
 } from '@shared/parsers/importQueue.parser';
-import {parseUser, parseUserId, toFirestoreUser} from '@shared/parsers/user.parser';
+import {parseUser, parseUserId, toStorageUser} from '@shared/parsers/user.parser';
 import {
   parseUserFeedSubscription,
   parseUserFeedSubscriptionId,
-  toFirestoreUserFeedSubscription,
+  toStorageUserFeedSubscription,
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
 import {ImportQueueItem, ImportQueueItemStatus} from '@shared/types/importQueue.types';
@@ -78,7 +74,7 @@ onInit(() => {
   });
 
   const feedSourceFirestoreConverter = makeFirestoreDataConverter(
-    toFirestoreFeedSource,
+    toStorageFeedSource,
     parseFeedSource
   );
 
@@ -91,7 +87,7 @@ onInit(() => {
   feedSourcesService = new ServerFeedSourcesService({feedSourcesCollectionService});
 
   const userFeedSubscriptionFirestoreConverter = makeFirestoreDataConverter(
-    toFirestoreUserFeedSubscription,
+    toStorageUserFeedSubscription,
     parseUserFeedSubscription
   );
 
@@ -105,7 +101,7 @@ onInit(() => {
     userFeedSubscriptionsCollectionService,
   });
 
-  const feedItemFirestoreConverter = makeFirestoreDataConverter(toFirestoreFeedItem, parseFeedItem);
+  const feedItemFirestoreConverter = makeFirestoreDataConverter(toStorageFeedItem, parseFeedItem);
 
   const feedItemsCollectionService = new ServerFirestoreCollectionService({
     collectionPath: FEED_ITEMS_DB_COLLECTION,
@@ -119,7 +115,7 @@ onInit(() => {
   });
 
   const importQueueItemFirestoreConverter = makeFirestoreDataConverter(
-    toFirestoreImportQueueItem,
+    toStorageImportQueueItem,
     parseImportQueueItem
   );
 
@@ -135,7 +131,7 @@ onInit(() => {
     feedItemsService,
   });
 
-  const userFirestoreConverter = makeFirestoreDataConverter(toFirestoreUser, parseUser);
+  const userFirestoreConverter = makeFirestoreDataConverter(toStorageUser, parseUser);
 
   const usersCollectionService = new ServerFirestoreCollectionService({
     collectionPath: USERS_DB_COLLECTION,

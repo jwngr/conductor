@@ -1,19 +1,18 @@
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {
-  parseFirestoreTimestamp,
-  parseZodResult,
-  toFirestoreTimestamp,
-} from '@shared/lib/parser.shared';
+import {parseStorageTimestamp, parseZodResult, toStorageTimestamp} from '@shared/lib/parser.shared';
 
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
 import {parseUserId} from '@shared/parsers/user.parser';
 
 import type {
   ImportQueueItem,
-  ImportQueueItemFromSchema,
+  ImportQueueItemFromStorage,
   ImportQueueItemId,
 } from '@shared/types/importQueue.types';
-import {ImportQueueItemIdSchema, ImportQueueItemSchema} from '@shared/types/importQueue.types';
+import {
+  ImportQueueItemFromStrageSchema,
+  ImportQueueItemIdSchema,
+} from '@shared/types/importQueue.types';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
 
@@ -34,7 +33,10 @@ export function parseImportQueueItemId(maybeImportQueueItemId: string): Result<I
  * valid.
  */
 export function parseImportQueueItem(maybeImportQueueItem: unknown): Result<ImportQueueItem> {
-  const parsedImportQueueItemResult = parseZodResult(ImportQueueItemSchema, maybeImportQueueItem);
+  const parsedImportQueueItemResult = parseZodResult(
+    ImportQueueItemFromStrageSchema,
+    maybeImportQueueItem
+  );
   if (!parsedImportQueueItemResult.success) {
     return prefixResultIfError(parsedImportQueueItemResult, 'Invalid import queue item');
   }
@@ -56,21 +58,25 @@ export function parseImportQueueItem(maybeImportQueueItem: unknown): Result<Impo
     feedItemId: parsedFeedItemIdResult.value,
     url: parsedImportQueueItemResult.value.url,
     status: parsedImportQueueItemResult.value.status,
-    createdTime: parseFirestoreTimestamp(parsedImportQueueItemResult.value.createdTime),
-    lastUpdatedTime: parseFirestoreTimestamp(parsedImportQueueItemResult.value.lastUpdatedTime),
+    createdTime: parseStorageTimestamp(parsedImportQueueItemResult.value.createdTime),
+    lastUpdatedTime: parseStorageTimestamp(parsedImportQueueItemResult.value.lastUpdatedTime),
   });
 }
 
-export function toFirestoreImportQueueItem(
+/**
+ * Converts a {@link ImportQueueItem} to a {@link ImportQueueItemFromStorage} object that can be
+ * persisted to Firestore.
+ */
+export function toStorageImportQueueItem(
   importQueueItem: ImportQueueItem
-): ImportQueueItemFromSchema {
+): ImportQueueItemFromStorage {
   return {
     importQueueItemId: importQueueItem.importQueueItemId,
     userId: importQueueItem.userId,
     feedItemId: importQueueItem.feedItemId,
     url: importQueueItem.url,
     status: importQueueItem.status,
-    createdTime: toFirestoreTimestamp(importQueueItem.createdTime),
-    lastUpdatedTime: toFirestoreTimestamp(importQueueItem.lastUpdatedTime),
+    createdTime: toStorageTimestamp(importQueueItem.createdTime),
+    lastUpdatedTime: toStorageTimestamp(importQueueItem.lastUpdatedTime),
   };
 }

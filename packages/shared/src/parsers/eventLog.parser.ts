@@ -1,9 +1,5 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {
-  parseFirestoreTimestamp,
-  parseZodResult,
-  toFirestoreTimestamp,
-} from '@shared/lib/parser.shared';
+import {parseStorageTimestamp, parseZodResult, toStorageTimestamp} from '@shared/lib/parser.shared';
 
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
 import {parseUserId} from '@shared/parsers/user.parser';
@@ -11,7 +7,7 @@ import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions
 
 import {
   EventIdSchema,
-  EventLogItemSchema,
+  EventLogItemFromStorageSchema,
   EventType,
   FeedItemActionEventLogItemDataSchema,
   UserFeedSubscriptionEventLogItemDataSchema,
@@ -19,7 +15,7 @@ import {
 import type {
   EventId,
   EventLogItem,
-  EventLogItemFromSchema,
+  EventLogItemFromStorage,
   FeedItemActionEventLogItem,
   FeedItemActionEventLogItemData,
   UserFeedSubscriptionEventLogItem,
@@ -45,7 +41,7 @@ export function parseEventId(maybeEventId: string): Result<EventId> {
  * value is not valid.
  */
 export function parseEventLogItem(maybeEventLogItem: unknown): Result<EventLogItem> {
-  const parsedResult = parseZodResult(EventLogItemSchema, maybeEventLogItem);
+  const parsedResult = parseZodResult(EventLogItemFromStorageSchema, maybeEventLogItem);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid event log item');
   }
@@ -69,7 +65,7 @@ export function parseEventLogItem(maybeEventLogItem: unknown): Result<EventLogIt
 function parseUserFeedSubscriptionEventLogItem(
   maybeEventLogItem: unknown
 ): Result<UserFeedSubscriptionEventLogItem> {
-  const parsedResult = parseZodResult(EventLogItemSchema, maybeEventLogItem);
+  const parsedResult = parseZodResult(EventLogItemFromStorageSchema, maybeEventLogItem);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid event log item');
   }
@@ -89,8 +85,8 @@ function parseUserFeedSubscriptionEventLogItem(
     userId: parsedUserIdResult.value,
     eventType: EventType.UserFeedSubscription,
     data: parsedDataResult.value,
-    createdTime: parseFirestoreTimestamp(createdTime),
-    lastUpdatedTime: parseFirestoreTimestamp(lastUpdatedTime),
+    createdTime: parseStorageTimestamp(createdTime),
+    lastUpdatedTime: parseStorageTimestamp(lastUpdatedTime),
   });
 }
 
@@ -101,7 +97,7 @@ function parseUserFeedSubscriptionEventLogItem(
 function parseFeedItemActionEventLogItem(
   maybeEventLogItem: unknown
 ): Result<FeedItemActionEventLogItem> {
-  const parsedResult = parseZodResult(EventLogItemSchema, maybeEventLogItem);
+  const parsedResult = parseZodResult(EventLogItemFromStorageSchema, maybeEventLogItem);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid event log item');
   }
@@ -121,8 +117,8 @@ function parseFeedItemActionEventLogItem(
     userId: parsedUserIdResult.value,
     eventType: EventType.FeedItemAction,
     data: parsedDataResult.value,
-    createdTime: parseFirestoreTimestamp(createdTime),
-    lastUpdatedTime: parseFirestoreTimestamp(lastUpdatedTime),
+    createdTime: parseStorageTimestamp(createdTime),
+    lastUpdatedTime: parseStorageTimestamp(lastUpdatedTime),
   });
 }
 
@@ -168,13 +164,17 @@ function parseUserFeedSubscriptionEventLogItemData(
   });
 }
 
-export function toFirestoreEventLogItem(eventLogItem: EventLogItem): EventLogItemFromSchema {
+/**
+ * Converts a {@link EventLogItem} to a {@link EventLogItemFromStorage} object that can be persisted
+ * to Firestore.
+ */
+export function toStorageEventLogItem(eventLogItem: EventLogItem): EventLogItemFromStorage {
   return {
     eventId: eventLogItem.eventId,
     userId: eventLogItem.userId,
     eventType: eventLogItem.eventType,
     data: eventLogItem.data,
-    createdTime: toFirestoreTimestamp(eventLogItem.createdTime),
-    lastUpdatedTime: toFirestoreTimestamp(eventLogItem.lastUpdatedTime),
+    createdTime: toStorageTimestamp(eventLogItem.createdTime),
+    lastUpdatedTime: toStorageTimestamp(eventLogItem.lastUpdatedTime),
   };
 }

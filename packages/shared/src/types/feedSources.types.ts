@@ -37,9 +37,9 @@ export interface FeedSource extends BaseStoreItem {
 }
 
 /**
- * Zod schema for a {@link FeedSource}.
+ * Zod schema for a {@link FeedSource} persisted to Firestore.
  */
-export const FeedSourceSchema = z.object({
+export const FeedSourceFromStorageSchema = z.object({
   feedSourceId: FeedSourceIdSchema,
   url: z.string().url(),
   title: z.string().min(1),
@@ -47,7 +47,10 @@ export const FeedSourceSchema = z.object({
   lastUpdatedTime: FirestoreTimestampSchema,
 });
 
-export type FeedSourceFromSchema = z.infer<typeof FeedSourceSchema>;
+/**
+ * Type for a {@link FeedSource} persisted to Firestore.
+ */
+export type FeedSourceFromStorage = z.infer<typeof FeedSourceFromStorageSchema>;
 
 /**
  * Creates a new {@link FeedSource} object.

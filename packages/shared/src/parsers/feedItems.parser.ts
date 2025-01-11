@@ -1,11 +1,5 @@
-import type {z} from 'zod';
-
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {
-  parseFirestoreTimestamp,
-  parseZodResult,
-  toFirestoreTimestamp,
-} from '@shared/lib/parser.shared';
+import {parseStorageTimestamp, parseZodResult, toStorageTimestamp} from '@shared/lib/parser.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
 
 import {parseUserId} from '@shared/parsers/user.parser';
@@ -15,17 +9,17 @@ import type {
   FeedItem,
   FeedItemAppSource,
   FeedItemExtensionSource,
-  FeedItemFromSchema,
+  FeedItemFromStorage,
   FeedItemId,
   FeedItemRSSSource,
   FeedItemSource,
-  FeedItemSourceSchema,
+  FeedItemSourceFromStorage,
 } from '@shared/types/feedItems.types';
 import {
   AppFeedItemSourceSchema,
   ExtensionFeedItemSourceSchema,
+  FeedItemFromStorageSchema,
   FeedItemIdSchema,
-  FeedItemSchema,
   FeedItemSourceType,
   RssFeedItemSourceSchema,
 } from '@shared/types/feedItems.types';
@@ -48,7 +42,9 @@ export function parseFeedItemId(maybeFeedItemId: string): Result<FeedItemId> {
  * Parses a {@link FeedItemSource} from an unknown value. Returns an `ErrorResult` if the value is
  * not valid.
  */
-function parseFeedItemSource(source: z.infer<typeof FeedItemSourceSchema>): Result<FeedItemSource> {
+// TODO: I'm not sure if this is the best way to do this. All other parsers take in an `unknown`
+// value instead of a discriminated union.
+function parseFeedItemSource(source: FeedItemSourceFromStorage): Result<FeedItemSource> {
   const sourceType = source.type;
   switch (sourceType) {
     case FeedItemSourceType.App:
@@ -111,7 +107,7 @@ function parseRssFeedItemSource(source: unknown): Result<FeedItemRSSSource> {
  * valid.
  */
 export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
-  const parsedFeedItemResult = parseZodResult(FeedItemSchema, maybeFeedItem);
+  const parsedFeedItemResult = parseZodResult(FeedItemFromStorageSchema, maybeFeedItem);
   if (!parsedFeedItemResult.success) {
     return prefixResultIfError(parsedFeedItemResult, 'Invalid feed item');
   }
@@ -138,15 +134,19 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
       triageStatus: parsedFeedItemResult.value.triageStatus,
       tagIds: parsedFeedItemResult.value.tagIds,
       lastImportedTime: parsedFeedItemResult.value.lastImportedTime
-        ? parseFirestoreTimestamp(parsedFeedItemResult.value.lastImportedTime)
+        ? parseStorageTimestamp(parsedFeedItemResult.value.lastImportedTime)
         : undefined,
-      createdTime: parseFirestoreTimestamp(parsedFeedItemResult.value.createdTime),
-      lastUpdatedTime: parseFirestoreTimestamp(parsedFeedItemResult.value.lastUpdatedTime),
+      createdTime: parseStorageTimestamp(parsedFeedItemResult.value.createdTime),
+      lastUpdatedTime: parseStorageTimestamp(parsedFeedItemResult.value.lastUpdatedTime),
     })
   );
 }
 
-export function toFirestoreFeedItem(feedItem: FeedItem): FeedItemFromSchema {
+/**
+ * Converts a {@link FeedItem} to a {@link FeedItemFromStorage} object that can be persisted to
+ * Firestore.
+ */
+export function toStorageFeedItem(feedItem: FeedItem): FeedItemFromStorage {
   return omitUndefined({
     feedItemId: feedItem.feedItemId,
     userId: feedItem.userId,
@@ -159,9 +159,9 @@ export function toFirestoreFeedItem(feedItem: FeedItem): FeedItemFromSchema {
     triageStatus: feedItem.triageStatus,
     tagIds: feedItem.tagIds,
     lastImportedTime: feedItem.lastImportedTime
-      ? toFirestoreTimestamp(feedItem.lastImportedTime)
+      ? toStorageTimestamp(feedItem.lastImportedTime)
       : undefined,
-    createdTime: toFirestoreTimestamp(feedItem.createdTime),
-    lastUpdatedTime: toFirestoreTimestamp(feedItem.lastUpdatedTime),
+    createdTime: toStorageTimestamp(feedItem.createdTime),
+    lastUpdatedTime: toStorageTimestamp(feedItem.lastUpdatedTime),
   });
 }

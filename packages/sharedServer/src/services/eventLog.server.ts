@@ -2,11 +2,11 @@ import type {WithFieldValue} from 'firebase-admin/firestore';
 
 import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {toFirestoreTimestamp} from '@shared/lib/parser.shared';
+import {toStorageTimestamp} from '@shared/lib/parser.shared';
 
 import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
 
-import type {EventId, EventLogItem, EventLogItemFromSchema} from '@shared/types/eventLog.types';
+import type {EventId, EventLogItem, EventLogItemFromStorage} from '@shared/types/eventLog.types';
 import type {AsyncResult} from '@shared/types/result.types';
 
 import {
@@ -17,7 +17,7 @@ import {
 type ServerEventLogCollectionService = ServerFirestoreCollectionService<
   EventId,
   EventLogItem,
-  EventLogItemFromSchema
+  EventLogItemFromStorage
 >;
 
 export class ServerEventLogService {
@@ -74,7 +74,7 @@ export class ServerEventLogService {
 
 // Initialize a singleton instance of the event log service
 const eventLogItemFirestoreConverter = makeFirestoreDataConverter(
-  toFirestoreEventLogItem,
+  toStorageEventLogItem,
   parseEventLogItem
 );
 
@@ -87,13 +87,18 @@ const eventLogCollectionService = new ServerFirestoreCollectionService({
 export const eventLogService = new ServerEventLogService({
   eventLogCollectionService,
 });
-export function toFirestoreEventLogItem(eventLogItem: EventLogItem): EventLogItemFromSchema {
+
+/**
+ * Converts a {@link EventLogItem} to a {@link EventLogItemFromStorage} object that can be persisted
+ * to Firestore.
+ */
+export function toStorageEventLogItem(eventLogItem: EventLogItem): EventLogItemFromStorage {
   return {
     eventId: eventLogItem.eventId,
     userId: eventLogItem.userId,
     eventType: eventLogItem.eventType,
     data: eventLogItem.data,
-    createdTime: toFirestoreTimestamp(eventLogItem.createdTime),
-    lastUpdatedTime: toFirestoreTimestamp(eventLogItem.lastUpdatedTime),
+    createdTime: toStorageTimestamp(eventLogItem.createdTime),
+    lastUpdatedTime: toStorageTimestamp(eventLogItem.lastUpdatedTime),
   };
 }

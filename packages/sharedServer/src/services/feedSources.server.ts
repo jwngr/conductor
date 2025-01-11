@@ -2,7 +2,11 @@ import type {WithFieldValue} from 'firebase-admin/firestore';
 
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
-import type {FeedSource, FeedSourceFromSchema, FeedSourceId} from '@shared/types/feedSources.types';
+import type {
+  FeedSource,
+  FeedSourceFromStorage,
+  FeedSourceId,
+} from '@shared/types/feedSources.types';
 import {makeFeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
@@ -12,7 +16,7 @@ import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore
 type FeedSourceCollectionService = ServerFirestoreCollectionService<
   FeedSourceId,
   FeedSource,
-  FeedSourceFromSchema
+  FeedSourceFromStorage
 >;
 
 export class ServerFeedSourcesService {
