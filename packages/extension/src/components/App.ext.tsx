@@ -8,7 +8,7 @@ import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
 
 import {useCurrentTab} from '@src/lib/tabs.ext';
 
-function App() {
+export const App: React.FC = () => {
   const [status, setStatus] = useState<string>('');
   const {currentTab} = useCurrentTab();
   const feedItemsService = useFeedItemsService();
@@ -16,7 +16,7 @@ function App() {
   const handleClick = async () => {
     setStatus('Saving URL...');
 
-    const tabResult = await asyncTry<chrome.tabs.Tab>(async () => {
+    const tabResult = await asyncTry(async () => {
       const [tab] = await chrome.tabs.query({active: true, lastFocusedWindow: true});
       return tab;
     });
@@ -33,7 +33,7 @@ function App() {
       return;
     }
 
-    const addFeedItemResult = await feedItemsService.addFeedItem({
+    const addFeedItemResult = await feedItemsService.createFeedItem({
       url: tabUrl,
       source: FEED_ITEM_APP_SOURCE,
     });
@@ -54,6 +54,4 @@ function App() {
       <p>{status}</p>
     </>
   );
-}
-
-export default App;
+};

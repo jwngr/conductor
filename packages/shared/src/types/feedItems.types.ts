@@ -1,15 +1,16 @@
-import type {FieldValue} from 'firebase/firestore';
+import {z} from 'zod';
 
-import {makeId} from '@shared/lib/utils.shared';
+import {makeUuid} from '@shared/lib/utils.shared';
 
+import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {IconName} from '@shared/types/icons.types';
-import type {Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import type {TagId} from '@shared/types/tags.types';
 import type {UserId} from '@shared/types/user.types';
+import {UserIdSchema} from '@shared/types/user.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
-import type {BaseStoreItem, Timestamp} from '@shared/types/utils.types';
+import {UserFeedSubscriptionIdSchema} from '@shared/types/userFeedSubscriptions.types';
+import type {BaseStoreItem} from '@shared/types/utils.types';
 
 /**
  * Strongly-typed type for a {@link FeedItem}'s unique identifier. Prefer this over plain strings.
@@ -17,21 +18,15 @@ import type {BaseStoreItem, Timestamp} from '@shared/types/utils.types';
 export type FeedItemId = string & {readonly __brand: 'FeedItemIdBrand'};
 
 /**
- * Checks if a value is a valid {@link FeedItemId}.
+ * Zod schema for a {@link FeedItemId}.
  */
-export function isFeedItemId(maybeFeedItemId: unknown): maybeFeedItemId is FeedItemId {
-  return typeof maybeFeedItemId === 'string' && maybeFeedItemId.length > 0;
-}
+export const FeedItemIdSchema = z.string().uuid();
 
 /**
- * Converts a plain string into a strongly-typed {@link FeedItemId}. Returns an error if the
- * string is not valid.
+ * Creates a new random {@link FeedItemId}.
  */
-export function makeFeedItemId(maybeFeedItemId: string = makeId()): Result<FeedItemId> {
-  if (!isFeedItemId(maybeFeedItemId)) {
-    return makeErrorResult(new Error(`Invalid feed item ID: "${maybeFeedItemId}"`));
-  }
-  return makeSuccessResult(maybeFeedItemId);
+export function makeFeedItemId(): FeedItemId {
+  return makeUuid<FeedItemId>();
 }
 
 // TODO: Do I want to persist this or just compute it on the client?
@@ -43,13 +38,6 @@ export enum FeedItemType {
   Xkcd = 'XKCD',
 }
 
-export enum TriageStatus {
-  Untriaged = 'UNTRIAGED',
-  Saved = 'SAVED',
-  Done = 'DONE',
-  Trashed = 'TRASHED',
-}
-
 export enum FeedItemSourceType {
   /** Feed item was manually added from the app. */
   App = 'APP',
@@ -59,7 +47,38 @@ export enum FeedItemSourceType {
   RSS = 'RSS',
 }
 
-interface FeedItemAppSource {
+export enum TriageStatus {
+  Untriaged = 'UNTRIAGED',
+  Saved = 'SAVED',
+  Done = 'DONE',
+  Trashed = 'TRASHED',
+}
+
+export const AppFeedItemSourceSchema = z.object({
+  type: z.literal(FeedItemSourceType.App),
+});
+
+export const ExtensionFeedItemSourceSchema = z.object({
+  type: z.literal(FeedItemSourceType.Extension),
+});
+
+export const RssFeedItemSourceSchema = z.object({
+  type: z.literal(FeedItemSourceType.RSS),
+  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
+});
+
+export const FeedItemSourceSchema = z.discriminatedUnion('type', [
+  AppFeedItemSourceSchema,
+  ExtensionFeedItemSourceSchema,
+  RssFeedItemSourceSchema,
+]);
+
+interface BaseFeedItemSource {
+  // TODO: Consider renaming this to `sourceType`.
+  readonly type: FeedItemSourceType;
+}
+
+export interface FeedItemAppSource extends BaseFeedItemSource {
   readonly type: FeedItemSourceType.App;
 }
 
@@ -67,7 +86,7 @@ export const FEED_ITEM_EXTENSION_SOURCE: FeedItemExtensionSource = {
   type: FeedItemSourceType.Extension,
 };
 
-interface FeedItemExtensionSource {
+export interface FeedItemExtensionSource extends BaseFeedItemSource {
   readonly type: FeedItemSourceType.Extension;
 }
 
@@ -75,7 +94,7 @@ export const FEED_ITEM_APP_SOURCE: FeedItemAppSource = {
   type: FeedItemSourceType.App,
 };
 
-interface FeedItemRSSSource {
+export interface FeedItemRSSSource extends BaseFeedItemSource {
   readonly type: FeedItemSourceType.RSS;
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
 }
@@ -89,10 +108,7 @@ export function makeFeedItemRSSSource(
   };
 }
 
-export type FeedItemSource =
-  | typeof FEED_ITEM_APP_SOURCE
-  | typeof FEED_ITEM_EXTENSION_SOURCE
-  | FeedItemRSSSource;
+export type FeedItemSource = FeedItemAppSource | FeedItemExtensionSource | FeedItemRSSSource;
 
 interface BaseFeedItem extends BaseStoreItem {
   readonly feedItemId: FeedItemId;
@@ -120,16 +136,33 @@ interface BaseFeedItem extends BaseStoreItem {
    * - indexing of arbitrary boolean user states.
    *
    * To accomplish this, most state is stored as tags that either exist in this map or not.
-   *
-   * Note: FieldValue is used to delete tags.
-   * TODO: Consider abstracting this strange type way with a Firestore converter.
-   * See https://cloud.google.com/firestore/docs/manage-data/add-data#custom_objects.
    */
-  readonly tagIds: Partial<Record<TagId, true | FieldValue>>;
+  readonly tagIds: Partial<Record<TagId, true>>;
 
   // Timestamps.
-  readonly lastImportedTime?: Timestamp;
+  readonly lastImportedTime?: Date;
 }
+
+/**
+ * Zod schema for a {@link FeedItem}.
+ */
+export const FeedItemSchema = z.object({
+  feedItemId: FeedItemIdSchema,
+  userId: UserIdSchema,
+  type: z.nativeEnum(FeedItemType),
+  source: FeedItemSourceSchema,
+  url: z.string().url(),
+  title: z.string().min(1),
+  description: z.string(),
+  outgoingLinks: z.array(z.string().url()),
+  triageStatus: z.nativeEnum(TriageStatus),
+  tagIds: z.record(z.string(), z.literal(true).optional()),
+  lastImportedTime: FirestoreTimestampSchema.optional(),
+  createdTime: FirestoreTimestampSchema,
+  lastUpdatedTime: FirestoreTimestampSchema,
+});
+
+export type FeedItemFromSchema = z.infer<typeof FeedItemSchema>;
 
 export interface ArticleFeedItem extends BaseFeedItem {
   readonly type: FeedItemType.Article;

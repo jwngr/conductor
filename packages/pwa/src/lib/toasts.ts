@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
 
-import {makeId} from '@shared/lib/utils.shared';
+import {makeUuid} from '@shared/lib/utils.shared';
 
 import type {Consumer, Task} from '@shared/types/utils.types';
 
@@ -153,7 +153,7 @@ function showToast({
   action,
   ...toastProps
 }: ToastComponentProps): ShowToastResult {
-  const toastId = makeId();
+  const toastId = makeUuid();
 
   const update = (updateProps: ToasterToast) =>
     dispatch({

@@ -1,9 +1,13 @@
-import {makeId} from '@shared/lib/utils.shared';
+import {z} from 'zod';
 
-import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
-import type {Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import {makeUuid} from '@shared/lib/utils.shared';
+
+import {FeedItemActionType, FeedItemIdSchema} from '@shared/types/feedItems.types';
+import type {FeedItemId} from '@shared/types/feedItems.types';
+import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {UserId} from '@shared/types/user.types';
+import {UserIdSchema} from '@shared/types/user.types';
+import {UserFeedSubscriptionIdSchema} from '@shared/types/userFeedSubscriptions.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 
@@ -13,21 +17,16 @@ import type {BaseStoreItem} from '@shared/types/utils.types';
 export type EventId = string & {readonly __brand: 'EventIdBrand'};
 
 /**
- * Checks if a value is a valid `FeedItemId`.
+ * Zod schema for an {@link EventId}.
  */
-export function isEventId(maybeEventId: unknown): maybeEventId is EventId {
-  return typeof maybeEventId === 'string' && maybeEventId.length > 0;
-}
+// TODO: Consider adding `brand()` and defining `EventId` based on this schema.
+export const EventIdSchema = z.string().uuid();
 
 /**
- * Converts a plain string into a strongly-typed `FeedItemId`. Returns an error if the string is
- * not a valid `FeedItemId`.
+ * Creates a new random {@link EventId}.
  */
-export function makeEventId(maybeEventId: string = makeId()): Result<EventId> {
-  if (!isEventId(maybeEventId)) {
-    return makeErrorResult(new Error(`Invalid event ID: "${maybeEventId}"`));
-  }
-  return makeSuccessResult(maybeEventId);
+export function makeEventId(): EventId {
+  return makeUuid<EventId>();
 }
 
 export enum EventType {
@@ -35,28 +34,63 @@ export enum EventType {
   UserFeedSubscription = 'USER_FEED_SUBSCRIPTION',
 }
 
+export interface FeedItemActionEventLogItemData extends Record<string, unknown> {
+  readonly feedItemId: FeedItemId;
+  readonly feedItemActionType: FeedItemActionType;
+}
+
+export const FeedItemActionEventLogItemDataSchema = z.object({
+  feedItemId: FeedItemIdSchema,
+  feedItemActionType: z.nativeEnum(FeedItemActionType),
+});
+
+export interface UserFeedSubscriptionEventLogItemData extends Record<string, unknown> {
+  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+  // TODO: Add `userFeedSubscriptionActionType`.
+}
+
+export const UserFeedSubscriptionEventLogItemDataSchema = z.object({
+  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
+});
+
+const EventLogItemDataSchema = FeedItemActionEventLogItemDataSchema.or(
+  UserFeedSubscriptionEventLogItemDataSchema
+);
+
+/**
+ * Base interface for all event log items. Most things that happen in the app are logged and tracked
+ * as an event.
+ */
 interface BaseEventLogItem extends BaseStoreItem {
-  readonly eventId: EventId;
-  readonly userId: UserId;
   readonly eventType: EventType;
+  readonly eventId: EventId;
+  // TODO: Replace this with an `actor` field so that admin logs can be integrated as well.
+  readonly userId: UserId;
   /** Arbitrary data associated with the event. */
   readonly data?: Record<string, unknown>;
 }
 
+/**
+ * Zod schema for an {@link EventLogItem}.
+ */
+export const EventLogItemSchema = z.object({
+  eventId: EventIdSchema,
+  userId: UserIdSchema,
+  eventType: z.nativeEnum(EventType),
+  data: EventLogItemDataSchema,
+  createdTime: FirestoreTimestampSchema,
+  lastUpdatedTime: FirestoreTimestampSchema,
+});
+
+export type EventLogItemFromSchema = z.infer<typeof EventLogItemSchema>;
 export interface FeedItemActionEventLogItem extends BaseEventLogItem {
   readonly eventType: EventType.FeedItemAction;
-  readonly data: {
-    readonly feedItemId: FeedItemId;
-    readonly feedItemActionType: FeedItemActionType;
-  };
+  readonly data: FeedItemActionEventLogItemData;
 }
 
 export interface UserFeedSubscriptionEventLogItem extends BaseEventLogItem {
   readonly eventType: EventType.UserFeedSubscription;
-  readonly data: {
-    readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-    // TODO: Add `userFeedSubscriptionActionType`.
-  };
+  readonly data: UserFeedSubscriptionEventLogItemData;
 }
 
 export type EventLogItem = FeedItemActionEventLogItem | UserFeedSubscriptionEventLogItem;

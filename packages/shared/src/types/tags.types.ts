@@ -1,7 +1,9 @@
-import {makeId} from '@shared/lib/utils.shared';
+import {z} from 'zod';
 
-import type {Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import {makeUuid} from '@shared/lib/utils.shared';
+
+import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
+import type {BaseStoreItem} from '@shared/types/utils.types';
 
 export enum TagType {
   User = 'USER',
@@ -9,28 +11,25 @@ export enum TagType {
 }
 
 /**
- * Strongly-typed type for a user tag's unique identifier. Prefer this over plain strings.
+ * Strongly-typed type for a {@link UserTag}'s unique identifier. Prefer this over plain strings.
  */
 export type UserTagId = string & {readonly __brand: 'UserTagIdBrand'};
 
 /**
- * Checks if a value is a valid `UserTagId`.
+ * Zod schema for a {@link UserTagId}.
  */
-export function isUserTagId(maybeUserTagId: unknown): maybeUserTagId is UserTagId {
-  return typeof maybeUserTagId === 'string' && maybeUserTagId.length > 0;
+export const UserTagIdSchema = z.string().uuid();
+
+/**
+ * Creates a new random {@link UserTagId}.
+ */
+export function makeUserTagId(): UserTagId {
+  return makeUuid<UserTagId>();
 }
 
 /**
- * Creates a `UserTagId` from a plain string. Returns an error if the string is not a valid
- * `UserTagId`.
+ * Unique IDs for {@link SystemTag}s, which are tags whose lifecycle is managed by the system.
  */
-export function makeUserTagId(maybeUserTagId: string = makeId()): Result<UserTagId> {
-  if (!isUserTagId(maybeUserTagId)) {
-    return makeErrorResult(new Error(`Invalid user tag ID: "${maybeUserTagId}"`));
-  }
-  return makeSuccessResult(maybeUserTagId);
-}
-
 export enum SystemTagId {
   Unread = 'UNREAD',
   Starred = 'STARRED',
@@ -41,8 +40,18 @@ export enum SystemTagId {
   // Done = 'DONE',
 }
 
+/**
+ * Zod schema for a {@link SystemTagId}.
+ */
+export const SystemTagIdSchema = z.nativeEnum(SystemTagId);
+
 export type TagId = UserTagId | SystemTagId;
 
+/**
+ * An arbitrary string which is either present or not for each {@link FeedItem}. Tags can have
+ * associated metadata, such as a color and icon. They can also be used as filter criteria for
+ * views and searches.
+ */
 export interface Tag {
   readonly tagId: TagId;
   readonly type: TagType;
@@ -50,14 +59,36 @@ export interface Tag {
   // TODO: Add color.
 }
 
-export interface UserTag extends Tag {
+/**
+ * A tag whose lifecycle is managed by the user.
+ */
+export interface UserTag extends Tag, BaseStoreItem {
   readonly type: TagType.User;
+  readonly tagId: UserTagId;
 }
 
+/**
+ * Zod schema for a {@link UserTag}.
+ */
+export const UserTagSchema = z.object({
+  tagId: UserTagIdSchema,
+  name: z.string().min(1).max(255),
+  createdTime: FirestoreTimestampSchema,
+  lastUpdatedTime: FirestoreTimestampSchema,
+});
+
+/**
+ * A tag whose lifecycle is managed by the system.
+ */
 export interface SystemTag extends Tag {
   readonly type: TagType.System;
   readonly tagId: SystemTagId;
 }
+
+export const SystemTagSchema = z.object({
+  tagId: SystemTagIdSchema,
+  name: z.string().min(1).max(255),
+});
 
 export class Tags {
   static readonly UNREAD_TAG: Tag = {
@@ -84,10 +115,13 @@ export class Tags {
     name: 'Importing',
   };
 
-  static makeUserTag(tagInfo: Omit<UserTag, 'type'>): UserTag {
+  static makeUserTag(tagInfo: Omit<UserTag, 'tagId' | 'type'>): UserTag {
     return {
-      ...tagInfo,
+      tagId: makeUserTagId(),
       type: TagType.User,
+      name: tagInfo.name,
+      createdTime: tagInfo.createdTime,
+      lastUpdatedTime: tagInfo.lastUpdatedTime,
     };
   }
 }

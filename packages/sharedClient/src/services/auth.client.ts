@@ -9,9 +9,10 @@ import {
 
 import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
 
+import {parseFirebaseUser} from '@shared/parsers/user.parser';
+
 import type {AsyncResult} from '@shared/types/result.types';
-import type {AuthStateChangedCallback, EmailAddress, LoggedInUser} from '@shared/types/user.types';
-import {makeLoggedInUserFromFirebaseUser} from '@shared/types/user.types';
+import type {AuthStateChangedCallback, EmailAddress, User} from '@shared/types/user.types';
 import type {Consumer} from '@shared/types/utils.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';
@@ -26,7 +27,7 @@ interface AuthServiceSubscriptionCallbacks {
  * the currently logged in user.
  */
 export class ClientAuthService {
-  private currentUser: LoggedInUser | null = null;
+  private currentUser: User | null = null;
   private subscribers = new Set<AuthServiceSubscriptionCallbacks>();
 
   constructor(private auth: FirebaseAuth) {
@@ -42,7 +43,7 @@ export class ClientAuthService {
 
         // Validate a logged in user can be created from the Firebase user. Fire subscriber's
         // callbacks with an error if we cannot.
-        const loggedInUserResult = makeLoggedInUserFromFirebaseUser(firebaseUser);
+        const loggedInUserResult = parseFirebaseUser(firebaseUser);
         if (!loggedInUserResult.success) {
           this.currentUser = null;
           const betterError = prefixError(
@@ -68,7 +69,7 @@ export class ClientAuthService {
   /**
    * Returns the logged in user. Returns null if the user is not logged in.
    */
-  public getLoggedInUser(): LoggedInUser | null {
+  public getLoggedInUser(): User | null {
     return this.currentUser;
   }
 
@@ -97,24 +98,20 @@ export class ClientAuthService {
     email: EmailAddress,
     emailLink: string
   ): AsyncResult<UserCredential> {
-    return await asyncTry<UserCredential>(async () => {
-      return await signInWithEmailLinkFirebase(this.auth, email, emailLink);
-    });
+    return await asyncTry(async () => signInWithEmailLinkFirebase(this.auth, email, emailLink));
   }
 
   public async sendSignInLinkToEmail(
     email: EmailAddress,
     actionCodeSettings: ActionCodeSettings
   ): AsyncResult<void> {
-    return await asyncTry<undefined>(async () => {
-      await sendSignInLinkToEmailFirebase(this.auth, email, actionCodeSettings);
-    });
+    return await asyncTry(async () =>
+      sendSignInLinkToEmailFirebase(this.auth, email, actionCodeSettings)
+    );
   }
 
   public async signOut(): AsyncResult<void> {
-    return await asyncTry<undefined>(async () => {
-      await signOutFirebase(this.auth);
-    });
+    return await asyncTry(async () => signOutFirebase(this.auth));
   }
 }
 

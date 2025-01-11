@@ -1,16 +1,36 @@
-import {makeId} from '@shared/lib/utils.shared';
+import {z} from 'zod';
 
-import type {FeedSource, FeedSourceId} from '@shared/types/feedSources.types';
+import {makeUuid} from '@shared/lib/utils.shared';
+
+import {
+  FeedSourceIdSchema,
+  type FeedSource,
+  type FeedSourceId,
+} from '@shared/types/feedSources.types';
+import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import {makeSuccessResult} from '@shared/types/result.types';
 import type {UserId} from '@shared/types/user.types';
-import type {BaseStoreItem, Timestamp} from '@shared/types/utils.types';
+import {UserIdSchema} from '@shared/types/user.types';
+import type {BaseStoreItem} from '@shared/types/utils.types';
 
 /**
  * Strongly-typed type for a {@link UserFeedSubscription}'s unique identifier. Prefer this over
  * plain strings.
  */
 export type UserFeedSubscriptionId = string & {readonly __brand: 'UserFeedSubscriptionIdBrand'};
+
+/**
+ * Zod schema for a {@link UserFeedSubscriptionId}.
+ */
+export const UserFeedSubscriptionIdSchema = z.string().uuid();
+
+/**
+ * Creates a new random {@link UserFeedSubscriptionId}.
+ */
+export function makeUserFeedSubscriptionId(): UserFeedSubscriptionId {
+  return makeUuid<UserFeedSubscriptionId>();
+}
 
 /**
  * An individual user's subscription to a feed source.
@@ -28,56 +48,45 @@ export interface UserFeedSubscription extends BaseStoreItem {
   readonly url: string;
   readonly title: string;
   readonly isActive: boolean;
-  readonly unsubscribedTime?: Timestamp;
+  readonly unsubscribedTime?: Date | undefined;
 }
 
 /**
- * Checks if a value is a valid {@link UserFeedSubscriptionId}.
+ * Zod schema for a {@link UserFeedSubscription}.
  */
-export function isUserFeedSubscriptionId(
-  userFeedSubscriptionId: unknown
-): userFeedSubscriptionId is UserFeedSubscriptionId {
-  return typeof userFeedSubscriptionId === 'string' && userFeedSubscriptionId.length > 0;
-}
+export const UserFeedSubscriptionSchema = z.object({
+  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
+  feedSourceId: FeedSourceIdSchema,
+  userId: UserIdSchema,
+  url: z.string().url(),
+  title: z.string().min(1),
+  isActive: z.boolean(),
+  unsubscribedTime: FirestoreTimestampSchema.optional(),
+  createdTime: FirestoreTimestampSchema,
+  lastUpdatedTime: FirestoreTimestampSchema,
+});
+
+export type UserFeedSubscriptionFromSchema = z.infer<typeof UserFeedSubscriptionSchema>;
 
 /**
- * Creates a {@link UserFeedSubscriptionId} from a plain string. Returns an error if the string
- * is not valid.
- */
-export function makeUserFeedSubscriptionId(
-  maybeUserFeedSubscriptionId: string = makeId()
-): Result<UserFeedSubscriptionId> {
-  if (!isUserFeedSubscriptionId(maybeUserFeedSubscriptionId)) {
-    return makeErrorResult(
-      new Error(`Invalid user feed subscription ID: "${maybeUserFeedSubscriptionId}"`)
-    );
-  }
-  return makeSuccessResult(maybeUserFeedSubscriptionId);
-}
-
-/**
- * Creates a {@link UserFeedSubscription} object.
+ * Creates a new {@link UserFeedSubscription} object.
  */
 export function makeUserFeedSubscription(args: {
   readonly feedSource: FeedSource;
   readonly userId: UserId;
-  readonly createdTime: Timestamp;
-  readonly lastUpdatedTime: Timestamp;
 }): Result<UserFeedSubscription> {
-  const {feedSource, userId, createdTime, lastUpdatedTime} = args;
-  const userFeedSubscriptionIdResult = makeUserFeedSubscriptionId();
-  if (!userFeedSubscriptionIdResult.success) return userFeedSubscriptionIdResult;
-  const userFeedSubscriptionId = userFeedSubscriptionIdResult.value;
+  const {feedSource, userId} = args;
 
   const userFeedSubscription: UserFeedSubscription = {
-    userFeedSubscriptionId,
+    userFeedSubscriptionId: makeUserFeedSubscriptionId(),
     userId,
     feedSourceId: feedSource.feedSourceId,
     url: feedSource.url,
     title: feedSource.title,
     isActive: true,
-    createdTime,
-    lastUpdatedTime,
+    // TODO: Should use server timestamps instead.
+    createdTime: new Date(),
+    lastUpdatedTime: new Date(),
   };
 
   return makeSuccessResult(userFeedSubscription);

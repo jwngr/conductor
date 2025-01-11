@@ -1,91 +1,49 @@
-import type {User as FirebaseUser} from 'firebase/auth';
+import {z} from 'zod';
 
-import {makeId} from '@shared/lib/utils.shared';
-
-import type {Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import type {Consumer, Task} from '@shared/types/utils.types';
 
 /**
- * Strongly-typed type for a `LoggedInUser`'s unique identifier. Prefer this over plain strings.
+ * Strongly-typed type for a {@link User}'s unique identifier. Prefer this over plain strings.
  */
 export type UserId = string & {readonly __brand: 'UserIdBrand'};
 
 /**
- * Checks if a value is a valid {@link UserId}.
+ * A Zod schema for a {@link UserId}.
  */
-export function isValidUserId(maybeUserId: unknown): maybeUserId is UserId {
-  return typeof maybeUserId === 'string' && maybeUserId.length > 0;
-}
+export const UserIdSchema = z.string().min(1).max(128);
 
 /**
- * Creates a {@link UserId} from a plain string. Returns an error if the string is not valid.
- */
-export function makeUserId(maybeUserId: string = makeId()): Result<UserId> {
-  if (!isValidUserId(maybeUserId)) {
-    return makeErrorResult(new Error(`Invalid user ID: "${maybeUserId}"`));
-  }
-  return makeSuccessResult(maybeUserId);
-}
-
-/**
- * Strongly-typed type for an email address. Prefer this over plain strings.
+ * Strongly-typed type for an {@link EmailAddress}. Prefer this over plain strings.
  */
 export type EmailAddress = string & {readonly __brand: 'EmailAddressBrand'};
 
 /**
- * Checks if a value is a valid `EmailAddress`.
+ * A Zod schema for an {@link EmailAddress}.
  */
-export function isValidEmail(maybeEmail: unknown): maybeEmail is EmailAddress {
-  return typeof maybeEmail === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(maybeEmail);
-}
+export const EmailAddressSchema = z.string().email();
 
 /**
- * Creates an {@link EmailAddress} from a plain string. Returns an error if the string is not valid.
+ * A generic type representing a user.
  */
-export function createEmailAddress(maybeEmail: string): Result<EmailAddress> {
-  if (!isValidEmail(maybeEmail)) {
-    return makeErrorResult(new Error(`Invalid email address format: "${maybeEmail}"`));
-  }
-  // TODO: Should we normalize email addresses?
-  return makeSuccessResult(maybeEmail);
-}
-
-export interface LoggedInUser {
+export interface User {
   readonly userId: UserId;
   readonly email: EmailAddress;
-  readonly displayName: string | null;
+  readonly displayName?: string;
   // TODO: Add photo URL.
   // readonly photoUrl: string;
 }
 
 /**
- * Create a generic {@link LoggedInUser} from a Firebase-specific {@link FirebaseUser}.
+ * A Zod schema for a {@link User}.
  */
-export function makeLoggedInUserFromFirebaseUser(
-  firebaseLoggedInUser: FirebaseUser
-): Result<LoggedInUser> {
-  if (!firebaseLoggedInUser.email) {
-    return makeErrorResult(new Error('No email address associated with Firebase user'));
-  }
+export const UserSchema = z.object({
+  userId: UserIdSchema,
+  email: EmailAddressSchema,
+  displayName: z.string().optional(),
+});
 
-  const emailResult = createEmailAddress(firebaseLoggedInUser.email);
-  if (!emailResult.success) {
-    return makeErrorResult(emailResult.error);
-  }
+export type UserFromSchema = z.infer<typeof UserSchema>;
 
-  const userIdResult = makeUserId(firebaseLoggedInUser.uid);
-  if (!userIdResult.success) {
-    return makeErrorResult(userIdResult.error);
-  }
-
-  return makeSuccessResult({
-    userId: userIdResult.value,
-    email: emailResult.value,
-    displayName: firebaseLoggedInUser.displayName,
-  });
-}
-
-export type AuthStateChangedCallback = Consumer<LoggedInUser | null>;
+export type AuthStateChangedCallback = Consumer<User | null>;
 
 export type AuthStateChangedUnsubscribe = Task;

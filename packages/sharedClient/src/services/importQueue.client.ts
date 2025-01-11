@@ -1,40 +1,93 @@
-import type {CollectionReference, DocumentReference} from 'firebase/firestore';
-import {addDoc, collection, doc, getDoc} from 'firebase/firestore';
+import {IMPORT_QUEUE_DB_COLLECTION} from '@shared/lib/constants.shared';
+import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 
-import {asyncTry} from '@shared/lib/errorUtils.shared';
+import {
+  parseImportQueueItem,
+  parseImportQueueItemId,
+  toFirestoreImportQueueItem,
+} from '@shared/parsers/importQueue.parser';
 
-import type {ImportQueueItem, ImportQueueItemId} from '@shared/types/importQueue.types';
-import {makeImportQueueItemId} from '@shared/types/importQueue.types';
+import {
+  makeImportQueueItem,
+  type ImportQueueItem,
+  type ImportQueueItemId,
+} from '@shared/types/importQueue.types';
 import type {AsyncResult} from '@shared/types/result.types';
+import {makeSuccessResult} from '@shared/types/result.types';
 
-import {firebaseService} from '@sharedClient/services/firebase.client';
+import {
+  ClientFirestoreCollectionService,
+  makeFirestoreDataConverter,
+} from '@sharedClient/services/firestore.client';
+
+type ImportQueueCollectionService = ClientFirestoreCollectionService<
+  ImportQueueItemId,
+  ImportQueueItem
+>;
 
 export class ClientImportQueueService {
-  private readonly importQueueDbRef: CollectionReference;
+  private readonly importQueueCollectionService: ImportQueueCollectionService;
 
-  constructor(args: {importQueueDbRef: CollectionReference}) {
-    this.importQueueDbRef = args.importQueueDbRef;
+  constructor(args: {importQueueCollectionService: ImportQueueCollectionService}) {
+    this.importQueueCollectionService = args.importQueueCollectionService;
   }
 
-  async add(item: ImportQueueItem): AsyncResult<ImportQueueItemId> {
-    const docRefResult = await asyncTry<DocumentReference>(async () => {
-      return await addDoc(this.importQueueDbRef, item);
+  /**
+   * Adds a new import queue item to Firestore.
+   */
+  public async create(
+    importQueueItemDetails: Omit<
+      ImportQueueItem,
+      'importQueueItemId' | 'createdTime' | 'lastUpdatedTime' | 'status'
+    >
+  ): AsyncResult<ImportQueueItem> {
+    // Create the new feed source in memory.
+    const makeImportQueueItemResult = makeImportQueueItem({
+      feedItemId: importQueueItemDetails.feedItemId,
+      userId: importQueueItemDetails.userId,
+      url: importQueueItemDetails.url,
     });
-    if (!docRefResult.success) return docRefResult;
-    return makeImportQueueItemId(docRefResult.value.id);
+    if (!makeImportQueueItemResult.success) return makeImportQueueItemResult;
+    const newImportQueueItem = makeImportQueueItemResult.value;
+
+    // Create the new feed source in Firestore.
+    const createResult = await this.importQueueCollectionService.setDoc(
+      newImportQueueItem.importQueueItemId,
+      newImportQueueItem
+    );
+    if (!createResult.success) {
+      return prefixErrorResult(createResult, 'Error creating import queue item in Firestore');
+    }
+    return makeSuccessResult(newImportQueueItem);
   }
 
-  async read(importQueueItemId: ImportQueueItemId): AsyncResult<ImportQueueItem | null> {
-    return asyncTry<ImportQueueItem | null>(async () => {
-      const docRef = doc(this.importQueueDbRef, importQueueItemId);
-      const docSnap = await getDoc(docRef);
-      if (!docSnap.exists()) return null;
-      // TODO: Add typesafe `createImportQueueItem` helper.
-      return {...docSnap.data(), importQueueItemId} as ImportQueueItem;
-    });
+  /**
+   * Fetches an import queue item from Firestore by its ID.
+   */
+  public async fetchById(
+    importQueueItemId: ImportQueueItemId
+  ): AsyncResult<ImportQueueItem | null> {
+    return this.importQueueCollectionService.fetchById(importQueueItemId);
   }
 }
 
-const importQueueDbRef = collection(firebaseService.firestore, 'importQueue');
+// Initialize a singleton instance of the import queue service.
 
-export const importQueueService = new ClientImportQueueService({importQueueDbRef});
+const importQueueItemFirestoreConverter = makeFirestoreDataConverter(
+  toFirestoreImportQueueItem,
+  parseImportQueueItem
+);
+
+const importQueueCollectionService = new ClientFirestoreCollectionService({
+  collectionPath: IMPORT_QUEUE_DB_COLLECTION,
+  converter: importQueueItemFirestoreConverter,
+  parseId: parseImportQueueItemId,
+});
+
+export const importQueueService = new ClientImportQueueService({
+  importQueueCollectionService,
+});
+
+export function useImportQueueService(): ClientImportQueueService {
+  return importQueueService;
+}

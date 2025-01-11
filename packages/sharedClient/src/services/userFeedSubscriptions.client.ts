@@ -1,23 +1,30 @@
-import type {CollectionReference} from 'firebase/firestore';
-import {collection, doc, limit, onSnapshot, orderBy, query, where} from 'firebase/firestore';
+import {limit, orderBy, where} from 'firebase/firestore';
 import type {Functions, HttpsCallableResult} from 'firebase/functions';
 import {httpsCallable} from 'firebase/functions';
 import {useMemo} from 'react';
 
 import {USER_FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants.shared';
-import {asyncTry} from '@shared/lib/errorUtils.shared';
+import {asyncTry, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+
+import {
+  parseUserFeedSubscription,
+  parseUserFeedSubscriptionId,
+  toFirestoreUserFeedSubscription,
+} from '@shared/parsers/userFeedSubscriptions.parser';
 
 import type {AsyncResult} from '@shared/types/result.types';
-import {makeSuccessResult} from '@shared/types/result.types';
 import type {UserId} from '@shared/types/user.types';
 import type {
   UserFeedSubscription,
   UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
-import {makeUserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {AsyncFunc, Consumer, Unsubscribe} from '@shared/types/utils.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';
+import {
+  ClientFirestoreCollectionService,
+  makeFirestoreDataConverter,
+} from '@sharedClient/services/firestore.client';
 
 import {useLoggedInUser} from '@sharedClient/hooks/auth.hooks';
 
@@ -34,19 +41,24 @@ type CallSubscribeUserToFeedFn = AsyncFunc<
   HttpsCallableResult<SubscribeToFeedResponse>
 >;
 
+type UserFeedSubscriptionsCollectionService = ClientFirestoreCollectionService<
+  UserFeedSubscriptionId,
+  UserFeedSubscription
+>;
+
 export class ClientUserFeedSubscriptionsService {
   private userId: UserId;
   private functions: Functions;
-  private userFeedSubscriptionsDbRef: CollectionReference;
+  private userFeedSubscriptionsCollectionService: UserFeedSubscriptionsCollectionService;
 
   constructor(args: {
     readonly userId: UserId;
     readonly functions: Functions;
-    readonly userFeedSubscriptionsDbRef: CollectionReference;
+    readonly userFeedSubscriptionsCollectionService: UserFeedSubscriptionsCollectionService;
   }) {
     this.userId = args.userId;
     this.functions = args.functions;
-    this.userFeedSubscriptionsDbRef = args.userFeedSubscriptionsDbRef;
+    this.userFeedSubscriptionsCollectionService = args.userFeedSubscriptionsCollectionService;
   }
 
   /**
@@ -61,22 +73,15 @@ export class ClientUserFeedSubscriptionsService {
     );
 
     // Hit Firebase Functions endpoint to subscribe user to feed source.
-    const subscribeResponseResult = await asyncTry(
-      async () => await callSubscribeUserToFeed({url})
-    );
+    const subscribeResponseResult = await asyncTry(async () => callSubscribeUserToFeed({url}));
     if (!subscribeResponseResult.success) return subscribeResponseResult;
     const subscribeResponse = subscribeResponseResult.value;
 
     // TODO: Parse and validate the response from the function.
 
     // Parse the response to get the new user feed subscription ID.
-    const newUserFeedSubscriptionIdResult = makeUserFeedSubscriptionId(
-      subscribeResponse.data.userFeedSubscriptionId
-    );
-    if (!newUserFeedSubscriptionIdResult.success) return newUserFeedSubscriptionIdResult;
-    const newUserFeedSubscriptionId = newUserFeedSubscriptionIdResult.value;
-
-    return makeSuccessResult(newUserFeedSubscriptionId);
+    const idResult = parseUserFeedSubscriptionId(subscribeResponse.data.userFeedSubscriptionId);
+    return prefixResultIfError(idResult, 'New user feed subscription ID did not parse correctly');
   }
 
   // TODO: Implement this.
@@ -89,19 +94,14 @@ export class ClientUserFeedSubscriptionsService {
    */
   public watchSubscription(args: {
     readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-    readonly successCallback: Consumer<UserFeedSubscription>;
+    readonly successCallback: Consumer<UserFeedSubscription | null>;
     readonly errorCallback: Consumer<Error>;
   }): Unsubscribe {
     const {userFeedSubscriptionId, successCallback, errorCallback} = args;
 
-    const userFeedSubscriptionDoc = doc(this.userFeedSubscriptionsDbRef, userFeedSubscriptionId);
-
-    const unsubscribe = onSnapshot(
-      userFeedSubscriptionDoc,
-      (snapshot) => {
-        const feedItem = snapshot.data() as UserFeedSubscription;
-        successCallback(feedItem);
-      },
+    const unsubscribe = this.userFeedSubscriptionsCollectionService.watchDoc(
+      userFeedSubscriptionId,
+      successCallback,
       errorCallback
     );
     return () => unsubscribe();
@@ -116,29 +116,31 @@ export class ClientUserFeedSubscriptionsService {
   }): Unsubscribe {
     const {successCallback, errorCallback} = args;
 
-    const itemsQuery = query(
-      this.userFeedSubscriptionsDbRef,
+    const itemsQuery = this.userFeedSubscriptionsCollectionService.query([
       where('userId', '==', this.userId),
       orderBy('createdTime', 'desc'),
-      limit(100)
-    );
+      limit(100),
+    ]);
 
-    const unsubscribe = onSnapshot(
+    const unsubscribe = this.userFeedSubscriptionsCollectionService.watchDocs(
       itemsQuery,
-      (snapshot) => {
-        const feedItems = snapshot.docs.map((doc) => doc.data() as UserFeedSubscription);
-        successCallback(feedItems);
-      },
+      successCallback,
       errorCallback
     );
     return () => unsubscribe();
   }
 }
 
-const userFeedSubscriptionsDbRef = collection(
-  firebaseService.firestore,
-  USER_FEED_SUBSCRIPTIONS_DB_COLLECTION
+const userFeedSubscriptionFirestoreConverter = makeFirestoreDataConverter(
+  toFirestoreUserFeedSubscription,
+  parseUserFeedSubscription
 );
+
+const userFeedSubscriptionsCollectionService = new ClientFirestoreCollectionService({
+  collectionPath: USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
+  converter: userFeedSubscriptionFirestoreConverter,
+  parseId: parseUserFeedSubscriptionId,
+});
 
 export function useUserFeedSubscriptionsService(): ClientUserFeedSubscriptionsService {
   const loggedInUser = useLoggedInUser();
@@ -147,7 +149,7 @@ export function useUserFeedSubscriptionsService(): ClientUserFeedSubscriptionsSe
     return new ClientUserFeedSubscriptionsService({
       userId: loggedInUser.userId,
       functions: firebaseService.functions,
-      userFeedSubscriptionsDbRef,
+      userFeedSubscriptionsCollectionService,
     });
   }, [loggedInUser]);
 

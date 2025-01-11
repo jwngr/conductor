@@ -30,16 +30,17 @@
     "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",
     "validate:lint": "eslint src",
     "validate:lint:fix": "eslint src --fix",
-    "validate:types": "yarn workspace @conductor/shared-client build && tsc --noEmit",
+    "validate:types": "yarn run hack-type && tsc --build",
     "validate:format": "prettier --check 'src/**/*.{js,jsx,ts,tsx,json,css,svg}'",
     "format": "prettier --write 'src/**/*.{js,jsx,ts,tsx,json,css,svg}'",
     "start": "vite",
-    "clean": "rm -rf dist/",
+    "clean": "rm -rf dist/ distIgnore/",
     "ci": "rm -rf node_modules/ && yarn install",
-    "build": "yarn run clean && yarn workspace @conductor/shared-client build && vite build",
+    "build": "yarn run clean && yarn run hack-type && vite build",
     "preview": "vite preview",
     "deploy": "firebase deploy --only hosting",
-    "test": "echo 'TODO: Implement tests for PWA'"
+    "test": "echo 'TODO: Implement tests for PWA'",
+    "hack-type": "test -f ../../node_modules/@types/request/index.d.ts && sed -i.bak '/setCookie(/d' ../../node_modules/@types/request/index.d.ts || true"
   },
   "browserslist": [
     ">0.2%",
