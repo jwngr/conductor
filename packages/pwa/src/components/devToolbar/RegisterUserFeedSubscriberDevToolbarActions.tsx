@@ -61,6 +61,7 @@ export const RegisterAccountFeedSubscriberDevToolbarSection: React.FC = () => {
       sectionType: DevToolbarSectionType.AccountFeedSubscriber,
       title: 'Account feed subscriber',
       renderSection: () => <AccountFeedSubscriber />,
+      requiresAuth: true,
     });
   }, [registerSection]);
 

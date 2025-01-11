@@ -96,6 +96,7 @@ export const RegisterFeedItemImporterDevToolbarSection: React.FC = () => {
       sectionType: DevToolbarSectionType.FeedItemImporter,
       title: 'Feed item importer',
       renderSection: () => <FeedItemImporter />,
+      requiresAuth: true,
     });
   }, [registerSection]);
 
