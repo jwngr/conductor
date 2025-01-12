@@ -1,6 +1,6 @@
 import {where} from 'firebase/firestore';
 import type {StorageReference} from 'firebase/storage';
-import {getDownloadURL, ref as storageRef} from 'firebase/storage';
+import {getBlob, ref as storageRef} from 'firebase/storage';
 import {useEffect, useMemo, useState} from 'react';
 
 import {
@@ -14,7 +14,6 @@ import {
   prefixResultIfError,
 } from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
-import {requestGet} from '@shared/lib/requests.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
 import {Views} from '@shared/lib/views.shared';
 
@@ -293,18 +292,14 @@ export class ClientFeedItemsService {
     );
 
     // Fetch the download URL for the file.
-    const downloadUrlResult = await asyncTry(async () => getDownloadURL(fileRef));
+    const downloadUrlResult = await asyncTry(async () => getBlob(fileRef));
     if (!downloadUrlResult.success) {
       return prefixErrorResult(downloadUrlResult, 'Error fetching feed item download URL');
     }
 
-    // Fetch the markdown content from the file.
-    const downloadUrl = downloadUrlResult.value;
-    const responseResult = await requestGet<string>(downloadUrl, {
-      headers: {'Content-Type': 'text/markdown'},
-    });
+    // TODO: Handle various expected Firebase errors.
 
-    // Return the markdown content.
-    return prefixResultIfError(responseResult, 'Error fetching feed item markdown content');
+    const parseBlobResult = await asyncTry(async () => downloadUrlResult.value.text());
+    return prefixResultIfError(parseBlobResult, 'Error parsing downloaded file blob');
   }
 }
