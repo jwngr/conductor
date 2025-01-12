@@ -1,6 +1,6 @@
 import {v4 as uuidv4} from 'uuid';
 
-import type {AsyncResult} from '@shared/types/result.types';
+import type {AsyncResult, Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import type {EmailAddress, Func, Supplier, UUID} from '@shared/types/utils.types';
 
@@ -45,13 +45,40 @@ export function omitUndefined<T extends object>(obj: T): T {
 }
 
 /**
- * Runs all of the provided async task suppliers in batches of a given size. If the number of tasks is less
- * than the batch size, all tasks are run in parallel. Tasks are not executed until this function is called.
+ * Runs all of the provided sync task suppliers in batches of a given size. If the number of tasks
+ * is less than the batch size, all tasks are run in parallel. Tasks are not executed until this
+ * function is called.
+ */
+export function batchSyncResults<T>(
+  syncResultSuppliers: Array<Supplier<Result<T>>>,
+  batchSize: number
+): Result<Array<Result<T>>> {
+  if (batchSize < 1) {
+    return makeErrorResult(new Error(`Batch size must be at least 1: ${batchSize}`));
+  }
+
+  const resultsPerBatch: Array<Array<Supplier<Result<T>>>> = [];
+  for (let i = 0; i < syncResultSuppliers.length; i += batchSize) {
+    resultsPerBatch.push(syncResultSuppliers.slice(i, i + batchSize));
+  }
+
+  const allResults: Array<Result<T>> = [];
+  for (const currentSuppliers of resultsPerBatch) {
+    const currentResults = currentSuppliers.map((supplier) => supplier());
+    allResults.push(...currentResults);
+  }
+  return makeSuccessResult(allResults);
+}
+
+/**
+ * Runs all of the provided async task suppliers in batches of a given size. If the number of tasks
+ * is less than the batch size, all tasks are run in parallel. Tasks are not executed until this
+ * function is called.
  */
 export async function batchAsyncResults<T>(
   asyncResultSuppliers: Array<Supplier<AsyncResult<T>>>,
   batchSize: number
-): AsyncResult<T> {
+): AsyncResult<Array<Result<T>>> {
   if (batchSize < 1) {
     return makeErrorResult(new Error(`Batch size must be at least 1: ${batchSize}`));
   }
@@ -61,12 +88,12 @@ export async function batchAsyncResults<T>(
     resultsPerBatch.push(asyncResultSuppliers.slice(i, i + batchSize));
   }
 
-  const allResults: unknown[] = [];
+  const allResults: Array<Result<T>> = [];
   for (const currentSuppliers of resultsPerBatch) {
     const currentResults = await Promise.all(currentSuppliers.map((supplier) => supplier()));
     allResults.push(...currentResults);
   }
-  return makeSuccessResult(allResults as T);
+  return makeSuccessResult(allResults);
 }
 
 /**

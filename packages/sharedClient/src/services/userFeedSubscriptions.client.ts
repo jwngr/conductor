@@ -77,9 +77,6 @@ export class ClientUserFeedSubscriptionsService {
     if (!subscribeResponseResult.success) return subscribeResponseResult;
     const subscribeResponse = subscribeResponseResult.value;
 
-    console.log('subscribeResponse', subscribeResponse);
-    console.log('userFeedSubscriptionId', subscribeResponse.data.userFeedSubscriptionId);
-
     // TODO: Parse and validate the response from the function.
 
     // Parse the response to get the new user feed subscription ID.

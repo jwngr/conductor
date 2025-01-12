@@ -223,9 +223,9 @@ export class ClientFeedItemsService {
 
   public async createFeedItem(args: {
     readonly url: string;
-    readonly source: FeedItemSource;
+    readonly feedItemSource: FeedItemSource;
   }): AsyncResult<FeedItemId | null> {
-    const {url, source} = args;
+    const {url, feedItemSource} = args;
 
     const trimmedUrl = url.trim();
     if (!isValidUrl(trimmedUrl)) {
@@ -237,7 +237,7 @@ export class ClientFeedItemsService {
       url: trimmedUrl,
       // TODO: Make this dynamic based on the actual content. Maybe it should be null initially
       // until we've done the import? Or should we compute this at save time?
-      source,
+      feedItemSource,
       accountId: this.accountId,
     });
     if (!feedItemResult.success) return feedItemResult;

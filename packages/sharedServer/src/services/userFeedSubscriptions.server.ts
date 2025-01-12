@@ -4,7 +4,7 @@ import type {WithFieldValue} from 'firebase-admin/firestore';
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import type {FeedSource} from '@shared/types/feedSources.types';
+import type {FeedSource, FeedSourceId} from '@shared/types/feedSources.types';
 import {makeSuccessResult, type AsyncResult} from '@shared/types/result.types';
 import type {
   UserFeedSubscription,
@@ -39,6 +39,20 @@ export class ServerUserFeedSubscriptionsService {
       .where('accountId', '==', accountId);
     const queryResult = await this.userFeedSubscriptionsCollectionService.fetchQueryDocs(query);
     return prefixResultIfError(queryResult, 'Error fetching user feed subscriptions for account');
+  }
+
+  /**
+   * Fetches all user feed subscription documents for an individual feed source from Firestore.
+   */
+  public async fetchForFeedSource(feedSourceId: FeedSourceId): AsyncResult<UserFeedSubscription[]> {
+    const query = this.userFeedSubscriptionsCollectionService
+      .getCollectionRef()
+      .where('feedSourceId', '==', feedSourceId);
+    const queryResult = await this.userFeedSubscriptionsCollectionService.fetchQueryDocs(query);
+    return prefixResultIfError(
+      queryResult,
+      'Error fetching user feed subscriptions for feed source'
+    );
   }
 
   /**

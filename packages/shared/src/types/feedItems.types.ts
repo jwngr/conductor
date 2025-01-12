@@ -116,7 +116,7 @@ interface BaseFeedItem extends BaseStoreItem {
   readonly feedItemId: FeedItemId;
   readonly accountId: AccountId;
   readonly type: FeedItemType;
-  readonly source: FeedItemSource;
+  readonly feedItemSource: FeedItemSource;
 
   // Content metadata.
   readonly url: string;
@@ -152,7 +152,7 @@ export const FeedItemFromStorageSchema = z.object({
   feedItemId: FeedItemIdSchema,
   accountId: AccountIdSchema,
   type: z.nativeEnum(FeedItemType),
-  source: FeedItemSourceFromStorageSchema,
+  feedItemSource: FeedItemSourceFromStorageSchema,
   url: z.string().url(),
   title: z.string().min(1),
   description: z.string(),

@@ -44,15 +44,15 @@ export function parseFeedItemId(maybeFeedItemId: string): Result<FeedItemId> {
  */
 // TODO: I'm not sure if this is the best way to do this. All other parsers take in an `unknown`
 // value instead of a discriminated union.
-function parseFeedItemSource(source: FeedItemSourceFromStorage): Result<FeedItemSource> {
-  const sourceType = source.type;
+function parseFeedItemSource(feedItemSource: FeedItemSourceFromStorage): Result<FeedItemSource> {
+  const sourceType = feedItemSource.type;
   switch (sourceType) {
     case FeedItemSourceType.App:
-      return parseAppFeedItemSource(source);
+      return parseAppFeedItemSource(feedItemSource);
     case FeedItemSourceType.Extension:
-      return parseExtensionFeedItemSource(source);
+      return parseExtensionFeedItemSource(feedItemSource);
     case FeedItemSourceType.RSS:
-      return parseRssFeedItemSource(source);
+      return parseRssFeedItemSource(feedItemSource);
     default:
       return makeErrorResult(new Error(`Unknown feed item source type: ${sourceType}`));
   }
@@ -62,8 +62,8 @@ function parseFeedItemSource(source: FeedItemSourceFromStorage): Result<FeedItem
  * Parses a {@link FeedItemAppSource} from an unknown value. Returns an `ErrorResult` if the value
  * is not valid.
  */
-function parseAppFeedItemSource(source: unknown): Result<FeedItemAppSource> {
-  const parsedResult = parseZodResult(AppFeedItemSourceSchema, source);
+function parseAppFeedItemSource(feedItemSource: unknown): Result<FeedItemAppSource> {
+  const parsedResult = parseZodResult(AppFeedItemSourceSchema, feedItemSource);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid app feed item source');
   }
@@ -74,8 +74,8 @@ function parseAppFeedItemSource(source: unknown): Result<FeedItemAppSource> {
  * Parses a {@link FeedItemExtensionSource} from an unknown value. Returns an `ErrorResult` if the
  * value is not valid.
  */
-function parseExtensionFeedItemSource(source: unknown): Result<FeedItemExtensionSource> {
-  const parsedResult = parseZodResult(ExtensionFeedItemSourceSchema, source);
+function parseExtensionFeedItemSource(feedItemSource: unknown): Result<FeedItemExtensionSource> {
+  const parsedResult = parseZodResult(ExtensionFeedItemSourceSchema, feedItemSource);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid extension feed item source');
   }
@@ -86,8 +86,8 @@ function parseExtensionFeedItemSource(source: unknown): Result<FeedItemExtension
  * Parses a {@link FeedItemRSSSource} from an unknown value. Returns an `ErrorResult` if the value
  * is not valid.
  */
-function parseRssFeedItemSource(source: unknown): Result<FeedItemRSSSource> {
-  const parsedResult = parseZodResult(RssFeedItemSourceSchema, source);
+function parseRssFeedItemSource(feedItemSource: unknown): Result<FeedItemRSSSource> {
+  const parsedResult = parseZodResult(RssFeedItemSourceSchema, feedItemSource);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid RSS feed item source');
   }
@@ -118,14 +118,14 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
   const parsedAccountIdReult = parseAccountId(parsedFeedItemResult.value.accountId);
   if (!parsedAccountIdReult.success) return parsedAccountIdReult;
 
-  const parsedSourceResult = parseFeedItemSource(parsedFeedItemResult.value.source);
+  const parsedSourceResult = parseFeedItemSource(parsedFeedItemResult.value.feedItemSource);
   if (!parsedSourceResult.success) return parsedSourceResult;
 
   return makeSuccessResult(
     omitUndefined({
       type: parsedFeedItemResult.value.type,
       accountId: parsedAccountIdReult.value,
-      source: parsedSourceResult.value,
+      feedItemSource: parsedSourceResult.value,
       feedItemId: parsedIdResult.value,
       url: parsedFeedItemResult.value.url,
       title: parsedFeedItemResult.value.title,
@@ -151,7 +151,7 @@ export function toStorageFeedItem(feedItem: FeedItem): FeedItemFromStorage {
     feedItemId: feedItem.feedItemId,
     accountId: feedItem.accountId,
     type: feedItem.type,
-    source: feedItem.source,
+    feedItemSource: feedItem.feedItemSource,
     url: feedItem.url,
     title: feedItem.title,
     description: feedItem.description,
