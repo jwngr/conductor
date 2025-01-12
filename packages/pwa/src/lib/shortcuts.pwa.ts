@@ -1,4 +1,5 @@
 import {useEffect} from 'react';
+import {useNavigate} from 'react-router-dom';
 
 import {SharedKeyboardShortcutsService} from '@shared/services/keyboardShortcuts.shared';
 
@@ -12,6 +13,11 @@ export function useShortcut(shortcut: KeyboardShortcut, handler: ShortcutHandler
   useEffect(() => {
     return keyboardShortcutsService.registerShortcut(shortcut, handler);
   }, [shortcut, handler]);
+}
+
+export function useNavShortcut(shortcut: KeyboardShortcut, url: string) {
+  const navigate = useNavigate();
+  useShortcut(shortcut, () => navigate(url));
 }
 
 interface ShortcutWithHandler {
