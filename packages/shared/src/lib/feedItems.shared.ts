@@ -1,10 +1,5 @@
-import {
-  FeedItemActionType,
-  makeFeedItemId,
-  TriageStatus,
-  type FeedItem,
-  type FeedItemAction,
-} from '@shared/types/feedItems.types';
+import type {FeedItem, FeedItemAction} from '@shared/types/feedItems.types';
+import {FeedItemActionType, makeFeedItemId, TriageStatus} from '@shared/types/feedItems.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
