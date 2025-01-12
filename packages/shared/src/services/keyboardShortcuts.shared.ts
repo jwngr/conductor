@@ -133,14 +133,11 @@ export class SharedKeyboardShortcutsService {
   public registerShortcut(shortcut: KeyboardShortcut, handler: ShortcutHandler): Unsubscribe {
     this.registeredShortcuts.set(shortcut.shortcutId, {shortcut, handler});
     this.refreshActiveShortcuts();
+
+    // Return a function to unregister the shortcut.
     return () => {
       this.registeredShortcuts.delete(shortcut.shortcutId);
       this.refreshActiveShortcuts();
     };
-  }
-
-  public cleanup(): void {
-    this.unsubscribeTinykeys?.();
-    this.registeredShortcuts.clear();
   }
 }
