@@ -20,11 +20,7 @@ export const FeedItemScreenEscapeHandler: React.FC = () => {
 
   useEffect(() => {
     const shortcut = keyboardShortcutsService.forClose();
-    keyboardShortcutsService.registerShortcut(shortcut, handleEscape);
-
-    return () => {
-      keyboardShortcutsService.unregisterShortcut(shortcut.shortcutId);
-    };
+    return keyboardShortcutsService.registerShortcut(shortcut, handleEscape);
   }, [handleEscape]);
 
   return null;

@@ -4,7 +4,6 @@ import {useNavigate} from 'react-router-dom';
 import {Urls} from '@shared/lib/urls.shared';
 
 import {ViewType} from '@shared/types/query.types';
-import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 
 import {keyboardShortcutsService} from '@src/lib/shortcuts.pwa';
 
@@ -18,11 +17,7 @@ export const ViewScreenEscapeHandler: React.FC = () => {
 
   useEffect(() => {
     const shortcut = keyboardShortcutsService.forClose();
-    keyboardShortcutsService.registerShortcut(shortcut, handleEscape);
-
-    return () => {
-      keyboardShortcutsService.unregisterShortcut(KeyboardShortcutId.Close);
-    };
+    return keyboardShortcutsService.registerShortcut(shortcut, handleEscape);
   }, [handleEscape]);
 
   return null;

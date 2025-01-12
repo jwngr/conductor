@@ -9,7 +9,7 @@ import type {
   ShortcutKey,
 } from '@shared/types/shortcuts.types';
 import {isModifierKey, KeyboardShortcutId, ModifierKey} from '@shared/types/shortcuts.types';
-import type {Task} from '@shared/types/utils.types';
+import type {Task, Unsubscribe} from '@shared/types/utils.types';
 
 export class SharedKeyboardShortcutsService {
   private isMac: boolean;
@@ -113,7 +113,7 @@ export class SharedKeyboardShortcutsService {
     };
   }
 
-  private setupTinykeys(): void {
+  private refreshActiveShortcuts(): void {
     if (this.unsubscribeTinykeys) {
       this.unsubscribeTinykeys();
     }
@@ -130,14 +130,13 @@ export class SharedKeyboardShortcutsService {
     this.unsubscribeTinykeys = tinykeys(window, shortcutMap);
   }
 
-  public registerShortcut(shortcut: KeyboardShortcut, handler: ShortcutHandler): void {
+  public registerShortcut(shortcut: KeyboardShortcut, handler: ShortcutHandler): Unsubscribe {
     this.registeredShortcuts.set(shortcut.shortcutId, {shortcut, handler});
-    this.setupTinykeys();
-  }
-
-  public unregisterShortcut(shortcutId: KeyboardShortcutId): void {
-    this.registeredShortcuts.delete(shortcutId);
-    this.setupTinykeys();
+    this.refreshActiveShortcuts();
+    return () => {
+      this.registeredShortcuts.delete(shortcut.shortcutId);
+      this.refreshActiveShortcuts();
+    };
   }
 
   public cleanup(): void {
