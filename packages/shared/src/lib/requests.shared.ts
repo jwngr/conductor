@@ -25,22 +25,21 @@ async function request<T>(
   const queryString =
     Object.keys(params).length > 0 ? `?${new URLSearchParams(params).toString()}` : ``;
 
-  const rawResponseResult = await asyncTry<Response>(async () => {
+  const rawResponseResult = await asyncTry(async () =>
     // Allow `fetch` here. We cannot use `request*` since we are inside its implementation.
     // eslint-disable-next-line no-restricted-syntax
-    const response = await fetch(url + queryString, {
+    fetch(url + queryString, {
       method,
       headers: {
         'Content-Type': headers['Content-Type'] ?? DEFAULT_CONTENT_TYPE,
         ...headers,
       },
       body: body ? JSON.stringify(body) : undefined,
-    });
-    return response;
-  });
+    })
+  );
 
   if (!rawResponseResult.success) {
-    logger.error('Error fetching request', {error: rawResponseResult.error, url});
+    logger.error(prefixError(rawResponseResult.error, 'Error fetching request'), {url});
     return makeErrorResponseResult(rawResponseResult.error, 500);
   }
 
@@ -54,7 +53,7 @@ async function request<T>(
     const rawResponseClone = rawResponse.clone();
 
     // Try to parse the error response as JSON.
-    const unknownErrorJsonResult = await asyncTry(() => rawResponseClone.json());
+    const unknownErrorJsonResult = await asyncTry(() => rawResponse.json());
     if (unknownErrorJsonResult.success) {
       const betterError = upgradeUnknownError(unknownErrorJsonResult.value ?? defaultErrorMessage);
       return makeErrorResponseResult(betterError, statusCode);
@@ -69,7 +68,7 @@ async function request<T>(
 
     // Fallback to a default error message if JSON and text parsing both fail.
     const errorPrefix = `${defaultErrorMessage}: Failed to parse error response.`;
-    logger.error(errorPrefix, {
+    logger.error(new Error(errorPrefix), {
       jsonError: unknownErrorJsonResult.error,
       textError: unknownErrorTextResult.error,
       url,
@@ -81,12 +80,14 @@ async function request<T>(
     );
   }
 
-  const parsedResponseResult = await asyncTry<T>(async () => {
-    return isJsonResponse(rawResponse) ? rawResponse.json() : rawResponse.text();
-  });
+  const parsedResponseResult = await asyncTry(async () =>
+    isJsonResponse(rawResponse) ? rawResponse.json() : rawResponse.text()
+  );
 
   if (!parsedResponseResult.success) {
-    logger.error('Error parsing response from body', {error: parsedResponseResult.error, url});
+    logger.error(prefixError(parsedResponseResult.error, 'Error parsing response from body'), {
+      url,
+    });
     return makeErrorResponseResult(parsedResponseResult.error, 500);
   }
 

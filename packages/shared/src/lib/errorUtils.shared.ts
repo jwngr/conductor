@@ -1,4 +1,4 @@
-import type {AsyncResult, Result} from '@shared/types/result.types';
+import type {AsyncResult, ErrorResult, Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import type {Supplier} from '@shared/types/utils.types';
 
@@ -10,7 +10,9 @@ export function upgradeUnknownError(unknownError: unknown): Error {
 
   // Unknown error is already an `Error` object.
   if (unknownError instanceof Error) {
-    return new Error(unknownError.message || defaultErrorMessage, {cause: unknownError});
+    return new Error(unknownError.message || defaultErrorMessage, {
+      cause: unknownError.cause instanceof Error ? unknownError.cause : unknownError,
+    });
   }
 
   // Unknown error is a string.
@@ -41,7 +43,26 @@ export function upgradeUnknownError(unknownError: unknown): Error {
  * Adds a prefix to the error message for a known `Error`.
  */
 export function prefixError(error: Error, prefix: string): Error {
-  return new Error(`${prefix}: ${error.message}`, {cause: error});
+  const newError = new Error(`${prefix}: ${error.message}`, {
+    cause: error.cause instanceof Error ? error.cause : error,
+  });
+  return newError;
+}
+
+/**
+ * Returns a new `ErrorResult` matching the provided `ErrorResult` but with an additional prefix.
+ */
+export function prefixErrorResult(errorResult: ErrorResult, errorPrefix: string): ErrorResult {
+  return makeErrorResult(prefixError(errorResult.error, errorPrefix));
+}
+
+/**
+ * If the provided result is a `SuccessResult`, returns it unchanged. If it is an `ErrorResult`,
+ * returns a new `ErrorResult` matching it but with an additional prefix.
+ */
+export function prefixResultIfError<T>(result: Result<T>, errorPrefix: string): Result<T> {
+  if (result.success) return result;
+  return makeErrorResult(prefixError(result.error, errorPrefix));
 }
 
 /**

@@ -3,6 +3,7 @@ import {useEffect, useRef} from 'react';
 
 import {logger} from '@shared/services/logger.shared';
 
+import {prefixError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {useFeedItemIdFromUrl} from '@shared/lib/router.shared';
 import {assertNever} from '@shared/lib/utils.shared';
@@ -62,10 +63,10 @@ const useMarkFeedItemRead = (args: {
         wasMarkedReadOnThisMount.current = true;
       } else {
         wasMarkedReadOnThisMount.current = false;
-        logger.error('Unread manager failed to mark item as read', {
-          error: markFeedItemAsReadResult.error,
-          feedItemId,
-        });
+        logger.error(
+          prefixError(markFeedItemAsReadResult.error, 'Unread manager failed to mark item as read'),
+          {feedItemId}
+        );
         // TODO: Show an error toast.
       }
     }
@@ -87,7 +88,7 @@ const FeedItemScreenMainContent: React.FC<{
   }
 
   if (feedItemError) {
-    logger.error('Error fetching feed item', {error: feedItemError});
+    logger.error(prefixError(feedItemError, 'Error fetching feed item'));
     // TODO: Introduce proper error screen.
     return <Text as="p">Something went wrong while loading this item</Text>;
   }

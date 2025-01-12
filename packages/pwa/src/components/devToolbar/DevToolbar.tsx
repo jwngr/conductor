@@ -1,12 +1,14 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {styled} from 'styled-components';
 
+import type {DevToolbarSectionInfo} from '@shared/types/devToolbar.types';
 import {ThemeColor} from '@shared/types/theme.types';
 
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
+import {RequireLoggedInAccount} from '@src/components/auth/RequireLoggedInAccount';
 
 import {IS_DEVELOPMENT} from '@src/lib/environment.pwa';
 
@@ -43,17 +45,28 @@ const BugEmoji = styled.span<{readonly $isOpen: boolean}>`
   font-size: 16px;
 `;
 
-export interface DevToolbarProps {
-  readonly isVisible?: boolean;
-}
+const DevToolbarSectionComponent: React.FC<{
+  readonly section: DevToolbarSectionInfo;
+}> = ({section}) => {
+  return (
+    <DevToolbarSectionWrapper>
+      <Text as="h4" bold>
+        {section.title}
+      </Text>
+      {section.renderSection()}
+    </DevToolbarSectionWrapper>
+  );
+};
 
-export const DevToolbar: React.FC<DevToolbarProps> = ({isVisible = true}) => {
+export const DevToolbar: React.FC<{
+  readonly isVisible?: boolean;
+}> = ({isVisible = true}) => {
   const [isOpen, setIsOpen] = useState(false);
   const toolbarRef = useRef<HTMLDivElement>(null);
 
   const devToolbarSections = useDevToolbarStore((state) => state.sections);
 
-  // Close the toolbar if the user clicks outside of it.
+  // Close the toolbar on clicks outside of it.
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (isOpen && toolbarRef.current && !toolbarRef.current.contains(event.target as Node)) {
@@ -85,7 +98,7 @@ export const DevToolbar: React.FC<DevToolbarProps> = ({isVisible = true}) => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  if (!IS_DEVELOPMENT || !isVisible) return null;
+  if (!IS_DEVELOPMENT || !isVisible || devToolbarSections.length === 0) return null;
 
   return (
     <DevToolbarWrapper ref={toolbarRef} $isOpen={isOpen} onClick={handleToolbarClick}>
@@ -93,14 +106,15 @@ export const DevToolbar: React.FC<DevToolbarProps> = ({isVisible = true}) => {
         🐛
       </BugEmoji>
       <DevToolbarContent $isOpen={isOpen}>
-        {devToolbarSections.map((section) => (
-          <DevToolbarSectionWrapper key={section.sectionType}>
-            <Text as="h4" bold>
-              {section.title}
-            </Text>
-            {section.renderSection()}
-          </DevToolbarSectionWrapper>
-        ))}
+        {devToolbarSections.map((section) =>
+          section.requiresAuth ? (
+            <RequireLoggedInAccount key={section.sectionType}>
+              <DevToolbarSectionComponent section={section} />
+            </RequireLoggedInAccount>
+          ) : (
+            <DevToolbarSectionComponent key={section.sectionType} section={section} />
+          )
+        )}
       </DevToolbarContent>
     </DevToolbarWrapper>
   );

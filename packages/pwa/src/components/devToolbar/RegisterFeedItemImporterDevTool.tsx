@@ -34,7 +34,7 @@ const FeedItemImporter: React.FC = () => {
         return;
       }
 
-      const addFeedItemResult = await feedItemsService.addFeedItem({
+      const addFeedItemResult = await feedItemsService.createFeedItem({
         url: trimmedUrl,
         source: FEED_ITEM_APP_SOURCE,
       });
@@ -96,6 +96,7 @@ export const RegisterFeedItemImporterDevToolbarSection: React.FC = () => {
       sectionType: DevToolbarSectionType.FeedItemImporter,
       title: 'Feed item importer',
       renderSection: () => <FeedItemImporter />,
+      requiresAuth: true,
     });
   }, [registerSection]);
 

@@ -3,12 +3,13 @@ import {useNavigate} from 'react-router-dom';
 
 import {logger} from '@shared/services/logger.shared';
 
+import {prefixError} from '@shared/lib/errorUtils.shared';
 import {Urls} from '@shared/lib/urls.shared';
 
 import {authService} from '@sharedClient/services/auth.client';
 
 /**
- * Signs the user out and redirects them to sign in page.
+ * Signs out the current account and redirects them to sign in page.
  */
 export const SignOutRedirect: React.FC = () => {
   const navigate = useNavigate();
@@ -17,8 +18,9 @@ export const SignOutRedirect: React.FC = () => {
     const go = async () => {
       const signOutResult = await authService.signOut();
       if (!signOutResult.success) {
-        // TODO: Filter out error message that are expected user error.
-        logger.error('Failed to sign out user', {error: signOutResult.error});
+        // TODO: Can this be de-duped with the error handler in `AuthServiceSubscription`?
+        // TODO: Filter out expected user errors..
+        logger.error(prefixError(signOutResult.error, 'Failed to sign out account'));
         // TODO: Surface error to user.
         return;
       }

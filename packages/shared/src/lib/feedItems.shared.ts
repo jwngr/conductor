@@ -1,26 +1,15 @@
-import {serverTimestamp} from 'firebase/firestore';
-
 import {
   FeedItemActionType,
+  makeFeedItemId,
   TriageStatus,
   type FeedItem,
   type FeedItemAction,
-  type FeedItemId,
-  type FeedItemSource,
-  type FeedItemType,
 } from '@shared/types/feedItems.types';
 import {IconName} from '@shared/types/icons.types';
+import type {Result} from '@shared/types/result.types';
+import {makeSuccessResult} from '@shared/types/result.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
-import type {UserId} from '@shared/types/user.types';
-
-interface MakeFeedItemArgs {
-  readonly feedItemId: FeedItemId;
-  readonly type: FeedItemType;
-  readonly url: string;
-  readonly source: FeedItemSource;
-  readonly userId: UserId;
-}
 
 type MaybeFeedItem = FeedItem | undefined | null;
 
@@ -49,24 +38,28 @@ export class SharedFeedItemHelpers {
     return feedItem?.tagIds[SystemTagId.Unread] === true;
   }
 
-  public static makeFeedItem({feedItemId, type, url, source, userId}: MakeFeedItemArgs): FeedItem {
-    return {
-      feedItemId,
-      userId,
-      url,
-      type,
-      source,
-      title: '',
-      description: '',
+  public static makeFeedItem(
+    args: Pick<FeedItem, 'type' | 'accountId' | 'url' | 'source'>
+  ): Result<FeedItem> {
+    return makeSuccessResult({
+      feedItemId: makeFeedItemId(),
+      accountId: args.accountId,
+      url: args.url,
+      type: args.type,
+      source: args.source,
+      // TODO: Update these and figure out a better solution. Maybe a better discriminated union.
+      title: 'Test title from makeFeedItem',
+      description: 'Test description from makeFeedItem',
       outgoingLinks: [],
       triageStatus: TriageStatus.Untriaged,
       tagIds: {
         [SystemTagId.Unread]: true,
         [SystemTagId.Importing]: true,
       },
-      createdTime: serverTimestamp(),
-      lastUpdatedTime: serverTimestamp(),
-    };
+      // TODO: Should use server timestamps instead.
+      createdTime: new Date(),
+      lastUpdatedTime: new Date(),
+    });
   }
 
   public static getMarkDoneFeedItemActionInfo(feedItem: FeedItem): FeedItemAction {

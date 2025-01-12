@@ -1,9 +1,14 @@
-import {makeId} from '@shared/lib/utils.shared';
+import {z} from 'zod';
 
+import {makeUuid} from '@shared/lib/utils.shared';
+
+import {AccountIdSchema} from '@shared/types/accounts.types';
+import type {AccountId} from '@shared/types/accounts.types';
+import {FeedItemIdSchema} from '@shared/types/feedItems.types';
 import type {FeedItemId} from '@shared/types/feedItems.types';
+import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import type {UserId} from '@shared/types/user.types';
+import {makeSuccessResult} from '@shared/types/result.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 
 /**
@@ -13,25 +18,15 @@ import type {BaseStoreItem} from '@shared/types/utils.types';
 export type ImportQueueItemId = string & {readonly __brand: 'ImportQueueItemIdBrand'};
 
 /**
- * Checks if a value is a valid {@link ImportQueueItemId}.
+ * Zod schema for an {@link ImportQueueItemId}.
  */
-export function isImportQueueItemId(
-  maybeImportQueueItemId: unknown
-): maybeImportQueueItemId is ImportQueueItemId {
-  return typeof maybeImportQueueItemId === 'string' && maybeImportQueueItemId.length > 0;
-}
+export const ImportQueueItemIdSchema = z.string().uuid();
 
 /**
- * Creates an {@link ImportQueueItemId} from a plain string. Returns an error if the string is not
- * valid.
+ * Creates a new random {@link ImportQueueItemId}.
  */
-export function makeImportQueueItemId(
-  maybeImportQueueItemId: string = makeId()
-): Result<ImportQueueItemId> {
-  if (!isImportQueueItemId(maybeImportQueueItemId)) {
-    return makeErrorResult(new Error(`Invalid import queue item ID: "${maybeImportQueueItemId}"`));
-  }
-  return makeSuccessResult(maybeImportQueueItemId);
+export function makeImportQueueItemId(): ImportQueueItemId {
+  return makeUuid<ImportQueueItemId>();
 }
 
 /**
@@ -58,8 +53,46 @@ export enum ImportQueueItemStatus {
  */
 export interface ImportQueueItem extends BaseStoreItem {
   readonly importQueueItemId: ImportQueueItemId;
-  readonly userId: UserId;
+  readonly accountId: AccountId;
   readonly feedItemId: FeedItemId;
   readonly url: string;
   readonly status: ImportQueueItemStatus;
+}
+
+/**
+ * Zod schema for an {@link ImportQueueItem} persisted to Firestore.
+ */
+export const ImportQueueItemFromStrageSchema = z.object({
+  importQueueItemId: ImportQueueItemIdSchema,
+  accountId: AccountIdSchema,
+  feedItemId: FeedItemIdSchema,
+  url: z.string().url(),
+  status: z.nativeEnum(ImportQueueItemStatus),
+  createdTime: FirestoreTimestampSchema,
+  lastUpdatedTime: FirestoreTimestampSchema,
+});
+
+/**
+ * Type for an {@link ImportQueueItem} persisted to Firestore.
+ */
+export type ImportQueueItemFromStorage = z.infer<typeof ImportQueueItemFromStrageSchema>;
+
+/**
+ * Creates a new {@link ImportQueueItem}.
+ */
+export function makeImportQueueItem(
+  args: Omit<ImportQueueItem, 'importQueueItemId' | 'status' | 'createdTime' | 'lastUpdatedTime'>
+): Result<ImportQueueItem> {
+  const {feedItemId, accountId, url} = args;
+
+  return makeSuccessResult({
+    importQueueItemId: makeImportQueueItemId(),
+    feedItemId,
+    accountId,
+    url,
+    status: ImportQueueItemStatus.New,
+    // TODO: Should use server timestamps instead.
+    createdTime: new Date(),
+    lastUpdatedTime: new Date(),
+  });
 }

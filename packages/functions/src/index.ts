@@ -1,80 +1,154 @@
 import FirecrawlApp from '@mendable/firecrawl-js';
-import {logger, setGlobalOptions} from 'firebase-functions';
-import {defineString} from 'firebase-functions/params';
+import {setGlobalOptions} from 'firebase-functions';
+import {defineString, projectID} from 'firebase-functions/params';
 import {auth} from 'firebase-functions/v1';
 import {onInit} from 'firebase-functions/v2/core';
 import {onDocumentCreated} from 'firebase-functions/v2/firestore';
 import {HttpsError, onCall} from 'firebase-functions/v2/https';
 
+import {logger} from '@shared/services/logger.shared';
+
 import {
+  ACCOUNTS_DB_COLLECTION,
   FEED_ITEMS_DB_COLLECTION,
   FEED_ITEMS_STORAGE_COLLECTION,
-  FEEDS_DB_COLLECTION,
+  FEED_SOURCES_DB_COLLECTION,
   IMPORT_QUEUE_DB_COLLECTION,
   USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
-  USERS_DB_COLLECTION,
 } from '@shared/lib/constants.shared';
+import {prefixError} from '@shared/lib/errorUtils.shared';
 
+import {parseAccount, parseAccountId, toStorageAccount} from '@shared/parsers/accounts.parser';
+import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 import {
-  ImportQueueItem,
-  ImportQueueItemStatus,
-  makeImportQueueItemId,
-} from '@shared/types/importQueue.types';
-import {makeSuccessResult} from '@shared/types/result.types';
-import {makeUserId, UserId} from '@shared/types/user.types';
+  parseFeedSource,
+  parseFeedSourceId,
+  toStorageFeedSource,
+} from '@shared/parsers/feedSources.parser';
+import {
+  parseImportQueueItem,
+  parseImportQueueItemId,
+  toStorageImportQueueItem,
+} from '@shared/parsers/importQueue.parser';
+import {
+  parseUserFeedSubscription,
+  parseUserFeedSubscriptionId,
+  toStorageUserFeedSubscription,
+} from '@shared/parsers/userFeedSubscriptions.parser';
 
+import {ImportQueueItem, ImportQueueItemStatus} from '@shared/types/importQueue.types';
+import {makeSuccessResult} from '@shared/types/result.types';
+
+import {ServerAccountsService} from '@sharedServer/services/accounts.server';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
-import {ServerFeedsService} from '@sharedServer/services/feeds.server';
+import {ServerFeedSourcesService} from '@sharedServer/services/feedSources.server';
 import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
+import {
+  makeFirestoreDataConverter,
+  ServerFirestoreCollectionService,
+} from '@sharedServer/services/firestore.server';
 import {ServerImportQueueService} from '@sharedServer/services/importQueue.server';
+import {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
 import {SuperfeedrService} from '@sharedServer/services/superfeedr.server';
 import {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
-import {ServerUsersService} from '@sharedServer/services/users.server';
 import {WipeoutService} from '@sharedServer/services/wipeout.server';
-
-import {firestore} from '@sharedServer/lib/firebase.server';
 
 const FIRECRAWL_API_KEY = defineString('FIRECRAWL_API_KEY');
 const SUPERFEEDR_USER = defineString('SUPERFEEDR_USER');
 const SUPERFEEDR_API_KEY = defineString('SUPERFEEDR_API_KEY');
 
-let feedsService: ServerFeedsService;
+let feedSourcesService: ServerFeedSourcesService;
 let userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
 let importQueueService: ServerImportQueueService;
 let wipeoutService: WipeoutService;
+let rssFeedService: ServerRssFeedService;
+
 onInit(() => {
   const firecrawlApp = new FirecrawlApp({apiKey: FIRECRAWL_API_KEY.value()});
 
   const superfeedrService = new SuperfeedrService({
     superfeedrUser: SUPERFEEDR_USER.value(),
     superfeedrApiKey: SUPERFEEDR_API_KEY.value(),
+    webhookBaseUrl: `https://${projectID.value()}.firebaseapp.com`,
   });
 
-  feedsService = new ServerFeedsService({
-    feedsDbRef: firestore.collection(FEEDS_DB_COLLECTION),
-    superfeedrService,
+  const feedSourceFirestoreConverter = makeFirestoreDataConverter(
+    toStorageFeedSource,
+    parseFeedSource
+  );
+
+  const feedSourcesCollectionService = new ServerFirestoreCollectionService({
+    collectionPath: FEED_SOURCES_DB_COLLECTION,
+    converter: feedSourceFirestoreConverter,
+    parseId: parseFeedSourceId,
+  });
+
+  feedSourcesService = new ServerFeedSourcesService({feedSourcesCollectionService});
+
+  const userFeedSubscriptionFirestoreConverter = makeFirestoreDataConverter(
+    toStorageUserFeedSubscription,
+    parseUserFeedSubscription
+  );
+
+  const userFeedSubscriptionsCollectionService = new ServerFirestoreCollectionService({
+    collectionPath: USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
+    converter: userFeedSubscriptionFirestoreConverter,
+    parseId: parseUserFeedSubscriptionId,
   });
 
   userFeedSubscriptionsService = new ServerUserFeedSubscriptionsService({
-    userFeedSubscriptionsDbRef: firestore.collection(USER_FEED_SUBSCRIPTIONS_DB_COLLECTION),
+    userFeedSubscriptionsCollectionService,
+  });
+
+  const feedItemFirestoreConverter = makeFirestoreDataConverter(toStorageFeedItem, parseFeedItem);
+
+  const feedItemsCollectionService = new ServerFirestoreCollectionService({
+    collectionPath: FEED_ITEMS_DB_COLLECTION,
+    converter: feedItemFirestoreConverter,
+    parseId: parseFeedItemId,
   });
 
   const feedItemsService = new ServerFeedItemsService({
-    feedItemsDbRef: firestore.collection(FEED_ITEMS_DB_COLLECTION),
+    feedItemsCollectionService,
     storageCollectionPath: FEED_ITEMS_STORAGE_COLLECTION,
   });
 
+  const importQueueItemFirestoreConverter = makeFirestoreDataConverter(
+    toStorageImportQueueItem,
+    parseImportQueueItem
+  );
+
+  const importQueueCollectionService = new ServerFirestoreCollectionService({
+    collectionPath: IMPORT_QUEUE_DB_COLLECTION,
+    converter: importQueueItemFirestoreConverter,
+    parseId: parseImportQueueItemId,
+  });
+
   importQueueService = new ServerImportQueueService({
-    importQueueDbRef: firestore.collection(IMPORT_QUEUE_DB_COLLECTION),
+    importQueueCollectionService,
     firecrawlService: new ServerFirecrawlService(firecrawlApp),
     feedItemsService,
   });
 
+  const accountFirestoreConverter = makeFirestoreDataConverter(toStorageAccount, parseAccount);
+
+  const accountsCollectionService = new ServerFirestoreCollectionService({
+    collectionPath: ACCOUNTS_DB_COLLECTION,
+    converter: accountFirestoreConverter,
+    parseId: parseAccountId,
+  });
+
   wipeoutService = new WipeoutService({
-    usersService: new ServerUsersService({usersDbRef: firestore.collection(USERS_DB_COLLECTION)}),
+    accountsService: new ServerAccountsService({accountsCollectionService}),
     userFeedSubscriptionsService,
     importQueueService,
     feedItemsService,
+  });
+
+  rssFeedService = new ServerRssFeedService({
+    superfeedrService,
+    feedSourcesService,
+    userFeedSubscriptionsService,
   });
 });
 
@@ -91,26 +165,38 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
   async (event) => {
     const {importQueueItemId: maybeImportQueueItemId} = event.params;
 
-    logger.info(`[IMPORT] Processing import queue item "${maybeImportQueueItemId}"`);
+    logger.log(`[IMPORT] Processing import queue item "${maybeImportQueueItemId}"`);
 
-    const importQueueItemIdResult = makeImportQueueItemId(maybeImportQueueItemId);
-    if (!importQueueItemIdResult.success) {
-      logger.error(importQueueItemIdResult.error.message, {
-        error: importQueueItemIdResult.error,
-        maybeImportQueueItemId,
-      });
+    const parseIdResult = parseImportQueueItemId(maybeImportQueueItemId);
+    if (!parseIdResult.success) {
+      logger.error(
+        prefixError(parseIdResult.error, '[IMPORT] Invalid import queue item ID. Skipping...'),
+        {maybeImportQueueItemId}
+      );
       return;
     }
-    const importQueueItemId = importQueueItemIdResult.value;
+    const importQueueItemId = parseIdResult.value;
 
     const snapshot = event.data;
     if (!snapshot) {
-      logger.error(`[IMPORT] No data associated with import queue item ${importQueueItemId}`);
+      logger.error(new Error(`[IMPORT] No data associated with import queue item`), {
+        importQueueItemId,
+      });
       return;
     }
 
-    // TODO: Properly validate the import item schema.
-    const importQueueItem = {importQueueItemId, ...snapshot.data()} as ImportQueueItem;
+    // const importQueueItemResult = parseImportQueueItem(snapshot.data());
+    // if (!importQueueItemResult.success) {
+    //   logger.error(
+    //     prefixError(importQueueItemResult.error, '[IMPORT] Invalid import queue item data'),
+    //     {importQueueItemId}
+    //   );
+    //   return;
+    // }
+    // const importQueueItem = importQueueItemResult.value;
+    // TODO: This cast is a lie and it is really a `ImportQueueItemFromSchema` since functions don't
+    // seem to auto-convert the data from the snapshot correctly.
+    const importQueueItem = snapshot.data() as ImportQueueItem;
 
     // Avoid double processing by only processing items with a "new" status.
     if (importQueueItem.status !== ImportQueueItemStatus.New) {
@@ -123,18 +209,18 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
     const logDetails = {
       importQueueItemId,
       feedItemId: importQueueItem.feedItemId,
-      userId: importQueueItem.userId,
+      accountId: importQueueItem.accountId,
     } as const;
 
     const handleError = async (errorPrefix: string, error: Error) => {
-      logger.error(`${errorPrefix}: ${error.message}`, {error, ...logDetails});
+      logger.error(prefixError(error, errorPrefix), logDetails);
       await importQueueService.updateImportQueueItem(importQueueItemId, {
         status: ImportQueueItemStatus.Failed,
       });
     };
 
     // Claim the item so that no other function picks it up.
-    logger.info(`[IMPORT] Claiming import queue item...`, logDetails);
+    logger.log(`[IMPORT] Claiming import queue item...`, logDetails);
     const claimItemResult = await importQueueService.updateImportQueueItem(importQueueItemId, {
       status: ImportQueueItemStatus.Processing,
     });
@@ -144,7 +230,7 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
     }
 
     // Actually import the feed item.
-    logger.info(`[IMPORT] Importing queue item...`, logDetails);
+    logger.log(`[IMPORT] Importing queue item...`, logDetails);
     const importItemResult = await importQueueService.importFeedItem(importQueueItem);
     if (!importItemResult.success) {
       await handleError('Error importing queue item', importItemResult.error);
@@ -152,123 +238,91 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
     }
 
     // Remove the import queue item once everything else has processed successfully.
-    logger.info(`[IMPORT] Deleting import queue item...`, logDetails);
+    logger.log(`[IMPORT] Deleting import queue item...`, logDetails);
     const deleteItemResult = await importQueueService.deleteImportQueueItem(importQueueItemId);
     if (!deleteItemResult.success) {
       await handleError('Error deleting import queue item', deleteItemResult.error);
       return;
     }
 
-    logger.info(`[IMPORT] Successfully processed import queue item`, logDetails);
+    logger.log(`[IMPORT] Successfully processed import queue item`, logDetails);
   }
 );
 
 /**
- * Permanently deletes all data associated with a user when their Firebase auth account is deleted.
+ * Permanently deletes all data associated with an account when their Firebase auth user is deleted.
  */
-export const wipeoutUserOnAuthDelete = auth.user().onDelete(async (firebaseUser) => {
-  const userIdResult = makeUserId(firebaseUser.uid);
-  if (!userIdResult.success) {
-    logger.error('[WIPEOUT] Invalid user ID. Not wiping out user.', {
-      error: userIdResult.error,
-      userId: firebaseUser.uid,
+export const wipeoutAccountOnAuthDelete = auth.user().onDelete(async (firebaseUser) => {
+  logger.log(`[WIPEOUT] Firebase user deleted. Processing account wipeout...`, {
+    fireabseUid: firebaseUser.uid,
+  });
+
+  const accountIdResult = parseAccountId(firebaseUser.uid);
+  if (!accountIdResult.success) {
+    logger.error(
+      prefixError(accountIdResult.error, '[WIPEOUT] Invalid account ID. Not wiping out account.'),
+      {firebaseUid: firebaseUser.uid}
+    );
+    return;
+  }
+  const accountId = accountIdResult.value;
+
+  const wipeoutAccountResult = await wipeoutService.wipeoutAccount(accountId);
+  if (!wipeoutAccountResult.success) {
+    logger.error(prefixError(wipeoutAccountResult.error, '[WIPEOUT] Failed to wipe out account'), {
+      accountId,
     });
     return;
   }
-  const userId = userIdResult.value;
 
-  logger.info(`[WIPEOUT] Wiping out user...`, {userId});
-  const wipeoutUserResult = await wipeoutService.wipeoutUser(userId);
-  if (!wipeoutUserResult.success) {
-    logger.error(`[WIPEOUT] Failed to wipe out user`, {error: wipeoutUserResult.error, userId});
-    return;
-  }
-
-  logger.info(`[WIPEOUT] Successfully wiped out user`, {userId});
+  logger.log(`[WIPEOUT] Successfully wiped out account`, {accountId});
 });
 
 /**
- * Subscribes a user to a new feed, creating the new feed if necessary.
+ * Subscribes an account to a feed source, creating it if necessary.
  */
-export const subscribeUserToFeedOnCall = onCall(
+export const subscribeAccountToFeedOnCall = onCall(
   // TODO: Lock down CORS to only allow requests from my domains.
   {cors: true},
   async (request) => {
     if (!request.auth) {
-      throw new HttpsError('unauthenticated', 'User must be authenticated');
+      throw new HttpsError('unauthenticated', 'Must be authenticated');
     } else if (!request.data.url) {
       // TODO: Use zod to validate the request data.
       throw new HttpsError('invalid-argument', 'URL is required');
     }
 
-    const userId = request.auth.uid as UserId;
+    const accountIdResult = parseAccountId(request.auth.uid);
+    if (!accountIdResult.success) {
+      throw new HttpsError('invalid-argument', 'Invalid account ID');
+    }
+    const accountId = accountIdResult.value;
+
     const {url} = request.data;
 
-    const logDetails = {url, userId} as const;
+    const logDetails = {url, accountId} as const;
 
-    logger.log(`[SUBSCRIBE] Subscribing user to feed via URL...`, logDetails);
+    logger.log(`[SUBSCRIBE] Subscribing account to feed source via URL...`, logDetails);
 
-    // Check if the feed already exists in the feeds collection. A single feed can have multiple
-    // users subscribed to it, but we only want to subscribe to it in Superfeedr once. Feeds are
-    // deduped based on exact URL match, although we could probably be smarter in the future.
-    const fetchFeedByUrlResult = await feedsService.fetchByUrl(url);
-    if (!fetchFeedByUrlResult.success) {
-      logger.error(`[SUBSCRIBE] Error fetching existing feed by URL`, {
-        ...logDetails,
-        error: fetchFeedByUrlResult.error,
-      });
-      return fetchFeedByUrlResult;
+    const subscribeToUrlResult = await rssFeedService.subscribeAccountToUrl({url, accountId});
+    if (!subscribeToUrlResult.success) {
+      logger.error(
+        prefixError(
+          subscribeToUrlResult.error,
+          '[SUBSCRIBE] Error subscribing account to feed source via URL'
+        ),
+        logDetails
+      );
+      return subscribeToUrlResult;
     }
 
-    let feed = fetchFeedByUrlResult.value;
+    const userFeedSubscription = subscribeToUrlResult.value;
 
-    if (feed) {
-      logger.log(`[SUBSCRIBE] Existing feed found`, {...logDetails, feedId: feed.feedId});
-    } else {
-      // If the feed is not already in the feeds collection, create an entry for it and subscribe to
-      // it in Superfeedr.
-      logger.log(`[SUBSCRIBE] Existing feed not found. Adding feed...`, logDetails);
-
-      // TODO: Enrich the feed with a title and image.
-      const addFeedResult = await feedsService.add({url, title: ''});
-      if (!addFeedResult.success) {
-        logger.error(`[SUBSCRIBE] Error adding feed`, {...logDetails, error: addFeedResult.error});
-        return addFeedResult;
-      }
-      feed = addFeedResult.value;
-
-      logger.log(`[SUBSCRIBE] Feed added. Subscribing to feed in Superfeedr...`, {
-        ...logDetails,
-        feedId: feed.feedId,
-      });
-
-      const subscribeToSuperfeedrResult = await feedsService.subscribeToSuperfeedr(feed);
-      if (!subscribeToSuperfeedrResult.success) {
-        logger.error(`[SUBSCRIBE] Error subscribing to feed in Superfeedr`, {
-          ...logDetails,
-          error: subscribeToSuperfeedrResult.error,
-        });
-        return subscribeToSuperfeedrResult;
-      }
-    }
-
-    const logDetailsWithFeedId = {...logDetails, feedId: feed.feedId} as const;
-
-    logger.log(`[SUBSCRIBE] Subscribing user to feed...`, logDetailsWithFeedId);
-
-    const createSubscriptionResult = await userFeedSubscriptionsService.subscribeUserToFeed({
-      feed,
-      userId,
+    logger.log(`[SUBSCRIBE] Successfully subscribed account to feed source`, {
+      ...logDetails,
+      feedSourceId: userFeedSubscription.feedSourceId,
+      userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     });
-    if (!createSubscriptionResult.success) {
-      logger.error(`[SUBSCRIBE] Error subscribing user to feed`, {
-        ...logDetailsWithFeedId,
-        error: createSubscriptionResult.error,
-      });
-      return createSubscriptionResult;
-    }
-
-    logger.log(`[SUBSCRIBE] Successfully subscribed user to feed`, logDetailsWithFeedId);
 
     // TODO: Is this what I want to return?
     return makeSuccessResult(undefined);

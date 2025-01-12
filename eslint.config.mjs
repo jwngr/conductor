@@ -116,9 +116,26 @@ export default tseslint.config(
     languageOptions: SHARED_LANGUAGE_OPTIONS,
     rules: makeSharedRules({
       disallowFirebaseAdminImports: true,
+      // TODO: This should really be turned - we shouldn't assume the client library is available.
+      // disallowFirebaseClientImports: true,
       disallowSharedClientImports: true,
       disallowSharedServerImports: true,
     }),
+  },
+
+  // Parser-specific config.
+  {
+    files: ['packages/shared/src/parsers/**/*.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'ImportSpecifier[imported.name="assertNever"]',
+          message:
+            'Using `assertNever` is not allowed in parsers. Methods in parsers should not throw.',
+        },
+      ],
+    },
   },
 
   // Shared client package config.

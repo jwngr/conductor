@@ -39,6 +39,7 @@ export const RegisterIndividualFeedItemDevToolbarSection: React.FC<{
       sectionType: DevToolbarSectionType.IndividualFeedItemActions,
       title: 'Current feed item',
       renderSection: () => <IndividualFeedItemDevToolbarSection feedItem={feedItem} />,
+      requiresAuth: false,
     });
   }, [registerSection, feedItem]);
 
