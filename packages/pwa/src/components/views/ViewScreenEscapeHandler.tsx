@@ -5,7 +5,7 @@ import {Urls} from '@shared/lib/urls.shared';
 
 import {ViewType} from '@shared/types/query.types';
 
-import {keyboardShortcutsService} from '@src/lib/shortcuts.pwa';
+import {keyboardShortcutsService, useShortcut} from '@src/lib/shortcuts.pwa';
 
 export const ViewScreenEscapeHandler: React.FC = () => {
   const navigate = useNavigate();
@@ -15,10 +15,7 @@ export const ViewScreenEscapeHandler: React.FC = () => {
     navigate(Urls.forView(ViewType.Untriaged));
   }, [navigate]);
 
-  useEffect(() => {
-    const shortcut = keyboardShortcutsService.forClose();
-    return keyboardShortcutsService.registerShortcut(shortcut, handleEscape);
-  }, [handleEscape]);
+  useShortcut(keyboardShortcutsService.forClose(), handleEscape);
 
   return null;
 };

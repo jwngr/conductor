@@ -7,7 +7,7 @@ import {ViewType} from '@shared/types/query.types';
 
 import {useFocusStore} from '@sharedClient/stores/FocusStore';
 
-import {keyboardShortcutsService} from '@src/lib/shortcuts.pwa';
+import {keyboardShortcutsService, useShortcut} from '@src/lib/shortcuts.pwa';
 
 export const FeedItemScreenEscapeHandler: React.FC = () => {
   const navigate = useNavigate();
@@ -18,10 +18,7 @@ export const FeedItemScreenEscapeHandler: React.FC = () => {
     navigate(Urls.forView(focusedViewType ?? ViewType.Untriaged));
   }, [navigate, focusedViewType]);
 
-  useEffect(() => {
-    const shortcut = keyboardShortcutsService.forClose();
-    return keyboardShortcutsService.registerShortcut(shortcut, handleEscape);
-  }, [handleEscape]);
+  useShortcut(keyboardShortcutsService.forClose(), handleEscape);
 
   return null;
 };
