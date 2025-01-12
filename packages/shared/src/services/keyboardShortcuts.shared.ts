@@ -60,6 +60,12 @@ export class SharedKeyboardShortcutsService {
         return this.forToggleUnread();
       case KeyboardShortcutId.Close:
         return this.forClose();
+      case KeyboardShortcutId.ArrowDown:
+        return this.forArrowDown();
+      case KeyboardShortcutId.ArrowUp:
+        return this.forArrowUp();
+      case KeyboardShortcutId.Enter:
+        return this.forEnter();
       default:
         assertNever(shortcutId);
     }
@@ -110,6 +116,30 @@ export class SharedKeyboardShortcutsService {
       shortcutId: KeyboardShortcutId.Close,
       displayKeys: this.getPlatformSpecificKeys(['Esc']),
       keyPattern: 'Escape',
+    };
+  }
+
+  public forArrowUp(): KeyboardShortcut {
+    return {
+      shortcutId: KeyboardShortcutId.ArrowUp,
+      displayKeys: this.getPlatformSpecificKeys(['↑']),
+      keyPattern: 'ArrowUp',
+    };
+  }
+
+  public forArrowDown(): KeyboardShortcut {
+    return {
+      shortcutId: KeyboardShortcutId.ArrowDown,
+      displayKeys: this.getPlatformSpecificKeys(['↓']),
+      keyPattern: 'ArrowDown',
+    };
+  }
+
+  public forEnter(): KeyboardShortcut {
+    return {
+      shortcutId: KeyboardShortcutId.Enter,
+      displayKeys: this.getPlatformSpecificKeys(['↵']),
+      keyPattern: 'Enter',
     };
   }
 

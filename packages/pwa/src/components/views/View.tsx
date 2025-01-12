@@ -18,6 +18,8 @@ import {FlexColumn} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
 
+import {keyboardShortcutsService} from '@src/lib/shortcuts.pwa';
+
 const StyledDiv = styled.div<{readonly $isFocused: boolean}>`
   display: flex;
   flex-direction: column;
@@ -91,56 +93,70 @@ const ViewListItem: React.FC<ViewListItemProps> = ({feedItem}) => {
 };
 
 const ViewList: React.FC<{viewType: ViewType}> = ({viewType}) => {
-  const {feedItems, isLoading, error} = useFeedItems({viewType});
-  const {focusedFeedItemId, setFocusedFeedItemId, setFocusedViewType} = useFocusStore();
   const navigate = useNavigate();
 
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent) => {
-      if (!feedItems.length) return;
+  const {feedItems, isLoading, error} = useFeedItems({viewType});
+  const {focusedFeedItemId, setFocusedFeedItemId, setFocusedViewType} = useFocusStore();
 
-      const currentIndex = focusedFeedItemId
-        ? feedItems.findIndex((item) => item.feedItemId === focusedFeedItemId)
-        : -1;
+  const handleArrowDown = useCallback(() => {
+    if (!feedItems.length) return;
 
-      switch (event.key) {
-        case 'ArrowDown':
-          event.preventDefault();
-          if (currentIndex === -1 || currentIndex === feedItems.length - 1) {
-            setFocusedFeedItemId(feedItems[0].feedItemId);
-          } else {
-            setFocusedFeedItemId(feedItems[currentIndex + 1].feedItemId);
-          }
-          break;
+    const currentIndex = focusedFeedItemId
+      ? feedItems.findIndex((item) => item.feedItemId === focusedFeedItemId)
+      : -1;
 
-        case 'ArrowUp':
-          event.preventDefault();
-          if (currentIndex === -1 || currentIndex === 0) {
-            setFocusedFeedItemId(feedItems[feedItems.length - 1].feedItemId);
-          } else {
-            setFocusedFeedItemId(feedItems[currentIndex - 1].feedItemId);
-          }
-          break;
+    if (currentIndex === -1 || currentIndex === feedItems.length - 1) {
+      setFocusedFeedItemId(feedItems[0].feedItemId);
+    } else {
+      setFocusedFeedItemId(feedItems[currentIndex + 1].feedItemId);
+    }
+  }, [feedItems, focusedFeedItemId, setFocusedFeedItemId]);
 
-        case 'Enter':
-          event.preventDefault();
-          if (focusedFeedItemId) {
-            setFocusedViewType(viewType);
-            navigate(Urls.forFeedItem(focusedFeedItemId));
-          }
-          break;
+  const handleArrowUp = useCallback(() => {
+    if (!feedItems.length) return;
 
-        default:
-          break;
-      }
-    },
-    [feedItems, focusedFeedItemId, setFocusedFeedItemId, setFocusedViewType, navigate, viewType]
-  );
+    const currentIndex = focusedFeedItemId
+      ? feedItems.findIndex((item) => item.feedItemId === focusedFeedItemId)
+      : -1;
+
+    if (currentIndex === -1 || currentIndex === 0) {
+      setFocusedFeedItemId(feedItems[feedItems.length - 1].feedItemId);
+    } else {
+      setFocusedFeedItemId(feedItems[currentIndex - 1].feedItemId);
+    }
+  }, [feedItems, focusedFeedItemId, setFocusedFeedItemId]);
+
+  const handleEnter = useCallback(() => {
+    if (!feedItems.length) return;
+
+    if (focusedFeedItemId) {
+      setFocusedViewType(viewType);
+      navigate(Urls.forFeedItem(focusedFeedItemId));
+    }
+  }, [feedItems, focusedFeedItemId, navigate, setFocusedViewType, viewType]);
 
   useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
+    const unsubscribeArrowDown = keyboardShortcutsService.registerShortcut(
+      keyboardShortcutsService.forArrowDown(),
+      handleArrowDown
+    );
+
+    const unsubscribeArrowUp = keyboardShortcutsService.registerShortcut(
+      keyboardShortcutsService.forArrowUp(),
+      handleArrowUp
+    );
+
+    const unsubscribeEnter = keyboardShortcutsService.registerShortcut(
+      keyboardShortcutsService.forEnter(),
+      handleEnter
+    );
+
+    return () => {
+      unsubscribeArrowDown();
+      unsubscribeArrowUp();
+      unsubscribeEnter();
+    };
+  }, [handleArrowDown, handleArrowUp, handleEnter]);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -148,7 +164,7 @@ const ViewList: React.FC<{viewType: ViewType}> = ({viewType}) => {
 
   if (error) {
     // TODO: Introduce proper error screen.
-    logger.error('Error loading feed items', {error, viewType});
+    logger.error(new Error('Error loading feed items'), {error, viewType});
     return <div>Error: {error.message}</div>;
   }
 
