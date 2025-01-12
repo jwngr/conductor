@@ -43,7 +43,7 @@ const FeedItemImporter: React.FC = () => {
         setStatus('URL saved successfully');
         setUrl('');
       } else {
-        setStatus(`Error: ${addFeedItemResult.error.message}`);
+        setStatus(`Error adding item to import queue: ${addFeedItemResult.error.message}`);
       }
     },
     [feedItemsService]

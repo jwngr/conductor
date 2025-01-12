@@ -65,7 +65,6 @@ const SuperfeedWebhookRequestBodySchema = z.object({
 
 const SuperfeedWebhookRequestSchema = z.object({
   body: SuperfeedWebhookRequestBodySchema,
-  bodyJson: z.string(),
 });
 
 type SuperfeedWebhookRequest = z.infer<typeof SuperfeedWebhookRequestSchema>;
