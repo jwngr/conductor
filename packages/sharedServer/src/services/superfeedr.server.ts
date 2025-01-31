@@ -30,7 +30,7 @@ export class SuperfeedrService {
   }
 
   private getSuperfeedrWebhookUrl(): string {
-    // The path matches the Firebase Function name
+    // This path needs to match the Firebase Function name.
     return `${this.webhookBaseUrl}/handleSuperfeedrWebhook`;
   }
 

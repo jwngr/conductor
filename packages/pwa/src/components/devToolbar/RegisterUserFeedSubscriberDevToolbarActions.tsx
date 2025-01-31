@@ -38,7 +38,6 @@ const AccountFeedSubscriber: React.FC = () => {
       >
         Subscribe to personal blog feed
       </Button>
-      {/* Dummy RSS feeds for testing from https://lorem-rss.herokuapp.com/. */}
       <Button
         variant={ButtonVariant.Secondary}
         onClick={() =>

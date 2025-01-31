@@ -343,8 +343,9 @@ export const subscribeAccountToFeedOnCall = onCall(
  * Handles webhook callbacks from Superfeedr when feed content is updated.
  */
 export const handleSuperfeedrWebhook = onRequest(
+  // TODO: Only allow Superfeedr to call this endpoint.
   // {
-  //   cors: false, // Only allow Superfeedr to call this endpoint
+  //   cors: false,
   // },
 
   async (request, response) => {
