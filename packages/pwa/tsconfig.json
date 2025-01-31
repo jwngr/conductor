@@ -12,6 +12,11 @@
     // React JSX requires this.
     "jsx": "react-jsx",
 
+    // Skip type checking of declaration files in node_modules.
+    // TODO: Ideally we would not need this, but it's a workaround for the fact that
+    // styled-components is complaining about the types of React 19.
+    "skipLibCheck": true,
+
     // Build is handled by Vite.
     "moduleResolution": "bundler",
 
