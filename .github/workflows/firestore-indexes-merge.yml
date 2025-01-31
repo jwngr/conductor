@@ -2,7 +2,7 @@ name: Deploy prod Firestore indexes on merge
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - 'firestore.indexes.json'
       - '.github/actions/setup-workflow/**'

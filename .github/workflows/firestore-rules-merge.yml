@@ -2,7 +2,7 @@ name: Deploy prod Firestore rules on merge
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - 'firestore.rules'
       - '.github/actions/setup-workflow/**'
