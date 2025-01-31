@@ -1,3 +1,5 @@
+import crypto from 'crypto';
+
 import FirecrawlApp from '@mendable/firecrawl-js';
 import {setGlobalOptions} from 'firebase-functions';
 import {defineString, projectID} from 'firebase-functions/params';
@@ -62,6 +64,7 @@ import {WipeoutService} from '@sharedServer/services/wipeout.server';
 const FIRECRAWL_API_KEY = defineString('FIRECRAWL_API_KEY');
 const SUPERFEEDR_USER = defineString('SUPERFEEDR_USER');
 const SUPERFEEDR_API_KEY = defineString('SUPERFEEDR_API_KEY');
+const SUPERFEEDR_WEBHOOK_SECRET = defineString('SUPERFEEDR_WEBHOOK_SECRET');
 
 // TODO: This should be an environment variable.
 const FIREBASE_FUNCTIONS_REGION = 'us-central1';
@@ -79,6 +82,7 @@ onInit(() => {
     superfeedrUser: SUPERFEEDR_USER.value(),
     superfeedrApiKey: SUPERFEEDR_API_KEY.value(),
     webhookBaseUrl: `https://${FIREBASE_FUNCTIONS_REGION}-${projectID.value()}.cloudfunctions.net`,
+    webhookSecret: SUPERFEEDR_WEBHOOK_SECRET.value(),
   });
 
   const feedSourceFirestoreConverter = makeFirestoreDataConverter(
@@ -343,11 +347,8 @@ export const subscribeAccountToFeedOnCall = onCall(
  * Handles webhook callbacks from Superfeedr when feed content is updated.
  */
 export const handleSuperfeedrWebhook = onRequest(
-  // TODO: Only allow Superfeedr to call this endpoint.
-  // {
-  //   cors: false,
-  // },
-
+  // Disable CORS since this endpoint should only be called by Superfeedr
+  {cors: false},
   async (request, response) => {
     const returnWithError = (
       error: Error,
@@ -359,7 +360,21 @@ export const handleSuperfeedrWebhook = onRequest(
       return;
     };
 
-    // TODO: Validate the request is from Superfeedr by checking some auth header.
+    // Validate the request is from Superfeedr by checking the signature
+    const signature = request.headers['x-hub-signature'];
+    if (!signature || typeof signature !== 'string') {
+      return returnWithError(new Error('Missing or invalid X-Hub-Signature header'));
+    }
+
+    // Create the expected signature using the webhook secret
+    const hmac = crypto.createHmac('sha1', SUPERFEEDR_WEBHOOK_SECRET.value());
+    hmac.update(JSON.stringify(request.body));
+    const expectedSignature = `sha1=${hmac.digest('hex')}`;
+
+    // Compare signatures using a timing-safe comparison
+    if (signature !== expectedSignature) {
+      return returnWithError(new Error('Invalid webhook signature'));
+    }
 
     logger.log('[SUPERFEEDR] Received webhook request', {request});
 

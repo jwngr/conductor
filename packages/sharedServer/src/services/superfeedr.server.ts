@@ -14,15 +14,18 @@ export class SuperfeedrService {
   private readonly superfeedrUser: string;
   private readonly superfeedrApiKey: string;
   private readonly webhookBaseUrl: string;
+  private readonly webhookSecret: string;
 
   constructor(args: {
     readonly superfeedrUser: string;
     readonly superfeedrApiKey: string;
     readonly webhookBaseUrl: string;
+    readonly webhookSecret: string;
   }) {
     this.superfeedrUser = args.superfeedrUser;
     this.superfeedrApiKey = args.superfeedrApiKey;
     this.webhookBaseUrl = args.webhookBaseUrl;
+    this.webhookSecret = args.webhookSecret;
   }
 
   private getSuperfeedrAuthHeader(): string {
@@ -44,6 +47,7 @@ export class SuperfeedrService {
         'hub.mode': 'subscribe',
         'hub.topic': feedUrl,
         'hub.callback': this.getSuperfeedrWebhookUrl(),
+        'hub.secret': this.webhookSecret,
         format: 'json',
       },
       {
