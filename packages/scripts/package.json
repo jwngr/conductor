@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@conductor/shared": "1.0.0",
+    "@conductor/shared": "workspace:*",
     "jsdom": "^26.0.0"
   },
   "devDependencies": {

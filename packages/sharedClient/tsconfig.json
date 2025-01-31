@@ -1,5 +1,5 @@
 {
-  "include": ["src"],
+  "include": ["src/**/*", "src/**/*.json"],
   "extends": "../../tsconfig.base.json",
 
   // This package consumes the `shared` package.
@@ -16,6 +16,7 @@
     "declarationMap": true,
 
     // Import aliases.
+    "baseUrl": ".",
     "paths": {
       "@shared/*": ["../shared/src/*"],
       // Despite this being in the `sharedClient` package itself, prefer `@sharedClient` imports

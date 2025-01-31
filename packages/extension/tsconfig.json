@@ -1,5 +1,5 @@
 {
-  "include": ["src"],
+  "include": ["src/**/*", "src/**/*.json"],
   "extends": "../../tsconfig.base.json",
 
   // This package consumes multiple shared packages.

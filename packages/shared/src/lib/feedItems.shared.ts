@@ -1,10 +1,5 @@
-import {
-  FeedItemActionType,
-  makeFeedItemId,
-  TriageStatus,
-  type FeedItem,
-  type FeedItemAction,
-} from '@shared/types/feedItems.types';
+import type {FeedItem, FeedItemAction} from '@shared/types/feedItems.types';
+import {FeedItemActionType, makeFeedItemId, TriageStatus} from '@shared/types/feedItems.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
@@ -41,7 +36,7 @@ export class SharedFeedItemHelpers {
   public static makeFeedItem(
     args: Pick<FeedItem, 'type' | 'accountId' | 'url' | 'source'>
   ): Result<FeedItem> {
-    return makeSuccessResult({
+    return makeSuccessResult<FeedItem>({
       feedItemId: makeFeedItemId(),
       accountId: args.accountId,
       url: args.url,

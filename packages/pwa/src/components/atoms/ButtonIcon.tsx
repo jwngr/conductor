@@ -1,4 +1,5 @@
-import React, {useCallback} from 'react';
+import type React from 'react';
+import {useCallback} from 'react';
 import styled from 'styled-components';
 
 import {getIconSizeFromButtonIconSize} from '@shared/lib/icons.shared';
