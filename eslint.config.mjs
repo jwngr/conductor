@@ -1,4 +1,5 @@
 import eslint from '@eslint/js';
+import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
@@ -53,6 +54,7 @@ function makeSharedRules({
     '@typescript-eslint/no-extraneous-class': 'off',
     '@typescript-eslint/await-thenable': 'error',
     '@typescript-eslint/no-floating-promises': 'error',
+    'react/jsx-no-useless-fragment': 'error',
     'no-restricted-syntax': [
       'error',
       {
@@ -92,6 +94,20 @@ export default tseslint.config(
   // TypeScript.
   ...tseslint.configs.strict,
   ...tseslint.configs.stylistic,
+
+  // React.
+  react.configs.flat.recommended,
+  react.configs.flat['jsx-runtime'],
+  {
+    settings: {
+      react: {
+        version: 'detect', // Automatically pick installed version.
+      },
+    },
+    rules: {
+      'react/prop-types': 'off',
+    },
+  },
 
   {
     // CLI settings.
@@ -146,6 +162,7 @@ export default tseslint.config(
       globals: globals.browser,
     },
     plugins: {
+      react,
       'react-hooks': reactHooks,
     },
     rules: {

@@ -36,7 +36,7 @@ export class SharedFeedItemHelpers {
   public static makeFeedItem(
     args: Pick<FeedItem, 'type' | 'accountId' | 'url' | 'feedItemSource'>
   ): Result<FeedItem> {
-    return makeSuccessResult({
+    return makeSuccessResult<FeedItem>({
       feedItemId: makeFeedItemId(),
       accountId: args.accountId,
       url: args.url,

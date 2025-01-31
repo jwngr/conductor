@@ -1,4 +1,4 @@
-# Conductor
+# Conductor | Contributing
 
 ## Packages
 

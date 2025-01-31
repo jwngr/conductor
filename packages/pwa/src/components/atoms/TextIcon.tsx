@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import styled from 'styled-components';
 
 import {assertNever} from '@shared/lib/utils.shared';

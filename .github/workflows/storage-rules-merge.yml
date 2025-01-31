@@ -2,7 +2,7 @@ name: Deploy prod Cloud Storage rules on merge
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - 'storage.rules'
       - '.github/actions/setup-workflow/**'

@@ -23,7 +23,7 @@ export const FlexStories: React.FC = () => {
         <FlexColumn gap={16}>
           <FlexRow gap={8} align="flex-start">
             <Box>
-              <Text>align="flex-start"</Text>
+              <Text>{`align="flex-start"`}</Text>
             </Box>
             <Box>
               <Text>Taller box</Text>
@@ -33,7 +33,7 @@ export const FlexStories: React.FC = () => {
 
           <FlexRow gap={8} align="center">
             <Box>
-              <Text>align="center"</Text>
+              <Text>{`align="center"`}</Text>
             </Box>
             <Box>
               <Text>Taller box</Text>
@@ -43,7 +43,7 @@ export const FlexStories: React.FC = () => {
 
           <FlexRow gap={8} align="flex-end">
             <Box>
-              <Text>align="flex-end"</Text>
+              <Text>{`align="flex-end"`}</Text>
             </Box>
             <Box>
               <Text>Taller box</Text>
@@ -57,7 +57,7 @@ export const FlexStories: React.FC = () => {
         <FlexColumn gap={16}>
           <FlexRow gap={8} justify="flex-start">
             <Box>
-              <Text>justify="flex-start"</Text>
+              <Text>{`justify="flex-start"`}</Text>
             </Box>
             <Box>
               <Text>Second box</Text>
@@ -66,7 +66,7 @@ export const FlexStories: React.FC = () => {
 
           <FlexRow gap={8} justify="center">
             <Box>
-              <Text>justify="center"</Text>
+              <Text>{`justify="center"`}</Text>
             </Box>
             <Box>
               <Text>Second box</Text>
@@ -75,7 +75,7 @@ export const FlexStories: React.FC = () => {
 
           <FlexRow gap={8} justify="space-between">
             <Box>
-              <Text>justify="space-between"</Text>
+              <Text>{`justify="space-between"`}</Text>
             </Box>
             <Box>
               <Text>Second box</Text>

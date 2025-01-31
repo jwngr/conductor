@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import {useMatch} from 'react-router-dom';
 import styled from 'styled-components';
 

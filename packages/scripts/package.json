@@ -4,12 +4,12 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@conductor/shared": "1.0.0",
+    "@conductor/shared": "workspace:*",
     "jsdom": "^26.0.0"
   },
   "devDependencies": {
     "@types/jsdom": "^21.1.7",
-    "@types/node": "^22.10.5"
+    "@types/node": "^22.12.0"
   },
   "scripts": {
     "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",

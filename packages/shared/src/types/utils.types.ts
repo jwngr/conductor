@@ -23,17 +23,11 @@ export interface StyleAttributes {
   readonly className?: string;
 }
 
-/**
- * Strongly-typed type for a UUID. Prefer this over plain strings.
- */
+/** Strongly-typed type for a UUID. Prefer this over plain strings. */
 export type UUID = string & {readonly __brand: 'UUIDBrand'};
 
-/**
- * Strongly-typed type for an {@link EmailAddress}. Prefer this over plain strings.
- */
+/** Strongly-typed type for an {@link EmailAddress}. Prefer this over plain strings. */
 export type EmailAddress = string & {readonly __brand: 'EmailAddressBrand'};
 
-/**
- * A Zod schema for an {@link EmailAddress}.
- */
+/** Zod schema for an {@link EmailAddress}. */
 export const EmailAddressSchema = z.string().email();

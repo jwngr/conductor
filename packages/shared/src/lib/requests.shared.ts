@@ -12,7 +12,9 @@ import {
 const DEFAULT_CONTENT_TYPE = 'application/json';
 
 function isJsonResponse(response: Response): boolean {
-  return response.headers.get('Content-Type') === 'application/json';
+  const responseContentTypeHeader = response.headers.get('Content-Type');
+  if (!responseContentTypeHeader) return false;
+  return responseContentTypeHeader.includes('application/json');
 }
 
 async function request<T>(

@@ -2,7 +2,7 @@ name: Deploy prod Functions on merge
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - 'packages/functions/**'
       - 'packages/shared/**'
