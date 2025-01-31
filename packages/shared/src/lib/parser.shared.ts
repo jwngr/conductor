@@ -1,8 +1,6 @@
 import {Timestamp} from 'firebase/firestore';
 import type {ZodSchema} from 'zod';
 
-import {logger} from '@shared/services/logger.shared';
-
 import type {FirestoreTimestamp} from '@shared/types/firebase.types';
 import type {Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
@@ -15,17 +13,19 @@ export function parseZodResult<T>(zodSchema: ZodSchema<T>, value: unknown): Resu
   const zodResult = zodSchema.safeParse(value);
 
   if (!zodResult.success) {
-    const keysWithErrors = Object.keys(zodResult.error.format()).filter((key) => key !== '_errors');
-    logger.error(new Error(`Error parsing value with Zod: ${keysWithErrors.join(', ')}`), {
-      value, // TODO: Probably should not be logging raw values here.
-      error: zodResult.error,
-      format: zodResult.error.format(),
-    });
+    const formattedError = zodResult.error.format();
+    const errorMessage = Object.entries(formattedError)
+      .filter(([key]) => key !== '_errors')
+      .map(([key, value]) => {
+        if (value && '_errors' in value) {
+          const errors = value._errors.join(', ');
+          return `${key} (${errors})`;
+        }
+        return `${key} (${value})`;
+      })
+      .join(', ');
     return makeErrorResult(
-      new Error(
-        `Error parsing value: ${JSON.stringify(zodResult.error.issues.map((issue) => issue.message).join(', '))}`,
-        {cause: zodResult.error}
-      )
+      new Error(`Error parsing value with Zod: ${errorMessage}`, {cause: zodResult.error})
     );
   }
 

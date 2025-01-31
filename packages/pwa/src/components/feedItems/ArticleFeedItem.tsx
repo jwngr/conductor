@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 
 import type {ArticleFeedItem} from '@shared/types/feedItems.types';
 

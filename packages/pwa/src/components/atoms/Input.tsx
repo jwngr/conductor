@@ -1,4 +1,5 @@
-import * as React from 'react';
+import type React from 'react';
+import {forwardRef} from 'react';
 import styled from 'styled-components';
 
 import {ThemeColor} from '@shared/types/theme.types';
@@ -28,9 +29,7 @@ const InputWrapper = styled.input`
   }
 `;
 
-const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
+export const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
   return <InputWrapper ref={ref} {...props} />;
 });
 Input.displayName = 'Input';
-
-export {Input};

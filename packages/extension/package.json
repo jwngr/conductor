@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@conductor/shared": "1.0.0",
-    "@conductor/shared-client": "1.0.0",
+    "@conductor/shared": "workspace:*",
+    "@conductor/shared-client": "workspace:*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

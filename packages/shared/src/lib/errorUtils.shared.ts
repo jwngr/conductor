@@ -1,4 +1,6 @@
-import type {AsyncResult, ErrorResult, Result} from '@shared/types/result.types';
+import {partition} from '@shared/lib/utils.shared';
+
+import type {AsyncResult, ErrorResult, Result, SuccessResult} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import type {Supplier} from '@shared/types/utils.types';
 
@@ -77,6 +79,32 @@ export function syncTry<T>(fn: Supplier<T>): Result<T> {
   try {
     const result = fn();
     return makeSuccessResult(result);
+  } catch (error) {
+    const betterError = upgradeUnknownError(error);
+    return makeErrorResult(betterError);
+  }
+}
+
+/**
+ * Executes the given synchronous functions and returns their results. If any of the functions
+ * return an `ErrorResult`, the first error will be returned as an `ErrorResult`.
+ *
+ * For asynchronous functions, see {@link asyncTryAll}.
+ */
+export function syncTryAll<T>(allResults: Array<Result<T>>): Result<T[]> {
+  // Allow `try` / `catch` block here.
+  // eslint-disable-next-line no-restricted-syntax
+  try {
+    const [successResults, failedResults] = partition<SuccessResult<T>, ErrorResult>(
+      allResults,
+      (result) => result.success
+    );
+    if (failedResults.length > 0) {
+      // Just use the first failed result as the error and ignore the rest.
+      return makeErrorResult(failedResults[0].error);
+    }
+    const allResultValues = successResults.map((result) => result.value);
+    return makeSuccessResult(allResultValues);
   } catch (error) {
     const betterError = upgradeUnknownError(error);
     return makeErrorResult(betterError);

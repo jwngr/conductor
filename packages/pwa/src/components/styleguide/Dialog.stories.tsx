@@ -38,7 +38,7 @@ export const DialogStories: React.FC = () => {
               <Text as="h2" bold>
                 Controlled Dialog
               </Text>
-              <Text>This dialog's state is controlled externally.</Text>
+              <Text>State is controlled externally for this dialog.</Text>
             </FlexColumn>
           </DialogContent>
         </Dialog>
