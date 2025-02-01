@@ -133,5 +133,5 @@ export function isValidEmail(maybeEmail: unknown): maybeEmail is EmailAddress {
  * Returns `true` if the provided value is a `Date`.
  */
 export function isDate(value: unknown): value is Date {
-  return typeof value === 'object' && value !== null && 'toDate' in value;
+  return value instanceof Date;
 }
