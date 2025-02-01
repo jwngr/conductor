@@ -1,4 +1,3 @@
-import {Timestamp} from 'firebase/firestore';
 import type {ZodSchema} from 'zod';
 
 import type {FirestoreTimestamp} from '@shared/types/firebase.types';
@@ -47,5 +46,6 @@ export function parseStorageTimestamp(firestoreDate: FirestoreTimestamp): Date {
 export function toStorageTimestamp(appDate: Date): FirestoreTimestamp {
   // TODO: This uses an import from the client library and could be wrong from the server. Ideally
   // this method would not rely on the client library.
-  return Timestamp.fromDate(appDate);
+  // TODO: The types here are a bit whacky.
+  return appDate as unknown as FirestoreTimestamp;
 }
