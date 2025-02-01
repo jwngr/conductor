@@ -26,7 +26,6 @@ import {
   type FeedItemId,
   type FeedItemSource,
 } from '@shared/types/feedItems.types';
-import {makeImportQueueItem} from '@shared/types/importQueue.types';
 import {fromFilterOperator, type ViewType} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
@@ -241,14 +240,6 @@ export class ClientFeedItemsService {
     });
     if (!feedItemResult.success) return feedItemResult;
     const feedItem = feedItemResult.value;
-
-    // Add the feed item to the import queue.
-    const makeImportQueueItemResult = makeImportQueueItem({
-      feedItemId: feedItem.feedItemId,
-      accountId: this.accountId,
-      url: trimmedUrl,
-    });
-    if (!makeImportQueueItemResult.success) return makeImportQueueItemResult;
 
     // TODO: Do these in a transaction.
     const addFeedItemResult = await asyncTryAll([

@@ -12,7 +12,7 @@ import {
 import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
-import type {BaseStoreItem} from '@shared/types/utils.types';
+import type {BaseStoreItem, Supplier} from '@shared/types/utils.types';
 
 /**
  * Strongly-typed type for a {@link UserFeedSubscription}'s unique identifier. Prefer this over
@@ -74,22 +74,23 @@ export type UserFeedSubscriptionFromStorage = z.infer<typeof UserFeedSubscriptio
 /**
  * Creates a new {@link UserFeedSubscription} object.
  */
-export function makeUserFeedSubscription(args: {
-  readonly feedSource: FeedSource;
-  readonly accountId: AccountId;
-}): Result<UserFeedSubscription> {
-  const {feedSource, accountId} = args;
-
+export function makeUserFeedSubscription<Timestamp>(
+  newItemArgs: {
+    readonly feedSource: FeedSource;
+    readonly accountId: AccountId;
+  },
+  timestampFactory: Supplier<Timestamp>
+): Result<UserFeedSubscription> {
   const userFeedSubscription: UserFeedSubscription = {
     userFeedSubscriptionId: makeUserFeedSubscriptionId(),
-    accountId,
-    feedSourceId: feedSource.feedSourceId,
-    url: feedSource.url,
-    title: feedSource.title,
+    accountId: newItemArgs.accountId,
+    feedSourceId: newItemArgs.feedSource.feedSourceId,
+    url: newItemArgs.feedSource.url,
+    title: newItemArgs.feedSource.title,
     isActive: true,
-    // TODO: Should use server timestamps instead.
-    createdTime: new Date(),
-    lastUpdatedTime: new Date(),
+    // TODO: This casting is a lie. Can I figure out a way to make this work without casting?
+    createdTime: timestampFactory() as Date,
+    lastUpdatedTime: timestampFactory() as Date,
   };
 
   return makeSuccessResult(userFeedSubscription);

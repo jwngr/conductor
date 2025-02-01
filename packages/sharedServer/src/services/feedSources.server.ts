@@ -1,4 +1,5 @@
 import type {WithFieldValue} from 'firebase-admin/firestore';
+import {FieldValue} from 'firebase-admin/firestore';
 
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
@@ -12,6 +13,8 @@ import type {AsyncResult} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
 
 import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
+
+import {serverTimestampSupplier} from './firebase.server';
 
 type FeedSourceCollectionService = ServerFirestoreCollectionService<
   FeedSourceId,
@@ -51,10 +54,10 @@ export class ServerFeedSourcesService {
     feedDetails: Omit<FeedSource, 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
   ): AsyncResult<FeedSource> {
     // Create the new feed source in memory.
-    const makeFeedSourceResult = makeFeedSource({
-      url: feedDetails.url,
-      title: feedDetails.title,
-    });
+    const makeFeedSourceResult = makeFeedSource<FieldValue>(
+      {url: feedDetails.url, title: feedDetails.title},
+      serverTimestampSupplier
+    );
     if (!makeFeedSourceResult.success) return makeFeedSourceResult;
     const newFeedSource = makeFeedSourceResult.value;
 

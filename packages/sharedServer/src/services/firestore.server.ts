@@ -112,7 +112,7 @@ export class ServerFirestoreCollectionService<
       const querySnapshot = await queryToFetch.get();
       return querySnapshot.docs.map((doc) => doc.data());
     });
-    return prefixResultIfError(queryDataResult, 'Error fetching Firestore query data');
+    return prefixResultIfError(queryDataResult, 'Error fetching Firestore query docs');
   }
 
   /**
@@ -127,7 +127,7 @@ export class ServerFirestoreCollectionService<
       if (queryDocsResult.value.length === 0) return null;
       return queryDocsResult.value[0];
     });
-    return prefixResultIfError(queryDataResult, 'Error fetching Firestore query data');
+    return prefixResultIfError(queryDataResult, 'Error fetching Firestore first query doc');
   }
 
   /**

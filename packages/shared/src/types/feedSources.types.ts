@@ -5,7 +5,7 @@ import {makeUuid} from '@shared/lib/utils.shared';
 import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
-import type {BaseStoreItem} from '@shared/types/utils.types';
+import type {BaseStoreItem, Supplier} from '@shared/types/utils.types';
 
 /**
  * Strongly-typed type for a {@link FeedSource}'s unique identifier. Prefer this over plain strings.
@@ -55,16 +55,17 @@ export type FeedSourceFromStorage = z.infer<typeof FeedSourceFromStorageSchema>;
 /**
  * Creates a new {@link FeedSource} object.
  */
-export function makeFeedSource(
-  args: Omit<FeedSource, 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
+export function makeFeedSource<Timestamp>(
+  newItemArgs: Omit<FeedSource, 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>,
+  timestampFactory: Supplier<Timestamp>
 ): Result<FeedSource> {
   const feedSource: FeedSource = {
     feedSourceId: makeFeedSourceId(),
-    url: args.url,
-    title: args.title,
-    // TODO: Should use server timestamps instead.
-    createdTime: new Date(),
-    lastUpdatedTime: new Date(),
+    url: newItemArgs.url,
+    title: newItemArgs.title,
+    // TODO: This casting is a lie. Can I figure out a way to make this work without casting?
+    createdTime: timestampFactory() as Date,
+    lastUpdatedTime: timestampFactory() as Date,
   };
 
   return makeSuccessResult(feedSource);

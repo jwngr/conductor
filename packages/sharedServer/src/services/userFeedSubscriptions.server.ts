@@ -15,6 +15,8 @@ import {makeUserFeedSubscription} from '@shared/types/userFeedSubscriptions.type
 
 import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
+import {serverTimestampSupplier} from './firebase.server';
+
 type UserFeedSubscriptionsCollectionService = ServerFirestoreCollectionService<
   UserFeedSubscriptionId,
   UserFeedSubscription,
@@ -65,7 +67,10 @@ export class ServerUserFeedSubscriptionsService {
     const {feedSource, accountId} = args;
 
     // Make a new user feed subscription object locally.
-    const userFeedSubscriptionResult = makeUserFeedSubscription({feedSource, accountId});
+    const userFeedSubscriptionResult = makeUserFeedSubscription<FieldValue>(
+      {feedSource, accountId},
+      serverTimestampSupplier
+    );
     if (!userFeedSubscriptionResult.success) return userFeedSubscriptionResult;
     const newUserFeedSubscription = userFeedSubscriptionResult.value;
 

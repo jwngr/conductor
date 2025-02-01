@@ -1,3 +1,5 @@
+import type {FieldValue} from 'firebase/firestore';
+
 import {IMPORT_QUEUE_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 
@@ -15,6 +17,7 @@ import {
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
 
+import {clientTimestampSupplier} from '@sharedClient/services/firebase.client';
 import {
   ClientFirestoreCollectionService,
   makeFirestoreDataConverter,
@@ -42,11 +45,14 @@ export class ClientImportQueueService {
     >
   ): AsyncResult<ImportQueueItem> {
     // Create the new feed source in memory.
-    const makeImportQueueItemResult = makeImportQueueItem({
-      feedItemId: importQueueItemDetails.feedItemId,
-      accountId: importQueueItemDetails.accountId,
-      url: importQueueItemDetails.url,
-    });
+    const makeImportQueueItemResult = makeImportQueueItem<FieldValue>(
+      {
+        feedItemId: importQueueItemDetails.feedItemId,
+        accountId: importQueueItemDetails.accountId,
+        url: importQueueItemDetails.url,
+      },
+      clientTimestampSupplier
+    );
     if (!makeImportQueueItemResult.success) return makeImportQueueItemResult;
     const newImportQueueItem = makeImportQueueItemResult.value;
 

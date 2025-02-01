@@ -37,7 +37,10 @@ export class ServerRssFeedService {
       title: 'Test title from subscribeAccountToUrl',
     });
     if (!fetchFeedSourceResult.success) {
-      return prefixErrorResult(fetchFeedSourceResult, 'Error fetching existing feed source by URL');
+      return prefixErrorResult(
+        fetchFeedSourceResult,
+        'Error fetching or creating feed source by URL'
+      );
     }
 
     const feedSource = fetchFeedSourceResult.value;
