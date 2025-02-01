@@ -44,7 +44,7 @@ export const FeedSourceFromStorageSchema = z.object({
   url: z.string().url(),
   title: z.string().min(1),
   createdTime: FirestoreTimestampSchema.or(z.date()),
-  lastUpdatedTime: FirestoreTimestampSchema,
+  lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
 /**

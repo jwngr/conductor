@@ -1,5 +1,4 @@
-import type {Timestamp, WithFieldValue} from 'firebase-admin/firestore';
-import {FieldValue} from 'firebase-admin/firestore';
+import type {WithFieldValue} from 'firebase-admin/firestore';
 
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {withFirestoreTimestamps} from '@shared/lib/parser.shared';
@@ -12,7 +11,6 @@ import type {
 import {makeFeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
-import {BaseStoreItem} from '@shared/types/utils.types';
 
 import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
