@@ -1,7 +1,8 @@
-import type {WithFieldValue} from 'firebase-admin/firestore';
+import type {Timestamp, WithFieldValue} from 'firebase-admin/firestore';
 import {FieldValue} from 'firebase-admin/firestore';
 
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {withFirestoreTimestamps} from '@shared/lib/parser.shared';
 
 import type {
   FeedSource,
@@ -11,6 +12,7 @@ import type {
 import {makeFeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
+import {BaseStoreItem} from '@shared/types/utils.types';
 
 import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
@@ -54,17 +56,17 @@ export class ServerFeedSourcesService {
     feedDetails: Omit<FeedSource, 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
   ): AsyncResult<FeedSource> {
     // Create the new feed source in memory.
-    const makeFeedSourceResult = makeFeedSource<FieldValue>(
-      {url: feedDetails.url, title: feedDetails.title},
-      serverTimestampSupplier
-    );
+    const makeFeedSourceResult = makeFeedSource({
+      url: feedDetails.url,
+      title: feedDetails.title,
+    });
     if (!makeFeedSourceResult.success) return makeFeedSourceResult;
     const newFeedSource = makeFeedSourceResult.value;
 
     // Create the new feed source in Firestore.
     const createResult = await this.feedSourcesCollectionService.setDoc(
       newFeedSource.feedSourceId,
-      newFeedSource
+      withFirestoreTimestamps(newFeedSource, serverTimestampSupplier)
     );
     if (!createResult.success) {
       return prefixErrorResult(createResult, 'Error adding feed source to Firestore');

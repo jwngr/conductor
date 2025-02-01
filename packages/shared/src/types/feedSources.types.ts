@@ -5,7 +5,7 @@ import {makeUuid} from '@shared/lib/utils.shared';
 import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
-import type {BaseStoreItem, Supplier} from '@shared/types/utils.types';
+import type {BaseStoreItem} from '@shared/types/utils.types';
 
 /**
  * Strongly-typed type for a {@link FeedSource}'s unique identifier. Prefer this over plain strings.
@@ -44,7 +44,7 @@ export const FeedSourceFromStorageSchema = z.object({
   url: z.string().url(),
   title: z.string().min(1),
   createdTime: FirestoreTimestampSchema.or(z.date()),
-  lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
+  lastUpdatedTime: FirestoreTimestampSchema,
 });
 
 /**
@@ -55,18 +55,14 @@ export type FeedSourceFromStorage = z.infer<typeof FeedSourceFromStorageSchema>;
 /**
  * Creates a new {@link FeedSource} object.
  */
-export function makeFeedSource<Timestamp>(
-  newItemArgs: Omit<FeedSource, 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>,
-  timestampFactory: Supplier<Timestamp>
+export function makeFeedSource(
+  newItemArgs: Omit<FeedSource, 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
 ): Result<FeedSource> {
-  const feedSource: FeedSource = {
+  return makeSuccessResult({
     feedSourceId: makeFeedSourceId(),
     url: newItemArgs.url,
     title: newItemArgs.title,
-    // TODO: This casting is a lie. Can I figure out a way to make this work without casting?
-    createdTime: timestampFactory() as Date,
-    lastUpdatedTime: timestampFactory() as Date,
-  };
-
-  return makeSuccessResult(feedSource);
+    createdTime: new Date(),
+    lastUpdatedTime: new Date(),
+  });
 }

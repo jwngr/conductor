@@ -2,6 +2,7 @@ import {FieldValue} from 'firebase-admin/firestore';
 import type {WithFieldValue} from 'firebase-admin/firestore';
 
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {withFirestoreTimestamps} from '@shared/lib/parser.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {FeedSource, FeedSourceId} from '@shared/types/feedSources.types';
@@ -67,10 +68,7 @@ export class ServerUserFeedSubscriptionsService {
     const {feedSource, accountId} = args;
 
     // Make a new user feed subscription object locally.
-    const userFeedSubscriptionResult = makeUserFeedSubscription<FieldValue>(
-      {feedSource, accountId},
-      serverTimestampSupplier
-    );
+    const userFeedSubscriptionResult = makeUserFeedSubscription({feedSource, accountId});
     if (!userFeedSubscriptionResult.success) return userFeedSubscriptionResult;
     const newUserFeedSubscription = userFeedSubscriptionResult.value;
 
@@ -78,7 +76,7 @@ export class ServerUserFeedSubscriptionsService {
     const userFeedSubscriptionId = newUserFeedSubscription.userFeedSubscriptionId;
     const createResult = await this.userFeedSubscriptionsCollectionService.setDoc(
       userFeedSubscriptionId,
-      newUserFeedSubscription
+      withFirestoreTimestamps(newUserFeedSubscription, serverTimestampSupplier)
     );
     if (!createResult.success) {
       return prefixErrorResult(createResult, 'Error creating user feed subscription in Firestore');

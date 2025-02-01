@@ -1,8 +1,11 @@
 import type {ZodSchema} from 'zod';
 
+import {isDate, omitUndefined} from '@shared/lib/utils.shared';
+
 import type {FirestoreTimestamp} from '@shared/types/firebase.types';
 import type {Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {BaseStoreItem, Supplier} from '@shared/types/utils.types';
 
 /**
  * Parses a value using a Zod schema and returns a `SuccessResult` with the parsed value if
@@ -31,14 +34,51 @@ export function parseZodResult<T>(zodSchema: ZodSchema<T>, value: unknown): Resu
   return makeSuccessResult(zodResult.data);
 }
 
-// TODO: Move this to a utility file.
-function isDate(value: unknown): value is Date {
-  return typeof value === 'object' && value !== null && 'toDate' in value;
-}
-
 /**
  * Converts a Firestore `Timestamp` to a normal `Date`.
  */
 export function parseStorageTimestamp(firestoreDate: FirestoreTimestamp | Date): Date {
   return isDate(firestoreDate) ? firestoreDate : firestoreDate.toDate();
+}
+
+/**
+ * Returns the provided item with `createdTime` and `lastUpdatedTime` replaced with the provided
+ * Firestore timestamp factory.
+ */
+export function withFirestoreTimestamps<ItemData extends BaseStoreItem, Timestamp>(
+  item: ItemData,
+  timestampFactory: Supplier<Timestamp>
+): Omit<ItemData, 'createdTime' | 'lastUpdatedTime'> & {
+  createdTime: Timestamp;
+  lastUpdatedTime: Timestamp;
+} {
+  return omitUndefined({
+    ...item,
+    createdTime: timestampFactory(),
+    lastUpdatedTime: timestampFactory(),
+  });
+}
+
+/**
+ * Returns the provided item with `createdTime`, `lastUpdatedTime`, and an additional timestamp
+ * field replaced with the provided Firestore timestamp factory.
+ */
+export function withFirestoreTimestampsExtended<
+  ItemData extends BaseStoreItem,
+  Timestamp,
+  AdditionalTimestampField extends string = never,
+>(
+  item: ItemData & Partial<Record<AdditionalTimestampField, Date>>,
+  timestampFactory: Supplier<Timestamp>,
+  additionalTimestampField: AdditionalTimestampField
+): Omit<ItemData, 'createdTime' | 'lastUpdatedTime' | AdditionalTimestampField> & {
+  createdTime: Timestamp;
+  lastUpdatedTime: Timestamp;
+} {
+  return omitUndefined({
+    ...item,
+    createdTime: timestampFactory(),
+    lastUpdatedTime: timestampFactory(),
+    [additionalTimestampField]: timestampFactory(),
+  });
 }

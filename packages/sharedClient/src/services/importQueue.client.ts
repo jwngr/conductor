@@ -2,6 +2,7 @@ import type {FieldValue} from 'firebase/firestore';
 
 import {IMPORT_QUEUE_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
+import {withFirestoreTimestamps} from '@shared/lib/parser.shared';
 
 import {
   parseImportQueueItem,
@@ -45,21 +46,18 @@ export class ClientImportQueueService {
     >
   ): AsyncResult<ImportQueueItem> {
     // Create the new feed source in memory.
-    const makeImportQueueItemResult = makeImportQueueItem<FieldValue>(
-      {
-        feedItemId: importQueueItemDetails.feedItemId,
-        accountId: importQueueItemDetails.accountId,
-        url: importQueueItemDetails.url,
-      },
-      clientTimestampSupplier
-    );
+    const makeImportQueueItemResult = makeImportQueueItem({
+      feedItemId: importQueueItemDetails.feedItemId,
+      accountId: importQueueItemDetails.accountId,
+      url: importQueueItemDetails.url,
+    });
     if (!makeImportQueueItemResult.success) return makeImportQueueItemResult;
     const newImportQueueItem = makeImportQueueItemResult.value;
 
     // Create the new feed source in Firestore.
     const createResult = await this.importQueueCollectionService.setDoc(
       newImportQueueItem.importQueueItemId,
-      newImportQueueItem
+      withFirestoreTimestamps(newImportQueueItem, clientTimestampSupplier)
     );
     if (!createResult.success) {
       return prefixErrorResult(createResult, 'Error creating import queue item in Firestore');

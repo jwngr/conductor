@@ -9,7 +9,7 @@ import type {FeedItemId} from '@shared/types/feedItems.types';
 import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
-import type {BaseStoreItem, Supplier} from '@shared/types/utils.types';
+import type {BaseStoreItem} from '@shared/types/utils.types';
 
 /**
  * Strongly-typed type for an {@link ImportQueueItem}'s unique identifier. Prefer this over plain
@@ -80,12 +80,11 @@ export type ImportQueueItemFromStorage = z.infer<typeof ImportQueueItemFromStrag
 /**
  * Creates a new {@link ImportQueueItem}.
  */
-export function makeImportQueueItem<Timestamp>(
+export function makeImportQueueItem(
   newItemArgs: Omit<
     ImportQueueItem,
     'importQueueItemId' | 'status' | 'createdTime' | 'lastUpdatedTime'
-  >,
-  timestampFactory: Supplier<Timestamp>
+  >
 ): Result<ImportQueueItem> {
   return makeSuccessResult({
     importQueueItemId: makeImportQueueItemId(),
@@ -93,8 +92,7 @@ export function makeImportQueueItem<Timestamp>(
     accountId: newItemArgs.accountId,
     url: newItemArgs.url,
     status: ImportQueueItemStatus.New,
-    // TODO: This casting is a lie. Can I figure out a way to make this work without casting?
-    createdTime: timestampFactory() as Date,
-    lastUpdatedTime: timestampFactory() as Date,
+    createdTime: new Date(),
+    lastUpdatedTime: new Date(),
   });
 }

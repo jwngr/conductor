@@ -128,3 +128,10 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export function isValidEmail(maybeEmail: unknown): maybeEmail is EmailAddress {
   return typeof maybeEmail === 'string' && EMAIL_REGEX.test(maybeEmail);
 }
+
+/**
+ * Returns `true` if the provided value is a `Date`.
+ */
+export function isDate(value: unknown): value is Date {
+  return typeof value === 'object' && value !== null && 'toDate' in value;
+}
