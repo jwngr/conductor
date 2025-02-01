@@ -81,7 +81,7 @@ export function parseUserFeedSubscription(
 export function toStorageUserFeedSubscription(
   userFeedSubscription: UserFeedSubscription
 ): UserFeedSubscriptionFromStorage {
-  return {
+  return omitUndefined({
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     feedSourceId: userFeedSubscription.feedSourceId,
     accountId: userFeedSubscription.accountId,
@@ -93,5 +93,5 @@ export function toStorageUserFeedSubscription(
       : undefined,
     createdTime: toStorageTimestamp(userFeedSubscription.createdTime),
     lastUpdatedTime: toStorageTimestamp(userFeedSubscription.lastUpdatedTime),
-  };
+  });
 }

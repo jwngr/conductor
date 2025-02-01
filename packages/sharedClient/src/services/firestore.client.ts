@@ -225,11 +225,14 @@ export class ClientFirestoreCollectionService<
   ): AsyncResult<void> {
     const docRef = this.getDocRef(docId);
     const updateResult = await asyncTry(async () =>
-      updateDoc(docRef, {
-        ...updates,
-        // Always update the `lastUpdatedTime` field.
-        lastUpdatedTime: serverTimestamp(),
-      })
+      updateDoc(
+        docRef,
+        omitUndefined({
+          ...updates,
+          // Always update the `lastUpdatedTime` field.
+          lastUpdatedTime: serverTimestamp(),
+        })
+      )
     );
     return prefixResultIfError(updateResult, 'Error updating Firestore document');
   }
