@@ -1,5 +1,5 @@
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {parseStorageTimestamp, parseZodResult, toStorageTimestamp} from '@shared/lib/parser.shared';
+import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
@@ -158,10 +158,8 @@ export function toStorageFeedItem(feedItem: FeedItem): FeedItemFromStorage {
     outgoingLinks: feedItem.outgoingLinks,
     triageStatus: feedItem.triageStatus,
     tagIds: feedItem.tagIds,
-    lastImportedTime: feedItem.lastImportedTime
-      ? toStorageTimestamp(feedItem.lastImportedTime)
-      : undefined,
-    createdTime: toStorageTimestamp(feedItem.createdTime),
-    lastUpdatedTime: toStorageTimestamp(feedItem.lastUpdatedTime),
+    lastImportedTime: feedItem.lastImportedTime,
+    createdTime: feedItem.createdTime,
+    lastUpdatedTime: feedItem.lastUpdatedTime,
   });
 }

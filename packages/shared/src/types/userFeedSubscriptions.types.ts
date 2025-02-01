@@ -61,9 +61,9 @@ export const UserFeedSubscriptionFromStorageSchema = z.object({
   url: z.string().url(),
   title: z.string().min(1),
   isActive: z.boolean(),
-  unsubscribedTime: FirestoreTimestampSchema.optional(),
-  createdTime: FirestoreTimestampSchema,
-  lastUpdatedTime: FirestoreTimestampSchema,
+  unsubscribedTime: FirestoreTimestampSchema.or(z.date()).optional(),
+  createdTime: FirestoreTimestampSchema.or(z.date()),
+  lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
 /**

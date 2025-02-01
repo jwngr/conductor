@@ -73,8 +73,8 @@ export interface UserTag extends Tag, BaseStoreItem {
 export const UserTagSchema = z.object({
   tagId: UserTagIdSchema,
   name: z.string().min(1).max(255),
-  createdTime: FirestoreTimestampSchema,
-  lastUpdatedTime: FirestoreTimestampSchema,
+  createdTime: FirestoreTimestampSchema.or(z.date()),
+  lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
 /**

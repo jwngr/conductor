@@ -68,8 +68,8 @@ export const ImportQueueItemFromStrageSchema = z.object({
   feedItemId: FeedItemIdSchema,
   url: z.string().url(),
   status: z.nativeEnum(ImportQueueItemStatus),
-  createdTime: FirestoreTimestampSchema,
-  lastUpdatedTime: FirestoreTimestampSchema,
+  createdTime: FirestoreTimestampSchema.or(z.date()),
+  lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
 /**

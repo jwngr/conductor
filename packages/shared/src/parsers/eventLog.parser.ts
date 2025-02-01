@@ -1,5 +1,5 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {parseStorageTimestamp, parseZodResult, toStorageTimestamp} from '@shared/lib/parser.shared';
+import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
@@ -174,7 +174,7 @@ export function toStorageEventLogItem(eventLogItem: EventLogItem): EventLogItemF
     accountId: eventLogItem.accountId,
     eventType: eventLogItem.eventType,
     data: eventLogItem.data,
-    createdTime: toStorageTimestamp(eventLogItem.createdTime),
-    lastUpdatedTime: toStorageTimestamp(eventLogItem.lastUpdatedTime),
+    createdTime: eventLogItem.createdTime,
+    lastUpdatedTime: eventLogItem.lastUpdatedTime,
   };
 }
