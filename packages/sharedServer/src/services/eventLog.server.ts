@@ -2,7 +2,6 @@ import type {WithFieldValue} from 'firebase-admin/firestore';
 
 import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {toStorageTimestamp} from '@shared/lib/parser.shared';
 
 import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
 
@@ -98,7 +97,7 @@ export function toStorageEventLogItem(eventLogItem: EventLogItem): EventLogItemF
     accountId: eventLogItem.accountId,
     eventType: eventLogItem.eventType,
     data: eventLogItem.data,
-    createdTime: toStorageTimestamp(eventLogItem.createdTime),
-    lastUpdatedTime: toStorageTimestamp(eventLogItem.lastUpdatedTime),
+    createdTime: eventLogItem.createdTime,
+    lastUpdatedTime: eventLogItem.lastUpdatedTime,
   };
 }

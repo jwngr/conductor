@@ -1,6 +1,6 @@
 import {where} from 'firebase/firestore';
 import type {StorageReference} from 'firebase/storage';
-import {getDownloadURL, ref as storageRef} from 'firebase/storage';
+import {getBlob, ref as storageRef} from 'firebase/storage';
 import {useEffect, useMemo, useState} from 'react';
 
 import {
@@ -14,7 +14,6 @@ import {
   prefixResultIfError,
 } from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
-import {requestGet} from '@shared/lib/requests.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
 import {Views} from '@shared/lib/views.shared';
 
@@ -27,7 +26,6 @@ import {
   type FeedItemId,
   type FeedItemSource,
 } from '@shared/types/feedItems.types';
-import {makeImportQueueItem} from '@shared/types/importQueue.types';
 import {fromFilterOperator, type ViewType} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
@@ -223,9 +221,9 @@ export class ClientFeedItemsService {
 
   public async createFeedItem(args: {
     readonly url: string;
-    readonly source: FeedItemSource;
+    readonly feedItemSource: FeedItemSource;
   }): AsyncResult<FeedItemId | null> {
-    const {url, source} = args;
+    const {url, feedItemSource} = args;
 
     const trimmedUrl = url.trim();
     if (!isValidUrl(trimmedUrl)) {
@@ -237,19 +235,11 @@ export class ClientFeedItemsService {
       url: trimmedUrl,
       // TODO: Make this dynamic based on the actual content. Maybe it should be null initially
       // until we've done the import? Or should we compute this at save time?
-      source,
+      feedItemSource,
       accountId: this.accountId,
     });
     if (!feedItemResult.success) return feedItemResult;
     const feedItem = feedItemResult.value;
-
-    // Add the feed item to the import queue.
-    const makeImportQueueItemResult = makeImportQueueItem({
-      feedItemId: feedItem.feedItemId,
-      accountId: this.accountId,
-      url: trimmedUrl,
-    });
-    if (!makeImportQueueItemResult.success) return makeImportQueueItemResult;
 
     // TODO: Do these in a transaction.
     const addFeedItemResult = await asyncTryAll([
@@ -293,18 +283,14 @@ export class ClientFeedItemsService {
     );
 
     // Fetch the download URL for the file.
-    const downloadUrlResult = await asyncTry(async () => getDownloadURL(fileRef));
+    const downloadUrlResult = await asyncTry(async () => getBlob(fileRef));
     if (!downloadUrlResult.success) {
       return prefixErrorResult(downloadUrlResult, 'Error fetching feed item download URL');
     }
 
-    // Fetch the markdown content from the file.
-    const downloadUrl = downloadUrlResult.value;
-    const responseResult = await requestGet<string>(downloadUrl, {
-      headers: {'Content-Type': 'text/markdown'},
-    });
+    // TODO: Handle various expected Firebase errors.
 
-    // Return the markdown content.
-    return prefixResultIfError(responseResult, 'Error fetching feed item markdown content');
+    const parseBlobResult = await asyncTry(async () => downloadUrlResult.value.text());
+    return prefixResultIfError(parseBlobResult, 'Error parsing downloaded file blob');
   }
 }

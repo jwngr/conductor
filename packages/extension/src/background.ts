@@ -77,7 +77,7 @@ chrome.action.onClicked.addListener(async (tab) => {
 
   const addFeedItemResult = await feedItemsService.createFeedItem({
     url: tabUrl,
-    source: FEED_ITEM_EXTENSION_SOURCE,
+    feedItemSource: FEED_ITEM_EXTENSION_SOURCE,
   });
 
   if (!addFeedItemResult.success) {

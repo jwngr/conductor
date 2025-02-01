@@ -34,14 +34,14 @@ export class SharedFeedItemHelpers {
   }
 
   public static makeFeedItem(
-    args: Pick<FeedItem, 'type' | 'accountId' | 'url' | 'source'>
+    args: Pick<FeedItem, 'type' | 'accountId' | 'url' | 'feedItemSource'>
   ): Result<FeedItem> {
     return makeSuccessResult<FeedItem>({
       feedItemId: makeFeedItemId(),
       accountId: args.accountId,
       url: args.url,
       type: args.type,
-      source: args.source,
+      feedItemSource: args.feedItemSource,
       // TODO: Update these and figure out a better solution. Maybe a better discriminated union.
       title: 'Test title from makeFeedItem',
       description: 'Test description from makeFeedItem',

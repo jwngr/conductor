@@ -68,8 +68,8 @@ export const ImportQueueItemFromStrageSchema = z.object({
   feedItemId: FeedItemIdSchema,
   url: z.string().url(),
   status: z.nativeEnum(ImportQueueItemStatus),
-  createdTime: FirestoreTimestampSchema,
-  lastUpdatedTime: FirestoreTimestampSchema,
+  createdTime: FirestoreTimestampSchema.or(z.date()),
+  lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
 /**
@@ -81,17 +81,17 @@ export type ImportQueueItemFromStorage = z.infer<typeof ImportQueueItemFromStrag
  * Creates a new {@link ImportQueueItem}.
  */
 export function makeImportQueueItem(
-  args: Omit<ImportQueueItem, 'importQueueItemId' | 'status' | 'createdTime' | 'lastUpdatedTime'>
+  newItemArgs: Omit<
+    ImportQueueItem,
+    'importQueueItemId' | 'status' | 'createdTime' | 'lastUpdatedTime'
+  >
 ): Result<ImportQueueItem> {
-  const {feedItemId, accountId, url} = args;
-
   return makeSuccessResult({
     importQueueItemId: makeImportQueueItemId(),
-    feedItemId,
-    accountId,
-    url,
+    feedItemId: newItemArgs.feedItemId,
+    accountId: newItemArgs.accountId,
+    url: newItemArgs.url,
     status: ImportQueueItemStatus.New,
-    // TODO: Should use server timestamps instead.
     createdTime: new Date(),
     lastUpdatedTime: new Date(),
   });

@@ -1,5 +1,5 @@
 import {prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {parseStorageTimestamp, parseZodResult, toStorageTimestamp} from '@shared/lib/parser.shared';
+import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
 
 import type {
   FeedSource,
@@ -53,7 +53,7 @@ export function toStorageFeedSource(feedSource: FeedSource): FeedSourceFromStora
     feedSourceId: feedSource.feedSourceId,
     url: feedSource.url,
     title: feedSource.title,
-    createdTime: toStorageTimestamp(feedSource.createdTime),
-    lastUpdatedTime: toStorageTimestamp(feedSource.lastUpdatedTime),
+    createdTime: feedSource.createdTime,
+    lastUpdatedTime: feedSource.lastUpdatedTime,
   };
 }

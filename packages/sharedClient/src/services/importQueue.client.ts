@@ -1,5 +1,6 @@
 import {IMPORT_QUEUE_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
+import {withFirestoreTimestamps} from '@shared/lib/parser.shared';
 
 import {
   parseImportQueueItem,
@@ -15,6 +16,7 @@ import {
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
 
+import {clientTimestampSupplier} from '@sharedClient/services/firebase.client';
 import {
   ClientFirestoreCollectionService,
   makeFirestoreDataConverter,
@@ -53,7 +55,7 @@ export class ClientImportQueueService {
     // Create the new feed source in Firestore.
     const createResult = await this.importQueueCollectionService.setDoc(
       newImportQueueItem.importQueueItemId,
-      newImportQueueItem
+      withFirestoreTimestamps(newImportQueueItem, clientTimestampSupplier)
     );
     if (!createResult.success) {
       return prefixErrorResult(createResult, 'Error creating import queue item in Firestore');

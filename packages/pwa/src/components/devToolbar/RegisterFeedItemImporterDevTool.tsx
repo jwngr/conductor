@@ -36,14 +36,14 @@ const FeedItemImporter: React.FC = () => {
 
       const addFeedItemResult = await feedItemsService.createFeedItem({
         url: trimmedUrl,
-        source: FEED_ITEM_APP_SOURCE,
+        feedItemSource: FEED_ITEM_APP_SOURCE,
       });
 
       if (addFeedItemResult.success) {
         setStatus('URL saved successfully');
         setUrl('');
       } else {
-        setStatus(`Error: ${addFeedItemResult.error.message}`);
+        setStatus(`Error adding item to import queue: ${addFeedItemResult.error.message}`);
       }
     },
     [feedItemsService]

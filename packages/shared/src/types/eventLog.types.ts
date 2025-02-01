@@ -78,8 +78,8 @@ export const EventLogItemFromStorageSchema = z.object({
   accountId: AccountIdSchema,
   eventType: z.nativeEnum(EventType),
   data: EventLogItemDataSchema,
-  createdTime: FirestoreTimestampSchema,
-  lastUpdatedTime: FirestoreTimestampSchema,
+  createdTime: FirestoreTimestampSchema.or(z.date()),
+  lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
 /**

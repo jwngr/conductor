@@ -1,5 +1,5 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {parseStorageTimestamp, parseZodResult, toStorageTimestamp} from '@shared/lib/parser.shared';
+import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
@@ -81,17 +81,15 @@ export function parseUserFeedSubscription(
 export function toStorageUserFeedSubscription(
   userFeedSubscription: UserFeedSubscription
 ): UserFeedSubscriptionFromStorage {
-  return {
+  return omitUndefined({
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     feedSourceId: userFeedSubscription.feedSourceId,
     accountId: userFeedSubscription.accountId,
     url: userFeedSubscription.url,
     title: userFeedSubscription.title,
     isActive: userFeedSubscription.isActive,
-    unsubscribedTime: userFeedSubscription.unsubscribedTime
-      ? toStorageTimestamp(userFeedSubscription.unsubscribedTime)
-      : undefined,
-    createdTime: toStorageTimestamp(userFeedSubscription.createdTime),
-    lastUpdatedTime: toStorageTimestamp(userFeedSubscription.lastUpdatedTime),
-  };
+    unsubscribedTime: userFeedSubscription.unsubscribedTime,
+    createdTime: userFeedSubscription.createdTime,
+    lastUpdatedTime: userFeedSubscription.lastUpdatedTime,
+  });
 }

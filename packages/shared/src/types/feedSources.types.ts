@@ -43,8 +43,8 @@ export const FeedSourceFromStorageSchema = z.object({
   feedSourceId: FeedSourceIdSchema,
   url: z.string().url(),
   title: z.string().min(1),
-  createdTime: FirestoreTimestampSchema,
-  lastUpdatedTime: FirestoreTimestampSchema,
+  createdTime: FirestoreTimestampSchema.or(z.date()),
+  lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
 /**
@@ -56,16 +56,13 @@ export type FeedSourceFromStorage = z.infer<typeof FeedSourceFromStorageSchema>;
  * Creates a new {@link FeedSource} object.
  */
 export function makeFeedSource(
-  args: Omit<FeedSource, 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
+  newItemArgs: Omit<FeedSource, 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
 ): Result<FeedSource> {
-  const feedSource: FeedSource = {
+  return makeSuccessResult({
     feedSourceId: makeFeedSourceId(),
-    url: args.url,
-    title: args.title,
-    // TODO: Should use server timestamps instead.
+    url: newItemArgs.url,
+    title: newItemArgs.title,
     createdTime: new Date(),
     lastUpdatedTime: new Date(),
-  };
-
-  return makeSuccessResult(feedSource);
+  });
 }

@@ -1,5 +1,5 @@
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {parseStorageTimestamp, parseZodResult, toStorageTimestamp} from '@shared/lib/parser.shared';
+import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
@@ -76,7 +76,7 @@ export function toStorageImportQueueItem(
     feedItemId: importQueueItem.feedItemId,
     url: importQueueItem.url,
     status: importQueueItem.status,
-    createdTime: toStorageTimestamp(importQueueItem.createdTime),
-    lastUpdatedTime: toStorageTimestamp(importQueueItem.lastUpdatedTime),
+    createdTime: importQueueItem.createdTime,
+    lastUpdatedTime: importQueueItem.lastUpdatedTime,
   };
 }

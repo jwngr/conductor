@@ -2,9 +2,10 @@ import {FieldValue} from 'firebase-admin/firestore';
 import type {WithFieldValue} from 'firebase-admin/firestore';
 
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {withFirestoreTimestamps} from '@shared/lib/parser.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import type {FeedSource} from '@shared/types/feedSources.types';
+import type {FeedSource, FeedSourceId} from '@shared/types/feedSources.types';
 import {makeSuccessResult, type AsyncResult} from '@shared/types/result.types';
 import type {
   UserFeedSubscription,
@@ -14,6 +15,8 @@ import type {
 import {makeUserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
 import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
+
+import {serverTimestampSupplier} from './firebase.server';
 
 type UserFeedSubscriptionsCollectionService = ServerFirestoreCollectionService<
   UserFeedSubscriptionId,
@@ -42,6 +45,20 @@ export class ServerUserFeedSubscriptionsService {
   }
 
   /**
+   * Fetches all user feed subscription documents for an individual feed source from Firestore.
+   */
+  public async fetchForFeedSource(feedSourceId: FeedSourceId): AsyncResult<UserFeedSubscription[]> {
+    const query = this.userFeedSubscriptionsCollectionService
+      .getCollectionRef()
+      .where('feedSourceId', '==', feedSourceId);
+    const queryResult = await this.userFeedSubscriptionsCollectionService.fetchQueryDocs(query);
+    return prefixResultIfError(
+      queryResult,
+      'Error fetching user feed subscriptions for feed source'
+    );
+  }
+
+  /**
    * Adds a new user feed subscription document to Firestore.
    */
   public async create(args: {
@@ -59,7 +76,7 @@ export class ServerUserFeedSubscriptionsService {
     const userFeedSubscriptionId = newUserFeedSubscription.userFeedSubscriptionId;
     const createResult = await this.userFeedSubscriptionsCollectionService.setDoc(
       userFeedSubscriptionId,
-      newUserFeedSubscription
+      withFirestoreTimestamps(newUserFeedSubscription, serverTimestampSupplier)
     );
     if (!createResult.success) {
       return prefixErrorResult(createResult, 'Error creating user feed subscription in Firestore');
