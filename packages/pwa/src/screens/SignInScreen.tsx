@@ -149,7 +149,7 @@ export const SignInScreen: React.FC = () => {
         ) : null}
         {signInLinkError ? (
           <Text color={ThemeColor.Red600} align="center">
-            {signInLinkError.message}
+            <Text bold>Error signing in:</Text> {signInLinkError.message}
           </Text>
         ) : null}
       </SignInContentWrapper>
