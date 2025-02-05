@@ -97,7 +97,7 @@ export const DevToolbar: React.FC<{
   }, [handleKeyDown]);
 
   // TODO: Add `!IS_DEVELOPMENT` check back here.
-  if  (!isVisible || devToolbarSections.length === 0) return null;
+  if (!isVisible || devToolbarSections.length === 0) return null;
 
   return (
     <DevToolbarWrapper ref={toolbarRef} $isOpen={isOpen} onClick={handleToolbarClick}>
