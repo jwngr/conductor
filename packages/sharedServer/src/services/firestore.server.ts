@@ -7,7 +7,6 @@ import type {
   QueryDocumentSnapshot,
   WithFieldValue,
 } from 'firebase-admin/firestore';
-import {FieldValue} from 'firebase-admin/firestore';
 
 import {
   asyncTry,

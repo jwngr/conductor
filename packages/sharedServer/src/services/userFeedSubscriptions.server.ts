@@ -1,4 +1,3 @@
-import {FieldValue} from 'firebase-admin/firestore';
 import type {WithFieldValue} from 'firebase-admin/firestore';
 
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
