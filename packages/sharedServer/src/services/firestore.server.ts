@@ -173,8 +173,8 @@ export class ServerFirestoreCollectionService<
       docRef.update(
         omitUndefined({
           ...updates,
-          // Always update the `lastUpdatedTime` field.
-          lastUpdatedTime: FieldValue.serverTimestamp(),
+          // TODO(timestamps): Use server timestamps instead.
+          lastUpdatedTime: new Date(),
         })
       )
     );

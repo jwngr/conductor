@@ -20,7 +20,6 @@ import {
   limit,
   onSnapshot,
   query,
-  serverTimestamp,
   setDoc,
   updateDoc,
 } from 'firebase/firestore';
@@ -229,8 +228,8 @@ export class ClientFirestoreCollectionService<
         docRef,
         omitUndefined({
           ...updates,
-          // Always update the `lastUpdatedTime` field.
-          lastUpdatedTime: serverTimestamp(),
+          // TODO(timestamps): Use server timestamps instead.
+          lastUpdatedTime: new Date(),
         })
       )
     );

@@ -94,7 +94,8 @@ export class ServerUserFeedSubscriptionsService {
   ): AsyncResult<void> {
     return this.update(userFeedSubscriptionId, {
       isActive: false,
-      unsubscribedTime: FieldValue.serverTimestamp(),
+      // TODO(timestamps): Use server timestamps instead.
+      unsubscribedTime: new Date(),
     });
   }
 

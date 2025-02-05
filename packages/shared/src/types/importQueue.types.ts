@@ -92,6 +92,7 @@ export function makeImportQueueItem(
     accountId: newItemArgs.accountId,
     url: newItemArgs.url,
     status: ImportQueueItemStatus.New,
+    // TODO(timestamps): Use server timestamps instead.
     createdTime: new Date(),
     lastUpdatedTime: new Date(),
   });

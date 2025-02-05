@@ -62,6 +62,7 @@ export function makeFeedSource(
     feedSourceId: makeFeedSourceId(),
     url: newItemArgs.url,
     title: newItemArgs.title,
+    // TODO(timestamps): Use server timestamps instead.
     createdTime: new Date(),
     lastUpdatedTime: new Date(),
   });
