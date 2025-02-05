@@ -10,8 +10,6 @@ import {FlexColumn} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
 import {RequireLoggedInAccount} from '@src/components/auth/RequireLoggedInAccount';
 
-import {IS_DEVELOPMENT} from '@src/lib/environment.pwa';
-
 const DevToolbarWrapper = styled.div<{readonly $isOpen: boolean}>`
   position: fixed;
   bottom: 16px;
@@ -98,7 +96,8 @@ export const DevToolbar: React.FC<{
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  if (!IS_DEVELOPMENT || !isVisible || devToolbarSections.length === 0) return null;
+  // TODO: Add `!IS_DEVELOPMENT` check back here.
+  if (!isVisible || devToolbarSections.length === 0) return null;
 
   return (
     <DevToolbarWrapper ref={toolbarRef} $isOpen={isOpen} onClick={handleToolbarClick}>
