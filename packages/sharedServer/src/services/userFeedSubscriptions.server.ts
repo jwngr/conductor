@@ -1,4 +1,3 @@
-import {FieldValue} from 'firebase-admin/firestore';
 import type {WithFieldValue} from 'firebase-admin/firestore';
 
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
@@ -94,7 +93,8 @@ export class ServerUserFeedSubscriptionsService {
   ): AsyncResult<void> {
     return this.update(userFeedSubscriptionId, {
       isActive: false,
-      unsubscribedTime: FieldValue.serverTimestamp(),
+      // TODO(timestamps): Use server timestamps instead.
+      unsubscribedTime: new Date(),
     });
   }
 

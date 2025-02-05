@@ -1,4 +1,4 @@
-import {limit as firestoreLimit, orderBy, serverTimestamp, where} from 'firebase/firestore';
+import {limit as firestoreLimit, orderBy, where} from 'firebase/firestore';
 import {useEffect, useMemo, useState} from 'react';
 
 import {logger} from '@shared/services/logger.shared';
@@ -186,8 +186,9 @@ export class ClientEventLogService {
         feedItemId: args.feedItemId,
         feedItemActionType: args.feedItemActionType,
       },
-      createdTime: serverTimestamp(),
-      lastUpdatedTime: serverTimestamp(),
+      // TODO(timestamps): Use server timestamps instead.
+      createdTime: new Date(),
+      lastUpdatedTime: new Date(),
     });
 
     if (!createResult.success) {
@@ -212,8 +213,9 @@ export class ClientEventLogService {
       data: {
         userFeedSubscriptionId: args.userFeedSubscriptionId,
       },
-      createdTime: serverTimestamp(),
-      lastUpdatedTime: serverTimestamp(),
+      // TODO(timestamps): Use server timestamps instead.
+      createdTime: new Date(),
+      lastUpdatedTime: new Date(),
     });
 
     if (!createResult.success) {

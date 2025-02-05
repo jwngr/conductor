@@ -51,7 +51,7 @@ export class SharedFeedItemHelpers {
         [SystemTagId.Unread]: true,
         [SystemTagId.Importing]: true,
       },
-      // TODO: Should use server timestamps instead.
+      // TODO(timestamps): Use server timestamps instead.
       createdTime: new Date(),
       lastUpdatedTime: new Date(),
     });

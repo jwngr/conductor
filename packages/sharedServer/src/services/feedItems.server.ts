@@ -59,7 +59,8 @@ export class ServerFeedItemsService {
       title: title ?? '',
       description: description ?? '',
       outgoingLinks: links ?? [],
-      lastImportedTime: FieldValue.serverTimestamp(),
+      // TODO(timestamps): Use server timestamps instead.
+      lastImportedTime: new Date(),
       ...untypedUpdates,
     });
     return prefixResultIfError(updateResult, 'Error updating imported feed item in Firestore');
