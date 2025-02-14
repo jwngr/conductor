@@ -63,15 +63,11 @@ const SuperfeedWebhookRequestBodySchema = z.object({
   items: z.array(SuperfeedrFeedItemSchema),
 });
 
-const SuperfeedWebhookRequestSchema = z.object({
-  body: SuperfeedWebhookRequestBodySchema,
-});
+type SuperfeedWebhookRequestBody = z.infer<typeof SuperfeedWebhookRequestBodySchema>;
 
-type SuperfeedWebhookRequest = z.infer<typeof SuperfeedWebhookRequestSchema>;
-
-export function parseSuperfeedrWebhookRequest(
-  maybeRequest: unknown
-): Result<SuperfeedWebhookRequest> {
-  const parsedResult = parseZodResult(SuperfeedWebhookRequestSchema, maybeRequest);
+export function parseSuperfeedrWebhookRequestBody(
+  maybeBody: unknown
+): Result<SuperfeedWebhookRequestBody> {
+  const parsedResult = parseZodResult(SuperfeedWebhookRequestBodySchema, maybeBody);
   return prefixResultIfError(parsedResult, 'Unexpected Superfeedr webhook request');
 }
