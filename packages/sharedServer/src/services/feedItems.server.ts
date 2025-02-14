@@ -1,12 +1,24 @@
 import {FieldValue} from 'firebase-admin/firestore';
 
-import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {
+  asyncTry,
+  asyncTryAll,
+  prefixErrorResult,
+  prefixResultIfError,
+} from '@shared/lib/errorUtils.shared';
+import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
+import {isValidUrl} from '@shared/lib/urls.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import {FeedItemType} from '@shared/types/feedItems.types';
-import type {FeedItem, FeedItemFromStorage, FeedItemId} from '@shared/types/feedItems.types';
+import type {
+  FeedItem,
+  FeedItemFromStorage,
+  FeedItemId,
+  FeedItemSource,
+} from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/result.types';
-import {makeErrorResult} from '@shared/types/result.types';
+import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import {SystemTagId} from '@shared/types/tags.types';
 
 import {storage} from '@sharedServer/services/firebase.server';
@@ -38,6 +50,36 @@ export class ServerFeedItemsService {
   }) {
     this.storageCollectionPath = args.storageCollectionPath;
     this.feedItemsCollectionService = args.feedItemsCollectionService;
+  }
+
+  public async createFeedItem(args: {
+    readonly url: string;
+    readonly feedItemSource: FeedItemSource;
+    readonly accountId: AccountId;
+  }): AsyncResult<FeedItemId | null> {
+    const {url, accountId, feedItemSource} = args;
+
+    const trimmedUrl = url.trim();
+    if (!isValidUrl(trimmedUrl)) {
+      return makeErrorResult(new Error(`Invalid URL provided for feed item: "${url}"`));
+    }
+
+    const feedItemResult = SharedFeedItemHelpers.makeFeedItem({
+      // TODO: Make this dynamic based on the actual content.
+      type: FeedItemType.Website,
+      url: trimmedUrl,
+      accountId,
+      feedItemSource,
+    });
+    if (!feedItemResult.success) return feedItemResult;
+    const feedItem = feedItemResult.value;
+
+    const addFeedItemResult = await this.feedItemsCollectionService.setDoc(
+      feedItem.feedItemId,
+      feedItem
+    );
+    if (!addFeedItemResult.success) return addFeedItemResult;
+    return makeSuccessResult(feedItem.feedItemId);
   }
 
   /**

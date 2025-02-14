@@ -17,8 +17,7 @@ import {
   USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
 } from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
-import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
-import {batchSyncResults, partition} from '@shared/lib/utils.shared';
+import {batchAsyncResults, partition} from '@shared/lib/utils.shared';
 
 import {parseAccount, parseAccountId, toStorageAccount} from '@shared/parsers/accounts.parser';
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
@@ -38,9 +37,9 @@ import {
   toStorageUserFeedSubscription,
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
-import {FeedItem, FeedItemType, makeFeedItemRSSSource} from '@shared/types/feedItems.types';
+import {FeedItemId, makeFeedItemRSSSource} from '@shared/types/feedItems.types';
 import {ImportQueueItem, ImportQueueItemStatus} from '@shared/types/importQueue.types';
-import {Result} from '@shared/types/result.types';
+import {AsyncResult, ErrorResult, SuccessResult} from '@shared/types/result.types';
 import {parseSuperfeedrWebhookRequestBody} from '@shared/types/superfeedr.types';
 import {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import {Supplier} from '@shared/types/utils.types';
@@ -71,7 +70,7 @@ let userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
 let importQueueService: ServerImportQueueService;
 let wipeoutService: WipeoutService;
 let rssFeedService: ServerRssFeedService;
-
+let feedItemsService: ServerFeedItemsService;
 onInit(() => {
   const firecrawlApp = new FirecrawlApp({apiKey: FIRECRAWL_API_KEY.value()});
 
@@ -117,7 +116,7 @@ onInit(() => {
     parseId: parseFeedItemId,
   });
 
-  const feedItemsService = new ServerFeedItemsService({
+  feedItemsService = new ServerFeedItemsService({
     feedItemsCollectionService,
     storageCollectionPath: FEED_ITEMS_STORAGE_COLLECTION,
   });
@@ -405,42 +404,45 @@ export const handleSuperfeedrWebhook = onRequest(
 
     const userFeedSubscriptions = fetchSubscriptionsResult.value;
 
-    // Make a list of feed items to create.
-    const makeFeedItemResults: Supplier<Result<FeedItem>>[] = [];
+    // Make a list of supplier methods that create feed items.
+    const createFeedItemResults: Supplier<AsyncResult<FeedItemId | null>>[] = [];
     body.items.forEach((item) => {
       logger.log(`[SUPERFEEDR] Processing item ${item.id}`, {item});
 
       userFeedSubscriptions.forEach((userFeedSubscription) => {
-        const newFeedItemResult = () =>
-          SharedFeedItemHelpers.makeFeedItem({
-            type: FeedItemType.Article,
-            accountId: userFeedSubscription.accountId,
+        const newFeedItemResult = async () =>
+          await feedItemsService.createFeedItem({
             url: item.permalinkUrl,
+            accountId: userFeedSubscription.accountId,
             feedItemSource: makeFeedItemRSSSource(userFeedSubscription.userFeedSubscriptionId),
           });
-        makeFeedItemResults.push(newFeedItemResult);
+        createFeedItemResults.push(newFeedItemResult);
       });
     });
 
-    // Create the feed items in batches.
-    const batchResult = await batchSyncResults(makeFeedItemResults, 10);
+    // Execute the supplier methods in batches.
+    const batchResult = await batchAsyncResults(createFeedItemResults, 10);
     if (!batchResult.success) {
       return respondWithError(batchResult.error, 'Error batching feed item creation');
     }
 
+    // Log successes and errors.
     const newFeedItemResults = batchResult.value;
-    const [newFeedItems, makeFeedItemErrors] = partition(
-      newFeedItemResults,
-      (result) => result.success
-    );
+    const [newFeedItemSuccesses, newFeedItemErrors] = partition<
+      SuccessResult<FeedItemId | null>,
+      ErrorResult
+    >(newFeedItemResults, (result): result is SuccessResult<FeedItemId | null> => result.success);
     logger.log(
-      `[SUPERFEEDR] Successfully created ${newFeedItems.length} feed items, encountered ${makeFeedItemErrors.length} errors`,
-      {newFeedItems, makeFeedItemErrors}
+      `[SUPERFEEDR] Successfully created ${newFeedItemSuccesses.length} feed items, encountered ${newFeedItemErrors.length} errors`,
+      {
+        successes: newFeedItemSuccesses.map((result) => result.value),
+        errors: newFeedItemErrors.map((result) => result.error),
+      }
     );
-    if (makeFeedItemErrors.length !== 0) {
+
+    if (newFeedItemErrors.length !== 0) {
       return respondWithError(new Error('Individual feed items failed to be created'), undefined, {
-        newFeedItems,
-        makeFeedItemErrors,
+        errors: newFeedItemErrors.map((result) => result.error),
       });
     }
 
