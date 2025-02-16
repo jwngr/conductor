@@ -212,6 +212,7 @@ export class ClientEventLogService {
     const eventId = makeEventId();
     const createResult = await this.eventLogCollectionService.setDoc(eventId, {
       eventId,
+      accountId: this.accountId,
       actor: makeUserActor(this.accountId),
       environment: this.environment,
       eventType: EventType.FeedItemAction,
@@ -241,6 +242,7 @@ export class ClientEventLogService {
     const eventId = makeEventId();
     const createResult = await this.eventLogCollectionService.setDoc(eventId, {
       eventId,
+      accountId: this.accountId,
       actor: makeUserActor(this.accountId),
       environment: this.environment,
       eventType: EventType.UserFeedSubscription,

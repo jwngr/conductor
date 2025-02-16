@@ -1,6 +1,7 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
 
+import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseActor} from '@shared/parsers/actors.parser';
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
 import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions.parser';
@@ -75,6 +76,9 @@ function parseUserFeedSubscriptionEventLogItem(
     return prefixErrorResult(parsedResult, 'Invalid event log item');
   }
 
+  const parsedAccountIdResult = parseAccountId(parsedResult.value.accountId);
+  if (!parsedAccountIdResult.success) return parsedAccountIdResult;
+
   const parsedActorResult = parseActor(parsedResult.value.actor);
   if (!parsedActorResult.success) return parsedActorResult;
 
@@ -87,6 +91,7 @@ function parseUserFeedSubscriptionEventLogItem(
   const {createdTime, lastUpdatedTime} = parsedResult.value;
   return makeSuccessResult({
     eventId: parsedEventIdResult.value,
+    accountId: parsedAccountIdResult.value,
     actor: parsedActorResult.value,
     environment: parsedResult.value.environment,
     eventType: EventType.UserFeedSubscription,
@@ -108,6 +113,9 @@ function parseFeedItemActionEventLogItem(
     return prefixErrorResult(parsedResult, 'Invalid event log item');
   }
 
+  const parsedAccountIdResult = parseAccountId(parsedResult.value.accountId);
+  if (!parsedAccountIdResult.success) return parsedAccountIdResult;
+
   const parsedActorResult = parseActor(parsedResult.value.actor);
   if (!parsedActorResult.success) return parsedActorResult;
 
@@ -120,6 +128,7 @@ function parseFeedItemActionEventLogItem(
   const {createdTime, lastUpdatedTime} = parsedResult.value;
   return makeSuccessResult({
     eventId: parsedEventIdResult.value,
+    accountId: parsedAccountIdResult.value,
     actor: parsedActorResult.value,
     environment: parsedResult.value.environment,
     eventType: EventType.FeedItemAction,
@@ -160,6 +169,9 @@ function parseFeedItemImportedEventLogItem(
     return prefixErrorResult(parsedResult, 'Invalid event log item');
   }
 
+  const parsedAccountIdResult = parseAccountId(parsedResult.value.accountId);
+  if (!parsedAccountIdResult.success) return parsedAccountIdResult;
+
   const parsedActorResult = parseActor(parsedResult.value.actor);
   if (!parsedActorResult.success) return parsedActorResult;
 
@@ -172,6 +184,7 @@ function parseFeedItemImportedEventLogItem(
   const {createdTime, lastUpdatedTime} = parsedResult.value;
   return makeSuccessResult({
     eventId: parsedEventIdResult.value,
+    accountId: parsedAccountIdResult.value,
     actor: parsedActorResult.value,
     environment: parsedResult.value.environment,
     eventType: EventType.FeedItemImported,
@@ -232,6 +245,7 @@ function parseUserFeedSubscriptionEventLogItemData(
 export function toStorageEventLogItem(eventLogItem: EventLogItem): EventLogItemFromStorage {
   return {
     eventId: eventLogItem.eventId,
+    accountId: eventLogItem.accountId,
     actor: eventLogItem.actor,
     environment: eventLogItem.environment,
     eventType: eventLogItem.eventType,

@@ -136,6 +136,11 @@ export class ServerImportQueueService {
       return makeErrorResult(prefixError(importAllDataResultError, 'Error importing feed item'));
     }
 
+    void eventLogService.logFeedItemImportedEvent({
+      feedItemId: importQueueItem.feedItemId,
+      accountId: importQueueItem.accountId,
+    });
+
     return makeSuccessResult(undefined);
   }
 
@@ -211,8 +216,6 @@ export class ServerImportQueueService {
         prefixError(saveFirecrawlDataResultError, 'Error saving Firecrawl data for feed item')
       );
     }
-
-    void eventLogService.logFeedItemImportedEvent({feedItemId});
 
     return makeSuccessResult(undefined);
   }

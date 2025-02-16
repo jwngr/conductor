@@ -2,6 +2,8 @@ import {z} from 'zod';
 
 import {makeUuid} from '@shared/lib/utils.shared';
 
+import {AccountIdSchema} from '@shared/types/accounts.types';
+import type {AccountId} from '@shared/types/accounts.types';
 import {ActorSchema} from '@shared/types/actors.types';
 import type {Actor} from '@shared/types/actors.types';
 import {FeedItemActionType, FeedItemIdSchema} from '@shared/types/feedItems.types';
@@ -84,6 +86,8 @@ const EventLogItemDataSchema = FeedItemActionEventLogItemDataSchema.or(
 interface BaseEventLogItem extends BaseStoreItem {
   readonly eventType: EventType;
   readonly eventId: EventId;
+  /** The account that the event belongs to. */
+  readonly accountId: AccountId;
   /** The entity who initiated the event. */
   readonly actor: Actor;
   /** The environment in which the event occurred. */
@@ -98,6 +102,7 @@ interface BaseEventLogItem extends BaseStoreItem {
 export const EventLogItemFromStorageSchema = z.object({
   eventId: EventIdSchema,
   eventType: z.nativeEnum(EventType),
+  accountId: AccountIdSchema,
   actor: ActorSchema,
   environment: z.nativeEnum(Environment),
   data: EventLogItemDataSchema,
