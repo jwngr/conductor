@@ -14,7 +14,9 @@ import {
 } from '@shared/parsers/eventLog.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
+import {makeUserActor} from '@shared/types/actors.types';
 import {
+  Environment,
   EventType,
   makeEventId,
   type EventId,
@@ -53,6 +55,7 @@ export const useEventLogService = () => {
     });
 
     return new ClientEventLogService({
+      environment: Environment.PWA,
       eventLogCollectionService,
       accountId: loggedInAccount.accountId,
     });
@@ -122,13 +125,16 @@ export function useEventLogItems({viewType}: {readonly viewType: ViewType}): Eve
 type ClientEventLogCollectionService = ClientFirestoreCollectionService<EventId, EventLogItem>;
 
 export class ClientEventLogService {
+  private readonly environment: Environment;
   private readonly eventLogCollectionService: ClientEventLogCollectionService;
   private readonly accountId: AccountId;
 
   constructor(args: {
+    readonly environment: Environment;
     readonly eventLogCollectionService: ClientEventLogCollectionService;
     readonly accountId: AccountId;
   }) {
+    this.environment = args.environment;
     this.eventLogCollectionService = args.eventLogCollectionService;
     this.accountId = args.accountId;
   }
@@ -180,7 +186,8 @@ export class ClientEventLogService {
     const eventId = makeEventId();
     const createResult = await this.eventLogCollectionService.setDoc(eventId, {
       eventId,
-      accountId: this.accountId,
+      actor: makeUserActor(this.accountId),
+      environment: this.environment,
       eventType: EventType.FeedItemAction,
       data: {
         feedItemId: args.feedItemId,
@@ -208,7 +215,8 @@ export class ClientEventLogService {
     const eventId = makeEventId();
     const createResult = await this.eventLogCollectionService.setDoc(eventId, {
       eventId,
-      accountId: this.accountId,
+      actor: makeUserActor(this.accountId),
+      environment: this.environment,
       eventType: EventType.UserFeedSubscription,
       data: {
         userFeedSubscriptionId: args.userFeedSubscriptionId,

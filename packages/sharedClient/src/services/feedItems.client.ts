@@ -7,12 +7,7 @@ import {
   FEED_ITEMS_DB_COLLECTION,
   FEED_ITEMS_STORAGE_COLLECTION,
 } from '@shared/lib/constants.shared';
-import {
-  asyncTry,
-  asyncTryAll,
-  prefixErrorResult,
-  prefixResultIfError,
-} from '@shared/lib/errorUtils.shared';
+import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
 import {Views} from '@shared/lib/views.shared';
@@ -36,8 +31,6 @@ import {
   ClientFirestoreCollectionService,
   makeFirestoreDataConverter,
 } from '@sharedClient/services/firestore.client';
-import {useImportQueueService} from '@sharedClient/services/importQueue.client';
-import type {ClientImportQueueService} from '@sharedClient/services/importQueue.client';
 
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
@@ -47,7 +40,6 @@ const feedItemFirestoreConverter = makeFirestoreDataConverter(toStorageFeedItem,
 
 export function useFeedItemsService(): ClientFeedItemsService {
   const loggedInAccount = useLoggedInAccount();
-  const importQueueService = useImportQueueService();
 
   const feedItemsService = useMemo(() => {
     const feedItemsCollectionService = new ClientFirestoreCollectionService({
@@ -58,11 +50,10 @@ export function useFeedItemsService(): ClientFeedItemsService {
 
     return new ClientFeedItemsService({
       feedItemsCollectionService,
-      importQueueService,
       feedItemsStorageRef,
       accountId: loggedInAccount.accountId,
     });
-  }, [loggedInAccount.accountId, importQueueService]);
+  }, [loggedInAccount.accountId]);
 
   return feedItemsService;
 }
@@ -161,18 +152,15 @@ type FeedItemsCollectionService = ClientFirestoreCollectionService<FeedItemId, F
 
 export class ClientFeedItemsService {
   private readonly feedItemsCollectionService: FeedItemsCollectionService;
-  private readonly importQueueService: ClientImportQueueService;
   private readonly feedItemsStorageRef: StorageReference;
   private readonly accountId: AccountId;
 
   constructor(args: {
     readonly feedItemsCollectionService: FeedItemsCollectionService;
-    readonly importQueueService: ClientImportQueueService;
     readonly feedItemsStorageRef: StorageReference;
     readonly accountId: AccountId;
   }) {
     this.feedItemsCollectionService = args.feedItemsCollectionService;
-    this.importQueueService = args.importQueueService;
     this.feedItemsStorageRef = args.feedItemsStorageRef;
     this.accountId = args.accountId;
   }
@@ -208,6 +196,8 @@ export class ClientFeedItemsService {
       ...viewConfig.filters.map((filter) =>
         where(filter.field, fromFilterOperator(filter.op), filter.value)
       ),
+      // TODO: Order by created time to ensure a consistent order.
+      // orderBy(viewConfig.sort.field, viewConfig.sort.direction),
     ];
     const itemsQuery = this.feedItemsCollectionService.query(whereClauses);
 
@@ -241,21 +231,12 @@ export class ClientFeedItemsService {
     if (!feedItemResult.success) return feedItemResult;
     const feedItem = feedItemResult.value;
 
-    // TODO: Do these in a transaction.
-    const addFeedItemResult = await asyncTryAll([
-      this.feedItemsCollectionService.setDoc(feedItem.feedItemId, feedItem),
-      this.importQueueService.create({
-        feedItemId: feedItem.feedItemId,
-        accountId: this.accountId,
-        url: trimmedUrl,
-      }),
-    ]);
-
-    const addFeedItemResultError = addFeedItemResult.success
-      ? addFeedItemResult.value.results.find((result) => !result.success)?.error
-      : addFeedItemResult.error;
-    if (addFeedItemResultError) {
-      return makeErrorResult(addFeedItemResultError);
+    const addFeedItemResult = await this.feedItemsCollectionService.setDoc(
+      feedItem.feedItemId,
+      feedItem
+    );
+    if (!addFeedItemResult.success) {
+      return makeErrorResult(addFeedItemResult.error);
     }
 
     return makeSuccessResult(feedItem.feedItemId);

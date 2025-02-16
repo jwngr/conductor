@@ -2,8 +2,8 @@ import {z} from 'zod';
 
 import {makeUuid} from '@shared/lib/utils.shared';
 
-import type {AccountId} from '@shared/types/accounts.types';
-import {AccountIdSchema} from '@shared/types/accounts.types';
+import {ActorSchema} from '@shared/types/actors.types';
+import type {Actor} from '@shared/types/actors.types';
 import {FeedItemActionType, FeedItemIdSchema} from '@shared/types/feedItems.types';
 import type {FeedItemId} from '@shared/types/feedItems.types';
 import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
@@ -32,6 +32,12 @@ export function makeEventId(): EventId {
 export enum EventType {
   FeedItemAction = 'FEED_ITEM_ACTION',
   UserFeedSubscription = 'USER_FEED_SUBSCRIPTION',
+}
+
+export enum Environment {
+  Server = 'SERVER',
+  PWA = 'PWA',
+  Extension = 'EXTENSION',
 }
 
 export interface FeedItemActionEventLogItemData extends Record<string, unknown> {
@@ -64,8 +70,10 @@ const EventLogItemDataSchema = FeedItemActionEventLogItemDataSchema.or(
 interface BaseEventLogItem extends BaseStoreItem {
   readonly eventType: EventType;
   readonly eventId: EventId;
-  // TODO: Replace this with an `actor` field so that admin logs can be integrated as well.
-  readonly accountId: AccountId;
+  /** The entity who initiated the event. */
+  readonly actor: Actor;
+  /** The environment in which the event occurred. */
+  readonly environment: Environment;
   /** Arbitrary data associated with the event. */
   readonly data?: Record<string, unknown>;
 }
@@ -75,8 +83,9 @@ interface BaseEventLogItem extends BaseStoreItem {
  */
 export const EventLogItemFromStorageSchema = z.object({
   eventId: EventIdSchema,
-  accountId: AccountIdSchema,
   eventType: z.nativeEnum(EventType),
+  actor: ActorSchema,
+  environment: z.nativeEnum(Environment),
   data: EventLogItemDataSchema,
   createdTime: FirestoreTimestampSchema.or(z.date()),
   lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),

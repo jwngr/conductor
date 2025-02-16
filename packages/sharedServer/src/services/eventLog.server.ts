@@ -94,8 +94,9 @@ export const eventLogService = new ServerEventLogService({
 export function toStorageEventLogItem(eventLogItem: EventLogItem): EventLogItemFromStorage {
   return {
     eventId: eventLogItem.eventId,
-    accountId: eventLogItem.accountId,
     eventType: eventLogItem.eventType,
+    actor: eventLogItem.actor,
+    environment: eventLogItem.environment,
     data: eventLogItem.data,
     createdTime: eventLogItem.createdTime,
     lastUpdatedTime: eventLogItem.lastUpdatedTime,
