@@ -1,4 +1,6 @@
+import {getFunctions, httpsCallable} from 'firebase/functions';
 import type React from 'react';
+import {useState} from 'react';
 import styled from 'styled-components';
 
 import {logger} from '@shared/services/logger.shared';
@@ -12,6 +14,7 @@ import {ThemeColor} from '@shared/types/theme.types';
 
 import {useFeedItems} from '@sharedClient/services/feedItems.client';
 
+import {Button, ButtonVariant} from '@src/components/atoms/Button';
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
@@ -73,10 +76,32 @@ const ViewWrapper = styled(FlexColumn)`
   overflow: auto;
 `;
 
+const PoemGenerator: React.FC = () => {
+  const [poem, setPoem] = useState('');
+  async function generatePoem(topic: string) {
+    const poemFlow = httpsCallable(getFunctions(), 'generatePoem');
+    const response = await poemFlow(topic);
+    setPoem(response.data as string);
+  }
+
+  return (
+    <FlexColumn>
+      <Button
+        onClick={() => generatePoem('Data visualizations about american football')}
+        variant={ButtonVariant.Primary}
+      >
+        Generate poem
+      </Button>
+      <Text as="p">Poem: {poem ?? 'No poem'}</Text>
+    </FlexColumn>
+  );
+};
+
 export const View: React.FC<{viewType: ViewType}> = ({viewType}) => {
   return (
     <ViewWrapper>
       <h2>{viewType}</h2>
+      <PoemGenerator />
       <ViewList viewType={viewType} />
     </ViewWrapper>
   );

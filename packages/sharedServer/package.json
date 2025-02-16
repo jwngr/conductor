@@ -4,7 +4,10 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@conductor/shared": "workspace:*"
+    "@conductor/shared": "workspace:*",
+    "@genkit-ai/firebase": "^1.0.4",
+    "@genkit-ai/googleai": "^1.0.4",
+    "genkit": "^1.0.4"
   },
   "scripts": {
     "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",

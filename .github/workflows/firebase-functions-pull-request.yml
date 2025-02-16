@@ -52,9 +52,14 @@ jobs:
             echo "Error: SUPERFEEDR_API_KEY secret must be added in GitHub"
             exit 1
           fi
+          if [ -z "$GOOGLE_GENAI_API_KEY" ]; then 
+            echo "Error: GOOGLE_GENAI_API_KEY secret must be added in GitHub"
+            exit 1
+          fi
           echo "FIRECRAWL_API_KEY=${FIRECRAWL_API_KEY}" > .env.conductor-stag
           echo "SUPERFEEDR_USER=${SUPERFEEDR_USER}" >> .env.conductor-stag
           echo "SUPERFEEDR_API_KEY=${SUPERFEEDR_API_KEY}" >> .env.conductor-stag
+          echo "GOOGLE_GENAI_API_KEY=${GOOGLE_GENAI_API_KEY}" >> .env.conductor-stag
       - name: Deploy Firebase Functions
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
