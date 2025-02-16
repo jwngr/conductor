@@ -179,6 +179,32 @@ export class ClientEventLogService {
     return () => unsubscribe();
   }
 
+  // private async logEvent<T extends Record<string, unknown>>(args: {
+  //   readonly eventType: EventType;
+  //   readonly data: T;
+  //   readonly errorDetails?: Record<string, unknown>;
+  // }): AsyncResult<EventId | null> {
+  //   const eventId = makeEventId();
+  //   const createResult = await this.eventLogCollectionService.setDoc(eventId, {
+  //     eventId,
+  //     actor: makeUserActor(this.accountId),
+  //     environment: this.environment,
+  //     eventType: args.eventType,
+  //     data: args.data as EventLogItemData,
+  //     // TODO(timestamps): Use server timestamps instead.
+  //     createdTime: new Date(),
+  //     lastUpdatedTime: new Date(),
+  //   });
+
+  //   if (!createResult.success) {
+  //     const betterError = prefixError(createResult.error, 'Failed to log event');
+  //     logger.error(betterError, args.errorDetails);
+  //     return makeErrorResult(betterError);
+  //   }
+
+  //   return makeSuccessResult(eventId);
+  // }
+
   public async logFeedItemActionEvent(args: {
     readonly feedItemId: FeedItemId;
     readonly feedItemActionType: FeedItemActionType;

@@ -24,6 +24,7 @@ import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
 import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
+import {eventLogService} from './eventLog.server';
 import {serverTimestampSupplier} from './firebase.server';
 
 function validateFeedItemUrl(url: string): Result<void> {
@@ -210,6 +211,8 @@ export class ServerImportQueueService {
         prefixError(saveFirecrawlDataResultError, 'Error saving Firecrawl data for feed item')
       );
     }
+
+    eventLogService.logFeedItemImportedEvent({feedItemId});
 
     return makeSuccessResult(undefined);
   }

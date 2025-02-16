@@ -32,6 +32,7 @@ export function makeEventId(): EventId {
 export enum EventType {
   FeedItemAction = 'FEED_ITEM_ACTION',
   UserFeedSubscription = 'USER_FEED_SUBSCRIPTION',
+  FeedItemImported = 'FEED_ITEM_IMPORTED',
 }
 
 export enum Environment {
@@ -55,13 +56,26 @@ export interface UserFeedSubscriptionEventLogItemData extends Record<string, unk
   // TODO: Add `userFeedSubscriptionActionType`.
 }
 
+export interface FeedItemImportedEventLogItemData extends Record<string, unknown> {
+  readonly feedItemId: FeedItemId;
+}
+
+export const FeedItemImportedEventLogItemDataSchema = z.object({
+  feedItemId: FeedItemIdSchema,
+});
+
+export type EventLogItemData =
+  | FeedItemActionEventLogItemData
+  | UserFeedSubscriptionEventLogItemData
+  | FeedItemImportedEventLogItemData;
+
 export const UserFeedSubscriptionEventLogItemDataSchema = z.object({
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
 });
 
 const EventLogItemDataSchema = FeedItemActionEventLogItemDataSchema.or(
   UserFeedSubscriptionEventLogItemDataSchema
-);
+).or(FeedItemImportedEventLogItemDataSchema);
 
 /**
  * Base interface for all event log items. Most things that happen in the app are logged and tracked
@@ -106,4 +120,12 @@ export interface UserFeedSubscriptionEventLogItem extends BaseEventLogItem {
   readonly data: UserFeedSubscriptionEventLogItemData;
 }
 
-export type EventLogItem = FeedItemActionEventLogItem | UserFeedSubscriptionEventLogItem;
+export interface FeedItemImportedEventLogItem extends BaseEventLogItem {
+  readonly eventType: EventType.FeedItemImported;
+  readonly data: FeedItemImportedEventLogItemData;
+}
+
+export type EventLogItem =
+  | FeedItemActionEventLogItem
+  | UserFeedSubscriptionEventLogItem
+  | FeedItemImportedEventLogItem;
