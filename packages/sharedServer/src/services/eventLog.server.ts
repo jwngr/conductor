@@ -7,6 +7,7 @@ import {prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
 import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
 
+import {AccountId} from '@shared/types/accounts.types';
 import {SYSTEM_ACTOR} from '@shared/types/actors.types';
 import {Environment, EventType, makeEventId} from '@shared/types/eventLog.types';
 import type {EventId, EventLogItem, EventLogItemFromStorage} from '@shared/types/eventLog.types';
@@ -64,10 +65,12 @@ export class ServerEventLogService {
 
   public async logFeedItemImportedEvent(args: {
     readonly feedItemId: FeedItemId;
+    readonly accountId: AccountId;
   }): AsyncResult<EventId | null> {
     const eventId = makeEventId();
     const createResult = await this.eventLogCollectionService.setDoc(eventId, {
       eventId,
+      accountId: args.accountId,
       actor: SYSTEM_ACTOR,
       environment: Environment.Server,
       eventType: EventType.FeedItemImported,
@@ -127,6 +130,7 @@ export function toStorageEventLogItem(eventLogItem: EventLogItem): EventLogItemF
   return {
     eventId: eventLogItem.eventId,
     eventType: eventLogItem.eventType,
+    accountId: eventLogItem.accountId,
     actor: eventLogItem.actor,
     environment: eventLogItem.environment,
     data: eventLogItem.data,
