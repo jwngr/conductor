@@ -1,6 +1,11 @@
 import {FieldValue} from 'firebase-admin/firestore';
 
-import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {
+  asyncTry,
+  asyncTryAll,
+  prefixErrorResult,
+  prefixResultIfError,
+} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
 
@@ -19,6 +24,8 @@ import {SystemTagId} from '@shared/types/tags.types';
 import {storage} from '@sharedServer/services/firebase.server';
 import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
+import {ServerImportQueueService} from './importQueue.server';
+
 interface UpdateImportedFeedItemInFirestoreArgs {
   readonly links: string[] | null;
   readonly title: string | null;
@@ -34,6 +41,7 @@ type FeedItemCollectionService = ServerFirestoreCollectionService<
 export class ServerFeedItemsService {
   private readonly storageCollectionPath: string;
   private readonly feedItemsCollectionService: FeedItemCollectionService;
+  private readonly importQueueService: ServerImportQueueService;
   // TODO: `storageBucket` should probably be passed in via the constructor, but there is no type
   // for it from the Firebase Admin SDK. We could use a type from @google-cloud/storage instead, but
   // we currently don't list that as a dependency.
@@ -42,9 +50,11 @@ export class ServerFeedItemsService {
   constructor(args: {
     readonly storageCollectionPath: string;
     readonly feedItemsCollectionService: FeedItemCollectionService;
+    readonly importQueueService: ServerImportQueueService;
   }) {
     this.storageCollectionPath = args.storageCollectionPath;
     this.feedItemsCollectionService = args.feedItemsCollectionService;
+    this.importQueueService = args.importQueueService;
   }
 
   public async createFeedItem(args: {
@@ -60,20 +70,33 @@ export class ServerFeedItemsService {
     }
 
     const feedItemResult = SharedFeedItemHelpers.makeFeedItem({
-      // TODO: Make this dynamic based on the actual content.
+      // TODO: Make this dynamic based on the actual content. Maybe it should be null initially
+      // until we've done the import? Or should we compute this at save time?
       type: FeedItemType.Website,
       url: trimmedUrl,
-      accountId,
       feedItemSource,
+      accountId,
     });
     if (!feedItemResult.success) return feedItemResult;
     const feedItem = feedItemResult.value;
 
-    const addFeedItemResult = await this.feedItemsCollectionService.setDoc(
-      feedItem.feedItemId,
-      feedItem
-    );
-    if (!addFeedItemResult.success) return addFeedItemResult;
+    // TODO: Do these in a transaction.
+    const addFeedItemResult = await asyncTryAll([
+      this.feedItemsCollectionService.setDoc(feedItem.feedItemId, feedItem),
+      this.importQueueService.create({
+        feedItemId: feedItem.feedItemId,
+        accountId,
+        url: trimmedUrl,
+      }),
+    ]);
+
+    const addFeedItemResultError = addFeedItemResult.success
+      ? addFeedItemResult.value.results.find((result) => !result.success)?.error
+      : addFeedItemResult.error;
+    if (addFeedItemResultError) {
+      return makeErrorResult(addFeedItemResultError);
+    }
+
     return makeSuccessResult(feedItem.feedItemId);
   }
 

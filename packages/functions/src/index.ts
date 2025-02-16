@@ -119,6 +119,7 @@ onInit(() => {
   feedItemsService = new ServerFeedItemsService({
     feedItemsCollectionService,
     storageCollectionPath: FEED_ITEMS_STORAGE_COLLECTION,
+    importQueueService,
   });
 
   const importQueueItemFirestoreConverter = makeFirestoreDataConverter(
