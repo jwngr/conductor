@@ -212,7 +212,7 @@ export class ServerImportQueueService {
       );
     }
 
-    eventLogService.logFeedItemImportedEvent({feedItemId});
+    void eventLogService.logFeedItemImportedEvent({feedItemId});
 
     return makeSuccessResult(undefined);
   }
