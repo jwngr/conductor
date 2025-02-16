@@ -40,7 +40,7 @@ const useMarkFeedItemRead = (args: {
 
   // Variables exist so we don't need to include the entire feed item in the deps array.
   const isFeedItemNull = feedItem === null;
-  const isFeedItemImported = feedItem ? Boolean(feedItem?.lastImportedTime) : false;
+  const isFeedItemImported = feedItem ? !SharedFeedItemHelpers.isImporting(feedItem) : false;
 
   useEffect(() => {
     async function go() {
