@@ -119,7 +119,6 @@ onInit(() => {
   feedItemsService = new ServerFeedItemsService({
     feedItemsCollectionService,
     storageCollectionPath: FEED_ITEMS_STORAGE_COLLECTION,
-    importQueueService,
   });
 
   const importQueueItemFirestoreConverter = makeFirestoreDataConverter(
@@ -448,5 +447,58 @@ export const handleSuperfeedrWebhook = onRequest(
     }
 
     response.status(200).json({success: true, value: undefined});
+  }
+);
+
+/**
+ * Creates an import queue item when a feed item is created.
+ *
+ * This is decoupled from feed item creation to simplify logic for callers. They just need to create
+ * a new feed item and this function will handle the rest.
+ */
+export const createImportQueueItemOnFeedItemCreated = onDocumentCreated(
+  `${FEED_ITEMS_DB_COLLECTION}/{feedItemId}`,
+  async (event) => {
+    const feedItemId = parseFeedItemId(event.params.feedItemId);
+    if (!feedItemId.success) {
+      const betterError = prefixError(feedItemId.error, 'Failed to parse feed item ID');
+      logger.error(betterError, {feedItemId: event.params.feedItemId});
+      return;
+    }
+
+    const feedItemData = event.data?.data();
+    if (!feedItemData) {
+      logger.error(new Error('No feed item data found'), {feedItemId: feedItemId.value});
+      return;
+    }
+
+    const feedItemResult = parseFeedItem(feedItemData);
+    if (!feedItemResult.success) {
+      const betterError = prefixError(feedItemResult.error, 'Failed to parse feed item');
+      logger.error(betterError, {feedItemId: feedItemId.value, feedItemData});
+      return;
+    }
+
+    const feedItem = feedItemResult.value;
+
+    const createImportQueueItemResult = await importQueueService.create({
+      feedItemId: feedItem.feedItemId,
+      accountId: feedItem.accountId,
+      url: feedItem.url,
+    });
+
+    if (!createImportQueueItemResult.success) {
+      const betterError = prefixError(
+        createImportQueueItemResult.error,
+        'Failed to create import queue item'
+      );
+      logger.error(betterError, {feedItemId: feedItem.feedItemId});
+      return;
+    }
+
+    logger.warn('Successfully created import queue item', {
+      feedItemId: feedItem.feedItemId,
+      importQueueItemId: createImportQueueItemResult.value.importQueueItemId,
+    });
   }
 );

@@ -1,11 +1,17 @@
 import type {WithFieldValue} from 'firebase-admin/firestore';
 
+import {logger} from '@shared/services/logger.shared';
+
 import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants.shared';
-import {prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
 import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
 
+import {SYSTEM_ACTOR} from '@shared/types/actors.types';
+import {Environment, EventType, makeEventId} from '@shared/types/eventLog.types';
 import type {EventId, EventLogItem, EventLogItemFromStorage} from '@shared/types/eventLog.types';
+import {FeedItemId} from '@shared/types/feedItems.types';
+import {makeSuccessResult} from '@shared/types/result.types';
 import type {AsyncResult} from '@shared/types/result.types';
 
 import {
@@ -30,32 +36,58 @@ export class ServerEventLogService {
     return this.eventLogCollectionService.fetchById(eventId);
   }
 
-  // public async logEvent(
-  //   eventLogItem: Omit<EventLogItem, 'createdTime' | 'lastUpdatedTime'>
-  // ): AsyncResult<EventId | null> {
+  // private async logEvent<T extends Record<string, unknown>>(args: {
+  //   readonly eventType: EventType;
+  //   readonly data: T;
+  //   readonly errorDetails?: Record<string, unknown>;
+  // }): AsyncResult<EventId | null> {
   //   const eventId = makeEventId();
   //   const createResult = await this.eventLogCollectionService.setDoc(eventId, {
   //     eventId,
-  //     actor: adminActor,
-  //     eventType: EventType.FeedItemAction,
-  //     data: {
-  //       feedItemId: args.feedItemId,
-  //       feedItemActionType: args.feedItemActionType,
-  //     },
-  //     createdTime: FieldValue.serverTimestamp(),
-  //     lastUpdatedTime: FieldValue.serverTimestamp(),
+  //     actor: makeUserActor(this.accountId),
+  //     environment: this.environment,
+  //     eventType: args.eventType,
+  //     data: args.data as EventLogItemData,
+  //     // TODO(timestamps): Use server timestamps instead.
+  //     createdTime: new Date(),
+  //     lastUpdatedTime: new Date(),
   //   });
 
   //   if (!createResult.success) {
-  //     logger.error(prefixError(createResult.error, 'Failed to log feed item action event'), {
-  //       feedItemId: args.feedItemId,
-  //       feedItemActionType: args.feedItemActionType,
-  //     });
-  //     return createResult;
+  //     const betterError = prefixError(createResult.error, 'Failed to log event');
+  //     logger.error(betterError, args.errorDetails);
+  //     return makeErrorResult(betterError);
   //   }
 
   //   return makeSuccessResult(eventId);
   // }
+
+  public async logFeedItemImportedEvent(args: {
+    readonly feedItemId: FeedItemId;
+  }): AsyncResult<EventId | null> {
+    const eventId = makeEventId();
+    const createResult = await this.eventLogCollectionService.setDoc(eventId, {
+      eventId,
+      actor: SYSTEM_ACTOR,
+      environment: Environment.Server,
+      eventType: EventType.FeedItemImported,
+      data: {
+        feedItemId: args.feedItemId,
+      },
+      // TODO(timestamps): Use server timestamps instead.
+      createdTime: new Date(),
+      lastUpdatedTime: new Date(),
+    });
+
+    if (!createResult.success) {
+      logger.error(prefixError(createResult.error, 'Failed to log feed item imported event'), {
+        feedItemId: args.feedItemId,
+      });
+      return createResult;
+    }
+
+    return makeSuccessResult(eventId);
+  }
 
   public async updateEventLogItem(
     eventId: EventId,
@@ -94,8 +126,9 @@ export const eventLogService = new ServerEventLogService({
 export function toStorageEventLogItem(eventLogItem: EventLogItem): EventLogItemFromStorage {
   return {
     eventId: eventLogItem.eventId,
-    accountId: eventLogItem.accountId,
     eventType: eventLogItem.eventType,
+    actor: eventLogItem.actor,
+    environment: eventLogItem.environment,
     data: eventLogItem.data,
     createdTime: eventLogItem.createdTime,
     lastUpdatedTime: eventLogItem.lastUpdatedTime,
