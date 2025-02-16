@@ -1,10 +1,14 @@
+import {gemini20Flash, googleAI} from '@genkit-ai/googleai';
 import FirecrawlApp from '@mendable/firecrawl-js';
 import {setGlobalOptions} from 'firebase-functions';
+import {isSignedIn, onCallGenkit} from 'firebase-functions/https';
 import {defineString, projectID} from 'firebase-functions/params';
 import {auth} from 'firebase-functions/v1';
 import {onInit} from 'firebase-functions/v2/core';
 import {onDocumentCreated} from 'firebase-functions/v2/firestore';
 import {HttpsError, onCall, onRequest} from 'firebase-functions/v2/https';
+import {genkit} from 'genkit';
+import {z} from 'zod';
 
 import {logger} from '@shared/services/logger.shared';
 
@@ -501,4 +505,30 @@ export const createImportQueueItemOnFeedItemCreated = onDocumentCreated(
       importQueueItemId: createImportQueueItemResult.value.importQueueItemId,
     });
   }
+);
+
+const ai = genkit({
+  plugins: [googleAI()],
+  model: gemini20Flash,
+});
+
+const generatePoemFlow = ai.defineFlow(
+  {
+    name: 'generatePoem',
+    inputSchema: z.string(),
+    outputSchema: z.string(),
+  },
+  async (subject: string) => {
+    const {text} = await ai.generate(`Compose a poem about ${subject}.`);
+    return text;
+  }
+);
+
+export const generatePoem = onCallGenkit(
+  {
+    authPolicy: isSignedIn(),
+    // TODO: Enable App Check.
+    // enforceAppCheck: true,
+  },
+  generatePoemFlow
 );
