@@ -37,6 +37,7 @@ jobs:
           FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
           SUPERFEEDR_USER: ${{ secrets.SUPERFEEDR_USER }}
           SUPERFEEDR_API_KEY: ${{ secrets.SUPERFEEDR_API_KEY }}
+          GOOGLE_GENAI_API_KEY: ${{ secrets.GOOGLE_GENAI_API_KEY }}
         run: |
           if [ -z "$FIRECRAWL_API_KEY" ]; then
             echo "Error: FIRECRAWL_API_KEY secret must be added in GitHub"
