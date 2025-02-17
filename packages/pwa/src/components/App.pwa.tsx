@@ -1,9 +1,11 @@
-import React, {StrictMode} from 'react';
+import type React from 'react';
+import {StrictMode} from 'react';
 import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import {ThemeProvider} from 'styled-components';
 
 import {theme} from '@shared/lib/theme.shared';
 import {Urls} from '@shared/lib/urls.shared';
+import {Views} from '@shared/lib/views.shared';
 
 import {useMaybeLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
@@ -31,7 +33,8 @@ export const CatchAllRoute: React.FC = () => {
 };
 
 const AllRoutes: React.FC = () => {
-  const orderedNavItems = Urls.getOrderedNavItems();
+  const viewTypes = Views.getAllViewTypes();
+
   return (
     <Routes>
       {/* Publicly visible routes. */}
@@ -40,17 +43,20 @@ const AllRoutes: React.FC = () => {
       <Route path={Urls.forStyleguide()} element={<StyleguideScreen />} />
 
       {/* Authenticated routes. */}
-      {orderedNavItems.map((item) => (
-        <Route
-          key={item.viewType}
-          path={Urls.forView(item.viewType)}
-          element={
-            <RequireLoggedInAccount>
-              <ViewScreen viewType={item.viewType} />
-            </RequireLoggedInAccount>
-          }
-        />
-      ))}
+      {viewTypes.map((viewType, i) => {
+        const viewUrl = Urls.forView(viewType);
+        return (
+          <Route
+            key={`${i}-${viewUrl}`}
+            path={viewUrl}
+            element={
+              <RequireLoggedInAccount>
+                <ViewScreen viewType={viewType} />
+              </RequireLoggedInAccount>
+            }
+          />
+        );
+      })}
       <Route
         path={Urls.forFeedItemUnsafe(':feedItemId')}
         element={
@@ -78,11 +84,7 @@ const AllRoutes: React.FC = () => {
  * Subscriptions that are always active whenever the app is loaded.
  */
 const PermanentGlobalSubscriptions: React.FC = () => {
-  return (
-    <>
-      <AuthSubscriptions />
-    </>
-  );
+  return <AuthSubscriptions />;
 };
 
 /**

@@ -1,14 +1,12 @@
-import React from 'react';
+import type React from 'react';
 import styled from 'styled-components';
 
 import type {CustomIcon} from '@shared/lib/customIcons.shared';
-import {CustomIconType, makeSystemIcon} from '@shared/lib/customIcons.shared';
-import {Urls} from '@shared/lib/urls.shared';
+import {CustomIconType} from '@shared/lib/customIcons.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
-import {IconName} from '@shared/types/icons.types';
 import {ThemeColor} from '@shared/types/theme.types';
-import type {NavItem} from '@shared/types/urls.types';
+import {NavItemId, NavItems, type NavItem} from '@shared/types/urls.types';
 import type {Task} from '@shared/types/utils.types';
 
 import {useFocusStore} from '@sharedClient/stores/FocusStore';
@@ -79,31 +77,28 @@ const LeftSidebarSection: React.FC<{
   readonly title: string;
   readonly navItems: readonly NavItem[];
 }> = ({title, navItems}) => {
-  const {focusedViewType} = useFocusStore();
+  const {focusedNavItemId} = useFocusStore();
   return (
     <FlexColumn>
       <Text as="h5" light>
         {title}
       </Text>
       <FlexColumn style={{margin: '0 -12px'}}>
-        {navItems.map((navItem) => {
-          const url = Urls.forView(navItem.viewType);
-          return (
-            <LeftSidebarItemComponent
-              key={navItem.viewType}
-              url={url}
-              icon={navItem.icon}
-              title={navItem.title}
-              isActive={focusedViewType === navItem.viewType}
-            />
-          );
-        })}
+        {navItems.map((navItem, i) => (
+          <LeftSidebarItemComponent
+            key={`${i}-${navItem.url}`}
+            url={navItem.url}
+            icon={navItem.icon}
+            title={navItem.title}
+            isActive={focusedNavItemId === navItem.id}
+          />
+        ))}
       </FlexColumn>
     </FlexColumn>
   );
 };
 
-const LeftSidebarWrapper = styled(FlexColumn)`
+const LeftSidebarWrapper = styled(FlexColumn).attrs({gap: 16})`
   width: 200px;
   padding: 20px;
   background-color: ${({theme}) => theme.colors[ThemeColor.Neutral100]};
@@ -111,22 +106,22 @@ const LeftSidebarWrapper = styled(FlexColumn)`
   overflow: auto;
 `;
 
-export const LeftSidebar: React.FC = () => {
-  const {setFocusedViewType} = useFocusStore();
+const ORDERED_VIEW_NAV_ITEMS: NavItem[] = [
+  NavItems.forId(NavItemId.Untriaged),
+  NavItems.forId(NavItemId.Saved),
+  NavItems.forId(NavItemId.Done),
+  NavItems.forId(NavItemId.Unread),
+  NavItems.forId(NavItemId.Starred),
+  NavItems.forId(NavItemId.All),
+  NavItems.forId(NavItemId.Trashed),
+  NavItems.forId(NavItemId.Today),
+];
 
+export const LeftSidebar: React.FC = () => {
   return (
     <LeftSidebarWrapper>
-      <LeftSidebarSection title="Views" navItems={Urls.getOrderedNavItems()} />
-      <div>
-        <LeftSidebarItemComponent
-          url={Urls.forFeedSubscriptions()}
-          // TODO: Choose a better icon.
-          icon={makeSystemIcon(IconName.Save)}
-          title="Feeds"
-          isActive={false}
-          onSelect={() => setFocusedViewType(null)}
-        />
-      </div>
+      <LeftSidebarSection title="Views" navItems={ORDERED_VIEW_NAV_ITEMS} />
+      <LeftSidebarSection title="Feeds" navItems={[NavItems.forId(NavItemId.Feeds)]} />
     </LeftSidebarWrapper>
   );
 };

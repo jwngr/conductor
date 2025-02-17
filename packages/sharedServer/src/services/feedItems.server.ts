@@ -1,12 +1,20 @@
 import {FieldValue} from 'firebase-admin/firestore';
 
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
+import {isValidUrl} from '@shared/lib/urls.shared';
+import {omitUndefined} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import {FeedItemType} from '@shared/types/feedItems.types';
-import type {FeedItem, FeedItemFromStorage, FeedItemId} from '@shared/types/feedItems.types';
+import type {
+  FeedItem,
+  FeedItemFromStorage,
+  FeedItemId,
+  FeedItemSource,
+} from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/result.types';
-import {makeErrorResult} from '@shared/types/result.types';
+import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import {SystemTagId} from '@shared/types/tags.types';
 
 import {storage} from '@sharedServer/services/firebase.server';
@@ -16,6 +24,7 @@ interface UpdateImportedFeedItemInFirestoreArgs {
   readonly links: string[] | null;
   readonly title: string | null;
   readonly description: string | null;
+  readonly summary: string | null;
 }
 
 type FeedItemCollectionService = ServerFirestoreCollectionService<
@@ -27,10 +36,6 @@ type FeedItemCollectionService = ServerFirestoreCollectionService<
 export class ServerFeedItemsService {
   private readonly storageCollectionPath: string;
   private readonly feedItemsCollectionService: FeedItemCollectionService;
-  // TODO: `storageBucket` should probably be passed in via the constructor, but there is no type
-  // for it from the Firebase Admin SDK. We could use a type from @google-cloud/storage instead, but
-  // we currently don't list that as a dependency.
-  // private readonly storageBucket: Bucket;
 
   constructor(args: {
     readonly storageCollectionPath: string;
@@ -40,28 +45,67 @@ export class ServerFeedItemsService {
     this.feedItemsCollectionService = args.feedItemsCollectionService;
   }
 
+  public async createFeedItem(args: {
+    readonly url: string;
+    readonly feedItemSource: FeedItemSource;
+    readonly accountId: AccountId;
+  }): AsyncResult<FeedItemId | null> {
+    const {url, accountId, feedItemSource} = args;
+
+    const trimmedUrl = url.trim();
+    if (!isValidUrl(trimmedUrl)) {
+      return makeErrorResult(new Error(`Invalid URL provided for feed item: "${url}"`));
+    }
+
+    const feedItemResult = SharedFeedItemHelpers.makeFeedItem({
+      // TODO: Make this dynamic based on the actual content. Maybe it should be null initially
+      // until we've done the import? Or should we compute this at save time?
+      type: FeedItemType.Website,
+      url: trimmedUrl,
+      feedItemSource,
+      accountId,
+    });
+    if (!feedItemResult.success) return feedItemResult;
+    const feedItem = feedItemResult.value;
+
+    const addFeedItemResult = await this.feedItemsCollectionService.setDoc(
+      feedItem.feedItemId,
+      feedItem
+    );
+
+    if (!addFeedItemResult.success) {
+      return prefixErrorResult(addFeedItemResult, 'Error creating feed item in Firestore');
+    }
+
+    return makeSuccessResult(feedItem.feedItemId);
+  }
+
   /**
    * Updates a feed item after it has been imported.
    */
   public async updateImportedFeedItemInFirestore(
     feedItemId: FeedItemId,
-    {links, title, description}: UpdateImportedFeedItemInFirestoreArgs
+    {links, title, description, summary}: UpdateImportedFeedItemInFirestoreArgs
   ): AsyncResult<void> {
     // TODO: Consider switching to array unions so I can use FieldValue.arrayRemove.
     const untypedUpdates = {
       [`tagIds.${SystemTagId.Importing}`]: FieldValue.delete(),
     };
 
-    const updateResult = await this.feedItemsCollectionService.updateDoc(feedItemId, {
-      // TODO: Determine the type based on the URL or fetched content.
-      type: FeedItemType.Website,
-      // TODO: Reconsider how to handle empty titles, descriptions, and links.
-      title: title ?? '',
-      description: description ?? '',
-      outgoingLinks: links ?? [],
-      lastImportedTime: FieldValue.serverTimestamp(),
-      ...untypedUpdates,
-    });
+    const updateResult = await this.feedItemsCollectionService.updateDoc(
+      feedItemId,
+      omitUndefined({
+        // TODO: Determine the type based on the URL or fetched content.
+        type: FeedItemType.Website,
+        title: title ?? undefined,
+        description: description ?? undefined,
+        summary: summary ?? undefined,
+        outgoingLinks: links ?? undefined,
+        // TODO(timestamps): Use server timestamps instead.
+        lastImportedTime: new Date(),
+        ...untypedUpdates,
+      })
+    );
     return prefixResultIfError(updateResult, 'Error updating imported feed item in Firestore');
   }
 

@@ -1,10 +1,5 @@
-import {
-  FeedItemActionType,
-  makeFeedItemId,
-  TriageStatus,
-  type FeedItem,
-  type FeedItemAction,
-} from '@shared/types/feedItems.types';
+import type {FeedItem, FeedItemAction} from '@shared/types/feedItems.types';
+import {FeedItemActionType, makeFeedItemId, TriageStatus} from '@shared/types/feedItems.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
@@ -39,24 +34,25 @@ export class SharedFeedItemHelpers {
   }
 
   public static makeFeedItem(
-    args: Pick<FeedItem, 'type' | 'accountId' | 'url' | 'source'>
+    args: Pick<FeedItem, 'type' | 'accountId' | 'url' | 'feedItemSource'>
   ): Result<FeedItem> {
-    return makeSuccessResult({
+    return makeSuccessResult<FeedItem>({
       feedItemId: makeFeedItemId(),
       accountId: args.accountId,
       url: args.url,
       type: args.type,
-      source: args.source,
+      feedItemSource: args.feedItemSource,
       // TODO: Update these and figure out a better solution. Maybe a better discriminated union.
       title: 'Test title from makeFeedItem',
       description: 'Test description from makeFeedItem',
+      summary: 'Test summary from makeFeedItem',
       outgoingLinks: [],
       triageStatus: TriageStatus.Untriaged,
       tagIds: {
         [SystemTagId.Unread]: true,
         [SystemTagId.Importing]: true,
       },
-      // TODO: Should use server timestamps instead.
+      // TODO(timestamps): Use server timestamps instead.
       createdTime: new Date(),
       lastUpdatedTime: new Date(),
     });
@@ -99,6 +95,22 @@ export class SharedFeedItemHelpers {
       text: isAlreadyStarred ? 'Unstar' : 'Star',
       icon: IconName.Star,
       shortcutId: KeyboardShortcutId.ToggleStarred,
+    };
+  }
+
+  public static getDebugSaveExampleFeedItemActionInfo(): FeedItemAction {
+    return {
+      type: FeedItemActionType.DebugSaveExample,
+      text: 'Save example',
+      icon: IconName.DebugSaveExample,
+    };
+  }
+
+  public static getCancelFeedItemActionInfo(): FeedItemAction {
+    return {
+      type: FeedItemActionType.Cancel,
+      text: 'Cancel',
+      icon: IconName.Cancel,
     };
   }
 }

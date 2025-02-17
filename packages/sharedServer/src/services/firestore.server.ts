@@ -7,7 +7,6 @@ import type {
   QueryDocumentSnapshot,
   WithFieldValue,
 } from 'firebase-admin/firestore';
-import {FieldValue} from 'firebase-admin/firestore';
 
 import {
   asyncTry,
@@ -15,6 +14,7 @@ import {
   prefixErrorResult,
   prefixResultIfError,
 } from '@shared/lib/errorUtils.shared';
+import {omitUndefined} from '@shared/lib/utils.shared';
 
 import type {AsyncResult, Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
@@ -112,7 +112,7 @@ export class ServerFirestoreCollectionService<
       const querySnapshot = await queryToFetch.get();
       return querySnapshot.docs.map((doc) => doc.data());
     });
-    return prefixResultIfError(queryDataResult, 'Error fetching Firestore query data');
+    return prefixResultIfError(queryDataResult, 'Error fetching Firestore query docs');
   }
 
   /**
@@ -127,7 +127,7 @@ export class ServerFirestoreCollectionService<
       if (queryDocsResult.value.length === 0) return null;
       return queryDocsResult.value[0];
     });
-    return prefixResultIfError(queryDataResult, 'Error fetching Firestore query data');
+    return prefixResultIfError(queryDataResult, 'Error fetching Firestore first query doc');
   }
 
   /**
@@ -151,6 +151,7 @@ export class ServerFirestoreCollectionService<
    * Sets a Firestore document. The entire document is replaced.
    */
   public async setDoc(docId: ItemId, data: WithFieldValue<ItemData>): AsyncResult<void> {
+    // TODO: Add `omitUndefined` here.
     const setResult = await asyncTry(async () => this.getDocRef(docId).set(data));
     if (!setResult.success) {
       return prefixErrorResult(setResult, 'Error setting Firestore document');
@@ -168,11 +169,13 @@ export class ServerFirestoreCollectionService<
   ): AsyncResult<void> {
     const docRef = this.getDocRef(docId);
     const updateResult = await asyncTry(async () =>
-      docRef.update({
-        ...updates,
-        // Always update the `lastUpdatedTime` field.
-        lastUpdatedTime: FieldValue.serverTimestamp(),
-      })
+      docRef.update(
+        omitUndefined({
+          ...updates,
+          // TODO(timestamps): Use server timestamps instead.
+          lastUpdatedTime: new Date(),
+        })
+      )
     );
     if (!updateResult.success) {
       return prefixErrorResult(updateResult, 'Error updating Firestore document');

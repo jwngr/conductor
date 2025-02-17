@@ -1,7 +1,10 @@
+import {logger} from '@shared/services/logger.shared';
+
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
 import {AccountId} from '@shared/types/accounts.types';
-import {AsyncResult} from '@shared/types/result.types';
+import {FeedSourceId} from '@shared/types/feedSources.types';
+import {AsyncResult, makeSuccessResult} from '@shared/types/result.types';
 import {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
 import {ServerFeedSourcesService} from '@sharedServer/services/feedSources.server';
@@ -37,7 +40,10 @@ export class ServerRssFeedService {
       title: 'Test title from subscribeAccountToUrl',
     });
     if (!fetchFeedSourceResult.success) {
-      return prefixErrorResult(fetchFeedSourceResult, 'Error fetching existing feed source by URL');
+      return prefixErrorResult(
+        fetchFeedSourceResult,
+        'Error fetching or creating feed source by URL'
+      );
     }
 
     const feedSource = fetchFeedSourceResult.value;
@@ -51,5 +57,39 @@ export class ServerRssFeedService {
     // Create a user feed subscription in the database.
     const saveToDbResult = await this.userFeedSubscriptionsService.create({feedSource, accountId});
     return prefixResultIfError(saveToDbResult, 'Error creating user feed subscription');
+  }
+
+  /**
+   * Unsubscribes from a feed URL in Superfeedr.
+   */
+  async unsubscribeAccountFromUrl(args: {
+    readonly feedSourceId: FeedSourceId;
+    readonly url: string;
+    readonly accountId: AccountId;
+  }): AsyncResult<void> {
+    const {url, accountId, feedSourceId} = args;
+
+    const otherSubscriptionsResult =
+      await this.userFeedSubscriptionsService.fetchForFeedSource(feedSourceId);
+
+    if (!otherSubscriptionsResult.success) {
+      return prefixErrorResult(
+        otherSubscriptionsResult,
+        '[UNSUBSCRIBE] Error fetching other subscriptions while unsubscribing account from Superfeedr feed'
+      );
+    }
+
+    // If other active subscriptions exist, don't actually unsubscribe from Superfeedr.
+    const activeSubscriptions = otherSubscriptionsResult.value.filter((sub) => sub.isActive);
+    if (activeSubscriptions.length > 0) {
+      return makeSuccessResult(undefined);
+    }
+
+    logger.log(
+      '[UNSUBSCRIBE] No active subscriptions found, unsubscribing account from Superfeedr feed',
+      {feedSourceId, accountId, url}
+    );
+
+    return await this.superfeedrService.unsubscribeFromFeed(url);
   }
 }

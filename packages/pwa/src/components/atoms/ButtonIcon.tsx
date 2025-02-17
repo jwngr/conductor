@@ -1,21 +1,15 @@
-import React, {useCallback} from 'react';
+import type React from 'react';
+import {useCallback} from 'react';
 import styled from 'styled-components';
 
 import {getIconSizeFromButtonIconSize} from '@shared/lib/icons.shared';
-import {assertNever} from '@shared/lib/utils.shared';
 
-import type {ButtonIconSize} from '@shared/types/icons.types';
-import {IconName} from '@shared/types/icons.types';
+import type {ButtonIconSize, IconName} from '@shared/types/icons.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {ThemeColor} from '@shared/types/theme.types';
 import type {StyleAttributes} from '@shared/types/utils.types';
 
-import InboxIcon from '@shared/icons/inbox.svg?react';
-import MarkDoneIcon from '@shared/icons/markDone.svg?react';
-import MarkUnreadIcon from '@shared/icons/markUnread.svg?react';
-import SaveIcon from '@shared/icons/save.svg?react';
-import StarIcon from '@shared/icons/star.svg?react';
-
+import {Icon} from '@src/components/atoms/Icon';
 import type {TooltipContent} from '@src/components/atoms/Tooltip';
 import {Tooltip} from '@src/components/atoms/Tooltip';
 
@@ -42,7 +36,6 @@ const ButtonIconWrapper = styled.div<ButtonIconWrapperProps>`
 
   svg * {
     stroke: ${({theme, $color}) => theme.colors[$color]};
-    fill: ${({theme, $color}) => theme.colors[$color]};
   }
 `;
 
@@ -64,27 +57,6 @@ export const ButtonIcon: React.FC<ButtonIconProps> = ({
   shortcutId,
   ...styleProps
 }) => {
-  let IconComponent: React.ElementType;
-  switch (name) {
-    case IconName.MarkDone:
-      IconComponent = MarkDoneIcon;
-      break;
-    case IconName.Save:
-      IconComponent = SaveIcon;
-      break;
-    case IconName.Inbox:
-      IconComponent = InboxIcon;
-      break;
-    case IconName.MarkUnread:
-      IconComponent = MarkUnreadIcon;
-      break;
-    case IconName.Star:
-      IconComponent = StarIcon;
-      break;
-    default:
-      assertNever(name);
-  }
-
   const iconSize = getIconSizeFromButtonIconSize(buttonIconSize);
 
   const handleShortcut = useCallback(() => {
@@ -94,7 +66,7 @@ export const ButtonIcon: React.FC<ButtonIconProps> = ({
 
   const buttonIcon = (
     <ButtonIconWrapper $color={color} $size={buttonIconSize} onClick={onClick}>
-      <IconComponent width={iconSize} height={iconSize} {...styleProps} />
+      <Icon name={name} size={iconSize} color={color} {...styleProps} />
     </ButtonIconWrapper>
   );
 

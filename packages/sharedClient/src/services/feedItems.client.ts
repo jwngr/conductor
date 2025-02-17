@@ -1,20 +1,14 @@
 import {where} from 'firebase/firestore';
 import type {StorageReference} from 'firebase/storage';
-import {getDownloadURL, ref as storageRef} from 'firebase/storage';
+import {getBlob, ref as storageRef} from 'firebase/storage';
 import {useEffect, useMemo, useState} from 'react';
 
 import {
   FEED_ITEMS_DB_COLLECTION,
   FEED_ITEMS_STORAGE_COLLECTION,
 } from '@shared/lib/constants.shared';
-import {
-  asyncTry,
-  asyncTryAll,
-  prefixErrorResult,
-  prefixResultIfError,
-} from '@shared/lib/errorUtils.shared';
+import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
-import {requestGet} from '@shared/lib/requests.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
 import {Views} from '@shared/lib/views.shared';
 
@@ -27,7 +21,6 @@ import {
   type FeedItemId,
   type FeedItemSource,
 } from '@shared/types/feedItems.types';
-import {makeImportQueueItem} from '@shared/types/importQueue.types';
 import {fromFilterOperator, type ViewType} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
@@ -38,8 +31,6 @@ import {
   ClientFirestoreCollectionService,
   makeFirestoreDataConverter,
 } from '@sharedClient/services/firestore.client';
-import {useImportQueueService} from '@sharedClient/services/importQueue.client';
-import type {ClientImportQueueService} from '@sharedClient/services/importQueue.client';
 
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
@@ -49,7 +40,6 @@ const feedItemFirestoreConverter = makeFirestoreDataConverter(toStorageFeedItem,
 
 export function useFeedItemsService(): ClientFeedItemsService {
   const loggedInAccount = useLoggedInAccount();
-  const importQueueService = useImportQueueService();
 
   const feedItemsService = useMemo(() => {
     const feedItemsCollectionService = new ClientFirestoreCollectionService({
@@ -60,11 +50,10 @@ export function useFeedItemsService(): ClientFeedItemsService {
 
     return new ClientFeedItemsService({
       feedItemsCollectionService,
-      importQueueService,
       feedItemsStorageRef,
       accountId: loggedInAccount.accountId,
     });
-  }, [loggedInAccount.accountId, importQueueService]);
+  }, [loggedInAccount.accountId]);
 
   return feedItemsService;
 }
@@ -163,18 +152,15 @@ type FeedItemsCollectionService = ClientFirestoreCollectionService<FeedItemId, F
 
 export class ClientFeedItemsService {
   private readonly feedItemsCollectionService: FeedItemsCollectionService;
-  private readonly importQueueService: ClientImportQueueService;
   private readonly feedItemsStorageRef: StorageReference;
   private readonly accountId: AccountId;
 
   constructor(args: {
     readonly feedItemsCollectionService: FeedItemsCollectionService;
-    readonly importQueueService: ClientImportQueueService;
     readonly feedItemsStorageRef: StorageReference;
     readonly accountId: AccountId;
   }) {
     this.feedItemsCollectionService = args.feedItemsCollectionService;
-    this.importQueueService = args.importQueueService;
     this.feedItemsStorageRef = args.feedItemsStorageRef;
     this.accountId = args.accountId;
   }
@@ -210,6 +196,8 @@ export class ClientFeedItemsService {
       ...viewConfig.filters.map((filter) =>
         where(filter.field, fromFilterOperator(filter.op), filter.value)
       ),
+      // TODO: Order by created time to ensure a consistent order.
+      // orderBy(viewConfig.sort.field, viewConfig.sort.direction),
     ];
     const itemsQuery = this.feedItemsCollectionService.query(whereClauses);
 
@@ -223,9 +211,9 @@ export class ClientFeedItemsService {
 
   public async createFeedItem(args: {
     readonly url: string;
-    readonly source: FeedItemSource;
+    readonly feedItemSource: FeedItemSource;
   }): AsyncResult<FeedItemId | null> {
-    const {url, source} = args;
+    const {url, feedItemSource} = args;
 
     const trimmedUrl = url.trim();
     if (!isValidUrl(trimmedUrl)) {
@@ -237,35 +225,18 @@ export class ClientFeedItemsService {
       url: trimmedUrl,
       // TODO: Make this dynamic based on the actual content. Maybe it should be null initially
       // until we've done the import? Or should we compute this at save time?
-      source,
+      feedItemSource,
       accountId: this.accountId,
     });
     if (!feedItemResult.success) return feedItemResult;
     const feedItem = feedItemResult.value;
 
-    // Add the feed item to the import queue.
-    const makeImportQueueItemResult = makeImportQueueItem({
-      feedItemId: feedItem.feedItemId,
-      accountId: this.accountId,
-      url: trimmedUrl,
-    });
-    if (!makeImportQueueItemResult.success) return makeImportQueueItemResult;
-
-    // TODO: Do these in a transaction.
-    const addFeedItemResult = await asyncTryAll([
-      this.feedItemsCollectionService.setDoc(feedItem.feedItemId, feedItem),
-      this.importQueueService.create({
-        feedItemId: feedItem.feedItemId,
-        accountId: this.accountId,
-        url: trimmedUrl,
-      }),
-    ]);
-
-    const addFeedItemResultError = addFeedItemResult.success
-      ? addFeedItemResult.value.results.find((result) => !result.success)?.error
-      : addFeedItemResult.error;
-    if (addFeedItemResultError) {
-      return makeErrorResult(addFeedItemResultError);
+    const addFeedItemResult = await this.feedItemsCollectionService.setDoc(
+      feedItem.feedItemId,
+      feedItem
+    );
+    if (!addFeedItemResult.success) {
+      return makeErrorResult(addFeedItemResult.error);
     }
 
     return makeSuccessResult(feedItem.feedItemId);
@@ -293,18 +264,14 @@ export class ClientFeedItemsService {
     );
 
     // Fetch the download URL for the file.
-    const downloadUrlResult = await asyncTry(async () => getDownloadURL(fileRef));
+    const downloadUrlResult = await asyncTry(async () => getBlob(fileRef));
     if (!downloadUrlResult.success) {
       return prefixErrorResult(downloadUrlResult, 'Error fetching feed item download URL');
     }
 
-    // Fetch the markdown content from the file.
-    const downloadUrl = downloadUrlResult.value;
-    const responseResult = await requestGet<string>(downloadUrl, {
-      headers: {'Content-Type': 'text/markdown'},
-    });
+    // TODO: Handle various expected Firebase errors.
 
-    // Return the markdown content.
-    return prefixResultIfError(responseResult, 'Error fetching feed item markdown content');
+    const parseBlobResult = await asyncTry(async () => downloadUrlResult.value.text());
+    return prefixResultIfError(parseBlobResult, 'Error parsing downloaded file blob');
   }
 }

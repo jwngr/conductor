@@ -1,13 +1,16 @@
 import FirecrawlApp from '@mendable/firecrawl-js';
 import {setGlobalOptions} from 'firebase-functions';
+import {isSignedIn, onCallGenkit} from 'firebase-functions/https';
 import {defineString, projectID} from 'firebase-functions/params';
 import {auth} from 'firebase-functions/v1';
 import {onInit} from 'firebase-functions/v2/core';
-import {onDocumentCreated} from 'firebase-functions/v2/firestore';
-import {HttpsError, onCall} from 'firebase-functions/v2/https';
+import {onDocumentCreated, onDocumentUpdated} from 'firebase-functions/v2/firestore';
+import {HttpsError, onCall, onRequest} from 'firebase-functions/v2/https';
+import {z} from 'zod';
 
 import {logger} from '@shared/services/logger.shared';
 
+import {ai} from '@shared/lib/ai.shared';
 import {
   ACCOUNTS_DB_COLLECTION,
   FEED_ITEMS_DB_COLLECTION,
@@ -17,6 +20,7 @@ import {
   USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
 } from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
+import {batchAsyncResults, partition} from '@shared/lib/utils.shared';
 
 import {parseAccount, parseAccountId, toStorageAccount} from '@shared/parsers/accounts.parser';
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
@@ -36,8 +40,12 @@ import {
   toStorageUserFeedSubscription,
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
+import {FeedItemId, makeFeedItemRSSSource} from '@shared/types/feedItems.types';
 import {ImportQueueItem, ImportQueueItemStatus} from '@shared/types/importQueue.types';
-import {makeSuccessResult} from '@shared/types/result.types';
+import {AsyncResult, ErrorResult, SuccessResult} from '@shared/types/result.types';
+import {parseSuperfeedrWebhookRequestBody} from '@shared/types/superfeedr.types';
+import {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
+import {Supplier} from '@shared/types/utils.types';
 
 import {ServerAccountsService} from '@sharedServer/services/accounts.server';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
@@ -57,19 +65,22 @@ const FIRECRAWL_API_KEY = defineString('FIRECRAWL_API_KEY');
 const SUPERFEEDR_USER = defineString('SUPERFEEDR_USER');
 const SUPERFEEDR_API_KEY = defineString('SUPERFEEDR_API_KEY');
 
+// TODO: This should be an environment variable.
+const FIREBASE_FUNCTIONS_REGION = 'us-central1';
+
 let feedSourcesService: ServerFeedSourcesService;
 let userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
 let importQueueService: ServerImportQueueService;
 let wipeoutService: WipeoutService;
 let rssFeedService: ServerRssFeedService;
-
+let feedItemsService: ServerFeedItemsService;
 onInit(() => {
   const firecrawlApp = new FirecrawlApp({apiKey: FIRECRAWL_API_KEY.value()});
 
   const superfeedrService = new SuperfeedrService({
     superfeedrUser: SUPERFEEDR_USER.value(),
     superfeedrApiKey: SUPERFEEDR_API_KEY.value(),
-    webhookBaseUrl: `https://${projectID.value()}.firebaseapp.com`,
+    webhookBaseUrl: `https://${FIREBASE_FUNCTIONS_REGION}-${projectID.value()}.cloudfunctions.net`,
   });
 
   const feedSourceFirestoreConverter = makeFirestoreDataConverter(
@@ -108,7 +119,7 @@ onInit(() => {
     parseId: parseFeedItemId,
   });
 
-  const feedItemsService = new ServerFeedItemsService({
+  feedItemsService = new ServerFeedItemsService({
     feedItemsCollectionService,
     storageCollectionPath: FEED_ITEMS_STORAGE_COLLECTION,
   });
@@ -284,7 +295,7 @@ export const wipeoutAccountOnAuthDelete = auth.user().onDelete(async (firebaseUs
 export const subscribeAccountToFeedOnCall = onCall(
   // TODO: Lock down CORS to only allow requests from my domains.
   {cors: true},
-  async (request) => {
+  async (request): Promise<{readonly userFeedSubscriptionId: UserFeedSubscriptionId}> => {
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Must be authenticated');
     } else if (!request.data.url) {
@@ -313,7 +324,7 @@ export const subscribeAccountToFeedOnCall = onCall(
         ),
         logDetails
       );
-      return subscribeToUrlResult;
+      throw new HttpsError('internal', subscribeToUrlResult.error.message);
     }
 
     const userFeedSubscription = subscribeToUrlResult.value;
@@ -324,7 +335,271 @@ export const subscribeAccountToFeedOnCall = onCall(
       userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     });
 
-    // TODO: Is this what I want to return?
-    return makeSuccessResult(undefined);
+    return {
+      userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
+    };
   }
+);
+
+/**
+ * Handles webhook callbacks from Superfeedr when feed content is updated.
+ */
+export const handleSuperfeedrWebhook = onRequest(
+  // This webhook is server-to-server, so we don't need to worry about CORS.
+  {cors: false},
+
+  async (request, response) => {
+    const respondWithError = (
+      error: Error,
+      errorPrefix = '',
+      logDetails: Record<string, unknown> = {}
+    ): void => {
+      const betterError = prefixError(error, `[SUPERFEEDR] ${errorPrefix}`);
+      logger.error(betterError, {body: request.body, ...logDetails});
+      response.status(400).json({success: false, error: betterError.message});
+      return;
+    };
+
+    // TODO: Validate the request is from Superfeedr by checking some auth header.
+
+    logger.log('[SUPERFEEDR] Received webhook request', {body: JSON.stringify(request.body)});
+
+    // Parse the request from Superfeedr.
+    const parseResult = parseSuperfeedrWebhookRequestBody(request.body);
+    if (!parseResult.success) {
+      return respondWithError(parseResult.error, 'Error parsing webhook request');
+    }
+
+    const body = parseResult.value;
+    if (body.status.code !== 200) {
+      return respondWithError(new Error('Webhook callback returned non-200 status'));
+    }
+
+    // Fetch the feed source from the URL.
+    const feedUrl = body.status.feed;
+    const fetchFeedSourceResult = await feedSourcesService.fetchByUrl(feedUrl);
+    if (!fetchFeedSourceResult.success) {
+      return respondWithError(
+        fetchFeedSourceResult.error,
+        'Error fetching webhook feed source by URL',
+        {feedUrl}
+      );
+    }
+
+    const feedSource = fetchFeedSourceResult.value;
+    if (!feedSource) {
+      return respondWithError(new Error('No feed source found for URL. Skipping...'), undefined, {
+        feedUrl,
+      });
+    }
+
+    // Fetch all users subscribed to this feed source.
+    const fetchSubscriptionsResult = await userFeedSubscriptionsService.fetchForFeedSource(
+      feedSource.feedSourceId
+    );
+    if (!fetchSubscriptionsResult.success) {
+      return respondWithError(
+        fetchSubscriptionsResult.error,
+        'Error fetching subscribed accounts',
+        {feedSourceId: feedSource.feedSourceId}
+      );
+    }
+
+    const userFeedSubscriptions = fetchSubscriptionsResult.value;
+
+    // Make a list of supplier methods that create feed items.
+    const createFeedItemResults: Supplier<AsyncResult<FeedItemId | null>>[] = [];
+    body.items.forEach((item) => {
+      logger.log(`[SUPERFEEDR] Processing item ${item.id}`, {item});
+
+      userFeedSubscriptions.forEach((userFeedSubscription) => {
+        const newFeedItemResult = async () =>
+          await feedItemsService.createFeedItem({
+            url: item.permalinkUrl,
+            accountId: userFeedSubscription.accountId,
+            feedItemSource: makeFeedItemRSSSource(userFeedSubscription.userFeedSubscriptionId),
+          });
+        createFeedItemResults.push(newFeedItemResult);
+      });
+    });
+
+    // Execute the supplier methods in batches.
+    const batchResult = await batchAsyncResults(createFeedItemResults, 10);
+    if (!batchResult.success) {
+      return respondWithError(batchResult.error, 'Error batching feed item creation');
+    }
+
+    // Log successes and errors.
+    const newFeedItemResults = batchResult.value;
+    const [newFeedItemSuccesses, newFeedItemErrors] = partition<
+      SuccessResult<FeedItemId | null>,
+      ErrorResult
+    >(newFeedItemResults, (result): result is SuccessResult<FeedItemId | null> => result.success);
+    logger.log(
+      `[SUPERFEEDR] Successfully created ${newFeedItemSuccesses.length} feed items, encountered ${newFeedItemErrors.length} errors`,
+      {
+        successes: newFeedItemSuccesses.map((result) => result.value),
+        errors: newFeedItemErrors.map((result) => result.error),
+      }
+    );
+
+    if (newFeedItemErrors.length !== 0) {
+      return respondWithError(new Error('Individual feed items failed to be created'), undefined, {
+        errors: newFeedItemErrors.map((result) => result.error),
+      });
+    }
+
+    response.status(200).json({success: true, value: undefined});
+  }
+);
+
+/**
+ * Creates an import queue item when a feed item is created.
+ *
+ * This is decoupled from feed item creation to simplify logic for callers. They just need to create
+ * a new feed item and this function will handle the rest.
+ */
+export const createImportQueueItemOnFeedItemCreated = onDocumentCreated(
+  `${FEED_ITEMS_DB_COLLECTION}/{feedItemId}`,
+  async (event) => {
+    const feedItemId = parseFeedItemId(event.params.feedItemId);
+    if (!feedItemId.success) {
+      const betterError = prefixError(feedItemId.error, 'Failed to parse feed item ID');
+      logger.error(betterError, {feedItemId: event.params.feedItemId});
+      return;
+    }
+
+    const feedItemData = event.data?.data();
+    if (!feedItemData) {
+      logger.error(new Error('No feed item data found'), {feedItemId: feedItemId.value});
+      return;
+    }
+
+    const feedItemResult = parseFeedItem(feedItemData);
+    if (!feedItemResult.success) {
+      const betterError = prefixError(feedItemResult.error, 'Failed to parse feed item');
+      logger.error(betterError, {feedItemId: feedItemId.value, feedItemData});
+      return;
+    }
+
+    const feedItem = feedItemResult.value;
+
+    const createImportQueueItemResult = await importQueueService.create({
+      feedItemId: feedItem.feedItemId,
+      accountId: feedItem.accountId,
+      url: feedItem.url,
+    });
+
+    if (!createImportQueueItemResult.success) {
+      const betterError = prefixError(
+        createImportQueueItemResult.error,
+        'Failed to create import queue item'
+      );
+      logger.error(betterError, {feedItemId: feedItem.feedItemId});
+      return;
+    }
+
+    logger.warn('Successfully created import queue item', {
+      feedItemId: feedItem.feedItemId,
+      importQueueItemId: createImportQueueItemResult.value.importQueueItemId,
+    });
+  }
+);
+
+/**
+ * Handles unsubscribe events when a user feed subscription is marked as inactive.
+ */
+export const handleFeedUnsubscribeOnUpdate = onDocumentUpdated(
+  `${USER_FEED_SUBSCRIPTIONS_DB_COLLECTION}/{userFeedSubscriptionId}`,
+  async (event) => {
+    const {userFeedSubscriptionId: maybeUserFeedSubscriptionId} = event.params;
+
+    // Parse the user feed subscription ID.
+    const parseIdResult = parseUserFeedSubscriptionId(maybeUserFeedSubscriptionId);
+    if (!parseIdResult.success) {
+      logger.error(
+        prefixError(parseIdResult.error, '[UNSUBSCRIBE] Invalid user feed subscription ID'),
+        {maybeUserFeedSubscriptionId}
+      );
+      return;
+    }
+    const userFeedSubscriptionId = parseIdResult.value;
+
+    // Parse the before and after data.
+    const beforeData = event.data?.before.data();
+    const afterData = event.data?.after.data();
+
+    if (!beforeData || !afterData) {
+      logger.error(new Error('[UNSUBSCRIBE] Missing before or after data'), {
+        userFeedSubscriptionId,
+      });
+      return;
+    }
+
+    const beforeResult = parseUserFeedSubscription(beforeData);
+    const afterResult = parseUserFeedSubscription(afterData);
+
+    if (!beforeResult.success || !afterResult.success) {
+      logger.error(new Error('[UNSUBSCRIBE] Failed to parse user feed subscription data'), {
+        userFeedSubscriptionId,
+        beforeError: beforeResult.success ? undefined : beforeResult.error.message,
+        afterError: afterResult.success ? undefined : afterResult.error.message,
+      });
+      return;
+    }
+
+    const before = beforeResult.value;
+    const after = afterResult.value;
+
+    // Only proceed if the subscription was marked as inactive.
+    const becameInactive = before.isActive && !after.isActive;
+    if (!becameInactive) return;
+
+    const logDetails = {
+      userFeedSubscriptionId,
+      accountId: after.accountId,
+      feedSourceId: after.feedSourceId,
+      url: after.url,
+    } as const;
+
+    logger.log('[UNSUBSCRIBE] Processing unsubscribe for feed subscription', logDetails);
+
+    const unsubscribeResult = await rssFeedService.unsubscribeAccountFromUrl({
+      feedSourceId: after.feedSourceId,
+      url: after.url,
+      accountId: after.accountId,
+    });
+
+    if (!unsubscribeResult.success) {
+      const betterError = prefixError(
+        unsubscribeResult.error,
+        '[UNSUBSCRIBE] Error unsubscribing account from Superfeedr feed'
+      );
+      logger.error(betterError, logDetails);
+      return;
+    }
+
+    logger.log('[UNSUBSCRIBE] Successfully unsubscribed account from Superfeedr feed', logDetails);
+  }
+);
+
+const generatePoemFlow = ai.defineFlow(
+  {
+    name: 'generatePoem',
+    inputSchema: z.string(),
+    outputSchema: z.string(),
+  },
+  async (subject: string) => {
+    const {text} = await ai.generate(`Compose a poem about ${subject}.`);
+    return text;
+  }
+);
+
+export const generatePoem = onCallGenkit(
+  {
+    authPolicy: isSignedIn(),
+    // TODO: Enable App Check.
+    // enforceAppCheck: true,
+  },
+  generatePoemFlow
 );

@@ -47,9 +47,9 @@ type UserFeedSubscriptionsCollectionService = ClientFirestoreCollectionService<
 >;
 
 export class ClientUserFeedSubscriptionsService {
-  private accountId: AccountId;
-  private functions: Functions;
-  private userFeedSubscriptionsCollectionService: UserFeedSubscriptionsCollectionService;
+  private readonly accountId: AccountId;
+  private readonly functions: Functions;
+  private readonly userFeedSubscriptionsCollectionService: UserFeedSubscriptionsCollectionService;
 
   constructor(args: {
     readonly accountId: AccountId;
@@ -82,6 +82,20 @@ export class ClientUserFeedSubscriptionsService {
     // Parse the response to get the new user feed subscription ID.
     const idResult = parseUserFeedSubscriptionId(subscribeResponse.data.userFeedSubscriptionId);
     return prefixResultIfError(idResult, 'New user feed subscription ID did not parse correctly');
+  }
+
+  /**
+   * Updates a user feed subscription document in Firestore.
+   */
+  public async updateSubscription(
+    userFeedSubscriptionId: UserFeedSubscriptionId,
+    update: Partial<Pick<UserFeedSubscription, 'isActive' | 'unsubscribedTime'>>
+  ): AsyncResult<void> {
+    const updateResult = await this.userFeedSubscriptionsCollectionService.updateDoc(
+      userFeedSubscriptionId,
+      update
+    );
+    return prefixResultIfError(updateResult, 'Error updating user feed subscription');
   }
 
   // TODO: Implement this.

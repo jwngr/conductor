@@ -1,5 +1,5 @@
 {
-  "include": ["src"],
+  "include": ["src/**/*", "src/**/*.json"],
   "extends": "../../tsconfig.base.json",
 
   "compilerOptions": {
@@ -12,6 +12,7 @@
     "declarationMap": true,
 
     // Import aliases.
+    "baseUrl": ".",
     "paths": {
       // Despite this being in the `shared` package itself, prefer `@shared` imports over `@src`.
       // This makes code valid in any package when copy / pasting.

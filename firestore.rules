@@ -25,11 +25,12 @@ service cloud.firestore {
       return request.resource.data.keys().hasAll([
         'feedItemId',
         'type',
-        'source',
+        'feedItemSource',
         'url',
         'title',
         'description',
         'outgoingLinks',
+        'summary',
         'triageStatus',
         'tagIds',
         'createdTime',
@@ -38,10 +39,11 @@ service cloud.firestore {
       request.resource.data.feedItemId is string &&
       request.resource.data.feedItemId == feedItemId &&
       request.resource.data.type in ['ARTICLE', 'VIDEO', 'WEBSITE', 'TWEET', 'XKCD'] &&
-      request.resource.data.source.type in ['APP', 'EXTENSION', 'RSS'] &&
+      request.resource.data.feedItemSource.type in ['APP', 'EXTENSION', 'RSS'] &&
       request.resource.data.url is string &&
       request.resource.data.title is string &&
       request.resource.data.description is string &&
+      request.resource.data.summary is string &&
       request.resource.data.outgoingLinks is list &&
       request.resource.data.triageStatus in ['UNTRIAGED', 'SAVED', 'DONE', 'TRASHED'] &&
       request.resource.data.tagIds is map &&
@@ -87,12 +89,19 @@ service cloud.firestore {
       return request.resource.data.keys().hasAll([
         'eventId',
         'eventType',
+        'accountId',
+        'actor',
+        'environment',
         'createdTime',
         'lastUpdatedTime'
       ]) &&
       request.resource.data.eventId is string &&
       request.resource.data.eventId == eventId &&
       request.resource.data.eventType is string &&
+      request.resource.data.actor is map &&
+      request.resource.data.actor.keys().hasAll(['accountId']) &&
+      request.resource.data.actor.accountId == request.auth.uid &&
+      request.resource.data.environment is string &&
       request.resource.data.createdTime is timestamp &&
       request.resource.data.lastUpdatedTime is timestamp;
     }
@@ -153,10 +162,9 @@ service cloud.firestore {
 
       // Allow creation and deletion if the current account owns the new document.
       allow create: if isNewResourceOwner() && isValidEventLogItemDoc(eventId);
-      allow delete: if isResourceOwner();
 
-      // Event log items cannot be updated, only created or deleted.
-      allow update: if false;
+      // Event log items cannot be updated or deleted, only created.
+      allow update, delete: if false;
     }
   }
 }

@@ -57,3 +57,4 @@ export const Button: React.FC<ButtonProps> = forwardRef<HTMLButtonElement, Butto
     return <ButtonWrapper $variant={variant} {...props} ref={ref} />;
   }
 );
+Button.displayName = 'Button';

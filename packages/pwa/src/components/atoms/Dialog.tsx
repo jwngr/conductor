@@ -1,9 +1,11 @@
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import {Cross2Icon} from '@radix-ui/react-icons';
-import * as React from 'react';
+import type React from 'react';
+import {forwardRef} from 'react';
 import styled from 'styled-components';
 
 import {ThemeColor} from '@shared/types/theme.types';
+
+import {CancelIcon} from '@src/components/atoms/Icon';
 
 const Dialog = DialogPrimitive.Root;
 
@@ -22,7 +24,7 @@ const DialogOverlayWrapper = styled(DialogPrimitive.Overlay)`
   // TODO: Add animation.
 `;
 
-const DialogOverlay = React.forwardRef<
+const DialogOverlay = forwardRef<
   React.ElementRef<typeof DialogPrimitive.Overlay>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
 >((props, ref) => <DialogOverlayWrapper ref={ref} {...props} />);
@@ -72,7 +74,7 @@ const CloseButtonWrapper = styled(DialogPrimitive.Close)`
   }
 `;
 
-const DialogContent = React.forwardRef<
+const DialogContent = forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({children, ...otherProps}, ref) => (
@@ -81,7 +83,7 @@ const DialogContent = React.forwardRef<
     <DialogContentWrapper ref={ref} {...otherProps}>
       {children}
       <CloseButtonWrapper aria-label="Close">
-        <Cross2Icon style={{height: 16, width: 16}} />
+        <CancelIcon size={16} />
       </CloseButtonWrapper>
     </DialogContentWrapper>
   </DialogPortal>
@@ -123,7 +125,7 @@ const DialogTitleWrapper = styled(DialogPrimitive.Title)`
   letter-spacing: -0.025em;
 `;
 
-const DialogTitle = React.forwardRef<
+const DialogTitle = forwardRef<
   React.ElementRef<typeof DialogPrimitive.Title>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
 >((props, ref) => <DialogTitleWrapper ref={ref} {...props} />);
@@ -142,7 +144,7 @@ const DialogDescriptionWrapper = styled(DialogPrimitive.Description)`
   border-width: 0;
 `;
 
-const DialogDescription = React.forwardRef<
+const DialogDescription = forwardRef<
   React.ElementRef<typeof DialogPrimitive.Description>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
 >((props, ref) => <DialogDescriptionWrapper ref={ref} {...props} />);

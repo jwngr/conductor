@@ -6,7 +6,9 @@ import {
   prefixErrorResult,
   prefixResultIfError,
 } from '@shared/lib/errorUtils.shared';
+import {withFirestoreTimestamps} from '@shared/lib/parser.shared';
 import {requestGet} from '@shared/lib/requests.shared';
+import {generateHierarchicalSummary} from '@shared/lib/summarization.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {FeedItemId} from '@shared/types/feedItems.types';
@@ -14,6 +16,7 @@ import {
   ImportQueueItem,
   ImportQueueItemFromStorage,
   ImportQueueItemId,
+  makeImportQueueItem,
 } from '@shared/types/importQueue.types';
 import type {AsyncResult, Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
@@ -21,6 +24,9 @@ import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
 import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
+
+import {eventLogService} from './eventLog.server';
+import {serverTimestampSupplier} from './firebase.server';
 
 function validateFeedItemUrl(url: string): Result<void> {
   // Parse the URL to validate its structure.
@@ -72,6 +78,35 @@ export class ServerImportQueueService {
   }
 
   /**
+   * Adds a new import queue item to Firestore.
+   */
+  public async create(
+    importQueueItemDetails: Omit<
+      ImportQueueItem,
+      'importQueueItemId' | 'createdTime' | 'lastUpdatedTime' | 'status'
+    >
+  ): AsyncResult<ImportQueueItem> {
+    // Create the new feed source in memory.
+    const makeImportQueueItemResult = makeImportQueueItem({
+      feedItemId: importQueueItemDetails.feedItemId,
+      accountId: importQueueItemDetails.accountId,
+      url: importQueueItemDetails.url,
+    });
+    if (!makeImportQueueItemResult.success) return makeImportQueueItemResult;
+    const newImportQueueItem = makeImportQueueItemResult.value;
+
+    // Create the new feed source in Firestore.
+    const createResult = await this.importQueueCollectionService.setDoc(
+      newImportQueueItem.importQueueItemId,
+      withFirestoreTimestamps(newImportQueueItem, serverTimestampSupplier)
+    );
+    if (!createResult.success) {
+      return prefixErrorResult(createResult, 'Error creating import queue item in Firestore');
+    }
+    return makeSuccessResult(newImportQueueItem);
+  }
+
+  /**
    * Imports a feed item, pulling in the raw HTML and LLM context.
    */
   async importFeedItem(importQueueItem: ImportQueueItem): AsyncResult<void> {
@@ -101,6 +136,11 @@ export class ServerImportQueueService {
     if (importAllDataResultError) {
       return makeErrorResult(prefixError(importAllDataResultError, 'Error importing feed item'));
     }
+
+    void eventLogService.logFeedItemImportedEvent({
+      feedItemId: importQueueItem.feedItemId,
+      accountId: importQueueItem.accountId,
+    });
 
     return makeSuccessResult(undefined);
   }
@@ -156,6 +196,15 @@ export class ServerImportQueueService {
 
     const firecrawlData = fetchDataResult.value;
 
+    if (firecrawlData.markdown === null) {
+      return makeErrorResult(new Error('Firecrawl data for feed item is missing markdown'));
+    }
+
+    const summaryResult = await generateHierarchicalSummary(firecrawlData.markdown);
+    if (!summaryResult.success) {
+      return prefixErrorResult(summaryResult, 'Error generating hierarchical summary');
+    }
+
     const saveFirecrawlDataResult = await asyncTryAll([
       this.feedItemsService.saveMarkdownToStorage({
         feedItemId,
@@ -166,6 +215,7 @@ export class ServerImportQueueService {
         links: firecrawlData.links,
         title: firecrawlData.title,
         description: firecrawlData.description,
+        summary: summaryResult.value,
       }),
     ]);
 

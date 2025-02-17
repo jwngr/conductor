@@ -30,8 +30,8 @@ export class SuperfeedrService {
   }
 
   private getSuperfeedrWebhookUrl(): string {
-    // TODO: FIX ME.
-    return `${this.webhookBaseUrl}/api/superfeedr-webhook`;
+    // This path needs to match the Firebase Function name.
+    return `${this.webhookBaseUrl}/handleSuperfeedrWebhook`;
   }
 
   public async subscribeToUrl(

@@ -61,9 +61,9 @@ export const UserFeedSubscriptionFromStorageSchema = z.object({
   url: z.string().url(),
   title: z.string().min(1),
   isActive: z.boolean(),
-  unsubscribedTime: FirestoreTimestampSchema.optional(),
-  createdTime: FirestoreTimestampSchema,
-  lastUpdatedTime: FirestoreTimestampSchema,
+  unsubscribedTime: FirestoreTimestampSchema.or(z.date()).optional(),
+  createdTime: FirestoreTimestampSchema.or(z.date()),
+  lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
 /**
@@ -74,20 +74,18 @@ export type UserFeedSubscriptionFromStorage = z.infer<typeof UserFeedSubscriptio
 /**
  * Creates a new {@link UserFeedSubscription} object.
  */
-export function makeUserFeedSubscription(args: {
+export function makeUserFeedSubscription(newItemArgs: {
   readonly feedSource: FeedSource;
   readonly accountId: AccountId;
 }): Result<UserFeedSubscription> {
-  const {feedSource, accountId} = args;
-
   const userFeedSubscription: UserFeedSubscription = {
     userFeedSubscriptionId: makeUserFeedSubscriptionId(),
-    accountId,
-    feedSourceId: feedSource.feedSourceId,
-    url: feedSource.url,
-    title: feedSource.title,
+    accountId: newItemArgs.accountId,
+    feedSourceId: newItemArgs.feedSource.feedSourceId,
+    url: newItemArgs.feedSource.url,
+    title: newItemArgs.feedSource.title,
     isActive: true,
-    // TODO: Should use server timestamps instead.
+    // TODO(timestamps): Use server timestamps instead.
     createdTime: new Date(),
     lastUpdatedTime: new Date(),
   };

@@ -64,7 +64,7 @@ const ALL_VIEW_CONFIGS: Record<ViewType, View<FeedItem>> = {
       {
         field: 'createdTime',
         op: FilterOp.GreaterThanOrEqual,
-        value: new Date(new Date().setDate(new Date().getDate() - 1)).toISOString(),
+        value: new Date().toISOString(),
       },
     ],
     sort: {field: 'createdTime', direction: 'desc'},
@@ -125,5 +125,9 @@ export class Views {
 
   static getForToday(): View<FeedItem> {
     return ALL_VIEW_CONFIGS[ViewType.Today];
+  }
+
+  static getAllViewTypes(): ViewType[] {
+    return Object.keys(ALL_VIEW_CONFIGS).map((key) => key as ViewType);
   }
 }

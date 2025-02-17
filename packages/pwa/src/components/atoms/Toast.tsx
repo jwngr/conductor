@@ -1,10 +1,12 @@
-import {Cross2Icon} from '@radix-ui/react-icons';
 import * as ToastPrimitives from '@radix-ui/react-toast';
-import * as React from 'react';
+import type React from 'react';
+import {forwardRef} from 'react';
 
 import {theme} from '@shared/lib/theme.shared';
 
 import {ThemeColor} from '@shared/types/theme.types';
+
+import {CancelIcon} from '@src/components/atoms/Icon';
 
 export const ToastProvider = ToastPrimitives.Provider;
 
@@ -12,7 +14,7 @@ const TOAST_DURATION_MS = 7_000;
 
 // TODO: Improve visual design of toasts.
 
-export const ToastViewport = React.forwardRef<
+export const ToastViewport = forwardRef<
   React.ElementRef<typeof ToastPrimitives.Viewport>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Viewport>
 >(({className, ...props}, ref) => (
@@ -30,7 +32,7 @@ export const ToastViewport = React.forwardRef<
 ));
 ToastViewport.displayName = ToastPrimitives.Viewport.displayName;
 
-export const Toast = React.forwardRef<
+export const Toast = forwardRef<
   React.ElementRef<typeof ToastPrimitives.Root>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root>
 >(({className, ...props}, ref) => {
@@ -52,7 +54,7 @@ export const Toast = React.forwardRef<
 });
 Toast.displayName = ToastPrimitives.Root.displayName;
 
-export const ToastAction = React.forwardRef<
+export const ToastAction = forwardRef<
   React.ElementRef<typeof ToastPrimitives.Action>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Action>
 >(({className, ...props}, ref) => (
@@ -60,7 +62,7 @@ export const ToastAction = React.forwardRef<
 ));
 ToastAction.displayName = ToastPrimitives.Action.displayName;
 
-export const ToastClose = React.forwardRef<
+export const ToastClose = forwardRef<
   React.ElementRef<typeof ToastPrimitives.Close>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Close>
 >(({className, ...props}, ref) => (
@@ -75,12 +77,12 @@ export const ToastClose = React.forwardRef<
     toast-close=""
     {...props}
   >
-    <Cross2Icon className="h-4 w-4" />
+    <CancelIcon size={16} />
   </ToastPrimitives.Close>
 ));
 ToastClose.displayName = ToastPrimitives.Close.displayName;
 
-export const ToastTitle = React.forwardRef<
+export const ToastTitle = forwardRef<
   React.ElementRef<typeof ToastPrimitives.Title>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Title>
 >(({className, ...props}, ref) => (
@@ -96,7 +98,7 @@ export const ToastTitle = React.forwardRef<
 ));
 ToastTitle.displayName = ToastPrimitives.Title.displayName;
 
-export const ToastDescription = React.forwardRef<
+export const ToastDescription = forwardRef<
   React.ElementRef<typeof ToastPrimitives.Description>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Description>
 >(({className, ...props}, ref) => (

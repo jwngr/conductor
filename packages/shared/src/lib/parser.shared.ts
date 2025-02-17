@@ -1,11 +1,11 @@
-import {Timestamp} from 'firebase/firestore';
 import type {ZodSchema} from 'zod';
 
-import {logger} from '@shared/services/logger.shared';
+import {isDate, omitUndefined} from '@shared/lib/utils.shared';
 
 import type {FirestoreTimestamp} from '@shared/types/firebase.types';
 import type {Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {BaseStoreItem, Supplier} from '@shared/types/utils.types';
 
 /**
  * Parses a value using a Zod schema and returns a `SuccessResult` with the parsed value if
@@ -15,17 +15,19 @@ export function parseZodResult<T>(zodSchema: ZodSchema<T>, value: unknown): Resu
   const zodResult = zodSchema.safeParse(value);
 
   if (!zodResult.success) {
-    const keysWithErrors = Object.keys(zodResult.error.format()).filter((key) => key !== '_errors');
-    logger.error(new Error(`Error parsing value with Zod: ${keysWithErrors.join(', ')}`), {
-      value, // TODO: Probably should not be logging raw values here.
-      error: zodResult.error,
-      format: zodResult.error.format(),
-    });
+    const formattedError = zodResult.error.format();
+    const errorMessage = Object.entries(formattedError)
+      .filter(([key]) => key !== '_errors')
+      .map(([key, value]) => {
+        if (value && '_errors' in value) {
+          const errors = value._errors.join(', ');
+          return `${key} (${errors})`;
+        }
+        return `${key} (${value})`;
+      })
+      .join(', ');
     return makeErrorResult(
-      new Error(
-        `Error parsing value: ${JSON.stringify(zodResult.error.issues.map((issue) => issue.message).join(', '))}`,
-        {cause: zodResult.error}
-      )
+      new Error(`Error parsing value with Zod: ${errorMessage}`, {cause: zodResult.error})
     );
   }
 
@@ -35,17 +37,48 @@ export function parseZodResult<T>(zodSchema: ZodSchema<T>, value: unknown): Resu
 /**
  * Converts a Firestore `Timestamp` to a normal `Date`.
  */
-export function parseStorageTimestamp(firestoreDate: FirestoreTimestamp): Date {
-  // TODO: For some reason this returns "Invalid date" when used from the server, but the function
-  // does exist.
-  return firestoreDate.toDate();
+export function parseStorageTimestamp(firestoreDate: FirestoreTimestamp | Date): Date {
+  return isDate(firestoreDate) ? firestoreDate : firestoreDate.toDate();
 }
 
 /**
- * Converts a normal `Date` into a Firestore `Timestamp`.
+ * Returns the provided item with `createdTime` and `lastUpdatedTime` replaced with the provided
+ * Firestore timestamp factory.
  */
-export function toStorageTimestamp(appDate: Date): FirestoreTimestamp {
-  // TODO: This uses an import from the client library and could be wrong from the server. Ideally
-  // this method would not rely on the client library.
-  return Timestamp.fromDate(appDate);
+export function withFirestoreTimestamps<ItemData extends BaseStoreItem, Timestamp>(
+  item: ItemData,
+  timestampFactory: Supplier<Timestamp>
+): Omit<ItemData, 'createdTime' | 'lastUpdatedTime'> & {
+  createdTime: Timestamp;
+  lastUpdatedTime: Timestamp;
+} {
+  return omitUndefined({
+    ...item,
+    createdTime: timestampFactory(),
+    lastUpdatedTime: timestampFactory(),
+  });
+}
+
+/**
+ * Returns the provided item with `createdTime`, `lastUpdatedTime`, and an additional timestamp
+ * field replaced with the provided Firestore timestamp factory.
+ */
+export function withFirestoreTimestampsExtended<
+  ItemData extends BaseStoreItem,
+  Timestamp,
+  AdditionalTimestampField extends string = never,
+>(
+  item: ItemData & Partial<Record<AdditionalTimestampField, Date>>,
+  timestampFactory: Supplier<Timestamp>,
+  additionalTimestampField: AdditionalTimestampField
+): Omit<ItemData, 'createdTime' | 'lastUpdatedTime' | AdditionalTimestampField> & {
+  createdTime: Timestamp;
+  lastUpdatedTime: Timestamp;
+} {
+  return omitUndefined({
+    ...item,
+    createdTime: timestampFactory(),
+    lastUpdatedTime: timestampFactory(),
+    [additionalTimestampField]: timestampFactory(),
+  });
 }

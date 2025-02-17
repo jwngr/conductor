@@ -1,5 +1,5 @@
 {
-  "include": ["src"],
+  "include": ["src/**/*", "src/**/*.json"],
   "extends": "../../tsconfig.base.json",
 
   // This package consumes the `shared` package.
@@ -7,14 +7,13 @@
 
   "compilerOptions": {
     // Emit `tsc` output to an ignored directory since we run scripts directly.
-    "outDir": "./distIgnore"
+    "outDir": "./distIgnore",
 
-    // TODO: Get import aliases working by adding some build step.
     // Import aliases.
-    // "baseUrl": ".",
-    // "paths": {
-    //   "@src/*": ["./src"],
-    //   "@shared/*": ["../shared/src/*"]
-    // }
+    "baseUrl": ".",
+    "paths": {
+      "@src/*": ["./src/*"],
+      "@shared/*": ["../shared/src/*"]
+    }
   }
 }

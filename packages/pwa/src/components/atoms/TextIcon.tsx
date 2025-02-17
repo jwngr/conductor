@@ -1,18 +1,11 @@
-import React from 'react';
+import type React from 'react';
 import styled from 'styled-components';
 
-import {assertNever} from '@shared/lib/utils.shared';
-
-import type {IconSize} from '@shared/types/icons.types';
-import {IconName} from '@shared/types/icons.types';
+import type {IconName, IconSize} from '@shared/types/icons.types';
 import {ThemeColor} from '@shared/types/theme.types';
 import type {StyleAttributes} from '@shared/types/utils.types';
 
-import InboxIcon from '@shared/icons/inbox.svg?react';
-import MarkDoneIcon from '@shared/icons/markDone.svg?react';
-import MarkUnreadIcon from '@shared/icons/markUnread.svg?react';
-import SaveIcon from '@shared/icons/save.svg?react';
-import StarIcon from '@shared/icons/star.svg?react';
+import {Icon} from '@src/components/atoms/Icon';
 
 interface TextIconWrapperProps {
   readonly $color: ThemeColor;
@@ -44,30 +37,9 @@ export const TextIcon: React.FC<TextIconProps> = ({
   color = ThemeColor.Neutral900,
   ...styleProps
 }) => {
-  let IconComponent: React.ElementType;
-  switch (name) {
-    case IconName.MarkDone:
-      IconComponent = MarkDoneIcon;
-      break;
-    case IconName.Save:
-      IconComponent = SaveIcon;
-      break;
-    case IconName.Inbox:
-      IconComponent = InboxIcon;
-      break;
-    case IconName.MarkUnread:
-      IconComponent = MarkUnreadIcon;
-      break;
-    case IconName.Star:
-      IconComponent = StarIcon;
-      break;
-    default:
-      assertNever(name);
-  }
-
   return (
     <TextIconWrapper $color={color} $size={size}>
-      <IconComponent width={size} height={size} {...styleProps} />
+      <Icon name={name} size={size} color={color} {...styleProps} />
     </TextIconWrapper>
   );
 };

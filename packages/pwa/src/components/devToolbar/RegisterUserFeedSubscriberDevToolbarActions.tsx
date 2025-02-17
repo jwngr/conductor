@@ -36,7 +36,15 @@ const AccountFeedSubscriber: React.FC = () => {
         variant={ButtonVariant.Secondary}
         onClick={() => handleSubscribeToFeedUrl('https://jwn.gr/rss.xml')}
       >
-        Subscribe to personal website feed source
+        Subscribe to personal blog feed
+      </Button>
+      <Button
+        variant={ButtonVariant.Secondary}
+        onClick={() =>
+          handleSubscribeToFeedUrl('https://lorem-rss.herokuapp.com/feed?unit=second&interval=30')
+        }
+      >
+        Subscribe to 30s feed
       </Button>
       {/* TODO: Add unsubscribe button. */}
       {status ? <StatusText $isError={status.includes('Error')}>{status}</StatusText> : null}
