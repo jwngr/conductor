@@ -7,7 +7,7 @@ The repo is organized into TypeScript packages which share code and are managed 
 
 The packages are:
 
-- `/shared` - Common types, libraries, icons, etc. shared across all packages, client and server
+- `/shared` - Common types, schemas, and libraries shared across all packages, client and server
 - `/sharedClient` - Common code shared across client-side packages
 - `/sharedServer` - Common code shared across server-side packages
 - `/pwa` - Progressive Web App, for web, desktop, and mobile

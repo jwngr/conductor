@@ -104,4 +104,12 @@ export class SharedFeedItemHelpers {
       icon: IconName.DebugSaveExample,
     };
   }
+
+  public static getCancelFeedItemActionInfo(): FeedItemAction {
+    return {
+      type: FeedItemActionType.Cancel,
+      text: 'Cancel',
+      icon: IconName.Cancel,
+    };
+  }
 }

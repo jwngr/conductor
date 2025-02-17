@@ -9,10 +9,11 @@ import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import type {FeedItem} from '@shared/types/feedItems.types';
 import {FeedItemActionType, TriageStatus} from '@shared/types/feedItems.types';
 import type {IconName} from '@shared/types/icons.types';
-import {AsyncResult, makeSuccessResult, type Result} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/result.types';
+import {makeSuccessResult} from '@shared/types/result.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
-import type {AsyncFunc, Func} from '@shared/types/utils.types';
+import type {Func} from '@shared/types/utils.types';
 
 import {useEventLogService} from '@sharedClient/services/eventLog.client';
 import {useFeedItemsService} from '@sharedClient/services/feedItems.client';

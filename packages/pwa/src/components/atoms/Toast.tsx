@@ -1,4 +1,3 @@
-import {Cross2Icon} from '@radix-ui/react-icons';
 import * as ToastPrimitives from '@radix-ui/react-toast';
 import type React from 'react';
 import {forwardRef} from 'react';
@@ -6,6 +5,8 @@ import {forwardRef} from 'react';
 import {theme} from '@shared/lib/theme.shared';
 
 import {ThemeColor} from '@shared/types/theme.types';
+
+import {CancelIcon} from '@src/components/atoms/Icon';
 
 export const ToastProvider = ToastPrimitives.Provider;
 
@@ -76,7 +77,7 @@ export const ToastClose = forwardRef<
     toast-close=""
     {...props}
   >
-    <Cross2Icon className="h-4 w-4" />
+    <CancelIcon size={16} />
   </ToastPrimitives.Close>
 ));
 ToastClose.displayName = ToastPrimitives.Close.displayName;

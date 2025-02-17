@@ -204,11 +204,12 @@ export type FeedItem =
   | XkcdFeedItem;
 
 export enum FeedItemActionType {
+  Cancel = 'CANCEL',
+  DebugSaveExample = 'DEBUG_SAVE_EXAMPLE',
   MarkDone = 'MARK_DONE',
   MarkUnread = 'MARK_UNREAD',
   Save = 'SAVE',
   Star = 'STAR',
-  DebugSaveExample = 'DEBUG_SAVE_EXAMPLE',
 }
 
 export interface FeedItemAction {

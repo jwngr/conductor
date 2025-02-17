@@ -1,10 +1,11 @@
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import {Cross2Icon} from '@radix-ui/react-icons';
 import type React from 'react';
 import {forwardRef} from 'react';
 import styled from 'styled-components';
 
 import {ThemeColor} from '@shared/types/theme.types';
+
+import {CancelIcon} from '@src/components/atoms/Icon';
 
 const Dialog = DialogPrimitive.Root;
 
@@ -82,7 +83,7 @@ const DialogContent = forwardRef<
     <DialogContentWrapper ref={ref} {...otherProps}>
       {children}
       <CloseButtonWrapper aria-label="Close">
-        <Cross2Icon style={{height: 16, width: 16}} />
+        <CancelIcon size={16} />
       </CloseButtonWrapper>
     </DialogContentWrapper>
   </DialogPortal>
