@@ -8,6 +8,7 @@ import {
 } from '@shared/lib/errorUtils.shared';
 import {withFirestoreTimestamps} from '@shared/lib/parser.shared';
 import {requestGet} from '@shared/lib/requests.shared';
+import {generateHierarchicalSummary} from '@shared/lib/summarization.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {FeedItemId} from '@shared/types/feedItems.types';
@@ -195,6 +196,15 @@ export class ServerImportQueueService {
 
     const firecrawlData = fetchDataResult.value;
 
+    if (firecrawlData.markdown === null) {
+      return makeErrorResult(new Error('Firecrawl data for feed item is missing markdown'));
+    }
+
+    const summaryResult = await generateHierarchicalSummary(firecrawlData.markdown);
+    if (!summaryResult.success) {
+      return prefixErrorResult(summaryResult, 'Error generating hierarchical summary');
+    }
+
     const saveFirecrawlDataResult = await asyncTryAll([
       this.feedItemsService.saveMarkdownToStorage({
         feedItemId,
@@ -205,6 +215,7 @@ export class ServerImportQueueService {
         links: firecrawlData.links,
         title: firecrawlData.title,
         description: firecrawlData.description,
+        summary: summaryResult.value,
       }),
     ]);
 

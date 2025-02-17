@@ -30,6 +30,7 @@ service cloud.firestore {
         'title',
         'description',
         'outgoingLinks',
+        'summary',
         'triageStatus',
         'tagIds',
         'createdTime',
@@ -42,6 +43,7 @@ service cloud.firestore {
       request.resource.data.url is string &&
       request.resource.data.title is string &&
       request.resource.data.description is string &&
+      request.resource.data.summary is string &&
       request.resource.data.outgoingLinks is list &&
       request.resource.data.triageStatus in ['UNTRIAGED', 'SAVED', 'DONE', 'TRASHED'] &&
       request.resource.data.tagIds is map &&

@@ -9,10 +9,11 @@ import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import type {FeedItem} from '@shared/types/feedItems.types';
 import {FeedItemActionType, TriageStatus} from '@shared/types/feedItems.types';
 import type {IconName} from '@shared/types/icons.types';
-import type {Result} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/result.types';
+import {makeSuccessResult} from '@shared/types/result.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
-import type {AsyncFunc, Func} from '@shared/types/utils.types';
+import type {Func} from '@shared/types/utils.types';
 
 import {useEventLogService} from '@sharedClient/services/eventLog.client';
 import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
@@ -29,7 +30,7 @@ interface GenericFeedItemActionIconProps {
   readonly tooltip: string;
   readonly shortcutId?: KeyboardShortcutId;
   readonly getIsActive: Func<FeedItem, boolean>;
-  readonly onAction: AsyncFunc<boolean, Result<void>>;
+  readonly onAction: Func<boolean, AsyncResult<void>>;
   readonly toastText: string;
   readonly errorMessage: string;
 }
@@ -186,6 +187,29 @@ const StarFeedItemActionIcon: React.FC<{
   );
 };
 
+const DebugSaveExampleActionIcon: React.FC<{
+  readonly feedItem: FeedItem;
+}> = ({feedItem}) => {
+  const actionInfo = SharedFeedItemHelpers.getDebugSaveExampleFeedItemActionInfo();
+
+  return (
+    <GenericFeedItemActionIcon
+      feedItem={feedItem}
+      feedItemActionType={FeedItemActionType.DebugSaveExample}
+      icon={actionInfo.icon}
+      tooltip={actionInfo.text}
+      shortcutId={actionInfo.shortcutId}
+      getIsActive={SharedFeedItemHelpers.isStarred}
+      onAction={async () => {
+        // TODO: Implement this.
+        return makeSuccessResult(undefined);
+      }}
+      toastText={'Feed item saved as example (TODO: Implement this)'}
+      errorMessage={'Error saving feed item as example (TODO: Implement this)'}
+    />
+  );
+};
+
 export const FeedItemActions: React.FC<{
   readonly feedItem: FeedItem;
 }> = ({feedItem}) => {
@@ -195,6 +219,7 @@ export const FeedItemActions: React.FC<{
       <SaveFeedItemActionIcon feedItem={feedItem} />
       <MarkUnreadFeedItemActionIcon feedItem={feedItem} />
       <StarFeedItemActionIcon feedItem={feedItem} />
+      <DebugSaveExampleActionIcon feedItem={feedItem} />
     </FlexRow>
   );
 };

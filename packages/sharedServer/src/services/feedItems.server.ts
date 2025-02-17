@@ -3,6 +3,7 @@ import {FieldValue} from 'firebase-admin/firestore';
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
+import {omitUndefined} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import {FeedItemType} from '@shared/types/feedItems.types';
@@ -23,6 +24,7 @@ interface UpdateImportedFeedItemInFirestoreArgs {
   readonly links: string[] | null;
   readonly title: string | null;
   readonly description: string | null;
+  readonly summary: string | null;
 }
 
 type FeedItemCollectionService = ServerFirestoreCollectionService<
@@ -83,24 +85,27 @@ export class ServerFeedItemsService {
    */
   public async updateImportedFeedItemInFirestore(
     feedItemId: FeedItemId,
-    {links, title, description}: UpdateImportedFeedItemInFirestoreArgs
+    {links, title, description, summary}: UpdateImportedFeedItemInFirestoreArgs
   ): AsyncResult<void> {
     // TODO: Consider switching to array unions so I can use FieldValue.arrayRemove.
     const untypedUpdates = {
       [`tagIds.${SystemTagId.Importing}`]: FieldValue.delete(),
     };
 
-    const updateResult = await this.feedItemsCollectionService.updateDoc(feedItemId, {
-      // TODO: Determine the type based on the URL or fetched content.
-      type: FeedItemType.Website,
-      // TODO: Reconsider how to handle empty titles, descriptions, and links.
-      title: title ?? '',
-      description: description ?? '',
-      outgoingLinks: links ?? [],
-      // TODO(timestamps): Use server timestamps instead.
-      lastImportedTime: new Date(),
-      ...untypedUpdates,
-    });
+    const updateResult = await this.feedItemsCollectionService.updateDoc(
+      feedItemId,
+      omitUndefined({
+        // TODO: Determine the type based on the URL or fetched content.
+        type: FeedItemType.Website,
+        title: title ?? undefined,
+        description: description ?? undefined,
+        summary: summary ?? undefined,
+        outgoingLinks: links ?? undefined,
+        // TODO(timestamps): Use server timestamps instead.
+        lastImportedTime: new Date(),
+        ...untypedUpdates,
+      })
+    );
     return prefixResultIfError(updateResult, 'Error updating imported feed item in Firestore');
   }
 

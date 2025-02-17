@@ -96,4 +96,20 @@ export class SharedFeedItemHelpers {
       shortcutId: KeyboardShortcutId.ToggleStarred,
     };
   }
+
+  public static getDebugSaveExampleFeedItemActionInfo(): FeedItemAction {
+    return {
+      type: FeedItemActionType.DebugSaveExample,
+      text: 'Save example',
+      icon: IconName.DebugSaveExample,
+    };
+  }
+
+  public static getCancelFeedItemActionInfo(): FeedItemAction {
+    return {
+      type: FeedItemActionType.Cancel,
+      text: 'Cancel',
+      icon: IconName.Cancel,
+    };
+  }
 }

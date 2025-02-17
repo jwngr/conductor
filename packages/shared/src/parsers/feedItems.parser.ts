@@ -131,6 +131,7 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
       title: parsedFeedItemResult.value.title,
       description: parsedFeedItemResult.value.description,
       outgoingLinks: parsedFeedItemResult.value.outgoingLinks,
+      summary: parsedFeedItemResult.value.summary,
       triageStatus: parsedFeedItemResult.value.triageStatus,
       tagIds: parsedFeedItemResult.value.tagIds,
       lastImportedTime: parsedFeedItemResult.value.lastImportedTime
@@ -156,6 +157,7 @@ export function toStorageFeedItem(feedItem: FeedItem): FeedItemFromStorage {
     title: feedItem.title,
     description: feedItem.description,
     outgoingLinks: feedItem.outgoingLinks,
+    summary: feedItem.summary,
     triageStatus: feedItem.triageStatus,
     tagIds: feedItem.tagIds,
     lastImportedTime: feedItem.lastImportedTime,
