@@ -19,8 +19,8 @@ export function Toaster() {
         return (
           <Toast key={toastId} {...toastProps}>
             <FlexRow gap={8}>
-              {title && <ToastTitle>{title}</ToastTitle>}
-              {description && <ToastDescription>{description}</ToastDescription>}
+              {title ? <ToastTitle>{title}</ToastTitle> : null}
+              {description ? <ToastDescription>{description}</ToastDescription> : null}
             </FlexRow>
             {action}
             <ToastClose />
