@@ -45,6 +45,7 @@ export class SharedFeedItemHelpers {
       // TODO: Update these and figure out a better solution. Maybe a better discriminated union.
       title: 'Test title from makeFeedItem',
       description: 'Test description from makeFeedItem',
+      summary: 'Test summary from makeFeedItem',
       outgoingLinks: [],
       triageStatus: TriageStatus.Untriaged,
       tagIds: {

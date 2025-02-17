@@ -159,7 +159,7 @@ export const FeedItemFromStorageSchema = z.object({
   title: z.string().min(1),
   description: z.string(),
   outgoingLinks: z.array(z.string().url()),
-  summary: z.string().optional(),
+  summary: z.string(),
   triageStatus: z.nativeEnum(TriageStatus),
   tagIds: z.record(z.string(), z.literal(true).optional()),
   lastImportedTime: FirestoreTimestampSchema.or(z.date()).optional(),
