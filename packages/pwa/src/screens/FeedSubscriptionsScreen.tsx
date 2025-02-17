@@ -137,15 +137,16 @@ const FeedAdder: React.FC = () => {
   );
 };
 
-export const FeedSubscriptionsList: React.FC = () => {
+const FeedSubscriptionsList: React.FC = () => {
   const [subscriptions, setSubscriptions] = useState<UserFeedSubscription[]>([]);
   const [error, setError] = useState<string>('');
+  const [unsubscribeStatus, setUnsubscribeStatus] = useState<Record<string, string>>({});
   const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
 
   useEffect(() => {
     const unsubscribe = userFeedSubscriptionsService.watchAllSubscriptions({
       successCallback: (updatedSubscriptions) => {
-        setSubscriptions(updatedSubscriptions.filter((sub) => sub.isActive));
+        setSubscriptions(updatedSubscriptions);
         setError('');
       },
       errorCallback: () => {
@@ -155,6 +156,34 @@ export const FeedSubscriptionsList: React.FC = () => {
 
     return () => unsubscribe();
   }, [userFeedSubscriptionsService]);
+
+  const handleUnsubscribe = async (subscription: UserFeedSubscription) => {
+    setUnsubscribeStatus((prev) => ({
+      ...prev,
+      [subscription.userFeedSubscriptionId]: 'Unsubscribing...',
+    }));
+
+    const unsubscribeResult = await userFeedSubscriptionsService.updateSubscription(
+      subscription.userFeedSubscriptionId,
+      {
+        isActive: false,
+        unsubscribedTime: new Date(),
+      }
+    );
+
+    if (!unsubscribeResult.success) {
+      setUnsubscribeStatus((prev) => ({
+        ...prev,
+        [subscription.userFeedSubscriptionId]: `Error unsubscribing: ${unsubscribeResult.error.message}`,
+      }));
+      return;
+    }
+
+    setUnsubscribeStatus((prev) => ({
+      ...prev,
+      [subscription.userFeedSubscriptionId]: 'Successfully unsubscribed',
+    }));
+  };
 
   const renderMainContent = () => {
     if (error) {
@@ -170,10 +199,19 @@ export const FeedSubscriptionsList: React.FC = () => {
         {subscriptions.map((subscription) => (
           <FeedSubscriptionItem key={subscription.userFeedSubscriptionId}>
             <FeedSubscriptionItemDetails>
-              <Text bold>{subscription.title}</Text>
+              <Text bold color={subscription.isActive ? undefined : ThemeColor.Red500}>
+                {subscription.title}
+              </Text>
               <Text style={{fontSize: '14px'}}>{subscription.url}</Text>
             </FeedSubscriptionItemDetails>
-            {/* TODO: Add unsubscribe button once the backend supports it */}
+            {subscription.isActive ? (
+              <Button
+                variant={ButtonVariant.Secondary}
+                onClick={() => handleUnsubscribe(subscription)}
+              >
+                Unsubscribe
+              </Button>
+            ) : null}
           </FeedSubscriptionItem>
         ))}
       </FeedSubscriptionItemsWrapper>
