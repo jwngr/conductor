@@ -125,7 +125,7 @@ interface BaseFeedItem extends BaseStoreItem {
   /** Links found in the scraped URL content. */
   readonly outgoingLinks: string[];
   /** AI-generated hierarchical summary of the content. */
-  readonly summary?: string;
+  readonly summary: string;
 
   /**
    * Triage status determines where the feed item "lives" in the app.
