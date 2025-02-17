@@ -3,10 +3,12 @@ import styled from 'styled-components';
 
 import type {CustomIcon} from '@shared/lib/customIcons.shared';
 import {CustomIconType} from '@shared/lib/customIcons.shared';
+import {NavItems} from '@shared/lib/navItems.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {ThemeColor} from '@shared/types/theme.types';
-import {NavItemId, NavItems, type NavItem} from '@shared/types/urls.types';
+import type {NavItem} from '@shared/types/urls.types';
+import {NavItemId} from '@shared/types/urls.types';
 import type {Task} from '@shared/types/utils.types';
 
 import {useFocusStore} from '@sharedClient/stores/FocusStore';

@@ -1,4 +1,4 @@
-import {NavItems} from '@shared/types/urls.types';
+import {NavItems} from '@shared/lib/navItems.shared';
 
 import {useFocusStore} from '@sharedClient/stores/FocusStore';
 

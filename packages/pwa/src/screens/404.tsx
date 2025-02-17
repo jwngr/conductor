@@ -1,4 +1,6 @@
-import {NavItemId, NavItems} from '@shared/types/urls.types';
+import {NavItems} from '@shared/lib/navItems.shared';
+
+import {NavItemId} from '@shared/types/urls.types';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';

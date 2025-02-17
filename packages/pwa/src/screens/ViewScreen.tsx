@@ -1,7 +1,8 @@
 import {useEffect} from 'react';
 
+import {NavItems} from '@shared/lib/navItems.shared';
+
 import type {ViewType} from '@shared/types/query.types';
-import {NavItems} from '@shared/types/urls.types';
 
 import {useFocusStore} from '@sharedClient/stores/FocusStore';
 
