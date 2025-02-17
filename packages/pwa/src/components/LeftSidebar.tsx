@@ -3,11 +3,10 @@ import {useMatch} from 'react-router-dom';
 import styled from 'styled-components';
 
 import type {CustomIcon} from '@shared/lib/customIcons.shared';
-import {CustomIconType, makeSystemIcon} from '@shared/lib/customIcons.shared';
+import {CustomIconType} from '@shared/lib/customIcons.shared';
 import {Urls} from '@shared/lib/urls.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
-import {IconName} from '@shared/types/icons.types';
 import {ThemeColor} from '@shared/types/theme.types';
 import type {NavItem} from '@shared/types/urls.types';
 
@@ -83,23 +82,20 @@ const LeftSidebarSection: React.FC<{
         {title}
       </Text>
       <FlexColumn style={{margin: '0 -12px'}}>
-        {navItems.map((navItem) => {
-          const url = Urls.forView(navItem.viewType);
-          return (
-            <LeftSidebarItemComponent
-              key={navItem.viewType}
-              url={url}
-              icon={navItem.icon}
-              title={navItem.title}
-            />
-          );
-        })}
+        {navItems.map((navItem, i) => (
+          <LeftSidebarItemComponent
+            key={`${i}-${navItem.url}`}
+            url={navItem.url}
+            icon={navItem.icon}
+            title={navItem.title}
+          />
+        ))}
       </FlexColumn>
     </FlexColumn>
   );
 };
 
-const LeftSidebarWrapper = styled(FlexColumn)`
+const LeftSidebarWrapper = styled(FlexColumn).attrs({gap: 16})`
   width: 200px;
   padding: 20px;
   background-color: ${({theme}) => theme.colors[ThemeColor.Neutral100]};
@@ -110,15 +106,8 @@ const LeftSidebarWrapper = styled(FlexColumn)`
 export const LeftSidebar: React.FC = () => {
   return (
     <LeftSidebarWrapper>
-      <LeftSidebarSection title="Views" navItems={Urls.getOrderedNavItems()} />
-      <div>
-        <LeftSidebarItemComponent
-          url={Urls.forFeedSubscriptions()}
-          // TODO: Choose a better icon.
-          icon={makeSystemIcon(IconName.Save)}
-          title="Feeds"
-        />
-      </div>
+      <LeftSidebarSection title="Views" navItems={Urls.getOrderedViewNavItems()} />
+      <LeftSidebarSection title="Feeds" navItems={[Urls.getFeedsNavItem()]} />
     </LeftSidebarWrapper>
   );
 };

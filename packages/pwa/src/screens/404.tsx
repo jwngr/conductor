@@ -7,7 +7,7 @@ import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
 
 export const NotFoundScreen: React.FC<{readonly message: string}> = ({message}) => {
-  const navItem = Urls.getNavItem(ViewType.Untriaged);
+  const navItem = Urls.getViewNavItem(ViewType.Untriaged);
   return (
     <FlexColumn align="center" justify="center" style={{height: '100%', width: '100%'}} gap={8}>
       <Text as="h1">404</Text>

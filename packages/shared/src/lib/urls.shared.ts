@@ -1,10 +1,10 @@
-import {CustomIconType} from '@shared/lib/customIcons.shared';
+import {makeEmojiIcon} from '@shared/lib/customIcons.shared';
 import {syncTry} from '@shared/lib/errorUtils.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import type {FeedItemId} from '@shared/types/feedItems.types';
 import {ViewType} from '@shared/types/query.types';
-import type {NavItem} from '@shared/types/urls.types';
+import {makeNavItemForView, type NavItem} from '@shared/types/urls.types';
 
 // TODO: Make URL validation more robust.
 export function isValidUrl(url: string): boolean {
@@ -14,84 +14,6 @@ export function isValidUrl(url: string): boolean {
   const isValidUrlResult2 = syncTry(() => new URL('https://' + url));
   return isValidUrlResult2.success;
 }
-
-const ALL_NAV_ITEMS: Record<ViewType, NavItem> = {
-  [ViewType.Untriaged]: {
-    icon: {
-      type: CustomIconType.Emoji,
-      emoji: '🆕',
-    },
-    title: 'New',
-    viewType: ViewType.Untriaged,
-  },
-  [ViewType.Saved]: {
-    icon: {
-      type: CustomIconType.Emoji,
-      emoji: '💾',
-    },
-    title: 'Saved',
-    viewType: ViewType.Saved,
-  },
-  [ViewType.Done]: {
-    icon: {
-      type: CustomIconType.Emoji,
-      emoji: '✅',
-    },
-    title: 'Done',
-    viewType: ViewType.Done,
-  },
-  [ViewType.Unread]: {
-    icon: {
-      type: CustomIconType.Emoji,
-      emoji: '📰',
-    },
-    title: 'Unread',
-    viewType: ViewType.Unread,
-  },
-  [ViewType.Starred]: {
-    icon: {
-      type: CustomIconType.Emoji,
-      emoji: '⭐️',
-    },
-    title: 'Starred',
-    viewType: ViewType.Starred,
-  },
-  [ViewType.All]: {
-    icon: {
-      type: CustomIconType.Emoji,
-      emoji: '📚',
-    },
-    title: 'All',
-    viewType: ViewType.All,
-  },
-  [ViewType.Trashed]: {
-    icon: {
-      type: CustomIconType.Emoji,
-      emoji: '🗑️',
-    },
-    title: 'Trashed',
-    viewType: ViewType.Trashed,
-  },
-  [ViewType.Today]: {
-    icon: {
-      type: CustomIconType.Emoji,
-      emoji: '📅',
-    },
-    title: 'Today',
-    viewType: ViewType.Today,
-  },
-};
-
-const ALL_ORDERED_NAV_ITEMS: NavItem[] = [
-  ALL_NAV_ITEMS[ViewType.Untriaged],
-  ALL_NAV_ITEMS[ViewType.Saved],
-  ALL_NAV_ITEMS[ViewType.Done],
-  ALL_NAV_ITEMS[ViewType.Unread],
-  ALL_NAV_ITEMS[ViewType.Starred],
-  ALL_NAV_ITEMS[ViewType.All],
-  ALL_NAV_ITEMS[ViewType.Trashed],
-  ALL_NAV_ITEMS[ViewType.Today],
-];
 
 export class Urls {
   static forRoot(): string {
@@ -137,13 +59,22 @@ export class Urls {
     return '/feeds';
   }
 
-  static getOrderedNavItems(): NavItem[] {
+  static getOrderedViewNavItems(): NavItem[] {
     // Return a copy to prevent external modification.
-    return [...ALL_ORDERED_NAV_ITEMS];
+    return [...ALL_ORDERED_VIEW_NAV_ITEMS];
   }
 
-  static getNavItem(viewType: ViewType): NavItem {
+  static getAllNavItems(): NavItem[] {
+    // Return a copy to prevent external modification.
+    return [...this.getOrderedViewNavItems(), this.getFeedsNavItem()];
+  }
+
+  static getViewNavItem(viewType: ViewType): NavItem {
     return ALL_NAV_ITEMS[viewType];
+  }
+
+  static getFeedsNavItem(): NavItem {
+    return ALL_NAV_ITEMS.ALL_FEEDS;
   }
 
   static forSignIn(): string {
@@ -158,3 +89,54 @@ export class Urls {
     return '/styleguide';
   }
 }
+
+const ALL_NAV_ITEMS: Record<ViewType | 'ALL_FEEDS', NavItem> = {
+  [ViewType.Untriaged]: makeNavItemForView(ViewType.Untriaged, {
+    icon: makeEmojiIcon('🆕'),
+    title: 'New',
+  }),
+  [ViewType.Saved]: makeNavItemForView(ViewType.Saved, {
+    icon: makeEmojiIcon('💾'),
+    title: 'Saved',
+  }),
+  [ViewType.Done]: makeNavItemForView(ViewType.Done, {
+    icon: makeEmojiIcon('✅'),
+    title: 'Done',
+  }),
+  [ViewType.Unread]: makeNavItemForView(ViewType.Unread, {
+    icon: makeEmojiIcon('👀'),
+    title: 'Unread',
+  }),
+  [ViewType.Starred]: makeNavItemForView(ViewType.Starred, {
+    icon: makeEmojiIcon('⭐️'),
+    title: 'Starred',
+  }),
+  [ViewType.All]: makeNavItemForView(ViewType.All, {
+    icon: makeEmojiIcon('📚'),
+    title: 'All',
+  }),
+  [ViewType.Trashed]: makeNavItemForView(ViewType.Trashed, {
+    icon: makeEmojiIcon('🗑️'),
+    title: 'Trashed',
+  }),
+  [ViewType.Today]: makeNavItemForView(ViewType.Today, {
+    icon: makeEmojiIcon('📅'),
+    title: 'Today',
+  }),
+  ALL_FEEDS: {
+    url: Urls.forFeedSubscriptions(),
+    icon: makeEmojiIcon('📰'),
+    title: 'Feeds',
+  },
+};
+
+const ALL_ORDERED_VIEW_NAV_ITEMS: NavItem[] = [
+  ALL_NAV_ITEMS[ViewType.Untriaged],
+  ALL_NAV_ITEMS[ViewType.Saved],
+  ALL_NAV_ITEMS[ViewType.Done],
+  ALL_NAV_ITEMS[ViewType.Unread],
+  ALL_NAV_ITEMS[ViewType.Starred],
+  ALL_NAV_ITEMS[ViewType.All],
+  ALL_NAV_ITEMS[ViewType.Trashed],
+  ALL_NAV_ITEMS[ViewType.Today],
+];

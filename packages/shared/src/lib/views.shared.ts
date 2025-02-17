@@ -126,4 +126,8 @@ export class Views {
   static getForToday(): View<FeedItem> {
     return ALL_VIEW_CONFIGS[ViewType.Today];
   }
+
+  static getAllViewTypes(): ViewType[] {
+    return Object.keys(ALL_VIEW_CONFIGS).map((key) => key as ViewType);
+  }
 }

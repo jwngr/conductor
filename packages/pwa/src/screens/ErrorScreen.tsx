@@ -9,7 +9,7 @@ import {ScreenWrapper} from '@src/components/layout/Screen';
 
 // TODO: Improve design of error screen.
 export const ErrorScreen: React.FC<{readonly error: Error}> = ({error}) => {
-  const navItem = Urls.getNavItem(ViewType.Untriaged);
+  const navItem = Urls.getViewNavItem(ViewType.Untriaged);
   return (
     <ScreenWrapper align="center" justify="center">
       <FlexColumn align="center" style={{maxWidth: 960}} gap={8}>
