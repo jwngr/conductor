@@ -124,6 +124,8 @@ interface BaseFeedItem extends BaseStoreItem {
   readonly description: string;
   /** Links found in the scraped URL content. */
   readonly outgoingLinks: string[];
+  /** AI-generated hierarchical summary of the content. */
+  readonly summary?: string;
 
   /**
    * Triage status determines where the feed item "lives" in the app.
@@ -157,6 +159,7 @@ export const FeedItemFromStorageSchema = z.object({
   title: z.string().min(1),
   description: z.string(),
   outgoingLinks: z.array(z.string().url()),
+  summary: z.string().optional(),
   triageStatus: z.nativeEnum(TriageStatus),
   tagIds: z.record(z.string(), z.literal(true).optional()),
   lastImportedTime: FirestoreTimestampSchema.or(z.date()).optional(),
@@ -205,6 +208,7 @@ export enum FeedItemActionType {
   MarkUnread = 'MARK_UNREAD',
   Save = 'SAVE',
   Star = 'STAR',
+  DebugSaveExample = 'DEBUG_SAVE_EXAMPLE',
 }
 
 export interface FeedItemAction {
@@ -212,5 +216,5 @@ export interface FeedItemAction {
   // TODO: Should this have `feedId` on it? Should it be optional?
   readonly text: string;
   readonly icon: IconName;
-  readonly shortcutId: KeyboardShortcutId;
+  readonly shortcutId?: KeyboardShortcutId;
 }
