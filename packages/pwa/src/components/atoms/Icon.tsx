@@ -1,4 +1,6 @@
 import {Bug, Check, DotSquare, Inbox, Save, Star, X} from 'lucide-react';
+import {DynamicIcon} from 'lucide-react/dynamic';
+import type {IconName as LucideIconName} from 'lucide-react/dynamic';
 import type React from 'react';
 
 import {assertNever} from '@shared/lib/utils.shared';
@@ -26,32 +28,26 @@ interface UnifiedIconProps extends BaseIconProps {
 }
 
 export const Icon: React.FC<UnifiedIconProps & {}> = ({name, ...props}) => {
-  let IconComponent: React.ElementType;
+  return <DynamicIcon name={toLucideIconName(name)} {...props} />;
+};
+
+function toLucideIconName(name: IconName): LucideIconName {
   switch (name) {
     case IconName.Cancel:
-      IconComponent = CancelIcon;
-      break;
+      return 'x';
     case IconName.DebugSaveExample:
-      IconComponent = DebugSaveExampleIcon;
-      break;
+      return 'bug';
     case IconName.Inbox:
-      IconComponent = InboxIcon;
-      break;
+      return 'inbox';
     case IconName.MarkDone:
-      IconComponent = MarkDoneIcon;
-      break;
+      return 'check';
     case IconName.MarkUnread:
-      IconComponent = MarkUnreadIcon;
-      break;
+      return 'dot-square';
     case IconName.Save:
-      IconComponent = SaveIcon;
-      break;
+      return 'save';
     case IconName.Star:
-      IconComponent = StarIcon;
-      break;
+      return 'star';
     default:
       assertNever(name);
   }
-
-  return <IconComponent {...props} />;
-};
+}
