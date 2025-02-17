@@ -110,7 +110,7 @@ const FeedAdder: React.FC = () => {
         </Button>
       </FeedAdderForm>
 
-      {status && <StatusText $isError={status.includes('Error')}>{status}</StatusText>}
+      {status ? <StatusText $isError={status.includes('Error')}>{status}</StatusText> : null}
 
       <PreCannedFeedsWrapper>
         <Text bold>Quick add feeds</Text>
