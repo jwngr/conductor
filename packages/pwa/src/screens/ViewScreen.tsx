@@ -1,23 +1,24 @@
 import {useEffect} from 'react';
 
 import type {ViewType} from '@shared/types/query.types';
+import {NavItems} from '@shared/types/urls.types';
 
 import {useFocusStore} from '@sharedClient/stores/FocusStore';
 
 import {AppHeader} from '@src/components/AppHeader';
+import {FeedItemScreenEscapeHandler} from '@src/components/feedItems/FeedItemScreenEscapeHandler';
 import {ScreenMainContentWrapper, ScreenWrapper} from '@src/components/layout/Screen';
 import {LeftSidebar} from '@src/components/LeftSidebar';
 import {View} from '@src/components/views/View';
-import {ViewScreenEscapeHandler} from '@src/components/views/ViewScreenEscapeHandler';
 
 export const ViewScreen: React.FC<{
   readonly viewType: ViewType;
 }> = ({viewType}) => {
-  const {setFocusedViewType} = useFocusStore();
+  const {setFocusedNavItemId} = useFocusStore();
 
   useEffect(() => {
-    setFocusedViewType(viewType);
-  }, [viewType, setFocusedViewType]);
+    setFocusedNavItemId(NavItems.forView(viewType).id);
+  }, [viewType, setFocusedNavItemId]);
 
   return (
     <ScreenWrapper>
@@ -26,7 +27,7 @@ export const ViewScreen: React.FC<{
         <LeftSidebar />
         <View viewType={viewType} />
       </ScreenMainContentWrapper>
-      <ViewScreenEscapeHandler />
+      <FeedItemScreenEscapeHandler />
     </ScreenWrapper>
   );
 };

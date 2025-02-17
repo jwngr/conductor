@@ -1,7 +1,8 @@
 import {create, type StateCreator} from 'zustand';
 
 import type {FeedItemId} from '@shared/types/feedItems.types';
-import type {ViewType} from '@shared/types/query.types';
+import {DEFAULT_FOCUSED_NAV_ITEM} from '@shared/types/urls.types';
+import type {NavItemId} from '@shared/types/urls.types';
 import type {Func} from '@shared/types/utils.types';
 
 /**
@@ -9,32 +10,27 @@ import type {Func} from '@shared/types/utils.types';
  * drive product functionality like which sidebar item is active and which list item has focus.
  */
 interface FocusState {
-  /**
-   * The feed item that has focus. Can be null, e.g. nothing has focus initially.
-   */
-  readonly focusedFeedItemId: FeedItemId | null;
+  /** The nav item that has focus. */
+  readonly focusedNavItemId: NavItemId;
 
-  /**
-   * The view that has focus, from which a feed item is being shown. Can be null, e.g. when viewing
-   * a feed item via a direct URL.
-   */
-  readonly focusedViewType: ViewType | null;
+  /** The feed item that has focus. Can be null, e.g. nothing has focus initially. */
+  readonly focusedFeedItemId: FeedItemId | null;
 
   // Actions.
   readonly setFocusedFeedItemId: Func<FeedItemId | null, void>;
-  readonly setFocusedViewType: Func<ViewType | null, void>;
+  readonly setFocusedNavItemId: Func<NavItemId, void>;
 }
 
 const createFocusStore: StateCreator<FocusState> = (set) => ({
   // Initial state.
+  focusedNavItemId: DEFAULT_FOCUSED_NAV_ITEM,
   focusedFeedItemId: null,
-  focusedViewType: null,
 
   // Actions.
   setFocusedFeedItemId: (feedItemId) => set({focusedFeedItemId: feedItemId}),
-  setFocusedViewType: (viewType) => {
+  setFocusedNavItemId: (navItemId) => {
     return set({
-      focusedViewType: viewType,
+      focusedNavItemId: navItemId,
       // Focusing a new view resets list item focus.
       focusedFeedItemId: null,
     });

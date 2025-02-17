@@ -1,6 +1,4 @@
-import {Urls} from '@shared/lib/urls.shared';
-
-import {ViewType} from '@shared/types/query.types';
+import {NavItemId, NavItems} from '@shared/types/urls.types';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
@@ -9,7 +7,7 @@ import {ScreenWrapper} from '@src/components/layout/Screen';
 
 // TODO: Improve design of error screen.
 export const ErrorScreen: React.FC<{readonly error: Error}> = ({error}) => {
-  const navItem = Urls.getViewNavItem(ViewType.Untriaged);
+  const navItem = NavItems.forId(NavItemId.Untriaged);
   return (
     <ScreenWrapper align="center" justify="center">
       <FlexColumn align="center" style={{maxWidth: 960}} gap={8}>

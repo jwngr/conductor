@@ -1,19 +1,14 @@
-import {Urls} from '@shared/lib/urls.shared';
-
-import {ViewType} from '@shared/types/query.types';
+import {NavItems} from '@shared/types/urls.types';
 
 import {useFocusStore} from '@sharedClient/stores/FocusStore';
 
 import {keyboardShortcutsService, useNavShortcut} from '@src/lib/shortcuts.pwa';
 
 export const FeedItemScreenEscapeHandler: React.FC = () => {
-  const {focusedViewType} = useFocusStore();
+  const {focusedNavItemId} = useFocusStore();
+  const focusedNavItem = NavItems.forId(focusedNavItemId);
 
-  // Navigate back to the parent view, if any. Otherwise, navigate to Untriaged.
-  useNavShortcut(
-    keyboardShortcutsService.forClose(),
-    Urls.forView(focusedViewType ?? ViewType.Untriaged)
-  );
+  useNavShortcut(keyboardShortcutsService.forClose(), focusedNavItem.url);
 
   return null;
 };
