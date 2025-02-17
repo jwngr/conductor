@@ -140,7 +140,6 @@ const FeedAdder: React.FC = () => {
 const FeedSubscriptionsList: React.FC = () => {
   const [subscriptions, setSubscriptions] = useState<UserFeedSubscription[]>([]);
   const [error, setError] = useState<string>('');
-  const [unsubscribeStatus, setUnsubscribeStatus] = useState<Record<string, string>>({});
   const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
 
   useEffect(() => {
@@ -158,11 +157,6 @@ const FeedSubscriptionsList: React.FC = () => {
   }, [userFeedSubscriptionsService]);
 
   const handleUnsubscribe = async (subscription: UserFeedSubscription) => {
-    setUnsubscribeStatus((prev) => ({
-      ...prev,
-      [subscription.userFeedSubscriptionId]: 'Unsubscribing...',
-    }));
-
     const unsubscribeResult = await userFeedSubscriptionsService.updateSubscription(
       subscription.userFeedSubscriptionId,
       {
@@ -172,17 +166,9 @@ const FeedSubscriptionsList: React.FC = () => {
     );
 
     if (!unsubscribeResult.success) {
-      setUnsubscribeStatus((prev) => ({
-        ...prev,
-        [subscription.userFeedSubscriptionId]: `Error unsubscribing: ${unsubscribeResult.error.message}`,
-      }));
+      setError(`Error unsubscribing from feed: ${unsubscribeResult.error.message}`);
       return;
     }
-
-    setUnsubscribeStatus((prev) => ({
-      ...prev,
-      [subscription.userFeedSubscriptionId]: 'Successfully unsubscribed',
-    }));
   };
 
   const renderMainContent = () => {
