@@ -44,7 +44,7 @@ const eventLogItemFirestoreConverter = makeFirestoreDataConverter(
   parseEventLogItem
 );
 
-export const useEventLogService = () => {
+export const useEventLogService = (): ClientEventLogService => {
   const loggedInAccount = useLoggedInAccount();
 
   const eventLogService = useMemo(() => {

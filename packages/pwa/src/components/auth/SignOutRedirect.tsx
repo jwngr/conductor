@@ -15,7 +15,7 @@ export const SignOutRedirect: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const go = async () => {
+    const go = async (): Promise<void> => {
       const signOutResult = await authService.signOut();
       if (!signOutResult.success) {
         // TODO: Can this be de-duped with the error handler in `AuthServiceSubscription`?

@@ -6,7 +6,7 @@ import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {FlexRow} from '@src/components/atoms/Flex';
 import {StorySection} from '@src/components/styleguide/StorySection';
 
-const handleButtonIconClick = () => {
+const handleButtonIconClick = (): void => {
   window.alert('Button icon clicked');
 };
 

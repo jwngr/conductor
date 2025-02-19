@@ -124,7 +124,7 @@ export function useFeedItemMarkdown(
   useEffect(() => {
     let isMounted = true;
 
-    async function go() {
+    async function go(): Promise<void> {
       // Wait to fetch markdown until the feed item has been imported.
       if (!isFeedItemImported) return;
 

@@ -90,7 +90,7 @@ export async function batchAsyncResults<T>(
 
   const allResults: Array<Result<T>> = [];
   for (const currentSuppliers of resultsPerBatch) {
-    const currentResults = await Promise.all(currentSuppliers.map((supplier) => supplier()));
+    const currentResults = await Promise.all(currentSuppliers.map(async (supplier) => supplier()));
     allResults.push(...currentResults);
   }
   return makeSuccessResult(allResults);

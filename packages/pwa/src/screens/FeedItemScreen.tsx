@@ -18,6 +18,7 @@ import {AppHeader} from '@src/components/AppHeader';
 import {Text} from '@src/components/atoms/Text';
 import {RegisterIndividualFeedItemDevToolbarSection} from '@src/components/devToolbar/RegisterIndividualFeedItemSection';
 import {ArticleFeedItemComponent} from '@src/components/feedItems/ArticleFeedItem';
+import {FeedItemScreenKeyboardHandler} from '@src/components/feedItems/FeedItemScreenEscapeHandler';
 import {TweetFeedItemComponent} from '@src/components/feedItems/TweetFeedItem';
 import {VideoFeedItemComponent} from '@src/components/feedItems/VideoFeedItem';
 import {WebsiteFeedItemComponent} from '@src/components/feedItems/WebsiteFeedItem';
@@ -30,7 +31,7 @@ import {NotFoundScreen} from '@src/screens/404';
 const useMarkFeedItemRead = (args: {
   readonly feedItemId: FeedItemId;
   readonly feedItem: FeedItem | null;
-}) => {
+}): void => {
   const {feedItemId, feedItem} = args;
 
   const feedItemsService = useFeedItemsService();
@@ -43,7 +44,7 @@ const useMarkFeedItemRead = (args: {
   const isFeedItemImported = feedItem ? !SharedFeedItemHelpers.isImporting(feedItem) : false;
 
   useEffect(() => {
-    async function go() {
+    async function go(): Promise<void> {
       // Don't mark the feed item as read unless it has been imported.
       if (isFeedItemNull || !isFeedItemImported) return;
 
@@ -141,6 +142,7 @@ export const FeedItemScreen: React.FC = () => {
         <LeftSidebar />
         {mainContent}
       </ScreenMainContentWrapper>
+      <FeedItemScreenKeyboardHandler />
     </ScreenWrapper>
   );
 };

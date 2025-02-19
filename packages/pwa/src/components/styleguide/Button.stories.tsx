@@ -2,11 +2,11 @@ import {Button, ButtonVariant} from '@src/components/atoms/Button';
 import {FlexRow} from '@src/components/atoms/Flex';
 import {StorySection} from '@src/components/styleguide/StorySection';
 
-const handleClick = (message: string) => {
+const handleClick = (message: string): void => {
   window.alert(message);
 };
 
-const handleDisabledClick = () => {
+const handleDisabledClick = (): void => {
   window.alert('You should not see this since the button is disabled');
 };
 

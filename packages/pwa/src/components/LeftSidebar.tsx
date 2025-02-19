@@ -1,14 +1,17 @@
 import type React from 'react';
-import {useMatch} from 'react-router-dom';
+import type {MouseEventHandler} from 'react';
 import styled from 'styled-components';
 
 import type {CustomIcon} from '@shared/lib/customIcons.shared';
 import {CustomIconType} from '@shared/lib/customIcons.shared';
-import {Urls} from '@shared/lib/urls.shared';
+import {NavItems, ORDERED_VIEW_NAV_ITEMS} from '@shared/lib/navItems.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {ThemeColor} from '@shared/types/theme.types';
 import type {NavItem} from '@shared/types/urls.types';
+import {NavItemId} from '@shared/types/urls.types';
+
+import {useFocusStore} from '@sharedClient/stores/FocusStore';
 
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
@@ -59,12 +62,12 @@ const LeftSidebarItemComponent: React.FC<{
   readonly url: string;
   readonly icon: CustomIcon;
   readonly title: string;
-}> = ({url, icon, title}) => {
-  const match = useMatch(url);
-
+  readonly isActive: boolean;
+  readonly onClick: MouseEventHandler<HTMLAnchorElement>;
+}> = ({url, icon, title, isActive, onClick}) => {
   return (
-    <Link to={url}>
-      <LeftSideItemWrapper $isActive={!!match}>
+    <Link to={url} onClick={onClick}>
+      <LeftSideItemWrapper $isActive={isActive}>
         <LeftSidebarItemAvatar icon={icon} />
         <Text as="p">{title}</Text>
       </LeftSideItemWrapper>
@@ -76,6 +79,7 @@ const LeftSidebarSection: React.FC<{
   readonly title: string;
   readonly navItems: readonly NavItem[];
 }> = ({title, navItems}) => {
+  const {focusedNavItemId, setFocusedNavItemId} = useFocusStore();
   return (
     <FlexColumn>
       <Text as="h5" light>
@@ -88,6 +92,8 @@ const LeftSidebarSection: React.FC<{
             url={navItem.url}
             icon={navItem.icon}
             title={navItem.title}
+            isActive={focusedNavItemId === navItem.id}
+            onClick={() => setFocusedNavItemId(navItem.id)}
           />
         ))}
       </FlexColumn>
@@ -106,8 +112,8 @@ const LeftSidebarWrapper = styled(FlexColumn).attrs({gap: 16})`
 export const LeftSidebar: React.FC = () => {
   return (
     <LeftSidebarWrapper>
-      <LeftSidebarSection title="Views" navItems={Urls.getOrderedViewNavItems()} />
-      <LeftSidebarSection title="Feeds" navItems={[Urls.getFeedsNavItem()]} />
+      <LeftSidebarSection title="Views" navItems={ORDERED_VIEW_NAV_ITEMS} />
+      <LeftSidebarSection title="Feeds" navItems={[NavItems.fromId(NavItemId.Feeds)]} />
     </LeftSidebarWrapper>
   );
 };

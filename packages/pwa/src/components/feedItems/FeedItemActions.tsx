@@ -50,7 +50,7 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
   const eventLogService = useEventLogService();
   const {showToast, showErrorToast} = useToast();
 
-  const handleAction = async () => {
+  const handleAction = async (): Promise<void> => {
     const isCurrentlyActive = getIsActive(feedItem);
     const result = await onAction(isCurrentlyActive);
 

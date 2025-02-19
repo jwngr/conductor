@@ -49,12 +49,21 @@ function makeSharedRules({
 }) {
   return {
     'no-console': 'error',
-    '@typescript-eslint/array-type': ['error', {default: 'array-simple'}],
-    '@typescript-eslint/consistent-type-imports': 'error',
-    '@typescript-eslint/no-extraneous-class': 'off',
-    '@typescript-eslint/await-thenable': 'error',
-    '@typescript-eslint/no-floating-promises': 'error',
     'react/jsx-no-useless-fragment': 'error',
+    '@typescript-eslint/array-type': ['error', {default: 'array-simple'}],
+    '@typescript-eslint/await-thenable': 'error',
+    '@typescript-eslint/consistent-type-imports': 'error',
+    '@typescript-eslint/explicit-function-return-type': [
+      'error',
+      {
+        allowExpressions: true,
+        allowTypedFunctionExpressions: true,
+        allowHigherOrderFunctions: true,
+      },
+    ],
+    '@typescript-eslint/no-floating-promises': 'error',
+    '@typescript-eslint/no-extraneous-class': 'off',
+    '@typescript-eslint/promise-function-async': 'error',
     'no-restricted-syntax': [
       'error',
       {

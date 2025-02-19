@@ -10,6 +10,7 @@ import {useMaybeLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
 export const RequireLoggedInAccount: React.FC<{
   readonly children: React.ReactNode;
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
 }> = ({children}) => {
   const {isLoading, loggedInAccount} = useMaybeLoggedInAccount();
 

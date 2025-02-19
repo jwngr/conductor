@@ -72,7 +72,7 @@ const FeedAdder: React.FC = () => {
   const [status, setStatus] = useState('');
   const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
 
-  const handleSubscribeToFeedUrl = async (feedUrl: string) => {
+  const handleSubscribeToFeedUrl = async (feedUrl: string): Promise<void> => {
     setStatus('Subscribing to feed source...');
 
     const trimmedUrl = feedUrl.trim();
@@ -105,7 +105,10 @@ const FeedAdder: React.FC = () => {
           onChange={(e) => setUrl(e.target.value)}
           style={{flex: 1}}
         />
-        <Button variant={ButtonVariant.Primary} onClick={() => handleSubscribeToFeedUrl(url)}>
+        <Button
+          variant={ButtonVariant.Primary}
+          onClick={async () => void handleSubscribeToFeedUrl(url)}
+        >
           Subscribe
         </Button>
       </FeedAdderForm>
@@ -117,14 +120,14 @@ const FeedAdder: React.FC = () => {
         <PreCannedFeedsButtonsWrapper>
           <Button
             variant={ButtonVariant.Secondary}
-            onClick={() => handleSubscribeToFeedUrl('https://jwn.gr/rss.xml')}
+            onClick={async () => void handleSubscribeToFeedUrl('https://jwn.gr/rss.xml')}
           >
             Personal blog feed
           </Button>
           <Button
             variant={ButtonVariant.Secondary}
-            onClick={() =>
-              handleSubscribeToFeedUrl(
+            onClick={async () =>
+              void handleSubscribeToFeedUrl(
                 'https://lorem-rss.herokuapp.com/feed?unit=second&interval=30'
               )
             }
@@ -156,7 +159,7 @@ const FeedSubscriptionsList: React.FC = () => {
     return () => unsubscribe();
   }, [userFeedSubscriptionsService]);
 
-  const handleUnsubscribe = async (subscription: UserFeedSubscription) => {
+  const handleUnsubscribe = async (subscription: UserFeedSubscription): Promise<void> => {
     const unsubscribeResult = await userFeedSubscriptionsService.updateSubscription(
       subscription.userFeedSubscriptionId,
       {
@@ -171,7 +174,7 @@ const FeedSubscriptionsList: React.FC = () => {
     }
   };
 
-  const renderMainContent = () => {
+  const renderMainContent = (): React.ReactNode => {
     if (error) {
       return <Text color={ThemeColor.Red500}>Error loading feed subscriptions</Text>;
     }
@@ -193,7 +196,7 @@ const FeedSubscriptionsList: React.FC = () => {
             {subscription.isActive ? (
               <Button
                 variant={ButtonVariant.Secondary}
-                onClick={() => handleUnsubscribe(subscription)}
+                onClick={async () => void handleUnsubscribe(subscription)}
               >
                 Unsubscribe
               </Button>

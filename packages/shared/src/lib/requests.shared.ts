@@ -55,14 +55,14 @@ async function request<T>(
     const rawResponseClone = rawResponse.clone();
 
     // Try to parse the error response as JSON.
-    const unknownErrorJsonResult = await asyncTry(() => rawResponse.json());
+    const unknownErrorJsonResult = await asyncTry(async () => rawResponse.json());
     if (unknownErrorJsonResult.success) {
       const betterError = upgradeUnknownError(unknownErrorJsonResult.value ?? defaultErrorMessage);
       return makeErrorResponseResult(betterError, statusCode);
     }
 
     // Fallback to parsing as text if JSON parsing fails.
-    const unknownErrorTextResult = await asyncTry(() => rawResponseClone.text());
+    const unknownErrorTextResult = await asyncTry(async () => rawResponseClone.text());
     if (unknownErrorTextResult.success) {
       const betterError = upgradeUnknownError(unknownErrorTextResult.value ?? defaultErrorMessage);
       return makeErrorResponseResult(betterError, statusCode);

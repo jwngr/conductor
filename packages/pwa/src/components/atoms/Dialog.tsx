@@ -101,7 +101,7 @@ const DialogHeaderWrapper = styled.div`
   }
 `;
 
-const DialogHeader = (props: React.HTMLAttributes<HTMLDivElement>) => (
+const DialogHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => (
   <DialogHeaderWrapper {...props} />
 );
 DialogHeader.displayName = 'DialogHeader';
@@ -113,7 +113,7 @@ const DialogFooterWrapper = styled.div`
   gap: 0.5rem;
 `;
 
-const DialogFooter = (props: React.HTMLAttributes<HTMLDivElement>) => (
+const DialogFooter: React.FC<React.HTMLAttributes<HTMLDivElement>> = (props) => (
   <DialogFooterWrapper {...props} />
 );
 DialogFooter.displayName = 'DialogFooter';

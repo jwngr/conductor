@@ -5,6 +5,7 @@ import {TriageStatus} from '@shared/types/feedItems.types';
 import type {View} from '@shared/types/query.types';
 import {FilterOp, ViewType} from '@shared/types/query.types';
 import {SystemTagId} from '@shared/types/tags.types';
+import {NavItemId} from '@shared/types/urls.types';
 
 const ALL_VIEW_CONFIGS: Record<ViewType, View<FeedItem>> = {
   [ViewType.Untriaged]: {
@@ -129,5 +130,28 @@ export class Views {
 
   static getAllViewTypes(): ViewType[] {
     return Object.keys(ALL_VIEW_CONFIGS).map((key) => key as ViewType);
+  }
+
+  static fromNavItemId(navItemId: Exclude<NavItemId, NavItemId.Feeds>): ViewType {
+    switch (navItemId) {
+      case NavItemId.Untriaged:
+        return ViewType.Untriaged;
+      case NavItemId.Saved:
+        return ViewType.Saved;
+      case NavItemId.Done:
+        return ViewType.Done;
+      case NavItemId.Unread:
+        return ViewType.Unread;
+      case NavItemId.Starred:
+        return ViewType.Starred;
+      case NavItemId.All:
+        return ViewType.All;
+      case NavItemId.Today:
+        return ViewType.Today;
+      case NavItemId.Trashed:
+        return ViewType.Trashed;
+      default:
+        assertNever(navItemId);
+    }
   }
 }

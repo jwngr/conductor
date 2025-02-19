@@ -19,7 +19,7 @@ const AccountFeedSubscriber: React.FC = () => {
 
   const [status, setStatus] = useState<string>('');
 
-  const handleSubscribeToFeedUrl = async (feedUrl: string) => {
+  const handleSubscribeToFeedUrl = async (feedUrl: string): Promise<void> => {
     setStatus('Subscribing to feed source...');
     const subscribeResult = await userFeedSubscriptionsService.subscribeToUrl(feedUrl);
     if (!subscribeResult.success) {
@@ -34,14 +34,16 @@ const AccountFeedSubscriber: React.FC = () => {
     <>
       <Button
         variant={ButtonVariant.Secondary}
-        onClick={() => handleSubscribeToFeedUrl('https://jwn.gr/rss.xml')}
+        onClick={async () => void handleSubscribeToFeedUrl('https://jwn.gr/rss.xml')}
       >
         Subscribe to personal blog feed
       </Button>
       <Button
         variant={ButtonVariant.Secondary}
-        onClick={() =>
-          handleSubscribeToFeedUrl('https://lorem-rss.herokuapp.com/feed?unit=second&interval=30')
+        onClick={async () =>
+          void handleSubscribeToFeedUrl(
+            'https://lorem-rss.herokuapp.com/feed?unit=second&interval=30'
+          )
         }
       >
         Subscribe to 30s feed

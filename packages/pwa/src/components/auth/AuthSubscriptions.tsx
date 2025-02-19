@@ -35,7 +35,7 @@ const PasswordlessAuthSubscription: React.FC = () => {
   const navigate = useNavigate();
   const {setLoggedInAccount} = useAuthStore();
   useEffect(() => {
-    const go = async () => {
+    const go = async (): Promise<void> => {
       // Only do something if the current URL is a "sign-in with email" link.
       if (!isSignInWithEmailLink(firebaseService.auth, window.location.href)) return;
 

@@ -9,7 +9,7 @@ import type {
   ShortcutKey,
 } from '@shared/types/shortcuts.types';
 import {isModifierKey, KeyboardShortcutId, ModifierKey} from '@shared/types/shortcuts.types';
-import type {Task} from '@shared/types/utils.types';
+import type {Task, Unsubscribe} from '@shared/types/utils.types';
 
 export class SharedKeyboardShortcutsService {
   private isMac: boolean;
@@ -60,6 +60,12 @@ export class SharedKeyboardShortcutsService {
         return this.forToggleUnread();
       case KeyboardShortcutId.Close:
         return this.forClose();
+      case KeyboardShortcutId.ArrowDown:
+        return this.forArrowDown();
+      case KeyboardShortcutId.ArrowUp:
+        return this.forArrowUp();
+      case KeyboardShortcutId.Enter:
+        return this.forEnter();
       default:
         assertNever(shortcutId);
     }
@@ -113,7 +119,31 @@ export class SharedKeyboardShortcutsService {
     };
   }
 
-  private setupTinykeys(): void {
+  public forArrowUp(): KeyboardShortcut {
+    return {
+      shortcutId: KeyboardShortcutId.ArrowUp,
+      displayKeys: this.getPlatformSpecificKeys(['↑']),
+      keyPattern: 'ArrowUp',
+    };
+  }
+
+  public forArrowDown(): KeyboardShortcut {
+    return {
+      shortcutId: KeyboardShortcutId.ArrowDown,
+      displayKeys: this.getPlatformSpecificKeys(['↓']),
+      keyPattern: 'ArrowDown',
+    };
+  }
+
+  public forEnter(): KeyboardShortcut {
+    return {
+      shortcutId: KeyboardShortcutId.Enter,
+      displayKeys: this.getPlatformSpecificKeys(['↵']),
+      keyPattern: 'Enter',
+    };
+  }
+
+  private refreshActiveShortcuts(): void {
     if (this.unsubscribeTinykeys) {
       this.unsubscribeTinykeys();
     }
@@ -130,18 +160,14 @@ export class SharedKeyboardShortcutsService {
     this.unsubscribeTinykeys = tinykeys(window, shortcutMap);
   }
 
-  public registerShortcut(shortcut: KeyboardShortcut, handler: ShortcutHandler): void {
+  public registerShortcut(shortcut: KeyboardShortcut, handler: ShortcutHandler): Unsubscribe {
     this.registeredShortcuts.set(shortcut.shortcutId, {shortcut, handler});
-    this.setupTinykeys();
-  }
+    this.refreshActiveShortcuts();
 
-  public unregisterShortcut(shortcutId: KeyboardShortcutId): void {
-    this.registeredShortcuts.delete(shortcutId);
-    this.setupTinykeys();
-  }
-
-  public cleanup(): void {
-    this.unsubscribeTinykeys?.();
-    this.registeredShortcuts.clear();
+    // Return a function to unregister the shortcut.
+    return () => {
+      this.registeredShortcuts.delete(shortcut.shortcutId);
+      this.refreshActiveShortcuts();
+    };
   }
 }

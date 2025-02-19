@@ -61,12 +61,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
 
   useEffect(() => {
     if (!shortcut || !onShortcutTrigger) return;
-
-    keyboardShortcutsService.registerShortcut(shortcut, onShortcutTrigger);
-
-    return () => {
-      keyboardShortcutsService.unregisterShortcut(shortcut.shortcutId);
-    };
+    return keyboardShortcutsService.registerShortcut(shortcut, onShortcutTrigger);
   }, [onShortcutTrigger, shortcut]);
 
   let tooltipContent: React.ReactNode;

@@ -10,6 +10,9 @@ export enum KeyboardShortcutId {
   ToggleTrashed = 'TOGGLE_TRASHED',
   ToggleUnread = 'TOGGLE_UNREAD',
   Close = 'ESCAPE',
+  ArrowDown = 'ARROW_DOWN',
+  ArrowUp = 'ARROW_UP',
+  Enter = 'ENTER',
 }
 
 /**

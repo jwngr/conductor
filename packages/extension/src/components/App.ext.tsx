@@ -13,7 +13,7 @@ export const App: React.FC = () => {
   const {currentTab} = useCurrentTab();
   const feedItemsService = useFeedItemsService();
 
-  const handleClick = async () => {
+  const handleClick = async (): Promise<void> => {
     setStatus('Saving URL...');
 
     const tabResult = await asyncTry(async () => {
