@@ -55,6 +55,7 @@ function makeSharedRules({
     '@typescript-eslint/await-thenable': 'error',
     '@typescript-eslint/no-floating-promises': 'error',
     'react/jsx-no-useless-fragment': 'error',
+    '@typescript-eslint/promise-function-async': ['error'],
     'no-restricted-syntax': [
       'error',
       {

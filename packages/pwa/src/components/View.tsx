@@ -87,7 +87,7 @@ const PoemGenerator: React.FC = () => {
   return (
     <FlexColumn>
       <Button
-        onClick={() => generatePoem('Data visualizations about american football')}
+        onClick={async () => void generatePoem('Data visualizations about american football')}
         variant={ButtonVariant.Primary}
       >
         Generate poem

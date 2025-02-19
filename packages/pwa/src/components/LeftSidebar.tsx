@@ -113,7 +113,7 @@ export const LeftSidebar: React.FC = () => {
   return (
     <LeftSidebarWrapper>
       <LeftSidebarSection title="Views" navItems={ORDERED_VIEW_NAV_ITEMS} />
-      <LeftSidebarSection title="Feeds" navItems={[NavItems.forId(NavItemId.Feeds)]} />
+      <LeftSidebarSection title="Feeds" navItems={[NavItems.fromId(NavItemId.Feeds)]} />
     </LeftSidebarWrapper>
   );
 };

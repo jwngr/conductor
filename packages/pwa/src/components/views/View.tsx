@@ -1,6 +1,5 @@
-import {useCallback, useEffect, useMemo, useRef} from 'react';
+import {useEffect, useRef} from 'react';
 import type React from 'react';
-import {useNavigate} from 'react-router-dom';
 import styled from 'styled-components';
 
 import {logger} from '@shared/services/logger.shared';
@@ -18,10 +17,13 @@ import {useFeedItems} from '@sharedClient/services/feedItems.client';
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
+import {ViewKeyboardShortcutHandler} from '@src/components/views/ViewKeyboardShortcutHandler';
 
-import {keyboardShortcutsService, useShortcuts} from '@src/lib/shortcuts.pwa';
+interface ViewListItemWrapperProps {
+  readonly $isFocused: boolean;
+}
 
-const StyledDiv = styled.div<{readonly $isFocused: boolean}>`
+const ViewListItemWrapper = styled.div<ViewListItemWrapperProps>`
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -39,57 +41,10 @@ const StyledDiv = styled.div<{readonly $isFocused: boolean}>`
   ${({$isFocused, theme}) =>
     $isFocused &&
     `
-    background-color: ${theme.colors[ThemeColor.Neutral100]};
-    outline: 2px solid ${theme.colors[ThemeColor.Neutral500]};
-  `}
+      background-color: ${theme.colors[ThemeColor.Neutral100]};
+      outline: 2px solid ${theme.colors[ThemeColor.Neutral500]};
+    `}
 `;
-
-const ViewListKeyboardShortcuts: React.FC<{readonly feedItems: FeedItem[]}> = ({feedItems}) => {
-  const navigate = useNavigate();
-  const {focusedFeedItemId, setFocusedFeedItemId} = useFocusStore();
-
-  const currentIndex = useMemo(
-    () =>
-      focusedFeedItemId ? feedItems.findIndex((item) => item.feedItemId === focusedFeedItemId) : -1,
-    [feedItems, focusedFeedItemId]
-  );
-
-  const handleArrowDown = useCallback(() => {
-    if (!feedItems.length) return;
-
-    if (currentIndex === -1 || currentIndex === feedItems.length - 1) {
-      setFocusedFeedItemId(feedItems[0].feedItemId);
-    } else {
-      setFocusedFeedItemId(feedItems[currentIndex + 1].feedItemId);
-    }
-  }, [feedItems, currentIndex, setFocusedFeedItemId]);
-
-  const handleArrowUp = useCallback(() => {
-    if (!feedItems.length) return;
-
-    if (currentIndex === -1 || currentIndex === 0) {
-      setFocusedFeedItemId(feedItems[feedItems.length - 1].feedItemId);
-    } else {
-      setFocusedFeedItemId(feedItems[currentIndex - 1].feedItemId);
-    }
-  }, [feedItems, currentIndex, setFocusedFeedItemId]);
-
-  const handleEnter = useCallback(() => {
-    if (!feedItems.length) return;
-
-    if (focusedFeedItemId) {
-      navigate(Urls.forFeedItem(focusedFeedItemId));
-    }
-  }, [feedItems, focusedFeedItemId, navigate]);
-
-  useShortcuts([
-    {shortcut: keyboardShortcutsService.forArrowDown(), handler: handleArrowDown},
-    {shortcut: keyboardShortcutsService.forArrowUp(), handler: handleArrowUp},
-    {shortcut: keyboardShortcutsService.forEnter(), handler: handleEnter},
-  ]);
-
-  return null;
-};
 
 const ViewListItem: React.FC<{
   readonly feedItem: FeedItem;
@@ -111,7 +66,7 @@ const ViewListItem: React.FC<{
 
   return (
     <Link to={Urls.forFeedItem(feedItem.feedItemId)}>
-      <StyledDiv
+      <ViewListItemWrapper
         ref={itemRef}
         $isFocused={isFocused}
         tabIndex={0}
@@ -124,7 +79,7 @@ const ViewListItem: React.FC<{
         <Text as="p" light>
           {feedItem.url}
         </Text>
-      </StyledDiv>
+      </ViewListItemWrapper>
     </Link>
   );
 };
@@ -155,7 +110,7 @@ const ViewList: React.FC<{viewType: ViewType}> = ({viewType}) => {
           <ViewListItem key={feedItem.feedItemId} feedItem={feedItem} viewType={viewType} />
         ))}
       </ul>
-      <ViewListKeyboardShortcuts feedItems={feedItems} />
+      <ViewKeyboardShortcutHandler feedItems={feedItems} />
     </>
   );
 };

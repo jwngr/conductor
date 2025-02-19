@@ -48,53 +48,30 @@ const ALL_NAV_ITEMS: Record<NavItemId, NavItem> = {
 };
 
 export class NavItems {
-  static forId(navItemId: NavItemId): NavItem {
+  static fromId(navItemId: NavItemId): NavItem {
     return ALL_NAV_ITEMS[navItemId];
   }
 
-  static forView(viewType: ViewType): NavItem {
+  static fromViewType(viewType: ViewType): NavItem {
     switch (viewType) {
       case ViewType.Untriaged:
-        return NavItems.forId(NavItemId.Untriaged);
+        return NavItems.fromId(NavItemId.Untriaged);
       case ViewType.Saved:
-        return NavItems.forId(NavItemId.Saved);
+        return NavItems.fromId(NavItemId.Saved);
       case ViewType.Done:
-        return NavItems.forId(NavItemId.Done);
+        return NavItems.fromId(NavItemId.Done);
       case ViewType.Unread:
-        return NavItems.forId(NavItemId.Unread);
+        return NavItems.fromId(NavItemId.Unread);
       case ViewType.Starred:
-        return NavItems.forId(NavItemId.Starred);
+        return NavItems.fromId(NavItemId.Starred);
       case ViewType.All:
-        return NavItems.forId(NavItemId.All);
+        return NavItems.fromId(NavItemId.All);
       case ViewType.Today:
-        return NavItems.forId(NavItemId.Today);
+        return NavItems.fromId(NavItemId.Today);
       case ViewType.Trashed:
-        return NavItems.forId(NavItemId.Trashed);
+        return NavItems.fromId(NavItemId.Trashed);
       default:
         assertNever(viewType);
-    }
-  }
-
-  static toViewType(navItemId: Exclude<NavItemId, NavItemId.Feeds>): ViewType {
-    switch (navItemId) {
-      case NavItemId.Untriaged:
-        return ViewType.Untriaged;
-      case NavItemId.Saved:
-        return ViewType.Saved;
-      case NavItemId.Done:
-        return ViewType.Done;
-      case NavItemId.Unread:
-        return ViewType.Unread;
-      case NavItemId.Starred:
-        return ViewType.Starred;
-      case NavItemId.All:
-        return ViewType.All;
-      case NavItemId.Today:
-        return ViewType.Today;
-      case NavItemId.Trashed:
-        return ViewType.Trashed;
-      default:
-        assertNever(navItemId);
     }
   }
 }
@@ -115,12 +92,12 @@ export function makeNavItemForView(
 }
 
 export const ORDERED_VIEW_NAV_ITEMS: NavItem[] = [
-  NavItems.forId(NavItemId.Untriaged),
-  NavItems.forId(NavItemId.Saved),
-  NavItems.forId(NavItemId.Done),
-  NavItems.forId(NavItemId.Unread),
-  NavItems.forId(NavItemId.Starred),
-  NavItems.forId(NavItemId.All),
-  NavItems.forId(NavItemId.Trashed),
-  NavItems.forId(NavItemId.Today),
+  NavItems.fromId(NavItemId.Untriaged),
+  NavItems.fromId(NavItemId.Saved),
+  NavItems.fromId(NavItemId.Done),
+  NavItems.fromId(NavItemId.Unread),
+  NavItems.fromId(NavItemId.Starred),
+  NavItems.fromId(NavItemId.All),
+  NavItems.fromId(NavItemId.Trashed),
+  NavItems.fromId(NavItemId.Today),
 ];
