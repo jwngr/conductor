@@ -61,7 +61,7 @@ interface ToastState {
 
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
 
-const addToRemoveQueue = (toastId: string) => {
+const addToRemoveQueue = (toastId: string): void => {
   if (toastTimeouts.has(toastId)) {
     return;
   }
@@ -155,14 +155,14 @@ function showToast({
 }: ToastComponentProps): ShowToastResult {
   const toastId = makeUuid();
 
-  const update = (updateProps: ToasterToast) =>
+  const update = (updateProps: ToasterToast): void =>
     dispatch({
       actionType: ToastActionType.UpdateToast,
       toastType,
       toast: {...updateProps, toastId},
     });
 
-  const dismiss = () => dispatch({actionType: ToastActionType.DismissToast, toastId});
+  const dismiss = (): void => dispatch({actionType: ToastActionType.DismissToast, toastId});
 
   dispatch({
     actionType: ToastActionType.AddToast,

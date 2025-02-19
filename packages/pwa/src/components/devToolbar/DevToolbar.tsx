@@ -66,7 +66,7 @@ export const DevToolbar: React.FC<{
 
   // Close the toolbar on clicks outside of it.
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
+    function handleClickOutside(event: MouseEvent): void {
       if (isOpen && toolbarRef.current && !toolbarRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
@@ -76,7 +76,7 @@ export const DevToolbar: React.FC<{
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
-  const handleToolbarClick = () => {
+  const handleToolbarClick = (): void => {
     if (!isOpen) {
       setIsOpen(true);
     }

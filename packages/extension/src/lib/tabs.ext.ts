@@ -2,13 +2,19 @@ import {useEffect, useState} from 'react';
 
 import {asyncTry} from '@shared/lib/errorUtils.shared';
 
-export function useCurrentTab() {
+interface UseCurrentTabReturnValue {
+  readonly currentTab: chrome.tabs.Tab | null;
+  readonly isLoading: boolean;
+  readonly error: Error | null;
+}
+
+export function useCurrentTab(): UseCurrentTabReturnValue {
   const [currentTab, setCurrentTab] = useState<chrome.tabs.Tab | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    async function fetchCurrentTab() {
+    async function fetchCurrentTab(): Promise<void> {
       const tabResult = await asyncTry(async () => {
         const [tab] = await chrome.tabs.query({active: true, lastFocusedWindow: true});
         return tab;

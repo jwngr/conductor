@@ -7,7 +7,7 @@ import {ThemeColor} from '@shared/types/theme.types';
 
 type FontWeight = 'normal' | 'bold' | '900';
 const DEFAULT_FONT_WEIGHT = 'normal';
-function getFontWeight(bold?: boolean, weight?: FontWeight) {
+function getFontWeight(bold?: boolean, weight?: FontWeight): FontWeight {
   if (typeof weight === 'undefined') {
     return bold ? 'bold' : DEFAULT_FONT_WEIGHT;
   } else {

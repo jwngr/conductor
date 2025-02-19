@@ -26,7 +26,7 @@ async function parsePocketExport(): Promise<PocketExportItem[]> {
   );
 }
 
-async function main() {
+async function main(): Promise<void> {
   // eslint-disable-next-line no-restricted-syntax
   try {
     const pocketItems = await parsePocketExport();

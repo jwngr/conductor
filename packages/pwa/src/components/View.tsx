@@ -78,7 +78,7 @@ const ViewWrapper = styled(FlexColumn)`
 
 const PoemGenerator: React.FC = () => {
   const [poem, setPoem] = useState('');
-  async function generatePoem(topic: string) {
+  async function generatePoem(topic: string): Promise<void> {
     const poemFlow = httpsCallable(getFunctions(), 'generatePoem');
     const response = await poemFlow(topic);
     setPoem(response.data as string);

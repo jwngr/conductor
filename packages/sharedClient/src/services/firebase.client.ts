@@ -2,7 +2,7 @@ import type {FirebaseApp} from 'firebase/app';
 import {initializeApp} from 'firebase/app';
 import type {Auth} from 'firebase/auth';
 import {connectAuthEmulator, getAuth} from 'firebase/auth';
-import type {Firestore} from 'firebase/firestore';
+import type {FieldValue, Firestore} from 'firebase/firestore';
 import {connectFirestoreEmulator, getFirestore, serverTimestamp} from 'firebase/firestore';
 import type {Functions} from 'firebase/functions';
 import {connectFunctionsEmulator, getFunctions} from 'firebase/functions';
@@ -118,4 +118,4 @@ export const firebaseService = new ClientFirebaseService({
   isEmulatorEnabled: getIsFirebaseEmulatorEnabled(),
 });
 
-export const clientTimestampSupplier = () => serverTimestamp();
+export const clientTimestampSupplier = (): FieldValue => serverTimestamp();

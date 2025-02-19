@@ -31,7 +31,7 @@ import {NotFoundScreen} from '@src/screens/404';
 const useMarkFeedItemRead = (args: {
   readonly feedItemId: FeedItemId;
   readonly feedItem: FeedItem | null;
-}) => {
+}): void => {
   const {feedItemId, feedItem} = args;
 
   const feedItemsService = useFeedItemsService();
@@ -44,7 +44,7 @@ const useMarkFeedItemRead = (args: {
   const isFeedItemImported = feedItem ? !SharedFeedItemHelpers.isImporting(feedItem) : false;
 
   useEffect(() => {
-    async function go() {
+    async function go(): Promise<void> {
       // Don't mark the feed item as read unless it has been imported.
       if (isFeedItemNull || !isFeedItemImported) return;
 

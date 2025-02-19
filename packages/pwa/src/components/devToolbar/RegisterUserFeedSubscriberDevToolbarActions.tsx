@@ -19,7 +19,7 @@ const AccountFeedSubscriber: React.FC = () => {
 
   const [status, setStatus] = useState<string>('');
 
-  const handleSubscribeToFeedUrl = async (feedUrl: string) => {
+  const handleSubscribeToFeedUrl = async (feedUrl: string): Promise<void> => {
     setStatus('Subscribing to feed source...');
     const subscribeResult = await userFeedSubscriptionsService.subscribeToUrl(feedUrl);
     if (!subscribeResult.success) {
