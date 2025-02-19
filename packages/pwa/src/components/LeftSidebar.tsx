@@ -1,15 +1,15 @@
 import type React from 'react';
+import type {MouseEventHandler} from 'react';
 import styled from 'styled-components';
 
 import type {CustomIcon} from '@shared/lib/customIcons.shared';
 import {CustomIconType} from '@shared/lib/customIcons.shared';
-import {NavItems} from '@shared/lib/navItems.shared';
+import {NavItems, ORDERED_VIEW_NAV_ITEMS} from '@shared/lib/navItems.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {ThemeColor} from '@shared/types/theme.types';
 import type {NavItem} from '@shared/types/urls.types';
 import {NavItemId} from '@shared/types/urls.types';
-import type {Task} from '@shared/types/utils.types';
 
 import {useFocusStore} from '@sharedClient/stores/FocusStore';
 
@@ -63,10 +63,10 @@ const LeftSidebarItemComponent: React.FC<{
   readonly icon: CustomIcon;
   readonly title: string;
   readonly isActive: boolean;
-  readonly onSelect?: Task;
-}> = ({url, icon, title, isActive, onSelect}) => {
+  readonly onClick: MouseEventHandler<HTMLAnchorElement>;
+}> = ({url, icon, title, isActive, onClick}) => {
   return (
-    <Link to={url} onClick={() => onSelect?.()}>
+    <Link to={url} onClick={onClick}>
       <LeftSideItemWrapper $isActive={isActive}>
         <LeftSidebarItemAvatar icon={icon} />
         <Text as="p">{title}</Text>
@@ -79,7 +79,7 @@ const LeftSidebarSection: React.FC<{
   readonly title: string;
   readonly navItems: readonly NavItem[];
 }> = ({title, navItems}) => {
-  const {focusedNavItemId} = useFocusStore();
+  const {focusedNavItemId, setFocusedNavItemId} = useFocusStore();
   return (
     <FlexColumn>
       <Text as="h5" light>
@@ -93,6 +93,7 @@ const LeftSidebarSection: React.FC<{
             icon={navItem.icon}
             title={navItem.title}
             isActive={focusedNavItemId === navItem.id}
+            onClick={() => setFocusedNavItemId(navItem.id)}
           />
         ))}
       </FlexColumn>
@@ -107,17 +108,6 @@ const LeftSidebarWrapper = styled(FlexColumn).attrs({gap: 16})`
   border-right: solid 1px ${({theme}) => theme.colors[ThemeColor.Neutral300]};
   overflow: auto;
 `;
-
-const ORDERED_VIEW_NAV_ITEMS: NavItem[] = [
-  NavItems.forId(NavItemId.Untriaged),
-  NavItems.forId(NavItemId.Saved),
-  NavItems.forId(NavItemId.Done),
-  NavItems.forId(NavItemId.Unread),
-  NavItems.forId(NavItemId.Starred),
-  NavItems.forId(NavItemId.All),
-  NavItems.forId(NavItemId.Trashed),
-  NavItems.forId(NavItemId.Today),
-];
 
 export const LeftSidebar: React.FC = () => {
   return (

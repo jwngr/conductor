@@ -113,3 +113,14 @@ export function makeNavItemForView(
     title: args.title,
   };
 }
+
+export const ORDERED_VIEW_NAV_ITEMS: NavItem[] = [
+  NavItems.forId(NavItemId.Untriaged),
+  NavItems.forId(NavItemId.Saved),
+  NavItems.forId(NavItemId.Done),
+  NavItems.forId(NavItemId.Unread),
+  NavItems.forId(NavItemId.Starred),
+  NavItems.forId(NavItemId.All),
+  NavItems.forId(NavItemId.Trashed),
+  NavItems.forId(NavItemId.Today),
+];

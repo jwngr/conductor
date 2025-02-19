@@ -18,8 +18,8 @@ interface FocusState {
   readonly focusedFeedItemId: FeedItemId | null;
 
   // Actions.
-  readonly setFocusedFeedItemId: Func<FeedItemId | null, void>;
   readonly setFocusedNavItemId: Func<NavItemId, void>;
+  readonly setFocusedFeedItemId: Func<FeedItemId | null, void>;
 }
 
 const createFocusStore: StateCreator<FocusState> = (set) => ({
@@ -28,7 +28,6 @@ const createFocusStore: StateCreator<FocusState> = (set) => ({
   focusedFeedItemId: null,
 
   // Actions.
-  setFocusedFeedItemId: (feedItemId) => set({focusedFeedItemId: feedItemId}),
   setFocusedNavItemId: (navItemId) => {
     return set({
       focusedNavItemId: navItemId,
@@ -36,6 +35,7 @@ const createFocusStore: StateCreator<FocusState> = (set) => ({
       focusedFeedItemId: null,
     });
   },
+  setFocusedFeedItemId: (feedItemId) => set({focusedFeedItemId: feedItemId}),
 });
 
 export const useFocusStore = create<FocusState>(createFocusStore);
