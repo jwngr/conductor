@@ -59,7 +59,7 @@ export const UserFeedSubscriptionFromStorageSchema = z.object({
   feedSourceId: FeedSourceIdSchema,
   accountId: AccountIdSchema,
   url: z.string().url(),
-  title: z.string().min(1),
+  title: z.string(),
   isActive: z.boolean(),
   unsubscribedTime: FirestoreTimestampSchema.or(z.date()).optional(),
   createdTime: FirestoreTimestampSchema.or(z.date()),

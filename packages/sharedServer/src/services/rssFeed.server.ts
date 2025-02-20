@@ -11,6 +11,10 @@ import {ServerFeedSourcesService} from '@sharedServer/services/feedSources.serve
 import {SuperfeedrService} from '@sharedServer/services/superfeedr.server';
 import {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
 
+import {parseRssFeed} from '@sharedServer/lib/rss.server';
+
+const DEFAULT_FEED_TITLE = '(no title)';
+
 export class ServerRssFeedService {
   private readonly superfeedrService: SuperfeedrService;
   private readonly feedSourcesService: ServerFeedSourcesService;
@@ -32,12 +36,20 @@ export class ServerRssFeedService {
   }): AsyncResult<UserFeedSubscription> {
     const {url, accountId} = args;
 
+    // Fetch and parse the RSS feed.
+    const parsedRssFeedResult = await parseRssFeed(url);
+    if (!parsedRssFeedResult.success) {
+      return prefixErrorResult(parsedRssFeedResult, 'Error parsing RSS feed');
+    }
+
+    const parsedRssFeed = parsedRssFeedResult.value;
+
     // Check if the feed source already exists. A single feed source can have multiple accounts
     // subscribed to it, but we only want to subscribe once to it in Superfeedr. Feed sources are
     // deduped based on exact URL match, although we could probably be smarter in the future.
     const fetchFeedSourceResult = await this.feedSourcesService.fetchByUrlOrCreate(url, {
-      // TODO: Enrich the feed sourcewith a title and image.
-      title: 'Test title from subscribeAccountToUrl',
+      // TODO: Consider just storing `null` for the title if it's not available.
+      title: parsedRssFeed.title ?? DEFAULT_FEED_TITLE,
     });
     if (!fetchFeedSourceResult.success) {
       return prefixErrorResult(
