@@ -52,7 +52,14 @@ function makeSharedRules({
     'react/jsx-no-useless-fragment': 'error',
     '@typescript-eslint/array-type': ['error', {default: 'array-simple'}],
     '@typescript-eslint/await-thenable': 'error',
-    '@typescript-eslint/consistent-type-imports': 'error',
+    '@typescript-eslint/consistent-type-imports': [
+      'error',
+      {
+        prefer: 'type-imports',
+        disallowTypeAnnotations: true,
+        fixStyle: 'separate-type-imports',
+      },
+    ],
     '@typescript-eslint/explicit-function-return-type': [
       'error',
       {

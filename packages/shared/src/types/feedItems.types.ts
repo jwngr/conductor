@@ -156,7 +156,7 @@ export const FeedItemFromStorageSchema = z.object({
   type: z.nativeEnum(FeedItemType),
   feedItemSource: FeedItemSourceFromStorageSchema,
   url: z.string().url(),
-  title: z.string().min(1),
+  title: z.string(),
   description: z.string(),
   outgoingLinks: z.array(z.string().url()),
   summary: z.string(),

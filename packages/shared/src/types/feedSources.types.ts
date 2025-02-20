@@ -42,7 +42,7 @@ export interface FeedSource extends BaseStoreItem {
 export const FeedSourceFromStorageSchema = z.object({
   feedSourceId: FeedSourceIdSchema,
   url: z.string().url(),
-  title: z.string().min(1),
+  title: z.string(),
   createdTime: FirestoreTimestampSchema.or(z.date()),
   lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
 });
