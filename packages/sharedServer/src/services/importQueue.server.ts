@@ -25,6 +25,8 @@ import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
 import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
+import {sanitizeHtml} from '@sharedServer/lib/html.shared';
+
 import {eventLogService} from './eventLog.server';
 import {serverTimestampSupplier} from './firebase.server';
 
@@ -169,10 +171,15 @@ export class ServerImportQueueService {
 
     const rawHtml = fetchDataResult.value;
 
-    const saveHtmlResult = await this.feedItemsService.saveRawHtmlToStorage({
+    const sanitizedHtmlResult = sanitizeHtml(rawHtml);
+    if (!sanitizedHtmlResult.success) {
+      return prefixErrorResult(sanitizedHtmlResult, 'Error sanitizing feed item HTML');
+    }
+
+    const saveHtmlResult = await this.feedItemsService.saveSanitizedHtmlToStorage({
       feedItemId,
       accountId,
-      rawHtml,
+      sanitizedHtml: sanitizedHtmlResult.value,
     });
 
     return prefixResultIfError(saveHtmlResult, 'Error saving feed item HTML');

@@ -7,7 +7,10 @@
     "@conductor/shared": "workspace:*",
     "@genkit-ai/firebase": "^1.0.4",
     "@genkit-ai/googleai": "^1.0.4",
-    "genkit": "^1.0.4"
+    "@types/jsdom": "^21.1.7",
+    "dompurify": "^3.2.4",
+    "genkit": "^1.0.4",
+    "jsdom": "^26.0.0"
   },
   "scripts": {
     "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",
