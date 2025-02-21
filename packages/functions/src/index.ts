@@ -1,16 +1,13 @@
 import FirecrawlApp from '@mendable/firecrawl-js';
 import {setGlobalOptions} from 'firebase-functions';
-import {isSignedIn, onCallGenkit} from 'firebase-functions/https';
 import {defineString, projectID} from 'firebase-functions/params';
 import {auth} from 'firebase-functions/v1';
 import {onInit} from 'firebase-functions/v2/core';
 import {onDocumentCreated, onDocumentUpdated} from 'firebase-functions/v2/firestore';
 import {HttpsError, onCall, onRequest} from 'firebase-functions/v2/https';
-import {z} from 'zod';
 
 import {logger} from '@shared/services/logger.shared';
 
-import {ai} from '@shared/lib/ai.shared';
 import {
   ACCOUNTS_DB_COLLECTION,
   FEED_ITEMS_DB_COLLECTION,
@@ -581,25 +578,4 @@ export const handleFeedUnsubscribeOnUpdate = onDocumentUpdated(
 
     logger.log('[UNSUBSCRIBE] Successfully unsubscribed account from Superfeedr feed', logDetails);
   }
-);
-
-const generatePoemFlow = ai.defineFlow(
-  {
-    name: 'generatePoem',
-    inputSchema: z.string(),
-    outputSchema: z.string(),
-  },
-  async (subject: string) => {
-    const {text} = await ai.generate(`Compose a poem about ${subject}.`);
-    return text;
-  }
-);
-
-export const generatePoem = onCallGenkit(
-  {
-    authPolicy: isSignedIn(),
-    // TODO: Enable App Check.
-    // enforceAppCheck: true,
-  },
-  generatePoemFlow
 );
