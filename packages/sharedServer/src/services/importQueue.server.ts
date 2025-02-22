@@ -8,7 +8,6 @@ import {
 } from '@shared/lib/errorUtils.shared';
 import {withFirestoreTimestamps} from '@shared/lib/parser.shared';
 import {requestGet} from '@shared/lib/requests.shared';
-import {generateHierarchicalSummary} from '@shared/lib/summarization.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {FeedItemId} from '@shared/types/feedItems.types';
@@ -24,6 +23,8 @@ import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
 import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
+
+import {generateHierarchicalSummary} from '@sharedServer/lib/summarization.server';
 
 import {eventLogService} from './eventLog.server';
 import {serverTimestampSupplier} from './firebase.server';

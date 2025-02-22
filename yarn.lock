@@ -466,6 +466,7 @@ __metadata:
     "@types/react": "npm:^19.0.8"
     "@types/react-dom": "npm:^19.0.3"
     "@vitejs/plugin-react": "npm:^4.3.4"
+    lucide-react: "npm:^0.475.0"
     react: "npm:^19.0.0"
     react-dom: "npm:^19.0.0"
     react-markdown: "npm:^9.0.3"
@@ -494,7 +495,6 @@ __metadata:
   dependencies:
     "@conductor/shared": "workspace:*"
     "@types/react": "npm:^19.0.8"
-    lucide-react: "npm:^0.475.0"
     react: "npm:^19.0.0"
     zustand: "npm:^5.0.3"
   languageName: unknown
