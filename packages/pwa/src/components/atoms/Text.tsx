@@ -1,92 +1,96 @@
 import type {HTMLAttributes} from 'react';
-import styled, {css} from 'styled-components';
+import {twMerge} from 'tailwind-merge';
 
 import {assertNever} from '@shared/lib/utils.shared';
 
-import {ThemeColor} from '@shared/types/theme.types';
+import type {ThemeColor} from '@shared/types/theme.types';
+
+import {getThemeColorClass} from '@src/lib/theme.pwa';
 
 type FontWeight = 'normal' | 'bold' | '900';
-const DEFAULT_FONT_WEIGHT = 'normal';
-function getFontWeight(bold?: boolean, weight?: FontWeight): FontWeight {
+function getFontWeightClasses(args: {
+  readonly bold?: boolean;
+  readonly weight?: FontWeight;
+}): string {
+  const {bold, weight} = args;
+
   if (typeof weight === 'undefined') {
-    return bold ? 'bold' : DEFAULT_FONT_WEIGHT;
-  } else {
-    return weight;
+    return bold ? 'font-bold' : 'normal';
+  }
+
+  switch (weight) {
+    case 'normal':
+      return 'font-normal';
+    case 'bold':
+      return 'font-bold';
+    case '900':
+      return 'font-black';
+    default:
+      return assertNever(weight);
   }
 }
 
-type TextElement = 'p' | 'span' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+function getTextAlignClasses(args: {readonly align?: 'left' | 'center' | 'right'}): string {
+  const {align} = args;
 
-interface TextWrapperProps {
-  readonly $color?: ThemeColor;
-  readonly $hoverColor?: ThemeColor;
-  readonly $light?: boolean;
-  readonly $monospace?: boolean;
-  readonly $truncate?: boolean;
-  readonly $underline?: 'always' | 'hover' | 'never';
+  if (typeof align === 'undefined') return '';
+  return `text-${align}`;
 }
 
-const TextWrapper = styled.span<TextWrapperProps>`
-  ${(props) =>
-    props.$monospace
-      ? css`
-          font-family: ui-monospace, Menlo, Monaco, Consolas, 'Courier New', monospace;
-        `
-      : null}
+function getColorClasses(args: {
+  readonly light?: boolean;
+  readonly color?: ThemeColor;
+  readonly hoverColor?: ThemeColor;
+}): string {
+  const {light, color, hoverColor} = args;
 
-  ${(props) =>
-    props.$truncate
-      ? css`
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          max-width: 100%;
-        `
-      : null}
+  return twMerge(
+    // `color` takes precedence over `light`.
+    light ? 'text-stone-950' : '',
+    color ? getThemeColorClass(color) : '',
+    hoverColor ? `hover:${getThemeColorClass(hoverColor)}` : ''
+  );
+}
 
-  
+function getUnderlineClasses(args: {readonly underline?: 'always' | 'hover' | 'never'}): string {
+  const {underline} = args;
 
-  ${({theme, $color, $light}) => {
-    // TODO: Set the default color somewhere. Probably shouldn't do it here.
-    if (!$color && !$light) return null;
-    return css`
-      color: ${theme.colors[$color ?? ThemeColor.Neutral500]};
-    `;
-  }};
+  if (typeof underline === 'undefined') return '';
 
-  ${({theme, $hoverColor}) => {
-    if (!$hoverColor) return null;
-    return css`
-      &:hover {
-        color: ${theme.colors[$hoverColor]};
-      }
-    `;
-  }}
+  switch (underline) {
+    case 'always':
+      return 'underline cursor-pointer';
+    case 'hover':
+      return 'hover:underline cursor-pointer';
+    case 'never':
+      return 'no-underline';
+    default:
+      return assertNever(underline);
+  }
+}
 
-  ${({$underline}) => {
-    if (!$underline) return null;
-    switch ($underline) {
-      case 'always':
-        return css`
-          cursor: pointer;
-          text-decoration: underline;
-        `;
-      case 'hover':
-        return css`
-          &:hover {
-            cursor: pointer;
-            text-decoration: underline;
-          }
-        `;
-      case 'never':
-        return css`
-          text-decoration: none;
-        `;
-      default:
-        assertNever($underline);
-    }
-  }}
-`;
+function getFlexClasses(args: {readonly flex?: number | string | boolean}): string {
+  const {flex} = args;
+
+  if (typeof flex === 'undefined') return '';
+  return flex === true ? 'flex-1' : flex === false ? 'flex-none' : `flex-${flex}`;
+}
+
+function getFontFamilyClasses(args: {readonly monospace?: boolean}): string {
+  const {monospace} = args;
+
+  if (typeof monospace === 'undefined') return '';
+  return monospace ? 'font-mono' : '';
+}
+
+function getTruncateClasses(args: {readonly truncate?: boolean}): string {
+  const {truncate} = args;
+
+  if (typeof truncate === 'undefined') return '';
+  return truncate ? 'truncate' : '';
+}
+
+type TextElement = 'p' | 'span' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 
 interface TextProps extends HTMLAttributes<HTMLParagraphElement> {
   readonly as?: TextElement;
@@ -104,39 +108,36 @@ interface TextProps extends HTMLAttributes<HTMLParagraphElement> {
 }
 
 export const Text: React.FC<TextProps> = ({
-  as = 'p',
+  as: Component = 'p',
   align,
   bold,
   weight,
   flex,
   children,
-  style,
   color,
   hoverColor,
   light,
   monospace,
   truncate,
   underline,
+  style,
+  className,
   ...rest
 }) => {
+  const classes = twMerge(
+    getColorClasses({light, color, hoverColor}),
+    getUnderlineClasses({underline}),
+    getFontWeightClasses({bold, weight}),
+    getFontFamilyClasses({monospace}),
+    getTextAlignClasses({align}),
+    getFlexClasses({flex}),
+    getTruncateClasses({truncate}),
+    className
+  );
+
   return (
-    <TextWrapper
-      as={as}
-      style={{
-        ...style,
-        textAlign: align,
-        fontWeight: getFontWeight(bold, weight),
-        flex: flex === true ? 1 : flex === false ? 0 : flex,
-      }}
-      $color={color}
-      $hoverColor={hoverColor}
-      $light={light}
-      $monospace={monospace}
-      $truncate={truncate}
-      $underline={underline}
-      {...rest}
-    >
+    <Component className={classes} style={style} {...rest}>
       {children}
-    </TextWrapper>
+    </Component>
   );
 };
