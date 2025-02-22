@@ -1,9 +1,10 @@
 import {z} from 'zod';
 
-import {ai} from '@shared/lib/ai.shared';
 import {asyncTry, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
 import type {AsyncResult} from '@shared/types/result.types';
+
+import {ai} from '@sharedServer/lib/ai.server';
 
 const generateHierarchicalSummaryFlow = ai.defineFlow(
   {

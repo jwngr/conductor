@@ -9,6 +9,8 @@ import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {ThemeColor} from '@shared/types/theme.types';
 import type {StyleAttributes} from '@shared/types/utils.types';
 
+import type {MouseEvent} from '@sharedClient/types/utils.client.types';
+
 import {Icon} from '@src/components/atoms/Icon';
 import type {TooltipContent} from '@src/components/atoms/Tooltip';
 import {Tooltip} from '@src/components/atoms/Tooltip';
@@ -61,7 +63,7 @@ export const ButtonIcon: React.FC<ButtonIconProps> = ({
 
   const handleShortcut = useCallback(() => {
     // TODO: Clean up this type.
-    onClick?.(null as unknown as React.MouseEvent<HTMLDivElement>);
+    onClick?.(null as unknown as MouseEvent<HTMLDivElement>);
   }, [onClick]);
 
   const buttonIcon = (
