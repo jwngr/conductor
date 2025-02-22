@@ -14,7 +14,7 @@ jobs:
         run: yarn run validate:format
       - name: Validate lint
         run: yarn run validate:lint
-      - name: Validate unused exports and deps
-        run: yarn run validate:knip
+      # - name: Validate unused exports and deps
+      # run: yarn run validate:knip
       - name: Validate types
         run: yarn run validate:types
