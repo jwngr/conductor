@@ -26,7 +26,7 @@ type ServerEventLogCollectionService = ServerFirestoreCollectionService<
   EventLogItemFromStorage
 >;
 
-export class ServerEventLogService {
+class ServerEventLogService {
   private readonly eventLogCollectionService: ServerEventLogCollectionService;
 
   constructor(args: {readonly eventLogCollectionService: ServerEventLogCollectionService}) {

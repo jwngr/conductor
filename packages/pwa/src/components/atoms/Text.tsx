@@ -26,7 +26,7 @@ interface TextWrapperProps {
   readonly $underline?: 'always' | 'hover' | 'never';
 }
 
-export const TextWrapper = styled.span<TextWrapperProps>`
+const TextWrapper = styled.span<TextWrapperProps>`
   ${(props) =>
     props.$monospace
       ? css`

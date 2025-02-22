@@ -432,7 +432,6 @@ __metadata:
   dependencies:
     "@conductor/shared": "workspace:*"
     "@conductor/shared-client": "workspace:*"
-    "@types/chrome": "npm:^0.0.300"
     "@types/react": "npm:^19.0.8"
     "@types/react-dom": "npm:^19.0.3"
     "@vitejs/plugin-react": "npm:^4.3.4"
@@ -4151,16 +4150,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/chrome@npm:^0.0.300":
-  version: 0.0.300
-  resolution: "@types/chrome@npm:0.0.300"
-  dependencies:
-    "@types/filesystem": "npm:*"
-    "@types/har-format": "npm:*"
-  checksum: 10c0/19fa837f7b85c4fe718cb0efa9cdba947fb12afbe2b12abbe84745e171db1c569b9f76d49c66c3d4aa87befcf9a8aeb0eff1421162742535152d7fddbad82010
-  languageName: node
-  linkType: hard
-
 "@types/connect@npm:*":
   version: 3.4.38
   resolution: "@types/connect@npm:3.4.38"
@@ -4194,25 +4183,6 @@ __metadata:
   dependencies:
     "@types/ms": "npm:*"
   checksum: 10c0/5dcd465edbb5a7f226e9a5efd1f399c6172407ef5840686b73e3608ce135eeca54ae8037dcd9f16bdb2768ac74925b820a8b9ecc588a58ca09eca6acabe33e2f
-  languageName: node
-  linkType: hard
-
-"@types/eslint@npm:*":
-  version: 9.6.1
-  resolution: "@types/eslint@npm:9.6.1"
-  dependencies:
-    "@types/estree": "npm:*"
-    "@types/json-schema": "npm:*"
-  checksum: 10c0/69ba24fee600d1e4c5abe0df086c1a4d798abf13792d8cfab912d76817fe1a894359a1518557d21237fbaf6eda93c5ab9309143dee4c59ef54336d1b3570420e
-  languageName: node
-  linkType: hard
-
-"@types/eslint__js@npm:^8.42.3":
-  version: 8.42.3
-  resolution: "@types/eslint__js@npm:8.42.3"
-  dependencies:
-    "@types/eslint": "npm:*"
-  checksum: 10c0/ccc5180b92155929a089ffb03ed62625216dcd5e46dd3197c6f82370ce8b52c7cb9df66c06b0a3017995409e023bc9eafe5a3f009e391960eacefaa1b62d9a56
   languageName: node
   linkType: hard
 
@@ -4256,22 +4226,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/filesystem@npm:*":
-  version: 0.0.36
-  resolution: "@types/filesystem@npm:0.0.36"
-  dependencies:
-    "@types/filewriter": "npm:*"
-  checksum: 10c0/3ebec32f0494b0a2612187d148e9f253ff55672c53f566d9a1e6d891eb6e2372df93c252b594b2775bc53e6660c4c37fdb05dc1b26e72b60a31010da8e1f7317
-  languageName: node
-  linkType: hard
-
-"@types/filewriter@npm:*":
-  version: 0.0.33
-  resolution: "@types/filewriter@npm:0.0.33"
-  checksum: 10c0/363ef9a658a961ceae04f52934562e4ebdcdc3a2564dd8544f593d77113c16574938b6ba4fea0bee418c37bda0668c1e03dfedb6adf00d55853f51fb3a59247b
-  languageName: node
-  linkType: hard
-
 "@types/graceful-fs@npm:^4.1.3":
   version: 4.1.9
   resolution: "@types/graceful-fs@npm:4.1.9"
@@ -4287,13 +4241,6 @@ __metadata:
   dependencies:
     handlebars: "npm:*"
   checksum: 10c0/50e85efb4a9306c8b2278dd1570714e9021f201ef317a259ce2d63406057e6575f3066b862bed3d192828d1cc32b80d3a0d2e18d0cd9cda98ec5f1f69038e342
-  languageName: node
-  linkType: hard
-
-"@types/har-format@npm:*":
-  version: 1.2.16
-  resolution: "@types/har-format@npm:1.2.16"
-  checksum: 10c0/77e952bc219db0c1f0588cab3b95865bc343b922e8423a76fbbd6a757c40709a256933fa415eb8fefda6ea5897c8e3dd3191bb8a82b37c13d9232467d31ae485
   languageName: node
   linkType: hard
 
@@ -4359,7 +4306,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/json-schema@npm:*, @types/json-schema@npm:^7.0.15":
+"@types/json-schema@npm:^7.0.15":
   version: 7.0.15
   resolution: "@types/json-schema@npm:7.0.15"
   checksum: 10c0/a996a745e6c5d60292f36731dd41341339d4eeed8180bb09226e5c8d23759067692b1d88e5d91d72ee83dfc00d3aca8e7bd43ea120516c17922cbcb7c3e252db
@@ -4373,13 +4320,6 @@ __metadata:
     "@types/ms": "npm:*"
     "@types/node": "npm:*"
   checksum: 10c0/dd3ccea05115ad9c4458d0c2a487179b1abf8886eaa8cc77d64031a8ef47abd3ff038cdde26e76893372238c8612e4f5fd578b3400e525b65c0e8d3abefe5282
-  languageName: node
-  linkType: hard
-
-"@types/lodash@npm:^4.17.15":
-  version: 4.17.15
-  resolution: "@types/lodash@npm:4.17.15"
-  checksum: 10c0/2eb2dc6d231f5fb4603d176c08c8d7af688f574d09af47466a179cd7812d9f64144ba74bb32ca014570ffdc544eedc51b7a5657212bad083b6eecbd72223f9bb
   languageName: node
   linkType: hard
 
@@ -5646,9 +5586,7 @@ __metadata:
   dependencies:
     "@eslint/js": "npm:^9.19.0"
     "@ianvs/prettier-plugin-sort-imports": "npm:^4.4.1"
-    "@types/eslint__js": "npm:^8.42.3"
     "@types/jest": "npm:^29.5.14"
-    "@types/lodash": "npm:^4.17.15"
     "@types/node": "npm:^22.12.0"
     eslint: "npm:^9.19.0"
     eslint-plugin-react: "npm:^7.37.4"
@@ -5657,7 +5595,6 @@ __metadata:
     globals: "npm:^15.14.0"
     jest: "npm:^29.7.0"
     knip: "npm:^5.44.4"
-    lodash: "npm:^4.17.21"
     prettier: "npm:^3.4.2"
     ts-jest: "npm:^29.2.5"
     typescript: "npm:^5.7.3"
@@ -9158,7 +9095,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:^4.17.20, lodash@npm:^4.17.21":
+"lodash@npm:^4.17.20":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: 10c0/d8cbea072bb08655bb4c989da418994b073a608dffa608b09ac04b43a791b12aeae7cd7ad919aa4c925f33b48490b5cfe6c1f71d827956071dae2e7bb3a6b74c

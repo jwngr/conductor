@@ -1,5 +1,5 @@
 import {limit, orderBy, where} from 'firebase/firestore';
-import type {Functions, HttpsCallableResult} from 'firebase/functions';
+import type {Functions, HttpsCallable} from 'firebase/functions';
 import {httpsCallable} from 'firebase/functions';
 import {useMemo} from 'react';
 
@@ -18,7 +18,7 @@ import type {
   UserFeedSubscription,
   UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
-import type {AsyncFunc, Consumer, Unsubscribe} from '@shared/types/utils.types';
+import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';
 import {
@@ -36,10 +36,7 @@ interface SubscribeToFeedResponse {
   readonly userFeedSubscriptionId: string;
 }
 
-type CallSubscribeUserToFeedFn = AsyncFunc<
-  SubscribeToFeedRequest,
-  HttpsCallableResult<SubscribeToFeedResponse>
->;
+type CallSubscribeUserToFeedFn = HttpsCallable<SubscribeToFeedRequest, SubscribeToFeedResponse>;
 
 type UserFeedSubscriptionsCollectionService = ClientFirestoreCollectionService<
   UserFeedSubscriptionId,

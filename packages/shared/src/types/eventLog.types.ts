@@ -66,11 +66,6 @@ export const FeedItemImportedEventLogItemDataSchema = z.object({
   feedItemId: FeedItemIdSchema,
 });
 
-export type EventLogItemData =
-  | FeedItemActionEventLogItemData
-  | UserFeedSubscriptionEventLogItemData
-  | FeedItemImportedEventLogItemData;
-
 export const UserFeedSubscriptionEventLogItemDataSchema = z.object({
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
 });

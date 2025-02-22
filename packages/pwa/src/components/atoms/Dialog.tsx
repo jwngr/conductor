@@ -3,9 +3,10 @@ import type React from 'react';
 import {forwardRef} from 'react';
 import styled from 'styled-components';
 
+import {IconName} from '@shared/types/icons.types';
 import {ThemeColor} from '@shared/types/theme.types';
 
-import {CancelIcon} from '@src/components/atoms/Icon';
+import {Icon} from '@src/components/atoms/Icon';
 
 const Dialog = DialogPrimitive.Root;
 
@@ -83,7 +84,7 @@ const DialogContent = forwardRef<
     <DialogContentWrapper ref={ref} {...otherProps}>
       {children}
       <CloseButtonWrapper aria-label="Close">
-        <CancelIcon size={16} />
+        <Icon name={IconName.Cancel} size={16} />
       </CloseButtonWrapper>
     </DialogContentWrapper>
   </DialogPortal>

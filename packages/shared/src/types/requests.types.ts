@@ -33,7 +33,7 @@ export function makeErrorResponseResult(error: Error, statusCode: number): Error
   return {success: false, error, statusCode};
 }
 
-export type ResponseResult<T, E = Error> = SuccessResponseResult<T> | ErrorResponseResult<E>;
+type ResponseResult<T, E = Error> = SuccessResponseResult<T> | ErrorResponseResult<E>;
 
 export type AsyncResponseResult<T, E = Error> = Promise<ResponseResult<T, E>>;
 

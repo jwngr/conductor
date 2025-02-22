@@ -1,7 +1,7 @@
 import type {HTMLAttributes} from 'react';
 import styled, {css} from 'styled-components';
 
-export interface FlexProps extends HTMLAttributes<HTMLDivElement> {
+interface FlexProps extends HTMLAttributes<HTMLDivElement> {
   readonly direction: 'row' | 'column';
   readonly align: 'flex-start' | 'flex-end' | 'center' | 'stretch' | 'baseline';
   readonly justify:

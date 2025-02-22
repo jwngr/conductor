@@ -4,9 +4,10 @@ import {forwardRef} from 'react';
 
 import {theme} from '@shared/lib/theme.shared';
 
+import {IconName} from '@shared/types/icons.types';
 import {ThemeColor} from '@shared/types/theme.types';
 
-import {CancelIcon} from '@src/components/atoms/Icon';
+import {Icon} from '@src/components/atoms/Icon';
 
 export const ToastProvider = ToastPrimitives.Provider;
 
@@ -77,7 +78,7 @@ export const ToastClose = forwardRef<
     toast-close=""
     {...props}
   >
-    <CancelIcon size={16} />
+    <Icon name={IconName.Cancel} size={16} />
   </ToastPrimitives.Close>
 ));
 ToastClose.displayName = ToastPrimitives.Close.displayName;

@@ -9,7 +9,7 @@ import type {ToastActionElement, ToastProps} from '@src/components/atoms/Toast';
 const TOAST_LIMIT = 1;
 const TOAST_REMOVE_DELAY_MS = 1_000_000;
 
-export enum ToastType {
+enum ToastType {
   Info = 'INFO',
   Error = 'ERROR',
 }
@@ -77,7 +77,7 @@ const addToRemoveQueue = (toastId: string): void => {
   toastTimeouts.set(toastId, timeout);
 };
 
-export const reducer = (state: ToastState, action: Action): ToastState => {
+const reducer = (state: ToastState, action: Action): ToastState => {
   switch (action.actionType) {
     case ToastActionType.AddToast:
       return {
