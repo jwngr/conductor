@@ -69,11 +69,15 @@ function getUnderlineClasses(args: {readonly underline?: 'always' | 'hover' | 'n
   }
 }
 
-function getFlexClasses(args: {readonly flex?: number | string | boolean}): string {
+type FlexValue = 1 | 'auto' | 'initial' | 'none' | boolean;
+function getFlexClasses(args: {readonly flex?: FlexValue}): string {
   const {flex} = args;
 
   if (typeof flex === 'undefined') return '';
-  return flex === true ? 'flex-1' : flex === false ? 'flex-none' : `flex-${flex}`;
+  if (typeof flex === 'boolean') {
+    return flex ? 'flex-1' : 'flex-none';
+  }
+  return `flex-${flex}`;
 }
 
 function getFontFamilyClasses(args: {readonly monospace?: boolean}): string {
