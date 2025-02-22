@@ -20,12 +20,10 @@
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react": "^4.3.4",
-    "source-map-explorer": "^2.5.3",
     "vite": "^6.0.11",
     "vite-plugin-svgr": "^4.3.0"
   },
   "scripts": {
-    "analyze": "source-map-explorer build/static/js/*",
     "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",
     "validate:lint": "eslint src",
     "validate:lint:fix": "eslint src --fix",

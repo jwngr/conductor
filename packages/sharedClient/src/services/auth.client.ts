@@ -31,7 +31,7 @@ interface AuthServiceSubscriptionCallbacks {
  * Service for interacting with authentication state. It contains limited profile information about
  * the currently logged in account.
  */
-export class ClientAuthService {
+class ClientAuthService {
   private currentAccount: LoggedInAccount | null = null;
   private subscribers = new Set<AuthServiceSubscriptionCallbacks>();
 

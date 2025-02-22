@@ -32,15 +32,15 @@ export enum FilterOp {
   NotIn = 'not-in',
 }
 
-export interface Filter<T> {
+interface Filter<T> {
   readonly field: keyof T;
   readonly op: FilterOp;
   readonly value: unknown;
 }
 
-export type SortDirection = 'asc' | 'desc';
+type SortDirection = 'asc' | 'desc';
 
-export interface SortOption<T> {
+interface SortOption<T> {
   readonly field: keyof T;
   readonly direction: SortDirection;
 }

@@ -27,7 +27,7 @@ import {SignInScreen} from '@src/screens/SignInScreen';
 import {StyleguideScreen} from '@src/screens/StyleguideScreen';
 import {ViewScreen} from '@src/screens/ViewScreen';
 
-export const CatchAllRoute: React.FC = () => {
+const CatchAllRoute: React.FC = () => {
   // TODO: Prevent ability to use 404s vs logged-out redirects to figure out what routes exist.
   return <NotFoundScreen message="Page not found" />;
 };
