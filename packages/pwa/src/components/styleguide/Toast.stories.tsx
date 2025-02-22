@@ -2,7 +2,7 @@ import {Button} from '@src/components/atoms/Button';
 import type {ToastActionElement} from '@src/components/atoms/Toast';
 import {StorySection} from '@src/components/styleguide/StorySection';
 
-import {useToast} from '@src/lib/toasts';
+import {toast} from '@src/lib/toasts';
 
 const ToastStory: React.FC<{
   readonly buttonText: string;
@@ -10,12 +10,8 @@ const ToastStory: React.FC<{
   readonly toastMessage: string;
   readonly toastAction?: ToastActionElement;
 }> = ({buttonText, toastMessage, toastTitle, toastAction}) => {
-  const {showToast} = useToast();
-
   return (
-    <Button
-      onClick={() => showToast({title: toastTitle, message: toastMessage, action: toastAction})}
-    >
+    <Button onClick={() => toast(toastTitle, {action: toastAction, description: toastMessage})}>
       {buttonText}
     </Button>
   );
