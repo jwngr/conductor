@@ -46,7 +46,7 @@ function getColorClasses(args: {
 
   return twMerge(
     // `color` takes precedence over `light`.
-    light ? 'text-stone-950' : '',
+    light ? 'text-stone-500' : '',
     color ? getThemeColorClass(color) : '',
     hoverColor ? `hover:${getThemeColorClass(hoverColor)}` : ''
   );
@@ -78,9 +78,7 @@ function getFlexClasses(args: {readonly flex?: number | string | boolean}): stri
 
 function getFontFamilyClasses(args: {readonly monospace?: boolean}): string {
   const {monospace} = args;
-
-  if (typeof monospace === 'undefined') return '';
-  return monospace ? 'font-mono' : '';
+  return monospace ? 'font-mono' : 'font-sans';
 }
 
 function getTruncateClasses(args: {readonly truncate?: boolean}): string {

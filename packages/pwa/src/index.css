@@ -12,20 +12,6 @@
   width: 100vw;
 }
 
-p,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-li {
-  /* System sans serif font w/ fallbacks as needed for broadest compatibility. */
-  font-family: -apple-system, 'system-ui', 'Segoe UI', Arimo, system-ui;
-  margin: 0;
-  padding: 0;
-}
-
 input,
 button {
   /* System sans serif font w/ fallbacks as needed for broadest compatibility. */
