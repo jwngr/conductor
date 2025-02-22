@@ -1,0 +1,14 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": [
+        "./packages/pwa/src/index.tsx",
+        "./packages/extension/src/index.tsx",
+        "./packages/extension/src/background.ts",
+        "./packages/functions/src/index.ts"
+      ],
+      "project": "./packages/{pwa,extension,functions,scripts,shared,sharedClient,sharedServer}/src/**/*.{ts,tsx,js,jsx}"
+    }
+  }
+}
