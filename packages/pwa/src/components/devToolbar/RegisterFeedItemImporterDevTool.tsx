@@ -58,7 +58,7 @@ const FeedItemImporter: React.FC = () => {
         onChange={(e) => setUrl(e.target.value)}
       />
       <Button
-        variant="secondary"
+        variant="outline"
         onClick={async () =>
           void handleAddItemToQueue('https://jwn.gr/posts/migrating-from-gatsby-to-astro/')
         }
@@ -66,7 +66,7 @@ const FeedItemImporter: React.FC = () => {
         Import personal blog post
       </Button>
       <Button
-        variant="secondary"
+        variant="outline"
         onClick={async () =>
           void handleAddItemToQueue('https://www.youtube.com/watch?v=p_di4Zn4wz4')
         }
@@ -74,7 +74,7 @@ const FeedItemImporter: React.FC = () => {
         Import YouTube video
       </Button>
       <Button
-        variant="secondary"
+        variant="outline"
         onClick={async () =>
           void handleAddItemToQueue('https://wattenberger.com/thoughts/the-internet-for-the-mind')
         }
@@ -82,7 +82,7 @@ const FeedItemImporter: React.FC = () => {
         Import complex blog post
       </Button>
 
-      <Button variant="secondary" onClick={async () => void handleAddItemToQueue(url)}>
+      <Button variant="outline" onClick={async () => void handleAddItemToQueue(url)}>
         Test URL import
       </Button>
       {status ? <StatusText $isError={status.includes('Error')}>{status}</StatusText> : null}

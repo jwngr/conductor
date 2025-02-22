@@ -33,13 +33,13 @@ const AccountFeedSubscriber: React.FC = () => {
   return (
     <>
       <Button
-        variant="secondary"
+        variant="outline"
         onClick={async () => void handleSubscribeToFeedUrl('https://jwn.gr/rss.xml')}
       >
         Subscribe to personal blog feed
       </Button>
       <Button
-        variant="secondary"
+        variant="outline"
         onClick={async () =>
           void handleSubscribeToFeedUrl(
             'https://lorem-rss.herokuapp.com/feed?unit=second&interval=30'
