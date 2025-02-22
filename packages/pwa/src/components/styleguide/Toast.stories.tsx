@@ -1,4 +1,4 @@
-import {Button, ButtonVariant} from '@src/components/atoms/Button';
+import {Button} from '@src/components/atoms/Button';
 import type {ToastActionElement} from '@src/components/atoms/Toast';
 import {StorySection} from '@src/components/styleguide/StorySection';
 
@@ -14,7 +14,6 @@ const ToastStory: React.FC<{
 
   return (
     <Button
-      variant={ButtonVariant.Primary}
       onClick={() => showToast({title: toastTitle, message: toastMessage, action: toastAction})}
     >
       {buttonText}
@@ -52,10 +51,7 @@ export const ToastStories: React.FC = () => {
           toastTitle="Undo action"
           toastMessage="Item has been deleted"
           toastAction={
-            <Button
-              variant={ButtonVariant.Secondary}
-              onClick={() => window.alert('Toast action clicked')}
-            >
+            <Button variant="secondary" onClick={() => window.alert('Toast action clicked')}>
               Undo
             </Button>
           }
