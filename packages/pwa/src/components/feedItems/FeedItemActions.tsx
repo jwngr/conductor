@@ -21,7 +21,7 @@ import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {FlexRow} from '@src/components/atoms/Flex';
 
-import {useToast} from '@src/lib/toasts';
+import {toast} from '@src/lib/toasts';
 
 interface GenericFeedItemActionIconProps {
   readonly feedItem: FeedItem;
@@ -48,19 +48,18 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
 }) => {
   const {feedItemId} = feedItem;
   const eventLogService = useEventLogService();
-  const {showToast, showErrorToast} = useToast();
 
   const handleAction = async (): Promise<void> => {
     const isCurrentlyActive = getIsActive(feedItem);
     const result = await onAction(isCurrentlyActive);
 
     if (result.success) {
-      showToast({message: toastText});
+      toast(toastText);
       void eventLogService.logFeedItemActionEvent({feedItemId, feedItemActionType});
       return;
     }
 
-    showErrorToast({message: `${errorMessage}: ${result.error.message}`});
+    toast.error(errorMessage, {description: result.error.message});
     logger.error(prefixError(result.error, errorMessage), {feedItemId: feedItem.feedItemId});
   };
 
