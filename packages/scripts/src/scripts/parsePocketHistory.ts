@@ -1,10 +1,11 @@
 import fs from 'fs/promises';
+import path from 'path';
 
 import {PocketService} from '@src/lib/pocket';
 
 import type {PocketExportedItem} from '@src/types/pocket.types';
 
-const EXPORT_FILE_PATH = '@src/resources/pocketExport.html';
+const EXPORT_FILE_PATH = path.resolve(__dirname, '../resources/pocketExport.html');
 
 async function main(): Promise<void> {
   // eslint-disable-next-line no-restricted-syntax
