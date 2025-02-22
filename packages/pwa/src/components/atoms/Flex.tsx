@@ -1,6 +1,8 @@
 import type {HTMLAttributes} from 'react';
 import styled, {css} from 'styled-components';
 
+export type FlexValue = 1 | 'auto' | 'initial' | 'none' | boolean;
+
 interface FlexProps extends HTMLAttributes<HTMLDivElement> {
   readonly direction: 'row' | 'column';
   readonly align: 'flex-start' | 'flex-end' | 'center' | 'stretch' | 'baseline';
@@ -13,7 +15,7 @@ interface FlexProps extends HTMLAttributes<HTMLDivElement> {
     | 'space-evenly';
   readonly gap?: number | {mobile: number; desktop: number};
   readonly wrap?: boolean;
-  readonly flex?: string | number | boolean;
+  readonly flex?: FlexValue;
 }
 
 interface FlexWrapperProps {

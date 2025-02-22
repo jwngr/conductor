@@ -5,6 +5,8 @@ import {assertNever} from '@shared/lib/utils.shared';
 
 import type {ThemeColor} from '@shared/types/theme.types';
 
+import type {FlexValue} from '@src/components/atoms/Flex';
+
 import {getThemeColorClass} from '@src/lib/theme.pwa';
 
 type FontWeight = 'normal' | 'bold' | '900';
@@ -69,7 +71,6 @@ function getUnderlineClasses(args: {readonly underline?: 'always' | 'hover' | 'n
   }
 }
 
-type FlexValue = 1 | 'auto' | 'initial' | 'none' | boolean;
 function getFlexClasses(args: {readonly flex?: FlexValue}): string {
   const {flex} = args;
 
@@ -101,7 +102,7 @@ interface TextProps extends HTMLAttributes<HTMLParagraphElement> {
   readonly weight?: FontWeight;
   readonly color?: ThemeColor;
   readonly hoverColor?: ThemeColor;
-  readonly flex?: number | string | boolean;
+  readonly flex?: FlexValue;
   readonly truncate?: boolean;
   readonly monospace?: boolean;
   readonly light?: boolean;
