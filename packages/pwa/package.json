@@ -6,15 +6,19 @@
   "dependencies": {
     "@conductor/shared": "workspace:*",
     "@conductor/shared-client": "workspace:*",
-    "@radix-ui/react-dialog": "^1.1.5",
+    "@radix-ui/react-dialog": "^1.1.6",
+    "@radix-ui/react-slot": "^1.1.2",
     "@radix-ui/react-toast": "^1.2.5",
     "@radix-ui/react-tooltip": "^1.1.7",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "lucide-react": "^0.475.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^9.0.3",
     "react-router-dom": "^6.28.0",
     "styled-components": "^6.1.14",
+    "tailwindcss-animate": "^1.0.7",
     "tinykeys": "^3.0.0"
   },
   "devDependencies": {

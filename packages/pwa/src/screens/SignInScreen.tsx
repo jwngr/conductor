@@ -15,7 +15,7 @@ import {authService} from '@sharedClient/services/auth.client';
 
 import {useMaybeLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
-import {Button, ButtonVariant} from '@src/components/atoms/Button';
+import {Button} from '@src/components/atoms/Button';
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Input} from '@src/components/atoms/Input';
 import {Spacer} from '@src/components/atoms/Spacer';
@@ -69,11 +69,7 @@ const PasswordlessAuthButton: React.FC<{
   };
 
   return (
-    <Button
-      variant={ButtonVariant.Primary}
-      onClick={handleSignInButtonClick}
-      disabled={!isValidEmail(maybeEmail)}
-    >
+    <Button onClick={handleSignInButtonClick} disabled={!isValidEmail(maybeEmail)}>
       {children}
     </Button>
   );

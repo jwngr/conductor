@@ -9,7 +9,7 @@ import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.typ
 import {useUserFeedSubscriptionsService} from '@sharedClient/services/userFeedSubscriptions.client';
 
 import {AppHeader} from '@src/components/AppHeader';
-import {Button, ButtonVariant} from '@src/components/atoms/Button';
+import {Button} from '@src/components/atoms/Button';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Input} from '@src/components/atoms/Input';
 import {Text} from '@src/components/atoms/Text';
@@ -105,12 +105,7 @@ const FeedAdder: React.FC = () => {
           onChange={(e) => setUrl(e.target.value)}
           style={{flex: 1}}
         />
-        <Button
-          variant={ButtonVariant.Primary}
-          onClick={async () => void handleSubscribeToFeedUrl(url)}
-        >
-          Subscribe
-        </Button>
+        <Button onClick={async () => void handleSubscribeToFeedUrl(url)}>Subscribe</Button>
       </FeedAdderForm>
 
       {status ? <StatusText $isError={status.includes('Error')}>{status}</StatusText> : null}
@@ -119,13 +114,13 @@ const FeedAdder: React.FC = () => {
         <Text bold>Quick add feeds</Text>
         <PreCannedFeedsButtonsWrapper>
           <Button
-            variant={ButtonVariant.Secondary}
+            variant="secondary"
             onClick={async () => void handleSubscribeToFeedUrl('https://jwn.gr/rss.xml')}
           >
             Personal blog feed
           </Button>
           <Button
-            variant={ButtonVariant.Secondary}
+            variant="secondary"
             onClick={async () =>
               void handleSubscribeToFeedUrl(
                 'https://lorem-rss.herokuapp.com/feed?unit=second&interval=30'
@@ -195,7 +190,7 @@ const FeedSubscriptionsList: React.FC = () => {
             </FeedSubscriptionItemDetails>
             {subscription.isActive ? (
               <Button
-                variant={ButtonVariant.Secondary}
+                variant="secondary"
                 onClick={async () => void handleUnsubscribe(subscription)}
               >
                 Unsubscribe

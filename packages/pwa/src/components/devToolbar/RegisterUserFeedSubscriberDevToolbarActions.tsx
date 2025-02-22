@@ -7,7 +7,7 @@ import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
 import {useUserFeedSubscriptionsService} from '@sharedClient/services/userFeedSubscriptions.client';
 
-import {Button, ButtonVariant} from '@src/components/atoms/Button';
+import {Button} from '@src/components/atoms/Button';
 
 const StatusText = styled.div<{readonly $isError?: boolean}>`
   font-size: 12px;
@@ -33,13 +33,13 @@ const AccountFeedSubscriber: React.FC = () => {
   return (
     <>
       <Button
-        variant={ButtonVariant.Secondary}
+        variant="outline"
         onClick={async () => void handleSubscribeToFeedUrl('https://jwn.gr/rss.xml')}
       >
         Subscribe to personal blog feed
       </Button>
       <Button
-        variant={ButtonVariant.Secondary}
+        variant="outline"
         onClick={async () =>
           void handleSubscribeToFeedUrl(
             'https://lorem-rss.herokuapp.com/feed?unit=second&interval=30'
