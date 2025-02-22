@@ -6,13 +6,18 @@ import {SharedKeyboardShortcutsService} from '@shared/services/keyboardShortcuts
 import type {KeyboardShortcut, ShortcutHandler} from '@shared/types/shortcuts.types';
 
 import {IS_MAC} from '@src/lib/environment.pwa';
+import {WebKeyboardShortcutsAdapter} from '@src/lib/webKeyboardShortcuts.pwa';
 
 interface ShortcutWithHandler {
   readonly shortcut: KeyboardShortcut;
   readonly handler: ShortcutHandler;
 }
 
-export const keyboardShortcutsService = new SharedKeyboardShortcutsService({isMac: IS_MAC});
+const webAdapter = new WebKeyboardShortcutsAdapter({isMac: IS_MAC});
+export const keyboardShortcutsService = new SharedKeyboardShortcutsService({
+  adapter: webAdapter,
+  isMac: IS_MAC,
+});
 
 /**
  * Registers a shortcut with a handler. Existing shortcuts with the same shortcut key pattern will

@@ -16,8 +16,7 @@ export enum KeyboardShortcutId {
 }
 
 /**
- * Universal representation of a non-platform-specific shortcut key. These will get mapped to
- * platform-specific strings.
+ * Platform-agnostic modifier keys that can be used in keyboard shortcuts.
  */
 export enum ModifierKey {
   Command = 'COMMAND',
@@ -27,38 +26,36 @@ export enum ModifierKey {
   Shift = 'SHIFT',
 }
 
-const ALL_MODIFIER_KEYS: Record<ModifierKey, true> = {
-  [ModifierKey.Command]: true,
-  [ModifierKey.Control]: true,
-  [ModifierKey.Enter]: true,
-  [ModifierKey.Option]: true,
-  [ModifierKey.Shift]: true,
-};
+export type ShortcutKey = ModifierKey | string;
 
-export function isModifierKey(maybeModifierKey: string): maybeModifierKey is ModifierKey {
-  return maybeModifierKey in ALL_MODIFIER_KEYS;
+export type ShortcutHandler = Task;
+
+export function isModifierKey(key: ShortcutKey): key is ModifierKey {
+  return Object.values(ModifierKey).includes(key as ModifierKey);
 }
 
 /**
- * Universal representation of a non-platform-specific shortcut key. Can either be a string (for
- * single alphanumeric or other basic characters shared across platform) or a `ModifierKey` (for
- * special characters which are platform-specific).
+ * Platform-agnostic interface for handling keyboard shortcuts across different platforms.
  */
-export type ShortcutKey = string | ModifierKey;
+export interface KeyboardShortcutsAdapter {
+  readonly registerShortcut: (shortcut: KeyboardShortcut, handler: ShortcutHandler) => Task;
+  readonly unregisterShortcut: (shortcutId: KeyboardShortcutId) => void;
+}
 
 /**
- * Full representation of a keyboard shortcut, with platform-specific keys.
+ * Full representation of a keyboard shortcut, with platform-agnostic keys.
  */
 export interface KeyboardShortcut {
   readonly shortcutId: KeyboardShortcutId;
   /** Platform-specific strings shown in the UI (e.g. ["D"] or ["⌘", "Shift", "S"]) */
   readonly displayKeys: readonly string[];
-  /** Keyboard pattern registered with tinykeys (e.g. 'd' or '$mod+$shift+s'). */
-  readonly keyPattern: string;
+  /** Raw keys in a platform-agnostic format (e.g. ["D"] or ["COMMAND", "SHIFT", "S"]) */
+  readonly rawKeys: readonly ShortcutKey[];
 }
 
-export type ShortcutHandler = Task;
-
+/**
+ * Internal type for tracking registered shortcuts.
+ */
 export interface RegisteredShortcut {
   readonly shortcut: KeyboardShortcut;
   readonly handler: ShortcutHandler;

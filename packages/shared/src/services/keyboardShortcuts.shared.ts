@@ -1,22 +1,22 @@
-import {tinykeys} from 'tinykeys';
-
 import {assertNever} from '@shared/lib/utils.shared';
 
 import type {
   KeyboardShortcut,
+  KeyboardShortcutsAdapter,
   RegisteredShortcut,
   ShortcutHandler,
   ShortcutKey,
 } from '@shared/types/shortcuts.types';
 import {isModifierKey, KeyboardShortcutId, ModifierKey} from '@shared/types/shortcuts.types';
-import type {Task, Unsubscribe} from '@shared/types/utils.types';
+import type {Task} from '@shared/types/utils.types';
 
 export class SharedKeyboardShortcutsService {
-  private isMac: boolean;
+  private readonly isMac: boolean;
+  private readonly adapter: KeyboardShortcutsAdapter;
   private readonly registeredShortcuts = new Map<KeyboardShortcutId, RegisteredShortcut>();
-  private unsubscribeTinykeys?: Task;
 
-  constructor(args: {readonly isMac: boolean}) {
+  constructor(args: {readonly adapter: KeyboardShortcutsAdapter; readonly isMac: boolean}) {
+    this.adapter = args.adapter;
     this.isMac = args.isMac;
   }
 
@@ -42,8 +42,8 @@ export class SharedKeyboardShortcutsService {
     return key.toUpperCase();
   }
 
-  private getPlatformSpecificKeys(keys: ShortcutKey[]): string[] {
-    return keys.map(this.getPlatformSpecificKey);
+  private getPlatformSpecificKeys(keys: readonly ShortcutKey[]): string[] {
+    return keys.map(this.getPlatformSpecificKey.bind(this));
   }
 
   public getShortcut(shortcutId: KeyboardShortcutId): KeyboardShortcut {
@@ -72,102 +72,88 @@ export class SharedKeyboardShortcutsService {
   }
 
   public forToggleDone(): KeyboardShortcut {
+    const rawKeys = ['D'];
     return {
       shortcutId: KeyboardShortcutId.ToggleDone,
-      displayKeys: this.getPlatformSpecificKeys(['D']),
-      keyPattern: 'd',
+      displayKeys: this.getPlatformSpecificKeys(rawKeys),
+      rawKeys,
     };
   }
 
   public forToggleSaved(): KeyboardShortcut {
+    const rawKeys = ['B'];
     return {
       shortcutId: KeyboardShortcutId.ToggleSaved,
-      displayKeys: this.getPlatformSpecificKeys(['B']),
-      keyPattern: 'b',
+      displayKeys: this.getPlatformSpecificKeys(rawKeys),
+      rawKeys,
     };
   }
 
   public forToggleStarred(): KeyboardShortcut {
+    const rawKeys = ['S'];
     return {
       shortcutId: KeyboardShortcutId.ToggleStarred,
-      displayKeys: this.getPlatformSpecificKeys(['S']),
-      keyPattern: 's',
+      displayKeys: this.getPlatformSpecificKeys(rawKeys),
+      rawKeys,
     };
   }
 
   public forToggleTrashed(): KeyboardShortcut {
+    const rawKeys = ['#'];
     return {
       shortcutId: KeyboardShortcutId.ToggleTrashed,
-      displayKeys: this.getPlatformSpecificKeys(['#']),
-      keyPattern: '#',
+      displayKeys: this.getPlatformSpecificKeys(rawKeys),
+      rawKeys,
     };
   }
 
   public forToggleUnread(): KeyboardShortcut {
+    const rawKeys = ['U'];
     return {
       shortcutId: KeyboardShortcutId.ToggleUnread,
-      displayKeys: this.getPlatformSpecificKeys(['U']),
-      keyPattern: 'u',
+      displayKeys: this.getPlatformSpecificKeys(rawKeys),
+      rawKeys,
     };
   }
 
   public forClose(): KeyboardShortcut {
+    const rawKeys = ['Esc'];
     return {
       shortcutId: KeyboardShortcutId.Close,
-      displayKeys: this.getPlatformSpecificKeys(['Esc']),
-      keyPattern: 'Escape',
+      displayKeys: this.getPlatformSpecificKeys(rawKeys),
+      rawKeys,
     };
   }
 
   public forArrowUp(): KeyboardShortcut {
+    const rawKeys = ['↑'];
     return {
       shortcutId: KeyboardShortcutId.ArrowUp,
-      displayKeys: this.getPlatformSpecificKeys(['↑']),
-      keyPattern: 'ArrowUp',
+      displayKeys: this.getPlatformSpecificKeys(rawKeys),
+      rawKeys,
     };
   }
 
   public forArrowDown(): KeyboardShortcut {
+    const rawKeys = ['↓'];
     return {
       shortcutId: KeyboardShortcutId.ArrowDown,
-      displayKeys: this.getPlatformSpecificKeys(['↓']),
-      keyPattern: 'ArrowDown',
+      displayKeys: this.getPlatformSpecificKeys(rawKeys),
+      rawKeys,
     };
   }
 
   public forEnter(): KeyboardShortcut {
+    const rawKeys = ['↵'];
     return {
       shortcutId: KeyboardShortcutId.Enter,
-      displayKeys: this.getPlatformSpecificKeys(['↵']),
-      keyPattern: 'Enter',
+      displayKeys: this.getPlatformSpecificKeys(rawKeys),
+      rawKeys,
     };
   }
 
-  private refreshActiveShortcuts(): void {
-    if (this.unsubscribeTinykeys) {
-      this.unsubscribeTinykeys();
-    }
-
-    const shortcutMap: Record<string, (e: Event) => void> = {};
-
-    this.registeredShortcuts.forEach(({shortcut, handler}) => {
-      shortcutMap[shortcut.keyPattern] = (e: Event) => {
-        e.preventDefault();
-        handler();
-      };
-    });
-
-    this.unsubscribeTinykeys = tinykeys(window, shortcutMap);
-  }
-
-  public registerShortcut(shortcut: KeyboardShortcut, handler: ShortcutHandler): Unsubscribe {
+  public registerShortcut(shortcut: KeyboardShortcut, handler: ShortcutHandler): Task {
     this.registeredShortcuts.set(shortcut.shortcutId, {shortcut, handler});
-    this.refreshActiveShortcuts();
-
-    // Return a function to unregister the shortcut.
-    return () => {
-      this.registeredShortcuts.delete(shortcut.shortcutId);
-      this.refreshActiveShortcuts();
-    };
+    return this.adapter.registerShortcut(shortcut, handler);
   }
 }
