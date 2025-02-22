@@ -9,15 +9,17 @@ import type {
   ShortcutKey,
 } from '@shared/types/shortcuts.types';
 import {isModifierKey, KeyboardShortcutId, ModifierKey} from '@shared/types/shortcuts.types';
-import type {Task, Unsubscribe} from '@shared/types/utils.types';
+import type {Func, Task, Unsubscribe} from '@shared/types/utils.types';
 
 export class SharedKeyboardShortcutsService {
   private isMac: boolean;
+  private subscribeKey: Func<KeyboardEvent, void>;
   private readonly registeredShortcuts = new Map<KeyboardShortcutId, RegisteredShortcut>();
   private unsubscribeTinykeys?: Task;
 
-  constructor(args: {readonly isMac: boolean}) {
+  constructor(args: {readonly subscribeKey: Func<KeyboardEvent, void>; readonly isMac: boolean}) {
     this.isMac = args.isMac;
+    this.subscribeKey = args.subscribeKey;
   }
 
   private getPlatformSpecificKey(key: ShortcutKey): string {
