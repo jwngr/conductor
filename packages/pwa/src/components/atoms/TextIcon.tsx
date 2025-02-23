@@ -24,7 +24,7 @@ export const TextIcon: React.FC<TextIconProps> = ({
 
   return (
     <div
-      className={`flex items-center justify-center ${colorClass} [&>svg]:stroke-current [&>svg>*]:fill-none [&>svg>*]:stroke-current`}
+      className={`flex items-center justify-center gap-[8px] ${colorClass} [&>svg]:stroke-current [&>svg>*]:fill-none [&>svg>*]:stroke-current`}
       style={{width: `${size}px`, height: `${size}px`}}
     >
       <Icon name={name} size={size} color={color} {...styleProps} />

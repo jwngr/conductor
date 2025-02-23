@@ -1,5 +1,7 @@
 import type {HTMLAttributes} from 'react';
 
+import {assertNever} from '@shared/lib/utils.shared';
+
 import {cn} from '@src/lib/utils';
 
 export type FlexValue = 1 | 'auto' | 'initial' | 'none' | boolean;
@@ -29,7 +31,6 @@ function getFlexClasses(args: {
 }): string {
   const {direction, align, justify, wrap, flex, gap} = args;
 
-  // Convert flex value to Tailwind class
   const flexClasses = (() => {
     if (flex === true) return 'flex-1';
     if (flex === false) return 'flex-none';
@@ -37,14 +38,12 @@ function getFlexClasses(args: {
     return flex ? `flex-[${flex}]` : '';
   })();
 
-  // Convert gap to Tailwind class
   const gapClasses = (() => {
     if (!gap) return '';
-    if (typeof gap === 'number') return `gap-[${gap}px]`;
-    return `md:gap-[${gap.desktop}px] gap-[${gap.mobile}px]`;
+    if (typeof gap === 'number') return `gap-${gap / 4}`;
+    return `md:gap-${gap.desktop / 4} gap-${gap.mobile / 4}`;
   })();
 
-  // Convert alignment to Tailwind class
   const alignClasses = (() => {
     switch (align) {
       case 'flex-start':
@@ -58,11 +57,10 @@ function getFlexClasses(args: {
       case 'baseline':
         return 'items-baseline';
       default:
-        return '';
+        assertNever(align);
     }
   })();
 
-  // Convert justification to Tailwind class
   const justifyClasses = (() => {
     switch (justify) {
       case 'flex-start':
@@ -78,7 +76,7 @@ function getFlexClasses(args: {
       case 'space-evenly':
         return 'justify-evenly';
       default:
-        return '';
+        assertNever(justify);
     }
   })();
 
@@ -87,7 +85,7 @@ function getFlexClasses(args: {
     direction === 'row' ? 'flex-row' : 'flex-col',
     alignClasses,
     justifyClasses,
-    wrap && 'flex-wrap',
+    wrap ? 'flex-wrap' : '',
     flexClasses,
     gapClasses
   );
@@ -106,17 +104,7 @@ const Flex: React.FC<FlexProps> = ({
 }) => {
   return (
     <div
-      className={cn(
-        getFlexClasses({
-          direction,
-          align,
-          justify,
-          wrap,
-          flex,
-          gap,
-        }),
-        className
-      )}
+      className={cn(getFlexClasses({direction, align, justify, wrap, flex, gap}), className)}
       {...rest}
     >
       {children}

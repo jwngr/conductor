@@ -10,8 +10,6 @@
 }
 
 input {
-  /* System sans serif font w/ fallbacks as needed for broadest compatibility. */
-  font-family: -apple-system, 'system-ui', 'Segoe UI', Arimo, system-ui;
   font-size: 1.125rem; /* 18px */
   line-height: 1.875rem; /* 30px */
 }
