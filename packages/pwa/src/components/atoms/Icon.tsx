@@ -6,8 +6,11 @@ import {assertNever} from '@shared/lib/utils.shared';
 
 import type {IconSize} from '@shared/types/icons.types';
 import {IconName} from '@shared/types/icons.types';
-import type {ThemeColor} from '@shared/types/theme.types';
+import {ThemeColor} from '@shared/types/theme.types';
 import type {StyleAttributes} from '@shared/types/utils.types';
+
+import {getThemeColorClass} from '@src/lib/theme.pwa';
+import {cn} from '@src/lib/utils';
 
 interface BaseIconProps extends StyleAttributes {
   readonly size: IconSize;
@@ -18,8 +21,19 @@ interface UnifiedIconProps extends BaseIconProps {
   readonly name: IconName;
 }
 
-export const Icon: React.FC<UnifiedIconProps> = ({name, ...props}) => {
-  return <DynamicIcon name={toLucideIconName(name)} {...props} />;
+export const Icon: React.FC<UnifiedIconProps> = ({
+  name,
+  color = ThemeColor.Neutral900,
+  className,
+  ...props
+}) => {
+  return (
+    <DynamicIcon
+      name={toLucideIconName(name)}
+      className={cn(className, getThemeColorClass(color))}
+      {...props}
+    />
+  );
 };
 
 function toLucideIconName(name: IconName): LucideIconName {

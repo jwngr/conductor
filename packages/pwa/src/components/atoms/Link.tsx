@@ -1,12 +1,12 @@
 import type {LinkProps as RouterLinkProps} from 'react-router-dom';
 import {Link as RouterLink} from 'react-router-dom';
-import styled from 'styled-components';
 
-const LinkWrapper = styled(RouterLink)`
-  text-decoration: none;
-  color: unset;
-`;
+import {cn} from '@src/lib/utils';
 
-export const Link: React.FC<RouterLinkProps> = ({children, ...props}) => {
-  return <LinkWrapper {...props}>{children}</LinkWrapper>;
+export const Link: React.FC<RouterLinkProps> = ({children, className, ...props}) => {
+  return (
+    <RouterLink className={cn('text-current no-underline', className)} {...props}>
+      {children}
+    </RouterLink>
+  );
 };
