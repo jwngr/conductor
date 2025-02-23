@@ -1,5 +1,6 @@
 import type {HTMLAttributes} from 'react';
-import styled, {css} from 'styled-components';
+
+import {cn} from '@src/lib/utils';
 
 export type FlexValue = 1 | 'auto' | 'initial' | 'none' | boolean;
 
@@ -18,28 +19,79 @@ interface FlexProps extends HTMLAttributes<HTMLDivElement> {
   readonly flex?: FlexValue;
 }
 
-interface FlexWrapperProps {
-  readonly $mobileGap?: number;
-  readonly $desktopGap?: number;
+function getFlexClasses(args: {
+  readonly direction: FlexProps['direction'];
+  readonly align: FlexProps['align'];
+  readonly justify: FlexProps['justify'];
+  readonly wrap?: FlexProps['wrap'];
+  readonly flex?: FlexProps['flex'];
+  readonly gap?: FlexProps['gap'];
+}): string {
+  const {direction, align, justify, wrap, flex, gap} = args;
+
+  // Convert flex value to Tailwind class
+  const flexClasses = (() => {
+    if (flex === true) return 'flex-1';
+    if (flex === false) return 'flex-none';
+    if (typeof flex === 'number') return `flex-[${flex}]`;
+    return flex ? `flex-[${flex}]` : '';
+  })();
+
+  // Convert gap to Tailwind class
+  const gapClasses = (() => {
+    if (!gap) return '';
+    if (typeof gap === 'number') return `gap-[${gap}px]`;
+    return `md:gap-[${gap.desktop}px] gap-[${gap.mobile}px]`;
+  })();
+
+  // Convert alignment to Tailwind class
+  const alignClasses = (() => {
+    switch (align) {
+      case 'flex-start':
+        return 'items-start';
+      case 'flex-end':
+        return 'items-end';
+      case 'center':
+        return 'items-center';
+      case 'stretch':
+        return 'items-stretch';
+      case 'baseline':
+        return 'items-baseline';
+      default:
+        return '';
+    }
+  })();
+
+  // Convert justification to Tailwind class
+  const justifyClasses = (() => {
+    switch (justify) {
+      case 'flex-start':
+        return 'justify-start';
+      case 'flex-end':
+        return 'justify-end';
+      case 'center':
+        return 'justify-center';
+      case 'space-between':
+        return 'justify-between';
+      case 'space-around':
+        return 'justify-around';
+      case 'space-evenly':
+        return 'justify-evenly';
+      default:
+        return '';
+    }
+  })();
+
+  return cn(
+    'flex',
+    direction === 'row' ? 'flex-row' : 'flex-col',
+    alignClasses,
+    justifyClasses,
+    wrap && 'flex-wrap',
+    flexClasses,
+    gapClasses
+  );
 }
-
-const FlexWrapper = styled.div<FlexWrapperProps>`
-  ${({$desktopGap}) =>
-    typeof $desktopGap === 'undefined'
-      ? null
-      : css`
-          gap: calc(${$desktopGap * 1}px);
-        `};
-
-  ${({$mobileGap}) =>
-    typeof $mobileGap === 'undefined'
-      ? null
-      : css`
-          @media (max-width: 768px) {
-            gap: calc(${$mobileGap * 1}px);
-          }
-        `};
-`;
 
 const Flex: React.FC<FlexProps> = ({
   children,
@@ -49,32 +101,26 @@ const Flex: React.FC<FlexProps> = ({
   gap,
   wrap,
   flex,
-  style,
+  className,
   ...rest
 }) => {
-  const mobileGap = typeof gap === 'number' ? gap : gap?.mobile;
-  const desktopGap = typeof gap === 'number' ? gap : gap?.desktop;
-
-  const flexValue = flex === true ? 1 : flex === false ? 0 : flex;
-  const wrapValue = wrap === true ? 'wrap' : wrap === false ? 'nowrap' : undefined;
-
   return (
-    <FlexWrapper
-      $mobileGap={mobileGap}
-      $desktopGap={desktopGap}
-      style={{
-        ...style,
-        display: 'flex',
-        flexDirection: direction,
-        alignItems: align,
-        justifyContent: justify,
-        ...(typeof flexValue === 'undefined' ? {} : {flex: flexValue}),
-        ...(typeof wrapValue === 'undefined' ? {} : {flexWrap: wrapValue}),
-      }}
+    <div
+      className={cn(
+        getFlexClasses({
+          direction,
+          align,
+          justify,
+          wrap,
+          flex,
+          gap,
+        }),
+        className
+      )}
       {...rest}
     >
       {children}
-    </FlexWrapper>
+    </div>
   );
 };
 
@@ -89,6 +135,7 @@ export const FlexRow: React.FC<FlexRowColumnProps> = ({
   wrap,
   flex,
   children,
+  className,
   ...rest
 }) => {
   return (
@@ -99,6 +146,7 @@ export const FlexRow: React.FC<FlexRowColumnProps> = ({
       gap={gap}
       wrap={wrap}
       flex={flex}
+      className={className}
       {...rest}
     >
       {children}
@@ -113,6 +161,7 @@ export const FlexColumn: React.FC<FlexRowColumnProps> = ({
   wrap,
   flex,
   children,
+  className,
   ...rest
 }) => {
   return (
@@ -123,6 +172,7 @@ export const FlexColumn: React.FC<FlexRowColumnProps> = ({
       gap={gap}
       wrap={wrap}
       flex={flex}
+      className={className}
       {...rest}
     >
       {children}
