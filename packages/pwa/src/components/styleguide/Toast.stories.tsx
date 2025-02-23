@@ -1,5 +1,4 @@
 import {Button} from '@src/components/atoms/Button';
-import type {ToastActionElement} from '@src/components/atoms/Toast';
 import {StorySection} from '@src/components/styleguide/StorySection';
 
 import {toast} from '@src/lib/toasts';
@@ -8,7 +7,7 @@ const ToastStory: React.FC<{
   readonly buttonText: string;
   readonly toastTitle?: string;
   readonly toastMessage: string;
-  readonly toastAction?: ToastActionElement;
+  readonly toastAction?: React.ReactNode;
 }> = ({buttonText, toastMessage, toastTitle, toastAction}) => {
   return (
     <Button onClick={() => toast(toastTitle, {action: toastAction, description: toastMessage})}>
