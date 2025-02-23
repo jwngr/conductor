@@ -1,6 +1,5 @@
 import type React from 'react';
 import {useCallback} from 'react';
-import styled from 'styled-components';
 
 import {getIconSizeFromButtonIconSize} from '@shared/lib/icons.shared';
 
@@ -15,31 +14,9 @@ import {Icon} from '@src/components/atoms/Icon';
 import type {TooltipContent} from '@src/components/atoms/Tooltip';
 import {Tooltip} from '@src/components/atoms/Tooltip';
 
+import {cn} from '@src/lib/utils';
+
 import type {OnClick} from '@src/types/utils.pwa.types';
-
-interface ButtonIconWrapperProps {
-  readonly $color: ThemeColor;
-  readonly $size: number;
-}
-
-const ButtonIconWrapper = styled.div<ButtonIconWrapperProps>`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  width: ${({$size}) => $size}px;
-  height: ${({$size}) => $size}px;
-  border-radius: 4px;
-
-  background-color: ${({theme}) => theme.colors[ThemeColor.Neutral100]};
-  &:hover {
-    background-color: ${({theme}) => theme.colors[ThemeColor.Neutral200]};
-  }
-
-  svg * {
-    stroke: ${({theme, $color}) => theme.colors[$color]};
-  }
-`;
 
 interface ButtonIconProps extends StyleAttributes {
   readonly name: IconName;
@@ -48,6 +25,7 @@ interface ButtonIconProps extends StyleAttributes {
   readonly onClick: OnClick<HTMLDivElement>;
   readonly shortcutId?: KeyboardShortcutId;
   readonly tooltip: TooltipContent;
+  readonly className?: string;
 }
 
 export const ButtonIcon: React.FC<ButtonIconProps> = ({
@@ -57,6 +35,7 @@ export const ButtonIcon: React.FC<ButtonIconProps> = ({
   color = ThemeColor.Neutral900,
   onClick,
   shortcutId,
+  className,
   ...styleProps
 }) => {
   const iconSize = getIconSizeFromButtonIconSize(buttonIconSize);
@@ -67,9 +46,21 @@ export const ButtonIcon: React.FC<ButtonIconProps> = ({
   }, [onClick]);
 
   const buttonIcon = (
-    <ButtonIconWrapper $color={color} $size={buttonIconSize} onClick={onClick}>
+    <div
+      className={cn(
+        'flex cursor-pointer items-center justify-center rounded',
+        'bg-neutral-200 hover:bg-neutral-300',
+        {
+          'h-6 w-6': buttonIconSize === 24,
+          'h-8 w-8': buttonIconSize === 32,
+          'h-10 w-10': buttonIconSize === 40,
+        },
+        className
+      )}
+      onClick={onClick}
+    >
       <Icon name={name} size={iconSize} color={color} {...styleProps} />
-    </ButtonIconWrapper>
+    </div>
   );
 
   return (
