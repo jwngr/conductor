@@ -34,7 +34,7 @@ function getFlexClasses(args: {
   const flexClasses = (() => {
     if (flex === true) return 'flex-1';
     if (flex === false) return 'flex-none';
-    if (typeof flex === 'number') return `flex-[${flex}]`;
+    if (typeof flex === 'number') return `flex-${flex}`;
     return flex ? `flex-[${flex}]` : '';
   })();
 
