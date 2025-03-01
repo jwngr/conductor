@@ -1,6 +1,5 @@
 import {useEffect, useRef} from 'react';
 import type React from 'react';
-import styled from 'styled-components';
 
 import {logger} from '@shared/services/logger.shared';
 
@@ -8,43 +7,14 @@ import {Urls} from '@shared/lib/urls.shared';
 
 import type {FeedItem} from '@shared/types/feedItems.types';
 import type {ViewType} from '@shared/types/query.types';
-import {ThemeColor} from '@shared/types/theme.types';
 
 import {useFocusStore} from '@sharedClient/stores/FocusStore';
 
 import {useFeedItems} from '@sharedClient/services/feedItems.client';
 
-import {FlexColumn} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
 import {ViewKeyboardShortcutHandler} from '@src/components/views/ViewKeyboardShortcutHandler';
-
-interface ViewListItemWrapperProps {
-  readonly $isFocused: boolean;
-}
-
-const ViewListItemWrapper = styled.div<ViewListItemWrapperProps>`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 4px;
-  cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 4px;
-  outline: none;
-
-  &:hover,
-  &:focus-visible {
-    background-color: ${({theme}) => theme.colors[ThemeColor.Neutral100]};
-  }
-
-  ${({$isFocused, theme}) =>
-    $isFocused &&
-    `
-      background-color: ${theme.colors[ThemeColor.Neutral100]};
-      outline: 2px solid ${theme.colors[ThemeColor.Neutral500]};
-    `}
-`;
 
 const ViewListItem: React.FC<{
   readonly feedItem: FeedItem;
@@ -66,9 +36,11 @@ const ViewListItem: React.FC<{
 
   return (
     <Link to={Urls.forFeedItem(feedItem.feedItemId)}>
-      <ViewListItemWrapper
+      <div
         ref={itemRef}
-        $isFocused={isFocused}
+        className={`flex cursor-pointer flex-col justify-center gap-1 rounded p-2 outline-none hover:bg-neutral-100 focus-visible:bg-neutral-100 ${
+          isFocused ? 'bg-neutral-100 outline outline-2 outline-neutral-500' : ''
+        }`}
         tabIndex={0}
         onFocus={() => setFocusedFeedItemId(feedItem.feedItemId)}
         onBlur={() => setFocusedFeedItemId(null)}
@@ -79,7 +51,7 @@ const ViewListItem: React.FC<{
         <Text as="p" light>
           {feedItem.url}
         </Text>
-      </ViewListItemWrapper>
+      </div>
     </Link>
   );
 };
@@ -115,17 +87,11 @@ const ViewList: React.FC<{viewType: ViewType}> = ({viewType}) => {
   );
 };
 
-const ViewWrapper = styled(FlexColumn)`
-  flex: 1;
-  padding: 20px;
-  overflow: auto;
-`;
-
 export const View: React.FC<{viewType: ViewType}> = ({viewType}) => {
   return (
-    <ViewWrapper>
+    <div className="flex flex-1 flex-col overflow-auto p-5">
       <h2>{viewType}</h2>
       <ViewList viewType={viewType} />
-    </ViewWrapper>
+    </div>
   );
 };
