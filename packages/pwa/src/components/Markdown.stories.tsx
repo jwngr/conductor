@@ -6,7 +6,7 @@ import {Markdown} from '@src/components/Markdown';
 import {StorySection} from '@src/components/styleguide/StorySection';
 
 export const MarkdownStories: React.FC = () => {
-  const headingsExample = `
+  const combinedMarkdownContent = `
 # Heading 1: Main Document Title 
 
 ## Heading 2: Major Section
@@ -28,9 +28,7 @@ This level is rarely used but available for very detailed hierarchies.
 ###### Heading 6: The Smallest Heading
 
 The smallest heading level, typically used for very specific annotations or notes.
-  `;
 
-  const textFormattingExample = `
 ## Text Formatting Examples
 
 Regular text appears like this, with no special formatting applied.
@@ -46,9 +44,7 @@ _Italic text_ can be used for book titles, foreign words, or slight emphasis.
 Text can also include [hyperlinks](https://example.com) that direct users to other resources.
 
 You can also use \`inline code\` for technical terms, commands, or code snippets within a sentence.
-  `;
 
-  const listsExample = `
 ## Lists
 
 ### Unordered Lists
@@ -73,9 +69,7 @@ You can also use \`inline code\` for technical terms, commands, or code snippets
    * Unordered sub-item
    * Another unordered sub-item
 2. Second ordered item
-  `;
 
-  const blockElementsExample = `
 ## Block Elements
 
 ### Blockquotes
@@ -106,9 +100,7 @@ The following is a horizontal rule, useful for separating content sections:
 ---
 
 Content after the horizontal rule.
-  `;
 
-  const tablesExample = `
 ## Tables
 
 | Header 1 | Header 2 | Header 3 |
@@ -123,9 +115,7 @@ Content after the horizontal rule.
 |:-------------|:--------------:|--------------:|
 | Left         | Center         | Right         |
 | Aligned      | Aligned        | Aligned       |
-  `;
 
-  const advancedExample = `
 ## Advanced Markdown Features
 
 ### Task Lists
@@ -152,38 +142,8 @@ Another Term
   `;
 
   return (
-    <StorySection title="Markdown documentation">
-      <FlexColumn gap={16}>
-        <Text as="h6" color={ThemeColor.Neutral500}>
-          Headings and Document Structure
-        </Text>
-        <Markdown content={headingsExample} />
-
-        <Text as="h6" color={ThemeColor.Neutral500}>
-          Text Formatting
-        </Text>
-        <Markdown content={textFormattingExample} />
-
-        <Text as="h6" color={ThemeColor.Neutral500}>
-          Lists
-        </Text>
-        <Markdown content={listsExample} />
-
-        <Text as="h6" color={ThemeColor.Neutral500}>
-          Block Elements
-        </Text>
-        <Markdown content={blockElementsExample} />
-
-        <Text as="h6" color={ThemeColor.Neutral500}>
-          Tables
-        </Text>
-        <Markdown content={tablesExample} />
-
-        <Text as="h6" color={ThemeColor.Neutral500}>
-          Advanced Features
-        </Text>
-        <Markdown content={advancedExample} />
-      </FlexColumn>
+    <StorySection title={null}>
+      <Markdown content={combinedMarkdownContent} />
     </StorySection>
   );
 };
