@@ -9,7 +9,7 @@
     "zustand": "^5.0.3"
   },
   "devDependencies": {
-    "@types/react": "^19.0.8"
+    "@types/react": "^19.0.10"
   },
   "scripts": {
     "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",
