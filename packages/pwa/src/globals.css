@@ -152,7 +152,7 @@
   }
 
   h5 {
-    @apply text-base font-normal tracking-wide uppercase;
+    @apply text-base font-medium;
   }
 
   h6 {
