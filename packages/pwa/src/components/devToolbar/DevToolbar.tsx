@@ -1,68 +1,56 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
-import {styled} from 'styled-components';
 
 import type {DevToolbarSectionInfo} from '@shared/types/devToolbar.types';
-import {ThemeColor} from '@shared/types/theme.types';
 
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
-import {FlexColumn} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
 import {RequireLoggedInAccount} from '@src/components/auth/RequireLoggedInAccount';
 
-const DevToolbarWrapper = styled.div<{readonly $isOpen: boolean}>`
-  position: fixed;
-  bottom: 16px;
-  right: 16px;
-  background-color: ${({theme}) => theme.colors[ThemeColor.Neutral100]};
-  border-radius: ${({$isOpen}) => ($isOpen ? '12px' : '100%')};
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  border: 2px solid ${({theme}) => theme.colors.border};
-  cursor: ${({$isOpen}) => ($isOpen ? 'default' : 'pointer')};
-  width: ${({$isOpen}) => ($isOpen ? '300px' : '32px')};
-  height: ${({$isOpen}) => ($isOpen ? 'auto' : '32px')};
-  padding: ${({$isOpen}) => ($isOpen ? '16px' : '0')};
-`;
+const BugEmoji: React.FC = () => {
+  return (
+    <span
+      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-base"
+      aria-hidden="true"
+    >
+      🐛
+    </span>
+  );
+};
 
-const DevToolbarContent = styled.div<{readonly $isOpen: boolean}>`
-  display: ${({$isOpen}) => ($isOpen ? 'flex' : 'none')};
-  flex-direction: column;
-  gap: 12px;
-`;
-
-const DevToolbarSectionWrapper = styled(FlexColumn)`
-  gap: 12px;
-`;
-
-const BugEmoji = styled.span<{readonly $isOpen: boolean}>`
-  display: ${({$isOpen}) => ($isOpen ? 'none' : 'block')};
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 16px;
-`;
+const DevToolbarContent: React.FC = () => {
+  const devToolbarSections = useDevToolbarStore((state) => state.sections);
+  return (
+    <div className="flex flex-col gap-3">
+      {devToolbarSections.map((section) =>
+        section.requiresAuth ? (
+          <RequireLoggedInAccount key={section.sectionType}>
+            <DevToolbarSectionComponent section={section} />
+          </RequireLoggedInAccount>
+        ) : (
+          <DevToolbarSectionComponent key={section.sectionType} section={section} />
+        )
+      )}
+    </div>
+  );
+};
 
 const DevToolbarSectionComponent: React.FC<{
   readonly section: DevToolbarSectionInfo;
 }> = ({section}) => {
   return (
-    <DevToolbarSectionWrapper>
+    <div className="flex flex-col gap-3">
       <Text as="h4" bold>
         {section.title}
       </Text>
       {section.renderSection()}
-    </DevToolbarSectionWrapper>
+    </div>
   );
 };
 
-export const DevToolbar: React.FC<{
-  readonly isVisible?: boolean;
-}> = ({isVisible = true}) => {
+export const DevToolbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const toolbarRef = useRef<HTMLDivElement>(null);
-
-  const devToolbarSections = useDevToolbarStore((state) => state.sections);
 
   // Close the toolbar on clicks outside of it.
   useEffect(() => {
@@ -97,24 +85,18 @@ export const DevToolbar: React.FC<{
   }, [handleKeyDown]);
 
   // TODO: Add `!IS_DEVELOPMENT` check back here.
-  if (!isVisible || devToolbarSections.length === 0) return null;
 
   return (
-    <DevToolbarWrapper ref={toolbarRef} $isOpen={isOpen} onClick={handleToolbarClick}>
-      <BugEmoji $isOpen={isOpen} aria-hidden="true">
-        🐛
-      </BugEmoji>
-      <DevToolbarContent $isOpen={isOpen}>
-        {devToolbarSections.map((section) =>
-          section.requiresAuth ? (
-            <RequireLoggedInAccount key={section.sectionType}>
-              <DevToolbarSectionComponent section={section} />
-            </RequireLoggedInAccount>
-          ) : (
-            <DevToolbarSectionComponent key={section.sectionType} section={section} />
-          )
-        )}
-      </DevToolbarContent>
-    </DevToolbarWrapper>
+    <div
+      ref={toolbarRef}
+      onClick={handleToolbarClick}
+      className={`border-border fixed right-4 bottom-4 border-2 border-solid shadow-md ${
+        isOpen
+          ? 'h-auto w-[300px] cursor-default rounded-xl bg-neutral-100 p-4'
+          : 'h-8 w-8 cursor-pointer rounded-full bg-neutral-100 p-0'
+      }`}
+    >
+      {isOpen ? <DevToolbarContent /> : <BugEmoji />}
+    </div>
   );
 };
