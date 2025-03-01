@@ -1,7 +1,3 @@
-import {ThemeColor} from '@shared/types/theme.types';
-
-import {FlexColumn} from '@src/components/atoms/Flex';
-import {Text} from '@src/components/atoms/Text';
 import {Markdown} from '@src/components/Markdown';
 import {StorySection} from '@src/components/styleguide/StorySection';
 
