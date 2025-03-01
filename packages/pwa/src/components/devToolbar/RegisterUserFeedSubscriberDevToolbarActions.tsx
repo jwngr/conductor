@@ -1,5 +1,4 @@
 import {useEffect, useState} from 'react';
-import styled from 'styled-components';
 
 import {DevToolbarSectionType} from '@shared/types/devToolbar.types';
 
@@ -8,11 +7,6 @@ import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 import {useUserFeedSubscriptionsService} from '@sharedClient/services/userFeedSubscriptions.client';
 
 import {Button} from '@src/components/atoms/Button';
-
-const StatusText = styled.div<{readonly $isError?: boolean}>`
-  font-size: 12px;
-  color: ${({theme, $isError}) => ($isError ? theme.colors.error : theme.colors.success)};
-`;
 
 const AccountFeedSubscriber: React.FC = () => {
   const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
@@ -29,6 +23,8 @@ const AccountFeedSubscriber: React.FC = () => {
 
     setStatus(`Successfully subscribed to feed source: ${subscribeResult.value}`);
   };
+
+  const isError = status.includes('Error');
 
   return (
     <>
@@ -49,7 +45,9 @@ const AccountFeedSubscriber: React.FC = () => {
         Subscribe to 30s feed
       </Button>
       {/* TODO: Add unsubscribe button. */}
-      {status ? <StatusText $isError={status.includes('Error')}>{status}</StatusText> : null}
+      {status ? (
+        <div className={`text-xs ${isError ? 'text-error' : 'text-success'}`}>{status}</div>
+      ) : null}
     </>
   );
 };

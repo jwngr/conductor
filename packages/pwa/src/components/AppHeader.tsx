@@ -1,5 +1,4 @@
 import type React from 'react';
-import styled from 'styled-components';
 
 import {Urls} from '@shared/lib/urls.shared';
 
@@ -10,11 +9,7 @@ import {Link} from '@src/components/atoms/Link';
 import {Spacer} from '@src/components/atoms/Spacer';
 import {Text} from '@src/components/atoms/Text';
 
-const AppHeaderWrapper = styled(FlexRow)`
-  height: 60px;
-  padding: 0 16px;
-  border-bottom: 1px solid red;
-`;
+import {cn} from '@src/lib/utils';
 
 export const AppHeader: React.FC = () => {
   const {isLoading, loggedInAccount} = useMaybeLoggedInAccount();
@@ -33,10 +28,10 @@ export const AppHeader: React.FC = () => {
   }
 
   return (
-    <AppHeaderWrapper>
+    <FlexRow className={cn('h-[60px] border-b px-4')}>
       <Text as="h2">Conductor</Text>
       <Spacer flex />
       {authContent}
-    </AppHeaderWrapper>
+    </FlexRow>
   );
 };

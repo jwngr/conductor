@@ -1,13 +1,11 @@
 import type React from 'react';
 import type {MouseEventHandler} from 'react';
-import styled from 'styled-components';
 
 import type {CustomIcon} from '@shared/lib/customIcons.shared';
 import {CustomIconType} from '@shared/lib/customIcons.shared';
 import {NavItems, ORDERED_VIEW_NAV_ITEMS} from '@shared/lib/navItems.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
-import {ThemeColor} from '@shared/types/theme.types';
 import type {NavItem} from '@shared/types/urls.types';
 import {NavItemId} from '@shared/types/urls.types';
 
@@ -17,6 +15,8 @@ import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
 import {TextIcon} from '@src/components/atoms/TextIcon';
+
+import {cn} from '@src/lib/utils';
 
 const LeftSidebarItemAvatar: React.FC<{
   readonly icon: CustomIcon;
@@ -33,31 +33,6 @@ const LeftSidebarItemAvatar: React.FC<{
   }
 };
 
-interface LeftSideItemWrapperProps {
-  readonly $isActive: boolean;
-}
-
-const LeftSideItemWrapper = styled(FlexRow).attrs({
-  gap: 8,
-})<LeftSideItemWrapperProps>`
-  padding: 8px 12px;
-  border-radius: 4px;
-
-  background-color: ${({$isActive, theme}) =>
-    $isActive ? theme.colors[ThemeColor.Orange200] : 'transparent'};
-
-  &:hover {
-    background-color: ${({$isActive, theme}) =>
-      theme.colors[$isActive ? ThemeColor.Orange300 : ThemeColor.Neutral300]};
-  }
-
-  // Animate on click.
-  transition: transform 0.1s ease-in-out;
-  &:active {
-    transform: scale(0.95);
-  }
-`;
-
 const LeftSidebarItemComponent: React.FC<{
   readonly url: string;
   readonly icon: CustomIcon;
@@ -67,10 +42,17 @@ const LeftSidebarItemComponent: React.FC<{
 }> = ({url, icon, title, isActive, onClick}) => {
   return (
     <Link to={url} onClick={onClick}>
-      <LeftSideItemWrapper $isActive={isActive}>
+      <FlexRow
+        gap={8}
+        className={cn(
+          'rounded px-3 py-2',
+          'transition-transform active:scale-95',
+          isActive ? 'bg-orange-200 hover:bg-orange-300' : 'bg-transparent hover:bg-neutral-300'
+        )}
+      >
         <LeftSidebarItemAvatar icon={icon} />
         <Text as="p">{title}</Text>
-      </LeftSideItemWrapper>
+      </FlexRow>
     </Link>
   );
 };
@@ -85,7 +67,7 @@ const LeftSidebarSection: React.FC<{
       <Text as="h5" light>
         {title}
       </Text>
-      <FlexColumn style={{margin: '0 -12px'}}>
+      <FlexColumn className="mx-[-12px]">
         {navItems.map((navItem, i) => (
           <LeftSidebarItemComponent
             key={`${i}-${navItem.url}`}
@@ -101,19 +83,14 @@ const LeftSidebarSection: React.FC<{
   );
 };
 
-const LeftSidebarWrapper = styled(FlexColumn).attrs({gap: 16})`
-  width: 200px;
-  padding: 20px;
-  background-color: ${({theme}) => theme.colors[ThemeColor.Neutral100]};
-  border-right: solid 1px ${({theme}) => theme.colors[ThemeColor.Neutral300]};
-  overflow: auto;
-`;
-
 export const LeftSidebar: React.FC = () => {
   return (
-    <LeftSidebarWrapper>
+    <FlexColumn
+      gap={16}
+      className="w-[200px] overflow-auto border-r border-neutral-300 bg-neutral-100 p-5"
+    >
       <LeftSidebarSection title="Views" navItems={ORDERED_VIEW_NAV_ITEMS} />
       <LeftSidebarSection title="Feeds" navItems={[NavItems.fromId(NavItemId.Feeds)]} />
-    </LeftSidebarWrapper>
+    </FlexColumn>
   );
 };
