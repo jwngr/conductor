@@ -4,7 +4,6 @@ import {Urls} from '@shared/lib/urls.shared';
 
 import {useMaybeLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
-import {FlexRow} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
 import {Spacer} from '@src/components/atoms/Spacer';
 import {Text} from '@src/components/atoms/Text';
@@ -28,10 +27,10 @@ export const AppHeader: React.FC = () => {
   }
 
   return (
-    <FlexRow className={cn('h-[60px] border-b px-4')}>
+    <div className={cn('flex h-[60px] flex-row items-center border-b px-4')}>
       <Text as="h2">Conductor</Text>
       <Spacer flex />
       {authContent}
-    </FlexRow>
+    </div>
   );
 };

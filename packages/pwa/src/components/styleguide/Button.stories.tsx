@@ -1,12 +1,14 @@
 import {Button} from '@src/components/atoms/Button';
 import {StorySection} from '@src/components/styleguide/StorySection';
 
+import {toast} from '@src/lib/toasts';
+
 const handleClick = (message: string): void => {
-  window.alert(message);
+  toast.success(message);
 };
 
 const handleDisabledClick = (): void => {
-  window.alert('You should not see this since the button is disabled');
+  toast.error('You should not see this since the button is disabled');
 };
 
 export const ButtonStories: React.FC = () => {

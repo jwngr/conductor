@@ -1,4 +1,3 @@
-import {FlexColumn} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
 
 export const StorySection: React.FC<{
@@ -6,13 +5,13 @@ export const StorySection: React.FC<{
   readonly children: React.ReactNode;
 }> = ({title, children}) => {
   return (
-    <FlexColumn gap={12}>
+    <div className="flex flex-col gap-3">
       {title ? (
         <Text as="h2" bold>
           {title}
         </Text>
       ) : null}
-      <FlexColumn gap={20}>{children}</FlexColumn>
-    </FlexColumn>
+      <div className="flex flex-col gap-5">{children}</div>
+    </div>
   );
 };

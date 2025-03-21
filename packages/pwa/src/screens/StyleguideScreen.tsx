@@ -125,7 +125,7 @@ export const StyleguideScreen: React.FC = () => {
         <Text as="h1" bold>
           {sectionConfig.title}
         </Text>
-        <div className="flex flex-col gap-40">
+        <div className="flex flex-col gap-8">
           <StyleguideStoryGroupContent sectionId={activeSectionId} />
         </div>
       </div>
