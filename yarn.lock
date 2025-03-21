@@ -517,7 +517,7 @@ __metadata:
     "@conductor/shared": "workspace:*"
     "@genkit-ai/firebase": "npm:^1.3.0"
     "@genkit-ai/googleai": "npm:^1.3.0"
-    "@rowanmanning/feed-parser": "npm:^1.1.2"
+    "@rowanmanning/feed-parser": "npm:^2.0.1"
     genkit: "npm:^1.3.0"
   languageName: unknown
   linkType: soft
@@ -3890,13 +3890,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rowanmanning/feed-parser@npm:^1.1.2":
-  version: 1.1.2
-  resolution: "@rowanmanning/feed-parser@npm:1.1.2"
+"@rowanmanning/feed-parser@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "@rowanmanning/feed-parser@npm:2.0.1"
   dependencies:
     fast-xml-parser: "npm:^5.0.8"
     html-entities: "npm:^2.3.3"
-  checksum: 10c0/4f3af3d075f0b6c51d348244065cc0f6bb878bb0b4b636fe3380e9b6c6f69807ded1576d3ad5ba130ea08e38b71acfc9d7690b6c367a0c7ffc72bc3d30c760df
+  checksum: 10c0/3263566b3585820df40d0feca29944ce3634f4c0a7f6ba8076e4a5b39eaab2a0aafac05c93fdd7673286cac058b9068e7be470b1b6954f0da1d3fc7b43542bbc
   languageName: node
   linkType: hard
 
