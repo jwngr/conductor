@@ -432,13 +432,13 @@ __metadata:
   dependencies:
     "@conductor/shared": "workspace:*"
     "@conductor/shared-client": "workspace:*"
-    "@types/chrome": "npm:^0.0.307"
-    "@types/react": "npm:^19.0.10"
+    "@types/chrome": "npm:^0.0.310"
+    "@types/react": "npm:^19.0.12"
     "@types/react-dom": "npm:^19.0.4"
     "@vitejs/plugin-react": "npm:^4.3.4"
     react: "npm:^19.0.0"
     react-dom: "npm:^19.0.0"
-    vite: "npm:^6.2.0"
+    vite: "npm:^6.2.2"
   languageName: unknown
   linkType: soft
 
@@ -446,10 +446,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@conductor/functions@workspace:packages/functions"
   dependencies:
-    "@mendable/firecrawl-js": "npm:^1.18.6"
-    "@types/node": "npm:^22.13.7"
-    esbuild: "npm:^0.25.0"
-    firebase-admin: "npm:^13.1.0"
+    "@mendable/firecrawl-js": "npm:^1.20.1"
+    "@types/node": "npm:^22.13.10"
+    esbuild: "npm:^0.25.1"
+    firebase-admin: "npm:^13.2.0"
     firebase-functions: "npm:^6.3.2"
   languageName: unknown
   linkType: soft
@@ -465,25 +465,25 @@ __metadata:
     "@radix-ui/react-toast": "npm:^1.2.6"
     "@radix-ui/react-tooltip": "npm:^1.1.8"
     "@tailwindcss/typography": "npm:^0.5.16"
-    "@tailwindcss/vite": "npm:^4.0.9"
-    "@types/react": "npm:^19.0.10"
+    "@tailwindcss/vite": "npm:^4.0.15"
+    "@types/react": "npm:^19.0.12"
     "@types/react-dom": "npm:^19.0.4"
     "@vitejs/plugin-react": "npm:^4.3.4"
     class-variance-authority: "npm:^0.7.1"
     clsx: "npm:^2.1.1"
-    lucide-react: "npm:^0.477.0"
-    next-themes: "npm:^0.4.4"
+    lucide-react: "npm:^0.483.0"
+    next-themes: "npm:^0.4.6"
     prettier-plugin-tailwindcss: "npm:^0.6.11"
     react: "npm:^19.0.0"
     react-dom: "npm:^19.0.0"
-    react-markdown: "npm:^10.0.0"
-    react-router-dom: "npm:^6.28.0"
+    react-markdown: "npm:^10.1.0"
+    react-router-dom: "npm:^6.30.0"
     sonner: "npm:^2.0.1"
     tailwind-merge: "npm:^3.0.2"
-    tailwindcss: "npm:^4.0.9"
+    tailwindcss: "npm:^4.0.15"
     tailwindcss-animate: "npm:^1.0.7"
     tinykeys: "npm:^3.0.0"
-    vite: "npm:^6.2.0"
+    vite: "npm:^6.2.2"
     vite-plugin-svgr: "npm:^4.3.0"
   languageName: unknown
   linkType: soft
@@ -494,7 +494,7 @@ __metadata:
   dependencies:
     "@conductor/shared": "workspace:*"
     "@types/jsdom": "npm:^21.1.7"
-    "@types/node": "npm:^22.13.7"
+    "@types/node": "npm:^22.13.10"
     jsdom: "npm:^26.0.0"
   languageName: unknown
   linkType: soft
@@ -504,7 +504,7 @@ __metadata:
   resolution: "@conductor/shared-client@workspace:packages/sharedClient"
   dependencies:
     "@conductor/shared": "workspace:*"
-    "@types/react": "npm:^19.0.10"
+    "@types/react": "npm:^19.0.12"
     react: "npm:^19.0.0"
     zustand: "npm:^5.0.3"
   languageName: unknown
@@ -515,10 +515,10 @@ __metadata:
   resolution: "@conductor/shared-server@workspace:packages/sharedServer"
   dependencies:
     "@conductor/shared": "workspace:*"
-    "@genkit-ai/firebase": "npm:^1.0.5"
-    "@genkit-ai/googleai": "npm:^1.0.5"
+    "@genkit-ai/firebase": "npm:^1.3.0"
+    "@genkit-ai/googleai": "npm:^1.3.0"
     "@rowanmanning/feed-parser": "npm:^1.1.2"
-    genkit: "npm:^1.0.5"
+    genkit: "npm:^1.3.0"
   languageName: unknown
   linkType: soft
 
@@ -824,7 +824,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/js@npm:9.22.0, @eslint/js@npm:^9.21.0":
+"@eslint/js@npm:9.22.0, @eslint/js@npm:^9.22.0":
   version: 9.22.0
   resolution: "@eslint/js@npm:9.22.0"
   checksum: 10c0/5bcd009bb579dc6c6ed760703bdd741e08a48cd9decd677aa2cf67fe66236658cb09a00185a0369f3904e5cffba9e6e0f2ff4d9ba4fdf598fcd81d34c49213a5
@@ -1475,7 +1475,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@genkit-ai/firebase@npm:^1.0.5":
+"@genkit-ai/firebase@npm:^1.3.0":
   version: 1.3.0
   resolution: "@genkit-ai/firebase@npm:1.3.0"
   dependencies:
@@ -1515,7 +1515,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@genkit-ai/googleai@npm:^1.0.5":
+"@genkit-ai/googleai@npm:^1.3.0":
   version: 1.3.0
   resolution: "@genkit-ai/googleai@npm:1.3.0"
   dependencies:
@@ -2116,7 +2116,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mendable/firecrawl-js@npm:^1.18.6":
+"@mendable/firecrawl-js@npm:^1.20.1":
   version: 1.20.1
   resolution: "@mendable/firecrawl-js@npm:1.20.1"
   dependencies:
@@ -4209,7 +4209,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tailwindcss/vite@npm:^4.0.9":
+"@tailwindcss/vite@npm:^4.0.15":
   version: 4.0.15
   resolution: "@tailwindcss/vite@npm:4.0.15"
   dependencies:
@@ -4304,13 +4304,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/chrome@npm:^0.0.307":
-  version: 0.0.307
-  resolution: "@types/chrome@npm:0.0.307"
+"@types/chrome@npm:^0.0.310":
+  version: 0.0.310
+  resolution: "@types/chrome@npm:0.0.310"
   dependencies:
     "@types/filesystem": "npm:*"
     "@types/har-format": "npm:*"
-  checksum: 10c0/b23f109d8aeae1a629e9391e90db7cce512727f5257d0e111a644185666c921f90ea67674ca07ba00124b1ef57aa8c3ce737e81d85323927f9b83d9ed668a098
+  checksum: 10c0/51bda6de2253e91755c15e66db18fb89074cca964d36f3113237fd36055fd9354e9be5bcbc5ad67631d8e58fa93a6bd1393d1935d678b107b3e6e74059eabc3a
   languageName: node
   linkType: hard
 
@@ -4558,7 +4558,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:>=12.12.47, @types/node@npm:>=13.7.0, @types/node@npm:^22.13.7, @types/node@npm:^22.8.7":
+"@types/node@npm:*, @types/node@npm:>=12.12.47, @types/node@npm:>=13.7.0, @types/node@npm:^22.13.10, @types/node@npm:^22.8.7":
   version: 22.13.10
   resolution: "@types/node@npm:22.13.10"
   dependencies:
@@ -4630,7 +4630,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:^19.0.10":
+"@types/react@npm:^19.0.12":
   version: 19.0.12
   resolution: "@types/react@npm:19.0.12"
   dependencies:
@@ -5753,21 +5753,21 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "conductor@workspace:."
   dependencies:
-    "@eslint/js": "npm:^9.21.0"
+    "@eslint/js": "npm:^9.22.0"
     "@ianvs/prettier-plugin-sort-imports": "npm:^4.4.1"
     "@types/jest": "npm:^29.5.14"
-    "@types/node": "npm:^22.13.7"
-    eslint: "npm:^9.21.0"
+    "@types/node": "npm:^22.13.10"
+    eslint: "npm:^9.22.0"
     eslint-plugin-react: "npm:^7.37.4"
     eslint-plugin-react-hooks: "npm:^5.2.0"
-    firebase: "npm:^11.4.0"
+    firebase: "npm:^11.5.0"
     globals: "npm:^16.0.0"
     jest: "npm:^29.7.0"
-    knip: "npm:^5.45.0"
-    prettier: "npm:^3.5.2"
+    knip: "npm:^5.46.0"
+    prettier: "npm:^3.5.3"
     ts-jest: "npm:^29.2.6"
     typescript: "npm:^5.8.2"
-    typescript-eslint: "npm:^8.25.0"
+    typescript-eslint: "npm:^8.27.0"
     zod: "npm:^3.24.2"
   languageName: unknown
   linkType: soft
@@ -6453,7 +6453,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"esbuild@npm:^0.25.0":
+"esbuild@npm:^0.25.0, esbuild@npm:^0.25.1":
   version: 0.25.1
   resolution: "esbuild@npm:0.25.1"
   dependencies:
@@ -6628,7 +6628,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:^9.21.0":
+"eslint@npm:^9.22.0":
   version: 9.22.0
   resolution: "eslint@npm:9.22.0"
   dependencies:
@@ -7034,7 +7034,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"firebase-admin@npm:^13.1.0":
+"firebase-admin@npm:^13.2.0":
   version: 13.2.0
   resolution: "firebase-admin@npm:13.2.0"
   dependencies:
@@ -7076,7 +7076,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"firebase@npm:^11.4.0":
+"firebase@npm:^11.5.0":
   version: 11.5.0
   resolution: "firebase@npm:11.5.0"
   dependencies:
@@ -7307,7 +7307,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"genkit@npm:^1.0.5":
+"genkit@npm:^1.3.0":
   version: 1.3.0
   resolution: "genkit@npm:1.3.0"
   dependencies:
@@ -9063,7 +9063,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"knip@npm:^5.45.0":
+"knip@npm:^5.46.0":
   version: 5.46.0
   resolution: "knip@npm:5.46.0"
   dependencies:
@@ -9433,12 +9433,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lucide-react@npm:^0.477.0":
-  version: 0.477.0
-  resolution: "lucide-react@npm:0.477.0"
+"lucide-react@npm:^0.483.0":
+  version: 0.483.0
+  resolution: "lucide-react@npm:0.483.0"
   peerDependencies:
     react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/950b21e13875f3fbeaa233ffb470e0200c3a4559fd706a0c80c16f3a401d91acb2bd25848c7dd478da79c74b7fd00582d5114f335dc19ec0190fb130045b19e5
+  checksum: 10c0/de38ca2c57bcd65aedf750fa101ddcdc24e4a828ae4fa873299fb26a5dfc60ff65582a9cf7d8dfd2fbf8a6db18c69dfbfcf955b2320537da80f7193a4e967596
   languageName: node
   linkType: hard
 
@@ -10114,7 +10114,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"next-themes@npm:^0.4.4":
+"next-themes@npm:^0.4.6":
   version: 0.4.6
   resolution: "next-themes@npm:0.4.6"
   peerDependencies:
@@ -10817,7 +10817,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:^3.5.2":
+"prettier@npm:^3.5.3":
   version: 3.5.3
   resolution: "prettier@npm:3.5.3"
   bin:
@@ -11041,7 +11041,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-markdown@npm:^10.0.0":
+"react-markdown@npm:^10.1.0":
   version: 10.1.0
   resolution: "react-markdown@npm:10.1.0"
   dependencies:
@@ -11105,7 +11105,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router-dom@npm:^6.28.0":
+"react-router-dom@npm:^6.30.0":
   version: 6.30.0
   resolution: "react-router-dom@npm:6.30.0"
   dependencies:
@@ -12145,7 +12145,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tailwindcss@npm:4.0.15, tailwindcss@npm:^4.0.9":
+"tailwindcss@npm:4.0.15, tailwindcss@npm:^4.0.15":
   version: 4.0.15
   resolution: "tailwindcss@npm:4.0.15"
   checksum: 10c0/c6d25c02312555e3ab4dc5e4766a131c3e9fc7bdb60e1973902a8903ff379e51813a2bc10d619b0ff2b7838c6f2e87078d087ad31c8fb4ef240942e3faff473b
@@ -12437,7 +12437,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript-eslint@npm:^8.25.0":
+"typescript-eslint@npm:^8.27.0":
   version: 8.27.0
   resolution: "typescript-eslint@npm:8.27.0"
   dependencies:
@@ -12763,7 +12763,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:^6.2.0":
+"vite@npm:^6.2.2":
   version: 6.2.2
   resolution: "vite@npm:6.2.2"
   dependencies:
