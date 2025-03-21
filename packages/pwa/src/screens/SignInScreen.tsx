@@ -20,7 +20,6 @@ import {FlexColumn} from '@src/components/atoms/Flex';
 import {Input} from '@src/components/atoms/Input';
 import {Spacer} from '@src/components/atoms/Spacer';
 import {Text} from '@src/components/atoms/Text';
-import {ScreenWrapper} from '@src/components/layout/Screen';
 
 import type {OnClick} from '@src/types/utils.pwa.types';
 
@@ -28,8 +27,6 @@ const PASSWORDLESS_AUTH_ACTION_CODE_SETTINGS: ActionCodeSettings = {
   url: import.meta.env.VITE_CONDUCTOR_URL, // URL to redirect back to.
   handleCodeInApp: true, // Must be true for this flow.
 };
-
-const SignInScreenWrapper = styled(ScreenWrapper).attrs({justify: 'center', align: 'center'})``;
 
 const SignInContentWrapper = styled(FlexColumn)`
   width: 100%;
@@ -86,7 +83,7 @@ export const SignInScreen: React.FC = () => {
   }
 
   return (
-    <SignInScreenWrapper>
+    <div className="flex h-full w-full items-center justify-center">
       <SignInContentWrapper gap={16}>
         <Text as="h1" bold align="center">
           Conductor
@@ -149,6 +146,6 @@ export const SignInScreen: React.FC = () => {
           </Text>
         ) : null}
       </SignInContentWrapper>
-    </SignInScreenWrapper>
+    </div>
   );
 };

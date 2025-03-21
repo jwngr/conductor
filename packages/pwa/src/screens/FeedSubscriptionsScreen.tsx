@@ -10,28 +10,34 @@ import {useUserFeedSubscriptionsService} from '@sharedClient/services/userFeedSu
 
 import {AppHeader} from '@src/components/AppHeader';
 import {Button} from '@src/components/atoms/Button';
-import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Input} from '@src/components/atoms/Input';
 import {Text} from '@src/components/atoms/Text';
-import {ScreenMainContentWrapper, ScreenWrapper} from '@src/components/layout/Screen';
 import {LeftSidebar} from '@src/components/LeftSidebar';
 
-const FeedSubscriptionsScreenMainContentWrapper = styled(FlexColumn)`
+const FeedSubscriptionsScreenMainContentWrapper = styled.div`
   flex: 1;
   padding: 20px;
   overflow: auto;
+  display: flex;
+  flex-direction: column;
   gap: 24px;
 `;
 
-const FeedSubscriptionsListWrapper = styled(FlexColumn)`
+const FeedSubscriptionsListWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
   gap: 16px;
 `;
 
-const FeedSubscriptionItemsWrapper = styled(FlexColumn)`
+const FeedSubscriptionItemsWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 `;
 
-const FeedSubscriptionItem = styled(FlexRow)`
+const FeedSubscriptionItem = styled.div`
+  display: flex;
+  flex-direction: row;
   gap: 12px;
   padding: 12px;
   border: 1px solid ${({theme}) => theme.colors.border};
@@ -39,8 +45,10 @@ const FeedSubscriptionItem = styled(FlexRow)`
   align-items: center;
 `;
 
-const FeedSubscriptionItemDetails = styled(FlexColumn)`
+const FeedSubscriptionItemDetails = styled.div`
   flex: 1;
+  display: flex;
+  flex-direction: column;
   gap: 4px;
 `;
 
@@ -49,20 +57,28 @@ const StatusText = styled.div<{readonly $isError?: boolean}>`
   color: ${({theme, $isError}) => ($isError ? theme.colors.error : theme.colors.success)};
 `;
 
-const PreCannedFeedsWrapper = styled(FlexColumn)`
+const PreCannedFeedsWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 `;
 
-const PreCannedFeedsButtonsWrapper = styled(FlexRow)`
+const PreCannedFeedsButtonsWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
   gap: 12px;
   flex-wrap: wrap;
 `;
 
-const FeedAdderWrapper = styled(FlexColumn)`
+const FeedAdderWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
   gap: 16px;
 `;
 
-const FeedAdderForm = styled(FlexRow)`
+const FeedAdderForm = styled.div`
+  display: flex;
+  flex-direction: row;
   gap: 12px;
   width: 100%;
 `;
@@ -214,15 +230,15 @@ const FeedSubscriptionsList: React.FC = () => {
 
 export const FeedSubscriptionsScreen: React.FC = () => {
   return (
-    <ScreenWrapper>
+    <div className="flex h-full w-full flex-col">
       <AppHeader />
-      <ScreenMainContentWrapper>
+      <div className="flex flex-1 items-stretch overflow-hidden">
         <LeftSidebar />
         <FeedSubscriptionsScreenMainContentWrapper>
           <FeedAdder />
           <FeedSubscriptionsList />
         </FeedSubscriptionsScreenMainContentWrapper>
-      </ScreenMainContentWrapper>
-    </ScreenWrapper>
+      </div>
+    </div>
   );
 };
