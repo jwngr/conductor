@@ -16,7 +16,6 @@ import {authService} from '@sharedClient/services/auth.client';
 import {useMaybeLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
 import {Button} from '@src/components/atoms/Button';
-import {FlexColumn} from '@src/components/atoms/Flex';
 import {Input} from '@src/components/atoms/Input';
 import {Spacer} from '@src/components/atoms/Spacer';
 import {Text} from '@src/components/atoms/Text';
@@ -28,9 +27,12 @@ const PASSWORDLESS_AUTH_ACTION_CODE_SETTINGS: ActionCodeSettings = {
   handleCodeInApp: true, // Must be true for this flow.
 };
 
-const SignInContentWrapper = styled(FlexColumn)`
+const SignInContentWrapper = styled.div`
   width: 100%;
   max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 `;
 
 const PasswordlessAuthButton: React.FC<{
@@ -84,7 +86,7 @@ export const SignInScreen: React.FC = () => {
 
   return (
     <div className="flex h-full w-full items-center justify-center">
-      <SignInContentWrapper gap={16}>
+      <SignInContentWrapper>
         <Text as="h1" bold align="center">
           Conductor
         </Text>

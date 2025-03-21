@@ -6,7 +6,6 @@ import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {ThemeColor} from '@shared/types/theme.types';
 import type {Task} from '@shared/types/utils.types';
 
-import {FlexRow} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
 
 import {keyboardShortcutsService} from '@src/lib/shortcuts.pwa';
@@ -86,10 +85,10 @@ export const Tooltip: React.FC<TooltipProps> = ({
     <TooltipRootComponent {...tooltipProps}>
       <TooltipTriggerComponent>{trigger}</TooltipTriggerComponent>
       <TooltipContentComponent>
-        <FlexRow gap={8}>
+        <div className="flex flex-row items-center gap-2">
           {tooltipContent}
           {shortcutKeysContent}
-        </FlexRow>
+        </div>
       </TooltipContentComponent>
     </TooltipRootComponent>
   );

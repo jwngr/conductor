@@ -19,7 +19,6 @@ import {useEventLogService} from '@sharedClient/services/eventLog.client';
 import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
-import {FlexRow} from '@src/components/atoms/Flex';
 
 import {toast} from '@src/lib/toasts';
 
@@ -213,12 +212,12 @@ export const FeedItemActions: React.FC<{
   readonly feedItem: FeedItem;
 }> = ({feedItem}) => {
   return (
-    <FlexRow gap={12}>
+    <div className="flex flex-row items-center gap-3">
       <MarkDoneFeedItemActionIcon feedItem={feedItem} />
       <SaveFeedItemActionIcon feedItem={feedItem} />
       <MarkUnreadFeedItemActionIcon feedItem={feedItem} />
       <StarFeedItemActionIcon feedItem={feedItem} />
       <DebugSaveExampleActionIcon feedItem={feedItem} />
-    </FlexRow>
+    </div>
   );
 };

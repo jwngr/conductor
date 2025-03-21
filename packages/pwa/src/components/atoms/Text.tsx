@@ -5,8 +5,6 @@ import {assertNever} from '@shared/lib/utils.shared';
 
 import type {ThemeColor} from '@shared/types/theme.types';
 
-import type {FlexValue} from '@src/components/atoms/Flex';
-
 import {getThemeColorClass} from '@src/lib/theme.pwa';
 
 type FontWeight = 'normal' | 'bold' | '900';
@@ -70,6 +68,8 @@ function getUnderlineClasses(args: {readonly underline?: 'always' | 'hover' | 'n
       return assertNever(underline);
   }
 }
+
+export type FlexValue = 1 | 'auto' | 'initial' | 'none' | boolean;
 
 function getFlexClasses(args: {readonly flex?: FlexValue}): string {
   const {flex} = args;

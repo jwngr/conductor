@@ -46,7 +46,7 @@ export const ToastStories: React.FC = () => {
           toastTitle="Undo action"
           toastMessage="Item has been deleted"
           toastAction={
-            <Button variant="secondary" onClick={() => window.alert('Toast action clicked')}>
+            <Button variant="secondary" onClick={() => toast.success('Toast undo action clicked')}>
               Undo
             </Button>
           }

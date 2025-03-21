@@ -11,7 +11,6 @@ import {NavItemId} from '@shared/types/urls.types';
 
 import {useFocusStore} from '@sharedClient/stores/FocusStore';
 
-import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
 import {TextIcon} from '@src/components/atoms/TextIcon';
@@ -42,17 +41,16 @@ const LeftSidebarItemComponent: React.FC<{
 }> = ({url, icon, title, isActive, onClick}) => {
   return (
     <Link to={url} onClick={onClick}>
-      <FlexRow
-        gap={8}
+      <div
         className={cn(
-          'rounded px-3 py-2',
+          'flex flex-row items-center gap-2 rounded px-3 py-2',
           'transition-transform active:scale-95',
           isActive ? 'bg-orange-200 hover:bg-orange-300' : 'bg-transparent hover:bg-neutral-300'
         )}
       >
         <LeftSidebarItemAvatar icon={icon} />
         <Text as="p">{title}</Text>
-      </FlexRow>
+      </div>
     </Link>
   );
 };
@@ -63,11 +61,11 @@ const LeftSidebarSection: React.FC<{
 }> = ({title, navItems}) => {
   const {focusedNavItemId, setFocusedNavItemId} = useFocusStore();
   return (
-    <FlexColumn>
+    <div className="flex flex-col">
       <Text as="h5" light>
         {title}
       </Text>
-      <FlexColumn className="mx-[-12px]">
+      <div className="mx-[-12px] flex flex-col">
         {navItems.map((navItem, i) => (
           <LeftSidebarItemComponent
             key={`${i}-${navItem.url}`}
@@ -78,19 +76,16 @@ const LeftSidebarSection: React.FC<{
             onClick={() => setFocusedNavItemId(navItem.id)}
           />
         ))}
-      </FlexColumn>
-    </FlexColumn>
+      </div>
+    </div>
   );
 };
 
 export const LeftSidebar: React.FC = () => {
   return (
-    <FlexColumn
-      gap={16}
-      className="w-[200px] overflow-auto border-r border-neutral-300 bg-neutral-100 p-5"
-    >
+    <div className="flex w-[200px] flex-col gap-4 overflow-auto border-r border-neutral-300 bg-neutral-100 p-5">
       <LeftSidebarSection title="Views" navItems={ORDERED_VIEW_NAV_ITEMS} />
       <LeftSidebarSection title="Feeds" navItems={[NavItems.fromId(NavItemId.Feeds)]} />
-    </FlexColumn>
+    </div>
   );
 };

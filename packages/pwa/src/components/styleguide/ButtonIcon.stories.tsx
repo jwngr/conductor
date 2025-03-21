@@ -5,9 +5,11 @@ import {ThemeColor} from '@shared/types/theme.types';
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {StorySection} from '@src/components/styleguide/StorySection';
 
+import {toast} from '@src/lib/toasts';
+
 export const ButtonIconStories: React.FC = () => {
   const handleButtonIconClick = (): void => {
-    window.alert('Button icon clicked');
+    toast.success('Button icon clicked');
   };
 
   return (

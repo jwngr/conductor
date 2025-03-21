@@ -5,6 +5,8 @@ import {Text} from '@src/components/atoms/Text';
 import {Tooltip} from '@src/components/atoms/Tooltip';
 import {StorySection} from '@src/components/styleguide/StorySection';
 
+import {toast} from '@src/lib/toasts';
+
 export const TooltipStories: React.FC = () => {
   return (
     <>
@@ -29,7 +31,7 @@ export const TooltipStories: React.FC = () => {
           content="Save changes"
           shortcutId={KeyboardShortcutId.ToggleSaved}
           onShortcutTrigger={() => {
-            window.alert('Keyboard shortcut triggered');
+            toast.success('Keyboard shortcut triggered');
           }}
         />
       </StorySection>
