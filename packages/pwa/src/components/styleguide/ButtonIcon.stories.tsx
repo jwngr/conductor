@@ -3,18 +3,17 @@ import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {ThemeColor} from '@shared/types/theme.types';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
-import {FlexRow} from '@src/components/atoms/Flex';
 import {StorySection} from '@src/components/styleguide/StorySection';
 
-const handleButtonIconClick = (): void => {
-  window.alert('Button icon clicked');
-};
-
 export const ButtonIconStories: React.FC = () => {
+  const handleButtonIconClick = (): void => {
+    window.alert('Button icon clicked');
+  };
+
   return (
     <>
       <StorySection title="Basic button icons">
-        <FlexRow gap={8}>
+        <div className="flex flex-row items-center gap-2">
           <ButtonIcon
             name={IconName.Star}
             size={32}
@@ -30,14 +29,14 @@ export const ButtonIconStories: React.FC = () => {
           <ButtonIcon
             name={IconName.MarkDone}
             size={32}
-            tooltip="Mark as done"
+            tooltip="Mark Done"
             onClick={handleButtonIconClick}
           />
-        </FlexRow>
+        </div>
       </StorySection>
 
       <StorySection title="Button icon sizes">
-        <FlexRow gap={8} align="center">
+        <div className="flex flex-row items-center gap-2">
           <ButtonIcon
             name={IconName.Star}
             size={24}
@@ -56,11 +55,11 @@ export const ButtonIconStories: React.FC = () => {
             tooltip="Large"
             onClick={handleButtonIconClick}
           />
-        </FlexRow>
+        </div>
       </StorySection>
 
       <StorySection title="Button icon colors">
-        <FlexRow gap={8}>
+        <div className="flex flex-row items-center gap-2">
           <ButtonIcon
             name={IconName.Star}
             size={32}
@@ -75,7 +74,7 @@ export const ButtonIconStories: React.FC = () => {
             tooltip="Green"
             onClick={handleButtonIconClick}
           />
-        </FlexRow>
+        </div>
       </StorySection>
 
       <StorySection title="Button icon with keyboard shortcut">

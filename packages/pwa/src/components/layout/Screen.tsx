@@ -1,15 +1,11 @@
-import styled from 'styled-components';
+import type React from 'react';
 
-import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
+export const ScreenWrapper: React.FC<{readonly children: React.ReactNode}> = ({children}) => {
+  return <div className="flex h-full w-full flex-col">{children}</div>;
+};
 
-export const ScreenWrapper = styled(FlexColumn)`
-  width: 100%;
-  height: 100%;
-`;
-
-export const ScreenMainContentWrapper = styled(FlexRow).attrs({
-  align: 'stretch',
-  flex: 1,
-})`
-  overflow: hidden;
-`;
+export const ScreenMainContentWrapper: React.FC<{readonly children: React.ReactNode}> = ({
+  children,
+}) => {
+  return <div className="flex flex-1 items-stretch overflow-hidden">{children}</div>;
+};

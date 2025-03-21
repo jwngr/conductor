@@ -1,6 +1,6 @@
 import {ThemeColor} from '@shared/types/theme.types';
 
-import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
+import {FlexColumn} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
 import {Markdown} from '@src/components/Markdown';
 import {StorySection} from '@src/components/styleguide/StorySection';
@@ -27,7 +27,7 @@ _Italic paragraph text_
   return (
     <>
       <StorySection title="Headings">
-        <FlexRow align="flex-start" gap={32}>
+        <div className="flex flex-row items-start gap-8">
           <FlexColumn gap={8} style={{flex: 1}}>
             <Text as="h6" color={ThemeColor.Neutral500}>
               Normal Typography
@@ -46,11 +46,11 @@ _Italic paragraph text_
             </Text>
             <Markdown content={headingsMarkdown} />
           </FlexColumn>
-        </FlexRow>
+        </div>
       </StorySection>
 
       <StorySection title="Paragraphs">
-        <FlexRow align="flex-start" gap={32}>
+        <div className="flex flex-row items-start gap-8">
           <FlexColumn gap={8} style={{flex: 1}}>
             <Text as="h6" color={ThemeColor.Neutral500}>
               Normal Typography
@@ -66,7 +66,7 @@ _Italic paragraph text_
             </Text>
             <Markdown content={paragraphsMarkdown} />
           </FlexColumn>
-        </FlexRow>
+        </div>
       </StorySection>
     </>
   );
