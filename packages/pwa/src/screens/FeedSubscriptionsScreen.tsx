@@ -55,9 +55,7 @@ const FeedAdder: React.FC = () => {
       </div>
 
       {status ? (
-        <div className={`text-sm ${status.includes('Error') ? 'text-red-500' : null}`}>
-          {status}
-        </div>
+        <Text color={status.includes('Error') ? ThemeColor.Red500 : undefined}>{status}</Text>
       ) : null}
 
       <div className="flex flex-col gap-3">

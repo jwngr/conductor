@@ -7,6 +7,8 @@ import type {ThemeColor} from '@shared/types/theme.types';
 
 import {getThemeColorClass} from '@src/lib/theme.pwa';
 
+const LIGHT_COLOR = 'text-stone-500';
+
 type FontWeight = 'normal' | 'bold' | '900';
 function getFontWeightClasses(args: {
   readonly bold?: boolean;
@@ -45,8 +47,8 @@ function getColorClasses(args: {
   const {light, color, hoverColor} = args;
 
   return twMerge(
-    // `color` takes precedence over `light`.
-    light ? 'text-stone-500' : '',
+    // Later rules override previous ones, so `color` takes precedence over `light`.
+    light ? LIGHT_COLOR : '',
     color ? getThemeColorClass(color) : '',
     hoverColor ? `hover:${getThemeColorClass(hoverColor)}` : ''
   );

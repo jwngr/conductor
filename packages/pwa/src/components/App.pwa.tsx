@@ -1,9 +1,7 @@
 import type React from 'react';
 import {StrictMode} from 'react';
 import {BrowserRouter, Route, Routes} from 'react-router-dom';
-import {ThemeProvider} from 'styled-components';
 
-import {theme} from '@shared/lib/theme.shared';
 import {Urls} from '@shared/lib/urls.shared';
 import {Views} from '@shared/lib/views.shared';
 
@@ -106,22 +104,20 @@ const LoggedInGlobalSubscriptions: React.FC = () => {
 export const App: React.FC = () => {
   return (
     <StrictMode>
-      <ThemeProvider theme={theme}>
-        <TooltipProvider>
-          <BrowserRouter
-            // Pass flags to silence console logs.
-            future={{v7_startTransition: true, v7_relativeSplatPath: true}}
-          >
-            <ErrorBoundary fallback={(error) => <ErrorScreen error={error} />}>
-              <AllRoutes />
-              <PermanentGlobalSubscriptions />
-              <LoggedInGlobalSubscriptions />
-              <DevToolbar />
-            </ErrorBoundary>
-          </BrowserRouter>
-          <Toaster />
-        </TooltipProvider>
-      </ThemeProvider>
+      <TooltipProvider>
+        <BrowserRouter
+          // Pass flags to silence console logs.
+          future={{v7_startTransition: true, v7_relativeSplatPath: true}}
+        >
+          <ErrorBoundary fallback={(error) => <ErrorScreen error={error} />}>
+            <AllRoutes />
+            <PermanentGlobalSubscriptions />
+            <LoggedInGlobalSubscriptions />
+            <DevToolbar />
+          </ErrorBoundary>
+        </BrowserRouter>
+        <Toaster />
+      </TooltipProvider>
     </StrictMode>
   );
 };
