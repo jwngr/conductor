@@ -2,17 +2,15 @@ import {NavItems} from '@shared/lib/navItems.shared';
 
 import {NavItemId} from '@shared/types/urls.types';
 
-import {FlexColumn} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
-import {ScreenWrapper} from '@src/components/layout/Screen';
 
 // TODO: Improve design of error screen.
 export const ErrorScreen: React.FC<{readonly error: Error}> = ({error}) => {
   const navItem = NavItems.fromId(NavItemId.Untriaged);
   return (
-    <ScreenWrapper align="center" justify="center">
-      <FlexColumn align="center" style={{maxWidth: 960}} gap={8}>
+    <div className="flex h-full w-full items-center justify-center">
+      <div className="flex max-w-[960px] flex-col items-center gap-8">
         <Text as="h1">Oops... something went wrong</Text>
         <Text as="p">{error.message}</Text>
         <Link to="/">
@@ -20,7 +18,7 @@ export const ErrorScreen: React.FC<{readonly error: Error}> = ({error}) => {
             Go to {navItem.title}
           </Text>
         </Link>
-      </FlexColumn>
-    </ScreenWrapper>
+      </div>
+    </div>
   );
 };

@@ -23,7 +23,6 @@ import {TweetFeedItemComponent} from '@src/components/feedItems/TweetFeedItem';
 import {VideoFeedItemComponent} from '@src/components/feedItems/VideoFeedItem';
 import {WebsiteFeedItemComponent} from '@src/components/feedItems/WebsiteFeedItem';
 import {XkcdFeedItemComponent} from '@src/components/feedItems/XkcdFeedItem';
-import {ScreenMainContentWrapper, ScreenWrapper} from '@src/components/layout/Screen';
 import {LeftSidebar} from '@src/components/LeftSidebar';
 
 import {NotFoundScreen} from '@src/screens/404';
@@ -136,13 +135,13 @@ export const FeedItemScreen: React.FC = () => {
   );
 
   return (
-    <ScreenWrapper>
+    <div className="flex h-full w-full flex-col">
       <AppHeader />
-      <ScreenMainContentWrapper>
+      <div className="flex flex-1 items-stretch overflow-hidden">
         <LeftSidebar />
         {mainContent}
-      </ScreenMainContentWrapper>
+      </div>
       <FeedItemScreenKeyboardHandler />
-    </ScreenWrapper>
+    </div>
   );
 };

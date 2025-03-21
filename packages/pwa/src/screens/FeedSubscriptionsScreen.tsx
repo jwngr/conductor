@@ -1,5 +1,4 @@
 import {useEffect, useState} from 'react';
-import styled from 'styled-components';
 
 import {isValidUrl} from '@shared/lib/urls.shared';
 
@@ -10,62 +9,9 @@ import {useUserFeedSubscriptionsService} from '@sharedClient/services/userFeedSu
 
 import {AppHeader} from '@src/components/AppHeader';
 import {Button} from '@src/components/atoms/Button';
-import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Input} from '@src/components/atoms/Input';
 import {Text} from '@src/components/atoms/Text';
-import {ScreenMainContentWrapper, ScreenWrapper} from '@src/components/layout/Screen';
 import {LeftSidebar} from '@src/components/LeftSidebar';
-
-const FeedSubscriptionsScreenMainContentWrapper = styled(FlexColumn)`
-  flex: 1;
-  padding: 20px;
-  overflow: auto;
-  gap: 24px;
-`;
-
-const FeedSubscriptionsListWrapper = styled(FlexColumn)`
-  gap: 16px;
-`;
-
-const FeedSubscriptionItemsWrapper = styled(FlexColumn)`
-  gap: 12px;
-`;
-
-const FeedSubscriptionItem = styled(FlexRow)`
-  gap: 12px;
-  padding: 12px;
-  border: 1px solid ${({theme}) => theme.colors.border};
-  border-radius: 8px;
-  align-items: center;
-`;
-
-const FeedSubscriptionItemDetails = styled(FlexColumn)`
-  flex: 1;
-  gap: 4px;
-`;
-
-const StatusText = styled.div<{readonly $isError?: boolean}>`
-  font-size: 14px;
-  color: ${({theme, $isError}) => ($isError ? theme.colors.error : theme.colors.success)};
-`;
-
-const PreCannedFeedsWrapper = styled(FlexColumn)`
-  gap: 12px;
-`;
-
-const PreCannedFeedsButtonsWrapper = styled(FlexRow)`
-  gap: 12px;
-  flex-wrap: wrap;
-`;
-
-const FeedAdderWrapper = styled(FlexColumn)`
-  gap: 16px;
-`;
-
-const FeedAdderForm = styled(FlexRow)`
-  gap: 12px;
-  width: 100%;
-`;
 
 const FeedAdder: React.FC = () => {
   const [url, setUrl] = useState('');
@@ -92,27 +38,31 @@ const FeedAdder: React.FC = () => {
   };
 
   return (
-    <FeedAdderWrapper>
+    <div className="flex flex-col gap-4">
       <Text as="h3" bold>
         Add new feed
       </Text>
 
-      <FeedAdderForm>
+      <div className="flex w-full gap-3">
         <Input
           type="text"
           value={url}
           placeholder="Enter RSS feed URL"
           onChange={(e) => setUrl(e.target.value)}
-          style={{flex: 1}}
+          className="flex-1"
         />
         <Button onClick={async () => void handleSubscribeToFeedUrl(url)}>Subscribe</Button>
-      </FeedAdderForm>
+      </div>
 
-      {status ? <StatusText $isError={status.includes('Error')}>{status}</StatusText> : null}
+      {status ? (
+        <div className={`text-sm ${status.includes('Error') ? 'text-red-500' : 'text-green-500'}`}>
+          {status}
+        </div>
+      ) : null}
 
-      <PreCannedFeedsWrapper>
+      <div className="flex flex-col gap-3">
         <Text bold>Quick add feeds</Text>
-        <PreCannedFeedsButtonsWrapper>
+        <div className="flex flex-wrap gap-3">
           <Button
             variant="secondary"
             onClick={async () => void handleSubscribeToFeedUrl('https://jwn.gr/rss.xml')}
@@ -129,9 +79,9 @@ const FeedAdder: React.FC = () => {
           >
             Dummy feed w/ 30s updates
           </Button>
-        </PreCannedFeedsButtonsWrapper>
-      </PreCannedFeedsWrapper>
-    </FeedAdderWrapper>
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -179,15 +129,18 @@ const FeedSubscriptionsList: React.FC = () => {
     }
 
     return (
-      <FeedSubscriptionItemsWrapper>
+      <div className="flex flex-col gap-3">
         {subscriptions.map((subscription) => (
-          <FeedSubscriptionItem key={subscription.userFeedSubscriptionId}>
-            <FeedSubscriptionItemDetails>
+          <div
+            key={subscription.userFeedSubscriptionId}
+            className="flex items-center gap-3 rounded-lg border border-gray-200 p-3"
+          >
+            <div className="flex flex-1 flex-col gap-1">
               <Text bold color={subscription.isActive ? undefined : ThemeColor.Red500}>
                 {subscription.title}
               </Text>
-              <Text style={{fontSize: '14px'}}>{subscription.url}</Text>
-            </FeedSubscriptionItemDetails>
+              <Text className="text-sm">{subscription.url}</Text>
+            </div>
             {subscription.isActive ? (
               <Button
                 variant="secondary"
@@ -196,33 +149,33 @@ const FeedSubscriptionsList: React.FC = () => {
                 Unsubscribe
               </Button>
             ) : null}
-          </FeedSubscriptionItem>
+          </div>
         ))}
-      </FeedSubscriptionItemsWrapper>
+      </div>
     );
   };
 
   return (
-    <FeedSubscriptionsListWrapper>
+    <div className="flex flex-col gap-4">
       <Text as="h3" bold>
         Active feed subscriptions
       </Text>
       {renderMainContent()}
-    </FeedSubscriptionsListWrapper>
+    </div>
   );
 };
 
 export const FeedSubscriptionsScreen: React.FC = () => {
   return (
-    <ScreenWrapper>
+    <div className="flex h-full w-full flex-col">
       <AppHeader />
-      <ScreenMainContentWrapper>
+      <div className="flex flex-1 items-stretch overflow-hidden">
         <LeftSidebar />
-        <FeedSubscriptionsScreenMainContentWrapper>
+        <div className="flex flex-1 flex-col gap-6 overflow-auto p-5">
           <FeedAdder />
           <FeedSubscriptionsList />
-        </FeedSubscriptionsScreenMainContentWrapper>
-      </ScreenMainContentWrapper>
-    </ScreenWrapper>
+        </div>
+      </div>
+    </div>
   );
 };
