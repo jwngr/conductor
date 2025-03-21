@@ -23,7 +23,7 @@ const FeedAdder: React.FC = () => {
 
     const trimmedUrl = feedUrl.trim();
     if (!isValidUrl(trimmedUrl)) {
-      setStatus('URL is not valid');
+      setStatus('Error: URL is not valid');
       return;
     }
 
@@ -55,7 +55,7 @@ const FeedAdder: React.FC = () => {
       </div>
 
       {status ? (
-        <div className={`text-sm ${status.includes('Error') ? 'text-red-500' : 'text-green-500'}`}>
+        <div className={`text-sm ${status.includes('Error') ? 'text-red-500' : null}`}>
           {status}
         </div>
       ) : null}
