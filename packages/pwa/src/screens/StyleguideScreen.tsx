@@ -1,5 +1,4 @@
 import {useState} from 'react';
-import styled from 'styled-components';
 
 import {assertNever} from '@shared/lib/utils.shared';
 
@@ -8,16 +7,13 @@ import {
   Styleguide,
   StyleguideStoryGroupId,
 } from '@shared/types/styleguide.types';
-import {ThemeColor} from '@shared/types/theme.types';
 
-import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
 import {MarkdownStories} from '@src/components/Markdown.stories';
 import {ButtonStories} from '@src/components/styleguide/Button.stories';
 import {ButtonIconStories} from '@src/components/styleguide/ButtonIcon.stories';
 import {DialogStories} from '@src/components/styleguide/Dialog.stories';
 import {DividerStories} from '@src/components/styleguide/Divider.stories';
-import {FlexStories} from '@src/components/styleguide/Flex.stories';
 import {InputStories} from '@src/components/styleguide/Input.stories';
 import {LinkStories} from '@src/components/styleguide/Link.stories';
 import {SpacerStories} from '@src/components/styleguide/Spacer.stories';
@@ -26,98 +22,20 @@ import {ToastStories} from '@src/components/styleguide/Toast.stories';
 import {TooltipStories} from '@src/components/styleguide/Tooltip.stories';
 import {TypographyStories} from '@src/components/styleguide/Typography.stories';
 
-const StyleguideWrapper = styled(FlexRow)`
-  width: 100%;
-  height: 100%;
-  background-color: ${({theme}) => theme.colors[ThemeColor.Neutral100]};
-`;
-
-const StyleguideSidebarWrapper = styled(FlexColumn).attrs({gap: 20})`
-  width: 240px;
-  height: 100%;
-  overflow: auto;
-  padding: 20px;
-  border-right: 1px solid ${({theme}) => theme.colors[ThemeColor.Neutral300]};
-`;
-
-const StyleguideStoryGroupWrapper = styled(FlexColumn).attrs({gap: 32})`
-  flex: 1;
-  height: 100%;
-  padding: 20px;
-  overflow: auto;
-`;
-
-const SidebarCategory = styled(Text)`
-  padding: 8px 12px;
-  font-size: 14px;
-  color: ${({theme}) => theme.colors[ThemeColor.Neutral500]};
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-`;
-
-const SidebarItem = styled(Text)<{readonly $isActive?: boolean}>`
-  padding: 8px 12px 8px 24px;
-  border-radius: 4px;
-  cursor: pointer;
-  background-color: ${({theme, $isActive}) =>
-    $isActive ? theme.colors[ThemeColor.Neutral200] : 'transparent'};
-
-  &:hover {
-    background-color: ${({theme}) => theme.colors[ThemeColor.Neutral200]};
-  }
-`;
-
-const StyleguideSidebarSection: React.FC<{
-  readonly title: string;
-  readonly sectionIds: StyleguideStoryGroupId[];
-  readonly activeSectionId: StyleguideStoryGroupId;
-  readonly setActiveSectionId: (sectionId: StyleguideStoryGroupId) => void;
-}> = ({title, sectionIds, activeSectionId, setActiveSectionId}) => {
-  return (
-    <FlexColumn gap={4}>
-      <SidebarCategory>{title}</SidebarCategory>
-      {sectionIds.map((sectionId) => {
-        const section = Styleguide.getSectionById(sectionId);
-        return (
-          <SidebarItem
-            key={section.storyGroupId}
-            $isActive={activeSectionId === section.storyGroupId}
-            onClick={() => setActiveSectionId(section.storyGroupId)}
-          >
-            {section.title}
-          </SidebarItem>
-        );
-      })}
-    </FlexColumn>
-  );
-};
-
-const StyleguideSidebar: React.FC<{
-  readonly activeSectionId: StyleguideStoryGroupId;
-  readonly setActiveSectionId: (sectionId: StyleguideStoryGroupId) => void;
-}> = ({activeSectionId, setActiveSectionId}) => {
-  return (
-    <StyleguideSidebarWrapper>
-      <Text as="h2" bold>
-        Styleguide
-      </Text>
-      <FlexColumn gap={16}>
-        <StyleguideSidebarSection
-          title="Atomic components"
-          sectionIds={Styleguide.getOrderedAtomicComponentIds()}
-          activeSectionId={activeSectionId}
-          setActiveSectionId={setActiveSectionId}
-        />
-        <StyleguideSidebarSection
-          title="Content viewers"
-          sectionIds={Styleguide.getOrderedContentViewerIds()}
-          activeSectionId={activeSectionId}
-          setActiveSectionId={setActiveSectionId}
-        />
-      </FlexColumn>
-    </StyleguideSidebarWrapper>
-  );
-};
+const SidebarItem: React.FC<{
+  readonly $isActive?: boolean;
+  readonly children: React.ReactNode;
+  readonly onClick: () => void;
+}> = ({$isActive, children, onClick}) => (
+  <Text
+    className={`cursor-pointer rounded px-3 py-2 pl-6 hover:bg-neutral-200 ${
+      $isActive ? 'bg-neutral-200' : ''
+    }`}
+    onClick={onClick}
+  >
+    {children}
+  </Text>
+);
 
 const StyleguideStoryGroupContent: React.FC<{readonly sectionId: StyleguideStoryGroupId}> = ({
   sectionId,
@@ -131,8 +49,6 @@ const StyleguideStoryGroupContent: React.FC<{readonly sectionId: StyleguideStory
       return <DialogStories />;
     case StyleguideStoryGroupId.Divider:
       return <DividerStories />;
-    case StyleguideStoryGroupId.Flex:
-      return <FlexStories />;
     case StyleguideStoryGroupId.Input:
       return <InputStories />;
     case StyleguideStoryGroupId.Link:
@@ -155,34 +71,64 @@ const StyleguideStoryGroupContent: React.FC<{readonly sectionId: StyleguideStory
   }
 };
 
-const StyleguideStoryGroup: React.FC<{readonly sectionId: StyleguideStoryGroupId}> = ({
-  sectionId,
-}) => {
-  const sectionConfig = Styleguide.getSectionById(sectionId);
-  return (
-    <StyleguideStoryGroupWrapper>
-      <Text as="h1" bold>
-        {sectionConfig.title}
-      </Text>
-      <FlexColumn gap={40}>
-        <StyleguideStoryGroupContent sectionId={sectionId} />
-      </FlexColumn>
-    </StyleguideStoryGroupWrapper>
-  );
-};
-
 export const StyleguideScreen: React.FC = () => {
   const [activeSectionId, setActiveSectionId] = useState<StyleguideStoryGroupId>(
     DEFAULT_STYLEGUIDE_STORY_GROUP_ID
   );
 
+  const sectionConfig = Styleguide.getSectionById(activeSectionId);
+
   return (
-    <StyleguideWrapper>
-      <StyleguideSidebar
-        activeSectionId={activeSectionId}
-        setActiveSectionId={setActiveSectionId}
-      />
-      <StyleguideStoryGroup sectionId={activeSectionId} />
-    </StyleguideWrapper>
+    <div className="flex h-full w-full flex-row bg-neutral-100">
+      <div className="flex h-full w-[240px] flex-col gap-5 overflow-auto border-r border-neutral-300 p-5">
+        <Text as="h2" bold>
+          Styleguide
+        </Text>
+        <div className="flex flex-col gap-16">
+          <div className="flex flex-col gap-4">
+            <Text className="px-3 py-2 text-sm tracking-wider text-neutral-500 uppercase">
+              Atomic components
+            </Text>
+            {Styleguide.getOrderedAtomicComponentIds().map((sectionId) => {
+              const section = Styleguide.getSectionById(sectionId);
+              return (
+                <SidebarItem
+                  key={section.storyGroupId}
+                  $isActive={activeSectionId === section.storyGroupId}
+                  onClick={() => setActiveSectionId(section.storyGroupId)}
+                >
+                  {section.title}
+                </SidebarItem>
+              );
+            })}
+          </div>
+          <div className="flex flex-col gap-4">
+            <Text className="px-3 py-2 text-sm tracking-wider text-neutral-500 uppercase">
+              Content viewers
+            </Text>
+            {Styleguide.getOrderedContentViewerIds().map((sectionId) => {
+              const section = Styleguide.getSectionById(sectionId);
+              return (
+                <SidebarItem
+                  key={section.storyGroupId}
+                  $isActive={activeSectionId === section.storyGroupId}
+                  onClick={() => setActiveSectionId(section.storyGroupId)}
+                >
+                  {section.title}
+                </SidebarItem>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-1 flex-col gap-8 overflow-auto p-5">
+        <Text as="h1" bold>
+          {sectionConfig.title}
+        </Text>
+        <div className="flex flex-col gap-40">
+          <StyleguideStoryGroupContent sectionId={activeSectionId} />
+        </div>
+      </div>
+    </div>
   );
 };

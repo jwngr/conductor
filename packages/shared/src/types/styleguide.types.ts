@@ -3,7 +3,6 @@ export enum StyleguideStoryGroupId {
   ButtonIcon = 'BUTTON_ICON',
   Dialog = 'DIALOG',
   Divider = 'DIVIDER',
-  Flex = 'FLEX',
   Input = 'INPUT',
   Link = 'LINK',
   Spacer = 'SPACER',
@@ -37,10 +36,6 @@ const STYLEGUIDE_STORY_GROUPS_BY_ID: Record<StyleguideStoryGroupId, StyleguideSt
   [StyleguideStoryGroupId.Divider]: {
     storyGroupId: StyleguideStoryGroupId.Divider,
     title: 'Divider',
-  },
-  [StyleguideStoryGroupId.Flex]: {
-    storyGroupId: StyleguideStoryGroupId.Flex,
-    title: 'Flex',
   },
   [StyleguideStoryGroupId.Input]: {
     storyGroupId: StyleguideStoryGroupId.Input,
@@ -87,7 +82,6 @@ const ORDERED_ATOMIC_COMPONENT_STORY_GROUP_IDS: StyleguideStoryGroupId[] = [
   StyleguideStoryGroupId.Toast,
   StyleguideStoryGroupId.Tooltip,
   StyleguideStoryGroupId.Divider,
-  StyleguideStoryGroupId.Flex,
   StyleguideStoryGroupId.Spacer,
 ];
 
