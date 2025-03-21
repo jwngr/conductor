@@ -7,7 +7,6 @@ import {Urls} from '@shared/lib/urls.shared';
 
 import type {FeedItem} from '@shared/types/feedItems.types';
 import type {ViewType} from '@shared/types/query.types';
-import {ThemeColor} from '@shared/types/theme.types';
 
 import {useFocusStore} from '@sharedClient/stores/FocusStore';
 
