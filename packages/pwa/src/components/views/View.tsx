@@ -7,6 +7,7 @@ import {Urls} from '@shared/lib/urls.shared';
 
 import type {FeedItem} from '@shared/types/feedItems.types';
 import type {ViewType} from '@shared/types/query.types';
+import {ThemeColor} from '@shared/types/theme.types';
 
 import {useFocusStore} from '@sharedClient/stores/FocusStore';
 
@@ -39,7 +40,7 @@ const ViewListItem: React.FC<{
       <div
         ref={itemRef}
         className={`flex cursor-pointer flex-col justify-center gap-1 rounded p-2 outline-none hover:bg-neutral-100 focus-visible:bg-neutral-100 ${
-          isFocused ? 'bg-neutral-100 outline outline-2 outline-neutral-500' : ''
+          isFocused ? `bg-neutral-100 outline-2 outline-${ThemeColor.Neutral500}` : ''
         }`}
         tabIndex={0}
         onFocus={() => setFocusedFeedItemId(feedItem.feedItemId)}

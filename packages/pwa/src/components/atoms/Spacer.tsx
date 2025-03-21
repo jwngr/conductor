@@ -1,23 +1,4 @@
-import styled from 'styled-components';
-
 import type {StyleAttributes} from '@shared/types/utils.types';
-
-interface SpacerWrapperProps {
-  readonly $widthDesktop: number;
-  readonly $widthMobile: number;
-  readonly $heightDesktop: number;
-  readonly $heightMobile: number;
-}
-
-const SpacerWrapper = styled.div<SpacerWrapperProps>`
-  width: ${(props) => (props.$widthDesktop ? `${props.$widthDesktop}px` : 'auto')};
-  height: ${(props) => (props.$heightDesktop ? `${props.$heightDesktop}px` : 'auto')};
-
-  @media (max-width: 760px) {
-    width: ${(props) => props.$widthMobile}px;
-    height: ${(props) => props.$heightMobile}px;
-  }
-`;
 
 interface SpacerProps extends StyleAttributes {
   readonly x?: number | {readonly mobile?: number; readonly desktop?: number};
@@ -35,15 +16,12 @@ export const Spacer: React.FC<SpacerProps> = ({x, y, flex, style, ...rest}) => {
   const flexValue = flex === true ? 1 : flex === false ? 0 : flex;
 
   return (
-    <SpacerWrapper
-      $widthDesktop={widthDesktop}
-      $widthMobile={widthMobile}
-      $heightDesktop={heightDesktop}
-      $heightMobile={heightMobile}
+    <div
+      className={`md:w-[${widthDesktop}px] md:h-[${heightDesktop}px] w-[${widthMobile}px] h-[${heightMobile}px]`}
       style={{...style, flex: flexValue}}
       {...rest}
     >
       &nbsp;
-    </SpacerWrapper>
+    </div>
   );
 };

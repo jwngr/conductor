@@ -1,9 +1,7 @@
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import React, {useEffect} from 'react';
-import styled from 'styled-components';
 
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
-import {ThemeColor} from '@shared/types/theme.types';
 import type {Task} from '@shared/types/utils.types';
 
 import {Text} from '@src/components/atoms/Text';
@@ -16,22 +14,16 @@ const TooltipRootComponent = TooltipPrimitive.Root;
 
 const TooltipTriggerComponent = TooltipPrimitive.Trigger;
 
-const TooltipContentComponentWrapper = styled(TooltipPrimitive.Content)`
-  z-index: 50;
-  overflow: hidden;
-  border-radius: 4px;
-  color: ${({theme}) => theme.colors[ThemeColor.Neutral100]};
-  background-color: ${({theme}) => theme.colors[ThemeColor.Neutral900]};
-  border: 1px solid ${({theme}) => theme.colors[ThemeColor.Neutral500]};
-  padding: 4px 8px;
-  // TODO: Add subtle slide-in animation.
-`;
-
 const TooltipContentComponent = React.forwardRef<
   React.ElementRef<typeof TooltipPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
->(({sideOffset = 4, ...props}, ref) => (
-  <TooltipContentComponentWrapper ref={ref} sideOffset={sideOffset} {...props} />
+>(({sideOffset = 4, className, ...props}, ref) => (
+  <TooltipPrimitive.Content
+    ref={ref}
+    sideOffset={sideOffset}
+    className={`z-50 overflow-hidden rounded border border-neutral-500 bg-neutral-900 px-2 py-1 text-neutral-100 ${className ?? ''}`}
+    {...props}
+  />
 ));
 
 TooltipContentComponent.displayName = TooltipPrimitive.Content.displayName;

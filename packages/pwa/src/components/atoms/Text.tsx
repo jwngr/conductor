@@ -3,7 +3,7 @@ import {twMerge} from 'tailwind-merge';
 
 import {assertNever} from '@shared/lib/utils.shared';
 
-import type {ThemeColor} from '@shared/types/theme.types';
+import {ThemeColor} from '@shared/types/theme.types';
 
 import {getThemeColorClass} from '@src/lib/theme.pwa';
 
@@ -46,7 +46,7 @@ function getColorClasses(args: {
 
   return twMerge(
     // `color` takes precedence over `light`.
-    light ? 'text-stone-500' : '',
+    light ? ThemeColor.Neutral500 : '',
     color ? getThemeColorClass(color) : '',
     hoverColor ? `hover:${getThemeColorClass(hoverColor)}` : ''
   );

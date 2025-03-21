@@ -1,7 +1,6 @@
 import type {ActionCodeSettings} from 'firebase/auth';
 import {useState} from 'react';
 import {Navigate} from 'react-router-dom';
-import styled from 'styled-components';
 
 import {Urls} from '@shared/lib/urls.shared';
 import {isValidEmail} from '@shared/lib/utils.shared';
@@ -26,14 +25,6 @@ const PASSWORDLESS_AUTH_ACTION_CODE_SETTINGS: ActionCodeSettings = {
   url: import.meta.env.VITE_CONDUCTOR_URL, // URL to redirect back to.
   handleCodeInApp: true, // Must be true for this flow.
 };
-
-const SignInContentWrapper = styled.div`
-  width: 100%;
-  max-width: 480px;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`;
 
 const PasswordlessAuthButton: React.FC<{
   readonly children: React.ReactNode;
@@ -86,7 +77,7 @@ export const SignInScreen: React.FC = () => {
 
   return (
     <div className="flex h-full w-full items-center justify-center">
-      <SignInContentWrapper>
+      <div className="flex w-full max-w-[480px] flex-col gap-4">
         <Text as="h1" bold align="center">
           Conductor
         </Text>
@@ -147,7 +138,7 @@ export const SignInScreen: React.FC = () => {
             <Text bold>Error signing in:</Text> {signInLinkError.message}
           </Text>
         ) : null}
-      </SignInContentWrapper>
+      </div>
     </div>
   );
 };

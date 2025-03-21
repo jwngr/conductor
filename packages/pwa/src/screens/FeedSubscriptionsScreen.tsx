@@ -55,7 +55,7 @@ const FeedAdder: React.FC = () => {
       </div>
 
       {status ? (
-        <div className={`text-sm ${status.includes('Error') ? 'text-red-500' : null}`}>
+        <div className={`text-sm ${status.includes('Error') ? ThemeColor.Red500 : null}`}>
           {status}
         </div>
       ) : null}
