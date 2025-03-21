@@ -1,5 +1,4 @@
 import {useCallback, useEffect, useState} from 'react';
-import styled from 'styled-components';
 
 import {isValidUrl} from '@shared/lib/urls.shared';
 
@@ -12,11 +11,18 @@ import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
 
 import {Button} from '@src/components/atoms/Button';
 import {Input} from '@src/components/atoms/Input';
+import {Text} from '@src/components/atoms/Text';
 
-const StatusText = styled.div<{readonly $isError?: boolean}>`
-  font-size: 12px;
-  color: ${({theme, $isError}) => ($isError ? theme.colors.error : theme.colors.success)};
-`;
+const StatusText: React.FC<{
+  readonly isError: boolean;
+  readonly children: React.ReactNode;
+}> = ({isError, children}) => {
+  return (
+    <Text as="p" className={`text-xs ${isError ? 'text-red-600' : null}`}>
+      {children}
+    </Text>
+  );
+};
 
 const FeedItemImporter: React.FC = () => {
   const feedItemsService = useFeedItemsService();
@@ -30,7 +36,7 @@ const FeedItemImporter: React.FC = () => {
 
       const trimmedUrl = urlToAdd.trim();
       if (!isValidUrl(trimmedUrl)) {
-        setStatus('URL is not valid');
+        setStatus('Error: URL is not valid');
         return;
       }
 
@@ -85,7 +91,7 @@ const FeedItemImporter: React.FC = () => {
       <Button variant="outline" onClick={async () => void handleAddItemToQueue(url)}>
         Test URL import
       </Button>
-      {status ? <StatusText $isError={status.includes('Error')}>{status}</StatusText> : null}
+      {status ? <StatusText isError={status.includes('Error')}>{status}</StatusText> : null}
     </>
   );
 };
