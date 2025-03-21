@@ -3,9 +3,11 @@ import {twMerge} from 'tailwind-merge';
 
 import {assertNever} from '@shared/lib/utils.shared';
 
-import {ThemeColor} from '@shared/types/theme.types';
+import type {ThemeColor} from '@shared/types/theme.types';
 
 import {getThemeColorClass} from '@src/lib/theme.pwa';
+
+const LIGHT_COLOR = 'text-stone-500';
 
 type FontWeight = 'normal' | 'bold' | '900';
 function getFontWeightClasses(args: {
@@ -45,8 +47,8 @@ function getColorClasses(args: {
   const {light, color, hoverColor} = args;
 
   return twMerge(
-    // `color` takes precedence over `light`.
-    light ? ThemeColor.Neutral500 : '',
+    // Later rules override previous ones, so `color` takes precedence over `light`.
+    light ? LIGHT_COLOR : '',
     color ? getThemeColorClass(color) : '',
     hoverColor ? `hover:${getThemeColorClass(hoverColor)}` : ''
   );

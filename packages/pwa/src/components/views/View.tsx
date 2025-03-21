@@ -40,7 +40,7 @@ const ViewListItem: React.FC<{
       <div
         ref={itemRef}
         className={`flex cursor-pointer flex-col justify-center gap-1 rounded p-2 outline-none hover:bg-neutral-100 focus-visible:bg-neutral-100 ${
-          isFocused ? `bg-neutral-100 outline-2 outline-${ThemeColor.Neutral500}` : ''
+          isFocused ? `bg-neutral-100 outline-2 outline-stone-500` : ''
         }`}
         tabIndex={0}
         onFocus={() => setFocusedFeedItemId(feedItem.feedItemId)}
