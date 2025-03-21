@@ -18,7 +18,7 @@ const StatusText: React.FC<{
   readonly children: React.ReactNode;
 }> = ({isError, children}) => {
   return (
-    <Text as="p" className={`text-xs ${isError ? 'text-error' : 'text-success'}`}>
+    <Text as="p" className={`text-xs ${isError ? 'text-red-600' : null}`}>
       {children}
     </Text>
   );
@@ -36,7 +36,7 @@ const FeedItemImporter: React.FC = () => {
 
       const trimmedUrl = urlToAdd.trim();
       if (!isValidUrl(trimmedUrl)) {
-        setStatus('URL is not valid');
+        setStatus('Error: URL is not valid');
         return;
       }
 
