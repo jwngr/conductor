@@ -12,6 +12,9 @@
     // React JSX requires this.
     "jsx": "react-jsx",
 
+    // TODO: This is ideally not needed, but `lucide-react` complains about the React 19 types.
+    "skipLibCheck": true,
+
     // Build is handled by Vite.
     "moduleResolution": "bundler",
 
