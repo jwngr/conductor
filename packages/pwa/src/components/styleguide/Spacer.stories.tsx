@@ -1,57 +1,40 @@
-import styled from 'styled-components';
-
-import {ThemeColor} from '@shared/types/theme.types';
-
-import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Spacer} from '@src/components/atoms/Spacer';
 import {Text} from '@src/components/atoms/Text';
 import {StorySection} from '@src/components/styleguide/StorySection';
-
-const FlexRowStoryWrapper = styled(FlexRow)`
-  border: solid 3px ${({theme}) => theme.colors[ThemeColor.Red200]};
-`;
-
-const FlexColumnStoryWrapper = styled(FlexColumn)`
-  background-color: ${({theme}) => theme.colors[ThemeColor.Red200]};
-`;
-
-const SpacerWrapper = styled(Spacer)`
-  background-color: ${({theme}) => theme.colors[ThemeColor.Green700]};
-`;
 
 export const SpacerStories: React.FC = () => {
   return (
     <>
       <StorySection title="Horizontal spacer">
-        <FlexRowStoryWrapper>
+        <div className="flex flex-row items-center border-3 border-red-200">
           <Text>Left</Text>
-          <SpacerWrapper x={100} />
+          <Spacer x={100} className="bg-green-700" />
           <Text>Right</Text>
-        </FlexRowStoryWrapper>
+        </div>
       </StorySection>
 
       <StorySection title="Vertical spacer">
-        <FlexColumnStoryWrapper>
+        <div className="flex flex-col bg-red-200">
           <Text>Top</Text>
-          <SpacerWrapper y={32} />
+          <Spacer y={32} className="bg-green-700" />
           <Text>Bottom</Text>
-        </FlexColumnStoryWrapper>
+        </div>
       </StorySection>
 
       <StorySection title="Responsive spacer">
-        <FlexRowStoryWrapper>
+        <div className="flex flex-row items-center border-3 border-red-200">
           <Text>Left</Text>
-          <SpacerWrapper x={{mobile: 16, desktop: 64}} />
+          <Spacer x={{mobile: 16, desktop: 64}} className="bg-green-700" />
           <Text>Right (spacing decreases on mobile)</Text>
-        </FlexRowStoryWrapper>
+        </div>
       </StorySection>
 
       <StorySection title="Flex spacer">
-        <FlexRowStoryWrapper>
+        <div className="flex flex-row items-center border-3 border-red-200">
           <Text>Left</Text>
-          <SpacerWrapper flex={1} />
+          <Spacer flex={1} className="bg-green-700" />
           <Text>Right (pushed to end)</Text>
-        </FlexRowStoryWrapper>
+        </div>
       </StorySection>
     </>
   );

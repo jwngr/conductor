@@ -1,5 +1,4 @@
 import {Button} from '@src/components/atoms/Button';
-import {FlexRow} from '@src/components/atoms/Flex';
 import {StorySection} from '@src/components/styleguide/StorySection';
 
 const handleClick = (message: string): void => {
@@ -14,13 +13,12 @@ export const ButtonStories: React.FC = () => {
   return (
     <>
       <StorySection title="Button variants">
-        <FlexRow gap={16}>
-          <Button onClick={() => handleClick('Clicked on primary button')}>Default</Button>
+        <div className="flex flex-row items-center gap-4">
+          <Button variant="default" onClick={() => handleClick('Clicked on primary button')}>
+            Primary
+          </Button>
           <Button variant="secondary" onClick={() => handleClick('Clicked on secondary button')}>
             Secondary
-          </Button>
-          <Button variant="outline" onClick={() => handleClick('Clicked on outline button')}>
-            Outline
           </Button>
           <Button
             variant="destructive"
@@ -28,17 +26,20 @@ export const ButtonStories: React.FC = () => {
           >
             Destructive
           </Button>
+          <Button variant="outline" onClick={() => handleClick('Clicked on outline button')}>
+            Outline
+          </Button>
           <Button variant="ghost" onClick={() => handleClick('Clicked on ghost button')}>
             Ghost
           </Button>
           <Button variant="link" onClick={() => handleClick('Clicked on link button')}>
             Link
           </Button>
-        </FlexRow>
+        </div>
       </StorySection>
 
       <StorySection title="Disabled buttons">
-        <FlexRow gap={16}>
+        <div className="flex flex-row items-center gap-4">
           <Button disabled onClick={handleDisabledClick}>
             Primary
           </Button>
@@ -57,11 +58,11 @@ export const ButtonStories: React.FC = () => {
           <Button disabled variant="link" onClick={handleDisabledClick}>
             Link
           </Button>
-        </FlexRow>
+        </div>
       </StorySection>
 
       <StorySection title="Button sizes">
-        <FlexRow gap={16}>
+        <div className="flex flex-row items-center gap-4">
           <Button size="sm" onClick={() => handleClick('Clicked on primary small button')}>
             Small
           </Button>
@@ -74,7 +75,7 @@ export const ButtonStories: React.FC = () => {
           <Button size="icon" onClick={() => handleClick('Clicked on primary button')}>
             Icon
           </Button>
-        </FlexRow>
+        </div>
       </StorySection>
     </>
   );
