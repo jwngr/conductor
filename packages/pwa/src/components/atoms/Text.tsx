@@ -7,7 +7,7 @@ import type {ThemeColor} from '@shared/types/theme.types';
 
 import {getThemeColorClass} from '@src/lib/theme.pwa';
 
-const DEFAULT_TEXT_COLOR = 'text-text';
+// const DEFAULT_TEXT_COLOR = 'text-text';
 const LIGHT_TEXT_COLOR = 'text-text-light';
 
 type FontWeight = 'normal' | 'bold' | '900';
