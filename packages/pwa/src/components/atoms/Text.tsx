@@ -2,10 +2,9 @@ import type {HTMLAttributes} from 'react';
 
 import {assertNever} from '@shared/lib/utils.shared';
 
-import {cn} from '@src/lib/utils.pwa';
+import {DEFAULT_TEXT_COLOR, DEFAULT_TEXT_LIGHT_COLOR} from '@shared/types/theme.types';
 
-const DEFAULT_TEXT_COLOR = 'text-text';
-const LIGHT_TEXT_COLOR = 'text-text-light';
+import {cn} from '@src/lib/utils.pwa';
 
 type FontWeight = 'normal' | 'bold' | '900';
 function getFontWeightClasses(args: {
@@ -44,7 +43,7 @@ function getTextAlignClasses(args: {readonly align?: 'left' | 'center' | 'right'
  */
 function getColorClasses(args: {readonly light?: boolean}): string {
   const {light} = args;
-  return light ? LIGHT_TEXT_COLOR : DEFAULT_TEXT_COLOR;
+  return light ? DEFAULT_TEXT_LIGHT_COLOR : DEFAULT_TEXT_COLOR;
 }
 
 function getUnderlineClasses(args: {readonly underline?: 'always' | 'hover' | 'never'}): string {

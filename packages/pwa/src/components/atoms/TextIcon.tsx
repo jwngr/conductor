@@ -1,6 +1,7 @@
 import type React from 'react';
 
 import type {IconName, IconSize} from '@shared/types/icons.types';
+import {DEFAULT_ICON_COLOR} from '@shared/types/theme.types';
 import type {StyleAttributes} from '@shared/types/utils.types';
 
 import {Icon} from '@src/components/atoms/Icon';
@@ -11,8 +12,6 @@ interface TextIconProps extends StyleAttributes {
   readonly name: IconName;
   readonly size: IconSize;
 }
-
-export const DEFAULT_ICON_COLOR = 'text-text';
 
 export const TextIcon: React.FC<TextIconProps> = ({name, size, style, className}) => {
   return (

@@ -10,7 +10,6 @@ import type {StyleAttributes} from '@shared/types/utils.types';
 import type {MouseEvent} from '@sharedClient/types/utils.client.types';
 
 import {Icon} from '@src/components/atoms/Icon';
-import {DEFAULT_ICON_COLOR} from '@src/components/atoms/TextIcon';
 import type {TooltipContent} from '@src/components/atoms/Tooltip';
 import {Tooltip} from '@src/components/atoms/Tooltip';
 
@@ -46,15 +45,13 @@ export const ButtonIcon: React.FC<ButtonIconProps> = ({
   const buttonIcon = (
     <div
       className={cn(
-        DEFAULT_ICON_COLOR,
         'flex cursor-pointer items-center justify-center rounded',
         'bg-neutral-200 hover:bg-neutral-300',
         {
           'h-6 w-6': buttonIconSize === 24,
           'h-8 w-8': buttonIconSize === 32,
           'h-10 w-10': buttonIconSize === 40,
-        },
-        className
+        }
       )}
       onClick={onClick}
     >
