@@ -12,7 +12,7 @@ interface TextIconProps extends StyleAttributes {
   readonly size: IconSize;
 }
 
-const DEFAULT_ICON_COLOR = 'text-red-1';
+const DEFAULT_ICON_COLOR = 'text-text';
 
 export const TextIcon: React.FC<TextIconProps> = ({name, size, style, className}) => {
   return (

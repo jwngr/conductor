@@ -106,7 +106,7 @@ const DialogDescription: React.FC<React.ComponentProps<typeof DialogPrimitive.De
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={cn('text-muted-foreground text-sm', className)}
+      className={cn('text-text-light text-sm', className)}
       {...props}
     />
   );

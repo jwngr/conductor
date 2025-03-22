@@ -86,7 +86,7 @@ export const StyleguideScreen: React.FC = () => {
         </Text>
         <div className="flex flex-col gap-16">
           <div className="flex flex-col gap-4">
-            <Text className="px-3 py-2 text-sm tracking-wider text-neutral-500 uppercase">
+            <Text as="h6" light className="px-3 py-2">
               Atomic components
             </Text>
             {Styleguide.getOrderedAtomicComponentIds().map((sectionId) => {
@@ -103,7 +103,7 @@ export const StyleguideScreen: React.FC = () => {
             })}
           </div>
           <div className="flex flex-col gap-4">
-            <Text className="px-3 py-2 text-sm tracking-wider text-neutral-500 uppercase">
+            <Text as="h6" light className="px-3 py-2">
               Content viewers
             </Text>
             {Styleguide.getOrderedContentViewerIds().map((sectionId) => {

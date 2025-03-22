@@ -45,7 +45,6 @@ export const ButtonIcon: React.FC<ButtonIconProps> = ({
   const buttonIcon = (
     <div
       className={cn(
-        'text-red-1',
         'flex cursor-pointer items-center justify-center rounded',
         'bg-neutral-200 hover:bg-neutral-300',
         {

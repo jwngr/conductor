@@ -26,7 +26,7 @@ _Italic paragraph text_
       <StorySection title="Headings">
         <div className="flex flex-row items-start gap-8">
           <div className="flex flex-1 flex-col gap-2">
-            <Text as="h6" className="text-neutral-3">
+            <Text as="h6" light>
               Normal Typography
             </Text>
             <Text as="h1">Heading 1</Text>
@@ -38,7 +38,7 @@ _Italic paragraph text_
           </div>
 
           <div className="flex flex-1 flex-col gap-2">
-            <Text as="h6" className="text-neutral-3">
+            <Text as="h6" light>
               Markdown Typography
             </Text>
             <Markdown content={headingsMarkdown} />
@@ -49,7 +49,7 @@ _Italic paragraph text_
       <StorySection title="Paragraphs">
         <div className="flex flex-row items-start gap-8">
           <div className="flex flex-1 flex-col gap-2">
-            <Text as="h6" className="text-neutral-3">
+            <Text as="h6" light>
               Normal Typography
             </Text>
             <Text>Regular paragraph text</Text>
@@ -58,7 +58,7 @@ _Italic paragraph text_
           </div>
 
           <div className="flex flex-1 flex-col gap-2">
-            <Text as="h6" className="text-neutral-3">
+            <Text as="h6" light>
               Markdown Typography
             </Text>
             <Markdown content={paragraphsMarkdown} />

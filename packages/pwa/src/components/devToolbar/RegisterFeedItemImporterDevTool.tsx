@@ -18,7 +18,7 @@ const StatusText: React.FC<{
   readonly children: React.ReactNode;
 }> = ({isError, children}) => {
   return (
-    <Text as="p" className={`text-xs ${isError ? 'text-red-600' : null}`}>
+    <Text as="p" className={`text-xs ${isError ? 'text-error' : 'text-success'}`}>
       {children}
     </Text>
   );

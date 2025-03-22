@@ -2,6 +2,9 @@
   /* Light theme. */
   --color-text: var(--color-stone-800);
   --color-text-light: var(--color-stone-500);
+  --color-text-link: var(--color-blue-500);
+  --color-error: var(--color-red-500);
+  --color-success: var(--color-green-500);
   --color-border: var(--color-stone-300);
   --color-background: var(--color-stone-50);
   --color-foreground: var(--color-stone-800);
@@ -40,6 +43,9 @@
   :where(.dark) {
     --color-text: var(--color-stone-50);
     --color-text-light: var(--color-stone-400);
+    --color-text-link: var(--color-blue-40);
+    --color-error: var(--color-red-400);
+    --color-success: var(--color-green-400);
     --color-border: var(--color-stone-300);
     --color-background: var(--color-stone-900);
     --color-foreground: var(--color-stone-50);
@@ -80,6 +86,9 @@
 @theme inline {
   --color-text: var(--color-text);
   --color-text-light: var(--color-text-light);
+  --color-text-link: var(--color-text-link);
+  --color-error: var(--color-error);
+  --color-success: var(--color-success);
   --color-border: var(--color-border);
   --color-background: var(--color-background);
   --color-foreground: var(--color-foreground);

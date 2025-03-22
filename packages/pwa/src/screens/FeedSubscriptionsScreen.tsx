@@ -54,7 +54,7 @@ const FeedAdder: React.FC = () => {
       </div>
 
       {status ? (
-        <Text className={status.includes('Error') ? 'text-red-2' : undefined}>{status}</Text>
+        <Text className={status.includes('Error') ? 'text-error' : 'text-success'}>{status}</Text>
       ) : null}
 
       <div className="flex flex-col gap-3">
@@ -118,7 +118,7 @@ const FeedSubscriptionsList: React.FC = () => {
 
   const renderMainContent = (): React.ReactNode => {
     if (error) {
-      return <Text className="text-red-2">Error loading feed subscriptions</Text>;
+      return <Text className="text-error">Error loading feed subscriptions</Text>;
     }
 
     if (subscriptions.length === 0) {
@@ -133,7 +133,7 @@ const FeedSubscriptionsList: React.FC = () => {
             className="flex items-center gap-3 rounded-lg border border-gray-200 p-3"
           >
             <div className="flex flex-1 flex-col gap-1">
-              <Text bold className={subscription.isActive ? undefined : 'text-red-2'}>
+              <Text bold className={subscription.isActive ? undefined : 'text-error'}>
                 {subscription.title}
               </Text>
               <Text className="text-sm">{subscription.url}</Text>

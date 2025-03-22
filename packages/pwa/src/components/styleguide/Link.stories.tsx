@@ -33,7 +33,7 @@ export const LinkStories: React.FC = () => {
               Colored:
             </Text>
             <Link to="/example">
-              <Text className="text-blue-2" underline="hover">
+              <Text className="text-text-link" underline="hover">
                 Blue link
               </Text>
             </Link>
@@ -69,7 +69,7 @@ export const LinkStories: React.FC = () => {
               Complex:
             </Text>
             <Link to="/example">
-              <Text bold underline="hover" className="text-blue-3 transition-colors">
+              <Text bold underline="hover" className="text-text-link transition-colors">
                 Interactive complex link
               </Text>
             </Link>
@@ -82,7 +82,7 @@ export const LinkStories: React.FC = () => {
           <Text>
             This is a paragraph with an{' '}
             <Link to="/example">
-              <Text underline="hover" className="text-blue-3 inline">
+              <Text underline="hover" className="text-text-link inline">
                 embedded link
               </Text>
             </Link>{' '}
