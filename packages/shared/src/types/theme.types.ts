@@ -1,3 +1,18 @@
+/**
+ * User preference for the application theme. System will use the browser's "prefers color scheme"
+ * setting.
+ */
+export enum ThemePreference {
+  System = 'SYSTEM',
+  Light = 'LIGHT',
+  Dark = 'DARK',
+}
+
+export const DEFAULT_THEME_PREFERENCE = ThemePreference.System;
+
+/**
+ * @deprecated TODO: Get rid of this.
+ */
 export enum ThemeColor {
   Neutral50 = 'NEUTRAL_50',
   Neutral100 = 'NEUTRAL_100',

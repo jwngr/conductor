@@ -45,7 +45,7 @@ const LeftSidebarItemComponent: React.FC<{
         className={cn(
           'flex flex-row items-center gap-2 rounded px-3 py-2',
           'transition-transform active:scale-95',
-          isActive ? 'bg-orange-200 hover:bg-orange-300' : 'bg-transparent hover:bg-neutral-300'
+          isActive ? 'bg-orange-1 hover:bg-orange-2' : 'hover:bg-neutral-2 bg-transparent'
         )}
       >
         <LeftSidebarItemAvatar icon={icon} />

@@ -16,6 +16,7 @@ import {SignOutRedirect} from '@src/components/auth/SignOutRedirect';
 import {DevToolbar} from '@src/components/devToolbar/DevToolbar';
 import {RegisterFeedItemImporterDevToolbarSection} from '@src/components/devToolbar/RegisterFeedItemImporterDevTool';
 import {RegisterAccountFeedSubscriberDevToolbarSection} from '@src/components/devToolbar/RegisterUserFeedSubscriberDevToolbarActions';
+import {ThemeProvider} from '@src/components/ThemeProvider';
 
 import {NotFoundScreen} from '@src/screens/404';
 import {ErrorScreen} from '@src/screens/ErrorScreen';
@@ -105,18 +106,20 @@ export const App: React.FC = () => {
   return (
     <StrictMode>
       <TooltipProvider>
-        <BrowserRouter
-          // Pass flags to silence console logs.
-          future={{v7_startTransition: true, v7_relativeSplatPath: true}}
-        >
-          <ErrorBoundary fallback={(error) => <ErrorScreen error={error} />}>
-            <AllRoutes />
-            <PermanentGlobalSubscriptions />
-            <LoggedInGlobalSubscriptions />
-            <DevToolbar />
-          </ErrorBoundary>
-        </BrowserRouter>
-        <Toaster />
+        <ThemeProvider>
+          <BrowserRouter
+            // Pass flags to silence console logs.
+            future={{v7_startTransition: true, v7_relativeSplatPath: true}}
+          >
+            <ErrorBoundary fallback={(error) => <ErrorScreen error={error} />}>
+              <AllRoutes />
+              <PermanentGlobalSubscriptions />
+              <LoggedInGlobalSubscriptions />
+              <DevToolbar />
+            </ErrorBoundary>
+          </BrowserRouter>
+          <Toaster />
+        </ThemeProvider>
       </TooltipProvider>
     </StrictMode>
   );

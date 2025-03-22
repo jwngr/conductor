@@ -1,13 +1,9 @@
-import {useTheme} from 'next-themes';
 import {Toaster as Sonner} from 'sonner';
 import type {ToasterProps} from 'sonner';
 
 export const Toaster: React.FC<ToasterProps> = (props) => {
-  const {theme = 'system'} = useTheme();
-
   return (
     <Sonner
-      theme={theme as ToasterProps['theme']}
       className="toaster group"
       toastOptions={{
         classNames: {

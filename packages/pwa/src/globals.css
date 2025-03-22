@@ -1,17 +1,13 @@
 @import 'tailwindcss';
+@import './theme.css';
 
 @plugin 'tailwindcss-animate';
 @plugin '@tailwindcss/typography';
 
+// Use dark theme when body has "dark" class.
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-
-  body {
-    @apply bg-background text-foreground;
-  }
-
   p {
     @apply text-lg;
   }
@@ -45,6 +41,6 @@
   }
 
   h6 {
-    @apply text-muted-foreground text-sm font-normal tracking-wider uppercase;
+    @apply text-sm font-normal tracking-wider uppercase;
   }
 }
