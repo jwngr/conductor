@@ -1,6 +1,6 @@
 import type React from 'react';
 
-import {cn} from '@src/lib/utils';
+import {cn} from '@src/lib/utils.pwa';
 
 export const Input: React.FC<React.ComponentProps<'input'>> = ({className, type, ...props}) => {
   return (

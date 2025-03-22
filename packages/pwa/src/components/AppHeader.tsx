@@ -8,7 +8,7 @@ import {Link} from '@src/components/atoms/Link';
 import {Spacer} from '@src/components/atoms/Spacer';
 import {Text} from '@src/components/atoms/Text';
 
-import {cn} from '@src/lib/utils';
+import {cn} from '@src/lib/utils.pwa';
 
 export const AppHeader: React.FC = () => {
   const {isLoading, loggedInAccount} = useMaybeLoggedInAccount();

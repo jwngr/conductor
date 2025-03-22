@@ -2,7 +2,6 @@ import {useEffect, useState} from 'react';
 
 import {isValidUrl} from '@shared/lib/urls.shared';
 
-import {ThemeColor} from '@shared/types/theme.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
 import {useUserFeedSubscriptionsService} from '@sharedClient/services/userFeedSubscriptions.client';
@@ -55,7 +54,7 @@ const FeedAdder: React.FC = () => {
       </div>
 
       {status ? (
-        <Text color={status.includes('Error') ? ThemeColor.Red500 : undefined}>{status}</Text>
+        <Text className={status.includes('Error') ? 'text-red-2' : undefined}>{status}</Text>
       ) : null}
 
       <div className="flex flex-col gap-3">
@@ -119,7 +118,7 @@ const FeedSubscriptionsList: React.FC = () => {
 
   const renderMainContent = (): React.ReactNode => {
     if (error) {
-      return <Text color={ThemeColor.Red500}>Error loading feed subscriptions</Text>;
+      return <Text className="text-red-2">Error loading feed subscriptions</Text>;
     }
 
     if (subscriptions.length === 0) {
@@ -134,7 +133,7 @@ const FeedSubscriptionsList: React.FC = () => {
             className="flex items-center gap-3 rounded-lg border border-gray-200 p-3"
           >
             <div className="flex flex-1 flex-col gap-1">
-              <Text bold color={subscription.isActive ? undefined : ThemeColor.Red500}>
+              <Text bold className={subscription.isActive ? undefined : 'text-red-2'}>
                 {subscription.title}
               </Text>
               <Text className="text-sm">{subscription.url}</Text>

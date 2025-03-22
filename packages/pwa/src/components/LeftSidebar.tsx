@@ -15,7 +15,7 @@ import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
 import {TextIcon} from '@src/components/atoms/TextIcon';
 
-import {cn} from '@src/lib/utils';
+import {cn} from '@src/lib/utils.pwa';
 
 const LeftSidebarItemAvatar: React.FC<{
   readonly icon: CustomIcon;

@@ -1,6 +1,5 @@
 import {IconName} from '@shared/types/icons.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
-import {ThemeColor} from '@shared/types/theme.types';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {StorySection} from '@src/components/styleguide/StorySection';
@@ -65,14 +64,14 @@ export const ButtonIconStories: React.FC = () => {
           <ButtonIcon
             name={IconName.Star}
             size={32}
-            color={ThemeColor.Red500}
+            className="text-red-1"
             tooltip="Red"
             onClick={handleButtonIconClick}
           />
           <ButtonIcon
             name={IconName.Star}
             size={32}
-            color={ThemeColor.Green500}
+            className="text-green-1"
             tooltip="Green"
             onClick={handleButtonIconClick}
           />

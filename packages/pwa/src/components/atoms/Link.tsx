@@ -1,7 +1,7 @@
 import type {LinkProps as RouterLinkProps} from 'react-router-dom';
 import {Link as RouterLink} from 'react-router-dom';
 
-import {cn} from '@src/lib/utils';
+import {cn} from '@src/lib/utils.pwa';
 
 export const Link: React.FC<RouterLinkProps> = ({children, className, ...props}) => {
   return (

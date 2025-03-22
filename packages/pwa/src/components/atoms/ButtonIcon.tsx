@@ -5,7 +5,6 @@ import {getIconSizeFromButtonIconSize} from '@shared/lib/icons.shared';
 
 import type {ButtonIconSize, IconName} from '@shared/types/icons.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
-import {ThemeColor} from '@shared/types/theme.types';
 import type {StyleAttributes} from '@shared/types/utils.types';
 
 import type {MouseEvent} from '@sharedClient/types/utils.client.types';
@@ -14,14 +13,13 @@ import {Icon} from '@src/components/atoms/Icon';
 import type {TooltipContent} from '@src/components/atoms/Tooltip';
 import {Tooltip} from '@src/components/atoms/Tooltip';
 
-import {cn} from '@src/lib/utils';
+import {cn} from '@src/lib/utils.pwa';
 
 import type {OnClick} from '@src/types/utils.pwa.types';
 
 interface ButtonIconProps extends StyleAttributes {
   readonly name: IconName;
   readonly size: ButtonIconSize;
-  readonly color?: ThemeColor;
   readonly onClick: OnClick<HTMLDivElement>;
   readonly shortcutId?: KeyboardShortcutId;
   readonly tooltip: TooltipContent;
@@ -32,7 +30,6 @@ export const ButtonIcon: React.FC<ButtonIconProps> = ({
   name,
   tooltip,
   size: buttonIconSize,
-  color = ThemeColor.Neutral900,
   onClick,
   shortcutId,
   className,
@@ -48,6 +45,7 @@ export const ButtonIcon: React.FC<ButtonIconProps> = ({
   const buttonIcon = (
     <div
       className={cn(
+        'text-red-1',
         'flex cursor-pointer items-center justify-center rounded',
         'bg-neutral-200 hover:bg-neutral-300',
         {
@@ -59,7 +57,7 @@ export const ButtonIcon: React.FC<ButtonIconProps> = ({
       )}
       onClick={onClick}
     >
-      <Icon name={name} size={iconSize} color={color} {...styleProps} />
+      <Icon className={className} name={name} size={iconSize} {...styleProps} />
     </div>
   );
 
