@@ -7,7 +7,6 @@ import {isValidEmail} from '@shared/lib/utils.shared';
 
 import {parseEmailAddress} from '@shared/parsers/accounts.parser';
 
-import {ThemeColor} from '@shared/types/theme.types';
 import type {Consumer} from '@shared/types/utils.types';
 
 import {authService} from '@sharedClient/services/auth.client';
@@ -134,7 +133,7 @@ export const SignInScreen: React.FC = () => {
           </Text>
         ) : null}
         {signInLinkError ? (
-          <Text color={ThemeColor.Red500} align="center">
+          <Text className="text-error" align="center">
             <Text bold>Error signing in:</Text> {signInLinkError.message}
           </Text>
         ) : null}

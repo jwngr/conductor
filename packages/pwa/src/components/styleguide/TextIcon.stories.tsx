@@ -1,5 +1,4 @@
 import {IconName} from '@shared/types/icons.types';
-import {ThemeColor} from '@shared/types/theme.types';
 
 import {TextIcon} from '@src/components/atoms/TextIcon';
 import {StorySection} from '@src/components/styleguide/StorySection';
@@ -26,8 +25,8 @@ export const TextIconStories: React.FC = () => {
 
       <StorySection title="Text icon colors">
         <div className="flex flex-row items-center gap-2">
-          <TextIcon name={IconName.Star} size={32} color={ThemeColor.Red500} />
-          <TextIcon name={IconName.Star} size={32} color={ThemeColor.Green500} />
+          <TextIcon name={IconName.Star} size={32} className="text-error" />
+          <TextIcon name={IconName.Star} size={32} className="text-success" />
         </div>
       </StorySection>
     </>

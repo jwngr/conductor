@@ -1,13 +1,10 @@
 import type {HTMLAttributes} from 'react';
-import {twMerge} from 'tailwind-merge';
 
 import {assertNever} from '@shared/lib/utils.shared';
 
-import type {ThemeColor} from '@shared/types/theme.types';
+import {DEFAULT_TEXT_COLOR, DEFAULT_TEXT_LIGHT_COLOR} from '@shared/types/theme.types';
 
-import {getThemeColorClass} from '@src/lib/theme.pwa';
-
-const LIGHT_COLOR = 'text-stone-500';
+import {cn} from '@src/lib/utils.pwa';
 
 type FontWeight = 'normal' | 'bold' | '900';
 function getFontWeightClasses(args: {
@@ -39,19 +36,14 @@ function getTextAlignClasses(args: {readonly align?: 'left' | 'center' | 'right'
   return `text-${align}`;
 }
 
-function getColorClasses(args: {
-  readonly light?: boolean;
-  readonly color?: ThemeColor;
-  readonly hoverColor?: ThemeColor;
-}): string {
-  const {light, color, hoverColor} = args;
-
-  return twMerge(
-    // Later rules override previous ones, so `color` takes precedence over `light`.
-    light ? LIGHT_COLOR : '',
-    color ? getThemeColorClass(color) : '',
-    hoverColor ? `hover:${getThemeColorClass(hoverColor)}` : ''
-  );
+/**
+ * Note that most colors should be handled by Tailwind classes.
+ *
+ * TODO: Add back a proper `color` attribute that is semantically cleaner.
+ */
+function getColorClasses(args: {readonly light?: boolean}): string {
+  const {light} = args;
+  return light ? DEFAULT_TEXT_LIGHT_COLOR : DEFAULT_TEXT_COLOR;
 }
 
 function getUnderlineClasses(args: {readonly underline?: 'always' | 'hover' | 'never'}): string {
@@ -102,8 +94,6 @@ interface TextProps extends HTMLAttributes<HTMLParagraphElement> {
   readonly align?: 'left' | 'center' | 'right';
   readonly bold?: boolean;
   readonly weight?: FontWeight;
-  readonly color?: ThemeColor;
-  readonly hoverColor?: ThemeColor;
   readonly flex?: FlexValue;
   readonly truncate?: boolean;
   readonly monospace?: boolean;
@@ -119,8 +109,6 @@ export const Text: React.FC<TextProps> = ({
   weight,
   flex,
   children,
-  color,
-  hoverColor,
   light,
   monospace,
   truncate,
@@ -129,8 +117,8 @@ export const Text: React.FC<TextProps> = ({
   className,
   ...rest
 }) => {
-  const classes = twMerge(
-    getColorClasses({light, color, hoverColor}),
+  const classes = cn(
+    getColorClasses({light}),
     getUnderlineClasses({underline}),
     getFontWeightClasses({bold, weight}),
     getFontFamilyClasses({monospace}),

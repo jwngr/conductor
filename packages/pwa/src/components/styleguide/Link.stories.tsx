@@ -1,5 +1,3 @@
-import {ThemeColor} from '@shared/types/theme.types';
-
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
 import {StorySection} from '@src/components/styleguide/StorySection';
@@ -11,35 +9,31 @@ export const LinkStories: React.FC = () => {
         {/* Default link with underline */}
         <div className="flex flex-col gap-8">
           <div className="flex items-center gap-4">
-            <Text className="w-32" color={ThemeColor.Neutral500}>
+            <Text className="w-32" light>
               Default:
             </Text>
             <Link to="/example">
-              <Text underline="always" color={ThemeColor.Neutral900}>
-                Click to navigate
-              </Text>
+              <Text underline="always">Click to navigate</Text>
             </Link>
           </div>
 
           {/* Interactive hover underline */}
           <div className="flex items-center gap-4">
-            <Text className="w-32" color={ThemeColor.Neutral500}>
+            <Text className="w-32" light>
               Hover underline:
             </Text>
             <Link to="/example">
-              <Text underline="hover" color={ThemeColor.Neutral900}>
-                Hover me
-              </Text>
+              <Text underline="hover">Hover me</Text>
             </Link>
           </div>
 
           {/* Colored link */}
           <div className="flex items-center gap-4">
-            <Text className="w-32" color={ThemeColor.Neutral500}>
+            <Text className="w-32" light>
               Colored:
             </Text>
             <Link to="/example">
-              <Text color={ThemeColor.Blue500} underline="hover">
+              <Text className="text-text-link" underline="hover">
                 Blue link
               </Text>
             </Link>
@@ -47,11 +41,11 @@ export const LinkStories: React.FC = () => {
 
           {/* Bold link */}
           <div className="flex items-center gap-4">
-            <Text className="w-32" color={ThemeColor.Neutral500}>
+            <Text className="w-32" light>
               Bold:
             </Text>
             <Link to="/example">
-              <Text bold color={ThemeColor.Neutral900} underline="hover">
+              <Text bold underline="hover">
                 Bold link
               </Text>
             </Link>
@@ -59,11 +53,11 @@ export const LinkStories: React.FC = () => {
 
           {/* Disabled style */}
           <div className="flex items-center gap-4">
-            <Text className="w-32" color={ThemeColor.Neutral500}>
+            <Text className="w-32" light>
               Disabled style:
             </Text>
             <Link to="/example">
-              <Text color={ThemeColor.Neutral400} className="cursor-not-allowed">
+              <Text light className="cursor-not-allowed">
                 Disabled-looking link
               </Text>
             </Link>
@@ -71,16 +65,11 @@ export const LinkStories: React.FC = () => {
 
           {/* Complex link */}
           <div className="flex items-center gap-4">
-            <Text className="w-32" color={ThemeColor.Neutral500}>
+            <Text className="w-32" light>
               Complex:
             </Text>
             <Link to="/example">
-              <Text
-                bold
-                color={ThemeColor.Blue500}
-                underline="hover"
-                className="transition-colors hover:text-blue-600"
-              >
+              <Text bold underline="hover" className="text-text-link transition-colors">
                 Interactive complex link
               </Text>
             </Link>
@@ -90,10 +79,10 @@ export const LinkStories: React.FC = () => {
 
       <StorySection title="Link in Context">
         <div className="rounded-lg border border-neutral-200 bg-white p-4">
-          <Text color={ThemeColor.Neutral900}>
+          <Text>
             This is a paragraph with an{' '}
             <Link to="/example">
-              <Text color={ThemeColor.Blue500} underline="hover" className="inline">
+              <Text underline="hover" className="text-text-link inline">
                 embedded link
               </Text>
             </Link>{' '}
