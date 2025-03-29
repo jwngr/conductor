@@ -3,9 +3,16 @@ description:
 globs: *.ts,*.tsx
 alwaysApply: false
 ---
+### Types
 - Use interfaces over types where possible
 - Strict type checking
-- Shared type definitions across packages
-- Put type vs regular imports onto separate lines
+- Share type definitions across packages
+
+### Project-specific abstractions
 - Use [result.types.ts](mdc:packages/shared/src/types/result.types.ts) and [errorUtils.shared.ts](mdc:packages/shared/src/lib/errorUtils.shared.ts) instead of throwing errors or try / catch
 - Use [requests.shared.ts](mdc:packages/shared/src/lib/requests.shared.ts) insated of fetch for requests
+
+### Imports and exports
+- Split regular and type imports between separate lines
+- No inline `type` imports
+- Exports should be named (no default exports)

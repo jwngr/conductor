@@ -3,5 +3,10 @@ description:
 globs: packages/pwa/**
 alwaysApply: false
 ---
-- Use atomic components defined in /packages/pwa/src/components/atoms
+### Components
+- Use atomic components defined in /src/components/atoms
+- Other components are grouped in feature folder
+- Very few top-level components
+
+### Styling
 - Use the `cn` utility function from [utils.pwa.ts](mdc:packages/pwa/src/lib/utils.pwa.ts) for joining Tailwind classes

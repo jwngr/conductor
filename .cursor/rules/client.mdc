@@ -9,6 +9,7 @@ alwaysApply: false
 - Client/server component separation
 - Handle loading + error states
 - Functional components using `React.FC`
+- Props usually inlined, except when large, then named `<COMPONENT_NAME>Props`
 
 ### State Management
 - Zustand for global state
@@ -20,7 +21,7 @@ alwaysApply: false
 - Radix UI for accessible components
 - Mobile-first responsive design
 - Consistent theme system
-- Use new tailwind v4 semantic, i.e. size-4 instead of h-4 w-4 etc.
+- Use new tailwind v4 semantic, i.e. size-4 instead of h-4 w-4 etc
 
 ### Performance
 - Code splitting
