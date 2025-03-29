@@ -1,6 +1,6 @@
 ---
 description: 
-globs: *.ts,*.tsx
+globs: **/*.tsx,**/*.ts
 alwaysApply: false
 ---
 ### Types
@@ -10,7 +10,7 @@ alwaysApply: false
 
 ### Project-specific abstractions
 - Use [result.types.ts](mdc:packages/shared/src/types/result.types.ts) and [errorUtils.shared.ts](mdc:packages/shared/src/lib/errorUtils.shared.ts) instead of throwing errors or try / catch
-- Use [requests.shared.ts](mdc:packages/shared/src/lib/requests.shared.ts) insated of fetch for requests
+- Use [requests.shared.ts](mdc:packages/shared/src/lib/requests.shared.ts) instead of fetch for requests
 
 ### Imports and exports
 - Split regular and type imports between separate lines
