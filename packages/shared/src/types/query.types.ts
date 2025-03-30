@@ -1,6 +1,19 @@
-import type {OrderByDirection, WhereFilterOp} from 'firebase/firestore';
-
 import {assertNever} from '@shared/lib/utils.shared';
+
+// TODO: Ideally we would use the types directly from Firebase, but we are in shared code and cannot
+// import from either client or server.
+type FirebaseOrderByDirection = 'asc' | 'desc';
+
+type FirebaseWhereFilterOp =
+  | '=='
+  | '!='
+  | '>'
+  | '>='
+  | '<'
+  | '<='
+  | 'array-contains'
+  | 'in'
+  | 'not-in';
 
 export enum ViewType {
   Untriaged = 'UNTRIAGED',
@@ -49,7 +62,7 @@ interface SortOption<T> {
  * Converters between Firestore types and internal types. This abstraction exists to provide a clear
  * boundary between the internal query language and the backing database layer (which may change).
  */
-export function toSortDirection(direction: OrderByDirection): SortDirection {
+export function toSortDirection(direction: FirebaseOrderByDirection): SortDirection {
   switch (direction) {
     case 'asc':
       return 'asc';
@@ -60,7 +73,7 @@ export function toSortDirection(direction: OrderByDirection): SortDirection {
   }
 }
 
-export function fromSortDirection(direction: SortDirection): OrderByDirection {
+export function fromSortDirection(direction: SortDirection): FirebaseOrderByDirection {
   switch (direction) {
     case 'asc':
       return 'asc';
@@ -71,7 +84,7 @@ export function fromSortDirection(direction: SortDirection): OrderByDirection {
   }
 }
 
-export function toFilterOperator(op: WhereFilterOp): FilterOp {
+export function toFilterOperator(op: FirebaseWhereFilterOp): FilterOp {
   switch (op) {
     case '==':
       return FilterOp.Equals;
@@ -97,7 +110,7 @@ export function toFilterOperator(op: WhereFilterOp): FilterOp {
   }
 }
 
-export function fromFilterOperator(op: FilterOp): WhereFilterOp {
+export function fromFilterOperator(op: FilterOp): FirebaseWhereFilterOp {
   switch (op) {
     case FilterOp.Equals:
       return '==';
