@@ -6,6 +6,7 @@
   "dependencies": {
     "@conductor/shared": "workspace:*",
     "@conductor/shared-client": "workspace:*",
+    "firebase": "^11.5.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

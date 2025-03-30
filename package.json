@@ -59,10 +59,6 @@
     "test:extension": "yarn workspace @conductor/extension test",
     "test:functions": "yarn workspace @conductor/functions test"
   },
-  "dependencies": {
-    "firebase": "^11.5.0",
-    "zod": "^3.24.2"
-  },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
     "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
