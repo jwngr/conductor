@@ -1,4 +1,4 @@
-import {prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
 
 import type {
@@ -17,7 +17,7 @@ import {makeSuccessResult} from '@shared/types/result.types';
 export function parseFeedSourceId(maybeFeedSourceId: string): Result<FeedSourceId> {
   const parsedResult = parseZodResult(FeedSourceIdSchema, maybeFeedSourceId);
   if (!parsedResult.success) {
-    return prefixResultIfError(parsedResult, 'Invalid feed source ID');
+    return prefixErrorResult(parsedResult, 'Invalid feed source ID');
   }
   return makeSuccessResult(parsedResult.value as FeedSourceId);
 }
@@ -29,7 +29,7 @@ export function parseFeedSourceId(maybeFeedSourceId: string): Result<FeedSourceI
 export function parseFeedSource(maybeFeedSource: unknown): Result<FeedSource> {
   const parsedFeedSourceResult = parseZodResult(FeedSourceFromStorageSchema, maybeFeedSource);
   if (!parsedFeedSourceResult.success) {
-    return prefixResultIfError(parsedFeedSourceResult, 'Invalid feed source');
+    return prefixErrorResult(parsedFeedSourceResult, 'Invalid feed source');
   }
 
   const parsedIdResult = parseFeedSourceId(parsedFeedSourceResult.value.feedSourceId);

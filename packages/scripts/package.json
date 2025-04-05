@@ -5,10 +5,9 @@
   "type": "module",
   "dependencies": {
     "@conductor/shared": "workspace:*",
-    "jsdom": "^26.0.0"
+    "@conductor/shared-server": "workspace:*"
   },
   "devDependencies": {
-    "@types/jsdom": "^21.1.7",
     "@types/node": "^22.13.10"
   },
   "scripts": {

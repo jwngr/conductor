@@ -135,3 +135,17 @@ export function isValidEmail(maybeEmail: unknown): maybeEmail is EmailAddress {
 export function isDate(value: unknown): value is Date {
   return value instanceof Date;
 }
+
+/**
+ * Returns a pluralized string, not including the count.
+ */
+export function pluralize(count: number, singular: string, plural: string): string {
+  return count === 1 ? singular : plural;
+}
+
+/**
+ * Returns a pluralized string, including the count.
+ */
+export function pluralizeWithCount(count: number, singular: string, plural: string): string {
+  return `${formatWithCommas(count)} ${pluralize(count, singular, plural)}`;
+}
