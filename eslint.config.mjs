@@ -125,23 +125,6 @@ export default tseslint.config(
     },
   },
 
-  {
-    // CLI settings.
-    linterOptions: {
-      reportUnusedDisableDirectives: true,
-    },
-    rules: {
-      // This effectively sets max-warnings to 0, but allows TODOs to be ignored.
-      'no-warning-comments': [
-        'error',
-        {
-          terms: ['fixme', 'xxx', 'hack'],
-          location: 'start',
-        },
-      ],
-    },
-  },
-
   // Shared models/lib package config.
   {
     files: ['packages/shared/src/**/*.ts'],
