@@ -37,12 +37,14 @@ import {
   toStorageUserFeedSubscription,
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
-import {FeedItemId, makeFeedItemRSSSource} from '@shared/types/feedItems.types';
-import {ImportQueueItem, ImportQueueItemStatus} from '@shared/types/importQueue.types';
-import {AsyncResult, ErrorResult, SuccessResult} from '@shared/types/result.types';
+import type {FeedItemId} from '@shared/types/feedItems.types';
+import {makeFeedItemRSSSource} from '@shared/types/feedItems.types';
+import type {ImportQueueItem} from '@shared/types/importQueue.types';
+import {ImportQueueItemStatus} from '@shared/types/importQueue.types';
+import type {AsyncResult, ErrorResult, SuccessResult} from '@shared/types/result.types';
 import {parseSuperfeedrWebhookRequestBody} from '@shared/types/superfeedr.types';
-import {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
-import {Supplier} from '@shared/types/utils.types';
+import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
+import type {Supplier} from '@shared/types/utils.types';
 
 import {ServerAccountsService} from '@sharedServer/services/accounts.server';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
@@ -220,7 +222,7 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
       accountId: importQueueItem.accountId,
     } as const;
 
-    const handleError = async (errorPrefix: string, error: Error) => {
+    const handleError = async (errorPrefix: string, error: Error): Promise<void> => {
       logger.error(prefixError(error, errorPrefix), logDetails);
       await importQueueService.updateImportQueueItem(importQueueItemId, {
         status: ImportQueueItemStatus.Failed,
@@ -294,14 +296,17 @@ export const subscribeAccountToFeedOnCall = onCall(
   {cors: true},
   async (request): Promise<{readonly userFeedSubscriptionId: UserFeedSubscriptionId}> => {
     if (!request.auth) {
+      // eslint-disable-next-line no-restricted-syntax
       throw new HttpsError('unauthenticated', 'Must be authenticated');
     } else if (!request.data.url) {
       // TODO: Use zod to validate the request data.
+      // eslint-disable-next-line no-restricted-syntax
       throw new HttpsError('invalid-argument', 'URL is required');
     }
 
     const accountIdResult = parseAccountId(request.auth.uid);
     if (!accountIdResult.success) {
+      // eslint-disable-next-line no-restricted-syntax
       throw new HttpsError('invalid-argument', 'Invalid account ID');
     }
     const accountId = accountIdResult.value;
@@ -321,6 +326,7 @@ export const subscribeAccountToFeedOnCall = onCall(
         ),
         logDetails
       );
+      // eslint-disable-next-line no-restricted-syntax
       throw new HttpsError('internal', subscribeToUrlResult.error.message);
     }
 
@@ -405,12 +411,12 @@ export const handleSuperfeedrWebhook = onRequest(
     const userFeedSubscriptions = fetchSubscriptionsResult.value;
 
     // Make a list of supplier methods that create feed items.
-    const createFeedItemResults: Supplier<AsyncResult<FeedItemId | null>>[] = [];
+    const createFeedItemResults: Array<Supplier<AsyncResult<FeedItemId | null>>> = [];
     body.items.forEach((item) => {
       logger.log(`[SUPERFEEDR] Processing item ${item.id}`, {item});
 
       userFeedSubscriptions.forEach((userFeedSubscription) => {
-        const newFeedItemResult = async () =>
+        const newFeedItemResult = async (): AsyncResult<FeedItemId | null> =>
           await feedItemsService.createFeedItem({
             url: item.permalinkUrl,
             accountId: userFeedSubscription.accountId,

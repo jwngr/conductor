@@ -261,7 +261,7 @@ export default tseslint.config(
 
   // Functions package config.
   {
-    files: ['packages/functions/**/*.{ts}'],
+    files: ['packages/functions/**/*.ts'],
     languageOptions: SHARED_LANGUAGE_OPTIONS,
     rules: makeSharedRules({
       disallowFirebaseClientImports: true,
