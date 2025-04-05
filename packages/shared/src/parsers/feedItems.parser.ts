@@ -1,4 +1,4 @@
-import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
 
@@ -109,7 +109,7 @@ function parseRssFeedItemSource(feedItemSource: unknown): Result<FeedItemRSSSour
 export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
   const parsedFeedItemResult = parseZodResult(FeedItemFromStorageSchema, maybeFeedItem);
   if (!parsedFeedItemResult.success) {
-    return prefixResultIfError(parsedFeedItemResult, 'Invalid feed item');
+    return prefixErrorResult(parsedFeedItemResult, 'Invalid feed item');
   }
 
   const parsedIdResult = parseFeedItemId(parsedFeedItemResult.value.feedItemId);

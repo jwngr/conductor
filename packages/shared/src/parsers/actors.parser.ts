@@ -1,6 +1,6 @@
 import {logger} from '@shared/services/logger.shared';
 
-import {prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 
@@ -18,7 +18,7 @@ export function parseActor(actor: unknown): Result<Actor> {
     case ActorType.User: {
       const accountIdResult = parseAccountId(result.data.accountId);
       if (!accountIdResult.success) {
-        return prefixResultIfError(accountIdResult, 'Failed to parse user actor account ID');
+        return prefixErrorResult(accountIdResult, 'Failed to parse user actor account ID');
       }
       return makeSuccessResult(makeUserActor(accountIdResult.value));
     }

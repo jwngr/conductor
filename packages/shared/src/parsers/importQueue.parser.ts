@@ -1,4 +1,4 @@
-import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
@@ -38,7 +38,7 @@ export function parseImportQueueItem(maybeImportQueueItem: unknown): Result<Impo
     maybeImportQueueItem
   );
   if (!parsedImportQueueItemResult.success) {
-    return prefixResultIfError(parsedImportQueueItemResult, 'Invalid import queue item');
+    return prefixErrorResult(parsedImportQueueItemResult, 'Invalid import queue item');
   }
 
   const parsedImportQueueItemIdResult = parseImportQueueItemId(
