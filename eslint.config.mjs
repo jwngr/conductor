@@ -42,10 +42,10 @@ const NO_SHARED_SERVER_IMPORT_PATTERN = {
 };
 
 function makeSharedRules({
-  disallowFirebaseAdminImports = false,
-  disallowFirebaseClientImports = false,
-  disallowSharedClientImports = false,
-  disallowSharedServerImports = false,
+  disallowFirebaseAdminImports,
+  disallowFirebaseClientImports,
+  disallowSharedClientImports,
+  disallowSharedServerImports,
 }) {
   return {
     'no-console': 'error',
@@ -148,8 +148,7 @@ export default tseslint.config(
     languageOptions: SHARED_LANGUAGE_OPTIONS,
     rules: makeSharedRules({
       disallowFirebaseAdminImports: true,
-      // TODO: This should really be turned - we shouldn't assume the client library is available.
-      // disallowFirebaseClientImports: true,
+      disallowFirebaseClientImports: true,
       disallowSharedClientImports: true,
       disallowSharedServerImports: true,
     }),
@@ -186,6 +185,8 @@ export default tseslint.config(
       ...makeSharedRules({
         disallowFirebaseAdminImports: true,
         disallowSharedServerImports: true,
+        disallowFirebaseClientImports: false,
+        disallowSharedClientImports: false,
       }),
     },
   },
@@ -198,6 +199,8 @@ export default tseslint.config(
     rules: makeSharedRules({
       disallowFirebaseClientImports: true,
       disallowSharedClientImports: true,
+      disallowFirebaseAdminImports: false,
+      disallowSharedServerImports: false,
     }),
   },
 
@@ -216,6 +219,8 @@ export default tseslint.config(
       ...makeSharedRules({
         disallowFirebaseAdminImports: true,
         disallowSharedServerImports: true,
+        disallowFirebaseClientImports: false,
+        disallowSharedClientImports: false,
       }),
     },
   },
@@ -228,9 +233,9 @@ export default tseslint.config(
       ...makeSharedRules({
         disallowFirebaseClientImports: true,
         disallowSharedClientImports: true,
+        disallowFirebaseAdminImports: false,
+        disallowSharedServerImports: false,
       }),
-      // TODO: Remove this after getting @src imports working in /scripts.
-      'no-restricted-imports': 'off',
     },
   },
 
@@ -249,6 +254,8 @@ export default tseslint.config(
       ...makeSharedRules({
         disallowFirebaseAdminImports: true,
         disallowSharedServerImports: true,
+        disallowFirebaseClientImports: false,
+        disallowSharedClientImports: false,
       }),
     },
   },
@@ -260,6 +267,8 @@ export default tseslint.config(
     rules: makeSharedRules({
       disallowFirebaseClientImports: true,
       disallowSharedClientImports: true,
+      disallowFirebaseAdminImports: false,
+      disallowSharedServerImports: false,
     }),
   }
 );
