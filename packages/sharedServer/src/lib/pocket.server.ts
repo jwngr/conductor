@@ -8,7 +8,6 @@ import type {PocketImportItem} from '@shared/types/pocket.types';
 import {makeSuccessResult} from '@shared/types/result.types';
 import type {AsyncResult, Result} from '@shared/types/result.types';
 
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class ServerPocketService {
   static async parseExportFromFile(path: string): AsyncResult<readonly PocketImportItem[]> {
     const readFileResult = await asyncTry(async () => readFile(path, 'utf-8'));

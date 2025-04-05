@@ -18,7 +18,7 @@ import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import {SystemTagId} from '@shared/types/tags.types';
 
 import {storage} from '@sharedServer/services/firebase.server';
-import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
+import type {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
 interface UpdateImportedFeedItemInFirestoreArgs {
   readonly links: string[] | null;

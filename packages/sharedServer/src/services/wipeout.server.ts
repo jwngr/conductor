@@ -66,7 +66,7 @@ export class WipeoutService {
         {activeUserFeedSubscriptionIds, ...logDetails}
       );
 
-      const unsubscribeFromFeedSuppliers: Supplier<AsyncResult<void>>[] =
+      const unsubscribeFromFeedSuppliers: Array<Supplier<AsyncResult<void>>> =
         activeUserFeedSubscriptionIds.map((userFeedSubscriptionId) => async () => {
           logger.log(
             `[WIPEOUT] Unsubscribing account ${accountId} from feed subscription ${userFeedSubscriptionId}...`,

@@ -12,9 +12,8 @@ import {makeFeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
 
-import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
-
-import {serverTimestampSupplier} from './firebase.server';
+import {serverTimestampSupplier} from '@sharedServer/services/firebase.server';
+import type {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
 type FeedSourceCollectionService = ServerFirestoreCollectionService<
   FeedSourceId,

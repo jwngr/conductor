@@ -14,13 +14,15 @@ export class ServerFirecrawlService {
    * 1. Markdown-formatted content for LLM prompt consumption (store in Cloud Storage).
    * 2. Outgoing links referenced by the content (stored in Firestore).
    */
-  public async fetch(url: string): AsyncResult<ParsedFirecrawlData> {
+  public async fetchUrl(url: string): AsyncResult<ParsedFirecrawlData> {
     const rawFirecrawlResult = await asyncTry(async () => {
       const firecrawlScrapeUrlResult = await this.firecrawlApp.scrapeUrl(url, {
         formats: ['markdown', 'links'],
         waitFor: 1000,
       });
       if (!firecrawlScrapeUrlResult.success) {
+        // Allow throwing here since we are inside `asyncTry`.
+        // eslint-disable-next-line no-restricted-syntax
         throw new Error(firecrawlScrapeUrlResult.error);
       }
       return firecrawlScrapeUrlResult as RawFirecrawlResponse;

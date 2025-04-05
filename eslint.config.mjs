@@ -20,13 +20,13 @@ const NO_RELATIVE_IMPORTS_PATTERN = {
 };
 
 const NO_FIREBASE_ADMIN_IMPORT_PATTERN = {
-  group: ['firebase-admin', 'firebase-admin/*'],
+  group: ['^firebase-admin$', '^firebase-admin/.*'],
   message:
     'Importing from the `firebase-admin` library is not allowed in this package. Use the `firebase` client-side library instead.',
 };
 
 const NO_FIREBASE_CLIENT_IMPORT_PATTERN = {
-  group: ['firebase', 'firebase/*'],
+  group: ['^firebase$', '^firebase/.*'],
   message:
     'Importing from the client-side `firebase` library is not allowed in this package. Use the `firebase-admin` library instead.',
 };
@@ -192,9 +192,8 @@ export default tseslint.config(
   },
 
   // Shared server package config.
-  // TODO: Figure out why this is not causing lint errors for `type` imports.
   {
-    files: ['packages/sharedServer/**/*.{ts}'],
+    files: ['packages/sharedServer/**/*.ts'],
     languageOptions: SHARED_LANGUAGE_OPTIONS,
     rules: makeSharedRules({
       disallowFirebaseClientImports: true,
