@@ -17,7 +17,6 @@ import {
   USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
 } from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
-import {batchAsyncResults, partition} from '@shared/lib/utils.shared';
 
 import {parseAccount, parseAccountId, toStorageAccount} from '@shared/parsers/accounts.parser';
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
@@ -37,14 +36,7 @@ import {
   toStorageUserFeedSubscription,
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
-import type {FeedItemId} from '@shared/types/feedItems.types';
-import {makeFeedItemRSSSource} from '@shared/types/feedItems.types';
-import type {ImportQueueItem} from '@shared/types/importQueue.types';
-import {ImportQueueItemStatus} from '@shared/types/importQueue.types';
-import type {AsyncResult, ErrorResult, SuccessResult} from '@shared/types/result.types';
-import {parseSuperfeedrWebhookRequestBody} from '@shared/types/superfeedr.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
-import type {Supplier} from '@shared/types/utils.types';
 
 import {ServerAccountsService} from '@sharedServer/services/accounts.server';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
@@ -60,6 +52,9 @@ import {SuperfeedrService} from '@sharedServer/services/superfeedr.server';
 import {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
 import {WipeoutService} from '@sharedServer/services/wipeout.server';
 
+import {processImportQueueItem} from '@src/lib/importQueueProcessor';
+import {handleSuperfeedrWebhookHelper} from '@src/lib/superfeedrWebhook';
+
 const FIRECRAWL_API_KEY = defineString('FIRECRAWL_API_KEY');
 const SUPERFEEDR_USER = defineString('SUPERFEEDR_USER');
 const SUPERFEEDR_API_KEY = defineString('SUPERFEEDR_API_KEY');
@@ -73,6 +68,9 @@ let importQueueService: ServerImportQueueService;
 let wipeoutService: WipeoutService;
 let rssFeedService: ServerRssFeedService;
 let feedItemsService: ServerFeedItemsService;
+let servicesInitialized = false;
+
+// Initialize services on startup
 onInit(() => {
   const firecrawlApp = new FirecrawlApp({apiKey: FIRECRAWL_API_KEY.value()});
 
@@ -160,6 +158,8 @@ onInit(() => {
     feedSourcesService,
     userFeedSubscriptionsService,
   });
+
+  servicesInitialized = true;
 });
 
 setGlobalOptions({
@@ -168,94 +168,51 @@ setGlobalOptions({
 });
 
 /**
+ * Handles webhook callbacks from Superfeedr when feed content is updated.
+ */
+export const handleSuperfeedrWebhook = onRequest(
+  // This webhook is server-to-server, so we don't need to worry about CORS.
+  {cors: false},
+  async (request, response) => {
+    if (!servicesInitialized) {
+      logger.error(
+        new Error('[SUPERFEEDR] Services not initialized before webhook handler was called')
+      );
+      response.status(500).json({
+        success: false,
+        error: 'Internal server error: Services not initialized',
+      });
+      return;
+    }
+
+    await handleSuperfeedrWebhookHelper({
+      request,
+      response,
+      feedSourcesService,
+      userFeedSubscriptionsService,
+      feedItemsService,
+    });
+  }
+);
+
+/**
  * Processes an import queue item when it is created.
  */
 export const processImportQueueOnDocumentCreated = onDocumentCreated(
   `/${IMPORT_QUEUE_DB_COLLECTION}/{importQueueItemId}`,
   async (event) => {
-    const {importQueueItemId: maybeImportQueueItemId} = event.params;
-
-    logger.log(`[IMPORT] Processing import queue item "${maybeImportQueueItemId}"`);
-
-    const parseIdResult = parseImportQueueItemId(maybeImportQueueItemId);
-    if (!parseIdResult.success) {
+    if (!servicesInitialized) {
       logger.error(
-        prefixError(parseIdResult.error, '[IMPORT] Invalid import queue item ID. Skipping...'),
-        {maybeImportQueueItemId}
-      );
-      return;
-    }
-    const importQueueItemId = parseIdResult.value;
-
-    const snapshot = event.data;
-    if (!snapshot) {
-      logger.error(new Error(`[IMPORT] No data associated with import queue item`), {
-        importQueueItemId,
-      });
-      return;
-    }
-
-    // const importQueueItemResult = parseImportQueueItem(snapshot.data());
-    // if (!importQueueItemResult.success) {
-    //   logger.error(
-    //     prefixError(importQueueItemResult.error, '[IMPORT] Invalid import queue item data'),
-    //     {importQueueItemId}
-    //   );
-    //   return;
-    // }
-    // const importQueueItem = importQueueItemResult.value;
-    // TODO: This cast is a lie and it is really a `ImportQueueItemFromSchema` since functions don't
-    // seem to auto-convert the data from the snapshot correctly.
-    const importQueueItem = snapshot.data() as ImportQueueItem;
-
-    // Avoid double processing by only processing items with a "new" status.
-    if (importQueueItem.status !== ImportQueueItemStatus.New) {
-      logger.warn(
-        `[IMPORT] Import queue item ${importQueueItemId} is not in the "new" status. Skipping...`
+        new Error('[IMPORT] Services not initialized before import queue processor was called')
       );
       return;
     }
 
-    const logDetails = {
-      importQueueItemId,
-      feedItemId: importQueueItem.feedItemId,
-      accountId: importQueueItem.accountId,
-    } as const;
-
-    const handleError = async (errorPrefix: string, error: Error): Promise<void> => {
-      logger.error(prefixError(error, errorPrefix), logDetails);
-      await importQueueService.updateImportQueueItem(importQueueItemId, {
-        status: ImportQueueItemStatus.Failed,
-      });
-    };
-
-    // Claim the item so that no other function picks it up.
-    logger.log(`[IMPORT] Claiming import queue item...`, logDetails);
-    const claimItemResult = await importQueueService.updateImportQueueItem(importQueueItemId, {
-      status: ImportQueueItemStatus.Processing,
+    await processImportQueueItem({
+      importQueueItemId: event.params.importQueueItemId,
+      data: event.data,
+      importQueueService,
     });
-    if (!claimItemResult.success) {
-      await handleError('Failed to claim import queue item', claimItemResult.error);
-      return;
-    }
-
-    // Actually import the feed item.
-    logger.log(`[IMPORT] Importing queue item...`, logDetails);
-    const importItemResult = await importQueueService.importFeedItem(importQueueItem);
-    if (!importItemResult.success) {
-      await handleError('Error importing queue item', importItemResult.error);
-      return;
-    }
-
-    // Remove the import queue item once everything else has processed successfully.
-    logger.log(`[IMPORT] Deleting import queue item...`, logDetails);
-    const deleteItemResult = await importQueueService.deleteImportQueueItem(importQueueItemId);
-    if (!deleteItemResult.success) {
-      await handleError('Error deleting import queue item', deleteItemResult.error);
-      return;
-    }
-
-    logger.log(`[IMPORT] Successfully processed import queue item`, logDetails);
   }
 );
 
@@ -341,118 +298,6 @@ export const subscribeAccountToFeedOnCall = onCall(
     return {
       userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     };
-  }
-);
-
-/**
- * Handles webhook callbacks from Superfeedr when feed content is updated.
- */
-export const handleSuperfeedrWebhook = onRequest(
-  // This webhook is server-to-server, so we don't need to worry about CORS.
-  {cors: false},
-
-  async (request, response) => {
-    const respondWithError = (
-      error: Error,
-      errorPrefix = '',
-      logDetails: Record<string, unknown> = {}
-    ): void => {
-      const betterError = prefixError(error, `[SUPERFEEDR] ${errorPrefix}`);
-      logger.error(betterError, {body: request.body, ...logDetails});
-      response.status(400).json({success: false, error: betterError.message});
-      return;
-    };
-
-    // TODO: Validate the request is from Superfeedr by checking some auth header.
-
-    logger.log('[SUPERFEEDR] Received webhook request', {body: JSON.stringify(request.body)});
-
-    // Parse the request from Superfeedr.
-    const parseResult = parseSuperfeedrWebhookRequestBody(request.body);
-    if (!parseResult.success) {
-      return respondWithError(parseResult.error, 'Error parsing webhook request');
-    }
-
-    const body = parseResult.value;
-    if (body.status.code !== 200) {
-      return respondWithError(new Error('Webhook callback returned non-200 status'));
-    }
-
-    // Fetch the feed source from the URL.
-    const feedUrl = body.status.feed;
-    const fetchFeedSourceResult = await feedSourcesService.fetchByUrl(feedUrl);
-    if (!fetchFeedSourceResult.success) {
-      return respondWithError(
-        fetchFeedSourceResult.error,
-        'Error fetching webhook feed source by URL',
-        {feedUrl}
-      );
-    }
-
-    const feedSource = fetchFeedSourceResult.value;
-    if (!feedSource) {
-      return respondWithError(new Error('No feed source found for URL. Skipping...'), undefined, {
-        feedUrl,
-      });
-    }
-
-    // Fetch all users subscribed to this feed source.
-    const fetchSubscriptionsResult = await userFeedSubscriptionsService.fetchForFeedSource(
-      feedSource.feedSourceId
-    );
-    if (!fetchSubscriptionsResult.success) {
-      return respondWithError(
-        fetchSubscriptionsResult.error,
-        'Error fetching subscribed accounts',
-        {feedSourceId: feedSource.feedSourceId}
-      );
-    }
-
-    const userFeedSubscriptions = fetchSubscriptionsResult.value;
-
-    // Make a list of supplier methods that create feed items.
-    const createFeedItemResults: Array<Supplier<AsyncResult<FeedItemId | null>>> = [];
-    body.items.forEach((item) => {
-      logger.log(`[SUPERFEEDR] Processing item ${item.id}`, {item});
-
-      userFeedSubscriptions.forEach((userFeedSubscription) => {
-        const newFeedItemResult = async (): AsyncResult<FeedItemId | null> =>
-          await feedItemsService.createFeedItem({
-            url: item.permalinkUrl,
-            accountId: userFeedSubscription.accountId,
-            feedItemSource: makeFeedItemRSSSource(userFeedSubscription.userFeedSubscriptionId),
-          });
-        createFeedItemResults.push(newFeedItemResult);
-      });
-    });
-
-    // Execute the supplier methods in batches.
-    const batchResult = await batchAsyncResults(createFeedItemResults, 10);
-    if (!batchResult.success) {
-      return respondWithError(batchResult.error, 'Error batching feed item creation');
-    }
-
-    // Log successes and errors.
-    const newFeedItemResults = batchResult.value;
-    const [newFeedItemSuccesses, newFeedItemErrors] = partition<
-      SuccessResult<FeedItemId | null>,
-      ErrorResult
-    >(newFeedItemResults, (result): result is SuccessResult<FeedItemId | null> => result.success);
-    logger.log(
-      `[SUPERFEEDR] Successfully created ${newFeedItemSuccesses.length} feed items, encountered ${newFeedItemErrors.length} errors`,
-      {
-        successes: newFeedItemSuccesses.map((result) => result.value),
-        errors: newFeedItemErrors.map((result) => result.error),
-      }
-    );
-
-    if (newFeedItemErrors.length !== 0) {
-      return respondWithError(new Error('Individual feed items failed to be created'), undefined, {
-        errors: newFeedItemErrors.map((result) => result.error),
-      });
-    }
-
-    response.status(200).json({success: true, value: undefined});
   }
 );
 
