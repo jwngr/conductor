@@ -20,13 +20,13 @@ const NO_RELATIVE_IMPORTS_PATTERN = {
 };
 
 const NO_FIREBASE_ADMIN_IMPORT_PATTERN = {
-  group: ['firebase-admin', 'firebase-admin/*'],
+  group: ['^firebase-admin$', '^firebase-admin/.*'],
   message:
     'Importing from the `firebase-admin` library is not allowed in this package. Use the `firebase` client-side library instead.',
 };
 
 const NO_FIREBASE_CLIENT_IMPORT_PATTERN = {
-  group: ['firebase', 'firebase/*'],
+  group: ['^firebase$', '^firebase/.*'],
   message:
     'Importing from the client-side `firebase` library is not allowed in this package. Use the `firebase-admin` library instead.',
 };
@@ -42,10 +42,10 @@ const NO_SHARED_SERVER_IMPORT_PATTERN = {
 };
 
 function makeSharedRules({
-  disallowFirebaseAdminImports = false,
-  disallowFirebaseClientImports = false,
-  disallowSharedClientImports = false,
-  disallowSharedServerImports = false,
+  disallowFirebaseAdminImports,
+  disallowFirebaseClientImports,
+  disallowSharedClientImports,
+  disallowSharedServerImports,
 }) {
   return {
     'no-console': 'error',
@@ -125,31 +125,13 @@ export default tseslint.config(
     },
   },
 
-  {
-    // CLI settings.
-    linterOptions: {
-      reportUnusedDisableDirectives: true,
-    },
-    rules: {
-      // This effectively sets max-warnings to 0, but allows TODOs to be ignored.
-      'no-warning-comments': [
-        'error',
-        {
-          terms: ['fixme', 'xxx', 'hack'],
-          location: 'start',
-        },
-      ],
-    },
-  },
-
   // Shared models/lib package config.
   {
     files: ['packages/shared/src/**/*.ts'],
     languageOptions: SHARED_LANGUAGE_OPTIONS,
     rules: makeSharedRules({
       disallowFirebaseAdminImports: true,
-      // TODO: This should really be turned - we shouldn't assume the client library is available.
-      // disallowFirebaseClientImports: true,
+      disallowFirebaseClientImports: true,
       disallowSharedClientImports: true,
       disallowSharedServerImports: true,
     }),
@@ -186,18 +168,21 @@ export default tseslint.config(
       ...makeSharedRules({
         disallowFirebaseAdminImports: true,
         disallowSharedServerImports: true,
+        disallowFirebaseClientImports: false,
+        disallowSharedClientImports: false,
       }),
     },
   },
 
   // Shared server package config.
-  // TODO: Figure out why this is not causing lint errors for `type` imports.
   {
-    files: ['packages/sharedServer/**/*.{ts}'],
+    files: ['packages/sharedServer/**/*.ts'],
     languageOptions: SHARED_LANGUAGE_OPTIONS,
     rules: makeSharedRules({
       disallowFirebaseClientImports: true,
       disallowSharedClientImports: true,
+      disallowFirebaseAdminImports: false,
+      disallowSharedServerImports: false,
     }),
   },
 
@@ -216,6 +201,8 @@ export default tseslint.config(
       ...makeSharedRules({
         disallowFirebaseAdminImports: true,
         disallowSharedServerImports: true,
+        disallowFirebaseClientImports: false,
+        disallowSharedClientImports: false,
       }),
     },
   },
@@ -228,9 +215,9 @@ export default tseslint.config(
       ...makeSharedRules({
         disallowFirebaseClientImports: true,
         disallowSharedClientImports: true,
+        disallowFirebaseAdminImports: false,
+        disallowSharedServerImports: false,
       }),
-      // TODO: Remove this after getting @src imports working in /scripts.
-      'no-restricted-imports': 'off',
     },
   },
 
@@ -249,17 +236,21 @@ export default tseslint.config(
       ...makeSharedRules({
         disallowFirebaseAdminImports: true,
         disallowSharedServerImports: true,
+        disallowFirebaseClientImports: false,
+        disallowSharedClientImports: false,
       }),
     },
   },
 
   // Functions package config.
   {
-    files: ['packages/functions/**/*.{ts}'],
+    files: ['packages/functions/**/*.ts'],
     languageOptions: SHARED_LANGUAGE_OPTIONS,
     rules: makeSharedRules({
       disallowFirebaseClientImports: true,
       disallowSharedClientImports: true,
+      disallowFirebaseAdminImports: false,
+      disallowSharedServerImports: false,
     }),
   }
 );

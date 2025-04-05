@@ -11,23 +11,22 @@ import {requestGet} from '@shared/lib/requests.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {FeedItemId} from '@shared/types/feedItems.types';
-import {
+import type {
   ImportQueueItem,
   ImportQueueItemFromStorage,
   ImportQueueItemId,
-  makeImportQueueItem,
 } from '@shared/types/importQueue.types';
+import {makeImportQueueItem} from '@shared/types/importQueue.types';
 import type {AsyncResult, Result} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 
-import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
-import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
-import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
+import {eventLogService} from '@sharedServer/services/eventLog.server';
+import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
+import {serverTimestampSupplier} from '@sharedServer/services/firebase.server';
+import type {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
+import type {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
 import {generateHierarchicalSummary} from '@sharedServer/lib/summarization.server';
-
-import {eventLogService} from './eventLog.server';
-import {serverTimestampSupplier} from './firebase.server';
 
 function validateFeedItemUrl(url: string): Result<void> {
   // Parse the URL to validate its structure.
@@ -112,7 +111,7 @@ export class ServerImportQueueService {
    */
   async importFeedItem(importQueueItem: ImportQueueItem): AsyncResult<void> {
     const url = importQueueItem.url;
-    const isSafeUrlResult = await validateFeedItemUrl(url);
+    const isSafeUrlResult = validateFeedItemUrl(url);
     if (!isSafeUrlResult.success) {
       return prefixErrorResult(isSafeUrlResult, 'Error validating feed item URL');
     }
@@ -189,7 +188,7 @@ export class ServerImportQueueService {
   }): AsyncResult<void> {
     const {url, feedItemId, accountId} = args;
 
-    const fetchDataResult = await this.firecrawlService.fetch(url);
+    const fetchDataResult = await this.firecrawlService.fetchUrl(url);
 
     if (!fetchDataResult.success) {
       return prefixErrorResult(fetchDataResult, 'Error fetching Firecrawl data for feed item');

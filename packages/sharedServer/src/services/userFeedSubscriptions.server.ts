@@ -13,9 +13,8 @@ import type {
 } from '@shared/types/userFeedSubscriptions.types';
 import {makeUserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
-import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
-
-import {serverTimestampSupplier} from './firebase.server';
+import {serverTimestampSupplier} from '@sharedServer/services/firebase.server';
+import type {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
 type UserFeedSubscriptionsCollectionService = ServerFirestoreCollectionService<
   UserFeedSubscriptionId,
