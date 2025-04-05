@@ -5,12 +5,12 @@
   "type": "module",
   "dependencies": {
     "@conductor/shared": "workspace:*",
-    "firebase": "^11.5.0",
-    "react": "^19.0.0",
+    "firebase": "^11.6.0",
+    "react": "^19.1.0",
     "zustand": "^5.0.3"
   },
   "devDependencies": {
-    "@types/react": "^19.0.12"
+    "@types/react": "^19.1.0"
   },
   "scripts": {
     "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",

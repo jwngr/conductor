@@ -8,7 +8,7 @@
     "@conductor/shared-server": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^22.13.10"
+    "@types/node": "^22.14.0"
   },
   "scripts": {
     "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",
