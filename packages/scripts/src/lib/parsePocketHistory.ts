@@ -4,10 +4,24 @@ import {fileURLToPath} from 'url';
 
 import {logger} from '@shared/services/logger.shared';
 
+import {
+  FEED_ITEMS_DB_COLLECTION,
+  FEED_ITEMS_STORAGE_COLLECTION,
+} from '@shared/lib/constants.shared';
 import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
 import {pluralizeWithCount} from '@shared/lib/utils.shared';
 
+import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
+
+import type {AccountId} from '@shared/types/accounts.types';
+import {FEED_ITEM_POCKET_EXPORT_SOURCE} from '@shared/types/feedItems.types';
 import type {PocketImportItem} from '@shared/types/pocket.types';
+
+import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
+import {
+  makeFirestoreDataConverter,
+  ServerFirestoreCollectionService,
+} from '@sharedServer/services/firestore.server';
 
 import {ServerPocketService} from '@sharedServer/lib/pocket.server';
 
@@ -20,6 +34,19 @@ const POCKET_EXPORT_FILE_PATH = path.resolve(__dirname, '../resources/pocketExpo
 const OUTPUT_FILE_PATH = path.resolve(__dirname, '../resources/pocketHistory.tsv');
 
 async function main(): Promise<void> {
+  const feedItemFirestoreConverter = makeFirestoreDataConverter(toStorageFeedItem, parseFeedItem);
+
+  const feedItemsCollectionService = new ServerFirestoreCollectionService({
+    collectionPath: FEED_ITEMS_DB_COLLECTION,
+    converter: feedItemFirestoreConverter,
+    parseId: parseFeedItemId,
+  });
+
+  const feedItemsService = new ServerFeedItemsService({
+    feedItemsCollectionService,
+    storageCollectionPath: FEED_ITEMS_STORAGE_COLLECTION,
+  });
+
   const pocketItemsResult = await ServerPocketService.parseExportFromFile(POCKET_EXPORT_FILE_PATH);
 
   if (!pocketItemsResult.success) {
@@ -32,11 +59,39 @@ async function main(): Promise<void> {
 
   const pocketItems = pocketItemsResult.value;
 
+  const janFirst2024 = new Date('2024-01-01');
+  const janThird2024 = new Date('2024-01-10');
+  for (const pocketItem of pocketItems) {
+    // Exclude items outside desired date range.
+    if (
+      pocketItem.timeAddedMs < janFirst2024.getTime() ||
+      pocketItem.timeAddedMs > janThird2024.getTime()
+    ) {
+      continue;
+    }
+
+    console.log(pocketItem.title, pocketItem.url, new Date(pocketItem.timeAddedMs).toISOString());
+
+    const createFeedItemResult = await feedItemsService.createFeedItem({
+      // TODO: Stop using hard-coded account ID.
+      accountId: 'iwyEQZp8yyf7bmnBLSUateGfXU32' as AccountId,
+      url: pocketItem.url,
+      feedItemSource: FEED_ITEM_POCKET_EXPORT_SOURCE,
+    });
+
+    if (!createFeedItemResult.success) {
+      logger.error(prefixError(createFeedItemResult.error, 'Error creating feed item'));
+      process.exit(1);
+    }
+  }
+
   const tsvFields = pocketItems
     .map((item: PocketImportItem) =>
-      [escapeFieldForTsv(item.href), escapeFieldForTsv(item.title), item.timeAdded.toString()].join(
-        '\t'
-      )
+      [
+        escapeFieldForTsv(item.url),
+        escapeFieldForTsv(item.title),
+        item.timeAddedMs.toString(),
+      ].join('\t')
     )
     .join('\n');
 

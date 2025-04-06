@@ -1,4 +1,4 @@
-import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
+import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
 
@@ -11,6 +11,7 @@ import type {
   FeedItemExtensionSource,
   FeedItemFromStorage,
   FeedItemId,
+  FeedItemPocketExportSource,
   FeedItemRSSSource,
   FeedItemSource,
   FeedItemSourceFromStorage,
@@ -21,6 +22,7 @@ import {
   FeedItemFromStorageSchema,
   FeedItemIdSchema,
   FeedItemSourceType,
+  PocketExportFeedItemSourceSchema,
   RssFeedItemSourceSchema,
 } from '@shared/types/feedItems.types';
 import type {Result} from '@shared/types/result.types';
@@ -53,6 +55,8 @@ function parseFeedItemSource(feedItemSource: FeedItemSourceFromStorage): Result<
       return parseExtensionFeedItemSource(feedItemSource);
     case FeedItemSourceType.RSS:
       return parseRssFeedItemSource(feedItemSource);
+    case FeedItemSourceType.PocketExport:
+      return parsePocketExportFeedItemSource(feedItemSource);
     default:
       return makeErrorResult(new Error(`Unknown feed item source type: ${sourceType}`));
   }
@@ -100,6 +104,17 @@ function parseRssFeedItemSource(feedItemSource: unknown): Result<FeedItemRSSSour
     type: FeedItemSourceType.RSS,
     userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
   });
+}
+
+/**
+ * Parses a {@link FeedItemPocketExportSource} from an unknown value. Returns an `ErrorResult` if
+ * the value is not valid.
+ */
+function parsePocketExportFeedItemSource(
+  feedItemSource: unknown
+): Result<FeedItemPocketExportSource> {
+  const parsedResult = parseZodResult(PocketExportFeedItemSourceSchema, feedItemSource);
+  return prefixResultIfError(parsedResult, 'Invalid pocket export feed item source');
 }
 
 /**

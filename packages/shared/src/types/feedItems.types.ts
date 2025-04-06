@@ -45,6 +45,8 @@ export enum FeedItemSourceType {
   Extension = 'EXTENSION',
   /** Feed item was added from an RSS feed subscription. */
   RSS = 'RSS',
+  /** Feed item was imported from a Pocket export. */
+  PocketExport = 'POCKET_EXPORT',
 }
 
 export enum TriageStatus {
@@ -67,10 +69,15 @@ export const RssFeedItemSourceSchema = z.object({
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
 });
 
+export const PocketExportFeedItemSourceSchema = z.object({
+  type: z.literal(FeedItemSourceType.PocketExport),
+});
+
 export const FeedItemSourceFromStorageSchema = z.discriminatedUnion('type', [
   AppFeedItemSourceSchema,
   ExtensionFeedItemSourceSchema,
   RssFeedItemSourceSchema,
+  PocketExportFeedItemSourceSchema,
 ]);
 
 export type FeedItemSourceFromStorage = z.infer<typeof FeedItemSourceFromStorageSchema>;
@@ -110,7 +117,19 @@ export function makeFeedItemRSSSource(
   };
 }
 
-export type FeedItemSource = FeedItemAppSource | FeedItemExtensionSource | FeedItemRSSSource;
+export interface FeedItemPocketExportSource extends BaseFeedItemSource {
+  readonly type: FeedItemSourceType.PocketExport;
+}
+
+export const FEED_ITEM_POCKET_EXPORT_SOURCE: FeedItemPocketExportSource = {
+  type: FeedItemSourceType.PocketExport,
+};
+
+export type FeedItemSource =
+  | FeedItemAppSource
+  | FeedItemExtensionSource
+  | FeedItemRSSSource
+  | FeedItemPocketExportSource;
 
 interface BaseFeedItem extends BaseStoreItem {
   readonly feedItemId: FeedItemId;
