@@ -1,5 +1,5 @@
 import FirecrawlApp from '@mendable/firecrawl-js';
-import {setGlobalOptions} from 'firebase-functions';
+import {logger, setGlobalOptions} from 'firebase-functions';
 import {defineString, projectID} from 'firebase-functions/params';
 import {auth} from 'firebase-functions/v1';
 import {onInit} from 'firebase-functions/v2/core';
@@ -14,6 +14,7 @@ import {
   IMPORT_QUEUE_DB_COLLECTION,
   USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
 } from '@shared/lib/constants.shared';
+import {prefixError} from '@shared/lib/errorUtils.shared';
 
 import {parseAccount, parseAccountId, toStorageAccount} from '@shared/parsers/accounts.parser';
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
@@ -200,10 +201,20 @@ export const processImportQueueOnDocumentCreated = onDocumentCreated(
  * Permanently deletes all data associated with an account when their Firebase auth user is deleted.
  */
 export const wipeoutAccountOnAuthDelete = auth.user().onDelete(async (firebaseUser) => {
-  await wipeoutAccountHelper({
-    firebaseUid: firebaseUser.uid,
-    wipeoutService,
-  });
+  const firebaseUid = firebaseUser.uid;
+  const logDetails = {firebaseUid} as const;
+
+  logger.log(`[WIPEOUT] Firebase user deleted. Processing account wipeout...`, logDetails);
+
+  const wipeoutResult = await wipeoutAccountHelper({firebaseUid, wipeoutService});
+
+  if (!wipeoutResult.success) {
+    const betterError = prefixError(wipeoutResult.error, '[WIPEOUT] Failed to wipe out account');
+    logger.error(betterError, logDetails);
+    return;
+  }
+
+  logger.log(`[WIPEOUT] Successfully wiped out account`, logDetails);
 });
 
 /**
@@ -244,11 +255,25 @@ export const createImportQueueItemOnFeedItemCreated = onDocumentCreated(
 export const handleFeedUnsubscribeOnUpdate = onDocumentUpdated(
   `${USER_FEED_SUBSCRIPTIONS_DB_COLLECTION}/{userFeedSubscriptionId}`,
   async (event) => {
-    await handleFeedUnsubscribeHelper({
-      userFeedSubscriptionId: event.params.userFeedSubscriptionId,
-      beforeData: event.data?.before.data(),
-      afterData: event.data?.after.data(),
+    const userFeedSubscriptionId = event.params.userFeedSubscriptionId;
+
+    const beforeData = event.data?.before.data();
+    const afterData = event.data?.after.data();
+
+    const logDetails = {userFeedSubscriptionId, beforeData, afterData} as const;
+
+    const result = await handleFeedUnsubscribeHelper({
+      beforeData,
+      afterData,
       rssFeedService,
     });
+
+    if (!result.success) {
+      const betterError = prefixError(result.error, '[UNSUBSCRIBE] Error unsubscribing account');
+      logger.error(betterError, logDetails);
+      return;
+    }
+
+    logger.log('[UNSUBSCRIBE] Successfully unsubscribed account from Superfeedr feed', logDetails);
   }
 );

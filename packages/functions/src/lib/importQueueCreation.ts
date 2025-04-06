@@ -50,7 +50,7 @@ export async function createImportQueueItemHelper(args: {
     return;
   }
 
-  logger.warn('Successfully created import queue item', {
+  logger.log('Successfully created import queue item', {
     feedItemId: feedItem.feedItemId,
     importQueueItemId: createImportQueueItemResult.value.importQueueItemId,
   });
