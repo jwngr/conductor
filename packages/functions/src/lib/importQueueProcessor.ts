@@ -18,6 +18,7 @@ export async function processImportQueueItem(args: {
   readonly importQueueItemId: string;
   readonly data?: DocumentSnapshot | null;
   readonly importQueueService: ServerImportQueueService;
+  // TODO: Use AsyncResult here.
 }): Promise<void> {
   const {importQueueItemId: maybeImportQueueItemId, data, importQueueService} = args;
 
