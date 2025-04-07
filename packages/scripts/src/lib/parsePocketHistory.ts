@@ -2,6 +2,9 @@ import fs from 'fs/promises';
 import path from 'path';
 import {fileURLToPath} from 'url';
 
+import FirecrawlApp from '@mendable/firecrawl-js';
+import dotenv from 'dotenv';
+
 import {logger} from '@shared/services/logger.shared';
 
 import {
@@ -29,6 +32,20 @@ import {ServerPocketService} from '@sharedServer/lib/pocket.server';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Load environment variables from packages/scripts/.env file
+const envResult = dotenv.config({path: path.resolve(__dirname, '../../.env')});
+if (envResult.error) {
+  logger.log(`Error loading .env file: ${envResult.error.message}`);
+  process.exit(1);
+}
+
+// Load Firecrawl API key from environment variable.
+const firecrawlApiKey = process.env.FIRECRAWL_API_KEY;
+if (!firecrawlApiKey) {
+  logger.error(new Error('FIRECRAWL_API_KEY environment variable is not defined'));
+  process.exit(1);
+}
+
 // Download file from https://getpocket.com/export.
 const POCKET_EXPORT_FILE_PATH = path.resolve(__dirname, '../resources/pocketExport.html');
 
@@ -43,9 +60,8 @@ async function main(): Promise<void> {
     parseId: parseFeedItemId,
   });
 
-  const firecrawlService = new ServerFirecrawlService({
-    apiKey: process.env.FIRECRAWL_API_KEY,
-  });
+  const firecrawlApp = new FirecrawlApp({apiKey: firecrawlApiKey});
+  const firecrawlService = new ServerFirecrawlService(firecrawlApp);
 
   const feedItemsService = new ServerFeedItemsService({
     feedItemsCollectionService,

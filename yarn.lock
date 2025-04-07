@@ -495,7 +495,9 @@ __metadata:
   dependencies:
     "@conductor/shared": "workspace:*"
     "@conductor/shared-server": "workspace:*"
+    "@mendable/firecrawl-js": "npm:^1.22.0"
     "@types/node": "npm:^22.14.0"
+    dotenv: "npm:^16.4.7"
   languageName: unknown
   linkType: soft
 
@@ -6154,6 +6156,13 @@ __metadata:
   dependencies:
     is-obj: "npm:^2.0.0"
   checksum: 10c0/30e51ec6408978a6951b21e7bc4938aad01a86f2fdf779efe52330205c6bb8a8ea12f35925c2029d6dc9d1df22f916f32f828ce1e9b259b1371c580541c22b5a
+  languageName: node
+  linkType: hard
+
+"dotenv@npm:^16.4.7":
+  version: 16.4.7
+  resolution: "dotenv@npm:16.4.7"
+  checksum: 10c0/be9f597e36a8daf834452daa1f4cc30e5375a5968f98f46d89b16b983c567398a330580c88395069a77473943c06b877d1ca25b4afafcdd6d4adb549e8293462
   languageName: node
   linkType: hard
 

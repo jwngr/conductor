@@ -35,10 +35,10 @@ export function getSystemThemeFromWindow(): BrowserPrefersColorScheme {
 
 export function getThemePreferenceFromLocalStorage(): ThemePreference | null {
   const stored = localStorage.getItem(THEME_PREFERENCE_STORAGE_KEY);
-  const trimmed = stored?.trim();
-  if (!trimmed) return null;
+  const trimmedAndLowerCased = stored?.trim().toLowerCase();
+  if (!trimmedAndLowerCased) return null;
 
-  switch (trimmed) {
+  switch (trimmedAndLowerCased) {
     case 'system':
       return ThemePreference.System;
     case 'light':
