@@ -1,11 +1,8 @@
 import type React from 'react';
 
-import {logger} from '@shared/services/logger.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 
-import {prefixError} from '@shared/lib/errorUtils.shared';
-import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
-
-import type {FeedItem} from '@shared/types/feedItems.types';
+import {FeedItemImportStatus, type FeedItem} from '@shared/types/feedItems.types';
 
 import {useFeedItemMarkdown} from '@sharedClient/services/feedItems.client';
 
@@ -13,22 +10,47 @@ import {Text} from '@src/components/atoms/Text';
 import {Markdown} from '@src/components/Markdown';
 
 export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
-  const isFeedItemImported = !SharedFeedItemHelpers.isImporting(feedItem);
-  const {markdown, isLoading, error} = useFeedItemMarkdown(feedItem.feedItemId, isFeedItemImported);
+  const markdownState = useFeedItemMarkdown(
+    feedItem.feedItemId,
+    feedItem.importState.status === FeedItemImportStatus.Completed
+  );
 
-  if (error) {
-    logger.error(prefixError(error, 'Error fetching markdown for feed item'), {
-      feedItemId: feedItem.feedItemId,
-    });
-    // TODO: Introduce proper error screen.
-    return <Text as="p">Something went wrong: {error.message}</Text>;
-  } else if (!isFeedItemImported) {
-    return <Text as="p">Importing...</Text>;
-  } else if (isLoading) {
-    return <Text as="p">Loading markdown...</Text>;
-  } else if (markdown) {
-    return <Markdown content={markdown} />;
-  } else {
-    return <Text as="p">No markdown</Text>;
+  switch (feedItem.importState.status) {
+    case FeedItemImportStatus.Failed:
+      return (
+        <Text as="p" className="text-error">
+          Import failed: {feedItem.importState.errorMessage}
+        </Text>
+      );
+    case FeedItemImportStatus.Processing: {
+      const msSinceImportStarted = Date.now() - feedItem.importState.importStartedTime.getTime();
+      const secondsSinceImportStarted = msSinceImportStarted / 1000;
+      return (
+        <Text as="p">Import in progress... {secondsSinceImportStarted} seconds since started</Text>
+      );
+    }
+    case FeedItemImportStatus.New: {
+      const msSinceCreated = Date.now() - feedItem.createdTime.getTime();
+      const secondsSinceCreated = msSinceCreated / 1000;
+      return (
+        <Text as="p">Import not yet started... {secondsSinceCreated} seconds since created</Text>
+      );
+    }
+    case FeedItemImportStatus.Completed:
+      if (markdownState.error) {
+        return (
+          <Text as="p" className="text-error">
+            Error loading markdown: {markdownState.error.message}
+          </Text>
+        );
+      } else if (markdownState.isLoading) {
+        return <Text as="p">Loading markdown...</Text>;
+      } else if (markdownState.markdown) {
+        return <Markdown content={markdownState.markdown} />;
+      } else {
+        return <Text as="p">No markdown</Text>;
+      }
+    default:
+      assertNever(feedItem.importState);
   }
 };

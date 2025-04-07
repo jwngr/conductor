@@ -34,9 +34,9 @@ export class ServerPocketService {
         const timeAddedString = anchor.getAttribute('time_added');
 
         items.push({
-          href: anchor.getAttribute('href') ?? '',
+          url: anchor.getAttribute('href') ?? '',
           title: anchor.textContent ?? '',
-          timeAdded: timeAddedString ? parseInt(timeAddedString, 10) : 0,
+          timeAddedMs: timeAddedString ? parseInt(timeAddedString, 10) * 1000 : 0,
         });
       }
     });

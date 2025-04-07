@@ -26,7 +26,8 @@ distIgnore/
 .env
 .env.*
 
-# Firebase debug log
+# Firebase.
+firebaseServiceAccount.json
 ui-debug.log
 firebase-debug.log
 functions-debug.log

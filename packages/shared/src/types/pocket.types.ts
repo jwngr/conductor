@@ -1,5 +1,5 @@
 export interface PocketImportItem {
-  readonly href: string;
+  readonly url: string;
   readonly title: string;
-  readonly timeAdded: number;
+  readonly timeAddedMs: number;
 }

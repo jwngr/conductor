@@ -45,6 +45,8 @@ export enum FeedItemSourceType {
   Extension = 'EXTENSION',
   /** Feed item was added from an RSS feed subscription. */
   RSS = 'RSS',
+  /** Feed item was imported from a Pocket export. */
+  PocketExport = 'POCKET_EXPORT',
 }
 
 export enum TriageStatus {
@@ -67,10 +69,15 @@ export const RssFeedItemSourceSchema = z.object({
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
 });
 
+export const PocketExportFeedItemSourceSchema = z.object({
+  type: z.literal(FeedItemSourceType.PocketExport),
+});
+
 export const FeedItemSourceFromStorageSchema = z.discriminatedUnion('type', [
   AppFeedItemSourceSchema,
   ExtensionFeedItemSourceSchema,
   RssFeedItemSourceSchema,
+  PocketExportFeedItemSourceSchema,
 ]);
 
 export type FeedItemSourceFromStorage = z.infer<typeof FeedItemSourceFromStorageSchema>;
@@ -110,13 +117,68 @@ export function makeFeedItemRSSSource(
   };
 }
 
-export type FeedItemSource = FeedItemAppSource | FeedItemExtensionSource | FeedItemRSSSource;
+export interface FeedItemPocketExportSource extends BaseFeedItemSource {
+  readonly type: FeedItemSourceType.PocketExport;
+}
+
+export const FEED_ITEM_POCKET_EXPORT_SOURCE: FeedItemPocketExportSource = {
+  type: FeedItemSourceType.PocketExport,
+};
+
+export type FeedItemSource =
+  | FeedItemAppSource
+  | FeedItemExtensionSource
+  | FeedItemRSSSource
+  | FeedItemPocketExportSource;
+
+export enum FeedItemImportStatus {
+  /** Created but not yet processed. */
+  New = 'NEW',
+  /** Currently being processed. */
+  Processing = 'PROCESSING',
+  /** Errored while processing. May have partially imported data. */
+  Failed = 'FAILED',
+  /** Successfully imported all data. */
+  Completed = 'COMPLETED',
+  // TODO: Add a "NeedsRefresh" status to force a re-import.
+}
+
+interface BaseFeedItemImportState {
+  readonly status: FeedItemImportStatus;
+}
+
+export interface NewFeedItemImportState extends BaseFeedItemImportState {
+  readonly status: FeedItemImportStatus.New;
+}
+
+export interface ProcessingFeedItemImportState extends BaseFeedItemImportState {
+  readonly status: FeedItemImportStatus.Processing;
+  readonly importStartedTime: Date;
+}
+
+export interface FailedFeedItemImportState extends BaseFeedItemImportState {
+  readonly status: FeedItemImportStatus.Failed;
+  readonly errorMessage: string;
+  readonly importFailedTime: Date;
+}
+
+export interface CompletedFeedItemImportState extends BaseFeedItemImportState {
+  readonly status: FeedItemImportStatus.Completed;
+  readonly importCompletedTime: Date;
+}
+
+export type FeedItemImportState =
+  | NewFeedItemImportState
+  | ProcessingFeedItemImportState
+  | FailedFeedItemImportState
+  | CompletedFeedItemImportState;
 
 interface BaseFeedItem extends BaseStoreItem {
   readonly feedItemId: FeedItemId;
   readonly accountId: AccountId;
   readonly type: FeedItemType;
   readonly feedItemSource: FeedItemSource;
+  readonly importState: FeedItemImportState;
 
   // Content metadata.
   readonly url: string;
@@ -142,10 +204,36 @@ interface BaseFeedItem extends BaseStoreItem {
    * To accomplish this, most state is stored as tags that either exist in this map or not.
    */
   readonly tagIds: Partial<Record<TagId, true>>;
-
-  // Timestamps.
-  readonly lastImportedTime?: Date;
 }
+
+export const NewFeedItemImportStateSchema = z.object({
+  status: z.literal(FeedItemImportStatus.New),
+});
+
+export const ProcessingFeedItemImportStateSchema = z.object({
+  status: z.literal(FeedItemImportStatus.Processing),
+  importStartedTime: FirestoreTimestampSchema.or(z.date()),
+});
+
+export const FailedFeedItemImportStateSchema = z.object({
+  status: z.literal(FeedItemImportStatus.Failed),
+  errorMessage: z.string(),
+  importFailedTime: FirestoreTimestampSchema.or(z.date()),
+});
+
+export const CompletedFeedItemImportStateSchema = z.object({
+  status: z.literal(FeedItemImportStatus.Completed),
+  importCompletedTime: FirestoreTimestampSchema.or(z.date()),
+});
+
+const FeedItemImportStateFromStorageSchema = z.discriminatedUnion('status', [
+  NewFeedItemImportStateSchema,
+  ProcessingFeedItemImportStateSchema,
+  FailedFeedItemImportStateSchema,
+  CompletedFeedItemImportStateSchema,
+]);
+
+export type FeedItemImportStateFromStorage = z.infer<typeof FeedItemImportStateFromStorageSchema>;
 
 /**
  * Zod schema for a {@link FeedItem} persisted to Firestore.
@@ -155,6 +243,7 @@ export const FeedItemFromStorageSchema = z.object({
   accountId: AccountIdSchema,
   type: z.nativeEnum(FeedItemType),
   feedItemSource: FeedItemSourceFromStorageSchema,
+  importState: FeedItemImportStateFromStorageSchema,
   url: z.string().url(),
   title: z.string(),
   description: z.string(),
@@ -162,7 +251,6 @@ export const FeedItemFromStorageSchema = z.object({
   summary: z.string(),
   triageStatus: z.nativeEnum(TriageStatus),
   tagIds: z.record(z.string(), z.literal(true).optional()),
-  lastImportedTime: FirestoreTimestampSchema.or(z.date()).optional(),
   createdTime: FirestoreTimestampSchema.or(z.date()),
   lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
 });

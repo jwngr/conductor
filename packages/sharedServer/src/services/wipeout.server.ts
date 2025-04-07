@@ -10,24 +10,20 @@ import type {Supplier} from '@shared/types/utils.types';
 
 import type {ServerAccountsService} from '@sharedServer/services/accounts.server';
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
-import type {ServerImportQueueService} from '@sharedServer/services/importQueue.server';
 import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
 
 export class WipeoutService {
   private accountsService: ServerAccountsService;
   private userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
   private feedItemsService: ServerFeedItemsService;
-  private importQueueService: ServerImportQueueService;
 
   constructor(args: {
     readonly accountsService: ServerAccountsService;
     readonly userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
-    readonly importQueueService: ServerImportQueueService;
     readonly feedItemsService: ServerFeedItemsService;
   }) {
     this.accountsService = args.accountsService;
     this.userFeedSubscriptionsService = args.userFeedSubscriptionsService;
-    this.importQueueService = args.importQueueService;
     this.feedItemsService = args.feedItemsService;
   }
 
@@ -108,7 +104,6 @@ export class WipeoutService {
     const deleteFirestoreResult = await asyncTryAll([
       this.accountsService.deleteAccountDoc(accountId),
       this.feedItemsService.deleteAllForAccount(accountId),
-      this.importQueueService.deleteAllForAccount(accountId),
       this.userFeedSubscriptionsService.deleteAllForAccount(accountId),
     ]);
     const deleteFirestoreResultError = deleteFirestoreResult.success

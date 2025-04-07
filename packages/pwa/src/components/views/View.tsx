@@ -4,17 +4,58 @@ import type React from 'react';
 import {logger} from '@shared/services/logger.shared';
 
 import {Urls} from '@shared/lib/urls.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 
-import type {FeedItem} from '@shared/types/feedItems.types';
+import {
+  FeedItemImportStatus,
+  type FeedItem,
+  type FeedItemImportState,
+} from '@shared/types/feedItems.types';
 import type {ViewType} from '@shared/types/query.types';
 
 import {useFocusStore} from '@sharedClient/stores/FocusStore';
 
 import {useFeedItems} from '@sharedClient/services/feedItems.client';
 
+import {Badge} from '@src/components/atoms/Badge';
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
 import {ViewKeyboardShortcutHandler} from '@src/components/views/ViewKeyboardShortcutHandler';
+
+const ViewListItemImportStatusBadge: React.FC<{
+  readonly importState: FeedItemImportState;
+}> = ({importState}) => {
+  let badgeText: string | null;
+  let badgeVariant: 'default' | 'destructive' | 'outline' | null = null;
+
+  switch (importState.status) {
+    case FeedItemImportStatus.Completed:
+      // Completed items have enough content to render already and don't need a badge.
+      badgeText = null;
+      badgeVariant = null;
+      break;
+    case FeedItemImportStatus.New:
+      badgeText = 'Importing';
+      badgeVariant = 'outline';
+      break;
+    case FeedItemImportStatus.Failed:
+      badgeText = 'Import Failed';
+      badgeVariant = 'destructive';
+      break;
+    case FeedItemImportStatus.Processing:
+      badgeText = 'Processing';
+      badgeVariant = 'outline';
+      break;
+    default:
+      assertNever(importState);
+  }
+
+  if (!badgeText) {
+    return null;
+  }
+
+  return <Badge variant={badgeVariant}>{badgeText}</Badge>;
+};
 
 const ViewListItem: React.FC<{
   readonly feedItem: FeedItem;
@@ -45,9 +86,12 @@ const ViewListItem: React.FC<{
         onFocus={() => setFocusedFeedItemId(feedItem.feedItemId)}
         onBlur={() => setFocusedFeedItemId(null)}
       >
-        <Text as="p" bold>
-          {feedItem.title || 'No title'}
-        </Text>
+        <div className="flex items-center gap-2">
+          <Text as="p" bold>
+            {feedItem.title || 'No title'}
+          </Text>
+          <ViewListItemImportStatusBadge importState={feedItem.importState} />
+        </div>
         <Text as="p" light>
           {feedItem.url}
         </Text>
