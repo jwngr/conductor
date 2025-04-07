@@ -46,7 +46,7 @@ export function getThemePreferenceFromLocalStorage(): ThemePreference | null {
     case 'dark':
       return ThemePreference.Dark;
     default:
-      logger.warn('Local storage contains unexpected theme preference', {stored, trimmed});
+      logger.warn('Local storage contains unexpected theme preference', {stored});
       return null;
   }
 }
