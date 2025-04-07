@@ -12,7 +12,7 @@ import {Markdown} from '@src/components/Markdown';
 export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
   const markdownState = useFeedItemMarkdown(
     feedItem.feedItemId,
-    feedItem.importState.status === FeedItemImportStatus.Completed
+    feedItem.importState.hasEverBeenImported
   );
 
   switch (feedItem.importState.status) {
@@ -37,6 +37,7 @@ export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedI
       );
     }
     case FeedItemImportStatus.Completed:
+    case FeedItemImportStatus.NeedsRefresh: {
       if (markdownState.error) {
         return (
           <Text as="p" className="text-error">
@@ -50,6 +51,7 @@ export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedI
       } else {
         return <Text as="p">No markdown</Text>;
       }
+    }
     default:
       assertNever(feedItem.importState);
   }

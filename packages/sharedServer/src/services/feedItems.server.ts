@@ -18,12 +18,10 @@ import type {
   FeedItem,
   FeedItemFromStorage,
   FeedItemId,
-  FeedItemImportState,
   FeedItemSource,
 } from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import {SystemTagId} from '@shared/types/tags.types';
 
 import {eventLogService} from '@sharedServer/services/eventLog.server';
 import {storage} from '@sharedServer/services/firebase.server';
@@ -31,14 +29,6 @@ import type {ServerFirecrawlService} from '@sharedServer/services/firecrawl.serv
 import type {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
 import {generateHierarchicalSummary} from '@sharedServer/lib/summarization.server';
-
-interface UpdateImportedFeedItemInFirestoreArgs {
-  readonly links: string[] | null;
-  readonly title: string | null;
-  readonly description: string | null;
-  readonly summary: string | null;
-  readonly importState: FeedItemImportState;
-}
 
 type FeedItemCollectionService = ServerFirestoreCollectionService<
   FeedItemId,
@@ -65,8 +55,9 @@ export class ServerFeedItemsService {
     readonly url: string;
     readonly feedItemSource: FeedItemSource;
     readonly accountId: AccountId;
+    readonly title: string;
   }): AsyncResult<FeedItemId | null> {
-    const {url, accountId, feedItemSource} = args;
+    const {url, accountId, feedItemSource, title} = args;
 
     const trimmedUrl = url.trim();
     if (!isValidUrl(trimmedUrl)) {
@@ -80,6 +71,7 @@ export class ServerFeedItemsService {
       url: trimmedUrl,
       feedItemSource,
       accountId,
+      title,
     });
     if (!feedItemResult.success) return feedItemResult;
     const feedItem = feedItemResult.value;
@@ -97,34 +89,22 @@ export class ServerFeedItemsService {
   }
 
   /**
-   * Updates a feed item after it has been imported.
+   * Updates a feed item in Firestore.
    */
-  public async updateImportedFeedItemInFirestore(
+  public async updateFeedItem(
     feedItemId: FeedItemId,
-    {
-      links,
-      title,
-      description,
-      summary,
-      importState,
-    }: Partial<UpdateImportedFeedItemInFirestoreArgs>
+    updates: Partial<FeedItem>
   ): AsyncResult<void> {
-    // TODO: Consider switching to array unions so I can use FieldValue.arrayRemove.
-    const untypedUpdates = {
-      [`tagIds.${SystemTagId.Importing}`]: FieldValue.delete(),
-    };
-
     const updateResult = await this.feedItemsCollectionService.updateDoc(
       feedItemId,
       omitUndefined({
         // TODO: Determine the type based on the URL or fetched content.
         type: FeedItemType.Website,
-        title: title ?? undefined,
-        description: description ?? undefined,
-        summary: summary ?? undefined,
-        outgoingLinks: links ?? undefined,
-        importState,
-        ...untypedUpdates,
+        title: updates.title,
+        description: updates.description,
+        summary: updates.summary,
+        outgoingLinks: updates.outgoingLinks,
+        importState: updates.importState,
       })
     );
     return prefixResultIfError(updateResult, 'Error updating imported feed item in Firestore');
@@ -310,10 +290,10 @@ export class ServerFeedItemsService {
         accountId,
         markdown: firecrawlData.markdown,
       }),
-      this.updateImportedFeedItemInFirestore(feedItemId, {
-        links: firecrawlData.links,
-        title: firecrawlData.title,
-        description: firecrawlData.description,
+      this.updateFeedItem(feedItemId, {
+        outgoingLinks: firecrawlData.links ?? [],
+        title: firecrawlData.title ?? 'No title found',
+        description: firecrawlData.description ?? 'No description found',
         summary: summaryResult.value,
       }),
     ]);

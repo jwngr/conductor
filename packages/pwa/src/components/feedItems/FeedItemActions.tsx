@@ -7,7 +7,11 @@ import {prefixError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 
 import type {FeedItem} from '@shared/types/feedItems.types';
-import {FeedItemActionType, TriageStatus} from '@shared/types/feedItems.types';
+import {
+  FeedItemActionType,
+  NEW_FEED_ITEM_IMPORT_STATE,
+  TriageStatus,
+} from '@shared/types/feedItems.types';
 import type {IconName} from '@shared/types/icons.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
@@ -185,6 +189,32 @@ const StarFeedItemActionIcon: React.FC<{
   );
 };
 
+const RetryImportActionIcon: React.FC<{
+  readonly feedItem: FeedItem;
+}> = ({feedItem}) => {
+  const actionInfo = SharedFeedItemHelpers.getRetryImportFeedItemActionInfo();
+  const feedItemsService = useFeedItemsService();
+
+  return (
+    <GenericFeedItemActionIcon
+      feedItem={feedItem}
+      feedItemActionType={FeedItemActionType.RetryImport}
+      icon={actionInfo.icon}
+      tooltip={actionInfo.text}
+      shortcutId={actionInfo.shortcutId}
+      getIsActive={() => false}
+      onAction={async () => {
+        const result = await feedItemsService.updateFeedItem(feedItem.feedItemId, {
+          importState: NEW_FEED_ITEM_IMPORT_STATE,
+        } as Partial<FeedItem>);
+        return result;
+      }}
+      toastText={'Feed item saved as example (TODO: Implement this)'}
+      errorMessage={'Error saving feed item as example (TODO: Implement this)'}
+    />
+  );
+};
+
 const DebugSaveExampleActionIcon: React.FC<{
   readonly feedItem: FeedItem;
 }> = ({feedItem}) => {
@@ -218,6 +248,7 @@ export const FeedItemActions: React.FC<{
       <MarkUnreadFeedItemActionIcon feedItem={feedItem} />
       <StarFeedItemActionIcon feedItem={feedItem} />
       <DebugSaveExampleActionIcon feedItem={feedItem} />
+      <RetryImportActionIcon feedItem={feedItem} />
     </div>
   );
 };

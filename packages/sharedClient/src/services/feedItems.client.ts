@@ -227,6 +227,7 @@ export class ClientFeedItemsService {
       // until we've done the import? Or should we compute this at save time?
       feedItemSource,
       accountId: this.accountId,
+      title: trimmedUrl,
     });
     if (!feedItemResult.success) return feedItemResult;
     const feedItem = feedItemResult.value;

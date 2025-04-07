@@ -40,12 +40,12 @@ const useMarkFeedItemRead = (args: {
 
   // Variables exist so we don't need to include the entire feed item in the deps array.
   const isFeedItemNull = feedItem === null;
-  const isFeedItemImported = feedItem ? !SharedFeedItemHelpers.isImporting(feedItem) : false;
+  const hasFeedItemBeenImported = feedItem?.importState.hasEverBeenImported ?? false;
 
   useEffect(() => {
     async function go(): Promise<void> {
       // Don't mark the feed item as read unless it has been imported.
-      if (isFeedItemNull || !isFeedItemImported) return;
+      if (isFeedItemNull || !hasFeedItemBeenImported) return;
 
       // Only mark the feed item as read:
       // 1. if it was not already read at mount, to avoid unnecessary requests.

@@ -140,16 +140,24 @@ export enum FeedItemImportStatus {
   Failed = 'FAILED',
   /** Successfully imported all data. */
   Completed = 'COMPLETED',
-  // TODO: Add a "NeedsRefresh" status to force a re-import.
+  /** Re-import is needed for some reason. */
+  NeedsRefresh = 'NEEDS_REFRESH',
 }
 
 interface BaseFeedItemImportState {
   readonly status: FeedItemImportStatus;
+  readonly hasEverBeenImported: boolean;
 }
 
 export interface NewFeedItemImportState extends BaseFeedItemImportState {
   readonly status: FeedItemImportStatus.New;
+  readonly hasEverBeenImported: false;
 }
+
+export const NEW_FEED_ITEM_IMPORT_STATE: NewFeedItemImportState = {
+  status: FeedItemImportStatus.New,
+  hasEverBeenImported: false,
+};
 
 export interface ProcessingFeedItemImportState extends BaseFeedItemImportState {
   readonly status: FeedItemImportStatus.Processing;
@@ -165,13 +173,22 @@ export interface FailedFeedItemImportState extends BaseFeedItemImportState {
 export interface CompletedFeedItemImportState extends BaseFeedItemImportState {
   readonly status: FeedItemImportStatus.Completed;
   readonly importCompletedTime: Date;
+  readonly hasEverBeenImported: true;
+}
+
+export interface NeedsRefreshFeedItemImportState extends BaseFeedItemImportState {
+  readonly status: FeedItemImportStatus.NeedsRefresh;
+  readonly lastCompletedTime: Date;
+  readonly refreshRequestedTime: Date;
+  readonly hasEverBeenImported: true;
 }
 
 export type FeedItemImportState =
   | NewFeedItemImportState
   | ProcessingFeedItemImportState
   | FailedFeedItemImportState
-  | CompletedFeedItemImportState;
+  | CompletedFeedItemImportState
+  | NeedsRefreshFeedItemImportState;
 
 interface BaseFeedItem extends BaseStoreItem {
   readonly feedItemId: FeedItemId;
@@ -226,11 +243,16 @@ export const CompletedFeedItemImportStateSchema = z.object({
   importCompletedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
+export const NeedsRefreshFeedItemImportStateSchema = z.object({
+  status: z.literal(FeedItemImportStatus.NeedsRefresh),
+});
+
 const FeedItemImportStateFromStorageSchema = z.discriminatedUnion('status', [
   NewFeedItemImportStateSchema,
   ProcessingFeedItemImportStateSchema,
   FailedFeedItemImportStateSchema,
   CompletedFeedItemImportStateSchema,
+  NeedsRefreshFeedItemImportStateSchema,
 ]);
 
 export type FeedItemImportStateFromStorage = z.infer<typeof FeedItemImportStateFromStorageSchema>;
@@ -298,6 +320,7 @@ export enum FeedItemActionType {
   MarkUnread = 'MARK_UNREAD',
   Save = 'SAVE',
   Star = 'STAR',
+  RetryImport = 'RETRY_IMPORT',
 }
 
 export interface FeedItemAction {

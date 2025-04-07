@@ -109,12 +109,6 @@ export class Tags {
     name: 'Trashed',
   };
 
-  static readonly IMPORTING_TAG: Tag = {
-    tagId: SystemTagId.Importing,
-    type: TagType.System,
-    name: 'Importing',
-  };
-
   static makeUserTag(tagInfo: Omit<UserTag, 'tagId' | 'type'>): UserTag {
     return {
       tagId: makeUserTagId(),

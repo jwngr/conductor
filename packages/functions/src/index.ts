@@ -14,6 +14,7 @@ import {
   USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
 } from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
+import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 
 import {parseAccount, parseAccountId, toStorageAccount} from '@shared/parsers/accounts.parser';
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
@@ -222,9 +223,10 @@ export const importItemOnFeedItemCreated = onDocumentCreated(
 
     const feedItem = feedItemResult.value;
 
-    // Avoid double processing by only processing items with a "new" status.
-    if (feedItem.importState.status !== FeedItemImportStatus.New) {
-      logger.warn(`[IMPORT] Feed item ${feedItemId} is not in the "New" status. Skipping...`);
+    if (!SharedFeedItemHelpers.getShouldImport(feedItem)) {
+      logger.warn(
+        `[IMPORT] Feed item ${feedItemId} does not have an status indicating it should be imported. Skipping...`
+      );
       return;
     }
 
@@ -232,9 +234,10 @@ export const importItemOnFeedItemCreated = onDocumentCreated(
 
     const handleError = async (errorPrefix: string, error: Error): Promise<void> => {
       logger.error(prefixError(error, errorPrefix), logDetails);
-      await feedItemsService.updateImportedFeedItemInFirestore(feedItemId, {
+      await feedItemsService.updateFeedItem(feedItemId, {
         importState: {
           status: FeedItemImportStatus.Failed,
+          hasEverBeenImported: feedItem.importState.hasEverBeenImported,
           errorMessage: error.message,
           importFailedTime: new Date(),
         },
@@ -244,9 +247,10 @@ export const importItemOnFeedItemCreated = onDocumentCreated(
     // Claim the item so that no other function picks it up.
     // TODO: Consider using a lock to prevent multiple functions from processing the same item.
     logger.log(`[IMPORT] Claiming import queue item...`, logDetails);
-    const claimItemResult = await feedItemsService.updateImportedFeedItemInFirestore(feedItemId, {
+    const claimItemResult = await feedItemsService.updateFeedItem(feedItemId, {
       importState: {
         status: FeedItemImportStatus.Processing,
+        hasEverBeenImported: feedItem.importState.hasEverBeenImported,
         importStartedTime: new Date(),
       },
     });
@@ -265,15 +269,13 @@ export const importItemOnFeedItemCreated = onDocumentCreated(
 
     // Mark the import queue item as completed once everything else has processed successfully.
     logger.log(`[IMPORT] Marking import queue item as completed...`, logDetails);
-    const markCompletedResult = await feedItemsService.updateImportedFeedItemInFirestore(
-      feedItemId,
-      {
-        importState: {
-          status: FeedItemImportStatus.Completed,
-          importCompletedTime: new Date(),
-        },
-      }
-    );
+    const markCompletedResult = await feedItemsService.updateFeedItem(feedItemId, {
+      importState: {
+        status: FeedItemImportStatus.Completed,
+        hasEverBeenImported: true,
+        importCompletedTime: new Date(),
+      },
+    });
     if (!markCompletedResult.success) {
       await handleError('Error marking import queue item as completed', markCompletedResult.error);
       return;

@@ -31,6 +31,8 @@ import {
   FeedItemIdSchema,
   FeedItemImportStatus,
   FeedItemSourceType,
+  NeedsRefreshFeedItemImportStateSchema,
+  NEW_FEED_ITEM_IMPORT_STATE,
   NewFeedItemImportStateSchema,
   PocketExportFeedItemSourceSchema,
   ProcessingFeedItemImportStateSchema,
@@ -147,6 +149,8 @@ function parseFeedItemImportState(
       return parseFailedFeedItemImportState(feedItemImportState);
     case FeedItemImportStatus.Completed:
       return parseCompletedFeedItemImportState(feedItemImportState);
+    case FeedItemImportStatus.NeedsRefresh:
+      return parseNeedsRefreshFeedItemImportState(feedItemImportState);
     default:
       return makeErrorResult(new Error(`Unknown feed item import status: ${status}`));
   }
@@ -161,9 +165,7 @@ function parseNewFeedItemImportState(feedItemImportState: unknown): Result<NewFe
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid new feed item import state');
   }
-  return makeSuccessResult({
-    status: FeedItemImportStatus.New,
-  });
+  return makeSuccessResult(NEW_FEED_ITEM_IMPORT_STATE);
 }
 
 /**
@@ -216,6 +218,19 @@ function parseCompletedFeedItemImportState(
     status: FeedItemImportStatus.Completed,
     importCompletedTime: parseStorageTimestamp(parsedResult.value.importCompletedTime),
   });
+}
+
+/**
+ * Parses a {@link NeedsRefreshFeedItemImportState} from an unknown value. Returns an `ErrorResult` if
+ * the value is not valid.
+ */
+function parseNeedsRefreshFeedItemImportState(
+  feedItemImportState: unknown
+): Result<NeedsRefreshFeedItemImportState> {
+  const parsedResult = parseZodResult(NeedsRefreshFeedItemImportStateSchema, feedItemImportState);
+  if (!parsedResult.success) {
+    return prefixErrorResult(parsedResult, 'Invalid needs refresh feed item import state');
+  }
 }
 
 /**

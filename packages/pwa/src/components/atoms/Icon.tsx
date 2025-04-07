@@ -36,6 +36,8 @@ function toLucideIconName(name: IconName): LucideIconName {
       return 'save';
     case IconName.Star:
       return 'star';
+    case IconName.RetryImport:
+      return 'refresh-cw';
     default:
       assertNever(name);
   }
