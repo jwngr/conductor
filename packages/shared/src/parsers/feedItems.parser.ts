@@ -19,6 +19,7 @@ import type {
   FeedItemRSSSource,
   FeedItemSource,
   FeedItemSourceFromStorage,
+  NeedsRefreshFeedItemImportState,
   NewFeedItemImportState,
   ProcessingFeedItemImportState,
 } from '@shared/types/feedItems.types';
@@ -182,6 +183,7 @@ function parseProcessingFeedItemImportState(
   return makeSuccessResult({
     status: FeedItemImportStatus.Processing,
     importStartedTime: parseStorageTimestamp(parsedResult.value.importStartedTime),
+    hasEverBeenImported: parsedResult.value.hasEverBeenImported,
   });
 }
 
@@ -200,6 +202,7 @@ function parseFailedFeedItemImportState(
     status: FeedItemImportStatus.Failed,
     errorMessage: parsedResult.value.errorMessage,
     importFailedTime: parseStorageTimestamp(parsedResult.value.importFailedTime),
+    hasEverBeenImported: parsedResult.value.hasEverBeenImported,
   });
 }
 
@@ -217,6 +220,7 @@ function parseCompletedFeedItemImportState(
   return makeSuccessResult({
     status: FeedItemImportStatus.Completed,
     importCompletedTime: parseStorageTimestamp(parsedResult.value.importCompletedTime),
+    hasEverBeenImported: true,
   });
 }
 
@@ -231,6 +235,12 @@ function parseNeedsRefreshFeedItemImportState(
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid needs refresh feed item import state');
   }
+  return makeSuccessResult({
+    status: FeedItemImportStatus.NeedsRefresh,
+    lastCompletedTime: parseStorageTimestamp(parsedResult.value.lastCompletedTime),
+    refreshRequestedTime: parseStorageTimestamp(parsedResult.value.refreshRequestedTime),
+    hasEverBeenImported: true,
+  });
 }
 
 /**

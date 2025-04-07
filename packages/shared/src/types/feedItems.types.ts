@@ -225,26 +225,33 @@ interface BaseFeedItem extends BaseStoreItem {
 
 export const NewFeedItemImportStateSchema = z.object({
   status: z.literal(FeedItemImportStatus.New),
+  hasEverBeenImported: z.literal(false),
 });
 
 export const ProcessingFeedItemImportStateSchema = z.object({
   status: z.literal(FeedItemImportStatus.Processing),
   importStartedTime: FirestoreTimestampSchema.or(z.date()),
+  hasEverBeenImported: z.boolean(),
 });
 
 export const FailedFeedItemImportStateSchema = z.object({
   status: z.literal(FeedItemImportStatus.Failed),
   errorMessage: z.string(),
   importFailedTime: FirestoreTimestampSchema.or(z.date()),
+  hasEverBeenImported: z.boolean(),
 });
 
 export const CompletedFeedItemImportStateSchema = z.object({
   status: z.literal(FeedItemImportStatus.Completed),
   importCompletedTime: FirestoreTimestampSchema.or(z.date()),
+  hasEverBeenImported: z.literal(true),
 });
 
 export const NeedsRefreshFeedItemImportStateSchema = z.object({
   status: z.literal(FeedItemImportStatus.NeedsRefresh),
+  lastCompletedTime: FirestoreTimestampSchema.or(z.date()),
+  refreshRequestedTime: FirestoreTimestampSchema.or(z.date()),
+  hasEverBeenImported: z.literal(true),
 });
 
 const FeedItemImportStateFromStorageSchema = z.discriminatedUnion('status', [

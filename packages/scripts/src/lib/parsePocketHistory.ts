@@ -107,6 +107,7 @@ async function main(): Promise<void> {
       accountId,
       url: pocketItem.url,
       feedItemSource: FEED_ITEM_POCKET_EXPORT_SOURCE,
+      title: pocketItem.title,
     });
 
     if (!createFeedItemResult.success) {

@@ -10,10 +10,10 @@ import {Text} from '@src/components/atoms/Text';
 import {Markdown} from '@src/components/Markdown';
 
 export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
-  const markdownState = useFeedItemMarkdown(
-    feedItem.feedItemId,
-    feedItem.importState.hasEverBeenImported
-  );
+  const markdownState = useFeedItemMarkdown({
+    feedItemId: feedItem.feedItemId,
+    hasFeedItemEverBeenImported: feedItem.importState.hasEverBeenImported,
+  });
 
   switch (feedItem.importState.status) {
     case FeedItemImportStatus.Failed:

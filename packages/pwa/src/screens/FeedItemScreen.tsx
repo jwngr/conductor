@@ -71,7 +71,7 @@ const useMarkFeedItemRead = (args: {
     }
 
     void go();
-  }, [feedItemId, isFeedItemNull, isFeedItemImported, feedItemsService]);
+  }, [feedItemId, isFeedItemNull, feedItemsService, hasFeedItemBeenImported]);
 };
 
 const FeedItemScreenMainContent: React.FC<{

@@ -106,14 +106,15 @@ export function useFeedItems({viewType}: {readonly viewType: ViewType}): {
   return state;
 }
 
-export function useFeedItemMarkdown(
-  feedItemId: FeedItemId,
-  isFeedItemImported: boolean
-): {
+export function useFeedItemMarkdown(args: {
+  readonly feedItemId: FeedItemId;
+  readonly hasFeedItemEverBeenImported: boolean;
+}): {
   readonly markdown: string | null;
   readonly isLoading: boolean;
   readonly error: Error | null;
 } {
+  const {feedItemId, hasFeedItemEverBeenImported} = args;
   const feedItemsService = useFeedItemsService();
   const [state, setState] = useState<{
     readonly markdown: string | null;
@@ -126,7 +127,7 @@ export function useFeedItemMarkdown(
 
     async function go(): Promise<void> {
       // Wait to fetch markdown until the feed item has been imported.
-      if (!isFeedItemImported) return;
+      if (!hasFeedItemEverBeenImported) return;
 
       const markdownResult = await feedItemsService.getFeedItemMarkdown(feedItemId);
       if (isMounted) {
@@ -143,7 +144,7 @@ export function useFeedItemMarkdown(
     return () => {
       isMounted = false;
     };
-  }, [feedItemId, isFeedItemImported, feedItemsService]);
+  }, [feedItemId, hasFeedItemEverBeenImported, feedItemsService]);
 
   return state;
 }
