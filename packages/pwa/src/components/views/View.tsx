@@ -30,7 +30,6 @@ const ViewListItemImportStatusBadge: React.FC<{
 
   switch (importState.status) {
     case FeedItemImportStatus.New:
-    case FeedItemImportStatus.NeedsRefresh:
       badgeText = 'Queued';
       badgeVariant = 'outline';
       break;
@@ -39,13 +38,23 @@ const ViewListItemImportStatusBadge: React.FC<{
       badgeVariant = 'outline';
       break;
     case FeedItemImportStatus.Completed:
-      // Completed items have enough content to render already and don't need a badge.
-      badgeText = null;
-      badgeVariant = null;
+      if (importState.shouldFetch) {
+        badgeText = 'Queued';
+        badgeVariant = 'outline';
+      } else {
+        // Completed items have enough content to render already and don't need a badge.
+        badgeText = null;
+        badgeVariant = null;
+      }
       break;
     case FeedItemImportStatus.Failed:
-      badgeText = 'Import Failed';
-      badgeVariant = 'destructive';
+      if (importState.shouldFetch) {
+        badgeText = 'Queued';
+        badgeVariant = 'outline';
+      } else {
+        badgeText = 'Import Failed';
+        badgeVariant = 'destructive';
+      }
       break;
     default:
       assertNever(importState);

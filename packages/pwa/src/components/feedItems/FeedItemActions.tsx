@@ -7,11 +7,7 @@ import {prefixError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 
 import type {FeedItem} from '@shared/types/feedItems.types';
-import {
-  FeedItemActionType,
-  FeedItemImportStatus,
-  TriageStatus,
-} from '@shared/types/feedItems.types';
+import {FeedItemActionType, TriageStatus} from '@shared/types/feedItems.types';
 import type {IconName} from '@shared/types/icons.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
@@ -206,8 +202,9 @@ const RetryImportActionIcon: React.FC<{
       onAction={async () => {
         const result = await feedItemsService.updateFeedItem(feedItem.feedItemId, {
           importState: {
-            status: FeedItemImportStatus.NeedsRefresh,
-            refreshRequestedTime: new Date(),
+            status: feedItem.importState.status,
+            shouldFetch: true,
+            lastImportRequestedTime: feedItem.importState.lastImportRequestedTime,
             lastSuccessfulImportTime: feedItem.importState.lastSuccessfulImportTime,
           },
         } as Partial<FeedItem>);

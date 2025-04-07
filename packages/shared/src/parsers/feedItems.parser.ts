@@ -19,7 +19,6 @@ import type {
   FeedItemRSSSource,
   FeedItemSource,
   FeedItemSourceFromStorage,
-  NeedsRefreshFeedItemImportState,
   NewFeedItemImportState,
   ProcessingFeedItemImportState,
 } from '@shared/types/feedItems.types';
@@ -32,8 +31,7 @@ import {
   FeedItemIdSchema,
   FeedItemImportStatus,
   FeedItemSourceType,
-  NeedsRefreshFeedItemImportStateSchema,
-  NEW_FEED_ITEM_IMPORT_STATE,
+  makeNewFeedItemImportState,
   NewFeedItemImportStateSchema,
   PocketExportFeedItemSourceSchema,
   ProcessingFeedItemImportStateSchema,
@@ -150,8 +148,6 @@ function parseFeedItemImportState(
       return parseFailedFeedItemImportState(feedItemImportState);
     case FeedItemImportStatus.Completed:
       return parseCompletedFeedItemImportState(feedItemImportState);
-    case FeedItemImportStatus.NeedsRefresh:
-      return parseNeedsRefreshFeedItemImportState(feedItemImportState);
     default:
       return makeErrorResult(new Error(`Unknown feed item import status: ${status}`));
   }
@@ -166,7 +162,7 @@ function parseNewFeedItemImportState(feedItemImportState: unknown): Result<NewFe
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid new feed item import state');
   }
-  return makeSuccessResult(NEW_FEED_ITEM_IMPORT_STATE);
+  return makeSuccessResult(makeNewFeedItemImportState());
 }
 
 /**
@@ -182,7 +178,9 @@ function parseProcessingFeedItemImportState(
   }
   return makeSuccessResult({
     status: FeedItemImportStatus.Processing,
+    shouldFetch: false,
     importStartedTime: parseStorageTimestamp(parsedResult.value.importStartedTime),
+    lastImportRequestedTime: parseStorageTimestamp(parsedResult.value.lastImportRequestedTime),
     lastSuccessfulImportTime: parsedResult.value.lastSuccessfulImportTime
       ? parseStorageTimestamp(parsedResult.value.lastSuccessfulImportTime)
       : null,
@@ -202,8 +200,10 @@ function parseFailedFeedItemImportState(
   }
   return makeSuccessResult({
     status: FeedItemImportStatus.Failed,
+    shouldFetch: parsedResult.value.shouldFetch,
     errorMessage: parsedResult.value.errorMessage,
     importFailedTime: parseStorageTimestamp(parsedResult.value.importFailedTime),
+    lastImportRequestedTime: parseStorageTimestamp(parsedResult.value.lastImportRequestedTime),
     lastSuccessfulImportTime: parsedResult.value.lastSuccessfulImportTime
       ? parseStorageTimestamp(parsedResult.value.lastSuccessfulImportTime)
       : null,
@@ -223,27 +223,9 @@ function parseCompletedFeedItemImportState(
   }
   return makeSuccessResult({
     status: FeedItemImportStatus.Completed,
+    shouldFetch: parsedResult.value.shouldFetch,
+    lastImportRequestedTime: parseStorageTimestamp(parsedResult.value.lastImportRequestedTime),
     lastSuccessfulImportTime: parseStorageTimestamp(parsedResult.value.lastSuccessfulImportTime),
-  });
-}
-
-/**
- * Parses a {@link NeedsRefreshFeedItemImportState} from an unknown value. Returns an `ErrorResult` if
- * the value is not valid.
- */
-function parseNeedsRefreshFeedItemImportState(
-  feedItemImportState: unknown
-): Result<NeedsRefreshFeedItemImportState> {
-  const parsedResult = parseZodResult(NeedsRefreshFeedItemImportStateSchema, feedItemImportState);
-  if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid needs refresh feed item import state');
-  }
-  return makeSuccessResult({
-    status: FeedItemImportStatus.NeedsRefresh,
-    refreshRequestedTime: parseStorageTimestamp(parsedResult.value.refreshRequestedTime),
-    lastSuccessfulImportTime: parsedResult.value.lastSuccessfulImportTime
-      ? parseStorageTimestamp(parsedResult.value.lastSuccessfulImportTime)
-      : null,
   });
 }
 

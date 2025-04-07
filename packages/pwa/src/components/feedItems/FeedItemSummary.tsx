@@ -32,13 +32,11 @@ export const FeedItemSummary: React.FC<{readonly feedItem: FeedItem}> = ({feedIt
       );
     }
     case FeedItemImportStatus.Completed:
-    case FeedItemImportStatus.NeedsRefresh: {
       if (feedItem.summary) {
         return <Markdown content={feedItem.summary.replace(/•/g, '*')} />;
       } else {
         return <Text as="p">No summary</Text>;
       }
-    }
     default: {
       assertNever(feedItem.importState);
     }

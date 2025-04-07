@@ -1,11 +1,8 @@
-import {assertNever} from '@shared/lib/utils.shared';
-
 import type {FeedItem, FeedItemAction} from '@shared/types/feedItems.types';
 import {
   FeedItemActionType,
-  FeedItemImportStatus,
   makeFeedItemId,
-  NEW_FEED_ITEM_IMPORT_STATE,
+  makeNewFeedItemImportState,
   TriageStatus,
 } from '@shared/types/feedItems.types';
 import {IconName} from '@shared/types/icons.types';
@@ -46,7 +43,7 @@ export class SharedFeedItemHelpers {
       url: args.url,
       type: args.type,
       feedItemSource: args.feedItemSource,
-      importState: NEW_FEED_ITEM_IMPORT_STATE,
+      importState: makeNewFeedItemImportState(),
       // TODO: Update these and figure out a better solution. Maybe a better discriminated union.
       title: args.title,
       description: 'Test description from makeFeedItem',
@@ -152,22 +149,5 @@ export class SharedFeedItemHelpers {
     }
 
     return makeSuccessResult(undefined);
-  }
-
-  /**
-   * Returns true if the feed item should be imported.
-   */
-  public static getShouldImport(feedItem: FeedItem): boolean {
-    switch (feedItem.importState.status) {
-      case FeedItemImportStatus.New:
-      case FeedItemImportStatus.NeedsRefresh:
-        return true;
-      case FeedItemImportStatus.Processing:
-      case FeedItemImportStatus.Completed:
-      case FeedItemImportStatus.Failed:
-        return true;
-      default:
-        assertNever(feedItem.importState);
-    }
   }
 }

@@ -14,7 +14,6 @@ import {
   USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
 } from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
-import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 
 import {parseAccount, parseAccountId, toStorageAccount} from '@shared/parsers/accounts.parser';
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
@@ -223,9 +222,9 @@ export const importItemOnFeedItemCreated = onDocumentCreated(
 
     const feedItem = feedItemResult.value;
 
-    if (!SharedFeedItemHelpers.getShouldImport(feedItem)) {
+    if (!feedItem.importState.shouldFetch) {
       logger.warn(
-        `[IMPORT] Feed item ${feedItemId} does not have an status indicating it should be imported. Skipping...`
+        `[IMPORT] Feed item ${feedItemId} is not marked as needing to be fetched. Skipping...`
       );
       return;
     }
@@ -239,7 +238,10 @@ export const importItemOnFeedItemCreated = onDocumentCreated(
           status: FeedItemImportStatus.Failed,
           errorMessage: error.message,
           importFailedTime: new Date(),
+          lastImportRequestedTime: feedItem.importState.lastImportRequestedTime,
           lastSuccessfulImportTime: feedItem.importState.lastSuccessfulImportTime,
+          // Don't retry failed imports. Users can manually retry from the UI.
+          shouldFetch: false,
         },
       });
     };
@@ -251,7 +253,10 @@ export const importItemOnFeedItemCreated = onDocumentCreated(
       importState: {
         status: FeedItemImportStatus.Processing,
         importStartedTime: new Date(),
+        lastImportRequestedTime: feedItem.importState.lastImportRequestedTime,
         lastSuccessfulImportTime: feedItem.importState.lastSuccessfulImportTime,
+        // Claiming the item means we don't need to fetch it again.
+        shouldFetch: false,
       },
     });
     if (!claimItemResult.success) {
@@ -273,6 +278,9 @@ export const importItemOnFeedItemCreated = onDocumentCreated(
       importState: {
         status: FeedItemImportStatus.Completed,
         lastSuccessfulImportTime: new Date(),
+        lastImportRequestedTime: feedItem.importState.lastImportRequestedTime,
+        // Completed items don't need to be fetched again.
+        shouldFetch: false,
       },
     });
     if (!markCompletedResult.success) {
