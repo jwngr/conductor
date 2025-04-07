@@ -40,7 +40,9 @@ const useMarkFeedItemRead = (args: {
 
   // Variables exist so we don't need to include the entire feed item in the deps array.
   const isFeedItemNull = feedItem === null;
-  const hasFeedItemBeenImported = feedItem?.importState.hasEverBeenImported ?? false;
+  const hasFeedItemBeenImported = feedItem
+    ? feedItem.importState.lastSuccessfulImportTime !== null
+    : false;
 
   useEffect(() => {
     async function go(): Promise<void> {

@@ -12,7 +12,7 @@ import {Markdown} from '@src/components/Markdown';
 export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
   const markdownState = useFeedItemMarkdown({
     feedItemId: feedItem.feedItemId,
-    hasFeedItemEverBeenImported: feedItem.importState.hasEverBeenImported,
+    hasFeedItemEverBeenImported: feedItem.importState.lastSuccessfulImportTime !== null,
   });
 
   switch (feedItem.importState.status) {

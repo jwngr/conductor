@@ -9,7 +9,7 @@ import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import type {FeedItem} from '@shared/types/feedItems.types';
 import {
   FeedItemActionType,
-  NEW_FEED_ITEM_IMPORT_STATE,
+  FeedItemImportStatus,
   TriageStatus,
 } from '@shared/types/feedItems.types';
 import type {IconName} from '@shared/types/icons.types';
@@ -205,12 +205,16 @@ const RetryImportActionIcon: React.FC<{
       getIsActive={() => false}
       onAction={async () => {
         const result = await feedItemsService.updateFeedItem(feedItem.feedItemId, {
-          importState: NEW_FEED_ITEM_IMPORT_STATE,
+          importState: {
+            status: FeedItemImportStatus.NeedsRefresh,
+            refreshRequestedTime: new Date(),
+            lastSuccessfulImportTime: feedItem.importState.lastSuccessfulImportTime,
+          },
         } as Partial<FeedItem>);
         return result;
       }}
-      toastText={'Feed item saved as example (TODO: Implement this)'}
-      errorMessage={'Error saving feed item as example (TODO: Implement this)'}
+      toastText={'Feed item queued for re-import'}
+      errorMessage={'Error queuing feed item for re-import'}
     />
   );
 };

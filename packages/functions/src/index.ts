@@ -237,9 +237,9 @@ export const importItemOnFeedItemCreated = onDocumentCreated(
       await feedItemsService.updateFeedItem(feedItemId, {
         importState: {
           status: FeedItemImportStatus.Failed,
-          hasEverBeenImported: feedItem.importState.hasEverBeenImported,
           errorMessage: error.message,
           importFailedTime: new Date(),
+          lastSuccessfulImportTime: feedItem.importState.lastSuccessfulImportTime,
         },
       });
     };
@@ -250,8 +250,8 @@ export const importItemOnFeedItemCreated = onDocumentCreated(
     const claimItemResult = await feedItemsService.updateFeedItem(feedItemId, {
       importState: {
         status: FeedItemImportStatus.Processing,
-        hasEverBeenImported: feedItem.importState.hasEverBeenImported,
         importStartedTime: new Date(),
+        lastSuccessfulImportTime: feedItem.importState.lastSuccessfulImportTime,
       },
     });
     if (!claimItemResult.success) {
@@ -272,8 +272,7 @@ export const importItemOnFeedItemCreated = onDocumentCreated(
     const markCompletedResult = await feedItemsService.updateFeedItem(feedItemId, {
       importState: {
         status: FeedItemImportStatus.Completed,
-        hasEverBeenImported: true,
-        importCompletedTime: new Date(),
+        lastSuccessfulImportTime: new Date(),
       },
     });
     if (!markCompletedResult.success) {
