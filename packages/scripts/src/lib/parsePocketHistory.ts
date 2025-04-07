@@ -46,6 +46,12 @@ if (!firecrawlApiKey) {
   process.exit(1);
 }
 
+const firebaseUserId = process.env.FIREBASE_USER_ID as AccountId;
+if (!firebaseUserId) {
+  logger.error(new Error('FIREBASE_USER_ID environment variable is not defined'));
+  process.exit(1);
+}
+
 // Download file from https://getpocket.com/export.
 const POCKET_EXPORT_FILE_PATH = path.resolve(__dirname, '../resources/pocketExport.html');
 
@@ -97,8 +103,7 @@ async function main(): Promise<void> {
     );
 
     const createFeedItemResult = await feedItemsService.createFeedItem({
-      // TODO: Stop using hard-coded account ID.
-      accountId: 'iwyEQZp8yyf7bmnBLSUateGfXU32' as AccountId,
+      accountId: firebaseUserId,
       url: pocketItem.url,
       feedItemSource: FEED_ITEM_POCKET_EXPORT_SOURCE,
     });

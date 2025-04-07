@@ -242,6 +242,7 @@ export const importItemOnFeedItemCreated = onDocumentCreated(
     };
 
     // Claim the item so that no other function picks it up.
+    // TODO: Consider using a lock to prevent multiple functions from processing the same item.
     logger.log(`[IMPORT] Claiming import queue item...`, logDetails);
     const claimItemResult = await feedItemsService.updateImportedFeedItemInFirestore(feedItemId, {
       importState: {
