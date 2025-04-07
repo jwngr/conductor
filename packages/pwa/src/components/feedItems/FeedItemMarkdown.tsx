@@ -17,14 +17,32 @@ export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedI
 
   switch (feedItem.importState.status) {
     case FeedItemImportStatus.Failed:
-      return <Text as="p">Import failed</Text>;
-    case FeedItemImportStatus.Processing:
-      return <Text as="p">Import in progress...</Text>;
-    case FeedItemImportStatus.New:
-      return <Text as="p">Loading markdown...</Text>;
+      return (
+        <Text as="p" className="text-error">
+          Import failed: {feedItem.importState.errorMessage}
+        </Text>
+      );
+    case FeedItemImportStatus.Processing: {
+      const msSinceImportStarted = Date.now() - feedItem.importState.importStartedTime.getTime();
+      const secondsSinceImportStarted = msSinceImportStarted / 1000;
+      return (
+        <Text as="p">Import in progress... {secondsSinceImportStarted} seconds since started</Text>
+      );
+    }
+    case FeedItemImportStatus.New: {
+      const msSinceCreated = Date.now() - feedItem.createdTime.getTime();
+      const secondsSinceCreated = msSinceCreated / 1000;
+      return (
+        <Text as="p">Import not yet started... {secondsSinceCreated} seconds since created</Text>
+      );
+    }
     case FeedItemImportStatus.Completed:
       if (markdownState.error) {
-        return <Text as="p">Error loading markdown</Text>;
+        return (
+          <Text as="p" className="text-error">
+            Error loading markdown: {markdownState.error.message}
+          </Text>
+        );
       } else if (markdownState.isLoading) {
         return <Text as="p">Loading markdown...</Text>;
       } else if (markdownState.markdown) {
