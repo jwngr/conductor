@@ -1,8 +1,5 @@
 import type React from 'react';
 
-import {logger} from '@shared/services/logger.shared';
-
-import {prefixError} from '@shared/lib/errorUtils.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {FeedItemImportStatus, type FeedItem} from '@shared/types/feedItems.types';
@@ -36,6 +33,6 @@ export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedI
         return <Text as="p">No markdown</Text>;
       }
     default:
-      assertNever(feedItem.importState.status);
+      assertNever(feedItem.importState);
   }
 };

@@ -137,8 +137,8 @@ function parsePocketExportFeedItemSource(
 function parseFeedItemImportState(
   feedItemImportState: FeedItemImportStateFromStorage
 ): Result<FeedItemImportState> {
-  const sourceType = feedItemImportState.type;
-  switch (sourceType) {
+  const status = feedItemImportState.status;
+  switch (status) {
     case FeedItemImportStatus.New:
       return parseNewFeedItemImportState(feedItemImportState);
     case FeedItemImportStatus.Processing:
@@ -148,7 +148,7 @@ function parseFeedItemImportState(
     case FeedItemImportStatus.Completed:
       return parseCompletedFeedItemImportState(feedItemImportState);
     default:
-      return makeErrorResult(new Error(`Unknown feed item import state type: ${sourceType}`));
+      return makeErrorResult(new Error(`Unknown feed item import status: ${status}`));
   }
 }
 
