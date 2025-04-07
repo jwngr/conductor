@@ -215,6 +215,7 @@ const RetryImportActionIcon: React.FC<{
         const result = await feedItemsService.updateFeedItem(feedItem.feedItemId, {
           importState: {
             ...feedItem.importState,
+            lastImportRequestedTime: new Date(),
             shouldFetch: true,
           },
         } as Partial<FeedItem>);
