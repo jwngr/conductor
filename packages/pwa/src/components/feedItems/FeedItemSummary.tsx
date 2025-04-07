@@ -19,7 +19,9 @@ export const FeedItemSummary: React.FC<{readonly feedItem: FeedItem}> = ({feedIt
       const msSinceImportStarted = Date.now() - feedItem.importState.importStartedTime.getTime();
       const secondsSinceImportStarted = msSinceImportStarted / 1000;
       return (
-        <Text as="p">Import in progress... {secondsSinceImportStarted} seconds since started</Text>
+        <Text as="p">
+          Import started {secondsSinceImportStarted} seconds ago and still in progres...
+        </Text>
       );
     }
     case FeedItemImportStatus.New: {
