@@ -7,7 +7,11 @@ import {prefixError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 
 import type {FeedItem} from '@shared/types/feedItems.types';
-import {FeedItemActionType, TriageStatus} from '@shared/types/feedItems.types';
+import {
+  FeedItemActionType,
+  FeedItemImportStatus,
+  TriageStatus,
+} from '@shared/types/feedItems.types';
 import type {IconName} from '@shared/types/icons.types';
 import type {AsyncResult} from '@shared/types/result.types';
 import {makeSuccessResult} from '@shared/types/result.types';
@@ -32,6 +36,7 @@ interface GenericFeedItemActionIconProps {
   readonly onAction: Func<boolean, AsyncResult<void>>;
   readonly toastText: string;
   readonly errorMessage: string;
+  readonly disabled?: boolean;
 }
 
 const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
@@ -44,11 +49,16 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
   onAction,
   toastText,
   errorMessage,
+  disabled,
 }) => {
   const {feedItemId} = feedItem;
   const eventLogService = useEventLogService();
 
   const handleAction = async (): Promise<void> => {
+    if (disabled) {
+      return;
+    }
+
     const isCurrentlyActive = getIsActive(feedItem);
     const result = await onAction(isCurrentlyActive);
 
@@ -69,6 +79,7 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
       size={40}
       onClick={handleAction}
       shortcutId={shortcutId}
+      disabled={disabled}
     />
   );
 };
@@ -199,13 +210,14 @@ const RetryImportActionIcon: React.FC<{
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}
       getIsActive={() => false}
+      disabled={feedItem.importState.status === FeedItemImportStatus.Processing}
       onAction={async () => {
         const result = await feedItemsService.updateFeedItem(feedItem.feedItemId, {
           importState: {
             status: feedItem.importState.status,
-            shouldFetch: true,
             lastImportRequestedTime: feedItem.importState.lastImportRequestedTime,
             lastSuccessfulImportTime: feedItem.importState.lastSuccessfulImportTime,
+            shouldFetch: true,
           },
         } as Partial<FeedItem>);
         return result;

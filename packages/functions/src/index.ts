@@ -222,12 +222,25 @@ export const importFeedItemOnUpdate = onDocumentUpdated(
 
     const feedItem = feedItemResult.value;
 
-    if (!feedItem.importState.shouldFetch) {
-      logger.warn(`[IMPORT] Feed item ${feedItemId} is not marked as needing fetched. Skipping...`);
+    const logDetails = {feedItemId, accountId: feedItem.accountId} as const;
+
+    if (!event.data) {
+      logger.error(new Error('No event data found'), logDetails);
       return;
     }
 
-    const logDetails = {feedItemId, accountId: feedItem.accountId} as const;
+    const beforeData = event.data.before.data();
+    const afterData = event.data.after.data();
+
+    const isCreation = event.data.after.exists && !event.data.before.exists;
+    const isReImport = !beforeData.importState.shouldFetch && afterData.importState.shouldFetch;
+    if (!isCreation && !isReImport) {
+      logger.warn(
+        `[IMPORT] Feed item update is not a creation or re-import. Skipping...`,
+        logDetails
+      );
+      return;
+    }
 
     const handleError = async (errorPrefix: string, error: Error): Promise<void> => {
       logger.error(prefixError(error, errorPrefix), logDetails);

@@ -24,6 +24,7 @@ interface ButtonIconProps extends StyleAttributes {
   readonly shortcutId?: KeyboardShortcutId;
   readonly tooltip: TooltipContent;
   readonly className?: string;
+  readonly disabled?: boolean;
 }
 
 export const ButtonIcon: React.FC<ButtonIconProps> = ({
@@ -33,6 +34,7 @@ export const ButtonIcon: React.FC<ButtonIconProps> = ({
   onClick,
   shortcutId,
   className,
+  disabled,
   ...styleProps
 }) => {
   const iconSize = getIconSizeFromButtonIconSize(buttonIconSize);
@@ -58,6 +60,10 @@ export const ButtonIcon: React.FC<ButtonIconProps> = ({
       <Icon className={className} name={name} size={iconSize} {...styleProps} />
     </div>
   );
+
+  if (disabled) {
+    return buttonIcon;
+  }
 
   return (
     <Tooltip
