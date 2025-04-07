@@ -23,19 +23,22 @@ export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedI
         </Text>
       );
     case FeedItemImportStatus.Processing: {
-      const msSinceImportStarted = Date.now() - feedItem.importState.importStartedTime.getTime();
-      const secondsSinceImportStarted = msSinceImportStarted / 1000;
+      const msSinceImportRequested =
+        Date.now() - feedItem.importState.lastImportRequestedTime.getTime();
+      const secondsSinceImportRequested = parseFloat((msSinceImportRequested / 1000).toFixed(0));
       return (
         <Text as="p">
-          Import started {secondsSinceImportStarted} seconds ago and still in progres...
+          Import requested {secondsSinceImportRequested} seconds ago and still in progress...
         </Text>
       );
     }
     case FeedItemImportStatus.New: {
       const msSinceCreated = Date.now() - feedItem.createdTime.getTime();
-      const secondsSinceCreated = msSinceCreated / 1000;
+      const secondsSinceCreated = parseFloat((msSinceCreated / 1000).toFixed(0));
       return (
-        <Text as="p">Import not yet started... {secondsSinceCreated} seconds since created</Text>
+        <Text as="p">
+          Import not yet started, item created {secondsSinceCreated} seconds ago...
+        </Text>
       );
     }
     case FeedItemImportStatus.Completed:

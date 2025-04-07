@@ -3,7 +3,7 @@ import {logger, setGlobalOptions} from 'firebase-functions';
 import {defineString, projectID} from 'firebase-functions/params';
 import {auth} from 'firebase-functions/v1';
 import {onInit} from 'firebase-functions/v2/core';
-import {onDocumentCreated, onDocumentUpdated} from 'firebase-functions/v2/firestore';
+import {onDocumentUpdated} from 'firebase-functions/v2/firestore';
 import {onCall, onRequest} from 'firebase-functions/v2/https';
 
 import {
@@ -194,9 +194,9 @@ export const subscribeAccountToFeedOnCall = onCall(
 );
 
 /**
- * Processes a feed item after it is created, importing its HTML and doing some LLM processing.
+ * Imports a feed item, importing content and doing some LLM processing.
  */
-export const importItemOnFeedItemCreated = onDocumentCreated(
+export const importFeedItemOnUpdate = onDocumentUpdated(
   `${FEED_ITEMS_DB_COLLECTION}/{feedItemId}`,
   async (event) => {
     const feedItemIdResult = parseFeedItemId(event.params.feedItemId);
@@ -207,7 +207,7 @@ export const importItemOnFeedItemCreated = onDocumentCreated(
     }
 
     const feedItemId = feedItemIdResult.value;
-    const feedItemData = event.data?.data();
+    const feedItemData = event.data?.after.data();
     if (!feedItemData) {
       logger.error(new Error('No feed item data found'), {feedItemId});
       return;
@@ -223,9 +223,7 @@ export const importItemOnFeedItemCreated = onDocumentCreated(
     const feedItem = feedItemResult.value;
 
     if (!feedItem.importState.shouldFetch) {
-      logger.warn(
-        `[IMPORT] Feed item ${feedItemId} is not marked as needing to be fetched. Skipping...`
-      );
+      logger.warn(`[IMPORT] Feed item ${feedItemId} is not marked as needing fetched. Skipping...`);
       return;
     }
 
