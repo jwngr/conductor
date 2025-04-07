@@ -180,7 +180,7 @@ export interface CompletedFeedItemImportState extends BaseFeedItemImportState {
 export interface NeedsRefreshFeedItemImportState extends BaseFeedItemImportState {
   readonly status: FeedItemImportStatus.NeedsRefresh;
   readonly refreshRequestedTime: Date;
-  readonly lastSuccessfulImportTime: Date;
+  readonly lastSuccessfulImportTime: Date | null;
 }
 
 export type FeedItemImportState =
@@ -249,7 +249,7 @@ export const CompletedFeedItemImportStateSchema = z.object({
 export const NeedsRefreshFeedItemImportStateSchema = z.object({
   status: z.literal(FeedItemImportStatus.NeedsRefresh),
   refreshRequestedTime: FirestoreTimestampSchema.or(z.date()),
-  lastSuccessfulImportTime: FirestoreTimestampSchema.or(z.date()),
+  lastSuccessfulImportTime: FirestoreTimestampSchema.or(z.date()).or(z.null()),
 });
 
 const FeedItemImportStateFromStorageSchema = z.discriminatedUnion('status', [

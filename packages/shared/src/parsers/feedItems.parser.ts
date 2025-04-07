@@ -183,7 +183,9 @@ function parseProcessingFeedItemImportState(
   return makeSuccessResult({
     status: FeedItemImportStatus.Processing,
     importStartedTime: parseStorageTimestamp(parsedResult.value.importStartedTime),
-    lastSuccessfulImportTime: parseStorageTimestamp(parsedResult.value.lastSuccessfulImportTime),
+    lastSuccessfulImportTime: parsedResult.value.lastSuccessfulImportTime
+      ? parseStorageTimestamp(parsedResult.value.lastSuccessfulImportTime)
+      : null,
   });
 }
 
@@ -202,7 +204,9 @@ function parseFailedFeedItemImportState(
     status: FeedItemImportStatus.Failed,
     errorMessage: parsedResult.value.errorMessage,
     importFailedTime: parseStorageTimestamp(parsedResult.value.importFailedTime),
-    lastSuccessfulImportTime: parseStorageTimestamp(parsedResult.value.lastSuccessfulImportTime),
+    lastSuccessfulImportTime: parsedResult.value.lastSuccessfulImportTime
+      ? parseStorageTimestamp(parsedResult.value.lastSuccessfulImportTime)
+      : null,
   });
 }
 
@@ -237,7 +241,9 @@ function parseNeedsRefreshFeedItemImportState(
   return makeSuccessResult({
     status: FeedItemImportStatus.NeedsRefresh,
     refreshRequestedTime: parseStorageTimestamp(parsedResult.value.refreshRequestedTime),
-    lastSuccessfulImportTime: parseStorageTimestamp(parsedResult.value.lastSuccessfulImportTime),
+    lastSuccessfulImportTime: parsedResult.value.lastSuccessfulImportTime
+      ? parseStorageTimestamp(parsedResult.value.lastSuccessfulImportTime)
+      : null,
   });
 }
 
