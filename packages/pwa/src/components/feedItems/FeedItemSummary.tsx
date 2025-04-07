@@ -8,6 +8,16 @@ import {Text} from '@src/components/atoms/Text';
 import {Markdown} from '@src/components/Markdown';
 
 export const FeedItemSummary: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
+  const hasFeedItemEverBeenImported = feedItem.importState.lastSuccessfulImportTime !== null;
+
+  if (hasFeedItemEverBeenImported) {
+    if (feedItem.summary) {
+      return <Markdown content={feedItem.summary.replace(/•/g, '*')} />;
+    } else {
+      return <Text as="p">No summary</Text>;
+    }
+  }
+
   switch (feedItem.importState.status) {
     case FeedItemImportStatus.Failed:
       return (
@@ -34,12 +44,6 @@ export const FeedItemSummary: React.FC<{readonly feedItem: FeedItem}> = ({feedIt
         </Text>
       );
     }
-    case FeedItemImportStatus.Completed:
-      if (feedItem.summary) {
-        return <Markdown content={feedItem.summary.replace(/•/g, '*')} />;
-      } else {
-        return <Text as="p">No summary</Text>;
-      }
     default: {
       assertNever(feedItem.importState);
     }

@@ -3,7 +3,7 @@ import {logger, setGlobalOptions} from 'firebase-functions';
 import {defineString, projectID} from 'firebase-functions/params';
 import {auth} from 'firebase-functions/v1';
 import {onInit} from 'firebase-functions/v2/core';
-import {onDocumentUpdated} from 'firebase-functions/v2/firestore';
+import {onDocumentCreated, onDocumentUpdated} from 'firebase-functions/v2/firestore';
 import {onCall, onRequest} from 'firebase-functions/v2/https';
 
 import {
@@ -45,6 +45,7 @@ import {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFee
 import {WipeoutService} from '@sharedServer/services/wipeout.server';
 
 import {wipeoutAccountHelper} from '@src/lib/accountWipeout';
+import {feedItemImportHelper} from '@src/lib/feedItemImport';
 import {subscribeAccountToFeedHelper} from '@src/lib/feedSubscription';
 import {handleFeedUnsubscribeHelper} from '@src/lib/feedUnsubscribe';
 import {handleSuperfeedrWebhookHelper} from '@src/lib/superfeedrWebhook';
@@ -196,13 +197,57 @@ export const subscribeAccountToFeedOnCall = onCall(
 /**
  * Imports a feed item, importing content and doing some LLM processing.
  */
+export const importFeedItemOnCreate = onDocumentCreated(
+  `${FEED_ITEMS_DB_COLLECTION}/{feedItemId}`,
+  async (event) => {
+    const feedItemIdResult = parseFeedItemId(event.params.feedItemId);
+    if (!feedItemIdResult.success) {
+      logger.error(feedItemIdResult.error, {feedItemId: event.params.feedItemId});
+      return;
+    }
+
+    const feedItemId = feedItemIdResult.value;
+    const feedItemResult = parseFeedItem(event.data?.data());
+    if (!feedItemResult.success) {
+      logger.error(feedItemResult.error, {feedItemId});
+      return;
+    }
+
+    const feedItem = feedItemResult.value;
+    const logDetails = {feedItemId, accountId: feedItem.accountId} as const;
+
+    if (!event.data) {
+      logger.error(new Error('No event data found'), logDetails);
+      return;
+    }
+
+    if (
+      feedItem.importState.status !== FeedItemImportStatus.New ||
+      !feedItem.importState.shouldFetch
+    ) {
+      logger.warn(`[IMPORT] Feed item has unexpected import state. Skipping...`, logDetails);
+      return;
+    }
+
+    const importResult = await feedItemImportHelper({feedItem, feedItemsService});
+    if (!importResult.success) {
+      logger.error(importResult.error, logDetails);
+      return;
+    }
+
+    logger.log(`[IMPORT] Successfully processed import queue item`, logDetails);
+  }
+);
+
+/**
+ * Imports a feed item, importing content and doing some LLM processing.
+ */
 export const importFeedItemOnUpdate = onDocumentUpdated(
   `${FEED_ITEMS_DB_COLLECTION}/{feedItemId}`,
   async (event) => {
     const feedItemIdResult = parseFeedItemId(event.params.feedItemId);
     if (!feedItemIdResult.success) {
-      const betterError = prefixError(feedItemIdResult.error, 'Failed to parse feed item ID');
-      logger.error(betterError, {feedItemId: event.params.feedItemId});
+      logger.error(feedItemIdResult.error, {feedItemId: event.params.feedItemId});
       return;
     }
 
@@ -215,13 +260,11 @@ export const importFeedItemOnUpdate = onDocumentUpdated(
 
     const feedItemResult = parseFeedItem(feedItemData);
     if (!feedItemResult.success) {
-      const betterError = prefixError(feedItemResult.error, 'Failed to parse feed item');
-      logger.error(betterError, {feedItemId, feedItemData});
+      logger.error(feedItemResult.error, {feedItemId, feedItemData});
       return;
     }
 
     const feedItem = feedItemResult.value;
-
     const logDetails = {feedItemId, accountId: feedItem.accountId} as const;
 
     if (!event.data) {
@@ -232,70 +275,14 @@ export const importFeedItemOnUpdate = onDocumentUpdated(
     const beforeData = event.data.before.data();
     const afterData = event.data.after.data();
 
-    const isCreation = event.data.after.exists && !event.data.before.exists;
+    // Only re-import if `shouldFetch` became true.
     const isReImport = !beforeData.importState.shouldFetch && afterData.importState.shouldFetch;
-    if (!isCreation && !isReImport) {
-      logger.warn(
-        `[IMPORT] Feed item update is not a creation or re-import. Skipping...`,
-        logDetails
-      );
-      return;
-    }
+    if (!isReImport) return;
 
-    const handleError = async (errorPrefix: string, error: Error): Promise<void> => {
-      logger.error(prefixError(error, errorPrefix), logDetails);
-      await feedItemsService.updateFeedItem(feedItemId, {
-        importState: {
-          status: FeedItemImportStatus.Failed,
-          errorMessage: error.message,
-          importFailedTime: new Date(),
-          lastImportRequestedTime: feedItem.importState.lastImportRequestedTime,
-          lastSuccessfulImportTime: feedItem.importState.lastSuccessfulImportTime,
-          // Don't retry failed imports. Users can manually retry from the UI.
-          shouldFetch: false,
-        },
-      });
-    };
+    const importResult = await feedItemImportHelper({feedItem, feedItemsService});
 
-    // Claim the item so that no other function picks it up.
-    // TODO: Consider using a lock to prevent multiple functions from processing the same item.
-    logger.log(`[IMPORT] Claiming import queue item...`, logDetails);
-    const claimItemResult = await feedItemsService.updateFeedItem(feedItemId, {
-      importState: {
-        status: FeedItemImportStatus.Processing,
-        importStartedTime: new Date(),
-        lastImportRequestedTime: feedItem.importState.lastImportRequestedTime,
-        lastSuccessfulImportTime: feedItem.importState.lastSuccessfulImportTime,
-        // Claiming the item means we don't need to fetch it again.
-        shouldFetch: false,
-      },
-    });
-    if (!claimItemResult.success) {
-      await handleError('Failed to claim import queue item', claimItemResult.error);
-      return;
-    }
-
-    // Actually import the feed item.
-    logger.log(`[IMPORT] Importing queue item...`, logDetails);
-    const importItemResult = await feedItemsService.importFeedItem(feedItem);
-    if (!importItemResult.success) {
-      await handleError('Error importing queue item', importItemResult.error);
-      return;
-    }
-
-    // Mark the import queue item as completed once everything else has processed successfully.
-    logger.log(`[IMPORT] Marking import queue item as completed...`, logDetails);
-    const markCompletedResult = await feedItemsService.updateFeedItem(feedItemId, {
-      importState: {
-        status: FeedItemImportStatus.Completed,
-        lastSuccessfulImportTime: new Date(),
-        lastImportRequestedTime: feedItem.importState.lastImportRequestedTime,
-        // Completed items don't need to be fetched again.
-        shouldFetch: false,
-      },
-    });
-    if (!markCompletedResult.success) {
-      await handleError('Error marking import queue item as completed', markCompletedResult.error);
+    if (!importResult.success) {
+      logger.error(importResult.error, logDetails);
       return;
     }
 

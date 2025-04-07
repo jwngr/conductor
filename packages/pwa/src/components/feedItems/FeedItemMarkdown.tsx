@@ -10,10 +10,28 @@ import {Text} from '@src/components/atoms/Text';
 import {Markdown} from '@src/components/Markdown';
 
 export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
+  const hasFeedItemEverBeenImported = feedItem.importState.lastSuccessfulImportTime !== null;
+
   const markdownState = useFeedItemMarkdown({
     feedItemId: feedItem.feedItemId,
-    hasFeedItemEverBeenImported: feedItem.importState.lastSuccessfulImportTime !== null,
+    hasFeedItemEverBeenImported,
   });
+
+  if (hasFeedItemEverBeenImported) {
+    if (markdownState.error) {
+      return (
+        <Text as="p" className="text-error">
+          Error loading markdown: {markdownState.error.message}
+        </Text>
+      );
+    } else if (markdownState.isLoading) {
+      return <Text as="p">Loading markdown...</Text>;
+    } else if (markdownState.markdown) {
+      return <Markdown content={markdownState.markdown} />;
+    } else {
+      return <Text as="p">No markdown</Text>;
+    }
+  }
 
   switch (feedItem.importState.status) {
     case FeedItemImportStatus.Failed:
@@ -41,20 +59,6 @@ export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedI
         </Text>
       );
     }
-    case FeedItemImportStatus.Completed:
-      if (markdownState.error) {
-        return (
-          <Text as="p" className="text-error">
-            Error loading markdown: {markdownState.error.message}
-          </Text>
-        );
-      } else if (markdownState.isLoading) {
-        return <Text as="p">Loading markdown...</Text>;
-      } else if (markdownState.markdown) {
-        return <Markdown content={markdownState.markdown} />;
-      } else {
-        return <Text as="p">No markdown</Text>;
-      }
     default: {
       assertNever(feedItem.importState);
     }
