@@ -14,9 +14,9 @@ import {
 import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
 import {pluralizeWithCount} from '@shared/lib/utils.shared';
 
+import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 
-import type {AccountId} from '@shared/types/accounts.types';
 import {FEED_ITEM_POCKET_EXPORT_SOURCE} from '@shared/types/feedItems.types';
 import type {PocketImportItem} from '@shared/types/pocket.types';
 
@@ -46,11 +46,12 @@ if (!firecrawlApiKey) {
   process.exit(1);
 }
 
-const firebaseUserId = process.env.FIREBASE_USER_ID as AccountId;
-if (!firebaseUserId) {
-  logger.error(new Error('FIREBASE_USER_ID environment variable is not defined'));
+const accountIdResult = parseAccountId(process.env.FIREBASE_USER_ID || '');
+if (!accountIdResult.success) {
+  logger.error(prefixError(accountIdResult.error, 'Invalid FIREBASE_USER_ID environment variable'));
   process.exit(1);
 }
+const accountId = accountIdResult.value;
 
 // Download file from https://getpocket.com/export.
 const POCKET_EXPORT_FILE_PATH = path.resolve(__dirname, '../resources/pocketExport.html');
@@ -103,14 +104,17 @@ async function main(): Promise<void> {
     );
 
     const createFeedItemResult = await feedItemsService.createFeedItem({
-      accountId: firebaseUserId,
+      accountId,
       url: pocketItem.url,
       feedItemSource: FEED_ITEM_POCKET_EXPORT_SOURCE,
     });
 
     if (!createFeedItemResult.success) {
-      logger.error(prefixError(createFeedItemResult.error, 'Error creating feed item'));
-      process.exit(1);
+      // Treat individual errors as non-fatal.
+      logger.error(
+        prefixError(createFeedItemResult.error, `Error creating feed item for ${pocketItem.url}`)
+      );
+      continue;
     }
   }
 
