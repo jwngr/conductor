@@ -11,7 +11,6 @@ import {
   FEED_ITEMS_DB_COLLECTION,
   FEED_ITEMS_STORAGE_COLLECTION,
   FEED_SOURCES_DB_COLLECTION,
-  IMPORT_QUEUE_DB_COLLECTION,
   USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
 } from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
@@ -24,16 +23,12 @@ import {
   toStorageFeedSource,
 } from '@shared/parsers/feedSources.parser';
 import {
-  parseImportQueueItem,
-  parseImportQueueItemId,
-  toStorageImportQueueItem,
-} from '@shared/parsers/importQueue.parser';
-import {
   parseUserFeedSubscription,
   parseUserFeedSubscriptionId,
   toStorageUserFeedSubscription,
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
+import {FeedItemImportStatus} from '@shared/types/feedItems.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 
 import {ServerAccountsService} from '@sharedServer/services/accounts.server';
@@ -44,7 +39,6 @@ import {
   makeFirestoreDataConverter,
   ServerFirestoreCollectionService,
 } from '@sharedServer/services/firestore.server';
-import {ServerImportQueueService} from '@sharedServer/services/importQueue.server';
 import {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
 import {SuperfeedrService} from '@sharedServer/services/superfeedr.server';
 import {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
@@ -53,8 +47,6 @@ import {WipeoutService} from '@sharedServer/services/wipeout.server';
 import {wipeoutAccountHelper} from '@src/lib/accountWipeout';
 import {subscribeAccountToFeedHelper} from '@src/lib/feedSubscription';
 import {handleFeedUnsubscribeHelper} from '@src/lib/feedUnsubscribe';
-import {createImportQueueItemHelper} from '@src/lib/importQueueCreation';
-import {processImportQueueItem} from '@src/lib/importQueueProcessor';
 import {handleSuperfeedrWebhookHelper} from '@src/lib/superfeedrWebhook';
 
 const FIRECRAWL_API_KEY = defineString('FIRECRAWL_API_KEY');
@@ -66,15 +58,12 @@ const FIREBASE_FUNCTIONS_REGION = 'us-central1';
 
 let feedSourcesService: ServerFeedSourcesService;
 let userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
-let importQueueService: ServerImportQueueService;
 let wipeoutService: WipeoutService;
 let rssFeedService: ServerRssFeedService;
 let feedItemsService: ServerFeedItemsService;
 
 // Initialize services on startup
 onInit(() => {
-  const firecrawlApp = new FirecrawlApp({apiKey: FIRECRAWL_API_KEY.value()});
-
   const superfeedrService = new SuperfeedrService({
     superfeedrUser: SUPERFEEDR_USER.value(),
     superfeedrApiKey: SUPERFEEDR_API_KEY.value(),
@@ -117,26 +106,13 @@ onInit(() => {
     parseId: parseFeedItemId,
   });
 
+  const firecrawlApp = new FirecrawlApp({apiKey: FIRECRAWL_API_KEY.value()});
+  const firecrawlService = new ServerFirecrawlService(firecrawlApp);
+
   feedItemsService = new ServerFeedItemsService({
     feedItemsCollectionService,
     storageCollectionPath: FEED_ITEMS_STORAGE_COLLECTION,
-  });
-
-  const importQueueItemFirestoreConverter = makeFirestoreDataConverter(
-    toStorageImportQueueItem,
-    parseImportQueueItem
-  );
-
-  const importQueueCollectionService = new ServerFirestoreCollectionService({
-    collectionPath: IMPORT_QUEUE_DB_COLLECTION,
-    converter: importQueueItemFirestoreConverter,
-    parseId: parseImportQueueItemId,
-  });
-
-  importQueueService = new ServerImportQueueService({
-    importQueueCollectionService,
-    firecrawlService: new ServerFirecrawlService(firecrawlApp),
-    feedItemsService,
+    firecrawlService,
   });
 
   const accountFirestoreConverter = makeFirestoreDataConverter(toStorageAccount, parseAccount);
@@ -150,7 +126,6 @@ onInit(() => {
   wipeoutService = new WipeoutService({
     accountsService: new ServerAccountsService({accountsCollectionService}),
     userFeedSubscriptionsService,
-    importQueueService,
     feedItemsService,
   });
 
@@ -179,20 +154,6 @@ export const handleSuperfeedrWebhook = onRequest(
       feedSourcesService,
       userFeedSubscriptionsService,
       feedItemsService,
-    });
-  }
-);
-
-/**
- * Processes an import queue item when it is created.
- */
-export const processImportQueueOnDocumentCreated = onDocumentCreated(
-  `/${IMPORT_QUEUE_DB_COLLECTION}/{importQueueItemId}`,
-  async (event) => {
-    await processImportQueueItem({
-      importQueueItemId: event.params.importQueueItemId,
-      data: event.data,
-      importQueueService,
     });
   }
 );
@@ -233,19 +194,91 @@ export const subscribeAccountToFeedOnCall = onCall(
 );
 
 /**
- * Creates an import queue item when a feed item is created.
- *
- * This is decoupled from feed item creation to simplify logic for callers. They just need to create
- * a new feed item and this function will handle the rest.
+ * Processes a feed item after it is created, importing its HTML and doing some LLM processing.
  */
-export const createImportQueueItemOnFeedItemCreated = onDocumentCreated(
+export const importItemOnFeedItemCreated = onDocumentCreated(
   `${FEED_ITEMS_DB_COLLECTION}/{feedItemId}`,
   async (event) => {
-    await createImportQueueItemHelper({
-      feedItemId: event.params.feedItemId,
-      data: event.data?.data(),
-      importQueueService,
+    const feedItemIdResult = parseFeedItemId(event.params.feedItemId);
+    if (!feedItemIdResult.success) {
+      const betterError = prefixError(feedItemIdResult.error, 'Failed to parse feed item ID');
+      logger.error(betterError, {feedItemId: event.params.feedItemId});
+      return;
+    }
+
+    const feedItemId = feedItemIdResult.value;
+    const feedItemData = event.data?.data();
+    if (!feedItemData) {
+      logger.error(new Error('No feed item data found'), {feedItemId});
+      return;
+    }
+
+    const feedItemResult = parseFeedItem(feedItemData);
+    if (!feedItemResult.success) {
+      const betterError = prefixError(feedItemResult.error, 'Failed to parse feed item');
+      logger.error(betterError, {feedItemId, feedItemData});
+      return;
+    }
+
+    const feedItem = feedItemResult.value;
+
+    // Avoid double processing by only processing items with a "new" status.
+    if (feedItem.importState.status !== FeedItemImportStatus.New) {
+      logger.warn(`[IMPORT] Feed item ${feedItemId} is not in the "New" status. Skipping...`);
+      return;
+    }
+
+    const logDetails = {feedItemId, accountId: feedItem.accountId} as const;
+
+    const handleError = async (errorPrefix: string, error: Error): Promise<void> => {
+      logger.error(prefixError(error, errorPrefix), logDetails);
+      await feedItemsService.updateImportedFeedItemInFirestore(feedItemId, {
+        importState: {
+          status: FeedItemImportStatus.Failed,
+          errorMessage: error.message,
+          importFailedTime: new Date(),
+        },
+      });
+    };
+
+    // Claim the item so that no other function picks it up.
+    logger.log(`[IMPORT] Claiming import queue item...`, logDetails);
+    const claimItemResult = await feedItemsService.updateImportedFeedItemInFirestore(feedItemId, {
+      importState: {
+        status: FeedItemImportStatus.Processing,
+        importStartedTime: new Date(),
+      },
     });
+    if (!claimItemResult.success) {
+      await handleError('Failed to claim import queue item', claimItemResult.error);
+      return;
+    }
+
+    // Actually import the feed item.
+    logger.log(`[IMPORT] Importing queue item...`, logDetails);
+    const importItemResult = await feedItemsService.importFeedItem(feedItem);
+    if (!importItemResult.success) {
+      await handleError('Error importing queue item', importItemResult.error);
+      return;
+    }
+
+    // Mark the import queue item as completed once everything else has processed successfully.
+    logger.log(`[IMPORT] Marking import queue item as completed...`, logDetails);
+    const markCompletedResult = await feedItemsService.updateImportedFeedItemInFirestore(
+      feedItemId,
+      {
+        importState: {
+          status: FeedItemImportStatus.Completed,
+          importCompletedTime: new Date(),
+        },
+      }
+    );
+    if (!markCompletedResult.success) {
+      await handleError('Error marking import queue item as completed', markCompletedResult.error);
+      return;
+    }
+
+    logger.log(`[IMPORT] Successfully processed import queue item`, logDetails);
   }
 );
 

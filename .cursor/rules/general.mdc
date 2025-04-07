@@ -55,7 +55,6 @@ Key data collections in Firestore:
 - `feed_sources` - RSS feed sources and configurations
 - `feed_items` - Individual feed entries
 - `user_feed_subscriptions` - User subscriptions to feeds
-- `import_queue` - Queue for processing new content
 
 ### Development Workflow
 - Local development using Firebase emulators

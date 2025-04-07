@@ -1,8 +1,13 @@
 import type {FeedItem, FeedItemAction} from '@shared/types/feedItems.types';
-import {FeedItemActionType, makeFeedItemId, TriageStatus} from '@shared/types/feedItems.types';
+import {
+  FeedItemActionType,
+  FeedItemImportStatus,
+  makeFeedItemId,
+  TriageStatus,
+} from '@shared/types/feedItems.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/result.types';
-import {makeSuccessResult} from '@shared/types/result.types';
+import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
 
@@ -42,6 +47,7 @@ export class SharedFeedItemHelpers {
       url: args.url,
       type: args.type,
       feedItemSource: args.feedItemSource,
+      importState: {status: FeedItemImportStatus.New},
       // TODO: Update these and figure out a better solution. Maybe a better discriminated union.
       title: 'Test title from makeFeedItem',
       description: 'Test description from makeFeedItem',
@@ -112,5 +118,33 @@ export class SharedFeedItemHelpers {
       text: 'Cancel',
       icon: IconName.Cancel,
     };
+  }
+
+  public static validateUrl(url: string): Result<void> {
+    // Parse the URL to validate its structure.
+    const parsedUrl = new URL(url);
+
+    // Only allow HTTPS protocols.
+    // TODO: Consider allowing other protocols like `http:` and `chrome:` as well.
+    if (!['https:'].includes(parsedUrl.protocol)) {
+      return makeErrorResult(new Error('Only HTTPS URLs allowed'));
+    }
+
+    // Prevent localhost and private IP addresses.
+    const hostname = parsedUrl.hostname.toLowerCase();
+    if (
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname === '0.0.0.0' ||
+      hostname.startsWith('192.168.') ||
+      hostname.startsWith('10.') ||
+      hostname.startsWith('172.16.') ||
+      hostname.startsWith('169.254.') ||
+      hostname.endsWith('.local')
+    ) {
+      return makeErrorResult(new Error('URL cannot point to localhost or private networks'));
+    }
+
+    return makeSuccessResult(undefined);
   }
 }

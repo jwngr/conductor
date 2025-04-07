@@ -3,9 +3,9 @@ import type React from 'react';
 import {logger} from '@shared/services/logger.shared';
 
 import {prefixError} from '@shared/lib/errorUtils.shared';
-import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 
-import type {FeedItem} from '@shared/types/feedItems.types';
+import {FeedItemImportStatus, type FeedItem} from '@shared/types/feedItems.types';
 
 import {useFeedItemMarkdown} from '@sharedClient/services/feedItems.client';
 
@@ -13,22 +13,29 @@ import {Text} from '@src/components/atoms/Text';
 import {Markdown} from '@src/components/Markdown';
 
 export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
-  const isFeedItemImported = !SharedFeedItemHelpers.isImporting(feedItem);
-  const {markdown, isLoading, error} = useFeedItemMarkdown(feedItem.feedItemId, isFeedItemImported);
+  const markdownState = useFeedItemMarkdown(
+    feedItem.feedItemId,
+    feedItem.importState.status === FeedItemImportStatus.Completed
+  );
 
-  if (error) {
-    logger.error(prefixError(error, 'Error fetching markdown for feed item'), {
-      feedItemId: feedItem.feedItemId,
-    });
-    // TODO: Introduce proper error screen.
-    return <Text as="p">Something went wrong: {error.message}</Text>;
-  } else if (!isFeedItemImported) {
-    return <Text as="p">Importing...</Text>;
-  } else if (isLoading) {
-    return <Text as="p">Loading markdown...</Text>;
-  } else if (markdown) {
-    return <Markdown content={markdown} />;
-  } else {
-    return <Text as="p">No markdown</Text>;
+  switch (feedItem.importState.status) {
+    case FeedItemImportStatus.Failed:
+      return <Text as="p">Import failed</Text>;
+    case FeedItemImportStatus.Processing:
+      return <Text as="p">Import in progress...</Text>;
+    case FeedItemImportStatus.New:
+      return <Text as="p">Loading markdown...</Text>;
+    case FeedItemImportStatus.Completed:
+      if (markdownState.error) {
+        return <Text as="p">Error loading markdown</Text>;
+      } else if (markdownState.isLoading) {
+        return <Text as="p">Loading markdown...</Text>;
+      } else if (markdownState.markdown) {
+        return <Markdown content={markdownState.markdown} />;
+      } else {
+        return <Text as="p">No markdown</Text>;
+      }
+    default:
+      assertNever(feedItem.importState.status);
   }
 };

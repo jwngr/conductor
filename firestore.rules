@@ -26,6 +26,7 @@ service cloud.firestore {
         'feedItemId',
         'type',
         'feedItemSource',
+        'importState',
         'url',
         'title',
         'description',
@@ -63,23 +64,6 @@ service cloud.firestore {
       ]) &&
       request.resource.data.userFeedSubscriptionId is string &&
       request.resource.data.userFeedSubscriptionId == userFeedSubscriptionId &&
-      request.resource.data.url is string &&
-      request.resource.data.createdTime is timestamp &&
-      request.resource.data.lastUpdatedTime is timestamp;
-    }
-
-    function isValidImportQueueDoc(importQueueItemId) {
-      return request.resource.data.keys().hasAll([
-        'importQueueItemId',
-        'accountId',
-        'feedItemId', 
-        'url',
-        'createdTime',
-        'lastUpdatedTime'
-      ]) &&
-      request.resource.data.importQueueItemId is string &&
-      request.resource.data.importQueueItemId == importQueueItemId &&
-      request.resource.data.feedItemId is string &&
       request.resource.data.url is string &&
       request.resource.data.createdTime is timestamp &&
       request.resource.data.lastUpdatedTime is timestamp;
@@ -144,16 +128,6 @@ service cloud.firestore {
       allow create: if isNewResourceOwner() && isValidUserFeedSubscriptionDoc(userFeedSubscriptionId);
       allow update: if isResourceOwner() && isNewResourceOwner() && isValidUserFeedSubscriptionDoc(userFeedSubscriptionId);
       allow delete: if isResourceOwner();
-    }
-
-    match /importQueue/{importQueueItemId} {
-      // Allow creation if the current account owns the new document.
-      allow create: if isNewResourceOwner() && isValidImportQueueDoc(importQueueItemId);
-      allow update: if isNewResourceOwner() && isValidImportQueueDoc(importQueueItemId);
-
-      // Only allow reads or writes via the admin SDK - only the import queue server needs access.
-      allow read: if false
-      allow delete: if false
     }
 
     match /eventLog/{eventId} {

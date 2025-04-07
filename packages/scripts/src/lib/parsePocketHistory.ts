@@ -18,6 +18,7 @@ import {FEED_ITEM_POCKET_EXPORT_SOURCE} from '@shared/types/feedItems.types';
 import type {PocketImportItem} from '@shared/types/pocket.types';
 
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
+import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
 import {
   makeFirestoreDataConverter,
   ServerFirestoreCollectionService,
@@ -42,9 +43,14 @@ async function main(): Promise<void> {
     parseId: parseFeedItemId,
   });
 
+  const firecrawlService = new ServerFirecrawlService({
+    apiKey: process.env.FIRECRAWL_API_KEY,
+  });
+
   const feedItemsService = new ServerFeedItemsService({
     feedItemsCollectionService,
     storageCollectionPath: FEED_ITEMS_STORAGE_COLLECTION,
+    firecrawlService,
   });
 
   const pocketItemsResult = await ServerPocketService.parseExportFromFile(POCKET_EXPORT_FILE_PATH);
@@ -70,7 +76,9 @@ async function main(): Promise<void> {
       continue;
     }
 
-    console.log(pocketItem.title, pocketItem.url, new Date(pocketItem.timeAddedMs).toISOString());
+    logger.log(
+      `${pocketItem.title} ${pocketItem.url} ${new Date(pocketItem.timeAddedMs).toISOString()}`
+    );
 
     const createFeedItemResult = await feedItemsService.createFeedItem({
       // TODO: Stop using hard-coded account ID.
