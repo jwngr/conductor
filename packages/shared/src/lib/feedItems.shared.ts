@@ -1,8 +1,8 @@
 import type {FeedItem, FeedItemAction} from '@shared/types/feedItems.types';
 import {
   FeedItemActionType,
-  FeedItemImportStatus,
   makeFeedItemId,
+  makeNewFeedItemImportState,
   TriageStatus,
 } from '@shared/types/feedItems.types';
 import {IconName} from '@shared/types/icons.types';
@@ -30,16 +30,12 @@ export class SharedFeedItemHelpers {
     return feedItem?.tagIds[SystemTagId.Starred] === true;
   }
 
-  public static isImporting(feedItem: MaybeFeedItem): boolean {
-    return feedItem?.tagIds[SystemTagId.Importing] === true;
-  }
-
   public static isUnread(feedItem: MaybeFeedItem): boolean {
     return feedItem?.tagIds[SystemTagId.Unread] === true;
   }
 
   public static makeFeedItem(
-    args: Pick<FeedItem, 'type' | 'accountId' | 'url' | 'feedItemSource'>
+    args: Pick<FeedItem, 'type' | 'accountId' | 'url' | 'feedItemSource' | 'title'>
   ): Result<FeedItem> {
     return makeSuccessResult<FeedItem>({
       feedItemId: makeFeedItemId(),
@@ -47,16 +43,15 @@ export class SharedFeedItemHelpers {
       url: args.url,
       type: args.type,
       feedItemSource: args.feedItemSource,
-      importState: {status: FeedItemImportStatus.New},
+      importState: makeNewFeedItemImportState(),
       // TODO: Update these and figure out a better solution. Maybe a better discriminated union.
-      title: 'Test title from makeFeedItem',
+      title: args.title,
       description: 'Test description from makeFeedItem',
       summary: 'Test summary from makeFeedItem',
       outgoingLinks: [],
       triageStatus: TriageStatus.Untriaged,
       tagIds: {
         [SystemTagId.Unread]: true,
-        [SystemTagId.Importing]: true,
       },
       // TODO(timestamps): Use server timestamps instead.
       createdTime: new Date(),
@@ -101,6 +96,14 @@ export class SharedFeedItemHelpers {
       text: isAlreadyStarred ? 'Unstar' : 'Star',
       icon: IconName.Star,
       shortcutId: KeyboardShortcutId.ToggleStarred,
+    };
+  }
+
+  public static getRetryImportFeedItemActionInfo(): FeedItemAction {
+    return {
+      type: FeedItemActionType.RetryImport,
+      text: 'Retry import',
+      icon: IconName.RetryImport,
     };
   }
 

@@ -140,31 +140,49 @@ export enum FeedItemImportStatus {
   Failed = 'FAILED',
   /** Successfully imported all data. */
   Completed = 'COMPLETED',
-  // TODO: Add a "NeedsRefresh" status to force a re-import.
 }
 
 interface BaseFeedItemImportState {
   readonly status: FeedItemImportStatus;
+  readonly shouldFetch: boolean;
+  readonly lastImportRequestedTime: Date;
+  readonly lastSuccessfulImportTime: Date | null;
 }
 
 export interface NewFeedItemImportState extends BaseFeedItemImportState {
   readonly status: FeedItemImportStatus.New;
+  readonly shouldFetch: true;
+  readonly lastSuccessfulImportTime: null;
+}
+
+export function makeNewFeedItemImportState(): NewFeedItemImportState {
+  return {
+    status: FeedItemImportStatus.New,
+    shouldFetch: true,
+    lastImportRequestedTime: new Date(),
+    lastSuccessfulImportTime: null,
+  };
 }
 
 export interface ProcessingFeedItemImportState extends BaseFeedItemImportState {
   readonly status: FeedItemImportStatus.Processing;
+  readonly shouldFetch: false;
   readonly importStartedTime: Date;
+  readonly lastSuccessfulImportTime: Date | null;
 }
 
 export interface FailedFeedItemImportState extends BaseFeedItemImportState {
   readonly status: FeedItemImportStatus.Failed;
+  readonly shouldFetch: boolean;
   readonly errorMessage: string;
   readonly importFailedTime: Date;
+  readonly lastSuccessfulImportTime: Date | null;
 }
 
 export interface CompletedFeedItemImportState extends BaseFeedItemImportState {
   readonly status: FeedItemImportStatus.Completed;
-  readonly importCompletedTime: Date;
+  readonly shouldFetch: boolean;
+  readonly lastSuccessfulImportTime: Date;
 }
 
 export type FeedItemImportState =
@@ -208,22 +226,33 @@ interface BaseFeedItem extends BaseStoreItem {
 
 export const NewFeedItemImportStateSchema = z.object({
   status: z.literal(FeedItemImportStatus.New),
+  shouldFetch: z.literal(true),
+  lastSuccessfulImportTime: z.null(),
+  lastImportRequestedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
 export const ProcessingFeedItemImportStateSchema = z.object({
   status: z.literal(FeedItemImportStatus.Processing),
+  shouldFetch: z.literal(false),
   importStartedTime: FirestoreTimestampSchema.or(z.date()),
+  lastSuccessfulImportTime: FirestoreTimestampSchema.or(z.date()).or(z.null()),
+  lastImportRequestedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
 export const FailedFeedItemImportStateSchema = z.object({
   status: z.literal(FeedItemImportStatus.Failed),
+  shouldFetch: z.boolean(),
   errorMessage: z.string(),
   importFailedTime: FirestoreTimestampSchema.or(z.date()),
+  lastSuccessfulImportTime: FirestoreTimestampSchema.or(z.date()).or(z.null()),
+  lastImportRequestedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
 export const CompletedFeedItemImportStateSchema = z.object({
   status: z.literal(FeedItemImportStatus.Completed),
-  importCompletedTime: FirestoreTimestampSchema.or(z.date()),
+  shouldFetch: z.boolean(),
+  lastSuccessfulImportTime: FirestoreTimestampSchema.or(z.date()),
+  lastImportRequestedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
 const FeedItemImportStateFromStorageSchema = z.discriminatedUnion('status', [
@@ -298,6 +327,7 @@ export enum FeedItemActionType {
   MarkUnread = 'MARK_UNREAD',
   Save = 'SAVE',
   Star = 'STAR',
+  RetryImport = 'RETRY_IMPORT',
 }
 
 export interface FeedItemAction {

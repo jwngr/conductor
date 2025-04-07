@@ -40,12 +40,14 @@ const useMarkFeedItemRead = (args: {
 
   // Variables exist so we don't need to include the entire feed item in the deps array.
   const isFeedItemNull = feedItem === null;
-  const isFeedItemImported = feedItem ? !SharedFeedItemHelpers.isImporting(feedItem) : false;
+  const hasFeedItemBeenImported = feedItem
+    ? feedItem.importState.lastSuccessfulImportTime !== null
+    : false;
 
   useEffect(() => {
     async function go(): Promise<void> {
       // Don't mark the feed item as read unless it has been imported.
-      if (isFeedItemNull || !isFeedItemImported) return;
+      if (isFeedItemNull || !hasFeedItemBeenImported) return;
 
       // Only mark the feed item as read:
       // 1. if it was not already read at mount, to avoid unnecessary requests.
@@ -71,7 +73,7 @@ const useMarkFeedItemRead = (args: {
     }
 
     void go();
-  }, [feedItemId, isFeedItemNull, isFeedItemImported, feedItemsService]);
+  }, [feedItemId, isFeedItemNull, feedItemsService, hasFeedItemBeenImported]);
 };
 
 const FeedItemScreenMainContent: React.FC<{

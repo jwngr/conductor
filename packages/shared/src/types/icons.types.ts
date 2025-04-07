@@ -6,6 +6,7 @@ export enum IconName {
   MarkUnread = 'MARK_UNREAD',
   Save = 'SAVE',
   Star = 'STAR',
+  RetryImport = 'RETRY_IMPORT',
 }
 
 export type IconSize = 16 | 24 | 32 | 40;

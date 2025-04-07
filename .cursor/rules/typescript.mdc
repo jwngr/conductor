@@ -14,5 +14,6 @@ alwaysApply: false
 
 ### Imports and exports
 - Split regular and type imports between separate lines
+- Always use absolute imports via @ prefixes, never relative imports
 - No inline `type` imports
 - Exports should be named (no default exports)
