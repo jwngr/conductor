@@ -132,7 +132,9 @@ export class Views {
     return Object.keys(ALL_VIEW_CONFIGS).map((key) => key as ViewType);
   }
 
-  static fromNavItemId(navItemId: Exclude<NavItemId, NavItemId.Feeds>): ViewType {
+  static fromNavItemId(
+    navItemId: Exclude<NavItemId, NavItemId.Feeds | NavItemId.Import>
+  ): ViewType {
     switch (navItemId) {
       case NavItemId.Untriaged:
         return ViewType.Untriaged;

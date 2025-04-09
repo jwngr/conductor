@@ -10,3 +10,19 @@ export const Link: React.FC<RouterLinkProps> = ({children, className, ...props})
     </RouterLink>
   );
 };
+
+interface ExternalLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {}
+
+export const ExternalLink: React.FC<ExternalLinkProps> = ({
+  children,
+  className,
+  target = '_blank',
+  rel = 'noopener noreferrer',
+  ...props
+}) => {
+  return (
+    <a className={cn('text-current underline', className)} target={target} rel={rel} {...props}>
+      {children}
+    </a>
+  );
+};

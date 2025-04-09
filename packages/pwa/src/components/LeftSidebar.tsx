@@ -85,7 +85,10 @@ export const LeftSidebar: React.FC = () => {
   return (
     <div className="flex w-[200px] flex-col gap-4 overflow-auto border-r border-neutral-300 bg-neutral-100 p-5">
       <LeftSidebarSection title="Views" navItems={ORDERED_VIEW_NAV_ITEMS} />
-      <LeftSidebarSection title="Feeds" navItems={[NavItems.fromId(NavItemId.Feeds)]} />
+      <LeftSidebarSection
+        title="Feeds & Imports"
+        navItems={[NavItems.fromId(NavItemId.Feeds), NavItems.fromId(NavItemId.Import)]}
+      />
     </div>
   );
 };

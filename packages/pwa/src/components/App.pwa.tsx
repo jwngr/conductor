@@ -22,6 +22,7 @@ import {NotFoundScreen} from '@src/screens/404';
 import {ErrorScreen} from '@src/screens/ErrorScreen';
 import {FeedItemScreen} from '@src/screens/FeedItemScreen';
 import {FeedSubscriptionsScreen} from '@src/screens/FeedSubscriptionsScreen';
+import {ImportScreen} from '@src/screens/ImportScreen';
 import {SignInScreen} from '@src/screens/SignInScreen';
 import {StyleguideScreen} from '@src/screens/StyleguideScreen';
 import {ViewScreen} from '@src/screens/ViewScreen';
@@ -69,6 +70,14 @@ const AllRoutes: React.FC = () => {
         element={
           <RequireLoggedInAccount>
             <FeedSubscriptionsScreen />
+          </RequireLoggedInAccount>
+        }
+      />
+      <Route
+        path={Urls.forImport()}
+        element={
+          <RequireLoggedInAccount>
+            <ImportScreen />
           </RequireLoggedInAccount>
         }
       />

@@ -45,6 +45,12 @@ const ALL_NAV_ITEMS: Record<NavItemId, NavItem> = {
     icon: makeEmojiIcon('📰'),
     title: 'Feeds',
   },
+  [NavItemId.Import]: {
+    id: NavItemId.Import,
+    url: Urls.forImport(),
+    icon: makeEmojiIcon('📥'),
+    title: 'Import',
+  },
 };
 
 export class NavItems {
