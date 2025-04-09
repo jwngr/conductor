@@ -99,7 +99,10 @@ export async function batchAsyncResults<T>(
 /**
  * Partitions an array into two arrays based on the provided predicate.
  */
-export function partition<T, U>(arr: Array<T | U>, predicate: Func<T | U, boolean>): [T[], U[]] {
+export function partition<T, U>(
+  arr: ReadonlyArray<T | U>,
+  predicate: Func<T | U, boolean>
+): [T[], U[]] {
   return arr.reduce(
     (acc, item) => {
       if (predicate(item)) {

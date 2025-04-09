@@ -5,6 +5,8 @@
  * Always prefer `Result` over throwing errors.
  */
 
+import {partition} from '@shared/lib/utils.shared';
+
 interface BaseResult {
   readonly success: boolean;
 }
@@ -30,3 +32,16 @@ export function makeErrorResult<E = Error>(error: E): ErrorResult<E> {
 export type Result<T, E = Error> = SuccessResult<T> | ErrorResult<E>;
 
 export type AsyncResult<T, E = Error> = Promise<Result<T, E>>;
+
+export function partitionResults<T, E = Error>(
+  results: ReadonlyArray<Result<T, E>>
+): {
+  readonly successes: ReadonlyArray<SuccessResult<T>>;
+  readonly errors: ReadonlyArray<ErrorResult<E>>;
+} {
+  const [successes, errors] = partition<SuccessResult<T>, ErrorResult<E>>(
+    results,
+    (result) => result.success
+  );
+  return {successes, errors};
+}
