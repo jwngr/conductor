@@ -4,7 +4,7 @@ import type {Feed} from '@rowanmanning/feed-parser/lib/feed/base';
 import {asyncTry, prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {requestGet} from '@shared/lib/requests.shared';
 
-import type {AsyncResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/results.types';
 
 export async function parseRssFeed(url: string): AsyncResult<Feed> {
   const rssFeedResult = await requestGet<string>(url);

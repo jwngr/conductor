@@ -2,6 +2,7 @@ import type {WithFieldValue} from 'firebase-admin/firestore';
 
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {withFirestoreTimestamps} from '@shared/lib/parser.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {
   FeedSource,
@@ -9,8 +10,7 @@ import type {
   FeedSourceId,
 } from '@shared/types/feedSources.types';
 import {makeFeedSource} from '@shared/types/feedSources.types';
-import type {AsyncResult} from '@shared/types/result.types';
-import {makeSuccessResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/results.types';
 
 import {serverTimestampSupplier} from '@sharedServer/services/firebase.server';
 import type {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';

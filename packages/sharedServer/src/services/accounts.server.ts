@@ -1,5 +1,5 @@
 import type {Account, AccountFromStorage, AccountId} from '@shared/types/accounts.types';
-import type {AsyncResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/results.types';
 
 import type {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 

@@ -1,9 +1,9 @@
 import {readFile as fsReadFile, writeFile as fsWriteFile} from 'fs/promises';
 
 import {asyncTry, syncTry} from '@shared/lib/errorUtils.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 
-import {makeSuccessResult} from '@shared/types/result.types';
-import type {AsyncResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/results.types';
 
 const DEFAULT_ENCODING: BufferEncoding = 'utf-8';
 

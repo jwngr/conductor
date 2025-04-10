@@ -5,6 +5,7 @@ import {logger} from '@shared/services/logger.shared';
 
 import {prefixError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {FeedItem} from '@shared/types/feedItems.types';
 import {
@@ -13,8 +14,7 @@ import {
   TriageStatus,
 } from '@shared/types/feedItems.types';
 import type {IconName} from '@shared/types/icons.types';
-import type {AsyncResult} from '@shared/types/result.types';
-import {makeSuccessResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/results.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
 import type {Func} from '@shared/types/utils.types';

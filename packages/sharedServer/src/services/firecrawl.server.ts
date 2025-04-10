@@ -1,10 +1,10 @@
 import type FirecrawlApp from '@mendable/firecrawl-js';
 
 import {asyncTry, prefixErrorResult} from '@shared/lib/errorUtils.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {ParsedFirecrawlData, RawFirecrawlResponse} from '@shared/types/firecrawl.types';
-import type {AsyncResult} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/results.types';
 
 export class ServerFirecrawlService {
   constructor(private readonly firecrawlApp: FirecrawlApp) {}

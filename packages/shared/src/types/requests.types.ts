@@ -1,4 +1,4 @@
-import type {ErrorResult, SuccessResult} from '@shared/types/result.types';
+import type {ErrorResult, SuccessResult} from '@shared/types/results.types';
 
 type RequestHeaders = Record<string, string>;
 export type RequestBody = Record<

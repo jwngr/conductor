@@ -1,10 +1,10 @@
 import {z} from 'zod';
 
+import {makeSuccessResult} from '@shared/lib/results.shared';
 import {makeUuid} from '@shared/lib/utils.shared';
 
 import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
-import type {Result} from '@shared/types/result.types';
-import {makeSuccessResult} from '@shared/types/result.types';
+import type {Result} from '@shared/types/results.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 
 /**

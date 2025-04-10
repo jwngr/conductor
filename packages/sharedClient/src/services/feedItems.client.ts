@@ -9,6 +9,7 @@ import {
 } from '@shared/lib/constants.shared';
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
 import {Views} from '@shared/lib/views.shared';
 
@@ -22,8 +23,7 @@ import {
   type FeedItemSource,
 } from '@shared/types/feedItems.types';
 import {fromFilterOperator, type ViewType} from '@shared/types/query.types';
-import type {AsyncResult} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/results.types';
 import type {Consumer} from '@shared/types/utils.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';

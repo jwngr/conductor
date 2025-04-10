@@ -8,7 +8,7 @@ import {batchAsyncResults, partition} from '@shared/lib/utils.shared';
 
 import {makeFeedItemRSSSource} from '@shared/types/feedItems.types';
 import type {FeedItemId} from '@shared/types/feedItems.types';
-import type {AsyncResult, ErrorResult, SuccessResult} from '@shared/types/result.types';
+import type {AsyncResult, ErrorResult, SuccessResult} from '@shared/types/results.types';
 import {parseSuperfeedrWebhookRequestBody} from '@shared/types/superfeedr.types';
 import type {Supplier} from '@shared/types/utils.types';
 

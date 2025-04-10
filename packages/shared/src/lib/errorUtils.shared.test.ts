@@ -9,9 +9,9 @@ import {
   syncTryAll,
   upgradeUnknownError,
 } from '@shared/lib/errorUtils.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
-import type {AsyncResult, Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {AsyncResult, Result} from '@shared/types/results.types';
 
 const MOCK_ERROR_MESSAGE = 'Mock error message';
 

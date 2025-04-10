@@ -1,5 +1,6 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {
   FeedSource,
@@ -7,8 +8,7 @@ import type {
   FeedSourceId,
 } from '@shared/types/feedSources.types';
 import {FeedSourceFromStorageSchema, FeedSourceIdSchema} from '@shared/types/feedSources.types';
-import type {Result} from '@shared/types/result.types';
-import {makeSuccessResult} from '@shared/types/result.types';
+import type {Result} from '@shared/types/results.types';
 
 /**
  * Parses a {@link FeedSourceId} from a plain string. Returns an `ErrorResult` if the string is not

@@ -2,7 +2,7 @@ import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 
-import type {AsyncResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/results.types';
 
 import type {WipeoutService} from '@sharedServer/services/wipeout.server';
 

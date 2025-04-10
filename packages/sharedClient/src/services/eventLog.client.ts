@@ -5,6 +5,7 @@ import {logger} from '@shared/services/logger.shared';
 
 import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 import {filterNull} from '@shared/lib/utils.shared';
 
 import {
@@ -24,8 +25,7 @@ import {
 } from '@shared/types/eventLog.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
 import type {ViewType} from '@shared/types/query.types';
-import type {AsyncResult} from '@shared/types/result.types';
-import {makeSuccessResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/results.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 

@@ -1,7 +1,8 @@
 import {v4 as uuidv4} from 'uuid';
 
-import type {AsyncResult, Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+
+import type {AsyncResult, Result} from '@shared/types/results.types';
 import type {EmailAddress, Func, Supplier, UUID} from '@shared/types/utils.types';
 
 /**

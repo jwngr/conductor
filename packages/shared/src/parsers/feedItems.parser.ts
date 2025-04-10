@@ -1,5 +1,6 @@
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
@@ -37,8 +38,7 @@ import {
   ProcessingFeedItemImportStateSchema,
   RssFeedItemSourceSchema,
 } from '@shared/types/feedItems.types';
-import type {Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {Result} from '@shared/types/results.types';
 
 /**
  * Parses a {@link FeedItemId} from a plain string. Returns an `ErrorResult` if the string is not

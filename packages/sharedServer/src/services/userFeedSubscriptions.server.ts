@@ -2,10 +2,11 @@ import type {WithFieldValue} from 'firebase-admin/firestore';
 
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {withFirestoreTimestamps} from '@shared/lib/parser.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {FeedSource, FeedSourceId} from '@shared/types/feedSources.types';
-import {makeSuccessResult, type AsyncResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/results.types';
 import type {
   UserFeedSubscription,
   UserFeedSubscriptionFromStorage,
