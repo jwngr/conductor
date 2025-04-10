@@ -11,6 +11,7 @@ alwaysApply: false
 ### Project-specific abstractions
 - Use [result.types.ts](mdc:packages/shared/src/types/result.types.ts) and [errorUtils.shared.ts](mdc:packages/shared/src/lib/errorUtils.shared.ts) instead of throwing errors or try / catch
 - Use [requests.shared.ts](mdc:packages/shared/src/lib/requests.shared.ts) instead of fetch for requests
+- Use `assertNever` from [utils.shared.ts](mdc:packages/shared/src/lib/utils.shared.ts) in switch statements to ensure exhaustive type checking
 
 ### Imports and exports
 - Split regular and type imports between separate lines

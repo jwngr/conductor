@@ -22,7 +22,7 @@ export function parsePocketCsvContent(csvString: string): Result<readonly Pocket
   if (errors.length > 0) {
     const betterErrorResult = prefixErrorResult(
       errors[0],
-      `Error parsing ${pluralizeWithCount(errors.length, 'record', 'records')}. First error:`
+      `Error parsing ${pluralizeWithCount(errors.length, 'record')}. First error:`
     );
     return betterErrorResult;
   }

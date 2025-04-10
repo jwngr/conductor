@@ -1,162 +1,153 @@
 import type React from 'react';
 import {useState} from 'react';
 
-import {asyncTry} from '@shared/lib/errorUtils.shared';
+import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
 import {pluralizeWithCount} from '@shared/lib/utils.shared';
 
+import {FEED_ITEM_POCKET_EXPORT_SOURCE} from '@shared/types/feedItems.types';
+import {
+  ExternalMigrationItemStatus,
+  NOT_STARTED_EXTERNAL_MIGRATION_ITEM_STATE,
+  PROCESSING_EXTERNAL_MIGRATION_ITEM_STATE,
+} from '@shared/types/migration.types';
+import type {ExternalMigrationItemState} from '@shared/types/migration.types';
 import type {PocketImportItem} from '@shared/types/pocket.types';
-import type {Result} from '@shared/types/result.types';
+
+import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
 
 import {parsePocketCsvContent} from '@sharedClient/lib/pocket.client';
+
+import type {WithChildren} from '@sharedClient/types/utils.client.types';
 
 import {AppHeader} from '@src/components/AppHeader';
 import {Button} from '@src/components/atoms/Button';
 import {Input} from '@src/components/atoms/Input';
 import {ExternalLink} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
+import {FeedItemImportStatusBadge} from '@src/components/feedItems/FeedItemImportStatusBadge';
 import {LeftSidebar} from '@src/components/LeftSidebar';
 
-interface ImportStatus {
-  readonly status: 'idle' | 'importing' | 'imported' | 'error';
-  readonly errorMessage?: string;
-}
-
 interface ImportScreenState {
-  readonly parseResult: Result<readonly PocketImportItem[]> | undefined;
-  readonly fileError: string | undefined;
-  readonly importStatuses: Record<string, ImportStatus>;
+  // List of items to import pulled from the CSV file.
+  readonly pocketImportItems: readonly PocketImportItem[] | null;
+  // Feed item import state associated with each Pocket import item. `null` means the item has not
+  // even started importing yet.
+  readonly importStates: Record<string, ExternalMigrationItemState>;
+  // Error from parsing the CSV file.
+  readonly fileError: Error | null;
 }
 
 const INITIAL_IMPORT_SCREEN_STATE: ImportScreenState = {
-  parseResult: undefined,
-  fileError: undefined,
-  importStatuses: {},
+  pocketImportItems: null,
+  fileError: null,
+  importStates: {},
 };
 
 export const ImportScreen: React.FC = () => {
   const [state, setState] = useState<ImportScreenState>(INITIAL_IMPORT_SCREEN_STATE);
+  const feedItemsService = useFeedItemsService();
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+  const setFileError = (error: Error): void => {
+    setState((prev) => ({...prev, fileError: error}));
+  };
+
+  const setImportStatus = (key: string, status: ExternalMigrationItemState): void => {
     setState((prev) => ({
       ...prev,
-      parseResult: undefined,
-      fileError: undefined,
-      importStatuses: {},
+      importStates: {...prev.importStates, [key]: status},
     }));
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+    // Reset state every time user uploads a new file.
+    setState(INITIAL_IMPORT_SCREEN_STATE);
 
     const file = event.target.files?.[0];
     if (!file) {
-      setState((prev) => ({...prev, fileError: 'No file selected.'}));
+      setFileError(new Error('No file selected'));
       return;
     }
 
     if (!file.name.endsWith('.csv')) {
-      setState((prev) => ({...prev, fileError: 'Please select a CSV file.'}));
+      setFileError(new Error('Only CSV files are supported'));
       return;
     }
 
-    const readFileResult = await asyncTry(async () => file.text());
+    const readPocketCsvResult = await asyncTry(async () => file.text());
 
-    if (!readFileResult.success) {
-      setState((prev) => ({
-        ...prev,
-        fileError: `Error reading file: ${readFileResult.error.message}`,
-      }));
+    if (!readPocketCsvResult.success) {
+      setFileError(prefixError(readPocketCsvResult.error, 'Error reading file'));
       return;
     }
 
-    const fileContent = readFileResult.value;
-    const result = parsePocketCsvContent(fileContent);
-    setState((prev) => ({...prev, parseResult: result}));
+    const parsePocketCsvResult = parsePocketCsvContent(readPocketCsvResult.value);
 
-    if (result.success) {
-      const initialStatuses: Record<string, ImportStatus> = {};
-      result.value.forEach((item, index) => {
-        initialStatuses[`${item.url}-${index}`] = {status: 'idle'};
-      });
-      setState((prev) => ({...prev, importStatuses: initialStatuses}));
+    if (!parsePocketCsvResult.success) {
+      setFileError(prefixError(parsePocketCsvResult.error, 'Error parsing CSV'));
+      return;
     }
+
+    const pocketImportItems = parsePocketCsvResult.value;
+    const importStates: Record<string, ExternalMigrationItemState> = {};
+    pocketImportItems.forEach((item, index) => {
+      importStates[`${item.url}-${index}`] = NOT_STARTED_EXTERNAL_MIGRATION_ITEM_STATE;
+    });
+    setState((prev) => ({...prev, importStates, pocketImportItems}));
   };
 
   const handleImportItem = async (item: PocketImportItem, key: string): Promise<void> => {
-    setState((prev) => ({
-      ...prev,
-      importStatuses: {...prev.importStatuses, [key]: {status: 'importing'}},
-    }));
+    setImportStatus(key, PROCESSING_EXTERNAL_MIGRATION_ITEM_STATE);
 
-    // TODO: Implement actual import logic using ClientFeedItemsService
-    // 1. Call createFeedItem with item.url and source { type: 'pocket_import' }
-    // 2. If successful, call updateFeedItem with the new feedItemId and item.title
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
+    const createResult = await feedItemsService.createFeedItem({
+      url: item.url,
+      feedItemSource: FEED_ITEM_POCKET_EXPORT_SOURCE,
+      title: item.title,
+    });
 
-    // Simulate success/error for now
-    const success = Math.random() > 0.2; // 80% success rate
-    if (success) {
-      setState((prev) => ({
-        ...prev,
-        importStatuses: {...prev.importStatuses, [key]: {status: 'imported'}},
-      }));
-    } else {
-      setState((prev) => ({
-        ...prev,
-        importStatuses: {
-          ...prev.importStatuses,
-          [key]: {status: 'error', errorMessage: 'Failed to import item.'},
-        },
-      }));
+    if (!createResult.success) {
+      setImportStatus(key, {
+        status: ExternalMigrationItemStatus.Failed,
+        error: createResult.error,
+      });
+      return;
     }
+
+    const feedItem = createResult.value;
+
+    setImportStatus(key, {
+      status: ExternalMigrationItemStatus.FeedItemExists,
+      feedItem,
+    });
   };
 
   const renderParsedItems = (): React.ReactNode => {
-    if (!state.parseResult) return null;
+    if (state.pocketImportItems === null) return null;
 
-    if (!state.parseResult.success) {
-      return (
-        <Text className="text-error">Error parsing CSV: {state.parseResult.error.message}</Text>
-      );
-    }
-
-    if (state.parseResult.value.length === 0) {
-      return <Text>No items found in the CSV file.</Text>;
+    if (state.pocketImportItems.length === 0) {
+      return <Text>No items found in the CSV file</Text>;
     }
 
     return (
       <div className="flex flex-col gap-4">
         <Text bold>
-          Found {pluralizeWithCount(state.parseResult.value.length, 'item', 'items')} to import:
+          Found {pluralizeWithCount(state.pocketImportItems.length, 'item')} to import:
         </Text>
         <div className="flex flex-col gap-3">
-          {state.parseResult.value.map((item, index) => {
+          {state.pocketImportItems.map((item, index) => {
             const key = `${item.url}-${index}`;
-            const importStatus = state.importStatuses[key] ?? {status: 'idle'};
-            const isIdle = importStatus.status === 'idle';
-            const isImporting = importStatus.status === 'importing';
-            const isImported = importStatus.status === 'imported';
-            const isError = importStatus.status === 'error';
+            const importStatus = state.importStates[key];
 
             return (
-              <div
+              <ImportItemRow
                 key={key}
-                className="flex items-center gap-3 rounded-lg border border-gray-200 p-3"
+                item={item}
+                status={importStatus}
+                onImport={() => void handleImportItem(item, key)}
               >
-                <div className="flex flex-1 flex-col gap-1">
-                  <Text bold>{item.title || '(No Title)'}</Text>
-                  <Text className="text-sm text-gray-500">{item.url}</Text>
-                  {isError && (
-                    <Text className="text-error text-sm">{importStatus.errorMessage}</Text>
-                  )}
-                </div>
-                <Button
-                  onClick={() => void handleImportItem(item, key)}
-                  disabled={!isIdle}
-                  size="sm"
-                >
-                  {isImporting && 'Importing...'}
-                  {isImported && 'Imported'}
-                  {isIdle && 'Import'}
-                  {isError && 'Retry'} {/* Button text changes to Retry on error */}
-                </Button>
-              </div>
+                {importStatus.status === ExternalMigrationItemStatus.FeedItemExists ? (
+                  <FeedItemImportStatusBadge importState={importStatus.feedItem.importState} />
+                ) : null}
+              </ImportItemRow>
             );
           })}
         </div>
@@ -187,12 +178,54 @@ export const ImportScreen: React.FC = () => {
               onChange={handleFileChange}
               className="max-w-sm"
             />
-            {state.fileError && <Text className="text-error text-sm">{state.fileError}</Text>}
+            {state.fileError ? (
+              <Text className="text-error text-sm">{state.fileError.message}</Text>
+            ) : null}
           </div>
 
           {renderParsedItems()}
         </div>
       </div>
+    </div>
+  );
+};
+
+// Individual import item row component
+interface ImportItemRowProps {
+  readonly item: PocketImportItem;
+  readonly status: ExternalMigrationItemState;
+  readonly onImport: () => void;
+}
+
+const ImportItemRow: React.FC<WithChildren<ImportItemRowProps>> = ({
+  item,
+  status,
+  onImport,
+  children,
+}) => {
+  const isImporting = status.status === ExternalMigrationItemStatus.CreatingFeedItem;
+  const isImported = status.status === ExternalMigrationItemStatus.FeedItemExists;
+  const isError = status.status === ExternalMigrationItemStatus.Failed;
+
+  // Button text based on local status
+  let buttonText = 'Import';
+  if (isImporting) buttonText = 'Importing...';
+  if (isImported) buttonText = 'Imported';
+  if (isError) buttonText = 'Retry';
+
+  return (
+    <div className="flex items-center gap-3 rounded-lg border border-gray-200 p-3">
+      <div className="flex flex-1 flex-col gap-1">
+        <div className="flex items-center gap-2">
+          <Text bold>{item.title}</Text>
+          {children}
+        </div>
+        <Text className="text-sm text-gray-500">{item.url}</Text>
+        {isError ? <Text className="text-error text-sm">{status.error.message}</Text> : null}
+      </div>
+      <Button onClick={onImport} disabled={isImporting || isImported} size="sm">
+        {buttonText}
+      </Button>
     </div>
   );
 };
