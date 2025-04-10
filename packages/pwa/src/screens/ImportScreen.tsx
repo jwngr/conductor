@@ -2,11 +2,10 @@ import type React from 'react';
 import {useState} from 'react';
 
 import {asyncTry} from '@shared/lib/errorUtils.shared';
-import {formatWithCommas, pluralizeWithCount} from '@shared/lib/utils.shared';
+import {pluralizeWithCount} from '@shared/lib/utils.shared';
 
 import type {PocketImportItem} from '@shared/types/pocket.types';
 import type {Result} from '@shared/types/result.types';
-import {makeErrorResult} from '@shared/types/result.types';
 
 import {parsePocketCsvContent} from '@sharedClient/lib/pocket.client';
 
@@ -18,54 +17,72 @@ import {Text} from '@src/components/atoms/Text';
 import {LeftSidebar} from '@src/components/LeftSidebar';
 
 interface ImportStatus {
-  status: 'idle' | 'importing' | 'imported' | 'error';
-  errorMessage?: string;
+  readonly status: 'idle' | 'importing' | 'imported' | 'error';
+  readonly errorMessage?: string;
 }
 
+interface ImportScreenState {
+  readonly parseResult: Result<readonly PocketImportItem[]> | undefined;
+  readonly fileError: string | undefined;
+  readonly importStatuses: Record<string, ImportStatus>;
+}
+
+const INITIAL_IMPORT_SCREEN_STATE: ImportScreenState = {
+  parseResult: undefined,
+  fileError: undefined,
+  importStatuses: {},
+};
+
 export const ImportScreen: React.FC = () => {
-  const [parseResult, setParseResult] = useState<Result<readonly PocketImportItem[]>>();
-  const [fileError, setFileError] = useState<string>();
-  const [importStatuses, setImportStatuses] = useState<Record<string, ImportStatus>>({});
+  const [state, setState] = useState<ImportScreenState>(INITIAL_IMPORT_SCREEN_STATE);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
-    setParseResult(undefined);
-    setFileError(undefined);
-    setImportStatuses({});
+    setState((prev) => ({
+      ...prev,
+      parseResult: undefined,
+      fileError: undefined,
+      importStatuses: {},
+    }));
 
     const file = event.target.files?.[0];
     if (!file) {
-      setFileError('No file selected.');
+      setState((prev) => ({...prev, fileError: 'No file selected.'}));
       return;
     }
 
-    if (!file.name.toLowerCase().endsWith('.csv')) {
-      setFileError('Please select a CSV file.');
+    if (!file.name.endsWith('.csv')) {
+      setState((prev) => ({...prev, fileError: 'Please select a CSV file.'}));
       return;
     }
 
     const readFileResult = await asyncTry(async () => file.text());
 
     if (!readFileResult.success) {
-      setFileError(`Error reading file: ${readFileResult.error.message}`);
-      setParseResult(makeErrorResult(readFileResult.error));
+      setState((prev) => ({
+        ...prev,
+        fileError: `Error reading file: ${readFileResult.error.message}`,
+      }));
       return;
     }
 
     const fileContent = readFileResult.value;
     const result = parsePocketCsvContent(fileContent);
-    setParseResult(result);
+    setState((prev) => ({...prev, parseResult: result}));
 
     if (result.success) {
       const initialStatuses: Record<string, ImportStatus> = {};
       result.value.forEach((item, index) => {
         initialStatuses[`${item.url}-${index}`] = {status: 'idle'};
       });
-      setImportStatuses(initialStatuses);
+      setState((prev) => ({...prev, importStatuses: initialStatuses}));
     }
   };
 
   const handleImportItem = async (item: PocketImportItem, key: string): Promise<void> => {
-    setImportStatuses((prev) => ({...prev, [key]: {status: 'importing'}}));
+    setState((prev) => ({
+      ...prev,
+      importStatuses: {...prev.importStatuses, [key]: {status: 'importing'}},
+    }));
 
     // TODO: Implement actual import logic using ClientFeedItemsService
     // 1. Call createFeedItem with item.url and source { type: 'pocket_import' }
@@ -75,35 +92,43 @@ export const ImportScreen: React.FC = () => {
     // Simulate success/error for now
     const success = Math.random() > 0.2; // 80% success rate
     if (success) {
-      setImportStatuses((prev) => ({...prev, [key]: {status: 'imported'}}));
-    } else {
-      setImportStatuses((prev) => ({
+      setState((prev) => ({
         ...prev,
-        [key]: {status: 'error', errorMessage: 'Failed to import item.'},
+        importStatuses: {...prev.importStatuses, [key]: {status: 'imported'}},
+      }));
+    } else {
+      setState((prev) => ({
+        ...prev,
+        importStatuses: {
+          ...prev.importStatuses,
+          [key]: {status: 'error', errorMessage: 'Failed to import item.'},
+        },
       }));
     }
   };
 
   const renderParsedItems = (): React.ReactNode => {
-    if (!parseResult) return null;
+    if (!state.parseResult) return null;
 
-    if (!parseResult.success) {
-      return <Text className="text-error">Error parsing CSV: {parseResult.error.message}</Text>;
+    if (!state.parseResult.success) {
+      return (
+        <Text className="text-error">Error parsing CSV: {state.parseResult.error.message}</Text>
+      );
     }
 
-    if (parseResult.value.length === 0) {
+    if (state.parseResult.value.length === 0) {
       return <Text>No items found in the CSV file.</Text>;
     }
 
     return (
       <div className="flex flex-col gap-4">
         <Text bold>
-          Found {pluralizeWithCount(parseResult.value.length, 'item', 'items')} to import:
+          Found {pluralizeWithCount(state.parseResult.value.length, 'item', 'items')} to import:
         </Text>
         <div className="flex flex-col gap-3">
-          {parseResult.value.map((item, index) => {
+          {state.parseResult.value.map((item, index) => {
             const key = `${item.url}-${index}`;
-            const importStatus = importStatuses[key] ?? {status: 'idle'};
+            const importStatus = state.importStatuses[key] ?? {status: 'idle'};
             const isIdle = importStatus.status === 'idle';
             const isImporting = importStatus.status === 'importing';
             const isImported = importStatus.status === 'imported';
@@ -162,7 +187,7 @@ export const ImportScreen: React.FC = () => {
               onChange={handleFileChange}
               className="max-w-sm"
             />
-            {fileError && <Text className="text-error text-sm">{fileError}</Text>}
+            {state.fileError && <Text className="text-error text-sm">{state.fileError}</Text>}
           </div>
 
           {renderParsedItems()}
