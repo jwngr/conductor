@@ -36,6 +36,7 @@ export const App: React.FC = () => {
     const addFeedItemResult = await feedItemsService.createFeedItem({
       url: tabUrl,
       feedItemSource: FEED_ITEM_APP_SOURCE,
+      title: tab.title ?? 'TODO: Add title support',
     });
 
     if (addFeedItemResult.success) {

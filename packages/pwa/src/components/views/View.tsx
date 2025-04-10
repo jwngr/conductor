@@ -4,68 +4,18 @@ import type React from 'react';
 import {logger} from '@shared/services/logger.shared';
 
 import {Urls} from '@shared/lib/urls.shared';
-import {assertNever} from '@shared/lib/utils.shared';
 
-import {
-  FeedItemImportStatus,
-  type FeedItem,
-  type FeedItemImportState,
-} from '@shared/types/feedItems.types';
+import {type FeedItem} from '@shared/types/feedItems.types';
 import type {ViewType} from '@shared/types/query.types';
 
 import {useFocusStore} from '@sharedClient/stores/FocusStore';
 
 import {useFeedItems} from '@sharedClient/services/feedItems.client';
 
-import {Badge} from '@src/components/atoms/Badge';
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
+import {FeedItemImportStatusBadge} from '@src/components/feedItems/FeedItemImportStatusBadge';
 import {ViewKeyboardShortcutHandler} from '@src/components/views/ViewKeyboardShortcutHandler';
-
-const ViewListItemImportStatusBadge: React.FC<{
-  readonly importState: FeedItemImportState;
-}> = ({importState}) => {
-  let badgeText: string | null;
-  let badgeVariant: 'default' | 'destructive' | 'outline' | null = null;
-
-  switch (importState.status) {
-    case FeedItemImportStatus.New:
-      badgeText = 'Queued';
-      badgeVariant = 'outline';
-      break;
-    case FeedItemImportStatus.Processing:
-      badgeText = 'Processing';
-      badgeVariant = 'outline';
-      break;
-    case FeedItemImportStatus.Completed:
-      if (importState.shouldFetch) {
-        badgeText = 'Queued';
-        badgeVariant = 'outline';
-      } else {
-        // Completed items have enough content to render already and don't need a badge.
-        badgeText = null;
-        badgeVariant = null;
-      }
-      break;
-    case FeedItemImportStatus.Failed:
-      if (importState.shouldFetch) {
-        badgeText = 'Queued';
-        badgeVariant = 'outline';
-      } else {
-        badgeText = 'Import Failed';
-        badgeVariant = 'destructive';
-      }
-      break;
-    default:
-      assertNever(importState);
-  }
-
-  if (!badgeText) {
-    return null;
-  }
-
-  return <Badge variant={badgeVariant}>{badgeText}</Badge>;
-};
 
 const ViewListItem: React.FC<{
   readonly feedItem: FeedItem;
@@ -100,7 +50,7 @@ const ViewListItem: React.FC<{
           <Text as="p" bold>
             {feedItem.title || 'No title'}
           </Text>
-          <ViewListItemImportStatusBadge importState={feedItem.importState} />
+          <FeedItemImportStatusBadge importState={feedItem.importState} />
         </div>
         <Text as="p" light>
           {feedItem.url}

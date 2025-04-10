@@ -17,6 +17,7 @@ export enum NavItemId {
   Today = 'TODAY',
   Trashed = 'TRASHED',
   Feeds = 'FEEDS',
+  Import = 'IMPORT',
 }
 
 export interface NavItem {

@@ -213,8 +213,9 @@ export class ClientFeedItemsService {
   public async createFeedItem(args: {
     readonly url: string;
     readonly feedItemSource: FeedItemSource;
-  }): AsyncResult<FeedItemId | null> {
-    const {url, feedItemSource} = args;
+    readonly title: string;
+  }): AsyncResult<FeedItem> {
+    const {url, feedItemSource, title} = args;
 
     const trimmedUrl = url.trim();
     if (!isValidUrl(trimmedUrl)) {
@@ -228,7 +229,7 @@ export class ClientFeedItemsService {
       // until we've done the import? Or should we compute this at save time?
       feedItemSource,
       accountId: this.accountId,
-      title: trimmedUrl,
+      title,
     });
     if (!feedItemResult.success) return feedItemResult;
     const feedItem = feedItemResult.value;
@@ -241,7 +242,7 @@ export class ClientFeedItemsService {
       return makeErrorResult(addFeedItemResult.error);
     }
 
-    return makeSuccessResult(feedItem.feedItemId);
+    return makeSuccessResult(feedItem);
   }
 
   public async updateFeedItem(

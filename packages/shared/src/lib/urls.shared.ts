@@ -57,6 +57,10 @@ export class Urls {
     return '/feeds';
   }
 
+  static forImport(): string {
+    return '/import';
+  }
+
   static forSignIn(): string {
     return '/login';
   }

@@ -1,7 +1,6 @@
-import {parse as parseCsv} from 'csv-parse/sync';
 import {JSDOM} from 'jsdom';
 
-import {prefixErrorResult, syncTry} from '@shared/lib/errorUtils.shared';
+import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {pluralizeWithCount} from '@shared/lib/utils.shared';
 
 import {parsePocketCsvRecord} from '@shared/types/pocket.types';
@@ -9,6 +8,7 @@ import type {PocketImportItem, RawPocketCsvRecord} from '@shared/types/pocket.ty
 import {makeSuccessResult, partitionResults} from '@shared/types/result.types';
 import type {AsyncResult} from '@shared/types/result.types';
 
+import {parseCsv} from '@sharedServer/lib/csv.server';
 import {readFile} from '@sharedServer/lib/fs.server';
 
 export class ServerPocketService {
@@ -21,13 +21,7 @@ export class ServerPocketService {
     const fileContentResult = await readFile(filePath, 'utf-8');
     if (!fileContentResult.success) return fileContentResult;
 
-    const rawCsvRecordsResult = syncTry(
-      () =>
-        parseCsv(fileContentResult.value, {
-          columns: true,
-          skip_empty_lines: true,
-        }) as RawPocketCsvRecord[]
-    );
+    const rawCsvRecordsResult = parseCsv<RawPocketCsvRecord>(fileContentResult.value);
     if (!rawCsvRecordsResult.success) return rawCsvRecordsResult;
 
     const parsedCsvRecordResults = rawCsvRecordsResult.value.map(parsePocketCsvRecord);
