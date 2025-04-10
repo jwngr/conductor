@@ -224,37 +224,49 @@ describe('asyncTry', () => {
 
 describe('asyncTryAll', () => {
   it('should return success result when all async results succeed', async () => {
-    const asyncResults = [
+    const result = await asyncTryAll([
       asyncTry(async () => 1),
-      asyncTry(async () => 2),
-      asyncTry(async () => 3),
-    ] as const;
-
-    const result = await asyncTryAll(asyncResults);
+      asyncTry(async () => 'two'),
+      asyncTry(async () => ({three: true})),
+    ]);
 
     expect(result).toEqual(
       makeSuccessResult({
         success: true,
         results: [
           {success: true, value: 1},
-          {success: true, value: 2},
-          {success: true, value: 3},
+          {success: true, value: 'two'},
+          {success: true, value: {three: true}},
         ],
       })
     );
   });
 
+  it('should handle unexpected errors during execution', async () => {
+    const result = await asyncTryAll([
+      asyncTry(async () => {
+        // eslint-disable-next-line no-restricted-syntax
+        throw new Error(MOCK_ERROR_MESSAGE);
+      }),
+    ]);
+
+    expect(result).toEqual(
+      makeSuccessResult({
+        success: false,
+        results: [{success: false, error: new Error(MOCK_ERROR_MESSAGE)}],
+      })
+    );
+  });
+
   it('should handle mixed success and failure results', async () => {
-    const asyncResults = [
+    const result = await asyncTryAll([
       asyncTry(async () => 1),
       asyncTry(async () => {
         // eslint-disable-next-line no-restricted-syntax
         throw new Error(MOCK_ERROR_MESSAGE);
       }),
       asyncTry(async () => 3),
-    ] as const;
-
-    const result = await asyncTryAll(asyncResults);
+    ]);
 
     expect(result).toEqual(
       makeSuccessResult({
@@ -268,26 +280,8 @@ describe('asyncTryAll', () => {
     );
   });
 
-  it('should handle unexpected errors during execution', async () => {
-    const asyncResults = [
-      asyncTry(async () => {
-        // eslint-disable-next-line no-restricted-syntax
-        throw new Error(MOCK_ERROR_MESSAGE);
-      }),
-    ] as const;
-
-    const result = await asyncTryAll(asyncResults);
-
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.message).toBe(MOCK_ERROR_MESSAGE);
-    }
-  });
-
   it('should handle empty array input', async () => {
-    const asyncResults = [] as const;
-
-    const result = await asyncTryAll(asyncResults);
+    const result = await asyncTryAll([]);
 
     expect(result).toEqual(
       makeSuccessResult({
@@ -297,58 +291,11 @@ describe('asyncTryAll', () => {
     );
   });
 
-  it('should preserve types of successful results', async () => {
-    interface TestType {
-      readonly id: string;
-      readonly value: number;
-    }
-
-    const testObj1: TestType = {
-      id: 'test1',
-      value: 123,
-    };
-
-    const testObj2: TestType = {
-      id: 'test2',
-      value: 456,
-    };
-
-    const asyncResults = [asyncTry(async () => testObj1), asyncTry(async () => testObj2)] as const;
-
-    const result = await asyncTryAll(asyncResults);
-
-    expect(result).toEqual(
-      makeSuccessResult({
-        success: true,
-        results: [
-          {success: true, value: testObj1},
-          {success: true, value: testObj2},
-        ],
-      })
-    );
-  });
-
-  it('should handle errors thrown during Promise.all', async () => {
-    // Create a Promise that will be rejected
-    const mockPromise = Promise.reject(new Error('Promise rejection during execution'));
-
-    // Cast to AsyncResult to match the function signature
-    const asyncResults = [mockPromise] as unknown as readonly [AsyncResult<unknown>];
-
-    const result = await asyncTryAll(asyncResults);
-
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.message).toBe('Promise rejection during execution');
-    }
-  });
-
-  // This test specifically covers line 109-110
   it('should handle errors when Promise.all throws', async () => {
-    // Create a Promise that will be rejected - using a circular reference that can't be stringified
+    // Create a Promise rejected with a circular reference that cannot be stringified.
     const circular: Record<string, unknown> = {};
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (circular as any).self = circular; // Create a circular reference
+    (circular as any).self = circular;
 
     const mockPromise = Promise.reject(circular);
     const asyncResults = [mockPromise] as unknown as readonly [AsyncResult<unknown>];
@@ -356,35 +303,38 @@ describe('asyncTryAll', () => {
     const result = await asyncTryAll(asyncResults);
 
     expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.message).toContain('Expected error, but caught non-stringifiable object');
+    }
   });
 });
 
 describe('asyncTryAllPromises', () => {
   it('should return success result when all promises resolve', async () => {
-    const promises = [Promise.resolve(1), Promise.resolve(2), Promise.resolve(3)] as const;
-
-    const result = await asyncTryAllPromises(promises);
+    const result = await asyncTryAllPromises([
+      Promise.resolve(1),
+      Promise.resolve('two'),
+      Promise.resolve({three: true}),
+    ]);
 
     expect(result).toEqual(
       makeSuccessResult({
         success: true,
         results: [
           {success: true, value: 1},
-          {success: true, value: 2},
-          {success: true, value: 3},
+          {success: true, value: 'two'},
+          {success: true, value: {three: true}},
         ],
       })
     );
   });
 
   it('should handle mixed resolved and rejected promises', async () => {
-    const promises = [
+    const result = await asyncTryAllPromises([
       Promise.resolve(1),
       Promise.reject(new Error(MOCK_ERROR_MESSAGE)),
       Promise.resolve(3),
-    ] as const;
-
-    const result = await asyncTryAllPromises(promises);
+    ]);
 
     expect(result).toEqual(
       makeSuccessResult({
@@ -428,37 +378,6 @@ describe('asyncTryAllPromises', () => {
     );
   });
 
-  it('should preserve types of resolved promises', async () => {
-    interface TestType {
-      readonly id: string;
-      readonly value: number;
-    }
-
-    const testObj1: TestType = {
-      id: 'test1',
-      value: 123,
-    };
-
-    const testObj2: TestType = {
-      id: 'test2',
-      value: 456,
-    };
-
-    const promises = [Promise.resolve(testObj1), Promise.resolve(testObj2)] as const;
-
-    const result = await asyncTryAllPromises(promises);
-
-    expect(result).toEqual(
-      makeSuccessResult({
-        success: true,
-        results: [
-          {success: true, value: testObj1},
-          {success: true, value: testObj2},
-        ],
-      })
-    );
-  });
-
   it('should handle rejecting with undefined', async () => {
     const result = await asyncTryAllPromises([
       Promise.resolve(1),
@@ -479,8 +398,6 @@ describe('asyncTryAllPromises', () => {
   });
 
   it('should handle errors thrown during Promise.allSettled', async () => {
-    // Create a Promise that throws during execution.
-
     const result = await asyncTryAllPromises([
       Promise.reject(new Error('Promise.allSettled rejection')),
     ]);
@@ -495,7 +412,6 @@ describe('asyncTryAllPromises', () => {
     }
   });
 
-  // This test specifically covers line 193-194
   it('should handle errors when Promise.allSettled throws', async () => {
     const nonIterable = 42;
     const result = await asyncTryAllPromises(nonIterable as unknown as readonly [Promise<unknown>]);
@@ -537,7 +453,6 @@ describe('upgradeUnknownError', () => {
     const errorObj = {message: MOCK_ERROR_MESSAGE};
     const upgradedError = upgradeUnknownError(errorObj);
 
-    // The function actually recursively calls itself with the message value
     expect(upgradedError.message).toBe(MOCK_ERROR_MESSAGE);
     expect(upgradedError.cause).toBe(MOCK_ERROR_MESSAGE);
   });
@@ -546,7 +461,6 @@ describe('upgradeUnknownError', () => {
     const errorObj = {error: MOCK_ERROR_MESSAGE};
     const upgradedError = upgradeUnknownError(errorObj);
 
-    // The function actually recursively calls itself with the error value
     expect(upgradedError.message).toBe(MOCK_ERROR_MESSAGE);
     expect(upgradedError.cause).toBe(MOCK_ERROR_MESSAGE);
   });
@@ -555,7 +469,6 @@ describe('upgradeUnknownError', () => {
     const errorObj = {error: {message: MOCK_ERROR_MESSAGE}};
     const upgradedError = upgradeUnknownError(errorObj);
 
-    // The function follows the error.message path recursively
     expect(upgradedError.message).toBe(MOCK_ERROR_MESSAGE);
     expect(upgradedError.cause).toBe(MOCK_ERROR_MESSAGE);
   });

@@ -39,7 +39,7 @@ export function upgradeUnknownError(unknownError: unknown): Error {
   if (!stringifiedErrorResult.success) {
     // `JSON.stringify` may fail due to circular references.
     return new Error(
-      `Expected error, but caught non-stringifiable object of type ${typeof unknownError}`,
+      `Expected error, but caught non-stringifiable object of type ${typeof unknownError}: \`${unknownError}\``,
       {cause: unknownError}
     );
   }
