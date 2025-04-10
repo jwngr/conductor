@@ -18,6 +18,8 @@
     "ci": "rm -rf node_modules/ && yarn install",
     "build": "yarn run clean && tsc --build",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:coverage:open": "jest --coverage && open coverage/index.html"
   }
 }

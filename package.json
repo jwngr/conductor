@@ -50,6 +50,8 @@
     "test": "yarn workspaces foreach --all -p -t run test",
     "test:shared": "yarn workspace @conductor/shared test",
     "test:shared:watch": "yarn workspace @conductor/shared test:watch",
+    "test:shared:coverage": "yarn workspace @conductor/shared test:coverage",
+    "test:shared:coverage:open": "yarn workspace @conductor/shared test:coverage:open",
     "test:sharedClient": "yarn workspace @conductor/shared-client test",
     "test:sharedClient:watch": "yarn workspace @conductor/shared-client test:watch",
     "test:sharedServer": "yarn workspace @conductor/shared-server test",
@@ -57,7 +59,8 @@
     "test:pwa": "yarn workspace @conductor/pwa test",
     "test:scripts": "yarn workspace @conductor/scripts test",
     "test:extension": "yarn workspace @conductor/extension test",
-    "test:functions": "yarn workspace @conductor/functions test"
+    "test:functions": "yarn workspace @conductor/functions test",
+    "test:coverage": "yarn workspaces foreach --all -p -t run test:coverage"
   },
   "devDependencies": {
     "@eslint/js": "^9.24.0",

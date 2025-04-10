@@ -141,8 +141,17 @@ export function isDate(value: unknown): value is Date {
 
 /**
  * Returns a pluralized string, not including the count.
+ *
+ * If `plural` is not provided, the string will be pluralized using the singular string and a basic
+ * heuristic.
+ *
+ * TODO: Use a more proper localization library which handles internationalization.
  */
-export function pluralize(count: number, singular: string, plural: string): string {
+export function pluralize(count: number, singular: string, plural?: string): string {
+  if (!plural) {
+    const pluralized = singular.endsWith('s') ? `${singular}es` : `${singular}s`;
+    return count === 1 ? singular : pluralized;
+  }
   return count === 1 ? singular : plural;
 }
 
@@ -155,9 +164,5 @@ export function pluralize(count: number, singular: string, plural: string): stri
  * TODO: Use a more proper localization library which handles internationalization.
  */
 export function pluralizeWithCount(count: number, singular: string, plural?: string): string {
-  if (!plural) {
-    const pluralized = singular.endsWith('s') ? `${singular}es` : `${singular}s`;
-    return `${formatWithCommas(count)} ${count === 1 ? singular : pluralized}`;
-  }
   return `${formatWithCommas(count)} ${pluralize(count, singular, plural)}`;
 }

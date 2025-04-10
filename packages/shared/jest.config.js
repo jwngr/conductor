@@ -13,4 +13,6 @@ export default {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   testMatch: ['<rootDir>/src/**/*.test.ts', '<rootDir>/src/**/*.test.tsx'],
   collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts'],
+  coverageReporters: ['text', 'lcov', 'clover', 'html'],
+  coverageDirectory: 'coverage',
 };
