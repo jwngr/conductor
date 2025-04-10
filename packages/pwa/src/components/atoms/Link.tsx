@@ -11,9 +11,7 @@ export const Link: React.FC<RouterLinkProps> = ({children, className, ...props})
   );
 };
 
-interface ExternalLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {}
-
-export const ExternalLink: React.FC<ExternalLinkProps> = ({
+export const ExternalLink: React.FC<React.AnchorHTMLAttributes<HTMLAnchorElement>> = ({
   children,
   className,
   target = '_blank',
