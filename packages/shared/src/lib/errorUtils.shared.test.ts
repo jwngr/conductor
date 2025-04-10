@@ -1,9 +1,19 @@
 /// <reference types="jest" />
 
-import {asyncTry, asyncTryAll, asyncTryAllPromises, syncTry} from '@shared/lib/errorUtils.shared';
+import {
+  asyncTry,
+  asyncTryAll,
+  asyncTryAllPromises,
+  prefixError,
+  prefixErrorResult,
+  prefixResultIfError,
+  syncTry,
+  syncTryAll,
+  upgradeUnknownError,
+} from '@shared/lib/errorUtils.shared';
 
-import type {AsyncResult} from '@shared/types/result.types';
-import {makeSuccessResult} from '@shared/types/result.types';
+import type {AsyncResult, Result} from '@shared/types/result.types';
+import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
 
 describe('syncTry', () => {
   it('should return success result when function executes successfully', () => {
@@ -255,6 +265,38 @@ describe('asyncTryAll', () => {
   });
 });
 
+describe('asyncTryAll additional tests', () => {
+  it('should handle errors thrown during Promise.all', async () => {
+    // Create a Promise that will be rejected
+    const mockPromise = Promise.reject(new Error('Promise rejection during execution'));
+
+    // Cast to AsyncResult to match the function signature
+    const asyncResults = [mockPromise] as unknown as readonly [AsyncResult<unknown>];
+
+    const result = await asyncTryAll(asyncResults);
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.message).toBe('Promise rejection during execution');
+    }
+  });
+
+  // This test specifically covers line 109-110
+  it('should handle errors when Promise.all throws', async () => {
+    // Create a Promise that will be rejected - using a circular reference that can't be stringified
+    const circular: Record<string, unknown> = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (circular as any).self = circular; // Create a circular reference
+
+    const mockPromise = Promise.reject(circular);
+    const asyncResults = [mockPromise] as unknown as readonly [AsyncResult<unknown>];
+
+    const result = await asyncTryAll(asyncResults);
+
+    expect(result.success).toBe(false);
+  });
+});
+
 describe('asyncTryAllPromises', () => {
   it('should return success result when all promises resolve', async () => {
     const promises = [Promise.resolve(1), Promise.resolve(2), Promise.resolve(3)] as const;
@@ -376,5 +418,231 @@ describe('asyncTryAllPromises', () => {
         ],
       })
     );
+  });
+});
+
+describe('asyncTryAllPromises additional tests', () => {
+  it('should handle errors thrown during Promise.allSettled', async () => {
+    // Create a Promise that throws during execution
+    const mockPromise = Promise.reject(new Error('Promise.allSettled rejection'));
+
+    const promises = [mockPromise] as const;
+
+    const result = await asyncTryAllPromises(promises);
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.value.success).toBe(false);
+      expect(result.value.results[0].success).toBe(false);
+      if (!result.value.results[0].success) {
+        expect(result.value.results[0].error.message).toBe('Promise.allSettled rejection');
+      }
+    }
+  });
+
+  // This test specifically covers line 193-194
+  it('should handle errors when Promise.allSettled throws', async () => {
+    // Create a scenario where Promise.allSettled itself would throw
+    // Mock Promise.allSettled to throw an error
+    const originalAllSettled = Promise.allSettled;
+
+    // Mock Promise.allSettled to throw an error
+    const mockAllSettled = (): never => {
+      // eslint-disable-next-line no-restricted-syntax
+      throw new Error('Promise.allSettled error');
+    };
+
+    Promise.allSettled = jest.fn().mockImplementationOnce(mockAllSettled);
+
+    // Use asyncTry instead of try/catch
+    const testPromises = async (): Promise<Result<unknown>> => {
+      const promises = [Promise.resolve(1)] as const;
+      return asyncTryAllPromises(promises);
+    };
+
+    const result = await testPromises();
+
+    // Restore the original implementation
+    Promise.allSettled = originalAllSettled;
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.message).toContain('Promise.allSettled error');
+    }
+  });
+});
+
+describe('upgradeUnknownError', () => {
+  it('should handle Error objects', () => {
+    const errorMessage = 'Original error';
+    const originalError = new Error(errorMessage);
+    const upgradedError = upgradeUnknownError(originalError);
+
+    expect(upgradedError.message).toBe(errorMessage);
+    expect(upgradedError.cause).toBe(originalError);
+  });
+
+  it('should handle string errors', () => {
+    const errorMessage = 'String error';
+    const upgradedError = upgradeUnknownError(errorMessage);
+
+    expect(upgradedError.message).toBe(errorMessage);
+    expect(upgradedError.cause).toBe(errorMessage);
+  });
+
+  it('should handle Error objects with empty messages', () => {
+    const originalError = new Error();
+    const upgradedError = upgradeUnknownError(originalError);
+
+    expect(upgradedError.message).toBe('An unexpected error occurred');
+    expect(upgradedError.cause).toBe(originalError);
+  });
+
+  it('should handle objects with message property', () => {
+    const errorObj = {message: 'Object error message'};
+    const upgradedError = upgradeUnknownError(errorObj);
+
+    // The function actually recursively calls itself with the message value
+    expect(upgradedError.message).toBe('Object error message');
+    expect(upgradedError.cause).toBe('Object error message');
+  });
+
+  it('should handle objects with error property', () => {
+    const errorObj = {error: 'Object error property'};
+    const upgradedError = upgradeUnknownError(errorObj);
+
+    // The function actually recursively calls itself with the error value
+    expect(upgradedError.message).toBe('Object error property');
+    expect(upgradedError.cause).toBe('Object error property');
+  });
+
+  it('should handle nested error objects', () => {
+    const errorObj = {error: {message: 'Nested error message'}};
+    const upgradedError = upgradeUnknownError(errorObj);
+
+    // The function follows the error.message path recursively
+    expect(upgradedError.message).toBe('Nested error message');
+    expect(upgradedError.cause).toBe('Nested error message');
+  });
+
+  it('should handle Error objects with cause', () => {
+    const causeError = new Error('Cause error');
+    const originalError = new Error('Original error', {cause: causeError});
+    const upgradedError = upgradeUnknownError(originalError);
+
+    expect(upgradedError.message).toBe('Original error');
+    expect(upgradedError.cause).toBe(causeError);
+  });
+
+  it('should handle objects with no message or error property', () => {
+    const unknownObj = {foo: 'bar'};
+    const upgradedError = upgradeUnknownError(unknownObj);
+
+    expect(upgradedError.message).toBe('Expected error, but caught `{"foo":"bar"}` (object)');
+    expect(upgradedError.cause).toBe(unknownObj);
+  });
+});
+
+describe('prefixError', () => {
+  it('should add prefix to error message', () => {
+    const originalError = new Error('Original message');
+    const prefix = 'Error prefix';
+    const prefixedError = prefixError(originalError, prefix);
+
+    expect(prefixedError.message).toBe('Error prefix: Original message');
+    expect(prefixedError.cause).toBe(originalError);
+  });
+
+  it('should handle errors with cause', () => {
+    const causeError = new Error('Cause error');
+    const originalError = new Error('Original message', {cause: causeError});
+    const prefix = 'Error prefix';
+    const prefixedError = prefixError(originalError, prefix);
+
+    expect(prefixedError.message).toBe('Error prefix: Original message');
+    expect(prefixedError.cause).toBe(causeError);
+  });
+});
+
+describe('prefixErrorResult', () => {
+  it('should add prefix to error message in ErrorResult', () => {
+    const errorMessage = 'Original error message';
+    const errorResult = makeErrorResult(new Error(errorMessage));
+    const prefix = 'Prefix';
+
+    const prefixedResult = prefixErrorResult(errorResult, prefix);
+
+    expect(prefixedResult.success).toBe(false);
+    expect(prefixedResult.error.message).toBe('Prefix: Original error message');
+  });
+});
+
+describe('prefixResultIfError', () => {
+  it('should return original SuccessResult unchanged', () => {
+    const successResult = makeSuccessResult(42);
+    const prefix = 'Prefix';
+
+    const result = prefixResultIfError(successResult, prefix);
+
+    expect(result).toBe(successResult);
+  });
+
+  it('should add prefix to error message for ErrorResult', () => {
+    const errorMessage = 'Original error message';
+    const errorResult = makeErrorResult(new Error(errorMessage));
+    const prefix = 'Prefix';
+
+    const result = prefixResultIfError(errorResult, prefix);
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.message).toBe('Prefix: Original error message');
+    }
+  });
+});
+
+describe('syncTryAll', () => {
+  it('should return success result with all values when all results succeed', () => {
+    const results = [makeSuccessResult(1), makeSuccessResult(2), makeSuccessResult(3)];
+
+    const combinedResult = syncTryAll(results);
+
+    expect(combinedResult).toEqual(makeSuccessResult([1, 2, 3]));
+  });
+
+  it('should return first error result when any result fails', () => {
+    const errorMessage = 'Test error';
+    const results = [
+      makeSuccessResult(1),
+      makeErrorResult(new Error(errorMessage)),
+      makeSuccessResult(3),
+    ];
+
+    const combinedResult = syncTryAll(results);
+
+    expect(combinedResult.success).toBe(false);
+    if (!combinedResult.success) {
+      expect(combinedResult.error.message).toBe(errorMessage);
+    }
+  });
+
+  it('should handle empty array input', () => {
+    const results: Array<Result<unknown>> = [];
+
+    const combinedResult = syncTryAll(results);
+
+    expect(combinedResult).toEqual(makeSuccessResult([]));
+  });
+
+  it('should handle various result types', () => {
+    const results: Array<Result<unknown>> = [
+      makeSuccessResult('string'),
+      makeSuccessResult(123),
+      makeSuccessResult({id: 'test'}),
+    ];
+
+    const combinedResult = syncTryAll(results);
+
+    expect(combinedResult).toEqual(makeSuccessResult(['string', 123, {id: 'test'}]));
   });
 });

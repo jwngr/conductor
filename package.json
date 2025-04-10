@@ -51,6 +51,7 @@
     "test:shared": "yarn workspace @conductor/shared test",
     "test:shared:watch": "yarn workspace @conductor/shared test:watch",
     "test:shared:coverage": "yarn workspace @conductor/shared test:coverage",
+    "test:shared:coverage:open": "yarn workspace @conductor/shared test:coverage:open",
     "test:sharedClient": "yarn workspace @conductor/shared-client test",
     "test:sharedClient:watch": "yarn workspace @conductor/shared-client test:watch",
     "test:sharedServer": "yarn workspace @conductor/shared-server test",
