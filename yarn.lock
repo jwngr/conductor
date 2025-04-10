@@ -3187,9 +3187,9 @@ __metadata:
   linkType: hard
 
 "@opentelemetry/semantic-conventions@npm:^1.22.0, @opentelemetry/semantic-conventions@npm:^1.23.0, @opentelemetry/semantic-conventions@npm:^1.24.0, @opentelemetry/semantic-conventions@npm:^1.27.0":
-  version: 1.30.0
-  resolution: "@opentelemetry/semantic-conventions@npm:1.30.0"
-  checksum: 10c0/0bf99552e3b4b7e8b7eb504b678d52f59c6f259df88e740a2011a0d858e523d36fee86047ae1b7f45849c77f00f970c3059ba58e0a06a7d47d6f01dbe8c455bd
+  version: 1.31.0
+  resolution: "@opentelemetry/semantic-conventions@npm:1.31.0"
+  checksum: 10c0/a21e250d14565c86b7f53378149765425371486516485721e1c64fc24aead71659d60a25ea6796d32d23bbcb6931e760f0ac3aac14a0cae15d19e106523147f7
   languageName: node
   linkType: hard
 
@@ -4618,11 +4618,11 @@ __metadata:
   linkType: hard
 
 "@types/react-dom@npm:^19.1.1":
-  version: 19.1.1
-  resolution: "@types/react-dom@npm:19.1.1"
+  version: 19.1.2
+  resolution: "@types/react-dom@npm:19.1.2"
   peerDependencies:
     "@types/react": ^19.0.0
-  checksum: 10c0/83833af502f501a372b370fdeb7cf933dfc8780903fe0e0d6e6a76b4ea3adbe5316159a62a0388d8afdd409afd76a40959e2ce82fbb788f57d32c786a63601ee
+  checksum: 10c0/100c341cacba9ec8ae1d47ee051072a3450e9573bf8eeb7262490e341cb246ea0f95a07a1f2077e61cf92648f812a0324c602fcd811bd87b7ce41db2811510cd
   languageName: node
   linkType: hard
 
@@ -5502,9 +5502,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.30001688":
-  version: 1.0.30001712
-  resolution: "caniuse-lite@npm:1.0.30001712"
-  checksum: 10c0/b3df8bdcc3335969380c2e47acb36c89bfc7f8fb4ef7ee2a5380e30ba46aa69e9d411654bc29894a06c201a1d60d490ab9b92787f3b66d7a7a38d71360e68215
+  version: 1.0.30001713
+  resolution: "caniuse-lite@npm:1.0.30001713"
+  checksum: 10c0/f5468abfe73ce30e29cc8bde2ea67df2aab69032bdd93345e0640efefb76b7901c84fe1d28d591a797e65fe52fc24cae97060bb5552f9f9740322aff95ce2f9d
   languageName: node
   linkType: hard
 
@@ -6193,9 +6193,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.5.73":
-  version: 1.5.134
-  resolution: "electron-to-chromium@npm:1.5.134"
-  checksum: 10c0/ba0c8b3a86e139b142ce797e807f3a7b4b5708d8a550d820cc5467bf22fc62517fa9c2a38c4fec975c96f321f18918be1bcae41687f1715889a0ac6122fbfa6d
+  version: 1.5.135
+  resolution: "electron-to-chromium@npm:1.5.135"
+  checksum: 10c0/d431751080e659dd089423cbf7e5efcd1c6672a06b9552b2ebfb80caf0e2c442a2ee883f445f70ffb53c4f740b3fe8f6607760d9a15d6db2d3ba44dff39fc901
   languageName: node
   linkType: hard
 
@@ -9044,8 +9044,8 @@ __metadata:
   linkType: hard
 
 "knip@npm:^5.46.5":
-  version: 5.48.0
-  resolution: "knip@npm:5.48.0"
+  version: 5.49.0
+  resolution: "knip@npm:5.49.0"
   dependencies:
     "@nodelib/fs.walk": "npm:^1.2.3"
     easy-table: "npm:1.2.0"
@@ -9067,7 +9067,7 @@ __metadata:
   bin:
     knip: bin/knip.js
     knip-bun: bin/knip-bun.js
-  checksum: 10c0/4440391790e4ffaf15c2a8b44fd996f80eb772317e2087274766c44d7b336c7a7de096055cdf8d5ecf20f9896e7b7ba950fb31e3a3dc2e6d1d38c29689925c47
+  checksum: 10c0/86eb1a7e580ca718edc9e9bec0b874f712c3a306c17ce8032527917a14f4d3c9118d23b08a317ab2a860ba0e4d932800ebdbab60db0e89a8117b38c9a90c9286
   languageName: node
   linkType: hard
 
