@@ -1,12 +1,12 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseFeedSourceId} from '@shared/parsers/feedSources.parser';
 
-import type {Result} from '@shared/types/result.types';
-import {makeSuccessResult} from '@shared/types/result.types';
+import type {Result} from '@shared/types/results.types';
 import {
   UserFeedSubscriptionFromStorageSchema,
   UserFeedSubscriptionIdSchema,

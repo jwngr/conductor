@@ -14,7 +14,7 @@ import {
 import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
 
 import type {AuthStateChangedCallback} from '@shared/types/accounts.types';
-import type {AsyncResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/results.types';
 import type {Consumer, EmailAddress} from '@shared/types/utils.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';

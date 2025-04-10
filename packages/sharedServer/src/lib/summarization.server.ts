@@ -2,7 +2,7 @@ import {z} from 'zod';
 
 import {asyncTry, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
-import type {AsyncResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/results.types';
 
 import {ai} from '@sharedServer/lib/ai.server';
 

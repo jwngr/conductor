@@ -1,7 +1,7 @@
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {partition} from '@shared/lib/utils.shared';
 
-import type {AsyncResult, ErrorResult, Result, SuccessResult} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {AsyncResult, ErrorResult, Result, SuccessResult} from '@shared/types/results.types';
 import type {Supplier} from '@shared/types/utils.types';
 
 const DEFAULT_ERROR_MESSAGE = 'An unexpected error occurred';

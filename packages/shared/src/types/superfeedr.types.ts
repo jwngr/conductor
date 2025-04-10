@@ -3,7 +3,7 @@ import {z} from 'zod';
 import {prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {parseZodResult} from '@shared/lib/parser.shared';
 
-import type {Result} from '@shared/types/result.types';
+import type {Result} from '@shared/types/results.types';
 
 const SuperfeedrActorSchema = z.object({
   displayName: z.string(),

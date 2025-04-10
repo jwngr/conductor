@@ -1,10 +1,11 @@
 import {logger} from '@shared/services/logger.shared';
 
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import {FeedItemImportStatus} from '@shared/types/feedItems.types';
 import type {FeedItem} from '@shared/types/feedItems.types';
-import {makeSuccessResult, type AsyncResult, type ErrorResult} from '@shared/types/result.types';
+import type {AsyncResult, ErrorResult} from '@shared/types/results.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 

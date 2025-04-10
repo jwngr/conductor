@@ -1,10 +1,10 @@
 import type {ZodSchema} from 'zod';
 
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {isDate, omitUndefined} from '@shared/lib/utils.shared';
 
 import type {FirestoreTimestamp} from '@shared/types/firebase.types';
-import type {Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {Result} from '@shared/types/results.types';
 import type {BaseStoreItem, Supplier} from '@shared/types/utils.types';
 
 /**

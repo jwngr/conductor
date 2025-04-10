@@ -14,10 +14,10 @@ import {
   prefixErrorResult,
   prefixResultIfError,
 } from '@shared/lib/errorUtils.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
 
-import type {AsyncResult, Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {AsyncResult, Result} from '@shared/types/results.types';
 import type {Func} from '@shared/types/utils.types';
 
 import {firestore} from '@sharedServer/services/firebase.server';

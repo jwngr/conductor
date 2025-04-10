@@ -7,6 +7,7 @@ import {
 } from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {requestGet} from '@shared/lib/requests.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
 
@@ -18,8 +19,7 @@ import type {
   FeedItemId,
   FeedItemSource,
 } from '@shared/types/feedItems.types';
-import type {AsyncResult} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/results.types';
 
 import {eventLogService} from '@sharedServer/services/eventLog.server';
 import {storage} from '@sharedServer/services/firebase.server';

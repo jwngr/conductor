@@ -4,6 +4,7 @@ import {logger} from '@shared/services/logger.shared';
 
 import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
 
@@ -12,8 +13,7 @@ import {SYSTEM_ACTOR} from '@shared/types/actors.types';
 import {Environment, EventType, makeEventId} from '@shared/types/eventLog.types';
 import type {EventId, EventLogItem, EventLogItemFromStorage} from '@shared/types/eventLog.types';
 import type {FeedItemId} from '@shared/types/feedItems.types';
-import {makeSuccessResult} from '@shared/types/result.types';
-import type {AsyncResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/results.types';
 
 import {
   makeFirestoreDataConverter,

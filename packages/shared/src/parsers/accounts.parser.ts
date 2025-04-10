@@ -1,10 +1,10 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseZodResult} from '@shared/lib/parser.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {Account, AccountFromStorage, AccountId} from '@shared/types/accounts.types';
 import {AccountFromStorageSchema, AccountIdSchema} from '@shared/types/accounts.types';
-import type {Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {Result} from '@shared/types/results.types';
 import type {EmailAddress} from '@shared/types/utils.types';
 import {EmailAddressSchema} from '@shared/types/utils.types';
 

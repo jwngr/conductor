@@ -1,13 +1,13 @@
 import {logger} from '@shared/services/logger.shared';
 
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 
 import type {Actor} from '@shared/types/actors.types';
 import {ActorSchema, ActorType, makeUserActor, SYSTEM_ACTOR} from '@shared/types/actors.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import type {Result} from '@shared/types/result.types';
+import type {Result} from '@shared/types/results.types';
 
 export function parseActor(actor: unknown): Result<Actor> {
   const result = ActorSchema.safeParse(actor);

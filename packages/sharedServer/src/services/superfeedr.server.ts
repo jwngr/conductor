@@ -1,6 +1,6 @@
 import {requestPost} from '@shared/lib/requests.shared';
 
-import type {AsyncResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/results.types';
 
 // TODO: Confirm if this is actually needed.
 // interface SuperfeedrResponse {

@@ -1,11 +1,11 @@
 import {logger} from '@shared/services/logger.shared';
 
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {FeedSourceId} from '@shared/types/feedSources.types';
-import {makeSuccessResult} from '@shared/types/result.types';
-import type {AsyncResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/results.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
 import type {ServerFeedSourcesService} from '@sharedServer/services/feedSources.server';

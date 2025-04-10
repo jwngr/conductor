@@ -1,5 +1,6 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseActor} from '@shared/parsers/actors.parser';
@@ -25,8 +26,7 @@ import type {
   UserFeedSubscriptionEventLogItem,
   UserFeedSubscriptionEventLogItemData,
 } from '@shared/types/eventLog.types';
-import type {Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {Result} from '@shared/types/results.types';
 
 /**
  * Parses a {@link EventId} from a plain string. Returns an `ErrorResult` if the string is not

@@ -1,3 +1,4 @@
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {
   assertNever,
   batchAsyncResults,
@@ -14,8 +15,7 @@ import {
   pluralizeWithCount,
 } from '@shared/lib/utils.shared';
 
-import type {Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {Result} from '@shared/types/results.types';
 
 describe('formatWithCommas', () => {
   test('should format numbers with commas', () => {

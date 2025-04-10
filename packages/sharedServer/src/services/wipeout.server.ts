@@ -1,11 +1,11 @@
 import {logger} from '@shared/services/logger.shared';
 
 import {asyncTryAll, prefixError} from '@shared/lib/errorUtils.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {batchAsyncResults} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import type {AsyncResult} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/results.types';
 import type {Supplier} from '@shared/types/utils.types';
 
 import type {ServerAccountsService} from '@sharedServer/services/accounts.server';

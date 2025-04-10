@@ -1,12 +1,12 @@
 import {JSDOM} from 'jsdom';
 
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
+import {makeSuccessResult, partitionResults} from '@shared/lib/results.shared';
 import {pluralizeWithCount} from '@shared/lib/utils.shared';
 
 import {parsePocketCsvRecord} from '@shared/types/pocket.types';
 import type {PocketImportItem, RawPocketCsvRecord} from '@shared/types/pocket.types';
-import {makeSuccessResult, partitionResults} from '@shared/types/result.types';
-import type {AsyncResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/results.types';
 
 import {parseCsv} from '@sharedServer/lib/csv.server';
 import {readFile} from '@sharedServer/lib/fs.server';

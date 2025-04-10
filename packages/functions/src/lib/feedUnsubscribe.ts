@@ -1,8 +1,9 @@
 import {prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import {parseUserFeedSubscription} from '@shared/parsers/userFeedSubscriptions.parser';
 
-import {makeErrorResult, makeSuccessResult, type AsyncResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/results.types';
 
 import type {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
 

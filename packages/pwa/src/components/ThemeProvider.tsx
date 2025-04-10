@@ -1,8 +1,9 @@
 import type {ReactNode} from 'react';
 import {createContext, useContext, useEffect, useState} from 'react';
 
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import type {Result} from '@shared/types/result.types';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+
+import type {Result} from '@shared/types/results.types';
 import {DEFAULT_THEME_PREFERENCE, ThemePreference} from '@shared/types/theme.types';
 import type {Consumer} from '@shared/types/utils.types';
 

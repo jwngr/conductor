@@ -1,7 +1,8 @@
 import {logger} from '@shared/services/logger.shared';
 
-import type {Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+
+import type {Result} from '@shared/types/results.types';
 
 type PocketImportItemStatus = 'unread' | 'archive';
 
