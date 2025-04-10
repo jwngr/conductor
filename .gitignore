@@ -33,3 +33,6 @@ firebase-debug.log
 functions-debug.log
 database-debug.log
 firestore-debug.log
+
+# Test coverage.
+packages/*/coverage/**
