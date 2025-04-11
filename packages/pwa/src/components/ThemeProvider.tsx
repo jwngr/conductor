@@ -9,6 +9,7 @@ import type {Consumer} from '@shared/types/utils.types';
 
 import type {WithChildren} from '@sharedClient/types/utils.client.types';
 
+import {darkTheme, lightTheme} from '@src/lib/theme.css';
 import {
   getThemePreferenceFromLocalStorage,
   THEME_PREFERENCE_STORAGE_KEY,
@@ -25,14 +26,22 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 function updateBodyOnNewThemePreference(themeType: BrowserPrefersColorScheme): void {
-  // This attribute is currently not used by anything, but is best practice to set.
+  const bodyClassList = window.document.body.classList;
+
+  // Set data-theme attribute (optional, but good practice).
   window.document.body.setAttribute('data-theme', themeType);
 
-  // This class is used by Tailwind to apply the correct theme.
+  const isDark = themeType === 'dark';
+
+  // vanilla-extract
+  bodyClassList.remove(isDark ? lightTheme : darkTheme);
+  bodyClassList.add(isDark ? darkTheme : lightTheme);
+
+  // Tailwind
   if (themeType === 'dark') {
-    window.document.body.classList.add('dark');
+    bodyClassList.add('dark');
   } else {
-    window.document.body.classList.remove('dark');
+    bodyClassList.remove('dark');
   }
 }
 
