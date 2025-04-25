@@ -1,12 +1,16 @@
+import {logger} from '@shared/services/logger.shared';
+
+import {prefixError, upgradeUnknownError} from '@shared/lib/errorUtils.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
-import type {FeedItem, FeedItemAction} from '@shared/types/feedItems.types';
 import {
   FeedItemActionType,
+  FeedItemType,
   makeFeedItemId,
   makeNewFeedItemImportState,
   TriageStatus,
 } from '@shared/types/feedItems.types';
+import type {FeedItem, FeedItemAction} from '@shared/types/feedItems.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/results.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
@@ -150,5 +154,34 @@ export class SharedFeedItemHelpers {
     }
 
     return makeSuccessResult(undefined);
+  }
+
+  public static getFeedItemTypeFromUrl(url: string): FeedItemType {
+    // Parsing the URL may throw. If it does, ignore the error and just use a default value.
+    let parsedUrl: URL;
+    // eslint-disable-next-line no-restricted-syntax
+    try {
+      parsedUrl = new URL(url);
+    } catch (error) {
+      const betterError = upgradeUnknownError(error);
+      logger.error(prefixError(betterError, 'Error parsing feed item type from URL'), {error, url});
+      return FeedItemType.Website;
+    }
+
+    const hostname = parsedUrl.hostname.toLowerCase();
+
+    // Check for exact matches against allowed hostnames.
+    const youtubeHosts = ['youtube.com', 'www.youtube.com', 'youtu.be', 'www.youtu.be'];
+    const xkcdHosts = ['xkcd.com', 'www.xkcd.com'];
+    const twitterHosts = ['twitter.com', 'www.twitter.com', 'x.com', 'www.x.com'];
+    if (youtubeHosts.includes(hostname)) {
+      return FeedItemType.YouTube;
+    } else if (xkcdHosts.includes(hostname)) {
+      return FeedItemType.Xkcd;
+    } else if (twitterHosts.includes(hostname)) {
+      return FeedItemType.Tweet;
+    }
+
+    return FeedItemType.Website;
   }
 }

@@ -39,8 +39,8 @@ service cloud.firestore {
       ]) &&
       request.resource.data.feedItemId is string &&
       request.resource.data.feedItemId == feedItemId &&
-      request.resource.data.type in ['ARTICLE', 'VIDEO', 'WEBSITE', 'TWEET', 'XKCD'] &&
-      request.resource.data.feedItemSource.type in ['APP', 'EXTENSION', 'RSS'] &&
+      request.resource.data.type in ['ARTICLE', 'VIDEO', 'WEBSITE', 'TWEET', 'XKCD', 'YOUTUBE'] &&
+      request.resource.data.feedItemSource.type in ['APP', 'EXTENSION', 'RSS', 'POCKET_EXPORT'] &&
       request.resource.data.url is string &&
       request.resource.data.title is string &&
       request.resource.data.description is string &&
