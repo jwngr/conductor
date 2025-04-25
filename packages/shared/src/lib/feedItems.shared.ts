@@ -1,3 +1,6 @@
+import {logger} from '@shared/services/logger.shared';
+
+import {prefixError, upgradeUnknownError} from '@shared/lib/errorUtils.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import {
@@ -154,16 +157,28 @@ export class SharedFeedItemHelpers {
   }
 
   public static getFeedItemTypeFromUrl(url: string): FeedItemType {
-    // TODO: Can this throw?
-    const parsedUrl = new URL(url);
+    // Parsing the URL may throw. If it does, ignore the error and just use a default value.
+    let parsedUrl: URL;
+    // eslint-disable-next-line no-restricted-syntax
+    try {
+      parsedUrl = new URL(url);
+    } catch (error) {
+      const betterError = upgradeUnknownError(error);
+      logger.error(prefixError(betterError, 'Error parsing feed item type from URL'), {error, url});
+      return FeedItemType.Website;
+    }
+
     const hostname = parsedUrl.hostname.toLowerCase();
 
-    // TODO: Should these be exact matches?
-    if (hostname.includes('youtube.com')) {
+    // Check for exact matches against allowed hostnames.
+    const youtubeHosts = ['youtube.com', 'www.youtube.com'];
+    const xkcdHosts = ['xkcd.com', 'www.xkcd.com'];
+    const twitterHosts = ['twitter.com', 'www.twitter.com', 'x.com', 'www.x.com'];
+    if (youtubeHosts.includes(hostname)) {
       return FeedItemType.YouTube;
-    } else if (hostname.includes('xkcd.com')) {
+    } else if (xkcdHosts.includes(hostname)) {
       return FeedItemType.Xkcd;
-    } else if (hostname.includes('twitter.com')) {
+    } else if (twitterHosts.includes(hostname)) {
       return FeedItemType.Tweet;
     }
 
