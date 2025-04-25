@@ -23,6 +23,7 @@ import {TweetFeedItemComponent} from '@src/components/feedItems/TweetFeedItem';
 import {VideoFeedItemComponent} from '@src/components/feedItems/VideoFeedItem';
 import {WebsiteFeedItemComponent} from '@src/components/feedItems/WebsiteFeedItem';
 import {XkcdFeedItemComponent} from '@src/components/feedItems/XkcdFeedItem';
+import {YouTubeFeedItemComponent} from '@src/components/feedItems/YouTubeFeedItem';
 import {LeftSidebar} from '@src/components/LeftSidebar';
 
 import {NotFoundScreen} from '@src/screens/404';
@@ -114,6 +115,9 @@ const FeedItemScreenMainContent: React.FC<{
       break;
     case FeedItemType.Xkcd:
       feedItemContent = <XkcdFeedItemComponent feedItem={feedItem} />;
+      break;
+    case FeedItemType.YouTube:
+      feedItemContent = <YouTubeFeedItemComponent feedItem={feedItem} />;
       break;
     default:
       assertNever(feedItem);

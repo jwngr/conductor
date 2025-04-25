@@ -1,12 +1,13 @@
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
-import type {FeedItem, FeedItemAction} from '@shared/types/feedItems.types';
 import {
   FeedItemActionType,
+  FeedItemType,
   makeFeedItemId,
   makeNewFeedItemImportState,
   TriageStatus,
 } from '@shared/types/feedItems.types';
+import type {FeedItem, FeedItemAction} from '@shared/types/feedItems.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/results.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
@@ -150,5 +151,22 @@ export class SharedFeedItemHelpers {
     }
 
     return makeSuccessResult(undefined);
+  }
+
+  public static getFeedItemTypeFromUrl(url: string): FeedItemType {
+    // TODO: Can this throw?
+    const parsedUrl = new URL(url);
+    const hostname = parsedUrl.hostname.toLowerCase();
+
+    // TODO: Should these be exact matches?
+    if (hostname.includes('youtube.com')) {
+      return FeedItemType.YouTube;
+    } else if (hostname.includes('xkcd.com')) {
+      return FeedItemType.Xkcd;
+    } else if (hostname.includes('twitter.com')) {
+      return FeedItemType.Tweet;
+    }
+
+    return FeedItemType.Website;
   }
 }

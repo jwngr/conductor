@@ -12,7 +12,6 @@ import {isValidUrl} from '@shared/lib/urls.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import {FeedItemType} from '@shared/types/feedItems.types';
 import type {
   FeedItem,
   FeedItemFromStorage,
@@ -65,7 +64,7 @@ export class ServerFeedItemsService {
     const feedItemResult = SharedFeedItemHelpers.makeFeedItem({
       // TODO: Make this dynamic based on the actual content. Maybe it should be null initially
       // until we've done the import? Or should we compute this at save time?
-      type: FeedItemType.Website,
+      type: SharedFeedItemHelpers.getFeedItemTypeFromUrl(trimmedUrl),
       url: trimmedUrl,
       feedItemSource,
       accountId,
@@ -96,8 +95,6 @@ export class ServerFeedItemsService {
     const updateResult = await this.feedItemsCollectionService.updateDoc(
       feedItemId,
       omitUndefined({
-        // TODO: Determine the type based on the URL or fetched content.
-        type: FeedItemType.Website,
         title: updates.title,
         description: updates.description,
         summary: updates.summary,
