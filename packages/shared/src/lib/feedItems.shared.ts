@@ -171,7 +171,7 @@ export class SharedFeedItemHelpers {
     const hostname = parsedUrl.hostname.toLowerCase();
 
     // Check for exact matches against allowed hostnames.
-    const youtubeHosts = ['youtube.com', 'www.youtube.com'];
+    const youtubeHosts = ['youtube.com', 'www.youtube.com', 'youtu.be', 'www.youtu.be'];
     const xkcdHosts = ['xkcd.com', 'www.xkcd.com'];
     const twitterHosts = ['twitter.com', 'www.twitter.com', 'x.com', 'www.x.com'];
     if (youtubeHosts.includes(hostname)) {
