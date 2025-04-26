@@ -2,16 +2,26 @@ import type React from 'react';
 
 import type {TweetFeedItem} from '@shared/types/feedItems.types';
 
+import {Text} from '@src/components/atoms/Text';
 import {FeedItemHeader, FeedItemWrapper} from '@src/components/feedItems/FeedItem';
-import {FeedItemMarkdown} from '@src/components/feedItems/FeedItemMarkdown';
+import {ImportingFeedItem} from '@src/components/feedItems/ImportingFeedItem';
 
 export const TweetFeedItemComponent: React.FC<{readonly feedItem: TweetFeedItem}> = ({
   feedItem,
 }) => {
+  const hasFeedItemEverBeenImported = feedItem.importState.lastSuccessfulImportTime !== null;
+
+  let mainContent: React.ReactNode;
+  if (!hasFeedItemEverBeenImported) {
+    mainContent = <ImportingFeedItem feedItem={feedItem} />;
+  } else {
+    mainContent = <Text as="p">TODO</Text>;
+  }
+
   return (
     <FeedItemWrapper>
       <FeedItemHeader feedItem={feedItem} />
-      <FeedItemMarkdown feedItem={feedItem} />
+      {mainContent}
     </FeedItemWrapper>
   );
 };
