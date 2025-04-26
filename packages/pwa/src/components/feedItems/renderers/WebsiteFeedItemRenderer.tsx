@@ -2,13 +2,13 @@ import type React from 'react';
 
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 
-import type {VideoFeedItem} from '@shared/types/feedItems.types';
+import type {WebsiteFeedItem} from '@shared/types/feedItems.types';
 
-import {Text} from '@src/components/atoms/Text';
-import {FeedItemHeader, FeedItemWrapper} from '@src/components/feedItems/FeedItem';
+import {FeedItemHeader, FeedItemSummary, FeedItemWrapper} from '@src/components/feedItems/FeedItem';
+import {FeedItemMarkdown} from '@src/components/feedItems/FeedItemMarkdown';
 import {ImportingFeedItem} from '@src/components/feedItems/ImportingFeedItem';
 
-export const VideoFeedItemComponent: React.FC<{readonly feedItem: VideoFeedItem}> = ({
+export const WebsiteFeedItemRenderer: React.FC<{readonly feedItem: WebsiteFeedItem}> = ({
   feedItem,
 }) => {
   const hasFeedItemEverBeenImported = SharedFeedItemHelpers.hasEverBeenImported(feedItem);
@@ -17,7 +17,12 @@ export const VideoFeedItemComponent: React.FC<{readonly feedItem: VideoFeedItem}
   if (!hasFeedItemEverBeenImported) {
     mainContent = <ImportingFeedItem feedItem={feedItem} />;
   } else {
-    mainContent = <Text as="p">TODO</Text>;
+    mainContent = (
+      <>
+        <FeedItemSummary feedItem={feedItem} />
+        <FeedItemMarkdown feedItem={feedItem} />
+      </>
+    );
   }
 
   return (

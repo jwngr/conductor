@@ -17,13 +17,13 @@ import {useFeedItem, useFeedItemsService} from '@sharedClient/services/feedItems
 import {AppHeader} from '@src/components/AppHeader';
 import {Text} from '@src/components/atoms/Text';
 import {RegisterIndividualFeedItemDevToolbarSection} from '@src/components/devToolbar/RegisterIndividualFeedItemSection';
-import {ArticleFeedItemComponent} from '@src/components/feedItems/ArticleFeedItem';
 import {FeedItemScreenKeyboardHandler} from '@src/components/feedItems/FeedItemScreenEscapeHandler';
-import {TweetFeedItemComponent} from '@src/components/feedItems/TweetFeedItem';
-import {VideoFeedItemComponent} from '@src/components/feedItems/VideoFeedItem';
-import {WebsiteFeedItemComponent} from '@src/components/feedItems/WebsiteFeedItem';
-import {XkcdFeedItemComponent} from '@src/components/feedItems/XkcdFeedItem';
-import {YouTubeFeedItemComponent} from '@src/components/feedItems/YouTubeFeedItem';
+import {ArticleFeedItemRenderer} from '@src/components/feedItems/renderers/ArticleFeedItemRenderer';
+import {TweetFeedItemRenderer} from '@src/components/feedItems/renderers/TweetFeedItemRenderer';
+import {VideoFeedItemRenderer} from '@src/components/feedItems/renderers/VideoFeedItemRenderer';
+import {WebsiteFeedItemRenderer} from '@src/components/feedItems/renderers/WebsiteFeedItemRenderer';
+import {XkcdFeedItemRenderer} from '@src/components/feedItems/renderers/XkcdFeedItemRenderer';
+import {YouTubeFeedItemRenderer} from '@src/components/feedItems/renderers/YouTubeFeedItemRenderer';
 import {LeftSidebar} from '@src/components/LeftSidebar';
 
 import {NotFoundScreen} from '@src/screens/404';
@@ -102,22 +102,22 @@ const FeedItemScreenMainContent: React.FC<{
   let feedItemContent: React.ReactNode;
   switch (feedItem.type) {
     case FeedItemType.Article:
-      feedItemContent = <ArticleFeedItemComponent feedItem={feedItem} />;
+      feedItemContent = <ArticleFeedItemRenderer feedItem={feedItem} />;
       break;
     case FeedItemType.Video:
-      feedItemContent = <VideoFeedItemComponent feedItem={feedItem} />;
+      feedItemContent = <VideoFeedItemRenderer feedItem={feedItem} />;
       break;
     case FeedItemType.Website:
-      feedItemContent = <WebsiteFeedItemComponent feedItem={feedItem} />;
+      feedItemContent = <WebsiteFeedItemRenderer feedItem={feedItem} />;
       break;
     case FeedItemType.Tweet:
-      feedItemContent = <TweetFeedItemComponent feedItem={feedItem} />;
+      feedItemContent = <TweetFeedItemRenderer feedItem={feedItem} />;
       break;
     case FeedItemType.Xkcd:
-      feedItemContent = <XkcdFeedItemComponent feedItem={feedItem} />;
+      feedItemContent = <XkcdFeedItemRenderer feedItem={feedItem} />;
       break;
     case FeedItemType.YouTube:
-      feedItemContent = <YouTubeFeedItemComponent feedItem={feedItem} />;
+      feedItemContent = <YouTubeFeedItemRenderer feedItem={feedItem} />;
       break;
     default:
       assertNever(feedItem);

@@ -33,7 +33,7 @@ const YouTubeFeedItemTranscript: React.FC<{readonly feedItem: YouTubeFeedItem}> 
   return <Text as="p">No transcript</Text>;
 };
 
-export const YouTubeFeedItemComponent: React.FC<{readonly feedItem: YouTubeFeedItem}> = ({
+export const YouTubeFeedItemRenderer: React.FC<{readonly feedItem: YouTubeFeedItem}> = ({
   feedItem,
 }) => {
   const hasFeedItemEverBeenImported = SharedFeedItemHelpers.hasEverBeenImported(feedItem);

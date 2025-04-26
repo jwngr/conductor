@@ -8,9 +8,7 @@ import {Text} from '@src/components/atoms/Text';
 import {FeedItemHeader, FeedItemWrapper} from '@src/components/feedItems/FeedItem';
 import {ImportingFeedItem} from '@src/components/feedItems/ImportingFeedItem';
 
-export const TweetFeedItemComponent: React.FC<{readonly feedItem: TweetFeedItem}> = ({
-  feedItem,
-}) => {
+export const TweetFeedItemRenderer: React.FC<{readonly feedItem: TweetFeedItem}> = ({feedItem}) => {
   const hasFeedItemEverBeenImported = SharedFeedItemHelpers.hasEverBeenImported(feedItem);
 
   let mainContent: React.ReactNode;

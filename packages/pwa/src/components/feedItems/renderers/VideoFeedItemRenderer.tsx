@@ -2,27 +2,20 @@ import type React from 'react';
 
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 
-import type {WebsiteFeedItem} from '@shared/types/feedItems.types';
+import type {VideoFeedItem} from '@shared/types/feedItems.types';
 
-import {FeedItemHeader, FeedItemSummary, FeedItemWrapper} from '@src/components/feedItems/FeedItem';
-import {FeedItemMarkdown} from '@src/components/feedItems/FeedItemMarkdown';
+import {Text} from '@src/components/atoms/Text';
+import {FeedItemHeader, FeedItemWrapper} from '@src/components/feedItems/FeedItem';
 import {ImportingFeedItem} from '@src/components/feedItems/ImportingFeedItem';
 
-export const WebsiteFeedItemComponent: React.FC<{readonly feedItem: WebsiteFeedItem}> = ({
-  feedItem,
-}) => {
+export const VideoFeedItemRenderer: React.FC<{readonly feedItem: VideoFeedItem}> = ({feedItem}) => {
   const hasFeedItemEverBeenImported = SharedFeedItemHelpers.hasEverBeenImported(feedItem);
 
   let mainContent: React.ReactNode;
   if (!hasFeedItemEverBeenImported) {
     mainContent = <ImportingFeedItem feedItem={feedItem} />;
   } else {
-    mainContent = (
-      <>
-        <FeedItemSummary feedItem={feedItem} />
-        <FeedItemMarkdown feedItem={feedItem} />
-      </>
-    );
+    mainContent = <Text as="p">TODO</Text>;
   }
 
   return (
