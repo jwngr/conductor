@@ -300,8 +300,9 @@ export const XkcdFeedItemFromStorageSchema = BaseFeedItemFromStorageSchema.exten
   type: z.literal(FeedItemType.Xkcd),
   xkcd: z
     .object({
-      imageUrl: z.string().url(),
       altText: z.string(),
+      imageUrlSmall: z.string().url(),
+      imageUrlLarge: z.string().url(),
     })
     .nullable(),
 });
@@ -332,8 +333,9 @@ export interface TweetFeedItem extends BaseFeedItem {
 export interface XkcdFeedItem extends BaseFeedItem {
   readonly type: FeedItemType.Xkcd;
   readonly xkcd: {
-    readonly imageUrl: string;
     readonly altText: string;
+    readonly imageUrlSmall: string;
+    readonly imageUrlLarge: string;
   } | null;
 }
 

@@ -252,11 +252,11 @@ export class ServerFeedItemsService {
       return prefixErrorResult(fetchComicResult, 'Error fetching XKCD comic');
     }
 
-    const {title, imageUrl, altText} = fetchComicResult.value;
+    const {title, imageUrlSmall, imageUrlLarge, altText} = fetchComicResult.value;
 
     const updateFeedItemResult = await this.updateFeedItem(feedItem.feedItemId, {
       title,
-      xkcd: {imageUrl, altText},
+      xkcd: {imageUrlSmall, imageUrlLarge, altText},
     });
     return prefixResultIfError(updateFeedItemResult, 'Error updating XKCD comic');
   }
