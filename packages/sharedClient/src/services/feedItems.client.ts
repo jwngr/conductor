@@ -20,12 +20,7 @@ import {Views} from '@shared/lib/views.shared';
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 
 import type {AccountId, AuthStateChangedUnsubscribe} from '@shared/types/accounts.types';
-import type {
-  FeedItem,
-  FeedItemId,
-  FeedItemSource,
-  XkcdFeedItem,
-} from '@shared/types/feedItems.types';
+import type {FeedItem, FeedItemId, FeedItemSource} from '@shared/types/feedItems.types';
 import {fromFilterOperator} from '@shared/types/query.types';
 import type {ViewType} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/results.types';

@@ -101,6 +101,7 @@ export async function handleSuperfeedrWebhookHelper(args: {
           accountId: userFeedSubscription.accountId,
           feedItemSource: makeFeedItemRSSSource(userFeedSubscription.userFeedSubscriptionId),
           title: item.title,
+          description: item.summary,
         });
       createFeedItemResults.push(newFeedItemResult);
     });

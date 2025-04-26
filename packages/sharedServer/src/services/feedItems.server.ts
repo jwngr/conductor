@@ -63,8 +63,9 @@ export class ServerFeedItemsService {
     readonly feedItemSource: FeedItemSource;
     readonly accountId: AccountId;
     readonly title: string;
+    readonly description: string | null;
   }): AsyncResult<FeedItemId | null> {
-    const {url, accountId, feedItemSource, title} = args;
+    const {url, accountId, feedItemSource, title, description} = args;
 
     const trimmedUrl = url.trim();
     if (!isValidUrl(trimmedUrl)) {
@@ -76,6 +77,7 @@ export class ServerFeedItemsService {
       feedItemSource,
       accountId,
       title,
+      description,
     });
     if (!feedItemResult.success) return feedItemResult;
     const feedItem = feedItemResult.value;
