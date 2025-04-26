@@ -13,7 +13,6 @@ import type {
   FeedItemSource,
 } from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/results.types';
-import type {Func} from '@shared/types/utils.types';
 
 import {eventLogService} from '@sharedServer/services/eventLog.server';
 import {storage} from '@sharedServer/services/firebase.server';
@@ -29,27 +28,6 @@ type FeedItemCollectionService = ServerFirestoreCollectionService<
   FeedItem,
   FeedItemFromStorage
 >;
-
-interface WriteFileToStorageArgs {
-  readonly storagePath: string;
-  readonly content: string;
-  readonly contentType: string;
-}
-
-export type WriteFileToStorageFn = Func<WriteFileToStorageArgs, AsyncResult<void>>;
-
-interface GetStoragePathArgs {
-  readonly feedItemId: FeedItemId;
-  readonly accountId: AccountId;
-  readonly filename: string;
-}
-
-export type GetStoragePathFn = Func<GetStoragePathArgs, string>;
-
-export type UpdateFeedItemFn = (
-  feedItemId: FeedItemId,
-  updates: Partial<FeedItem>
-) => AsyncResult<void>;
 
 export class ServerFeedItemsService {
   private readonly storageCollectionPath: string;
@@ -119,7 +97,11 @@ export class ServerFeedItemsService {
   /**
    * Writes content to storage file.
    */
-  private async writeFileToStorage(args: WriteFileToStorageArgs): AsyncResult<void> {
+  public async writeFileToStorage(args: {
+    readonly storagePath: string;
+    readonly content: string;
+    readonly contentType: string;
+  }): AsyncResult<void> {
     const {storagePath, content, contentType} = args;
     return await asyncTry(async () => {
       const file = storage.bucket().file(storagePath);
@@ -160,7 +142,11 @@ export class ServerFeedItemsService {
     return `${this.storageCollectionPath}/${accountId}/`;
   }
 
-  private getStoragePath(args: GetStoragePathArgs): string {
+  public getStoragePath(args: {
+    readonly feedItemId: FeedItemId;
+    readonly accountId: AccountId;
+    readonly filename: string;
+  }): string {
     const {feedItemId, accountId, filename} = args;
     const accountPath = this.getStoragePathForAccount(accountId);
     return `${accountPath}${feedItemId}/${filename}`;
@@ -174,10 +160,7 @@ export class ServerFeedItemsService {
 
     switch (feedItem.type) {
       case FeedItemType.YouTube: {
-        const importer = new YouTubeFeedItemImporter({
-          getStoragePath: this.getStoragePath,
-          writeFileToStorage: this.writeFileToStorage,
-        });
+        const importer = new YouTubeFeedItemImporter({feedItemService: this});
         await importer.import(feedItem);
         break;
       }
@@ -186,18 +169,14 @@ export class ServerFeedItemsService {
       case FeedItemType.Video:
       case FeedItemType.Website: {
         const importer = new WebsiteFeedItemImporter({
-          updateFeedItem: this.updateFeedItem,
-          getStoragePath: this.getStoragePath,
-          writeFileToStorage: this.writeFileToStorage,
+          feedItemService: this,
           firecrawlService: this.firecrawlService,
         });
         await importer.import(feedItem);
         break;
       }
       case FeedItemType.Xkcd: {
-        const importer = new XkcdFeedItemImporter({
-          updateFeedItem: this.updateFeedItem,
-        });
+        const importer = new XkcdFeedItemImporter({feedItemService: this});
         await importer.import(feedItem);
         break;
       }

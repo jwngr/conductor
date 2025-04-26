@@ -4,20 +4,15 @@ import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.sha
 import type {YouTubeFeedItem} from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
-import type {GetStoragePathFn, WriteFileToStorageFn} from '@sharedServer/services/feedItems.server';
+import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 
 import {fetchYouTubeTranscript} from '@sharedServer/lib/youtube.server';
 
 export class YouTubeFeedItemImporter {
-  private readonly getStoragePath: GetStoragePathFn;
-  private readonly writeFileToStorage: WriteFileToStorageFn;
+  private readonly feedItemService: ServerFeedItemsService;
 
-  constructor(args: {
-    readonly getStoragePath: GetStoragePathFn;
-    readonly writeFileToStorage: WriteFileToStorageFn;
-  }) {
-    this.getStoragePath = args.getStoragePath;
-    this.writeFileToStorage = args.writeFileToStorage;
+  constructor(args: {readonly feedItemService: ServerFeedItemsService}) {
+    this.feedItemService = args.feedItemService;
   }
 
   public async import(feedItem: YouTubeFeedItem): AsyncResult<void> {
@@ -26,8 +21,8 @@ export class YouTubeFeedItemImporter {
       return prefixErrorResult(fetchTranscriptResult, 'Error fetching YouTube transcript');
     }
 
-    const saveTranscriptResult = await this.writeFileToStorage({
-      storagePath: this.getStoragePath({
+    const saveTranscriptResult = await this.feedItemService.writeFileToStorage({
+      storagePath: this.feedItemService.getStoragePath({
         feedItemId: feedItem.feedItemId,
         accountId: feedItem.accountId,
         filename: FEED_ITEM_FILE_NAME_TRANSCRIPT,

@@ -20,30 +20,20 @@ import type {
 } from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
-import type {
-  GetStoragePathFn,
-  UpdateFeedItemFn,
-  WriteFileToStorageFn,
-} from '@sharedServer/services/feedItems.server';
+import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import type {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
 
 import {generateHierarchicalSummary} from '@sharedServer/lib/summarization.server';
 
 export class WebsiteFeedItemImporter {
-  private readonly updateFeedItem: UpdateFeedItemFn;
-  private readonly getStoragePath: GetStoragePathFn;
-  private readonly writeFileToStorage: WriteFileToStorageFn;
+  private readonly feedItemService: ServerFeedItemsService;
   private readonly firecrawlService: ServerFirecrawlService;
 
   constructor(args: {
-    readonly updateFeedItem: UpdateFeedItemFn;
-    readonly getStoragePath: GetStoragePathFn;
-    readonly writeFileToStorage: WriteFileToStorageFn;
+    readonly feedItemService: ServerFeedItemsService;
     readonly firecrawlService: ServerFirecrawlService;
   }) {
-    this.updateFeedItem = args.updateFeedItem;
-    this.getStoragePath = args.getStoragePath;
-    this.writeFileToStorage = args.writeFileToStorage;
+    this.feedItemService = args.feedItemService;
     this.firecrawlService = args.firecrawlService;
   }
 
@@ -71,12 +61,12 @@ export class WebsiteFeedItemImporter {
 
     const rawHtml = fetchDataResult.value;
 
-    const storagePath = this.getStoragePath({
+    const storagePath = this.feedItemService.getStoragePath({
       feedItemId,
       accountId,
       filename: FEED_ITEM_FILE_NAME_HTML,
     });
-    const saveHtmlResult = await this.writeFileToStorage({
+    const saveHtmlResult = await this.feedItemService.writeFileToStorage({
       storagePath,
       content: rawHtml,
       contentType: 'text/html',
@@ -112,19 +102,19 @@ export class WebsiteFeedItemImporter {
       return prefixErrorResult(summaryResult, 'Error generating hierarchical summary');
     }
 
-    const storagePath = this.getStoragePath({
+    const storagePath = this.feedItemService.getStoragePath({
       feedItemId,
       accountId,
       filename: FEED_ITEM_FILE_NAME_LLM_CONTEXT,
     });
 
     const saveFirecrawlDataResult = await asyncTryAll([
-      this.writeFileToStorage({
+      this.feedItemService.writeFileToStorage({
         storagePath,
         content: firecrawlData.markdown,
         contentType: 'text/markdown',
       }),
-      this.updateFeedItem(feedItemId, {
+      this.feedItemService.updateFeedItem(feedItemId, {
         outgoingLinks: firecrawlData.links ?? [],
         title: firecrawlData.title ?? 'No title found',
         description: firecrawlData.description ?? 'No description found',

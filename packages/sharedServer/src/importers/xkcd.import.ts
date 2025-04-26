@@ -3,15 +3,15 @@ import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.sha
 import type {XkcdFeedItem} from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
-import type {UpdateFeedItemFn} from '@sharedServer/services/feedItems.server';
+import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 
 import {fetchXkcdComic} from '@sharedServer/lib/xkcd.server';
 
 export class XkcdFeedItemImporter {
-  private readonly updateFeedItem: UpdateFeedItemFn;
+  private readonly feedItemService: ServerFeedItemsService;
 
-  constructor(args: {readonly updateFeedItem: UpdateFeedItemFn}) {
-    this.updateFeedItem = args.updateFeedItem;
+  constructor(args: {readonly feedItemService: ServerFeedItemsService}) {
+    this.feedItemService = args.feedItemService;
   }
 
   public async import(feedItem: XkcdFeedItem): AsyncResult<void> {
@@ -22,7 +22,7 @@ export class XkcdFeedItemImporter {
 
     const {title, imageUrlSmall, imageUrlLarge, altText} = fetchComicResult.value;
 
-    const updateFeedItemResult = await this.updateFeedItem(feedItem.feedItemId, {
+    const updateFeedItemResult = await this.feedItemService.updateFeedItem(feedItem.feedItemId, {
       title,
       xkcd: {imageUrlSmall, imageUrlLarge, altText},
     });
