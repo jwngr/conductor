@@ -86,7 +86,6 @@ function greetUser(name: string): string {
 
 // Call the function
 const greeting = greetUser('User');
-console.log(greeting);
 \`\`\`
 
 ### Horizontal Rules

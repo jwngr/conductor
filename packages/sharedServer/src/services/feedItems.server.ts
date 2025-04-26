@@ -226,11 +226,9 @@ export class ServerFeedItemsService {
     if (!fetchTranscriptResult.success) {
       return prefixErrorResult(fetchTranscriptResult, 'Error fetching YouTube transcript');
     }
-    console.log('fetchTranscriptResult', fetchTranscriptResult.value);
 
     // Convert segments into Markdown.
     const transcript = fetchTranscriptResult.value;
-    console.log('transcript', transcript);
 
     // Save transcript to storage.
     const saveTranscriptResult = await this.writeFileToStorage({
