@@ -538,6 +538,7 @@ __metadata:
     firebase-admin: "npm:^13.2.0"
     genkit: "npm:^1.5.0"
     jsdom: "npm:^26.0.0"
+    youtube-transcript: "npm:^1.2.1"
     zod: "npm:^3.24.2"
   languageName: unknown
   linkType: soft
@@ -13462,6 +13463,13 @@ __metadata:
   version: 0.1.0
   resolution: "yocto-queue@npm:0.1.0"
   checksum: 10c0/dceb44c28578b31641e13695d200d34ec4ab3966a5729814d5445b194933c096b7ced71494ce53a0e8820685d1d010df8b2422e5bf2cdea7e469d97ffbea306f
+  languageName: node
+  linkType: hard
+
+"youtube-transcript@npm:^1.2.1":
+  version: 1.2.1
+  resolution: "youtube-transcript@npm:1.2.1"
+  checksum: 10c0/2c030b1d0ac34678533cc1d628bd97709c628d49a2f583330fa2d5e04c8bd49b3644514df315791f7d8512d71c1f9e9292810823d4a0f10e9a605ae325fc89d0
   languageName: node
   linkType: hard
 

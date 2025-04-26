@@ -7,3 +7,8 @@ export const ACCOUNTS_DB_COLLECTION = 'accounts';
 
 // Firebase Cloud Storage collections.
 export const FEED_ITEMS_STORAGE_COLLECTION = 'feedItems';
+
+// Feed item file names.
+export const FEED_ITEM_FILE_NAME_HTML = 'raw.html';
+export const FEED_ITEM_FILE_NAME_LLM_CONTEXT = 'llmContext.md';
+export const FEED_ITEM_FILE_NAME_TRANSCRIPT = 'transcript.md';
