@@ -254,25 +254,11 @@ export class ServerFeedItemsService {
 
     const {title, imageUrl, altText} = fetchComicResult.value;
 
-    const saveTranscriptResult = await asyncTryAll([
-      this.writeFileToStorage({
-        feedItemId: feedItem.feedItemId,
-        accountId: feedItem.accountId,
-        content: imageUrl,
-        filename: 'xkcdComic.png',
-        contentType: 'image/png',
-      }),
-      this.updateFeedItem(feedItem.feedItemId, {title, xkcd: {imageUrl, altText}}),
-    ]);
-
-    const saveTranscriptResultError = saveTranscriptResult.success
-      ? saveTranscriptResult.value.results.find((result) => !result.success)?.error
-      : saveTranscriptResult.error;
-    if (saveTranscriptResultError) {
-      return makeErrorResult(prefixError(saveTranscriptResultError, 'Error saving XKCD comic'));
-    }
-
-    return makeSuccessResult(undefined);
+    const updateFeedItemResult = await this.updateFeedItem(feedItem.feedItemId, {
+      title,
+      xkcd: {imageUrl, altText},
+    });
+    return prefixResultIfError(updateFeedItemResult, 'Error updating XKCD comic');
   }
 
   /**

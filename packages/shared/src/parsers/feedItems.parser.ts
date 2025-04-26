@@ -24,7 +24,6 @@ import type {
   FeedItemRSSSource,
   FeedItemSource,
   FeedItemSourceFromStorage,
-  NewFeedItemImportState,
   ProcessingFeedItemImportState,
   XkcdFeedItem,
   XkcdFeedItemFromStorage,
@@ -40,7 +39,6 @@ import {
   FeedItemSourceType,
   FeedItemType,
   makeNewFeedItemImportState,
-  NewFeedItemImportStateSchema,
   PocketExportFeedItemSourceSchema,
   ProcessingFeedItemImportStateSchema,
   RssFeedItemSourceSchema,
@@ -149,7 +147,7 @@ function parseFeedItemImportState(
   const status = feedItemImportState.status;
   switch (status) {
     case FeedItemImportStatus.New:
-      return parseNewFeedItemImportState(feedItemImportState);
+      return makeSuccessResult(makeNewFeedItemImportState());
     case FeedItemImportStatus.Processing:
       return parseProcessingFeedItemImportState(feedItemImportState);
     case FeedItemImportStatus.Failed:
@@ -159,18 +157,6 @@ function parseFeedItemImportState(
     default:
       return makeErrorResult(new Error(`Unknown feed item import status: ${status}`));
   }
-}
-
-/**
- * Parses a {@link NewFeedItemImportState} from an unknown value. Returns an `ErrorResult` if the
- * value is not valid.
- */
-function parseNewFeedItemImportState(feedItemImportState: unknown): Result<NewFeedItemImportState> {
-  const parsedResult = parseZodResult(NewFeedItemImportStateSchema, feedItemImportState);
-  if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid new feed item import state');
-  }
-  return makeSuccessResult(makeNewFeedItemImportState());
 }
 
 /**

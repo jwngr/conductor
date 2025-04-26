@@ -38,8 +38,14 @@ export async function fetchXkcdComic(url: string): AsyncResult<XkcdComic> {
     return makeErrorResult(error);
   }
 
-  // Ensure the image URL is absolute
-  const absoluteImageUrl = imageUrl.startsWith('//') ? `https:${imageUrl}` : imageUrl;
+  // Ensure the image URL is absolute.
+  let absoluteImageUrl = imageUrl;
+  if (imageUrl.startsWith('//')) {
+    absoluteImageUrl = `https:${imageUrl}`;
+  } else if (imageUrl.startsWith('/')) {
+    const {origin} = new URL(url);
+    absoluteImageUrl = `${origin}${imageUrl}`;
+  }
 
   return makeSuccessResult({
     title: title,
