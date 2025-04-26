@@ -19,8 +19,8 @@ import {assertNever, omitUndefined} from '@shared/lib/utils.shared';
 import type {AccountId} from '@shared/types/accounts.types';
 import {FeedItemType} from '@shared/types/feedItems.types';
 import type {
-  BaseFeedItemFromStorage,
   FeedItem,
+  FeedItemFromStorage,
   FeedItemId,
   FeedItemSource,
   XkcdFeedItem,
@@ -40,7 +40,7 @@ import {fetchYouTubeTranscript} from '@sharedServer/lib/youtube.server';
 type FeedItemCollectionService = ServerFirestoreCollectionService<
   FeedItemId,
   FeedItem,
-  BaseFeedItemFromStorage
+  FeedItemFromStorage
 >;
 
 export class ServerFeedItemsService {
