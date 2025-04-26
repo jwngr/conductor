@@ -121,9 +121,9 @@ const INITIAL_USE_FEED_ITEM_FILE_STATE: UseFeedItemFileResult = {
 
 export function useFeedItemFile(args: {
   readonly feedItem: FeedItem;
-  readonly fileName: string;
+  readonly filename: string;
 }): UseFeedItemFileResult {
-  const {feedItem, fileName} = args;
+  const {feedItem, filename} = args;
   const feedItemId = feedItem.feedItemId;
   const hasFeedItemEverBeenImported = feedItem.importState.lastSuccessfulImportTime !== null;
 
@@ -135,11 +135,12 @@ export function useFeedItemFile(args: {
     async function go(): Promise<void> {
       if (!hasFeedItemEverBeenImported) {
         const error = new Error('Cannot fetch file for feed item that has never been imported');
-        logger.error(error, {feedItemId, fileName});
+        logger.error(error, {feedItemId, filename});
+        setState({content: null, isLoading: false, error});
         return;
       }
 
-      const contentsResult = await feedItemsService.getFileFromStorage({feedItemId, fileName});
+      const contentsResult = await feedItemsService.getFileFromStorage({feedItemId, filename});
 
       if (!isMounted.current) return;
 
@@ -151,17 +152,17 @@ export function useFeedItemFile(args: {
     }
 
     void go();
-  }, [feedItemId, fileName, hasFeedItemEverBeenImported, feedItemsService, isMounted]);
+  }, [feedItemId, filename, hasFeedItemEverBeenImported, feedItemsService, isMounted]);
 
   return state;
 }
 
 export function useFeedItemMarkdown(feedItem: FeedItem): UseFeedItemFileResult {
-  return useFeedItemFile({feedItem, fileName: FEED_ITEM_FILE_NAME_LLM_CONTEXT});
+  return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_NAME_LLM_CONTEXT});
 }
 
 export function useYouTubeFeedItemTranscript(feedItem: FeedItem): UseFeedItemFileResult {
-  return useFeedItemFile({feedItem, fileName: FEED_ITEM_FILE_NAME_TRANSCRIPT});
+  return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_NAME_TRANSCRIPT});
 }
 
 type FeedItemsCollectionService = ClientFirestoreCollectionService<FeedItemId, FeedItem>;
@@ -278,9 +279,9 @@ export class ClientFeedItemsService {
   /**
    * Returns an account-specific path to a file in Firebase Storage for a given feed item.
    */
-  public getFilePath(args: {readonly feedItemId: FeedItemId; readonly fileName: string}): string {
-    const {feedItemId, fileName} = args;
-    return `${this.accountId}/${feedItemId}/${fileName}`;
+  public getFilePath(args: {readonly feedItemId: FeedItemId; readonly filename: string}): string {
+    const {feedItemId, filename} = args;
+    return `${this.accountId}/${feedItemId}/${filename}`;
   }
 
   /**
@@ -288,11 +289,11 @@ export class ClientFeedItemsService {
    */
   public async getFileFromStorage(args: {
     readonly feedItemId: FeedItemId;
-    readonly fileName: string;
+    readonly filename: string;
   }): AsyncResult<string> {
-    const {feedItemId, fileName} = args;
+    const {feedItemId, filename} = args;
 
-    const filePath = this.getFilePath({feedItemId, fileName});
+    const filePath = this.getFilePath({feedItemId, filename});
     const fileRef = storageRef(this.feedItemsStorageRef, filePath);
 
     // Fetch the download URL for the file.
@@ -308,10 +309,10 @@ export class ClientFeedItemsService {
   }
 
   public async getFeedItemMarkdown(feedItemId: FeedItemId): AsyncResult<string> {
-    return this.getFileFromStorage({feedItemId, fileName: FEED_ITEM_FILE_NAME_LLM_CONTEXT});
+    return this.getFileFromStorage({feedItemId, filename: FEED_ITEM_FILE_NAME_LLM_CONTEXT});
   }
 
   public async getFeedItemTranscript(feedItemId: FeedItemId): AsyncResult<string> {
-    return this.getFileFromStorage({feedItemId, fileName: FEED_ITEM_FILE_NAME_TRANSCRIPT});
+    return this.getFileFromStorage({feedItemId, filename: FEED_ITEM_FILE_NAME_TRANSCRIPT});
   }
 }
