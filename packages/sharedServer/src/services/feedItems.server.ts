@@ -23,6 +23,7 @@ import type {
   FeedItemFromStorage,
   FeedItemId,
   FeedItemSource,
+  XkcdFeedItem,
   YouTubeFeedItem,
 } from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/results.types';
@@ -33,6 +34,7 @@ import type {ServerFirecrawlService} from '@sharedServer/services/firecrawl.serv
 import type {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
 import {generateHierarchicalSummary} from '@sharedServer/lib/summarization.server';
+import {fetchXkcdComic} from '@sharedServer/lib/xkcd.server';
 import {fetchYouTubeTranscript} from '@sharedServer/lib/youtube.server';
 
 type FeedItemCollectionService = ServerFirestoreCollectionService<
@@ -61,8 +63,9 @@ export class ServerFeedItemsService {
     readonly feedItemSource: FeedItemSource;
     readonly accountId: AccountId;
     readonly title: string;
+    readonly description: string | null;
   }): AsyncResult<FeedItemId | null> {
-    const {url, accountId, feedItemSource, title} = args;
+    const {url, accountId, feedItemSource, title, description} = args;
 
     const trimmedUrl = url.trim();
     if (!isValidUrl(trimmedUrl)) {
@@ -70,13 +73,11 @@ export class ServerFeedItemsService {
     }
 
     const feedItemResult = SharedFeedItemHelpers.makeFeedItem({
-      // TODO: Make this dynamic based on the actual content. Maybe it should be null initially
-      // until we've done the import? Or should we compute this at save time?
-      type: SharedFeedItemHelpers.getFeedItemTypeFromUrl(trimmedUrl),
       url: trimmedUrl,
       feedItemSource,
       accountId,
       title,
+      description,
     });
     if (!feedItemResult.success) return feedItemResult;
     const feedItem = feedItemResult.value;
@@ -102,13 +103,7 @@ export class ServerFeedItemsService {
   ): AsyncResult<void> {
     const updateResult = await this.feedItemsCollectionService.updateDoc(
       feedItemId,
-      omitUndefined({
-        title: updates.title,
-        description: updates.description,
-        summary: updates.summary,
-        outgoingLinks: updates.outgoingLinks,
-        importState: updates.importState,
-      })
+      omitUndefined(updates)
     );
     return prefixResultIfError(updateResult, 'Error updating imported feed item in Firestore');
   }
@@ -177,8 +172,7 @@ export class ServerFeedItemsService {
   }
 
   public async importFeedItem(feedItem: FeedItem): AsyncResult<void> {
-    const url = feedItem.url;
-    const isSafeUrlResult = SharedFeedItemHelpers.validateUrl(url);
+    const isSafeUrlResult = SharedFeedItemHelpers.validateUrl(feedItem.url);
     if (!isSafeUrlResult.success) {
       return prefixErrorResult(isSafeUrlResult, 'Error validating feed item URL');
     }
@@ -191,8 +185,10 @@ export class ServerFeedItemsService {
       case FeedItemType.Tweet:
       case FeedItemType.Video:
       case FeedItemType.Website:
-      case FeedItemType.Xkcd:
         await this.importGenericFeedItem(feedItem);
+        break;
+      case FeedItemType.Xkcd:
+        await this.importXkcdFeedItem(feedItem);
         break;
       default:
         assertNever(feedItem);
@@ -250,6 +246,21 @@ export class ServerFeedItemsService {
     return prefixResultIfError(saveTranscriptResult, 'Error saving YouTube transcript');
   }
 
+  public async importXkcdFeedItem(feedItem: XkcdFeedItem): AsyncResult<void> {
+    const fetchComicResult = await fetchXkcdComic(feedItem.url);
+    if (!fetchComicResult.success) {
+      return prefixErrorResult(fetchComicResult, 'Error fetching XKCD comic');
+    }
+
+    const {title, imageUrl, altText} = fetchComicResult.value;
+
+    const updateFeedItemResult = await this.updateFeedItem(feedItem.feedItemId, {
+      title,
+      xkcd: {imageUrl, altText},
+    });
+    return prefixResultIfError(updateFeedItemResult, 'Error updating XKCD comic');
+  }
+
   /**
    * Imports a feed item's HTML and saves it to storage.
    */
@@ -265,7 +276,7 @@ export class ServerFeedItemsService {
     // 2. Extract a canonical URL (resolving redirects and removing tracking parameters).
     // 3. Handle images more gracefully (download and replace links in the HTML?).
     const fetchDataResult = await requestGet<string>(url, {
-      headers: {'Content-Type': 'text/html'},
+      headers: {Accept: 'text/html'},
     });
 
     if (!fetchDataResult.success) {

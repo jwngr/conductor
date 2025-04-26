@@ -82,6 +82,12 @@ const FeedItemImporter: React.FC = () => {
       </Button>
       <Button
         variant="outline"
+        onClick={async () => void handleAddItemToQueue('https://xkcd.com/927/')}
+      >
+        Import XKCD comic
+      </Button>
+      <Button
+        variant="outline"
         onClick={async () =>
           void handleAddItemToQueue('https://wattenberger.com/thoughts/the-internet-for-the-mind')
         }

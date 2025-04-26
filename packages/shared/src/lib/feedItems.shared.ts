@@ -2,6 +2,7 @@ import {logger} from '@shared/services/logger.shared';
 
 import {prefixError, upgradeUnknownError} from '@shared/lib/errorUtils.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 
 import {
   FeedItemActionType,
@@ -15,6 +16,7 @@ import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/results.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
+import type {TagId} from '@shared/types/tags.types';
 
 type MaybeFeedItem = FeedItem | undefined | null;
 
@@ -40,28 +42,67 @@ export class SharedFeedItemHelpers {
   }
 
   public static makeFeedItem(
-    args: Pick<FeedItem, 'type' | 'accountId' | 'url' | 'feedItemSource' | 'title'>
+    args: Pick<FeedItem, 'accountId' | 'url' | 'feedItemSource' | 'title' | 'description'>
   ): Result<FeedItem> {
-    return makeSuccessResult<FeedItem>({
-      feedItemId: makeFeedItemId(),
-      accountId: args.accountId,
-      url: args.url,
-      type: args.type,
-      feedItemSource: args.feedItemSource,
-      importState: makeNewFeedItemImportState(),
-      // TODO: Update these and figure out a better solution. Maybe a better discriminated union.
-      title: args.title,
-      description: 'Test description from makeFeedItem',
-      summary: null,
-      outgoingLinks: [],
-      triageStatus: TriageStatus.Untriaged,
-      tagIds: {
-        [SystemTagId.Unread]: true,
-      },
-      // TODO(timestamps): Use server timestamps instead.
-      createdTime: new Date(),
-      lastUpdatedTime: new Date(),
-    });
+    const {accountId, url, feedItemSource, title, description} = args;
+
+    // Common fields across all feed item types.
+    const feedItemId = makeFeedItemId();
+    const feedItemType = SharedFeedItemHelpers.getFeedItemTypeFromUrl(url);
+    const triageStatus = TriageStatus.Untriaged;
+    const importState = makeNewFeedItemImportState();
+    const tagIds: Partial<Record<TagId, true>> = {
+      [SystemTagId.Unread]: true,
+    };
+    const summary = null;
+    const outgoingLinks: string[] = [];
+
+    // Some feed item contain additional fields.
+    switch (feedItemType) {
+      case FeedItemType.Article:
+      case FeedItemType.Video:
+      case FeedItemType.Tweet:
+      case FeedItemType.Website:
+      case FeedItemType.YouTube:
+        return makeSuccessResult<FeedItem>({
+          type: feedItemType,
+          url,
+          accountId,
+          feedItemId,
+          feedItemSource,
+          importState,
+          title,
+          description,
+          summary,
+          outgoingLinks,
+          triageStatus,
+          tagIds,
+          // TODO(timestamps): Use server timestamps instead.
+          createdTime: new Date(),
+          lastUpdatedTime: new Date(),
+        });
+      case FeedItemType.Xkcd:
+        return makeSuccessResult<FeedItem>({
+          type: FeedItemType.Xkcd,
+          xkcd: null,
+          url,
+          accountId,
+          feedItemId,
+          feedItemSource,
+          importState,
+          title,
+          description,
+          summary,
+          outgoingLinks,
+          triageStatus,
+          tagIds,
+          // TODO(timestamps): Use server timestamps instead.
+          createdTime: new Date(),
+          lastUpdatedTime: new Date(),
+        });
+      default:
+        assertNever(feedItemType);
+    }
   }
 
   public static getMarkDoneFeedItemActionInfo(feedItem: FeedItem): FeedItemAction {
@@ -183,5 +224,9 @@ export class SharedFeedItemHelpers {
     }
 
     return FeedItemType.Website;
+  }
+
+  public static hasEverBeenImported(feedItem: FeedItem): boolean {
+    return feedItem.importState.lastSuccessfulImportTime !== null;
   }
 }

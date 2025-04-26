@@ -1,5 +1,7 @@
 import type React from 'react';
 
+import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
+
 import type {YouTubeFeedItem} from '@shared/types/feedItems.types';
 
 import {useYouTubeFeedItemTranscript} from '@sharedClient/services/feedItems.client';
@@ -34,7 +36,7 @@ const YouTubeFeedItemTranscript: React.FC<{readonly feedItem: YouTubeFeedItem}> 
 export const YouTubeFeedItemComponent: React.FC<{readonly feedItem: YouTubeFeedItem}> = ({
   feedItem,
 }) => {
-  const hasFeedItemEverBeenImported = feedItem.importState.lastSuccessfulImportTime !== null;
+  const hasFeedItemEverBeenImported = SharedFeedItemHelpers.hasEverBeenImported(feedItem);
 
   let mainContent: React.ReactNode;
   if (!hasFeedItemEverBeenImported) {

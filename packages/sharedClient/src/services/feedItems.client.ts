@@ -15,6 +15,7 @@ import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/erro
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
+import {omitUndefined} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
 
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
@@ -125,7 +126,7 @@ export function useFeedItemFile(args: {
 }): UseFeedItemFileResult {
   const {feedItem, filename} = args;
   const feedItemId = feedItem.feedItemId;
-  const hasFeedItemEverBeenImported = feedItem.importState.lastSuccessfulImportTime !== null;
+  const hasFeedItemEverBeenImported = SharedFeedItemHelpers.hasEverBeenImported(feedItem);
 
   const isMounted = useIsMounted();
   const feedItemsService = useFeedItemsService();
@@ -239,13 +240,11 @@ export class ClientFeedItemsService {
     }
 
     const feedItemResult = SharedFeedItemHelpers.makeFeedItem({
-      type: SharedFeedItemHelpers.getFeedItemTypeFromUrl(trimmedUrl),
       url: trimmedUrl,
-      // TODO: Make this dynamic based on the actual content. Maybe it should be null initially
-      // until we've done the import? Or should we compute this at save time?
       feedItemSource,
       accountId: this.accountId,
       title,
+      description: null,
     });
     if (!feedItemResult.success) return feedItemResult;
     const feedItem = feedItemResult.value;
@@ -263,11 +262,14 @@ export class ClientFeedItemsService {
 
   public async updateFeedItem(
     feedItemId: FeedItemId,
-    item: Partial<
+    updates: Partial<
       Pick<FeedItem, 'url' | 'title' | 'description' | 'outgoingLinks' | 'triageStatus' | 'tagIds'>
     >
   ): AsyncResult<void> {
-    const updateResult = await this.feedItemsCollectionService.updateDoc(feedItemId, item);
+    const updateResult = await this.feedItemsCollectionService.updateDoc(
+      feedItemId,
+      omitUndefined(updates)
+    );
     return prefixResultIfError(updateResult, 'Error updating feed item');
   }
 
