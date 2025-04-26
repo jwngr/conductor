@@ -14,7 +14,7 @@ import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {requestGet} from '@shared/lib/requests.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
-import {omitUndefined} from '@shared/lib/utils.shared';
+import {assertNever, omitUndefined} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import {FeedItemType} from '@shared/types/feedItems.types';
@@ -176,28 +176,47 @@ export class ServerFeedItemsService {
     return `${accountPath}${feedItemId}/${filename}`;
   }
 
-  /**
-   * Imports a feed item, pulling in the raw HTML and LLM context.
-   */
   public async importFeedItem(feedItem: FeedItem): AsyncResult<void> {
-    if (feedItem.type === FeedItemType.YouTube) {
-      return this.importYouTubeFeedItem(feedItem);
-    }
-
     const url = feedItem.url;
     const isSafeUrlResult = SharedFeedItemHelpers.validateUrl(url);
     if (!isSafeUrlResult.success) {
       return prefixErrorResult(isSafeUrlResult, 'Error validating feed item URL');
     }
 
+    switch (feedItem.type) {
+      case FeedItemType.YouTube:
+        await this.importYouTubeFeedItem(feedItem);
+        break;
+      case FeedItemType.Article:
+      case FeedItemType.Tweet:
+      case FeedItemType.Video:
+      case FeedItemType.Website:
+      case FeedItemType.Xkcd:
+        await this.importGenericFeedItem(feedItem);
+        break;
+      default:
+        assertNever(feedItem);
+    }
+
+    void eventLogService.logFeedItemImportedEvent({
+      feedItemId: feedItem.feedItemId,
+      accountId: feedItem.accountId,
+    });
+
+    return makeSuccessResult(undefined);
+  }
+
+  public async importGenericFeedItem(
+    feedItem: Exclude<FeedItem, YouTubeFeedItem>
+  ): AsyncResult<void> {
     const importAllDataResult = await asyncTryAll([
       this.importFeedItemHtml({
-        url,
+        url: feedItem.url,
         feedItemId: feedItem.feedItemId,
         accountId: feedItem.accountId,
       }),
       this.importFeedItemFirecrawl({
-        url,
+        url: feedItem.url,
         feedItemId: feedItem.feedItemId,
         accountId: feedItem.accountId,
       }),
@@ -211,45 +230,24 @@ export class ServerFeedItemsService {
       return makeErrorResult(prefixError(importAllDataResultError, 'Error importing feed item'));
     }
 
-    void eventLogService.logFeedItemImportedEvent({
-      feedItemId: feedItem.feedItemId,
-      accountId: feedItem.accountId,
-    });
-
     return makeSuccessResult(undefined);
   }
 
   public async importYouTubeFeedItem(feedItem: YouTubeFeedItem): AsyncResult<void> {
-    const {feedItemId, accountId, url} = feedItem;
-    const isSafeUrlResult = SharedFeedItemHelpers.validateUrl(url);
-    if (!isSafeUrlResult.success) {
-      return prefixErrorResult(isSafeUrlResult, 'Error validating feed item URL');
-    }
-
-    // Fetch the transcript via youtube-transcript
-    const fetchTranscriptResult = await fetchYouTubeTranscript(url);
+    const fetchTranscriptResult = await fetchYouTubeTranscript(feedItem.url);
     if (!fetchTranscriptResult.success) {
       return prefixErrorResult(fetchTranscriptResult, 'Error fetching YouTube transcript');
     }
 
-    // Convert segments into Markdown.
-    const transcript = fetchTranscriptResult.value;
-
-    // Save transcript to storage.
     const saveTranscriptResult = await this.writeFileToStorage({
-      feedItemId,
-      accountId,
-      content: transcript,
+      feedItemId: feedItem.feedItemId,
+      accountId: feedItem.accountId,
+      content: fetchTranscriptResult.value,
       filename: FEED_ITEM_FILE_NAME_TRANSCRIPT,
       contentType: 'text/markdown',
     });
-    if (!saveTranscriptResult.success) {
-      return prefixErrorResult(saveTranscriptResult, 'Error saving YouTube transcript');
-    }
 
-    // Log event and complete import
-    void eventLogService.logFeedItemImportedEvent({feedItemId, accountId});
-    return makeSuccessResult(undefined);
+    return prefixResultIfError(saveTranscriptResult, 'Error saving YouTube transcript');
   }
 
   /**
