@@ -1,3 +1,5 @@
+import {YoutubeTranscript} from 'youtube-transcript';
+
 import {
   asyncTry,
   asyncTryAll,
@@ -12,11 +14,13 @@ import {isValidUrl} from '@shared/lib/urls.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
+import {FeedItemType} from '@shared/types/feedItems.types';
 import type {
   FeedItem,
   FeedItemFromStorage,
   FeedItemId,
   FeedItemSource,
+  YouTubeFeedItem,
 } from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
@@ -106,40 +110,22 @@ export class ServerFeedItemsService {
   }
 
   /**
-   * Saves the raw HTML to storage.
+   * Writes content to storage file.
    */
-  public async saveRawHtmlToStorage(args: {
+  private async writeFileToStorage(args: {
+    // Path info.
     readonly feedItemId: FeedItemId;
-    readonly rawHtml: string;
     readonly accountId: AccountId;
+    readonly filename: string;
+    // Content info.
+    readonly content: string;
+    readonly contentType: string;
   }): AsyncResult<void> {
-    const {feedItemId, rawHtml, accountId} = args;
+    const {feedItemId, content, accountId, filename, contentType} = args;
+    const storagePath = this.getStoragePath({feedItemId, accountId, filename});
     return await asyncTry(async () => {
-      const rawHtmlFile = storage
-        .bucket()
-        .file(this.getStoragePathForFeedItem(feedItemId, accountId) + 'raw.html');
-      await rawHtmlFile.save(rawHtml, {contentType: 'text/html'});
-    });
-  }
-
-  /**
-   * Saves the LLM Markdown context to storage.
-   */
-  public async saveMarkdownToStorage(args: {
-    readonly feedItemId: FeedItemId;
-    readonly markdown: string | null;
-    readonly accountId: AccountId;
-  }): AsyncResult<void> {
-    const {feedItemId, markdown, accountId} = args;
-    if (markdown === null) {
-      return makeErrorResult(new Error('Markdown is null'));
-    }
-
-    return await asyncTry(async () => {
-      const llmContextFile = storage
-        .bucket()
-        .file(this.getStoragePathForFeedItem(feedItemId, accountId) + 'llmContext.md');
-      await llmContextFile.save(markdown, {contentType: 'text/markdown'});
+      const file = storage.bucket().file(storagePath);
+      await file.save(content, {contentType});
     });
   }
 
@@ -176,14 +162,24 @@ export class ServerFeedItemsService {
     return `${this.storageCollectionPath}/${accountId}/`;
   }
 
-  private getStoragePathForFeedItem(feedItemId: FeedItemId, accountId: AccountId): string {
-    return `${this.getStoragePathForAccount(accountId)}${feedItemId}/`;
+  private getStoragePath(args: {
+    readonly feedItemId: FeedItemId;
+    readonly accountId: AccountId;
+    readonly filename: string;
+  }): string {
+    const {feedItemId, accountId, filename} = args;
+    const accountPath = this.getStoragePathForAccount(accountId);
+    return `${accountPath}${feedItemId}/${filename}`;
   }
 
   /**
    * Imports a feed item, pulling in the raw HTML and LLM context.
    */
   public async importFeedItem(feedItem: FeedItem): AsyncResult<void> {
+    if (feedItem.type === FeedItemType.YouTube) {
+      return this.importYouTubeFeedItem(feedItem);
+    }
+
     const url = feedItem.url;
     const isSafeUrlResult = SharedFeedItemHelpers.validateUrl(url);
     if (!isSafeUrlResult.success) {
@@ -219,6 +215,45 @@ export class ServerFeedItemsService {
     return makeSuccessResult(undefined);
   }
 
+  public async importYouTubeFeedItem(feedItem: YouTubeFeedItem): AsyncResult<void> {
+    const {feedItemId, accountId, url} = feedItem;
+    const isSafeUrlResult = SharedFeedItemHelpers.validateUrl(url);
+    if (!isSafeUrlResult.success) {
+      return prefixErrorResult(isSafeUrlResult, 'Error validating feed item URL');
+    }
+
+    // Fetch the transcript via youtube-transcript
+    const fetchTranscriptResult = await asyncTry(async () =>
+      YoutubeTranscript.fetchTranscript(url)
+    );
+    if (!fetchTranscriptResult.success) {
+      return prefixErrorResult(fetchTranscriptResult, 'Error fetching YouTube transcript');
+    }
+    console.log('fetchTranscriptResult', fetchTranscriptResult.value);
+
+    // Convert segments into Markdown.
+    const segments = fetchTranscriptResult.value;
+    const markdown = segments.map((s) => s.text).join('\n\n');
+
+    console.log('markdown', markdown);
+
+    // Save transcript to storage.
+    const saveTranscriptResult = await this.writeFileToStorage({
+      feedItemId,
+      accountId,
+      content: markdown,
+      filename: 'transcript.md',
+      contentType: 'text/markdown',
+    });
+    if (!saveTranscriptResult.success) {
+      return prefixErrorResult(saveTranscriptResult, 'Error saving YouTube transcript');
+    }
+
+    // Log event and complete import
+    void eventLogService.logFeedItemImportedEvent({feedItemId, accountId});
+    return makeSuccessResult(undefined);
+  }
+
   /**
    * Imports a feed item's HTML and saves it to storage.
    */
@@ -243,10 +278,12 @@ export class ServerFeedItemsService {
 
     const rawHtml = fetchDataResult.value;
 
-    const saveHtmlResult = await this.saveRawHtmlToStorage({
+    const saveHtmlResult = await this.writeFileToStorage({
       feedItemId,
       accountId,
-      rawHtml,
+      content: rawHtml,
+      filename: 'raw.html',
+      contentType: 'text/html',
     });
 
     return prefixResultIfError(saveHtmlResult, 'Error saving feed item HTML');
@@ -280,10 +317,12 @@ export class ServerFeedItemsService {
     }
 
     const saveFirecrawlDataResult = await asyncTryAll([
-      this.saveMarkdownToStorage({
+      this.writeFileToStorage({
         feedItemId,
         accountId,
-        markdown: firecrawlData.markdown,
+        content: firecrawlData.markdown,
+        filename: 'firecrawl.md',
+        contentType: 'text/markdown',
       }),
       this.updateFeedItem(feedItemId, {
         outgoingLinks: firecrawlData.links ?? [],
