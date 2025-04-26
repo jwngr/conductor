@@ -20,25 +20,29 @@ import type {
 } from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
-import type {UpdateFeedItemFn, WriteFileToStorageFn} from '@sharedServer/services/feedItems.server';
+import type {
+  GetStoragePathFn,
+  UpdateFeedItemFn,
+  WriteFileToStorageFn,
+} from '@sharedServer/services/feedItems.server';
 import type {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
 
 import {generateHierarchicalSummary} from '@sharedServer/lib/summarization.server';
 
 export class WebsiteFeedItemImporter {
-  private readonly updateFeedItem: (
-    feedItemId: FeedItemId,
-    updates: Partial<FeedItem>
-  ) => AsyncResult<void>;
+  private readonly updateFeedItem: UpdateFeedItemFn;
+  private readonly getStoragePath: GetStoragePathFn;
   private readonly writeFileToStorage: WriteFileToStorageFn;
   private readonly firecrawlService: ServerFirecrawlService;
 
   constructor(args: {
     readonly updateFeedItem: UpdateFeedItemFn;
+    readonly getStoragePath: GetStoragePathFn;
     readonly writeFileToStorage: WriteFileToStorageFn;
     readonly firecrawlService: ServerFirecrawlService;
   }) {
     this.updateFeedItem = args.updateFeedItem;
+    this.getStoragePath = args.getStoragePath;
     this.writeFileToStorage = args.writeFileToStorage;
     this.firecrawlService = args.firecrawlService;
   }
@@ -67,11 +71,14 @@ export class WebsiteFeedItemImporter {
 
     const rawHtml = fetchDataResult.value;
 
-    const saveHtmlResult = await this.writeFileToStorage({
+    const storagePath = this.getStoragePath({
       feedItemId,
       accountId,
-      content: rawHtml,
       filename: FEED_ITEM_FILE_NAME_HTML,
+    });
+    const saveHtmlResult = await this.writeFileToStorage({
+      storagePath,
+      content: rawHtml,
       contentType: 'text/html',
     });
 
@@ -105,12 +112,16 @@ export class WebsiteFeedItemImporter {
       return prefixErrorResult(summaryResult, 'Error generating hierarchical summary');
     }
 
+    const storagePath = this.getStoragePath({
+      feedItemId,
+      accountId,
+      filename: FEED_ITEM_FILE_NAME_LLM_CONTEXT,
+    });
+
     const saveFirecrawlDataResult = await asyncTryAll([
       this.writeFileToStorage({
-        feedItemId,
-        accountId,
+        storagePath,
         content: firecrawlData.markdown,
-        filename: FEED_ITEM_FILE_NAME_LLM_CONTEXT,
         contentType: 'text/markdown',
       }),
       this.updateFeedItem(feedItemId, {

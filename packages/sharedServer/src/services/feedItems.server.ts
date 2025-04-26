@@ -31,14 +31,20 @@ type FeedItemCollectionService = ServerFirestoreCollectionService<
 >;
 
 interface WriteFileToStorageArgs {
-  readonly feedItemId: FeedItemId;
-  readonly accountId: AccountId;
-  readonly filename: string;
+  readonly storagePath: string;
   readonly content: string;
   readonly contentType: string;
 }
 
 export type WriteFileToStorageFn = Func<WriteFileToStorageArgs, AsyncResult<void>>;
+
+interface GetStoragePathArgs {
+  readonly feedItemId: FeedItemId;
+  readonly accountId: AccountId;
+  readonly filename: string;
+}
+
+export type GetStoragePathFn = Func<GetStoragePathArgs, string>;
 
 export type UpdateFeedItemFn = (
   feedItemId: FeedItemId,
@@ -114,8 +120,7 @@ export class ServerFeedItemsService {
    * Writes content to storage file.
    */
   private async writeFileToStorage(args: WriteFileToStorageArgs): AsyncResult<void> {
-    const {feedItemId, content, accountId, filename, contentType} = args;
-    const storagePath = this.getStoragePath({feedItemId, accountId, filename});
+    const {storagePath, content, contentType} = args;
     return await asyncTry(async () => {
       const file = storage.bucket().file(storagePath);
       await file.save(content, {contentType});
@@ -155,11 +160,7 @@ export class ServerFeedItemsService {
     return `${this.storageCollectionPath}/${accountId}/`;
   }
 
-  private getStoragePath(args: {
-    readonly feedItemId: FeedItemId;
-    readonly accountId: AccountId;
-    readonly filename: string;
-  }): string {
+  private getStoragePath(args: GetStoragePathArgs): string {
     const {feedItemId, accountId, filename} = args;
     const accountPath = this.getStoragePathForAccount(accountId);
     return `${accountPath}${feedItemId}/${filename}`;
@@ -174,6 +175,7 @@ export class ServerFeedItemsService {
     switch (feedItem.type) {
       case FeedItemType.YouTube: {
         const importer = new YouTubeFeedItemImporter({
+          getStoragePath: this.getStoragePath,
           writeFileToStorage: this.writeFileToStorage,
         });
         await importer.import(feedItem);
@@ -185,6 +187,7 @@ export class ServerFeedItemsService {
       case FeedItemType.Website: {
         const importer = new WebsiteFeedItemImporter({
           updateFeedItem: this.updateFeedItem,
+          getStoragePath: this.getStoragePath,
           writeFileToStorage: this.writeFileToStorage,
           firecrawlService: this.firecrawlService,
         });
