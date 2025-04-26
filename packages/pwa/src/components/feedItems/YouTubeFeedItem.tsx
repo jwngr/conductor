@@ -28,8 +28,8 @@ const ImportedYouTubeFeedItemTranscript: React.FC<{readonly feedItem: YouTubeFee
     return <Text as="p">Loading transcript...</Text>;
   }
 
-  if (transcriptState.contents) {
-    return <Markdown content={transcriptState.contents} />;
+  if (transcriptState.content) {
+    return <Markdown content={transcriptState.content} />;
   }
 
   return <Text as="p">No transcript</Text>;

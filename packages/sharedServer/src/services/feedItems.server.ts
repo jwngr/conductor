@@ -1,5 +1,3 @@
-import {YoutubeTranscript} from 'youtube-transcript';
-
 import {
   asyncTry,
   asyncTryAll,
@@ -30,6 +28,7 @@ import type {ServerFirecrawlService} from '@sharedServer/services/firecrawl.serv
 import type {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
 import {generateHierarchicalSummary} from '@sharedServer/lib/summarization.server';
+import {fetchYouTubeTranscript} from '@sharedServer/lib/youtube.server';
 
 type FeedItemCollectionService = ServerFirestoreCollectionService<
   FeedItemId,
@@ -223,25 +222,21 @@ export class ServerFeedItemsService {
     }
 
     // Fetch the transcript via youtube-transcript
-    const fetchTranscriptResult = await asyncTry(async () =>
-      YoutubeTranscript.fetchTranscript(url)
-    );
+    const fetchTranscriptResult = await fetchYouTubeTranscript(url);
     if (!fetchTranscriptResult.success) {
       return prefixErrorResult(fetchTranscriptResult, 'Error fetching YouTube transcript');
     }
     console.log('fetchTranscriptResult', fetchTranscriptResult.value);
 
     // Convert segments into Markdown.
-    const segments = fetchTranscriptResult.value;
-    const markdown = segments.map((s) => s.text).join('\n\n');
-
-    console.log('markdown', markdown);
+    const transcript = fetchTranscriptResult.value;
+    console.log('transcript', transcript);
 
     // Save transcript to storage.
     const saveTranscriptResult = await this.writeFileToStorage({
       feedItemId,
       accountId,
-      content: markdown,
+      content: transcript,
       filename: 'transcript.md',
       contentType: 'text/markdown',
     });

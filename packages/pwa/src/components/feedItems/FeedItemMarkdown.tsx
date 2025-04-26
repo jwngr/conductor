@@ -23,8 +23,8 @@ const ImportedFeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feed
     return <Text as="p">Loading markdown...</Text>;
   }
 
-  if (markdownState.contents) {
-    return <Markdown content={markdownState.contents} />;
+  if (markdownState.content) {
+    return <Markdown content={markdownState.content} />;
   }
 
   return <Text as="p">No markdown</Text>;

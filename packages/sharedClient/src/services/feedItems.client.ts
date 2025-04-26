@@ -106,13 +106,13 @@ export function useFeedItems({viewType}: {readonly viewType: ViewType}): {
 }
 
 interface UseFeedItemFileResult {
-  readonly contents: string | null;
+  readonly content: string | null;
   readonly isLoading: boolean;
   readonly error: Error | null;
 }
 
 const INITIAL_USE_FEED_ITEM_FILE_STATE: UseFeedItemFileResult = {
-  contents: null,
+  content: null,
   isLoading: true,
   error: null,
 };
@@ -142,9 +142,9 @@ export function useFeedItemFile(args: {
       if (!isMounted.current) return;
 
       if (contentsResult.success) {
-        setState({contents: contentsResult.value, isLoading: false, error: null});
+        setState({content: contentsResult.value, isLoading: false, error: null});
       } else {
-        setState({contents: null, isLoading: false, error: contentsResult.error});
+        setState({content: null, isLoading: false, error: contentsResult.error});
       }
     }
 
@@ -282,7 +282,7 @@ export class ClientFeedItemsService {
   }
 
   /**
-   * Fetches a file from Firebase Storage and returns the contents as a string.
+   * Fetches a file from Firebase Storage as a string.
    */
   public async getFileFromStorage(args: {
     readonly feedItemId: FeedItemId;
