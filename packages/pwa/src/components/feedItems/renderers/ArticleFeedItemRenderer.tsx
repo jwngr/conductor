@@ -8,7 +8,7 @@ import {FeedItemHeader, FeedItemSummary, FeedItemWrapper} from '@src/components/
 import {FeedItemMarkdown} from '@src/components/feedItems/FeedItemMarkdown';
 import {ImportingFeedItem} from '@src/components/feedItems/ImportingFeedItem';
 
-export const ArticleFeedItemComponent: React.FC<{readonly feedItem: ArticleFeedItem}> = ({
+export const ArticleFeedItemRenderer: React.FC<{readonly feedItem: ArticleFeedItem}> = ({
   feedItem,
 }) => {
   const hasFeedItemEverBeenImported = SharedFeedItemHelpers.hasEverBeenImported(feedItem);
