@@ -205,7 +205,7 @@ interface BaseFeedItem extends BaseStoreItem {
   /** Links found in the scraped URL content. */
   readonly outgoingLinks: string[];
   /** AI-generated hierarchical summary of the content. */
-  readonly summary: string;
+  readonly summary: string | null;
 
   /**
    * Triage status determines where the feed item "lives" in the app.
@@ -277,7 +277,7 @@ export const FeedItemFromStorageSchema = z.object({
   title: z.string(),
   description: z.string(),
   outgoingLinks: z.array(z.string().url()),
-  summary: z.string(),
+  summary: z.string().nullable(),
   triageStatus: z.nativeEnum(TriageStatus),
   tagIds: z.record(z.string(), z.literal(true).optional()),
   createdTime: FirestoreTimestampSchema.or(z.date()),

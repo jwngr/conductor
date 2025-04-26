@@ -9,9 +9,7 @@ import {FeedItemHeader, FeedItemWrapper} from '@src/components/feedItems/FeedIte
 import {ImportingFeedItem} from '@src/components/feedItems/ImportingFeedItem';
 import {Markdown} from '@src/components/Markdown';
 
-const ImportedYouTubeFeedItemTranscript: React.FC<{readonly feedItem: YouTubeFeedItem}> = ({
-  feedItem,
-}) => {
+const YouTubeFeedItemTranscript: React.FC<{readonly feedItem: YouTubeFeedItem}> = ({feedItem}) => {
   const transcriptState = useYouTubeFeedItemTranscript(feedItem);
 
   if (transcriptState.error) {
@@ -33,23 +31,22 @@ const ImportedYouTubeFeedItemTranscript: React.FC<{readonly feedItem: YouTubeFee
   return <Text as="p">No transcript</Text>;
 };
 
-const YouTubeFeedItemTranscript: React.FC<{readonly feedItem: YouTubeFeedItem}> = ({feedItem}) => {
-  const hasFeedItemEverBeenImported = feedItem.importState.lastSuccessfulImportTime !== null;
-
-  if (hasFeedItemEverBeenImported) {
-    return <ImportedYouTubeFeedItemTranscript feedItem={feedItem} />;
-  }
-
-  return <ImportingFeedItem feedItem={feedItem} />;
-};
-
 export const YouTubeFeedItemComponent: React.FC<{readonly feedItem: YouTubeFeedItem}> = ({
   feedItem,
 }) => {
+  const hasFeedItemEverBeenImported = feedItem.importState.lastSuccessfulImportTime !== null;
+
+  let mainContent: React.ReactNode;
+  if (!hasFeedItemEverBeenImported) {
+    mainContent = <ImportingFeedItem feedItem={feedItem} />;
+  } else {
+    mainContent = <YouTubeFeedItemTranscript feedItem={feedItem} />;
+  }
+
   return (
     <FeedItemWrapper>
       <FeedItemHeader feedItem={feedItem} />
-      <YouTubeFeedItemTranscript feedItem={feedItem} />
+      {mainContent}
     </FeedItemWrapper>
   );
 };
