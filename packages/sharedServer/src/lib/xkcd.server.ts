@@ -16,7 +16,7 @@ interface XkcdComic {
 
 export async function fetchXkcdComic(url: string): AsyncResult<XkcdComic> {
   const fetchDataResult = await requestGet<string>(url, {
-    headers: {'Content-Type': 'text/html'},
+    headers: {Accept: 'text/html'},
   });
 
   if (!fetchDataResult.success) {

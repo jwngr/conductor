@@ -290,7 +290,7 @@ export class ServerFeedItemsService {
     // 2. Extract a canonical URL (resolving redirects and removing tracking parameters).
     // 3. Handle images more gracefully (download and replace links in the HTML?).
     const fetchDataResult = await requestGet<string>(url, {
-      headers: {'Content-Type': 'text/html'},
+      headers: {Accept: 'text/html'},
     });
 
     if (!fetchDataResult.success) {
