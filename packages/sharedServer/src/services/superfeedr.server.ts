@@ -49,7 +49,6 @@ export class SuperfeedrService {
       {
         headers: {
           Authorization: this.getSuperfeedrAuthHeader(),
-          'Content-Type': 'application/json',
         },
       }
     );

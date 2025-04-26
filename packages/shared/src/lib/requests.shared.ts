@@ -31,8 +31,8 @@ async function request<T>(
     fetch(url + queryString, {
       method,
       headers: {
-        Accept: headers['Accept'],
-        'Content-Type': headers['Content-Type'],
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
         ...headers,
       },
       body: body ? JSON.stringify(body) : undefined,
