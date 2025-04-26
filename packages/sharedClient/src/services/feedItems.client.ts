@@ -15,6 +15,7 @@ import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/erro
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
+import {omitUndefined} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
 
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
@@ -261,11 +262,14 @@ export class ClientFeedItemsService {
 
   public async updateFeedItem(
     feedItemId: FeedItemId,
-    item: Partial<
+    updates: Partial<
       Pick<FeedItem, 'url' | 'title' | 'description' | 'outgoingLinks' | 'triageStatus' | 'tagIds'>
     >
   ): AsyncResult<void> {
-    const updateResult = await this.feedItemsCollectionService.updateDoc(feedItemId, item);
+    const updateResult = await this.feedItemsCollectionService.updateDoc(
+      feedItemId,
+      omitUndefined(updates)
+    );
     return prefixResultIfError(updateResult, 'Error updating feed item');
   }
 

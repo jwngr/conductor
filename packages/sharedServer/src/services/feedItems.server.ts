@@ -103,13 +103,7 @@ export class ServerFeedItemsService {
   ): AsyncResult<void> {
     const updateResult = await this.feedItemsCollectionService.updateDoc(
       feedItemId,
-      omitUndefined({
-        title: updates.title,
-        description: updates.description,
-        summary: updates.summary,
-        outgoingLinks: updates.outgoingLinks,
-        importState: updates.importState,
-      })
+      omitUndefined(updates)
     );
     return prefixResultIfError(updateResult, 'Error updating imported feed item in Firestore');
   }
