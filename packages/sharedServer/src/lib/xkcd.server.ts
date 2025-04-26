@@ -8,10 +8,23 @@ import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AsyncResult} from '@shared/types/results.types';
 
+function makeAbsoluteXkcdUrl(relativeUrl: string, feedItemUrl: string): string {
+  let absoluteUrl = relativeUrl;
+  if (relativeUrl.startsWith('//')) {
+    absoluteUrl = `https:${relativeUrl}`;
+  } else if (relativeUrl.startsWith('/')) {
+    const {origin} = new URL(feedItemUrl);
+    absoluteUrl = `${origin}${relativeUrl}`;
+  }
+
+  return absoluteUrl;
+}
+
 interface XkcdComic {
   readonly title: string;
-  readonly imageUrl: string;
   readonly altText: string;
+  readonly imageUrlSmall: string;
+  readonly imageUrlLarge: string;
 }
 
 export async function fetchXkcdComic(url: string): AsyncResult<XkcdComic> {
@@ -29,27 +42,20 @@ export async function fetchXkcdComic(url: string): AsyncResult<XkcdComic> {
 
   const title = $('#ctitle').text().trim();
   const imageElement = $('#comic img');
-  const imageUrl = imageElement.attr('src');
   const altText = imageElement.attr('title');
+  const imageUrlSmall = imageElement.attr('src');
+  const imageUrlLarge = imageElement.attr('srcset')?.split(' ')[0];
 
-  if (!title || !imageUrl || !altText) {
+  if (!title || !imageUrlSmall || !imageUrlLarge || !altText) {
     const error = new Error('Could not parse XKCD comic details from HTML');
-    logger.error(error, {url, title, imageUrl, altText});
+    logger.error(error, {url, title, imageUrlSmall, imageUrlLarge, altText});
     return makeErrorResult(error);
   }
 
-  // Ensure the image URL is absolute.
-  let absoluteImageUrl = imageUrl;
-  if (imageUrl.startsWith('//')) {
-    absoluteImageUrl = `https:${imageUrl}`;
-  } else if (imageUrl.startsWith('/')) {
-    const {origin} = new URL(url);
-    absoluteImageUrl = `${origin}${imageUrl}`;
-  }
-
   return makeSuccessResult({
-    title: title,
-    imageUrl: absoluteImageUrl,
-    altText: altText,
+    title,
+    altText,
+    imageUrlSmall: makeAbsoluteXkcdUrl(imageUrlSmall, url),
+    imageUrlLarge: makeAbsoluteXkcdUrl(imageUrlLarge, url),
   });
 }
