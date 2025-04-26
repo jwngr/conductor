@@ -47,6 +47,12 @@ export const ImportingFeedItem: React.FC<{readonly feedItem: FeedItem}> = ({feed
         </Text>
       );
     }
+    case FeedItemImportStatus.Completed:
+      // This should never happen, but the type system doesn't know that.
+      logger.error(new Error('Feed item unexpectedly has completed import'), {
+        feedItemId: feedItem.feedItemId,
+      });
+      return null;
 
     default:
       assertNever(feedItem.importState);
