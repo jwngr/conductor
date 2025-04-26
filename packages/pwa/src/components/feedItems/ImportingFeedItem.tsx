@@ -1,0 +1,53 @@
+import type React from 'react';
+
+import {logger} from '@shared/services/logger.shared';
+
+import {assertNever} from '@shared/lib/utils.shared';
+
+import type {FeedItem} from '@shared/types/feedItems.types';
+import {FeedItemImportStatus} from '@shared/types/feedItems.types';
+
+import {Text} from '@src/components/atoms/Text';
+
+export const ImportingFeedItem: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
+  const hasFeedItemEverBeenImported = feedItem.importState.lastSuccessfulImportTime !== null;
+
+  if (hasFeedItemEverBeenImported) {
+    const error = new Error('Feed item unexpectedly has already been imported');
+    logger.error(error, {feedItemId: feedItem.feedItemId});
+    return null;
+  }
+
+  switch (feedItem.importState.status) {
+    case FeedItemImportStatus.Failed:
+      return (
+        <Text as="p" className="text-error">
+          Import failed: {feedItem.importState.errorMessage}
+        </Text>
+      );
+
+    case FeedItemImportStatus.Processing: {
+      const msSinceImportRequested =
+        Date.now() - feedItem.importState.lastImportRequestedTime.getTime();
+      const secondsSinceImportRequested = parseFloat((msSinceImportRequested / 1000).toFixed(0));
+      return (
+        <Text as="p">
+          Import requested {secondsSinceImportRequested} seconds ago and still in progress...
+        </Text>
+      );
+    }
+
+    case FeedItemImportStatus.New: {
+      const msSinceCreated = Date.now() - feedItem.createdTime.getTime();
+      const secondsSinceCreated = parseFloat((msSinceCreated / 1000).toFixed(0));
+      return (
+        <Text as="p">
+          Import not yet started, item created {secondsSinceCreated} seconds ago...
+        </Text>
+      );
+    }
+
+    default:
+      assertNever(feedItem.importState);
+  }
+};
