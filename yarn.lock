@@ -485,7 +485,6 @@ __metadata:
     clsx: "npm:^2.1.1"
     firebase: "npm:^11.6.0"
     lucide-react: "npm:^0.487.0"
-    prettier-plugin-tailwindcss: "npm:^0.6.11"
     react: "npm:^19.1.0"
     react-dom: "npm:^19.1.0"
     react-markdown: "npm:^10.1.0"
@@ -532,6 +531,7 @@ __metadata:
     "@conductor/shared": "workspace:*"
     "@genkit-ai/firebase": "npm:^1.5.0"
     "@genkit-ai/googleai": "npm:^1.5.0"
+    "@google-cloud/firestore": "npm:^7.1.0"
     "@rowanmanning/feed-parser": "npm:^2.0.2"
     "@types/jsdom": "npm:^21.1.7"
     csv-parse: "npm:^5.6.0"
@@ -1606,7 +1606,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@google-cloud/firestore@npm:^7.11.0":
+"@google-cloud/firestore@npm:^7.1.0, @google-cloud/firestore@npm:^7.11.0":
   version: 7.11.0
   resolution: "@google-cloud/firestore@npm:7.11.0"
   dependencies:
@@ -5912,6 +5912,7 @@ __metadata:
     jest: "npm:^29.7.0"
     knip: "npm:^5.46.5"
     prettier: "npm:^3.5.3"
+    prettier-plugin-tailwindcss: "npm:^0.6.11"
     ts-jest: "npm:^29.3.1"
     typescript: "npm:^5.8.3"
     typescript-eslint: "npm:^8.29.0"
