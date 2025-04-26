@@ -19,8 +19,8 @@ import {assertNever, omitUndefined} from '@shared/lib/utils.shared';
 import type {AccountId} from '@shared/types/accounts.types';
 import {FeedItemType} from '@shared/types/feedItems.types';
 import type {
+  BaseFeedItemFromStorage,
   FeedItem,
-  FeedItemFromStorage,
   FeedItemId,
   FeedItemSource,
   XkcdFeedItem,
@@ -40,7 +40,7 @@ import {fetchYouTubeTranscript} from '@sharedServer/lib/youtube.server';
 type FeedItemCollectionService = ServerFirestoreCollectionService<
   FeedItemId,
   FeedItem,
-  FeedItemFromStorage
+  BaseFeedItemFromStorage
 >;
 
 export class ServerFeedItemsService {
@@ -72,9 +72,6 @@ export class ServerFeedItemsService {
     }
 
     const feedItemResult = SharedFeedItemHelpers.makeFeedItem({
-      // TODO: Make this dynamic based on the actual content. Maybe it should be null initially
-      // until we've done the import? Or should we compute this at save time?
-      type: SharedFeedItemHelpers.getFeedItemTypeFromUrl(trimmedUrl),
       url: trimmedUrl,
       feedItemSource,
       accountId,
@@ -259,7 +256,7 @@ export class ServerFeedItemsService {
       return prefixErrorResult(fetchComicResult, 'Error fetching XKCD comic');
     }
 
-    const {title, imageUrl} = fetchComicResult.value;
+    const {title, imageUrl, altText} = fetchComicResult.value;
 
     const saveTranscriptResult = await asyncTryAll([
       this.writeFileToStorage({
@@ -269,8 +266,7 @@ export class ServerFeedItemsService {
         filename: 'xkcdComic.png',
         contentType: 'image/png',
       }),
-      this.updateFeedItem(feedItem.feedItemId, {title}),
-      // TODO: Store alt text somewhere.
+      this.updateFeedItem(feedItem.feedItemId, {title, xkcd: {imageUrl, altText}}),
     ]);
 
     const saveTranscriptResultError = saveTranscriptResult.success

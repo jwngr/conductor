@@ -1,5 +1,7 @@
 import type React from 'react';
 
+import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
+
 import type {ArticleFeedItem} from '@shared/types/feedItems.types';
 
 import {FeedItemHeader, FeedItemSummary, FeedItemWrapper} from '@src/components/feedItems/FeedItem';
@@ -9,7 +11,7 @@ import {ImportingFeedItem} from '@src/components/feedItems/ImportingFeedItem';
 export const ArticleFeedItemComponent: React.FC<{readonly feedItem: ArticleFeedItem}> = ({
   feedItem,
 }) => {
-  const hasFeedItemEverBeenImported = feedItem.importState.lastSuccessfulImportTime !== null;
+  const hasFeedItemEverBeenImported = SharedFeedItemHelpers.hasEverBeenImported(feedItem);
 
   let mainContent: React.ReactNode;
   if (!hasFeedItemEverBeenImported) {

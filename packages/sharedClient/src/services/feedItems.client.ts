@@ -130,7 +130,7 @@ export function useFeedItemFile(args: {
 }): UseFeedItemFileResult {
   const {feedItem, filename} = args;
   const feedItemId = feedItem.feedItemId;
-  const hasFeedItemEverBeenImported = feedItem.importState.lastSuccessfulImportTime !== null;
+  const hasFeedItemEverBeenImported = SharedFeedItemHelpers.hasEverBeenImported(feedItem);
 
   const isMounted = useIsMounted();
   const feedItemsService = useFeedItemsService();
@@ -168,10 +168,6 @@ export function useFeedItemMarkdown(feedItem: FeedItem): UseFeedItemFileResult {
 
 export function useYouTubeFeedItemTranscript(feedItem: FeedItem): UseFeedItemFileResult {
   return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_NAME_TRANSCRIPT});
-}
-
-export function getXkcdFeedItemImageUrl(feedItem: XkcdFeedItem): string {
-  return 'TODO';
 }
 
 type FeedItemsCollectionService = ClientFirestoreCollectionService<FeedItemId, FeedItem>;
@@ -248,13 +244,11 @@ export class ClientFeedItemsService {
     }
 
     const feedItemResult = SharedFeedItemHelpers.makeFeedItem({
-      type: SharedFeedItemHelpers.getFeedItemTypeFromUrl(trimmedUrl),
       url: trimmedUrl,
-      // TODO: Make this dynamic based on the actual content. Maybe it should be null initially
-      // until we've done the import? Or should we compute this at save time?
       feedItemSource,
       accountId: this.accountId,
       title,
+      description: null,
     });
     if (!feedItemResult.success) return feedItemResult;
     const feedItem = feedItemResult.value;

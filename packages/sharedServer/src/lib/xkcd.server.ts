@@ -1,14 +1,20 @@
+import * as cheerio from 'cheerio';
+
+import {logger} from '@shared/services/logger.shared';
+
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {requestGet} from '@shared/lib/requests.shared';
-import {makeSuccessResult} from '@shared/lib/results.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AsyncResult} from '@shared/types/results.types';
 
-export async function fetchXkcdComic(url: string): AsyncResult<{
+interface XkcdComic {
   readonly title: string;
   readonly imageUrl: string;
   readonly altText: string;
-}> {
+}
+
+export async function fetchXkcdComic(url: string): AsyncResult<XkcdComic> {
   const fetchDataResult = await requestGet<string>(url, {
     headers: {'Content-Type': 'text/html'},
   });
@@ -18,11 +24,26 @@ export async function fetchXkcdComic(url: string): AsyncResult<{
   }
 
   const rawHtml = fetchDataResult.value;
-  console.log(rawHtml);
+
+  const $ = cheerio.load(rawHtml);
+
+  const title = $('#ctitle').text().trim();
+  const imageElement = $('#comic img');
+  const imageUrl = imageElement.attr('src');
+  const altText = imageElement.attr('title');
+
+  if (!title || !imageUrl || !altText) {
+    const error = new Error('Could not parse XKCD comic details from HTML');
+    logger.error(error, {url, title, imageUrl, altText});
+    return makeErrorResult(error);
+  }
+
+  // Ensure the image URL is absolute
+  const absoluteImageUrl = imageUrl.startsWith('//') ? `https:${imageUrl}` : imageUrl;
 
   return makeSuccessResult({
-    title: 'XKCD Comic',
-    imageUrl: 'https://xkcd.com/1234/image.png',
-    altText: 'XKCD Comic',
+    title: title,
+    imageUrl: absoluteImageUrl,
+    altText: altText,
   });
 }

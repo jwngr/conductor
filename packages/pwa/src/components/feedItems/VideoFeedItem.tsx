@@ -1,5 +1,7 @@
 import type React from 'react';
 
+import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
+
 import type {VideoFeedItem} from '@shared/types/feedItems.types';
 
 import {Text} from '@src/components/atoms/Text';
@@ -9,7 +11,7 @@ import {ImportingFeedItem} from '@src/components/feedItems/ImportingFeedItem';
 export const VideoFeedItemComponent: React.FC<{readonly feedItem: VideoFeedItem}> = ({
   feedItem,
 }) => {
-  const hasFeedItemEverBeenImported = feedItem.importState.lastSuccessfulImportTime !== null;
+  const hasFeedItemEverBeenImported = SharedFeedItemHelpers.hasEverBeenImported(feedItem);
 
   let mainContent: React.ReactNode;
   if (!hasFeedItemEverBeenImported) {

@@ -29,7 +29,6 @@ service cloud.firestore {
         'importState',
         'url',
         'title',
-        'description',
         'outgoingLinks',
         'triageStatus',
         'tagIds',
@@ -42,7 +41,6 @@ service cloud.firestore {
       request.resource.data.feedItemSource.type in ['APP', 'EXTENSION', 'RSS', 'POCKET_EXPORT'] &&
       request.resource.data.url is string &&
       request.resource.data.title is string &&
-      request.resource.data.description is string &&
       request.resource.data.outgoingLinks is list &&
       request.resource.data.triageStatus in ['UNTRIAGED', 'SAVED', 'DONE', 'TRASHED'] &&
       request.resource.data.tagIds is map &&

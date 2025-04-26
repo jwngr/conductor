@@ -1,3 +1,5 @@
+import {logger} from '@shared/services/logger.shared';
+
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
@@ -7,6 +9,7 @@ import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions.parser';
 
 import type {
+  BaseFeedItemFromStorage,
   CompletedFeedItemImportState,
   FailedFeedItemImportState,
   FeedItem,
@@ -22,21 +25,25 @@ import type {
   FeedItemSourceFromStorage,
   NewFeedItemImportState,
   ProcessingFeedItemImportState,
+  XkcdFeedItem,
+  XkcdFeedItemFromStorage,
 } from '@shared/types/feedItems.types';
 import {
   AppFeedItemSourceSchema,
+  BaseFeedItemFromStorageSchema,
   CompletedFeedItemImportStateSchema,
   ExtensionFeedItemSourceSchema,
   FailedFeedItemImportStateSchema,
-  FeedItemFromStorageSchema,
   FeedItemIdSchema,
   FeedItemImportStatus,
   FeedItemSourceType,
+  FeedItemType,
   makeNewFeedItemImportState,
   NewFeedItemImportStateSchema,
   PocketExportFeedItemSourceSchema,
   ProcessingFeedItemImportStateSchema,
   RssFeedItemSourceSchema,
+  XkcdFeedItemFromStorageSchema,
 } from '@shared/types/feedItems.types';
 import type {Result} from '@shared/types/results.types';
 
@@ -234,7 +241,7 @@ function parseCompletedFeedItemImportState(
  * valid.
  */
 export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
-  const parsedFeedItemResult = parseZodResult(FeedItemFromStorageSchema, maybeFeedItem);
+  const parsedFeedItemResult = parseZodResult(BaseFeedItemFromStorageSchema, maybeFeedItem);
   if (!parsedFeedItemResult.success) {
     return prefixErrorResult(parsedFeedItemResult, 'Invalid feed item');
   }
@@ -251,24 +258,58 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
   const parsedImportStateResult = parseFeedItemImportState(parsedFeedItemResult.value.importState);
   if (!parsedImportStateResult.success) return parsedImportStateResult;
 
-  return makeSuccessResult(
-    omitUndefined({
-      type: parsedFeedItemResult.value.type,
-      accountId: parsedAccountIdReult.value,
-      feedItemSource: parsedSourceResult.value,
-      importState: parsedImportStateResult.value,
-      feedItemId: parsedIdResult.value,
-      url: parsedFeedItemResult.value.url,
-      title: parsedFeedItemResult.value.title,
-      description: parsedFeedItemResult.value.description,
-      outgoingLinks: parsedFeedItemResult.value.outgoingLinks,
-      summary: parsedFeedItemResult.value.summary,
-      triageStatus: parsedFeedItemResult.value.triageStatus,
-      tagIds: parsedFeedItemResult.value.tagIds,
-      createdTime: parseStorageTimestamp(parsedFeedItemResult.value.createdTime),
-      lastUpdatedTime: parseStorageTimestamp(parsedFeedItemResult.value.lastUpdatedTime),
-    })
-  );
+  switch (parsedFeedItemResult.value.type) {
+    case FeedItemType.Xkcd: {
+      const parsedXkcdFeedItemResult = parseZodResult(XkcdFeedItemFromStorageSchema, maybeFeedItem);
+      if (!parsedXkcdFeedItemResult.success) {
+        return prefixErrorResult(parsedXkcdFeedItemResult, 'Invalid feed item');
+      }
+
+      return makeSuccessResult(
+        omitUndefined({
+          type: FeedItemType.Xkcd,
+          xkcd: parsedXkcdFeedItemResult.value.xkcd,
+          accountId: parsedAccountIdReult.value,
+          feedItemSource: parsedSourceResult.value,
+          importState: parsedImportStateResult.value,
+          feedItemId: parsedIdResult.value,
+          url: parsedFeedItemResult.value.url,
+          title: parsedFeedItemResult.value.title,
+          description: parsedFeedItemResult.value.description,
+          outgoingLinks: parsedFeedItemResult.value.outgoingLinks,
+          summary: parsedFeedItemResult.value.summary,
+          triageStatus: parsedFeedItemResult.value.triageStatus,
+          tagIds: parsedFeedItemResult.value.tagIds,
+          createdTime: parseStorageTimestamp(parsedFeedItemResult.value.createdTime),
+          lastUpdatedTime: parseStorageTimestamp(parsedFeedItemResult.value.lastUpdatedTime),
+        })
+      );
+    }
+    case FeedItemType.YouTube:
+    case FeedItemType.Article:
+    case FeedItemType.Video:
+    case FeedItemType.Website:
+    case FeedItemType.Tweet:
+    default:
+      return makeSuccessResult(
+        omitUndefined({
+          type: parsedFeedItemResult.value.type,
+          accountId: parsedAccountIdReult.value,
+          feedItemSource: parsedSourceResult.value,
+          importState: parsedImportStateResult.value,
+          feedItemId: parsedIdResult.value,
+          url: parsedFeedItemResult.value.url,
+          title: parsedFeedItemResult.value.title,
+          description: parsedFeedItemResult.value.description,
+          outgoingLinks: parsedFeedItemResult.value.outgoingLinks,
+          summary: parsedFeedItemResult.value.summary,
+          triageStatus: parsedFeedItemResult.value.triageStatus,
+          tagIds: parsedFeedItemResult.value.tagIds,
+          createdTime: parseStorageTimestamp(parsedFeedItemResult.value.createdTime),
+          lastUpdatedTime: parseStorageTimestamp(parsedFeedItemResult.value.lastUpdatedTime),
+        })
+      );
+  }
 }
 
 /**
@@ -276,6 +317,28 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
  * Firestore.
  */
 export function toStorageFeedItem(feedItem: FeedItem): FeedItemFromStorage {
+  switch (feedItem.type) {
+    case FeedItemType.Xkcd:
+      return toStorageXkcdFeedItem(feedItem);
+    case FeedItemType.YouTube:
+    case FeedItemType.Article:
+    case FeedItemType.Video:
+    case FeedItemType.Website:
+    case FeedItemType.Tweet:
+      return toStorageBaseFeedItem(feedItem);
+    default:
+      logger.error(new Error('Unknown feed item type'), {feedItem});
+      return toStorageBaseFeedItem(feedItem);
+  }
+}
+
+/**
+ * Converts an {@link BaseFeedItem} to a {@link BaseFeedItemFromStorage} object that can be
+ * persisted to Firestore.
+ */
+export function toStorageBaseFeedItem(
+  feedItem: Exclude<FeedItem, XkcdFeedItem>
+): BaseFeedItemFromStorage {
   return omitUndefined({
     feedItemId: feedItem.feedItemId,
     accountId: feedItem.accountId,
@@ -291,5 +354,29 @@ export function toStorageFeedItem(feedItem: FeedItem): FeedItemFromStorage {
     tagIds: feedItem.tagIds,
     createdTime: feedItem.createdTime,
     lastUpdatedTime: feedItem.lastUpdatedTime,
+  });
+}
+
+/**
+ * Converts an {@link XkcdFeedItem} to a {@link XkcdFeedItemFromStorage} object that can be
+ * persisted to Firestore.
+ */
+export function toStorageXkcdFeedItem(feedItem: XkcdFeedItem): XkcdFeedItemFromStorage {
+  return omitUndefined({
+    feedItemId: feedItem.feedItemId,
+    accountId: feedItem.accountId,
+    type: feedItem.type,
+    feedItemSource: feedItem.feedItemSource,
+    importState: feedItem.importState,
+    url: feedItem.url,
+    title: feedItem.title,
+    description: feedItem.description,
+    outgoingLinks: feedItem.outgoingLinks,
+    summary: feedItem.summary,
+    triageStatus: feedItem.triageStatus,
+    tagIds: feedItem.tagIds,
+    createdTime: feedItem.createdTime,
+    lastUpdatedTime: feedItem.lastUpdatedTime,
+    xkcd: feedItem.xkcd,
   });
 }
