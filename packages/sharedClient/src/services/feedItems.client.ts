@@ -6,6 +6,8 @@ import {useEffect, useMemo, useState} from 'react';
 import {logger} from '@shared/services/logger.shared';
 
 import {
+  FEED_ITEM_FILE_NAME_LLM_CONTEXT,
+  FEED_ITEM_FILE_NAME_TRANSCRIPT,
   FEED_ITEMS_DB_COLLECTION,
   FEED_ITEMS_STORAGE_COLLECTION,
 } from '@shared/lib/constants.shared';
@@ -155,11 +157,11 @@ export function useFeedItemFile(args: {
 }
 
 export function useFeedItemMarkdown(feedItem: FeedItem): UseFeedItemFileResult {
-  return useFeedItemFile({feedItem, fileName: 'llmContext.md'});
+  return useFeedItemFile({feedItem, fileName: FEED_ITEM_FILE_NAME_LLM_CONTEXT});
 }
 
 export function useYouTubeFeedItemTranscript(feedItem: FeedItem): UseFeedItemFileResult {
-  return useFeedItemFile({feedItem, fileName: 'transcript.md'});
+  return useFeedItemFile({feedItem, fileName: FEED_ITEM_FILE_NAME_TRANSCRIPT});
 }
 
 type FeedItemsCollectionService = ClientFirestoreCollectionService<FeedItemId, FeedItem>;
@@ -306,10 +308,10 @@ export class ClientFeedItemsService {
   }
 
   public async getFeedItemMarkdown(feedItemId: FeedItemId): AsyncResult<string> {
-    return this.getFileFromStorage({feedItemId, fileName: 'llmContext.md'});
+    return this.getFileFromStorage({feedItemId, fileName: FEED_ITEM_FILE_NAME_LLM_CONTEXT});
   }
 
   public async getFeedItemTranscript(feedItemId: FeedItemId): AsyncResult<string> {
-    return this.getFileFromStorage({feedItemId, fileName: 'transcript.txt'});
+    return this.getFileFromStorage({feedItemId, fileName: FEED_ITEM_FILE_NAME_TRANSCRIPT});
   }
 }

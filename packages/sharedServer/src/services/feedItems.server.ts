@@ -1,4 +1,9 @@
 import {
+  FEED_ITEM_FILE_NAME_HTML,
+  FEED_ITEM_FILE_NAME_LLM_CONTEXT,
+  FEED_ITEM_FILE_NAME_TRANSCRIPT,
+} from '@shared/lib/constants.shared';
+import {
   asyncTry,
   asyncTryAll,
   prefixError,
@@ -235,7 +240,7 @@ export class ServerFeedItemsService {
       feedItemId,
       accountId,
       content: transcript,
-      filename: 'transcript.md',
+      filename: FEED_ITEM_FILE_NAME_TRANSCRIPT,
       contentType: 'text/markdown',
     });
     if (!saveTranscriptResult.success) {
@@ -275,7 +280,7 @@ export class ServerFeedItemsService {
       feedItemId,
       accountId,
       content: rawHtml,
-      filename: 'raw.html',
+      filename: FEED_ITEM_FILE_NAME_HTML,
       contentType: 'text/html',
     });
 
@@ -314,7 +319,7 @@ export class ServerFeedItemsService {
         feedItemId,
         accountId,
         content: firecrawlData.markdown,
-        filename: 'firecrawl.md',
+        filename: FEED_ITEM_FILE_NAME_LLM_CONTEXT,
         contentType: 'text/markdown',
       }),
       this.updateFeedItem(feedItemId, {

@@ -8,7 +8,7 @@ import type {AsyncResult} from '@shared/types/results.types';
 export async function fetchYouTubeTranscript(url: string): AsyncResult<string> {
   const fetchTranscriptResult = await asyncTry(async () =>
     YoutubeTranscript.fetchTranscript(url, {
-      lang: 'en-us',
+      lang: 'en',
     })
   );
   if (!fetchTranscriptResult.success) {

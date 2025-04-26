@@ -5,11 +5,9 @@ import type {YouTubeFeedItem} from '@shared/types/feedItems.types';
 import {useYouTubeFeedItemTranscript} from '@sharedClient/services/feedItems.client';
 
 import {Text} from '@src/components/atoms/Text';
+import {FeedItemHeader, FeedItemWrapper} from '@src/components/feedItems/FeedItem';
 import {ImportingFeedItem} from '@src/components/feedItems/ImportingFeedItem';
 import {Markdown} from '@src/components/Markdown';
-
-import {FeedItemHeader, FeedItemWrapper} from './FeedItem';
-import {FeedItemMarkdown} from './FeedItemMarkdown';
 
 const ImportedYouTubeFeedItemTranscript: React.FC<{readonly feedItem: YouTubeFeedItem}> = ({
   feedItem,
