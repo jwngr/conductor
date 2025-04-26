@@ -20,7 +20,12 @@ import {Views} from '@shared/lib/views.shared';
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 
 import type {AccountId, AuthStateChangedUnsubscribe} from '@shared/types/accounts.types';
-import type {FeedItem, FeedItemId, FeedItemSource} from '@shared/types/feedItems.types';
+import type {
+  FeedItem,
+  FeedItemId,
+  FeedItemSource,
+  XkcdFeedItem,
+} from '@shared/types/feedItems.types';
 import {fromFilterOperator} from '@shared/types/query.types';
 import type {ViewType} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/results.types';
@@ -163,6 +168,10 @@ export function useFeedItemMarkdown(feedItem: FeedItem): UseFeedItemFileResult {
 
 export function useYouTubeFeedItemTranscript(feedItem: FeedItem): UseFeedItemFileResult {
   return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_NAME_TRANSCRIPT});
+}
+
+export function getXkcdFeedItemImageUrl(feedItem: XkcdFeedItem): string {
+  return 'TODO';
 }
 
 type FeedItemsCollectionService = ClientFirestoreCollectionService<FeedItemId, FeedItem>;

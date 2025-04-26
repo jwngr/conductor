@@ -23,6 +23,7 @@ import type {
   FeedItemFromStorage,
   FeedItemId,
   FeedItemSource,
+  XkcdFeedItem,
   YouTubeFeedItem,
 } from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/results.types';
@@ -33,6 +34,7 @@ import type {ServerFirecrawlService} from '@sharedServer/services/firecrawl.serv
 import type {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
 import {generateHierarchicalSummary} from '@sharedServer/lib/summarization.server';
+import {fetchXkcdComic} from '@sharedServer/lib/xkcd.server';
 import {fetchYouTubeTranscript} from '@sharedServer/lib/youtube.server';
 
 type FeedItemCollectionService = ServerFirestoreCollectionService<
@@ -177,8 +179,7 @@ export class ServerFeedItemsService {
   }
 
   public async importFeedItem(feedItem: FeedItem): AsyncResult<void> {
-    const url = feedItem.url;
-    const isSafeUrlResult = SharedFeedItemHelpers.validateUrl(url);
+    const isSafeUrlResult = SharedFeedItemHelpers.validateUrl(feedItem.url);
     if (!isSafeUrlResult.success) {
       return prefixErrorResult(isSafeUrlResult, 'Error validating feed item URL');
     }
@@ -191,8 +192,10 @@ export class ServerFeedItemsService {
       case FeedItemType.Tweet:
       case FeedItemType.Video:
       case FeedItemType.Website:
-      case FeedItemType.Xkcd:
         await this.importGenericFeedItem(feedItem);
+        break;
+      case FeedItemType.Xkcd:
+        await this.importXkcdFeedItem(feedItem);
         break;
       default:
         assertNever(feedItem);
@@ -248,6 +251,36 @@ export class ServerFeedItemsService {
     });
 
     return prefixResultIfError(saveTranscriptResult, 'Error saving YouTube transcript');
+  }
+
+  public async importXkcdFeedItem(feedItem: XkcdFeedItem): AsyncResult<void> {
+    const fetchComicResult = await fetchXkcdComic(feedItem.url);
+    if (!fetchComicResult.success) {
+      return prefixErrorResult(fetchComicResult, 'Error fetching XKCD comic');
+    }
+
+    const {title, imageUrl} = fetchComicResult.value;
+
+    const saveTranscriptResult = await asyncTryAll([
+      this.writeFileToStorage({
+        feedItemId: feedItem.feedItemId,
+        accountId: feedItem.accountId,
+        content: imageUrl,
+        filename: 'xkcdComic.png',
+        contentType: 'image/png',
+      }),
+      this.updateFeedItem(feedItem.feedItemId, {title}),
+      // TODO: Store alt text somewhere.
+    ]);
+
+    const saveTranscriptResultError = saveTranscriptResult.success
+      ? saveTranscriptResult.value.results.find((result) => !result.success)?.error
+      : saveTranscriptResult.error;
+    if (saveTranscriptResultError) {
+      return makeErrorResult(prefixError(saveTranscriptResultError, 'Error saving XKCD comic'));
+    }
+
+    return makeSuccessResult(undefined);
   }
 
   /**
