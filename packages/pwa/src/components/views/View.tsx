@@ -259,7 +259,9 @@ export const ViewRenderer: React.FC<{
   return (
     <div className="flex flex-1 flex-col overflow-auto p-5">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">{defaultViewConfig.name}</h2>
+        <Text as="h2" bold>
+          {defaultViewConfig.name}
+        </Text>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1">
             <label htmlFor="groupBy">Group by:</label>
