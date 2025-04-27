@@ -264,24 +264,14 @@ const ViewList: React.FC<{
   );
 };
 
-interface ViewRendererState {
-  viewType: ViewType;
+const ViewHeader: React.FC<{
+  name: string;
   sortBy: readonly ViewSortByOption[];
   groupBy: readonly ViewGroupByOption[];
-}
-
-export const ViewRenderer: React.FC<{
-  viewType: ViewType;
-}> = ({viewType}) => {
-  const defaultViewConfig = Views.get(viewType);
-
-  const [viewOptions, setViewOptions] = useState<ViewRendererState>(() => ({
-    viewType,
-    sortBy: defaultViewConfig.sortBy,
-    groupBy: defaultViewConfig.groupBy,
-  }));
-
-  const firstSortByOption = viewOptions.sortBy[0] ?? SORT_BY_CREATED_TIME_DESC_OPTION;
+  setViewOptions: React.Dispatch<React.SetStateAction<ViewRendererState>>;
+}> = ({name, sortBy, groupBy, setViewOptions}) => {
+  const firstSortByOption = sortBy[0] ?? SORT_BY_CREATED_TIME_DESC_OPTION;
+  const firstGroupByOption = groupBy.length === 0 ? null : groupBy[0].field;
 
   const handleGroupByChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
     setViewOptions((prevOptions) => ({
@@ -316,57 +306,78 @@ export const ViewRenderer: React.FC<{
   };
 
   return (
-    <div className="flex flex-1 flex-col overflow-auto p-5">
-      <div className="mb-4 flex items-center justify-between">
-        <Text as="h2" bold>
-          {defaultViewConfig.name}
-        </Text>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1">
-            <label htmlFor="groupBy">Group by:</label>
-            <select
-              id="groupBy"
-              value={viewOptions.groupBy.length === 0 ? 'none' : viewOptions.groupBy[0].field}
-              onChange={handleGroupByChange}
-              className="rounded border border-stone-300 p-1"
-            >
-              <option value={'none'}>None</option>
-              <option value={'type'}>{toViewGroupByOptionText('type')}</option>
-              <option value={'importState'}>{toViewGroupByOptionText('importState')}</option>
-            </select>
-          </div>
-          <div className="flex items-center gap-1">
-            <label htmlFor="sortField">Sort by:</label>
-            <select
-              id="sortField"
-              value={firstSortByOption.field}
-              onChange={handleSortFieldChange}
-              className="rounded border border-stone-300 p-1"
-            >
-              <option value={'createdTime'}>{toViewSortByOptionText('createdTime')}</option>
-              <option value={'lastUpdatedTime'}>{toViewSortByOptionText('lastUpdatedTime')}</option>
-              <option value={'title'}>{toViewSortByOptionText('title')}</option>
-            </select>
-          </div>
-          <div className="flex items-center gap-1">
-            <select
-              id="sortDirection"
-              value={firstSortByOption.direction}
-              onChange={handleSortDirectionChange}
-              className="rounded border border-stone-300 p-1"
-              aria-label="Sort direction"
-            >
-              <option value="asc">Ascending</option>
-              <option value="desc">Descending</option>
-            </select>
-          </div>
+    <div className="mb-4 flex items-center justify-between">
+      <Text as="h2" bold>
+        {name}
+      </Text>
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1">
+          <label htmlFor="groupBy">Group by:</label>
+          <select
+            id="groupBy"
+            value={firstGroupByOption ?? 'none'}
+            onChange={handleGroupByChange}
+            className="rounded border border-stone-300 p-1"
+          >
+            <option value={'none'}>None</option>
+            <option value={'type'}>{toViewGroupByOptionText('type')}</option>
+            <option value={'importState'}>{toViewGroupByOptionText('importState')}</option>
+          </select>
+        </div>
+        <div className="flex items-center gap-1">
+          <label htmlFor="sortField">Sort by:</label>
+          <select
+            id="sortField"
+            value={firstSortByOption.field}
+            onChange={handleSortFieldChange}
+            className="rounded border border-stone-300 p-1"
+          >
+            <option value={'createdTime'}>{toViewSortByOptionText('createdTime')}</option>
+            <option value={'lastUpdatedTime'}>{toViewSortByOptionText('lastUpdatedTime')}</option>
+            <option value={'title'}>{toViewSortByOptionText('title')}</option>
+          </select>
+        </div>
+        <div className="flex items-center gap-1">
+          <select
+            id="sortDirection"
+            value={firstSortByOption.direction}
+            onChange={handleSortDirectionChange}
+            className="rounded border border-stone-300 p-1"
+            aria-label="Sort direction"
+          >
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+          </select>
         </div>
       </div>
-      <ViewList
-        viewType={viewOptions.viewType}
+    </div>
+  );
+};
+
+interface ViewRendererState {
+  sortBy: readonly ViewSortByOption[];
+  groupBy: readonly ViewGroupByOption[];
+}
+
+export const ViewRenderer: React.FC<{
+  viewType: ViewType;
+}> = ({viewType}) => {
+  const defaultViewConfig = Views.get(viewType);
+
+  const [viewOptions, setViewOptions] = useState<ViewRendererState>(() => ({
+    sortBy: defaultViewConfig.sortBy,
+    groupBy: defaultViewConfig.groupBy,
+  }));
+
+  return (
+    <div className="flex flex-1 flex-col overflow-auto p-5">
+      <ViewHeader
+        name={defaultViewConfig.name}
         sortBy={viewOptions.sortBy}
         groupBy={viewOptions.groupBy}
+        setViewOptions={setViewOptions}
       />
+      <ViewList viewType={viewType} sortBy={viewOptions.sortBy} groupBy={viewOptions.groupBy} />
     </div>
   );
 };
