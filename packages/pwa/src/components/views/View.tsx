@@ -175,13 +175,6 @@ const ViewList: React.FC<{
       assertNever(groupByField);
   }
 
-  console.log('--------------------------------');
-  console.log('viewType', viewType);
-  console.log('feedItems', feedItems);
-  console.log('sortedItems', sortedItems);
-  console.log('groupedItems', groupedItems);
-  console.log('--------------------------------');
-
   return (
     <>
       {/* Render grouped items */}

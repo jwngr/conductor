@@ -209,7 +209,6 @@ export class ClientFeedItemsService {
 
     // Construct Firestore queries from the view config.
     const viewConfig = Views.get(viewType);
-    console.log('viewConfig', viewConfig);
     const whereClauses = [
       where('accountId', '==', this.accountId),
       ...viewConfig.filters.map((filter) =>
