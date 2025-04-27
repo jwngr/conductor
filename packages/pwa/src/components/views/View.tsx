@@ -217,18 +217,20 @@ const LoadedViewList: React.FC<{
       </ul>
     );
   } else {
-    mainContent = Object.entries(groupedItems).map(([groupKey, items]) => (
-      <React.Fragment key={`${viewType}-${groupKey}`}>
-        {groupBy === null ? null : (
-          <h3 className="mt-4 text-lg font-medium capitalize">{groupKey}</h3>
-        )}
-        <ul>
-          {items.map((feedItem) => (
-            <ViewListItem key={feedItem.feedItemId} feedItem={feedItem} viewType={viewType} />
-          ))}
-        </ul>
-      </React.Fragment>
-    ));
+    mainContent = (
+      <div className="flex flex-col gap-4">
+        {Object.entries(groupedItems).map(([groupKey, items]) => (
+          <React.Fragment key={`${viewType}-${groupKey}`}>
+            <Text as="h3">{groupKey}</Text>
+            <ul>
+              {items.map((feedItem) => (
+                <ViewListItem key={feedItem.feedItemId} feedItem={feedItem} viewType={viewType} />
+              ))}
+            </ul>
+          </React.Fragment>
+        ))}
+      </div>
+    );
   }
 
   return (
@@ -260,48 +262,6 @@ const ViewList: React.FC<{
   return (
     <LoadedViewList viewType={viewType} feedItems={feedItems} sortBy={sortBy} groupBy={groupBy} />
   );
-
-  // if (feedItems.length === 0) {
-  //   // TODO: Introduce proper empty state screen.
-  //   return <div>No items</div>;
-  // }
-
-  // // Sorting logic.
-  // const sortedItems = useSortedFeedItems(feedItems, sortBy);
-
-  // // Grouping logic. Currently only supports a single field.
-  // const groupByField = groupBy.length === 0 ? null : groupBy[0].field;
-  // let mainContent: React.ReactNode;
-  // if (groupByField === null) {
-  //   mainContent = (
-  //     <ul>
-  //       {sortedItems.map((feedItem) => (
-  //         <ViewListItem key={feedItem.feedItemId} feedItem={feedItem} viewType={viewType} />
-  //       ))}
-  //     </ul>
-  //   );
-  // } else {
-  //   const groupedItems = getGroupedFeedItems(sortedItems, groupByField);
-  //   mainContent = Object.entries(groupedItems).map(([groupKey, items]) => (
-  //     <React.Fragment key={`${viewType}-${groupKey}`}>
-  //       {groupBy === null ? null : (
-  //         <h3 className="mt-4 text-lg font-medium capitalize">{groupKey}</h3>
-  //       )}
-  //       <ul>
-  //         {items.map((feedItem) => (
-  //           <ViewListItem key={feedItem.feedItemId} feedItem={feedItem} viewType={viewType} />
-  //         ))}
-  //       </ul>
-  //     </React.Fragment>
-  //   ));
-  // }
-
-  // return (
-  //   <>
-  //     {mainContent}
-  //     <ViewKeyboardShortcutHandler feedItems={sortedItems} />
-  //   </>
-  // );
 };
 
 interface ViewRendererState {
