@@ -1,7 +1,3 @@
-import {useMemo} from 'react';
-
-import {Views} from '@shared/lib/views.shared';
-
 import type {ViewType} from '@shared/types/views.types';
 
 import {AppHeader} from '@src/components/AppHeader';
