@@ -72,25 +72,32 @@ function compareFeedItems(args: {
 }
 
 /**
- * Returns a sorted list of feed items.
- *
- * Note: Only supports a single sort field.
+ * Returns a sorted list of feed items based on multiple sort criteria. If multiple items are equal
+ * based on the first criterion, the next criterion is used, and so on.
  */
 function useSortedFeedItems(
   feedItems: FeedItem[],
   sortBy: readonly ViewSortByOption[]
 ): FeedItem[] {
-  const firstSortByOption = sortBy[0] ?? SORT_BY_CREATED_TIME_DESC_OPTION;
-
   const sortedItems = useMemo(
     () =>
-      feedItems.sort((a, b) => {
-        const field = firstSortByOption.field;
-        const direction = firstSortByOption.direction === 'asc' ? 1 : -1;
+      // Create a shallow copy to avoid mutating the original array.
+      [...feedItems].sort((a, b) => {
+        for (const sortOption of sortBy) {
+          const {field, direction: sortDirection} = sortOption;
+          const direction = sortDirection === 'asc' ? 1 : -1;
+          const comparison = compareFeedItems({a, b, field, direction});
 
-        return compareFeedItems({a, b, field, direction});
+          // If the items differ based on the current criterion, return the result. Otherwise,
+          // continue to the next criterion.
+          if (comparison !== 0) return comparison;
+        }
+
+        // If items are equal based on all criteria, maintain their original order.
+        return 0;
       }),
-    [feedItems, firstSortByOption.direction, firstSortByOption.field]
+    // Ensure the sorting re-runs when feedItems or the sortBy array changes.
+    [feedItems, sortBy]
   );
 
   return sortedItems;
@@ -100,7 +107,7 @@ function useSortedFeedItems(
  * Returns a grouped list of feed items, keyed by values of the group field. Returns `null` if no
  * group field is provided.
  *
- * Note: Only supports a single group field.
+ * Note: Only supports a single level of grouping.
  */
 function useGroupedFeedItems(
   feedItems: FeedItem[],
