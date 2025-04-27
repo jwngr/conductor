@@ -47,7 +47,7 @@ const AllRoutes: React.FC = () => {
         const viewUrl = Urls.forView(viewType);
         return (
           <Route
-            key={`${i}-${viewUrl}`}
+            key={`${i}-${viewType}`}
             path={viewUrl}
             element={
               <RequireLoggedInAccount>

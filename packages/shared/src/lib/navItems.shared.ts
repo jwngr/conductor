@@ -2,9 +2,9 @@ import {makeEmojiIcon} from '@shared/lib/customIcons.shared';
 import {Urls} from '@shared/lib/urls.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
-import {ViewType} from '@shared/types/query.types';
 import type {NavItem} from '@shared/types/urls.types';
 import {NavItemId} from '@shared/types/urls.types';
+import {ViewType} from '@shared/types/views.types';
 
 const ALL_NAV_ITEMS: Record<NavItemId, NavItem> = {
   [NavItemId.Untriaged]: makeNavItemForView(NavItemId.Untriaged, ViewType.Untriaged, {

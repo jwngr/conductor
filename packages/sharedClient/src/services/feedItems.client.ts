@@ -22,10 +22,10 @@ import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers
 
 import type {AccountId, AuthStateChangedUnsubscribe} from '@shared/types/accounts.types';
 import type {FeedItem, FeedItemId, FeedItemSource} from '@shared/types/feedItems.types';
-import {fromFilterOperator} from '@shared/types/query.types';
-import type {ViewType} from '@shared/types/query.types';
+import {fromQueryFilterOp} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {Consumer} from '@shared/types/utils.types';
+import type {ViewType} from '@shared/types/views.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';
 import {
@@ -209,10 +209,11 @@ export class ClientFeedItemsService {
 
     // Construct Firestore queries from the view config.
     const viewConfig = Views.get(viewType);
+    console.log('viewConfig', viewConfig);
     const whereClauses = [
       where('accountId', '==', this.accountId),
       ...viewConfig.filters.map((filter) =>
-        where(filter.field, fromFilterOperator(filter.op), filter.value)
+        where(filter.field, fromQueryFilterOp(filter.op), filter.value)
       ),
       // TODO: Order by created time to ensure a consistent order.
       // orderBy(viewConfig.sort.field, viewConfig.sort.direction),

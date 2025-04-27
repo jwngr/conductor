@@ -2,35 +2,44 @@ import {assertNever} from '@shared/lib/utils.shared';
 
 import type {FeedItem} from '@shared/types/feedItems.types';
 import {TriageStatus} from '@shared/types/feedItems.types';
-import type {View} from '@shared/types/query.types';
-import {FilterOp, ViewType} from '@shared/types/query.types';
+import {QueryFilterOp} from '@shared/types/query.types';
 import {SystemTagId} from '@shared/types/tags.types';
 import {NavItemId} from '@shared/types/urls.types';
+import type {View} from '@shared/types/views.types';
+import {
+  SORT_BY_CREATED_TIME_DESC_OPTION,
+  SORT_BY_LAST_UPDATED_TIME_DESC_OPTION,
+  ViewType,
+} from '@shared/types/views.types';
 
 const ALL_VIEW_CONFIGS: Record<ViewType, View<FeedItem>> = {
   [ViewType.Untriaged]: {
     name: 'Untriaged',
     type: ViewType.Untriaged,
-    filters: [{field: 'triageStatus', op: FilterOp.Equals, value: TriageStatus.Untriaged}],
-    sort: {field: 'createdTime', direction: 'desc'},
+    filters: [{field: 'triageStatus', op: QueryFilterOp.Equals, value: TriageStatus.Untriaged}],
+    sortBy: [SORT_BY_CREATED_TIME_DESC_OPTION],
+    groupBy: [],
   },
   [ViewType.Saved]: {
     name: 'Saved',
     type: ViewType.Saved,
-    filters: [{field: 'triageStatus', op: FilterOp.Equals, value: TriageStatus.Saved}],
-    sort: {field: 'lastUpdatedTime', direction: 'desc'},
+    filters: [{field: 'triageStatus', op: QueryFilterOp.Equals, value: TriageStatus.Saved}],
+    sortBy: [SORT_BY_LAST_UPDATED_TIME_DESC_OPTION],
+    groupBy: [],
   },
   [ViewType.Done]: {
     name: 'Done',
     type: ViewType.Done,
-    filters: [{field: 'triageStatus', op: FilterOp.Equals, value: TriageStatus.Done}],
-    sort: {field: 'lastUpdatedTime', direction: 'desc'},
+    filters: [{field: 'triageStatus', op: QueryFilterOp.Equals, value: TriageStatus.Done}],
+    sortBy: [SORT_BY_LAST_UPDATED_TIME_DESC_OPTION],
+    groupBy: [],
   },
   [ViewType.Trashed]: {
     name: 'Trashed',
     type: ViewType.Trashed,
-    filters: [{field: 'triageStatus', op: FilterOp.Equals, value: TriageStatus.Trashed}],
-    sort: {field: 'lastUpdatedTime', direction: 'desc'},
+    filters: [{field: 'triageStatus', op: QueryFilterOp.Equals, value: TriageStatus.Trashed}],
+    sortBy: [SORT_BY_LAST_UPDATED_TIME_DESC_OPTION],
+    groupBy: [],
   },
   [ViewType.Unread]: {
     name: 'Unread',
@@ -38,9 +47,10 @@ const ALL_VIEW_CONFIGS: Record<ViewType, View<FeedItem>> = {
     filters: [
       // TODO: Fix the typecasting here.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      {field: `tagIds.${SystemTagId.Unread}` as any, op: FilterOp.Equals, value: true},
+      {field: `tagIds.${SystemTagId.Unread}` as any, op: QueryFilterOp.Equals, value: true},
     ],
-    sort: {field: 'createdTime', direction: 'desc'},
+    sortBy: [SORT_BY_CREATED_TIME_DESC_OPTION],
+    groupBy: [],
   },
   [ViewType.Starred]: {
     name: 'Starred',
@@ -48,15 +58,17 @@ const ALL_VIEW_CONFIGS: Record<ViewType, View<FeedItem>> = {
     filters: [
       // TODO: Fix the typecasting here.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      {field: `tagIds.${SystemTagId.Starred}` as any, op: FilterOp.Equals, value: true},
+      {field: `tagIds.${SystemTagId.Starred}` as any, op: QueryFilterOp.Equals, value: true},
     ],
-    sort: {field: 'createdTime', direction: 'desc'},
+    sortBy: [SORT_BY_CREATED_TIME_DESC_OPTION],
+    groupBy: [],
   },
   [ViewType.All]: {
     name: 'All',
     type: ViewType.All,
     filters: [],
-    sort: {field: 'createdTime', direction: 'desc'},
+    sortBy: [SORT_BY_CREATED_TIME_DESC_OPTION],
+    groupBy: [],
   },
   [ViewType.Today]: {
     name: 'Today',
@@ -64,11 +76,12 @@ const ALL_VIEW_CONFIGS: Record<ViewType, View<FeedItem>> = {
     filters: [
       {
         field: 'createdTime',
-        op: FilterOp.GreaterThanOrEqual,
+        op: QueryFilterOp.GreaterThanOrEqual,
         value: new Date().toISOString(),
       },
     ],
-    sort: {field: 'createdTime', direction: 'desc'},
+    sortBy: [SORT_BY_CREATED_TIME_DESC_OPTION],
+    groupBy: [],
   },
 };
 
