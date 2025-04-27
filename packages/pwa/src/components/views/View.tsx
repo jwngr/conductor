@@ -26,6 +26,81 @@ import {Text} from '@src/components/atoms/Text';
 import {FeedItemImportStatusBadge} from '@src/components/feedItems/FeedItemImportStatusBadge';
 import {ViewKeyboardShortcutHandler} from '@src/components/views/ViewKeyboardShortcutHandler';
 
+function sortFeedItems(feedItems: FeedItem[], sortBy: readonly ViewSortByOption[]): FeedItem[] {
+  const firstSortByOption = sortBy[0] ?? SORT_BY_CREATED_TIME_DESC_OPTION;
+
+  return feedItems.sort((a, b) => {
+    const field = firstSortByOption.field;
+    const direction = firstSortByOption.direction === 'asc' ? 1 : -1;
+
+    let valA: string | number | Date;
+    let valB: string | number | Date;
+
+    switch (field) {
+      case 'createdTime':
+        valA = a.createdTime;
+        valB = b.createdTime;
+        break;
+      case 'lastUpdatedTime':
+        valA = a.lastUpdatedTime;
+        valB = b.lastUpdatedTime;
+        break;
+      case 'title':
+        valA = a.title;
+        valB = b.title;
+        break;
+      default:
+        assertNever(field);
+    }
+
+    // Handle date sorting.
+    if (field === 'createdTime' || field === 'lastUpdatedTime') {
+      valA = valA instanceof Date ? valA.getTime() : new Date(valA).getTime();
+      valB = valB instanceof Date ? valB.getTime() : new Date(valB).getTime();
+    }
+
+    // Handle string comparison.
+    if (typeof valA === 'string' && typeof valB === 'string') {
+      return valA.localeCompare(valB) * direction;
+    }
+
+    // Basic comparison for numbers/other types.
+    if (valA < valB) return -direction;
+    if (valA > valB) return direction;
+    return 0;
+  });
+}
+
+function getGroupedFeedItems(
+  feedItems: FeedItem[],
+  groupByField: ViewGroupByField
+): Record<string, FeedItem[]> {
+  const groupedItems: Record<string, FeedItem[]> = {};
+  switch (groupByField) {
+    case 'type':
+      for (const item of feedItems) {
+        const groupKey = item.type;
+        if (!groupedItems[groupKey]) {
+          groupedItems[groupKey] = [];
+        }
+        groupedItems[groupKey].push(item);
+      }
+      return groupedItems;
+
+    case 'importState':
+      for (const item of feedItems) {
+        const groupKey = item.importState?.status || 'UNKNOWN';
+        if (!groupedItems[groupKey]) {
+          groupedItems[groupKey] = [];
+        }
+        groupedItems[groupKey].push(item);
+      }
+      return groupedItems;
+
+    default:
+      assertNever(groupByField);
+  }
+}
 const ViewListItem: React.FC<{
   readonly feedItem: FeedItem;
   readonly viewType: ViewType;
@@ -93,87 +168,12 @@ const ViewList: React.FC<{
   }
 
   // Sorting logic.
-  const sortedItems = [...feedItems].sort((a, b) => {
-    const firstSortByOption = sortBy[0] ?? SORT_BY_CREATED_TIME_DESC_OPTION;
+  const sortedItems = sortFeedItems(feedItems, sortBy);
 
-    const field = firstSortByOption.field;
-    const direction = firstSortByOption.direction === 'asc' ? 1 : -1;
-
-    let valA: string | number | Date | null = null;
-    let valB: string | number | Date | null = null;
-
-    switch (field) {
-      case 'createdTime':
-        valA = a.createdTime;
-        valB = b.createdTime;
-        break;
-      case 'lastUpdatedTime':
-        valA = a.lastUpdatedTime;
-        valB = b.lastUpdatedTime;
-        break;
-      case 'title':
-        valA = a.title;
-        valB = b.title;
-        break;
-      default:
-        assertNever(field);
-    }
-
-    // Handle null/undefined values
-    if (valA == null && valB == null) return 0;
-    if (valA == null) return direction; // Sort nulls based on direction
-    if (valB == null) return -direction;
-
-    // Handle date sorting
-    if (field === 'createdTime' || field === 'lastUpdatedTime') {
-      valA = valA instanceof Date ? valA.getTime() : new Date(valA).getTime();
-      valB = valB instanceof Date ? valB.getTime() : new Date(valB).getTime();
-    }
-
-    // Handle string comparison (case-insensitive)
-    if (typeof valA === 'string' && typeof valB === 'string') {
-      return valA.localeCompare(valB) * direction;
-    }
-
-    // Basic comparison for numbers/other
-    if (valA < valB) return -direction;
-    if (valA > valB) return direction;
-    return 0;
-  });
-
-  // Grouping logic currently only supports a single group by field.
+  // Grouping logic. Currently only supports a single field.
   const groupByField = groupBy.length === 0 ? null : groupBy[0].field;
-  const groupedItems: Record<string, FeedItem[]> = {};
-  switch (groupByField) {
-    case null:
-      break;
-
-    case 'type':
-      for (const item of sortedItems) {
-        const groupKey = item.type;
-        if (!groupedItems[groupKey]) {
-          groupedItems[groupKey] = [];
-        }
-        groupedItems[groupKey].push(item);
-      }
-      break;
-
-    case 'importState':
-      for (const item of sortedItems) {
-        const groupKey = item.importState?.status || 'UNKNOWN';
-        if (!groupedItems[groupKey]) {
-          groupedItems[groupKey] = [];
-        }
-        groupedItems[groupKey].push(item);
-      }
-      break;
-
-    default:
-      assertNever(groupByField);
-  }
-
   let mainContent: React.ReactNode;
-  if (Object.keys(groupedItems).length === 0) {
+  if (groupByField === null) {
     mainContent = (
       <ul>
         {sortedItems.map((feedItem) => (
@@ -182,6 +182,7 @@ const ViewList: React.FC<{
       </ul>
     );
   } else {
+    const groupedItems = getGroupedFeedItems(sortedItems, groupByField);
     mainContent = Object.entries(groupedItems).map(([groupKey, items]) => (
       <React.Fragment key={`${viewType}-${groupKey}`}>
         {groupBy === null ? null : (
