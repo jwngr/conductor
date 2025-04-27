@@ -36,15 +36,15 @@ export class ServerFirecrawlService {
 
     // Some fields should always be present. Report them, but still allow the import to continue.
     if (!rawFirecrawlData.markdown) {
-      return makeErrorResult(new Error('Error fetching Firecrawl data: No markdown found.'));
+      return makeErrorResult(new Error('No markdown found'));
     }
     if (!rawFirecrawlData.links) {
-      return makeErrorResult(new Error('Error fetching Firecrawl data: No links found.'));
+      return makeErrorResult(new Error('No links found'));
     }
 
     return makeSuccessResult({
-      title: rawFirecrawlData.metadata.title,
-      description: rawFirecrawlData.metadata.description,
+      title: rawFirecrawlData.metadata.title ?? undefined,
+      description: rawFirecrawlData.metadata.description ?? undefined,
       // TODO: Process other metadata (e.g. keywords).
       markdown: rawFirecrawlData.markdown,
       links: rawFirecrawlData.links,

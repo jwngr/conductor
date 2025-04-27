@@ -19,6 +19,10 @@ function makeAbsoluteXkcdUrl(relativeUrl: string, feedItemUrl: string): string {
   return absoluteUrl;
 }
 
+export function makeExplainXkcdUrl(comicId: number): string {
+  return `https://www.explainxkcd.com/wiki/index.php/${comicId}`;
+}
+
 /**
  * Extracts the comic ID from an XKCD URL. XKCD URLs look like https://xkcd.com/1234/.
  */
@@ -74,32 +78,32 @@ export async function fetchXkcdComic(comicId: number): AsyncResult<XkcdComic> {
   });
 }
 
-export async function fetchExplainXkcdContent(comicId: number): AsyncResult<string> {
-  const url = `https://www.explainxkcd.com/wiki/index.php/${comicId}`;
+// export async function fetchExplainXkcdContent(comicId: number): AsyncResult<string> {
+//   const url = makeExplainXkcdUrl(comicId);
 
-  const fetchDataResult = await requestGet<string>(url, {
-    headers: {Accept: 'text/html'},
-  });
+//   const fetchDataResult = await requestGet<string>(url, {
+//     headers: {Accept: 'text/html'},
+//   });
 
-  if (!fetchDataResult.success) return fetchDataResult;
+//   if (!fetchDataResult.success) return fetchDataResult;
 
-  const rawHtml = fetchDataResult.value;
+//   const rawHtml = fetchDataResult.value;
 
-  console.log('RAW HTML:', rawHtml);
+//   console.log('RAW HTML:', rawHtml);
 
-  // const $ = cheerio.load(rawHtml);
+//   // const $ = cheerio.load(rawHtml);
 
-  // const title = $('#ctitle').text().trim();
-  // const imageElement = $('#comic img');
-  // const altText = imageElement.attr('title');
-  // const imageUrlSmall = imageElement.attr('src');
-  // const imageUrlLarge = imageElement.attr('srcset')?.split(' ')[0];
+//   // const title = $('#ctitle').text().trim();
+//   // const imageElement = $('#comic img');
+//   // const altText = imageElement.attr('title');
+//   // const imageUrlSmall = imageElement.attr('src');
+//   // const imageUrlLarge = imageElement.attr('srcset')?.split(' ')[0];
 
-  // if (!title || !imageUrlSmall || !imageUrlLarge || !altText) {
-  //   const error = new Error('Could not parse XKCD comic details from HTML');
-  //   logger.error(error, {url, title, imageUrlSmall, imageUrlLarge, altText});
-  //   return makeErrorResult(error);
-  // }
+//   // if (!title || !imageUrlSmall || !imageUrlLarge || !altText) {
+//   //   const error = new Error('Could not parse XKCD comic details from HTML');
+//   //   logger.error(error, {url, title, imageUrlSmall, imageUrlLarge, altText});
+//   //   return makeErrorResult(error);
+//   // }
 
-  return makeSuccessResult(rawHtml);
-}
+//   return makeSuccessResult(rawHtml);
+// }

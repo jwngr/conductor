@@ -4,9 +4,12 @@ import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 
 import type {XkcdFeedItem} from '@shared/types/feedItems.types';
 
+import {useExplainXkcdMarkdown} from '@sharedClient/services/feedItems.client';
+
 import {Text} from '@src/components/atoms/Text';
 import {FeedItemHeader, FeedItemWrapper} from '@src/components/feedItems/FeedItem';
 import {ImportingFeedItem} from '@src/components/feedItems/ImportingFeedItem';
+import {Markdown} from '@src/components/Markdown';
 
 const XkcdImageAndAltText: React.FC<{
   readonly imageUrl: string;
@@ -25,6 +28,28 @@ const XkcdImageAndAltText: React.FC<{
   );
 };
 
+const ExplainXkcdContent: React.FC<{readonly feedItem: XkcdFeedItem}> = ({feedItem}) => {
+  const markdownState = useExplainXkcdMarkdown(feedItem);
+
+  if (markdownState.error) {
+    return (
+      <Text as="p" className="text-error">
+        Error loading Explain XKCD content: {markdownState.error.message}
+      </Text>
+    );
+  }
+
+  if (markdownState.isLoading) {
+    return <Text as="p">Loading Explain XKCD content...</Text>;
+  }
+
+  if (markdownState.content) {
+    return <Markdown content={markdownState.content} />;
+  }
+
+  return <Text as="p">No Explain XKCD content</Text>;
+};
+
 export const XkcdFeedItemRenderer: React.FC<{readonly feedItem: XkcdFeedItem}> = ({feedItem}) => {
   const hasFeedItemEverBeenImported = SharedFeedItemHelpers.hasEverBeenImported(feedItem);
 
@@ -35,7 +60,13 @@ export const XkcdFeedItemRenderer: React.FC<{readonly feedItem: XkcdFeedItem}> =
     mainContent = <Text as="p">No XKCD comic found</Text>;
   } else {
     mainContent = (
-      <XkcdImageAndAltText imageUrl={feedItem.xkcd.imageUrlLarge} altText={feedItem.xkcd.altText} />
+      <>
+        <XkcdImageAndAltText
+          imageUrl={feedItem.xkcd.imageUrlLarge}
+          altText={feedItem.xkcd.altText}
+        />
+        <ExplainXkcdContent feedItem={feedItem} />
+      </>
     );
   }
 

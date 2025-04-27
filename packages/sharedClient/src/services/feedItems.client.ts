@@ -8,6 +8,7 @@ import {logger} from '@shared/services/logger.shared';
 import {
   FEED_ITEM_FILE_NAME_LLM_CONTEXT,
   FEED_ITEM_FILE_NAME_TRANSCRIPT,
+  FEED_ITEM_FILE_NAME_XKCD_EXPLAIN,
   FEED_ITEMS_DB_COLLECTION,
   FEED_ITEMS_STORAGE_COLLECTION,
 } from '@shared/lib/constants.shared';
@@ -21,7 +22,12 @@ import {Views} from '@shared/lib/views.shared';
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 
 import type {AccountId, AuthStateChangedUnsubscribe} from '@shared/types/accounts.types';
-import type {FeedItem, FeedItemId, FeedItemSource} from '@shared/types/feedItems.types';
+import type {
+  FeedItem,
+  FeedItemId,
+  FeedItemSource,
+  XkcdFeedItem,
+} from '@shared/types/feedItems.types';
 import {fromQueryFilterOp} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {Consumer} from '@shared/types/utils.types';
@@ -164,6 +170,10 @@ export function useFeedItemMarkdown(feedItem: FeedItem): UseFeedItemFileResult {
 
 export function useYouTubeFeedItemTranscript(feedItem: FeedItem): UseFeedItemFileResult {
   return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_NAME_TRANSCRIPT});
+}
+
+export function useExplainXkcdMarkdown(feedItem: XkcdFeedItem): UseFeedItemFileResult {
+  return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_NAME_XKCD_EXPLAIN});
 }
 
 type FeedItemsCollectionService = ClientFirestoreCollectionService<FeedItemId, FeedItem>;

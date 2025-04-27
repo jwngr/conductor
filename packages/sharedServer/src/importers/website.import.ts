@@ -90,10 +90,6 @@ export class WebsiteFeedItemImporter {
 
     const firecrawlData = fetchDataResult.value;
 
-    if (firecrawlData.markdown === null) {
-      return makeErrorResult(new Error('Firecrawl data for feed item is missing markdown'));
-    }
-
     const storagePath = this.feedItemService.getStoragePath({
       feedItemId,
       accountId,
@@ -107,9 +103,9 @@ export class WebsiteFeedItemImporter {
         contentType: 'text/markdown',
       }),
       this.feedItemService.updateFeedItem(feedItemId, {
-        outgoingLinks: firecrawlData.links ?? [],
-        title: firecrawlData.title ?? 'No title found',
-        description: firecrawlData.description ?? 'No description found',
+        outgoingLinks: firecrawlData.links,
+        title: firecrawlData.title,
+        description: firecrawlData.description,
       }),
     ]);
 
