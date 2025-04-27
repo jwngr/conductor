@@ -183,7 +183,7 @@ const ViewList: React.FC<{
     );
   } else {
     mainContent = Object.entries(groupedItems).map(([groupKey, items]) => (
-      <React.Fragment key={groupKey}>
+      <React.Fragment key={`${viewType}-${groupKey}`}>
         {groupBy === null ? null : (
           <h3 className="mt-4 text-lg font-medium capitalize">{groupKey}</h3>
         )}
@@ -301,7 +301,6 @@ export const ViewRenderer: React.FC<{
         </div>
       </div>
       <ViewList
-        key={viewOptions.viewType}
         viewType={viewOptions.viewType}
         sortBy={viewOptions.sortBy}
         groupBy={viewOptions.groupBy}
