@@ -5,7 +5,7 @@ import {TriageStatus} from '@shared/types/feedItems.types';
 import {QueryFilterOp} from '@shared/types/query.types';
 import {SystemTagId} from '@shared/types/tags.types';
 import {NavItemId} from '@shared/types/urls.types';
-import type {View} from '@shared/types/views.types';
+import type {View, ViewGroupByField, ViewSortByField} from '@shared/types/views.types';
 import {
   SORT_BY_CREATED_TIME_DESC_OPTION,
   SORT_BY_LAST_UPDATED_TIME_DESC_OPTION,
@@ -168,5 +168,29 @@ export class Views {
       default:
         assertNever(navItemId);
     }
+  }
+}
+
+export function toViewGroupByOptionText(viewGroupByField: ViewGroupByField): string {
+  switch (viewGroupByField) {
+    case 'type':
+      return 'Type';
+    case 'importState':
+      return 'Import state';
+    default:
+      assertNever(viewGroupByField);
+  }
+}
+
+export function toViewSortByOptionText(viewSortByField: ViewSortByField): string {
+  switch (viewSortByField) {
+    case 'createdTime':
+      return 'Created time';
+    case 'lastUpdatedTime':
+      return 'Last updated time';
+    case 'title':
+      return 'Title';
+    default:
+      assertNever(viewSortByField);
   }
 }

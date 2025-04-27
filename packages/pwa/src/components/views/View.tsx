@@ -4,7 +4,7 @@ import {logger} from '@shared/services/logger.shared';
 
 import {Urls} from '@shared/lib/urls.shared';
 import {assertNever} from '@shared/lib/utils.shared';
-import {Views} from '@shared/lib/views.shared';
+import {toViewGroupByOptionText, toViewSortByOptionText, Views} from '@shared/lib/views.shared';
 
 import type {FeedItem} from '@shared/types/feedItems.types';
 import type {SortDirection} from '@shared/types/query.types';
@@ -146,13 +146,11 @@ const ViewList: React.FC<{
   const groupedItems: Record<string, FeedItem[]> = {};
   switch (groupByField) {
     case null:
-      groupedItems['all'] = sortedItems; // Group the sorted items
       break;
 
     case 'type':
       for (const item of sortedItems) {
-        // Iterate over sorted items
-        const groupKey = item.type || 'UNKNOWN';
+        const groupKey = item.type;
         if (!groupedItems[groupKey]) {
           groupedItems[groupKey] = [];
         }
@@ -162,7 +160,6 @@ const ViewList: React.FC<{
 
     case 'importState':
       for (const item of sortedItems) {
-        // Iterate over sorted items
         const groupKey = item.importState?.status || 'UNKNOWN';
         if (!groupedItems[groupKey]) {
           groupedItems[groupKey] = [];
@@ -175,21 +172,33 @@ const ViewList: React.FC<{
       assertNever(groupByField);
   }
 
+  let mainContent: React.ReactNode;
+  if (Object.keys(groupedItems).length === 0) {
+    mainContent = (
+      <ul>
+        {sortedItems.map((feedItem) => (
+          <ViewListItem key={feedItem.feedItemId} feedItem={feedItem} viewType={viewType} />
+        ))}
+      </ul>
+    );
+  } else {
+    mainContent = Object.entries(groupedItems).map(([groupKey, items]) => (
+      <React.Fragment key={groupKey}>
+        {groupBy === null ? null : (
+          <h3 className="mt-4 text-lg font-medium capitalize">{groupKey}</h3>
+        )}
+        <ul>
+          {items.map((feedItem) => (
+            <ViewListItem key={feedItem.feedItemId} feedItem={feedItem} viewType={viewType} />
+          ))}
+        </ul>
+      </React.Fragment>
+    ));
+  }
+
   return (
     <>
-      {/* Render grouped items */}
-      {Object.entries(groupedItems).map(([groupKey, items]) => (
-        <React.Fragment key={groupKey}>
-          {groupBy === null ? null : (
-            <h3 className="mt-4 text-lg font-medium capitalize">{groupKey}</h3>
-          )}
-          <ul>
-            {items.map((feedItem) => (
-              <ViewListItem key={feedItem.feedItemId} feedItem={feedItem} viewType={viewType} />
-            ))}
-          </ul>
-        </React.Fragment>
-      ))}
+      {mainContent}
       <ViewKeyboardShortcutHandler feedItems={sortedItems} />
     </>
   );
@@ -260,8 +269,8 @@ export const ViewRenderer: React.FC<{
               className="rounded border border-stone-300 p-1"
             >
               <option value={'none'}>None</option>
-              <option value={'type'}>Type</option>
-              <option value={'importState'}>Import State</option>
+              <option value={'type'}>{toViewGroupByOptionText('type')}</option>
+              <option value={'importState'}>{toViewGroupByOptionText('importState')}</option>
             </select>
           </div>
           <div className="flex items-center gap-1">
@@ -272,9 +281,9 @@ export const ViewRenderer: React.FC<{
               onChange={handleSortFieldChange}
               className="rounded border border-stone-300 p-1"
             >
-              <option value={'createdTime'}>Date Created</option>
-              <option value={'lastUpdatedTime'}>Date Updated</option>
-              <option value={'title'}>Title</option>
+              <option value={'createdTime'}>{toViewSortByOptionText('createdTime')}</option>
+              <option value={'lastUpdatedTime'}>{toViewSortByOptionText('lastUpdatedTime')}</option>
+              <option value={'title'}>{toViewSortByOptionText('title')}</option>
             </select>
           </div>
           <div className="flex items-center gap-1">
