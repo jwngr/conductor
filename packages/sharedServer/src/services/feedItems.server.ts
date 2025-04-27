@@ -12,7 +12,7 @@ import type {
   FeedItemId,
   FeedItemSource,
 } from '@shared/types/feedItems.types';
-import type {AsyncResult} from '@shared/types/results.types';
+import type {AsyncResult, Result} from '@shared/types/results.types';
 
 import {eventLogService} from '@sharedServer/services/eventLog.server';
 import {storage} from '@sharedServer/services/firebase.server';
@@ -158,10 +158,11 @@ export class ServerFeedItemsService {
       return prefixErrorResult(isSafeUrlResult, 'Error validating feed item URL');
     }
 
+    let importResult: Result<void, Error>;
     switch (feedItem.type) {
       case FeedItemType.YouTube: {
         const importer = new YouTubeFeedItemImporter({feedItemService: this});
-        await importer.import(feedItem);
+        importResult = await importer.import(feedItem);
         break;
       }
       case FeedItemType.Article:
@@ -172,17 +173,19 @@ export class ServerFeedItemsService {
           feedItemService: this,
           firecrawlService: this.firecrawlService,
         });
-        await importer.import(feedItem);
+        importResult = await importer.import(feedItem);
         break;
       }
       case FeedItemType.Xkcd: {
         const importer = new XkcdFeedItemImporter({feedItemService: this});
-        await importer.import(feedItem);
+        importResult = await importer.import(feedItem);
         break;
       }
       default:
         assertNever(feedItem);
     }
+
+    if (!importResult.success) return importResult;
 
     void eventLogService.logFeedItemImportedEvent({
       feedItemId: feedItem.feedItemId,
