@@ -177,10 +177,7 @@ export class ServerFeedItemsService {
         break;
       }
       case FeedItemType.Xkcd: {
-        const importer = new XkcdFeedItemImporter({
-          feedItemService: this,
-          firecrawlService: this.firecrawlService,
-        });
+        const importer = new XkcdFeedItemImporter({feedItemService: this});
         importResult = await importer.import(feedItem);
         break;
       }

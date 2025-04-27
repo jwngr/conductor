@@ -1,4 +1,5 @@
 import * as cheerio from 'cheerio';
+import TurndownService from 'turndown';
 
 import {logger} from '@shared/services/logger.shared';
 
@@ -45,6 +46,11 @@ interface XkcdComic {
   readonly imageUrlLarge: string;
 }
 
+interface ExplainXkcdContent {
+  readonly explanationMarkdown: string;
+  readonly transcriptMarkdown: string | null;
+}
+
 export async function fetchXkcdComic(comicId: number): AsyncResult<XkcdComic> {
   const url = `https://xkcd.com/${comicId}`;
 
@@ -78,32 +84,62 @@ export async function fetchXkcdComic(comicId: number): AsyncResult<XkcdComic> {
   });
 }
 
-// export async function fetchExplainXkcdContent(comicId: number): AsyncResult<string> {
-//   const url = makeExplainXkcdUrl(comicId);
+export async function fetchExplainXkcdContent(comicId: number): AsyncResult<ExplainXkcdContent> {
+  const url = makeExplainXkcdUrl(comicId);
 
-//   const fetchDataResult = await requestGet<string>(url, {
-//     headers: {Accept: 'text/html'},
-//   });
+  const fetchDataResult = await requestGet<string>(url, {
+    headers: {Accept: 'text/html'},
+  });
 
-//   if (!fetchDataResult.success) return fetchDataResult;
+  if (!fetchDataResult.success) return fetchDataResult;
 
-//   const rawHtml = fetchDataResult.value;
+  const rawHtml = fetchDataResult.value;
 
-//   console.log('RAW HTML:', rawHtml);
+  const $ = cheerio.load(rawHtml);
+  const turndownService = new TurndownService();
 
-//   // const $ = cheerio.load(rawHtml);
+  let explanationMarkdown: string | null = null;
+  let transcriptMarkdown: string | null = null;
 
-//   // const title = $('#ctitle').text().trim();
-//   // const imageElement = $('#comic img');
-//   // const altText = imageElement.attr('title');
-//   // const imageUrlSmall = imageElement.attr('src');
-//   // const imageUrlLarge = imageElement.attr('srcset')?.split(' ')[0];
+  // Find the Explanation heading
+  const explanationHeading = $('#Explanation').parent('h2');
+  if (explanationHeading.length > 0) {
+    let nextElement = explanationHeading.next();
+    let explanationHtml = '';
+    while (nextElement.length > 0 && !nextElement.is('h2')) {
+      explanationHtml += $.html(nextElement);
+      nextElement = nextElement.next();
+    }
+    if (explanationHtml) {
+      explanationMarkdown = turndownService.turndown(explanationHtml).trim();
+    }
+  }
 
-//   // if (!title || !imageUrlSmall || !imageUrlLarge || !altText) {
-//   //   const error = new Error('Could not parse XKCD comic details from HTML');
-//   //   logger.error(error, {url, title, imageUrlSmall, imageUrlLarge, altText});
-//   //   return makeErrorResult(error);
-//   // }
+  if (!explanationMarkdown) {
+    const error = new Error('Could not parse explanation from Explain XKCD page');
+    logger.error(error, {url, comicId});
+    return makeErrorResult(error);
+  }
 
-//   return makeSuccessResult(rawHtml);
-// }
+  // Find the Transcript heading
+  const transcriptHeading = $('#Transcript').parent('h2');
+  if (transcriptHeading.length > 0) {
+    let nextElement = transcriptHeading.next();
+    let transcriptHtml = '';
+    // Collect elements until the next h2 or the end of the container
+    while (nextElement.length > 0 && !nextElement.is('h2')) {
+      // Check if the element is within the main content area if necessary
+      // This logic might need adjustment based on the exact HTML structure of explainxkcd
+      transcriptHtml += $.html(nextElement);
+      nextElement = nextElement.next();
+    }
+    if (transcriptHtml) {
+      transcriptMarkdown = turndownService.turndown(transcriptHtml).trim();
+    }
+  }
+
+  return makeSuccessResult({
+    explanationMarkdown,
+    transcriptMarkdown,
+  });
+}

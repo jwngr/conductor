@@ -21,6 +21,7 @@ const XkcdImageAndAltText: React.FC<{
   return (
     <div className="flex flex-col items-center gap-4">
       <img className="w-auto max-w-[960px]" src={imageUrl} alt={altText} />
+      <Text as="h5">Title text</Text>
       <Text as="p" light className="max-w-prose italic">
         {altText}
       </Text>
@@ -43,11 +44,16 @@ const ExplainXkcdContent: React.FC<{readonly feedItem: XkcdFeedItem}> = ({feedIt
     return <Text as="p">Loading Explain XKCD content...</Text>;
   }
 
-  if (markdownState.content) {
-    return <Markdown content={markdownState.content} />;
+  if (!markdownState.content) {
+    return <Text as="p">No Explain XKCD content</Text>;
   }
 
-  return <Text as="p">No Explain XKCD content</Text>;
+  return (
+    <>
+      <Text as="h5">Explanation from Explain XKCD</Text>
+      <Markdown content={markdownState.content} />
+    </>
+  );
 };
 
 export const XkcdFeedItemRenderer: React.FC<{readonly feedItem: XkcdFeedItem}> = ({feedItem}) => {
