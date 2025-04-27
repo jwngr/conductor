@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 
 import {logger} from '@shared/services/logger.shared';
 
@@ -26,81 +26,121 @@ import {Text} from '@src/components/atoms/Text';
 import {FeedItemImportStatusBadge} from '@src/components/feedItems/FeedItemImportStatusBadge';
 import {ViewKeyboardShortcutHandler} from '@src/components/views/ViewKeyboardShortcutHandler';
 
-function sortFeedItems(feedItems: FeedItem[], sortBy: readonly ViewSortByOption[]): FeedItem[] {
+function compareFeedItems(args: {
+  a: FeedItem;
+  b: FeedItem;
+  field: ViewSortByField;
+  direction: 1 | -1;
+}): number {
+  const {a, b, field, direction} = args;
+
+  let valA: string | number | Date;
+  let valB: string | number | Date;
+
+  switch (field) {
+    case 'createdTime':
+      valA = a.createdTime;
+      valB = b.createdTime;
+      break;
+    case 'lastUpdatedTime':
+      valA = a.lastUpdatedTime;
+      valB = b.lastUpdatedTime;
+      break;
+    case 'title':
+      valA = a.title;
+      valB = b.title;
+      break;
+    default:
+      assertNever(field);
+  }
+
+  // Handle date sorting.
+  if (field === 'createdTime' || field === 'lastUpdatedTime') {
+    valA = valA instanceof Date ? valA.getTime() : new Date(valA).getTime();
+    valB = valB instanceof Date ? valB.getTime() : new Date(valB).getTime();
+  }
+
+  // Handle string comparison.
+  if (typeof valA === 'string' && typeof valB === 'string') {
+    return valA.localeCompare(valB) * direction;
+  }
+
+  // Basic comparison for numbers/other types.
+  if (valA < valB) return -direction;
+  if (valA > valB) return direction;
+  return 0;
+}
+
+/**
+ * Returns a sorted list of feed items.
+ *
+ * Note: Only supports a single sort field.
+ */
+function useSortedFeedItems(
+  feedItems: FeedItem[],
+  sortBy: readonly ViewSortByOption[]
+): FeedItem[] {
   const firstSortByOption = sortBy[0] ?? SORT_BY_CREATED_TIME_DESC_OPTION;
 
-  return feedItems.sort((a, b) => {
-    const field = firstSortByOption.field;
-    const direction = firstSortByOption.direction === 'asc' ? 1 : -1;
+  const sortedItems = useMemo(
+    () =>
+      feedItems.sort((a, b) => {
+        const field = firstSortByOption.field;
+        const direction = firstSortByOption.direction === 'asc' ? 1 : -1;
 
-    let valA: string | number | Date;
-    let valB: string | number | Date;
+        return compareFeedItems({a, b, field, direction});
+      }),
+    [feedItems, firstSortByOption.direction, firstSortByOption.field]
+  );
 
-    switch (field) {
-      case 'createdTime':
-        valA = a.createdTime;
-        valB = b.createdTime;
-        break;
-      case 'lastUpdatedTime':
-        valA = a.lastUpdatedTime;
-        valB = b.lastUpdatedTime;
-        break;
-      case 'title':
-        valA = a.title;
-        valB = b.title;
-        break;
-      default:
-        assertNever(field);
-    }
-
-    // Handle date sorting.
-    if (field === 'createdTime' || field === 'lastUpdatedTime') {
-      valA = valA instanceof Date ? valA.getTime() : new Date(valA).getTime();
-      valB = valB instanceof Date ? valB.getTime() : new Date(valB).getTime();
-    }
-
-    // Handle string comparison.
-    if (typeof valA === 'string' && typeof valB === 'string') {
-      return valA.localeCompare(valB) * direction;
-    }
-
-    // Basic comparison for numbers/other types.
-    if (valA < valB) return -direction;
-    if (valA > valB) return direction;
-    return 0;
-  });
+  return sortedItems;
 }
 
-function getGroupedFeedItems(
+/**
+ * Returns a grouped list of feed items, keyed by values of the group field. Returns `null` if no
+ * group field is provided.
+ *
+ * Note: Only supports a single group field.
+ */
+function useGroupedFeedItems(
   feedItems: FeedItem[],
-  groupByField: ViewGroupByField
-): Record<string, FeedItem[]> {
-  const groupedItems: Record<string, FeedItem[]> = {};
-  switch (groupByField) {
-    case 'type':
-      for (const item of feedItems) {
-        const groupKey = item.type;
-        if (!groupedItems[groupKey]) {
-          groupedItems[groupKey] = [];
-        }
-        groupedItems[groupKey].push(item);
-      }
-      return groupedItems;
+  groupByField: ViewGroupByField | null
+): Record<string, FeedItem[]> | null {
+  const groupedItems = useMemo(() => {
+    if (groupByField === null) {
+      return null;
+    }
 
-    case 'importState':
-      for (const item of feedItems) {
-        const groupKey = item.importState?.status || 'UNKNOWN';
-        if (!groupedItems[groupKey]) {
-          groupedItems[groupKey] = [];
+    const groupedItems: Record<string, FeedItem[]> = {};
+    switch (groupByField) {
+      case 'type':
+        for (const item of feedItems) {
+          const groupKey = item.type;
+          if (!groupedItems[groupKey]) {
+            groupedItems[groupKey] = [];
+          }
+          groupedItems[groupKey].push(item);
         }
-        groupedItems[groupKey].push(item);
-      }
-      return groupedItems;
+        return groupedItems;
 
-    default:
-      assertNever(groupByField);
-  }
+      case 'importState':
+        for (const item of feedItems) {
+          const groupKey = item.importState?.status || 'UNKNOWN';
+          if (!groupedItems[groupKey]) {
+            groupedItems[groupKey] = [];
+          }
+          groupedItems[groupKey].push(item);
+        }
+        return groupedItems;
+
+      default:
+        assertNever(groupByField);
+    }
+  }, [feedItems, groupByField]);
+
+  return groupedItems;
 }
+
 const ViewListItem: React.FC<{
   readonly feedItem: FeedItem;
   readonly viewType: ViewType;
@@ -144,36 +184,24 @@ const ViewListItem: React.FC<{
   );
 };
 
-const ViewList: React.FC<{
+const LoadedViewList: React.FC<{
   viewType: ViewType;
+  feedItems: FeedItem[];
   sortBy: readonly ViewSortByOption[];
   groupBy: readonly ViewGroupByOption[];
-}> = ({viewType, sortBy, groupBy}) => {
-  const {feedItems, isLoading, error} = useFeedItems({viewType});
-
-  if (isLoading) {
-    // TODO: Introduce proper loading screen.
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    // TODO: Introduce proper error screen.
-    logger.error(new Error('Error loading feed items'), {error, viewType});
-    return <div>Error: {error.message}</div>;
-  }
+}> = ({viewType, feedItems, sortBy, groupBy}) => {
+  const sortedItems = useSortedFeedItems(feedItems, sortBy);
+  const groupByField = groupBy.length === 0 ? null : groupBy[0].field;
+  const groupedItems = useGroupedFeedItems(sortedItems, groupByField);
 
   if (feedItems.length === 0) {
     // TODO: Introduce proper empty state screen.
     return <div>No items</div>;
   }
 
-  // Sorting logic.
-  const sortedItems = sortFeedItems(feedItems, sortBy);
-
-  // Grouping logic. Currently only supports a single field.
-  const groupByField = groupBy.length === 0 ? null : groupBy[0].field;
+  // Grouping logic.
   let mainContent: React.ReactNode;
-  if (groupByField === null) {
+  if (groupedItems === null) {
     mainContent = (
       <ul>
         {sortedItems.map((feedItem) => (
@@ -182,7 +210,6 @@ const ViewList: React.FC<{
       </ul>
     );
   } else {
-    const groupedItems = getGroupedFeedItems(sortedItems, groupByField);
     mainContent = Object.entries(groupedItems).map(([groupKey, items]) => (
       <React.Fragment key={`${viewType}-${groupKey}`}>
         {groupBy === null ? null : (
@@ -203,6 +230,71 @@ const ViewList: React.FC<{
       <ViewKeyboardShortcutHandler feedItems={sortedItems} />
     </>
   );
+};
+
+const ViewList: React.FC<{
+  viewType: ViewType;
+  sortBy: readonly ViewSortByOption[];
+  groupBy: readonly ViewGroupByOption[];
+}> = ({viewType, sortBy, groupBy}) => {
+  const {feedItems, isLoading, error} = useFeedItems({viewType});
+
+  if (isLoading) {
+    // TODO: Introduce proper loading screen.
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    // TODO: Introduce proper error screen.
+    logger.error(new Error('Error loading feed items'), {error, viewType});
+    return <div>Error: {error.message}</div>;
+  }
+
+  return (
+    <LoadedViewList viewType={viewType} feedItems={feedItems} sortBy={sortBy} groupBy={groupBy} />
+  );
+
+  // if (feedItems.length === 0) {
+  //   // TODO: Introduce proper empty state screen.
+  //   return <div>No items</div>;
+  // }
+
+  // // Sorting logic.
+  // const sortedItems = useSortedFeedItems(feedItems, sortBy);
+
+  // // Grouping logic. Currently only supports a single field.
+  // const groupByField = groupBy.length === 0 ? null : groupBy[0].field;
+  // let mainContent: React.ReactNode;
+  // if (groupByField === null) {
+  //   mainContent = (
+  //     <ul>
+  //       {sortedItems.map((feedItem) => (
+  //         <ViewListItem key={feedItem.feedItemId} feedItem={feedItem} viewType={viewType} />
+  //       ))}
+  //     </ul>
+  //   );
+  // } else {
+  //   const groupedItems = getGroupedFeedItems(sortedItems, groupByField);
+  //   mainContent = Object.entries(groupedItems).map(([groupKey, items]) => (
+  //     <React.Fragment key={`${viewType}-${groupKey}`}>
+  //       {groupBy === null ? null : (
+  //         <h3 className="mt-4 text-lg font-medium capitalize">{groupKey}</h3>
+  //       )}
+  //       <ul>
+  //         {items.map((feedItem) => (
+  //           <ViewListItem key={feedItem.feedItemId} feedItem={feedItem} viewType={viewType} />
+  //         ))}
+  //       </ul>
+  //     </React.Fragment>
+  //   ));
+  // }
+
+  // return (
+  //   <>
+  //     {mainContent}
+  //     <ViewKeyboardShortcutHandler feedItems={sortedItems} />
+  //   </>
+  // );
 };
 
 interface ViewRendererState {
