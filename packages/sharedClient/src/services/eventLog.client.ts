@@ -24,10 +24,10 @@ import {
   type EventLogItem,
 } from '@shared/types/eventLog.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
-import type {ViewType} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
+import type {ViewType} from '@shared/types/views.types';
 
 import {
   ClientFirestoreCollectionService,

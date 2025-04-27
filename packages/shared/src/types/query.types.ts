@@ -16,25 +16,7 @@ type FirebaseWhereFilterOp =
   | 'in'
   | 'not-in';
 
-export enum ViewType {
-  Untriaged = 'UNTRIAGED',
-  Saved = 'SAVED',
-  Done = 'DONE',
-  Trashed = 'TRASHED',
-  Unread = 'UNREAD',
-  Starred = 'STARRED',
-  All = 'ALL',
-  Today = 'TODAY',
-}
-
-export interface View<T> {
-  readonly name: string;
-  readonly type: ViewType;
-  readonly filters: ReadonlyArray<Filter<T>>;
-  readonly sort: SortOption<T>;
-}
-
-export enum FilterOp {
+export enum QueryFilterOp {
   Equals = '==',
   NotEquals = '!=',
   GreaterThan = '>',
@@ -46,18 +28,58 @@ export enum FilterOp {
   NotIn = 'not-in',
 }
 
-interface Filter<T> {
-  readonly field: keyof T;
-  readonly op: FilterOp;
-  readonly value: unknown;
+export function toQueryFilterOp(op: FirebaseWhereFilterOp): QueryFilterOp {
+  switch (op) {
+    case '==':
+      return QueryFilterOp.Equals;
+    case '!=':
+      return QueryFilterOp.NotEquals;
+    case '>':
+      return QueryFilterOp.GreaterThan;
+    case '>=':
+      return QueryFilterOp.GreaterThanOrEqual;
+    case '<':
+      return QueryFilterOp.LessThan;
+    case '<=':
+      return QueryFilterOp.LessThanOrEqual;
+    case 'array-contains':
+    case 'array-contains-any':
+      return QueryFilterOp.Contains;
+    case 'in':
+      return QueryFilterOp.In;
+    case 'not-in':
+      return QueryFilterOp.NotIn;
+    default:
+      assertNever(op);
+  }
 }
 
-type SortDirection = 'asc' | 'desc';
-
-interface SortOption<T> {
-  readonly field: keyof T;
-  readonly direction: SortDirection;
+export function fromQueryFilterOp(op: QueryFilterOp): FirebaseWhereFilterOp {
+  switch (op) {
+    case QueryFilterOp.Equals:
+      return '==';
+    case QueryFilterOp.NotEquals:
+      return '!=';
+    case QueryFilterOp.GreaterThan:
+      return '>';
+    case QueryFilterOp.GreaterThanOrEqual:
+      return '>=';
+    case QueryFilterOp.LessThan:
+      return '<';
+    case QueryFilterOp.LessThanOrEqual:
+      return '<=';
+    case QueryFilterOp.Contains:
+      return 'array-contains';
+    case QueryFilterOp.In:
+      return 'in';
+    case QueryFilterOp.NotIn:
+      return 'not-in';
+    default:
+      assertNever(op);
+  }
 }
+
+export type SortDirection = 'asc' | 'desc';
 
 /**
  * Converters between Firestore types and internal types. This abstraction exists to provide a clear
@@ -82,56 +104,5 @@ export function fromSortDirection(direction: SortDirection): FirebaseOrderByDire
       return 'desc';
     default:
       assertNever(direction);
-  }
-}
-
-export function toFilterOperator(op: FirebaseWhereFilterOp): FilterOp {
-  switch (op) {
-    case '==':
-      return FilterOp.Equals;
-    case '!=':
-      return FilterOp.NotEquals;
-    case '>':
-      return FilterOp.GreaterThan;
-    case '>=':
-      return FilterOp.GreaterThanOrEqual;
-    case '<':
-      return FilterOp.LessThan;
-    case '<=':
-      return FilterOp.LessThanOrEqual;
-    case 'array-contains':
-    case 'array-contains-any':
-      return FilterOp.Contains;
-    case 'in':
-      return FilterOp.In;
-    case 'not-in':
-      return FilterOp.NotIn;
-    default:
-      assertNever(op);
-  }
-}
-
-export function fromFilterOperator(op: FilterOp): FirebaseWhereFilterOp {
-  switch (op) {
-    case FilterOp.Equals:
-      return '==';
-    case FilterOp.NotEquals:
-      return '!=';
-    case FilterOp.GreaterThan:
-      return '>';
-    case FilterOp.GreaterThanOrEqual:
-      return '>=';
-    case FilterOp.LessThan:
-      return '<';
-    case FilterOp.LessThanOrEqual:
-      return '<=';
-    case FilterOp.Contains:
-      return 'array-contains';
-    case FilterOp.In:
-      return 'in';
-    case FilterOp.NotIn:
-      return 'not-in';
-    default:
-      assertNever(op);
   }
 }

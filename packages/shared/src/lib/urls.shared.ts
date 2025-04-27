@@ -2,7 +2,7 @@ import {syncTry} from '@shared/lib/errorUtils.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import type {FeedItemId} from '@shared/types/feedItems.types';
-import {ViewType} from '@shared/types/query.types';
+import {ViewType} from '@shared/types/views.types';
 
 // TODO: Make URL validation more robust.
 export function isValidUrl(url: string): boolean {

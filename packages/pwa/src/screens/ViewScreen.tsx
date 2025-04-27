@@ -1,9 +1,9 @@
-import type {ViewType} from '@shared/types/query.types';
+import type {ViewType} from '@shared/types/views.types';
 
 import {AppHeader} from '@src/components/AppHeader';
 import {FeedItemScreenKeyboardHandler} from '@src/components/feedItems/FeedItemScreenEscapeHandler';
 import {LeftSidebar} from '@src/components/LeftSidebar';
-import {View} from '@src/components/views/View';
+import {ViewRenderer} from '@src/components/views/View';
 
 export const ViewScreen: React.FC<{
   readonly viewType: ViewType;
@@ -13,7 +13,7 @@ export const ViewScreen: React.FC<{
       <AppHeader />
       <div className="flex flex-1 items-stretch overflow-hidden">
         <LeftSidebar />
-        <View viewType={viewType} />
+        <ViewRenderer key={viewType} viewType={viewType} />
       </div>
       <FeedItemScreenKeyboardHandler />
     </div>
