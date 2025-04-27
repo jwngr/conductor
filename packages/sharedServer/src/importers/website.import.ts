@@ -40,7 +40,7 @@ export class WebsiteFeedItemImporter {
   /**
    * Imports a feed item's HTML and saves it to storage.
    */
-  private async importFeedItemHtml(args: {
+  private async fetchAndSaveRawHtml(args: {
     readonly url: string;
     readonly feedItemId: FeedItemId;
     readonly accountId: AccountId;
@@ -78,7 +78,7 @@ export class WebsiteFeedItemImporter {
   /**
    * Imports a feed item's Firecrawl data and saves it to storage.
    */
-  private async importFeedItemFirecrawl(args: {
+  private async fetchAndSaveFirecrawlData(args: {
     readonly url: string;
     readonly feedItemId: FeedItemId;
     readonly accountId: AccountId;
@@ -86,21 +86,9 @@ export class WebsiteFeedItemImporter {
     const {url, feedItemId, accountId} = args;
 
     const fetchDataResult = await this.firecrawlService.fetchUrl(url);
-
-    if (!fetchDataResult.success) {
-      return prefixErrorResult(fetchDataResult, 'Error fetching Firecrawl data for feed item');
-    }
+    if (!fetchDataResult.success) return fetchDataResult;
 
     const firecrawlData = fetchDataResult.value;
-
-    if (firecrawlData.markdown === null) {
-      return makeErrorResult(new Error('Firecrawl data for feed item is missing markdown'));
-    }
-
-    const summaryResult = await generateHierarchicalSummary(firecrawlData.markdown);
-    if (!summaryResult.success) {
-      return prefixErrorResult(summaryResult, 'Error generating hierarchical summary');
-    }
 
     const storagePath = this.feedItemService.getStoragePath({
       feedItemId,
@@ -115,10 +103,9 @@ export class WebsiteFeedItemImporter {
         contentType: 'text/markdown',
       }),
       this.feedItemService.updateFeedItem(feedItemId, {
-        outgoingLinks: firecrawlData.links ?? [],
-        title: firecrawlData.title ?? 'No title found',
-        description: firecrawlData.description ?? 'No description found',
-        summary: summaryResult.value,
+        outgoingLinks: firecrawlData.links,
+        title: firecrawlData.title,
+        description: firecrawlData.description,
       }),
     ]);
 
@@ -131,19 +118,41 @@ export class WebsiteFeedItemImporter {
       );
     }
 
-    return makeSuccessResult(undefined);
+    return await this.generateAndSaveHierarchicalSummary({
+      markdown: firecrawlData.markdown,
+      feedItemId,
+    });
+  }
+
+  /**
+   * Imports a feed item's Firecrawl data and saves it to storage.
+   */
+  private async generateAndSaveHierarchicalSummary(args: {
+    readonly markdown: string;
+    readonly feedItemId: FeedItemId;
+  }): AsyncResult<void> {
+    const {markdown, feedItemId} = args;
+
+    const summaryResult = await generateHierarchicalSummary(markdown);
+    if (!summaryResult.success) return summaryResult;
+
+    const saveSummaryResult = await this.feedItemService.updateFeedItem(feedItemId, {
+      summary: summaryResult.value,
+    });
+
+    return prefixResultIfError(saveSummaryResult, 'Error saving hierarchical summary');
   }
 
   public async import(
     feedItem: Exclude<FeedItem, YouTubeFeedItem | XkcdFeedItem>
   ): AsyncResult<void> {
     const importAllDataResult = await asyncTryAll([
-      this.importFeedItemHtml({
+      this.fetchAndSaveRawHtml({
         url: feedItem.url,
         feedItemId: feedItem.feedItemId,
         accountId: feedItem.accountId,
       }),
-      this.importFeedItemFirecrawl({
+      this.fetchAndSaveFirecrawlData({
         url: feedItem.url,
         feedItemId: feedItem.feedItemId,
         accountId: feedItem.accountId,
