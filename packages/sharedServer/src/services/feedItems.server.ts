@@ -1,17 +1,5 @@
-import {
-  FEED_ITEM_FILE_NAME_HTML,
-  FEED_ITEM_FILE_NAME_LLM_CONTEXT,
-  FEED_ITEM_FILE_NAME_TRANSCRIPT,
-} from '@shared/lib/constants.shared';
-import {
-  asyncTry,
-  asyncTryAll,
-  prefixError,
-  prefixErrorResult,
-  prefixResultIfError,
-} from '@shared/lib/errorUtils.shared';
+import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
-import {requestGet} from '@shared/lib/requests.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
 import {assertNever, omitUndefined} from '@shared/lib/utils.shared';
@@ -23,19 +11,17 @@ import type {
   FeedItemFromStorage,
   FeedItemId,
   FeedItemSource,
-  XkcdFeedItem,
-  YouTubeFeedItem,
 } from '@shared/types/feedItems.types';
-import type {AsyncResult} from '@shared/types/results.types';
+import type {AsyncResult, Result} from '@shared/types/results.types';
 
 import {eventLogService} from '@sharedServer/services/eventLog.server';
 import {storage} from '@sharedServer/services/firebase.server';
 import type {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
 import type {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
-import {generateHierarchicalSummary} from '@sharedServer/lib/summarization.server';
-import {fetchXkcdComic} from '@sharedServer/lib/xkcd.server';
-import {fetchYouTubeTranscript} from '@sharedServer/lib/youtube.server';
+import {WebsiteFeedItemImporter} from '@sharedServer/importers/website.import';
+import {XkcdFeedItemImporter} from '@sharedServer/importers/xkcd.import';
+import {YouTubeFeedItemImporter} from '@sharedServer/importers/youtube.import';
 
 type FeedItemCollectionService = ServerFirestoreCollectionService<
   FeedItemId,
@@ -111,17 +97,12 @@ export class ServerFeedItemsService {
   /**
    * Writes content to storage file.
    */
-  private async writeFileToStorage(args: {
-    // Path info.
-    readonly feedItemId: FeedItemId;
-    readonly accountId: AccountId;
-    readonly filename: string;
-    // Content info.
+  public async writeFileToStorage(args: {
+    readonly storagePath: string;
     readonly content: string;
     readonly contentType: string;
   }): AsyncResult<void> {
-    const {feedItemId, content, accountId, filename, contentType} = args;
-    const storagePath = this.getStoragePath({feedItemId, accountId, filename});
+    const {storagePath, content, contentType} = args;
     return await asyncTry(async () => {
       const file = storage.bucket().file(storagePath);
       await file.save(content, {contentType});
@@ -161,7 +142,7 @@ export class ServerFeedItemsService {
     return `${this.storageCollectionPath}/${accountId}/`;
   }
 
-  private getStoragePath(args: {
+  public getStoragePath(args: {
     readonly feedItemId: FeedItemId;
     readonly accountId: AccountId;
     readonly filename: string;
@@ -177,176 +158,39 @@ export class ServerFeedItemsService {
       return prefixErrorResult(isSafeUrlResult, 'Error validating feed item URL');
     }
 
+    let importResult: Result<void, Error>;
     switch (feedItem.type) {
-      case FeedItemType.YouTube:
-        await this.importYouTubeFeedItem(feedItem);
+      case FeedItemType.YouTube: {
+        const importer = new YouTubeFeedItemImporter({feedItemService: this});
+        importResult = await importer.import(feedItem);
         break;
+      }
       case FeedItemType.Article:
       case FeedItemType.Tweet:
       case FeedItemType.Video:
-      case FeedItemType.Website:
-        await this.importGenericFeedItem(feedItem);
+      case FeedItemType.Website: {
+        const importer = new WebsiteFeedItemImporter({
+          feedItemService: this,
+          firecrawlService: this.firecrawlService,
+        });
+        importResult = await importer.import(feedItem);
         break;
-      case FeedItemType.Xkcd:
-        await this.importXkcdFeedItem(feedItem);
+      }
+      case FeedItemType.Xkcd: {
+        const importer = new XkcdFeedItemImporter({feedItemService: this});
+        importResult = await importer.import(feedItem);
         break;
+      }
       default:
         assertNever(feedItem);
     }
+
+    if (!importResult.success) return importResult;
 
     void eventLogService.logFeedItemImportedEvent({
       feedItemId: feedItem.feedItemId,
       accountId: feedItem.accountId,
     });
-
-    return makeSuccessResult(undefined);
-  }
-
-  public async importGenericFeedItem(
-    feedItem: Exclude<FeedItem, YouTubeFeedItem>
-  ): AsyncResult<void> {
-    const importAllDataResult = await asyncTryAll([
-      this.importFeedItemHtml({
-        url: feedItem.url,
-        feedItemId: feedItem.feedItemId,
-        accountId: feedItem.accountId,
-      }),
-      this.importFeedItemFirecrawl({
-        url: feedItem.url,
-        feedItemId: feedItem.feedItemId,
-        accountId: feedItem.accountId,
-      }),
-    ]);
-
-    // TODO: Make this multi-result error handling pattern simpler.
-    const importAllDataResultError = importAllDataResult.success
-      ? importAllDataResult.value.results.find((result) => !result.success)?.error
-      : importAllDataResult.error;
-    if (importAllDataResultError) {
-      return makeErrorResult(prefixError(importAllDataResultError, 'Error importing feed item'));
-    }
-
-    return makeSuccessResult(undefined);
-  }
-
-  public async importYouTubeFeedItem(feedItem: YouTubeFeedItem): AsyncResult<void> {
-    const fetchTranscriptResult = await fetchYouTubeTranscript(feedItem.url);
-    if (!fetchTranscriptResult.success) {
-      return prefixErrorResult(fetchTranscriptResult, 'Error fetching YouTube transcript');
-    }
-
-    const saveTranscriptResult = await this.writeFileToStorage({
-      feedItemId: feedItem.feedItemId,
-      accountId: feedItem.accountId,
-      content: fetchTranscriptResult.value,
-      filename: FEED_ITEM_FILE_NAME_TRANSCRIPT,
-      contentType: 'text/markdown',
-    });
-
-    return prefixResultIfError(saveTranscriptResult, 'Error saving YouTube transcript');
-  }
-
-  public async importXkcdFeedItem(feedItem: XkcdFeedItem): AsyncResult<void> {
-    const fetchComicResult = await fetchXkcdComic(feedItem.url);
-    if (!fetchComicResult.success) {
-      return prefixErrorResult(fetchComicResult, 'Error fetching XKCD comic');
-    }
-
-    const {title, imageUrlSmall, imageUrlLarge, altText} = fetchComicResult.value;
-
-    const updateFeedItemResult = await this.updateFeedItem(feedItem.feedItemId, {
-      title,
-      xkcd: {imageUrlSmall, imageUrlLarge, altText},
-    });
-    return prefixResultIfError(updateFeedItemResult, 'Error updating XKCD comic');
-  }
-
-  /**
-   * Imports a feed item's HTML and saves it to storage.
-   */
-  private async importFeedItemHtml(args: {
-    readonly url: string;
-    readonly feedItemId: FeedItemId;
-    readonly accountId: AccountId;
-  }): AsyncResult<void> {
-    const {url, feedItemId, accountId} = args;
-
-    // TODO: Extend the import functionality here:
-    // 1. Handle more than just HTML.
-    // 2. Extract a canonical URL (resolving redirects and removing tracking parameters).
-    // 3. Handle images more gracefully (download and replace links in the HTML?).
-    const fetchDataResult = await requestGet<string>(url, {
-      headers: {Accept: 'text/html'},
-    });
-
-    if (!fetchDataResult.success) {
-      return prefixErrorResult(fetchDataResult, 'Error fetching raw feed item HTML');
-    }
-
-    const rawHtml = fetchDataResult.value;
-
-    const saveHtmlResult = await this.writeFileToStorage({
-      feedItemId,
-      accountId,
-      content: rawHtml,
-      filename: FEED_ITEM_FILE_NAME_HTML,
-      contentType: 'text/html',
-    });
-
-    return prefixResultIfError(saveHtmlResult, 'Error saving feed item HTML');
-  }
-
-  /**
-   * Imports a feed item's Firecrawl data and saves it to storage.
-   */
-  private async importFeedItemFirecrawl(args: {
-    readonly url: string;
-    readonly feedItemId: FeedItemId;
-    readonly accountId: AccountId;
-  }): AsyncResult<void> {
-    const {url, feedItemId, accountId} = args;
-
-    const fetchDataResult = await this.firecrawlService.fetchUrl(url);
-
-    if (!fetchDataResult.success) {
-      return prefixErrorResult(fetchDataResult, 'Error fetching Firecrawl data for feed item');
-    }
-
-    const firecrawlData = fetchDataResult.value;
-
-    if (firecrawlData.markdown === null) {
-      return makeErrorResult(new Error('Firecrawl data for feed item is missing markdown'));
-    }
-
-    const summaryResult = await generateHierarchicalSummary(firecrawlData.markdown);
-    if (!summaryResult.success) {
-      return prefixErrorResult(summaryResult, 'Error generating hierarchical summary');
-    }
-
-    const saveFirecrawlDataResult = await asyncTryAll([
-      this.writeFileToStorage({
-        feedItemId,
-        accountId,
-        content: firecrawlData.markdown,
-        filename: FEED_ITEM_FILE_NAME_LLM_CONTEXT,
-        contentType: 'text/markdown',
-      }),
-      this.updateFeedItem(feedItemId, {
-        outgoingLinks: firecrawlData.links ?? [],
-        title: firecrawlData.title ?? 'No title found',
-        description: firecrawlData.description ?? 'No description found',
-        summary: summaryResult.value,
-      }),
-    ]);
-
-    const saveFirecrawlDataResultError = saveFirecrawlDataResult.success
-      ? saveFirecrawlDataResult.value.results.find((result) => !result.success)?.error
-      : saveFirecrawlDataResult.error;
-    if (saveFirecrawlDataResultError) {
-      return makeErrorResult(
-        prefixError(saveFirecrawlDataResultError, 'Error saving Firecrawl data for feed item')
-      );
-    }
 
     return makeSuccessResult(undefined);
   }

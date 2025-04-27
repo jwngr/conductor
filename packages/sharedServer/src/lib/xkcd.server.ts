@@ -2,7 +2,6 @@ import * as cheerio from 'cheerio';
 
 import {logger} from '@shared/services/logger.shared';
 
-import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {requestGet} from '@shared/lib/requests.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
@@ -32,9 +31,7 @@ export async function fetchXkcdComic(url: string): AsyncResult<XkcdComic> {
     headers: {Accept: 'text/html'},
   });
 
-  if (!fetchDataResult.success) {
-    return prefixErrorResult(fetchDataResult, 'Error fetching XKCD comic');
-  }
+  if (!fetchDataResult.success) return fetchDataResult;
 
   const rawHtml = fetchDataResult.value;
 

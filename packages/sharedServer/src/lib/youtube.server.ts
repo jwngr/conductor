@@ -1,6 +1,6 @@
 import {YoutubeTranscript} from 'youtube-transcript';
 
-import {asyncTry, prefixErrorResult} from '@shared/lib/errorUtils.shared';
+import {asyncTry} from '@shared/lib/errorUtils.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AsyncResult} from '@shared/types/results.types';
@@ -11,9 +11,7 @@ export async function fetchYouTubeTranscript(url: string): AsyncResult<string> {
       lang: 'en',
     })
   );
-  if (!fetchTranscriptResult.success) {
-    return prefixErrorResult(fetchTranscriptResult, 'Error fetching YouTube transcript');
-  }
+  if (!fetchTranscriptResult.success) return fetchTranscriptResult;
 
   const segments = fetchTranscriptResult.value;
   const content = segments.map((s) => s.text).join('\n\n');

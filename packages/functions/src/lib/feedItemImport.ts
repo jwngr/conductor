@@ -37,7 +37,7 @@ export async function feedItemImportHelper(args: {
 
   // Claim the item so that no other function picks it up.
   // TODO: Consider using a lock to prevent multiple functions from processing the same item.
-  logger.log(`[IMPORT] Claiming import queue item...`, logDetails);
+  logger.log(`[IMPORT] Claiming feed item to import...`, logDetails);
   const claimItemResult = await feedItemsService.updateFeedItem(feedItemId, {
     importState: {
       status: FeedItemImportStatus.Processing,
@@ -49,18 +49,18 @@ export async function feedItemImportHelper(args: {
     },
   });
   if (!claimItemResult.success) {
-    return handleError(claimItemResult, 'Failed to claim import queue item');
+    return handleError(claimItemResult, 'Failed to claim feed item to import');
   }
 
   // Actually import the feed item.
-  logger.log(`[IMPORT] Importing queue item...`, logDetails);
+  logger.log(`[IMPORT] Importing feed item...`, logDetails);
   const importItemResult = await feedItemsService.importFeedItem(feedItem);
   if (!importItemResult.success) {
-    return handleError(importItemResult, 'Error importing queue item');
+    return handleError(importItemResult, 'Failed to import feed item');
   }
 
-  // Mark the import queue item as completed once everything else has processed successfully.
-  logger.log(`[IMPORT] Marking import queue item as completed...`, logDetails);
+  // Mark the feed item as completed once everything else has processed successfully.
+  logger.log(`[IMPORT] Marking feed item as completed...`, logDetails);
   const markCompletedResult = await feedItemsService.updateFeedItem(feedItemId, {
     importState: {
       status: FeedItemImportStatus.Completed,
@@ -71,7 +71,7 @@ export async function feedItemImportHelper(args: {
     },
   });
   if (!markCompletedResult.success) {
-    return handleError(markCompletedResult, 'Failed to mark import queue item as completed');
+    return handleError(markCompletedResult, 'Failed to mark feed item as completed');
   }
 
   return makeSuccessResult(undefined);
