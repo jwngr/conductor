@@ -3,6 +3,7 @@ import TurndownService from 'turndown';
 
 import {logger} from '@shared/services/logger.shared';
 
+import {prefixError, upgradeUnknownError} from '@shared/lib/errorUtils.shared';
 import {requestGet} from '@shared/lib/requests.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
@@ -28,15 +29,29 @@ export function makeExplainXkcdUrl(comicId: number): string {
  * Extracts the comic ID from an XKCD URL. XKCD URLs look like https://xkcd.com/1234/.
  */
 export function parseXkcdComicIdFromUrl(url: string): Result<number> {
-  const match = url.match(/xkcd\.com\/(\d+)/);
-  if (!match || match.length !== 2) {
-    return makeErrorResult(new Error('XKCD URL does not match expected format'));
+  // eslint-disable-next-line no-restricted-syntax
+  try {
+    const {hostname, pathname} = new URL(url);
+    if (!/(^|\.)xkcd\.com$/.test(hostname)) {
+      return makeErrorResult(new Error('URL host is not xkcd.com'));
+    }
+    const match = pathname.match(/^\/(\d+)\/?$/);
+    if (!match) {
+      return makeErrorResult(new Error('Path does not contain a comic id'));
+    }
+    const comicId = Number(match[1]);
+    if (isNaN(comicId)) {
+      return makeErrorResult(new Error('XKCD comic ID is not a number'));
+    }
+    return makeSuccessResult(comicId);
+  } catch (error) {
+    const betterError = prefixError(
+      upgradeUnknownError(error),
+      'Error parsing XKCD comic ID from URL'
+    );
+    logger.error(betterError, {url});
+    return makeErrorResult(betterError);
   }
-  const comicId = parseInt(match[1], 10);
-  if (isNaN(comicId)) {
-    return makeErrorResult(new Error('XKCD comic ID is not a number'));
-  }
-  return makeSuccessResult(comicId);
 }
 
 interface XkcdComic {
