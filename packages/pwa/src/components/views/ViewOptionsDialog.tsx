@@ -60,13 +60,13 @@ export const ViewOptionsDialog: React.FC<{
         <ButtonIcon
           name={IconName.SlidersHorizontal}
           size={32}
-          tooltip="Display options"
+          tooltip="Customize view"
           // eslint-disable-next-line @typescript-eslint/no-empty-function
           onClick={() => {}}
         />
       </PopoverTrigger>
 
-      <PopoverContent className="w-auto">
+      <PopoverContent className="w-auto" align="end" side="bottom">
         <div className="flex flex-col gap-4 p-4">
           <div className="flex items-center justify-between gap-2">
             <label htmlFor="groupBy" className="text-sm font-medium">
