@@ -5,7 +5,7 @@ import {logger} from '@shared/services/logger.shared';
 
 import {prefixError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
-import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {FeedItem} from '@shared/types/feedItems.types';
 import {
@@ -135,6 +135,7 @@ const MarkDoneFeedItemActionIcon: React.FC<{
       });
       return makeSuccessResult(undefined);
     };
+
     return makeSuccessResult({undo});
   };
 
@@ -170,24 +171,20 @@ const SaveFeedItemActionIcon: React.FC<{
 
     const updateResult = await feedItemsService.updateFeedItem(feedItem.feedItemId, targetState);
 
-    if (updateResult.success) {
-      const undo = async (): AsyncResult<void> => {
-        const undoResult = await feedItemsService.updateFeedItem(
-          feedItem.feedItemId,
-          originalState
-        );
-        if (undoResult.success) {
-          void eventLogService.logFeedItemActionEvent({
-            feedItemId: feedItem.feedItemId,
-            feedItemActionType: FeedItemActionType.Save,
-          });
-        }
-        return undoResult;
-      };
-      return makeSuccessResult({undo});
-    } else {
-      return makeErrorResult(updateResult.error);
-    }
+    if (!updateResult.success) return updateResult;
+
+    const undo = async (): AsyncResult<void> => {
+      const undoResult = await feedItemsService.updateFeedItem(feedItem.feedItemId, originalState);
+      if (!undoResult.success) return undoResult;
+
+      void eventLogService.logFeedItemActionEvent({
+        feedItemId: feedItem.feedItemId,
+        feedItemActionType: FeedItemActionType.Save,
+      });
+      return makeSuccessResult(undefined);
+    };
+
+    return makeSuccessResult({undo});
   };
 
   return (
@@ -223,24 +220,23 @@ const MarkUnreadFeedItemActionIcon: React.FC<{
       targetState as Partial<FeedItem>
     );
 
-    if (updateResult.success) {
-      const undo = async (): AsyncResult<void> => {
-        const undoResult = await feedItemsService.updateFeedItem(
-          feedItem.feedItemId,
-          originalState as Partial<FeedItem>
-        );
-        if (undoResult.success) {
-          void eventLogService.logFeedItemActionEvent({
-            feedItemId: feedItem.feedItemId,
-            feedItemActionType: FeedItemActionType.MarkUnread,
-          });
-        }
-        return undoResult;
-      };
-      return makeSuccessResult({undo});
-    } else {
-      return makeErrorResult(updateResult.error);
-    }
+    if (!updateResult.success) return updateResult;
+
+    const undo = async (): AsyncResult<void> => {
+      const undoResult = await feedItemsService.updateFeedItem(
+        feedItem.feedItemId,
+        originalState as Partial<FeedItem>
+      );
+      if (!undoResult.success) return undoResult;
+
+      void eventLogService.logFeedItemActionEvent({
+        feedItemId: feedItem.feedItemId,
+        feedItemActionType: FeedItemActionType.MarkUnread,
+      });
+      return makeSuccessResult(undefined);
+    };
+
+    return makeSuccessResult({undo});
   };
 
   return (
@@ -278,24 +274,23 @@ const StarFeedItemActionIcon: React.FC<{
       targetState as Partial<FeedItem>
     );
 
-    if (updateResult.success) {
-      const undo = async (): AsyncResult<void> => {
-        const undoResult = await feedItemsService.updateFeedItem(
-          feedItem.feedItemId,
-          originalState as Partial<FeedItem>
-        );
-        if (undoResult.success) {
-          void eventLogService.logFeedItemActionEvent({
-            feedItemId: feedItem.feedItemId,
-            feedItemActionType: FeedItemActionType.Star,
-          });
-        }
-        return undoResult;
-      };
-      return makeSuccessResult({undo});
-    } else {
-      return makeErrorResult(updateResult.error);
-    }
+    if (!updateResult.success) return updateResult;
+
+    const undo = async (): AsyncResult<void> => {
+      const undoResult = await feedItemsService.updateFeedItem(
+        feedItem.feedItemId,
+        originalState as Partial<FeedItem>
+      );
+      if (!undoResult.success) return undoResult;
+
+      void eventLogService.logFeedItemActionEvent({
+        feedItemId: feedItem.feedItemId,
+        feedItemActionType: FeedItemActionType.Star,
+      });
+      return makeSuccessResult(undefined);
+    };
+
+    return makeSuccessResult({undo});
   };
 
   return (
@@ -328,15 +323,14 @@ const RetryImportActionIcon: React.FC<{
       },
     } as Partial<FeedItem>);
 
-    if (updateResult.success) {
-      const undo = async (): AsyncResult<void> => {
-        logger.warn('Cannot undo Retry Import action', {feedItemId: feedItem.feedItemId});
-        return makeSuccessResult(undefined);
-      };
-      return makeSuccessResult({undo});
-    } else {
-      return makeErrorResult(updateResult.error);
-    }
+    if (!updateResult.success) return updateResult;
+
+    const undo = async (): AsyncResult<void> => {
+      logger.warn('Cannot undo Retry Import action', {feedItemId: feedItem.feedItemId});
+      return makeSuccessResult(undefined);
+    };
+
+    return makeSuccessResult({undo});
   };
 
   return (
@@ -371,6 +365,7 @@ const DebugSaveExampleActionIcon: React.FC<{
       });
       return makeSuccessResult(undefined);
     };
+
     return makeSuccessResult({undo});
   };
 

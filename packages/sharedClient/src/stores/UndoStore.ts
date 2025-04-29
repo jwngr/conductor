@@ -5,7 +5,7 @@ import {logger} from '@shared/services/logger.shared';
 import {makeErrorResult} from '@shared/lib/results.shared';
 
 import type {AsyncResult} from '@shared/types/results.types';
-import type {Consumer, Supplier, Task} from '@shared/types/utils.types';
+import type {Consumer, Supplier} from '@shared/types/utils.types';
 
 const MAX_UNDO_STACK_SIZE = 25;
 
