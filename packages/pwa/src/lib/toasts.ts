@@ -3,7 +3,6 @@ import type {ExternalToast} from 'sonner';
 
 import type {UndoAction} from '@sharedClient/stores/UndoStore';
 
-// Keep the original export for direct use if needed
 export const toast = sonnerToast as typeof sonnerToast & {successWithUndo: typeof successWithUndo};
 
 const UNDO_TIMEOUT_MS = 5000; // 5 seconds for undo
@@ -26,20 +25,9 @@ function successWithUndo(
     action: {
       label: 'Undo',
       onClick: async () => {
-        // Optionally add loading state to the button here if needed
         await onUndo();
-        // No need to manually dismiss, Sonner handles it on action click by default
       },
     },
-    // We can also clear the global undo action if the toast times out or is dismissed manually
-    // onDismiss: () => {
-    //   console.log('Toast dismissed');
-    //   // Potentially clear the global undo action here if it matches? Might be tricky.
-    // },
-    // onAutoClose: () => {
-    //   console.log('Toast auto-closed');
-    //   // Potentially clear the global undo action here if it matches? Might be tricky.
-    // },
   });
 }
 

@@ -71,28 +71,29 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
     const isCurrentlyActive = getIsActive(feedItem);
     const result = await performAction({isActive: isCurrentlyActive});
 
-    if (result.success === true) {
-      const {undo} = result.value;
-
-      const handleToastUndo: UndoAction = async () => {
-        const undoResult = await undo();
-        if (undoResult.success) {
-          toast('Action undone');
-        } else {
-          toast.error('Failed to undo', {description: undoResult.error.message});
-          logger.error(prefixError(undoResult.error, 'Toast undo action failed'), {feedItemId});
-        }
-        return undoResult;
-      };
-
-      toast.successWithUndo(toastText, handleToastUndo);
-      pushUndoAction(undo);
-      void eventLogService.logFeedItemActionEvent({feedItemId, feedItemActionType});
-      return;
-    } else {
+    if (!result.success) {
       toast.error(errorMessage, {description: result.error.message});
       logger.error(prefixError(result.error, errorMessage), {feedItemId: feedItem.feedItemId});
+      return;
     }
+
+    const {undo} = result.value;
+
+    const handleToastUndo: UndoAction = async () => {
+      const undoResult = await undo();
+      if (undoResult.success) {
+        toast('Action undone');
+      } else {
+        toast.error('Failed to undo', {description: undoResult.error.message});
+        logger.error(prefixError(undoResult.error, 'Toast undo action failed'), {feedItemId});
+      }
+      return undoResult;
+    };
+
+    toast.successWithUndo(toastText, handleToastUndo);
+    pushUndoAction(undo);
+    void eventLogService.logFeedItemActionEvent({feedItemId, feedItemActionType});
+    return;
   };
 
   return (
@@ -122,24 +123,19 @@ const MarkDoneFeedItemActionIcon: React.FC<{
 
     const updateResult = await feedItemsService.updateFeedItem(feedItem.feedItemId, targetState);
 
-    if (updateResult.success) {
-      const undo = async (): AsyncResult<void> => {
-        const undoResult = await feedItemsService.updateFeedItem(
-          feedItem.feedItemId,
-          originalState
-        );
-        if (undoResult.success) {
-          void eventLogService.logFeedItemActionEvent({
-            feedItemId: feedItem.feedItemId,
-            feedItemActionType: FeedItemActionType.MarkDone,
-          });
-        }
-        return undoResult;
-      };
-      return makeSuccessResult({undo});
-    } else {
-      return makeErrorResult(updateResult.error);
-    }
+    if (!updateResult.success) return updateResult;
+
+    const undo = async (): AsyncResult<void> => {
+      const undoResult = await feedItemsService.updateFeedItem(feedItem.feedItemId, originalState);
+      if (!undoResult.success) return undoResult;
+
+      void eventLogService.logFeedItemActionEvent({
+        feedItemId: feedItem.feedItemId,
+        feedItemActionType: FeedItemActionType.MarkDone,
+      });
+      return makeSuccessResult(undefined);
+    };
+    return makeSuccessResult({undo});
   };
 
   return (

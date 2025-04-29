@@ -7,19 +7,18 @@ import {makeErrorResult} from '@shared/lib/results.shared';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {Consumer, Supplier, Task} from '@shared/types/utils.types';
 
+const MAX_UNDO_STACK_SIZE = 25;
+
 export type UndoAction = Supplier<AsyncResult<void>>;
 
 export interface UndoableActionResult {
   readonly undo: UndoAction;
 }
 
-const MAX_UNDO_STACK_SIZE = 25;
-
 interface UndoStoreState {
   readonly undoStack: readonly UndoAction[];
   readonly pushUndoAction: Consumer<UndoAction>;
   readonly executeAndPopUndoAction: Supplier<AsyncResult<void>>;
-  readonly clearUndoStack: Task;
 }
 
 export const useUndoStore = create<UndoStoreState>((set, get) => ({
@@ -43,6 +42,4 @@ export const useUndoStore = create<UndoStoreState>((set, get) => ({
     set({undoStack: remainingStack});
     return await actionToExecute();
   },
-
-  clearUndoStack: () => set({undoStack: []}),
 }));
