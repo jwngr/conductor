@@ -50,6 +50,7 @@ function makeSharedRules({
   return {
     'no-console': 'error',
     'react/jsx-no-useless-fragment': 'error',
+    'react/jsx-no-leaked-render': ['error', {validStrategies: ['ternary']}],
     '@typescript-eslint/array-type': ['error', {default: 'array-simple'}],
     '@typescript-eslint/await-thenable': 'error',
     '@typescript-eslint/consistent-type-imports': [
