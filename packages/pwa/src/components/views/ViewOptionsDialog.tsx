@@ -10,13 +10,7 @@ import type {
 import {SORT_BY_CREATED_TIME_DESC_OPTION} from '@shared/types/views.types';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@src/components/atoms/Dialog';
+import {Popover, PopoverContent, PopoverTrigger} from '@src/components/atoms/Popover';
 
 export const ViewOptionsDialog: React.FC<{
   sortBy: readonly ViewSortByOption[];
@@ -61,21 +55,18 @@ export const ViewOptionsDialog: React.FC<{
     firstSortByOption.direction === 'asc' ? 'Sort Ascending' : 'Sort Descending';
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
+    <Popover>
+      <PopoverTrigger asChild>
         <ButtonIcon
           name={IconName.SlidersHorizontal}
           size={32}
           tooltip="Display options"
-          onClick={() => true} // onClick required by ButtonIcon, dialog handles open
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          onClick={() => {}}
         />
-      </DialogTrigger>
+      </PopoverTrigger>
 
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Display options</DialogTitle>
-        </DialogHeader>
-
+      <PopoverContent className="w-auto">
         <div className="flex flex-col gap-4 p-4">
           <div className="flex items-center justify-between gap-2">
             <label htmlFor="groupBy" className="text-sm font-medium">
@@ -117,7 +108,7 @@ export const ViewOptionsDialog: React.FC<{
             </div>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </PopoverContent>
+    </Popover>
   );
 };
