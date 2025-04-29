@@ -5,7 +5,7 @@ import {logger} from '@shared/services/logger.shared';
 
 import {prefixError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
-import {makeSuccessResult} from '@shared/lib/results.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {FeedItem} from '@shared/types/feedItems.types';
 import {
@@ -14,10 +14,13 @@ import {
   TriageStatus,
 } from '@shared/types/feedItems.types';
 import type {IconName} from '@shared/types/icons.types';
-import type {AsyncResult} from '@shared/types/results.types';
+import type {AsyncResult, SuccessResult as SuccessResultType} from '@shared/types/results.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
 import type {Func} from '@shared/types/utils.types';
+
+import {useUndoStore} from '@sharedClient/stores/UndoStore';
+import type {UndoableActionResult, UndoAction} from '@sharedClient/stores/UndoStore';
 
 import {useEventLogService} from '@sharedClient/services/eventLog.client';
 import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
@@ -35,7 +38,7 @@ interface GenericFeedItemActionIconProps {
   readonly tooltip: string;
   readonly shortcutId?: KeyboardShortcutId;
   readonly getIsActive: Func<FeedItem, boolean>;
-  readonly onAction: Func<boolean, AsyncResult<void>>;
+  readonly performAction: (args: {isActive: boolean}) => Promise<AsyncResult<UndoableActionResult>>;
   readonly toastText: string;
   readonly errorMessage: string;
   readonly disabled?: boolean;
@@ -48,13 +51,14 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
   tooltip,
   shortcutId,
   getIsActive,
-  onAction,
+  performAction,
   toastText,
   errorMessage,
   disabled,
 }) => {
   const {feedItemId} = feedItem;
   const eventLogService = useEventLogService();
+  const pushUndoAction = useUndoStore((state) => state.pushUndoAction);
 
   const handleAction = async (event?: MouseEvent<HTMLDivElement>): Promise<void> => {
     event?.stopPropagation();
@@ -65,16 +69,30 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
     }
 
     const isCurrentlyActive = getIsActive(feedItem);
-    const result = await onAction(isCurrentlyActive);
+    const result = await performAction({isActive: isCurrentlyActive});
 
-    if (result.success) {
-      toast(toastText);
+    if (result.success === true) {
+      const undo = result.data.undo;
+
+      const handleToastUndo: UndoAction = async () => {
+        const undoResult = await undo();
+        if (undoResult.success) {
+          toast('Action undone');
+        } else {
+          toast.error('Failed to undo', {description: undoResult.error.message});
+          logger.error(prefixError(undoResult.error, 'Toast undo action failed'), {feedItemId});
+        }
+        return undoResult;
+      };
+
+      toast.successWithUndo(toastText, handleToastUndo);
+      pushUndoAction(undo);
       void eventLogService.logFeedItemActionEvent({feedItemId, feedItemActionType});
       return;
+    } else {
+      toast.error(errorMessage, {description: result.error.message});
+      logger.error(prefixError(result.error, errorMessage), {feedItemId: feedItem.feedItemId});
     }
-
-    toast.error(errorMessage, {description: result.error.message});
-    logger.error(prefixError(result.error, errorMessage), {feedItemId: feedItem.feedItemId});
   };
 
   return (
@@ -95,6 +113,36 @@ const MarkDoneFeedItemActionIcon: React.FC<{
   const actionInfo = SharedFeedItemHelpers.getMarkDoneFeedItemActionInfo(feedItem);
   const isDone = SharedFeedItemHelpers.isMarkedDone(feedItem);
   const feedItemsService = useFeedItemsService();
+  const eventLogService = useEventLogService();
+
+  const performAction = async (args: {
+    isActive: boolean;
+  }): Promise<AsyncResult<UndoableActionResult>> => {
+    const {isActive} = args;
+    const targetState = {triageStatus: isActive ? TriageStatus.Untriaged : TriageStatus.Done};
+    const originalState = {triageStatus: isActive ? TriageStatus.Done : TriageStatus.Untriaged};
+
+    const updateResult = await feedItemsService.updateFeedItem(feedItem.feedItemId, targetState);
+
+    if (updateResult.success) {
+      const undo = async (): Promise<AsyncResult<void>> => {
+        const undoResult = await feedItemsService.updateFeedItem(
+          feedItem.feedItemId,
+          originalState
+        );
+        if (undoResult.success) {
+          void eventLogService.logFeedItemActionEvent({
+            feedItemId: feedItem.feedItemId,
+            feedItemActionType: FeedItemActionType.MarkDone,
+          });
+        }
+        return undoResult;
+      };
+      return makeSuccessResult({undo});
+    } else {
+      return makeErrorResult(updateResult.error);
+    }
+  };
 
   return (
     <GenericFeedItemActionIcon
@@ -104,12 +152,7 @@ const MarkDoneFeedItemActionIcon: React.FC<{
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}
       getIsActive={SharedFeedItemHelpers.isMarkedDone}
-      onAction={async (isActive) => {
-        const result = await feedItemsService.updateFeedItem(feedItem.feedItemId, {
-          triageStatus: isActive ? TriageStatus.Untriaged : TriageStatus.Done,
-        });
-        return result;
-      }}
+      performAction={performAction}
       toastText={isDone ? 'Feed item marked as undone' : 'Feed item marked as done'}
       errorMessage={
         isDone ? 'Error marking feed item as undone' : 'Error marking feed item as done'
@@ -124,6 +167,36 @@ const SaveFeedItemActionIcon: React.FC<{
   const actionInfo = SharedFeedItemHelpers.getSaveFeedItemActionInfo(feedItem);
   const isSaved = SharedFeedItemHelpers.isSaved(feedItem);
   const feedItemsService = useFeedItemsService();
+  const eventLogService = useEventLogService();
+
+  const performAction = async (args: {
+    isActive: boolean;
+  }): Promise<AsyncResult<UndoableActionResult>> => {
+    const {isActive} = args;
+    const targetState = {triageStatus: isActive ? TriageStatus.Untriaged : TriageStatus.Saved};
+    const originalState = {triageStatus: isActive ? TriageStatus.Saved : TriageStatus.Untriaged};
+
+    const updateResult = await feedItemsService.updateFeedItem(feedItem.feedItemId, targetState);
+
+    if (updateResult.success) {
+      const undo = async (): Promise<AsyncResult<void>> => {
+        const undoResult = await feedItemsService.updateFeedItem(
+          feedItem.feedItemId,
+          originalState
+        );
+        if (undoResult.success) {
+          void eventLogService.logFeedItemActionEvent({
+            feedItemId: feedItem.feedItemId,
+            feedItemActionType: FeedItemActionType.Save,
+          });
+        }
+        return undoResult;
+      };
+      return makeSuccessResult({undo});
+    } else {
+      return makeErrorResult(updateResult.error);
+    }
+  };
 
   return (
     <GenericFeedItemActionIcon
@@ -133,12 +206,7 @@ const SaveFeedItemActionIcon: React.FC<{
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}
       getIsActive={SharedFeedItemHelpers.isSaved}
-      onAction={async (isActive) => {
-        const result = await feedItemsService.updateFeedItem(feedItem.feedItemId, {
-          triageStatus: isActive ? TriageStatus.Untriaged : TriageStatus.Saved,
-        });
-        return result;
-      }}
+      performAction={performAction}
       toastText={isSaved ? 'Feed item unsaved' : 'Feed item saved'}
       errorMessage={isSaved ? 'Error unsaving feed item' : 'Error saving feed item'}
     />
@@ -151,6 +219,39 @@ const MarkUnreadFeedItemActionIcon: React.FC<{
   const actionInfo = SharedFeedItemHelpers.getMarkUnreadFeedItemActionInfo(feedItem);
   const isUnread = SharedFeedItemHelpers.isUnread(feedItem);
   const feedItemsService = useFeedItemsService();
+  const eventLogService = useEventLogService();
+
+  const performAction = async (args: {
+    isActive: boolean;
+  }): Promise<AsyncResult<UndoableActionResult>> => {
+    const {isActive} = args;
+    const targetState = {[`tagIds.${SystemTagId.Unread}`]: isActive ? deleteField() : true};
+    const originalState = {[`tagIds.${SystemTagId.Unread}`]: isActive ? true : deleteField()};
+
+    const updateResult = await feedItemsService.updateFeedItem(
+      feedItem.feedItemId,
+      targetState as Partial<FeedItem>
+    );
+
+    if (updateResult.success) {
+      const undo = async (): Promise<AsyncResult<void>> => {
+        const undoResult = await feedItemsService.updateFeedItem(
+          feedItem.feedItemId,
+          originalState as Partial<FeedItem>
+        );
+        if (undoResult.success) {
+          void eventLogService.logFeedItemActionEvent({
+            feedItemId: feedItem.feedItemId,
+            feedItemActionType: FeedItemActionType.MarkUnread,
+          });
+        }
+        return undoResult;
+      };
+      return makeSuccessResult({undo});
+    } else {
+      return makeErrorResult(updateResult.error);
+    }
+  };
 
   return (
     <GenericFeedItemActionIcon
@@ -160,12 +261,7 @@ const MarkUnreadFeedItemActionIcon: React.FC<{
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}
       getIsActive={SharedFeedItemHelpers.isUnread}
-      onAction={async (isActive) => {
-        const result = await feedItemsService.updateFeedItem(feedItem.feedItemId, {
-          [`tagIds.${SystemTagId.Unread}`]: isActive ? deleteField() : true,
-        } as Partial<FeedItem>);
-        return result;
-      }}
+      performAction={performAction}
       toastText={isUnread ? 'Feed item marked as read' : 'Feed item marked as unread'}
       errorMessage={
         isUnread ? 'Error marking feed item as read' : 'Error marking feed item as unread'
@@ -180,6 +276,39 @@ const StarFeedItemActionIcon: React.FC<{
   const actionInfo = SharedFeedItemHelpers.getStarFeedItemActionInfo(feedItem);
   const isStarred = SharedFeedItemHelpers.isStarred(feedItem);
   const feedItemsService = useFeedItemsService();
+  const eventLogService = useEventLogService();
+
+  const performAction = async (args: {
+    isActive: boolean;
+  }): Promise<AsyncResult<UndoableActionResult>> => {
+    const {isActive} = args;
+    const targetState = {[`tagIds.${SystemTagId.Starred}`]: isActive ? deleteField() : true};
+    const originalState = {[`tagIds.${SystemTagId.Starred}`]: isActive ? true : deleteField()};
+
+    const updateResult = await feedItemsService.updateFeedItem(
+      feedItem.feedItemId,
+      targetState as Partial<FeedItem>
+    );
+
+    if (updateResult.success) {
+      const undo = async (): Promise<AsyncResult<void>> => {
+        const undoResult = await feedItemsService.updateFeedItem(
+          feedItem.feedItemId,
+          originalState as Partial<FeedItem>
+        );
+        if (undoResult.success) {
+          void eventLogService.logFeedItemActionEvent({
+            feedItemId: feedItem.feedItemId,
+            feedItemActionType: FeedItemActionType.Star,
+          });
+        }
+        return undoResult;
+      };
+      return makeSuccessResult({undo});
+    } else {
+      return makeErrorResult(updateResult.error);
+    }
+  };
 
   return (
     <GenericFeedItemActionIcon
@@ -189,12 +318,7 @@ const StarFeedItemActionIcon: React.FC<{
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}
       getIsActive={SharedFeedItemHelpers.isStarred}
-      onAction={async (isActive) => {
-        const result = await feedItemsService.updateFeedItem(feedItem.feedItemId, {
-          [`tagIds.${SystemTagId.Starred}`]: isActive ? deleteField() : true,
-        } as Partial<FeedItem>);
-        return result;
-      }}
+      performAction={performAction}
       toastText={isStarred ? 'Feed item unstarred' : 'Feed item starred'}
       errorMessage={isStarred ? 'Error unstarring feed item' : 'Error starring feed item'}
     />
@@ -207,6 +331,26 @@ const RetryImportActionIcon: React.FC<{
   const actionInfo = SharedFeedItemHelpers.getRetryImportFeedItemActionInfo();
   const feedItemsService = useFeedItemsService();
 
+  const performAction = async (): Promise<AsyncResult<UndoableActionResult>> => {
+    const updateResult = await feedItemsService.updateFeedItem(feedItem.feedItemId, {
+      importState: {
+        ...feedItem.importState,
+        lastImportRequestedTime: new Date(),
+        shouldFetch: true,
+      },
+    } as Partial<FeedItem>);
+
+    if (updateResult.success) {
+      const undo = async (): Promise<AsyncResult<void>> => {
+        logger.warn('Cannot undo Retry Import action', {feedItemId: feedItem.feedItemId});
+        return makeSuccessResult(undefined);
+      };
+      return makeSuccessResult({undo});
+    } else {
+      return makeErrorResult(updateResult.error);
+    }
+  };
+
   return (
     <GenericFeedItemActionIcon
       feedItem={feedItem}
@@ -216,16 +360,7 @@ const RetryImportActionIcon: React.FC<{
       shortcutId={actionInfo.shortcutId}
       getIsActive={() => false}
       disabled={feedItem.importState.status === FeedItemImportStatus.Processing}
-      onAction={async () => {
-        const result = await feedItemsService.updateFeedItem(feedItem.feedItemId, {
-          importState: {
-            ...feedItem.importState,
-            lastImportRequestedTime: new Date(),
-            shouldFetch: true,
-          },
-        } as Partial<FeedItem>);
-        return result;
-      }}
+      performAction={performAction}
       toastText={'Feed item queued for re-import'}
       errorMessage={'Error queuing feed item for re-import'}
     />
@@ -237,6 +372,20 @@ const DebugSaveExampleActionIcon: React.FC<{
 }> = ({feedItem}) => {
   const actionInfo = SharedFeedItemHelpers.getDebugSaveExampleFeedItemActionInfo();
 
+  const performAction = async (): Promise<AsyncResult<UndoableActionResult>> => {
+    logger.log('DebugSaveExampleActionIcon action performed (TODO)', {
+      feedItemId: feedItem.feedItemId,
+    });
+
+    const undo = async (): Promise<AsyncResult<void>> => {
+      logger.warn('Cannot undo Debug Save Example action (TODO)', {
+        feedItemId: feedItem.feedItemId,
+      });
+      return makeSuccessResult(undefined);
+    };
+    return makeSuccessResult({undo});
+  };
+
   return (
     <GenericFeedItemActionIcon
       feedItem={feedItem}
@@ -244,11 +393,8 @@ const DebugSaveExampleActionIcon: React.FC<{
       icon={actionInfo.icon}
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}
-      getIsActive={SharedFeedItemHelpers.isStarred}
-      onAction={async () => {
-        // TODO: Implement this.
-        return makeSuccessResult(undefined);
-      }}
+      getIsActive={() => false}
+      performAction={performAction}
       toastText={'Feed item saved as example (TODO: Implement this)'}
       errorMessage={'Error saving feed item as example (TODO: Implement this)'}
     />
