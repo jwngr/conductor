@@ -1,18 +1,14 @@
 import {toast as sonnerToast} from 'sonner';
 import type {ExternalToast} from 'sonner';
 
-import type {UndoAction} from '@sharedClient/stores/UndoStore';
+import type {UndoAction} from '@shared/types/undo.types';
 
 export const toast = sonnerToast as typeof sonnerToast & {successWithUndo: typeof successWithUndo};
 
-const UNDO_TIMEOUT_MS = 5000; // 5 seconds for undo
+const DEFAULT_UNDO_TIMEOUT_MS = 5_000;
 
 /**
  * Shows a success toast with an Undo button.
- *
- * @param message The main message for the toast.
- * @param onUndo The function to execute when Undo is clicked.
- * @param options Optional Sonner toast options.
  */
 function successWithUndo(
   message: string | React.ReactNode,
@@ -21,12 +17,10 @@ function successWithUndo(
 ): void {
   sonnerToast.success(message, {
     ...options,
-    duration: options?.duration ?? UNDO_TIMEOUT_MS, // Use provided duration or default
+    duration: options?.duration ?? DEFAULT_UNDO_TIMEOUT_MS,
     action: {
       label: 'Undo',
-      onClick: async () => {
-        await onUndo();
-      },
+      onClick: async () => await onUndo(),
     },
   });
 }

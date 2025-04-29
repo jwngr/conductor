@@ -17,10 +17,8 @@ import type {IconName} from '@shared/types/icons.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
+import type {UndoableActionFn, UndoAction} from '@shared/types/undo.types';
 import type {Func} from '@shared/types/utils.types';
-
-import {useUndoStore} from '@sharedClient/stores/UndoStore';
-import type {UndoableActionResult, UndoAction} from '@sharedClient/stores/UndoStore';
 
 import {useEventLogService} from '@sharedClient/services/eventLog.client';
 import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
@@ -38,7 +36,7 @@ interface GenericFeedItemActionIconProps {
   readonly tooltip: string;
   readonly shortcutId?: KeyboardShortcutId;
   readonly getIsActive: Func<FeedItem, boolean>;
-  readonly performAction: (args: {isActive: boolean}) => AsyncResult<UndoableActionResult>;
+  readonly performAction: UndoableActionFn;
   readonly toastText: string;
   readonly errorMessage: string;
   readonly disabled?: boolean;
@@ -58,7 +56,6 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
 }) => {
   const {feedItemId} = feedItem;
   const eventLogService = useEventLogService();
-  const pushUndoAction = useUndoStore((state) => state.pushUndoAction);
 
   const handleAction = async (event?: MouseEvent<HTMLDivElement>): Promise<void> => {
     event?.stopPropagation();
@@ -77,10 +74,8 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
       return;
     }
 
-    const {undo} = result.value;
-
     const handleToastUndo: UndoAction = async () => {
-      const undoResult = await undo();
+      const undoResult = await result.value();
       if (undoResult.success) {
         toast('Action undone');
       } else {
@@ -91,7 +86,6 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
     };
 
     toast.successWithUndo(toastText, handleToastUndo);
-    pushUndoAction(undo);
     void eventLogService.logFeedItemActionEvent({feedItemId, feedItemActionType});
     return;
   };
@@ -116,8 +110,7 @@ const MarkDoneFeedItemActionIcon: React.FC<{
   const feedItemsService = useFeedItemsService();
   const eventLogService = useEventLogService();
 
-  const performAction = async (args: {isActive: boolean}): AsyncResult<UndoableActionResult> => {
-    const {isActive} = args;
+  const performAction: UndoableActionFn = async ({isActive}) => {
     const targetState = {triageStatus: isActive ? TriageStatus.Untriaged : TriageStatus.Done};
     const originalState = {triageStatus: isActive ? TriageStatus.Done : TriageStatus.Untriaged};
 
@@ -136,7 +129,7 @@ const MarkDoneFeedItemActionIcon: React.FC<{
       return makeSuccessResult(undefined);
     };
 
-    return makeSuccessResult({undo});
+    return makeSuccessResult(undo);
   };
 
   return (
@@ -164,8 +157,7 @@ const SaveFeedItemActionIcon: React.FC<{
   const feedItemsService = useFeedItemsService();
   const eventLogService = useEventLogService();
 
-  const performAction = async (args: {isActive: boolean}): AsyncResult<UndoableActionResult> => {
-    const {isActive} = args;
+  const performAction: UndoableActionFn = async ({isActive}) => {
     const targetState = {triageStatus: isActive ? TriageStatus.Untriaged : TriageStatus.Saved};
     const originalState = {triageStatus: isActive ? TriageStatus.Saved : TriageStatus.Untriaged};
 
@@ -184,7 +176,7 @@ const SaveFeedItemActionIcon: React.FC<{
       return makeSuccessResult(undefined);
     };
 
-    return makeSuccessResult({undo});
+    return makeSuccessResult(undo);
   };
 
   return (
@@ -210,8 +202,7 @@ const MarkUnreadFeedItemActionIcon: React.FC<{
   const feedItemsService = useFeedItemsService();
   const eventLogService = useEventLogService();
 
-  const performAction = async (args: {isActive: boolean}): AsyncResult<UndoableActionResult> => {
-    const {isActive} = args;
+  const performAction: UndoableActionFn = async ({isActive}) => {
     const targetState = {[`tagIds.${SystemTagId.Unread}`]: isActive ? deleteField() : true};
     const originalState = {[`tagIds.${SystemTagId.Unread}`]: isActive ? true : deleteField()};
 
@@ -236,7 +227,7 @@ const MarkUnreadFeedItemActionIcon: React.FC<{
       return makeSuccessResult(undefined);
     };
 
-    return makeSuccessResult({undo});
+    return makeSuccessResult(undo);
   };
 
   return (
@@ -264,8 +255,7 @@ const StarFeedItemActionIcon: React.FC<{
   const feedItemsService = useFeedItemsService();
   const eventLogService = useEventLogService();
 
-  const performAction = async (args: {isActive: boolean}): AsyncResult<UndoableActionResult> => {
-    const {isActive} = args;
+  const performAction: UndoableActionFn = async ({isActive}) => {
     const targetState = {[`tagIds.${SystemTagId.Starred}`]: isActive ? deleteField() : true};
     const originalState = {[`tagIds.${SystemTagId.Starred}`]: isActive ? true : deleteField()};
 
@@ -290,7 +280,7 @@ const StarFeedItemActionIcon: React.FC<{
       return makeSuccessResult(undefined);
     };
 
-    return makeSuccessResult({undo});
+    return makeSuccessResult(undo);
   };
 
   return (
@@ -314,7 +304,7 @@ const RetryImportActionIcon: React.FC<{
   const actionInfo = SharedFeedItemHelpers.getRetryImportFeedItemActionInfo();
   const feedItemsService = useFeedItemsService();
 
-  const performAction = async (): AsyncResult<UndoableActionResult> => {
+  const performAction: UndoableActionFn = async () => {
     const updateResult = await feedItemsService.updateFeedItem(feedItem.feedItemId, {
       importState: {
         ...feedItem.importState,
@@ -330,7 +320,7 @@ const RetryImportActionIcon: React.FC<{
       return makeSuccessResult(undefined);
     };
 
-    return makeSuccessResult({undo});
+    return makeSuccessResult(undo);
   };
 
   return (
@@ -354,7 +344,7 @@ const DebugSaveExampleActionIcon: React.FC<{
 }> = ({feedItem}) => {
   const actionInfo = SharedFeedItemHelpers.getDebugSaveExampleFeedItemActionInfo();
 
-  const performAction = async (): AsyncResult<UndoableActionResult> => {
+  const performAction: UndoableActionFn = async () => {
     logger.log('DebugSaveExampleActionIcon action performed (TODO)', {
       feedItemId: feedItem.feedItemId,
     });
@@ -366,7 +356,7 @@ const DebugSaveExampleActionIcon: React.FC<{
       return makeSuccessResult(undefined);
     };
 
-    return makeSuccessResult({undo});
+    return makeSuccessResult(undo);
   };
 
   return (

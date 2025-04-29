@@ -1,41 +1,44 @@
 import type React from 'react';
 
+import {noop} from '@shared/lib/utils.shared';
+
 import {IconName} from '@shared/types/icons.types';
-import {ViewType} from '@shared/types/views.types';
 
 import {useEventLogItems} from '@sharedClient/services/eventLog.client';
 
 import {formatRelativeTime} from '@sharedClient/lib/time.client';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
-// Import Popover components and ButtonIcon
 import {Popover, PopoverContent, PopoverTrigger} from '@src/components/atoms/Popover';
 import {Text} from '@src/components/atoms/Text';
 
 export const RecentActivityFeed: React.FC = () => {
-  // Use ViewType.All - might need adjustment based on hook/service needs
-  const {eventLogItems, isLoading, error} = useEventLogItems({viewType: ViewType.All});
+  const {eventLogItems, isLoading, error} = useEventLogItems();
 
-  // Still render nothing if loading/error/empty in dev mode
-  // TODO: Add !IS_DEVELOPMENT check
-  if (isLoading || error || eventLogItems.length === 0) {
-    return null;
+  if (error) {
+    return <Text className="text-error">Error loading recent activity: {error.message}</Text>;
+  }
+
+  if (isLoading) {
+    return <Text light>Loading...</Text>;
+  }
+
+  if (eventLogItems.length === 0) {
+    return <Text light>No recent activity</Text>;
   }
 
   return (
     // Use Popover component
     <Popover>
       <PopoverTrigger asChild>
-        {/* Use an icon button as the trigger */}
         <ButtonIcon
           name={IconName.Inbox}
           tooltip="Recent Activity"
           size={32}
-          onClick={() => {
-            /* Radix handles popover via asChild */
-          }}
+          onClick={noop} // Radix handles popover via asChild
         />
       </PopoverTrigger>
+
       <PopoverContent className="w-[350px]" align="end">
         <div className="flex flex-col gap-2">
           <Text as="h4" bold className="mb-1">

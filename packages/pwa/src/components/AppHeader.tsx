@@ -30,9 +30,9 @@ export const AppHeader: React.FC = () => {
   return (
     <div className={cn('flex h-[60px] flex-row items-center border-b px-4')}>
       <Text as="h2">Conductor</Text>
-      <Spacer flex />
-      <RecentActivityFeed />
       <Spacer x={12} />
+      <RecentActivityFeed />
+      <Spacer flex />
       {authContent}
     </div>
   );
