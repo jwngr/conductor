@@ -1,18 +1,25 @@
 import {create} from 'zustand';
 
+import {logger} from '@shared/services/logger.shared';
+
+import {makeErrorResult} from '@shared/lib/results.shared';
+
 import type {AsyncResult} from '@shared/types/results.types';
+import type {Consumer, Supplier, Task} from '@shared/types/utils.types';
 
-// import type {Task} from '@shared/types/utils.types'; // Removed unused import
+export type UndoAction = Supplier<AsyncResult<void>>;
 
-export type UndoAction = () => Promise<AsyncResult<void>>;
+export interface UndoableActionResult {
+  readonly undo: UndoAction;
+}
 
-const MAX_UNDO_STACK_SIZE = 10;
+const MAX_UNDO_STACK_SIZE = 25;
 
 interface UndoStoreState {
   readonly undoStack: readonly UndoAction[];
-  readonly pushUndoAction: (action: UndoAction) => void;
-  readonly executeAndPopUndoAction: () => Promise<void>;
-  readonly clearUndoStack: () => void;
+  readonly pushUndoAction: Consumer<UndoAction>;
+  readonly executeAndPopUndoAction: Supplier<AsyncResult<void>>;
+  readonly clearUndoStack: Task;
 }
 
 export const useUndoStore = create<UndoStoreState>((set, get) => ({
@@ -26,17 +33,16 @@ export const useUndoStore = create<UndoStoreState>((set, get) => ({
 
   executeAndPopUndoAction: async () => {
     const currentStack = get().undoStack;
-    if (currentStack.length > 0) {
-      const [actionToExecute, ...remainingStack] = currentStack;
-      set({undoStack: remainingStack});
-      await actionToExecute();
+    if (currentStack.length === 0) {
+      const error = new Error('No undo action to execute');
+      logger.error(error);
+      return makeErrorResult(error);
     }
+
+    const [actionToExecute, ...remainingStack] = currentStack;
+    set({undoStack: remainingStack});
+    return await actionToExecute();
   },
 
   clearUndoStack: () => set({undoStack: []}),
 }));
-
-// Optional: Define a specific type for the result of actions that can be undone.
-export interface UndoableActionResult {
-  undo: UndoAction;
-}

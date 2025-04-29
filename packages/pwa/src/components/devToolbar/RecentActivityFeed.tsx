@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 
 import {IconName} from '@shared/types/icons.types';
 import {ViewType} from '@shared/types/views.types';

@@ -14,6 +14,7 @@ import {
   TriageStatus,
 } from '@shared/types/feedItems.types';
 import type {IconName} from '@shared/types/icons.types';
+import type {AsyncResult} from '@shared/types/results.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
 import type {Func} from '@shared/types/utils.types';
@@ -37,7 +38,7 @@ interface GenericFeedItemActionIconProps {
   readonly tooltip: string;
   readonly shortcutId?: KeyboardShortcutId;
   readonly getIsActive: Func<FeedItem, boolean>;
-  readonly performAction: (args: {isActive: boolean}) => Promise<AsyncResult<UndoableActionResult>>;
+  readonly performAction: (args: {isActive: boolean}) => AsyncResult<UndoableActionResult>;
   readonly toastText: string;
   readonly errorMessage: string;
   readonly disabled?: boolean;
@@ -114,9 +115,7 @@ const MarkDoneFeedItemActionIcon: React.FC<{
   const feedItemsService = useFeedItemsService();
   const eventLogService = useEventLogService();
 
-  const performAction = async (args: {
-    isActive: boolean;
-  }): Promise<AsyncResult<UndoableActionResult>> => {
+  const performAction = async (args: {isActive: boolean}): AsyncResult<UndoableActionResult> => {
     const {isActive} = args;
     const targetState = {triageStatus: isActive ? TriageStatus.Untriaged : TriageStatus.Done};
     const originalState = {triageStatus: isActive ? TriageStatus.Done : TriageStatus.Untriaged};
@@ -124,7 +123,7 @@ const MarkDoneFeedItemActionIcon: React.FC<{
     const updateResult = await feedItemsService.updateFeedItem(feedItem.feedItemId, targetState);
 
     if (updateResult.success) {
-      const undo = async (): Promise<AsyncResult<void>> => {
+      const undo = async (): AsyncResult<void> => {
         const undoResult = await feedItemsService.updateFeedItem(
           feedItem.feedItemId,
           originalState
@@ -168,9 +167,7 @@ const SaveFeedItemActionIcon: React.FC<{
   const feedItemsService = useFeedItemsService();
   const eventLogService = useEventLogService();
 
-  const performAction = async (args: {
-    isActive: boolean;
-  }): Promise<AsyncResult<UndoableActionResult>> => {
+  const performAction = async (args: {isActive: boolean}): AsyncResult<UndoableActionResult> => {
     const {isActive} = args;
     const targetState = {triageStatus: isActive ? TriageStatus.Untriaged : TriageStatus.Saved};
     const originalState = {triageStatus: isActive ? TriageStatus.Saved : TriageStatus.Untriaged};
@@ -178,7 +175,7 @@ const SaveFeedItemActionIcon: React.FC<{
     const updateResult = await feedItemsService.updateFeedItem(feedItem.feedItemId, targetState);
 
     if (updateResult.success) {
-      const undo = async (): Promise<AsyncResult<void>> => {
+      const undo = async (): AsyncResult<void> => {
         const undoResult = await feedItemsService.updateFeedItem(
           feedItem.feedItemId,
           originalState
@@ -220,9 +217,7 @@ const MarkUnreadFeedItemActionIcon: React.FC<{
   const feedItemsService = useFeedItemsService();
   const eventLogService = useEventLogService();
 
-  const performAction = async (args: {
-    isActive: boolean;
-  }): Promise<AsyncResult<UndoableActionResult>> => {
+  const performAction = async (args: {isActive: boolean}): AsyncResult<UndoableActionResult> => {
     const {isActive} = args;
     const targetState = {[`tagIds.${SystemTagId.Unread}`]: isActive ? deleteField() : true};
     const originalState = {[`tagIds.${SystemTagId.Unread}`]: isActive ? true : deleteField()};
@@ -233,7 +228,7 @@ const MarkUnreadFeedItemActionIcon: React.FC<{
     );
 
     if (updateResult.success) {
-      const undo = async (): Promise<AsyncResult<void>> => {
+      const undo = async (): AsyncResult<void> => {
         const undoResult = await feedItemsService.updateFeedItem(
           feedItem.feedItemId,
           originalState as Partial<FeedItem>
@@ -277,9 +272,7 @@ const StarFeedItemActionIcon: React.FC<{
   const feedItemsService = useFeedItemsService();
   const eventLogService = useEventLogService();
 
-  const performAction = async (args: {
-    isActive: boolean;
-  }): Promise<AsyncResult<UndoableActionResult>> => {
+  const performAction = async (args: {isActive: boolean}): AsyncResult<UndoableActionResult> => {
     const {isActive} = args;
     const targetState = {[`tagIds.${SystemTagId.Starred}`]: isActive ? deleteField() : true};
     const originalState = {[`tagIds.${SystemTagId.Starred}`]: isActive ? true : deleteField()};
@@ -290,7 +283,7 @@ const StarFeedItemActionIcon: React.FC<{
     );
 
     if (updateResult.success) {
-      const undo = async (): Promise<AsyncResult<void>> => {
+      const undo = async (): AsyncResult<void> => {
         const undoResult = await feedItemsService.updateFeedItem(
           feedItem.feedItemId,
           originalState as Partial<FeedItem>
@@ -330,7 +323,7 @@ const RetryImportActionIcon: React.FC<{
   const actionInfo = SharedFeedItemHelpers.getRetryImportFeedItemActionInfo();
   const feedItemsService = useFeedItemsService();
 
-  const performAction = async (): Promise<AsyncResult<UndoableActionResult>> => {
+  const performAction = async (): AsyncResult<UndoableActionResult> => {
     const updateResult = await feedItemsService.updateFeedItem(feedItem.feedItemId, {
       importState: {
         ...feedItem.importState,
@@ -340,7 +333,7 @@ const RetryImportActionIcon: React.FC<{
     } as Partial<FeedItem>);
 
     if (updateResult.success) {
-      const undo = async (): Promise<AsyncResult<void>> => {
+      const undo = async (): AsyncResult<void> => {
         logger.warn('Cannot undo Retry Import action', {feedItemId: feedItem.feedItemId});
         return makeSuccessResult(undefined);
       };
@@ -371,12 +364,12 @@ const DebugSaveExampleActionIcon: React.FC<{
 }> = ({feedItem}) => {
   const actionInfo = SharedFeedItemHelpers.getDebugSaveExampleFeedItemActionInfo();
 
-  const performAction = async (): Promise<AsyncResult<UndoableActionResult>> => {
+  const performAction = async (): AsyncResult<UndoableActionResult> => {
     logger.log('DebugSaveExampleActionIcon action performed (TODO)', {
       feedItemId: feedItem.feedItemId,
     });
 
-    const undo = async (): Promise<AsyncResult<void>> => {
+    const undo = async (): AsyncResult<void> => {
       logger.warn('Cannot undo Debug Save Example action (TODO)', {
         feedItemId: feedItem.feedItemId,
       });
