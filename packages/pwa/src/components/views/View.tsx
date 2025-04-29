@@ -2,6 +2,7 @@ import React, {useEffect, useMemo, useRef, useState} from 'react';
 
 import {logger} from '@shared/services/logger.shared';
 
+import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {Urls} from '@shared/lib/urls.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
@@ -182,6 +183,7 @@ const ViewListItem: React.FC<{
   const itemRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
 
+  const isUnread = SharedFeedItemHelpers.isUnread(feedItem);
   const isFocused = focusedFeedItemId === feedItem.feedItemId;
   const shouldShowActions = isHovered || isFocused;
 
@@ -209,7 +211,7 @@ const ViewListItem: React.FC<{
       >
         <div>
           <div className="flex items-center gap-2 pr-10">
-            <Text as="p" bold>
+            <Text as="p" bold={isUnread}>
               {feedItem.title || 'No title'}
             </Text>
             <FeedItemImportStatusBadge importState={feedItem.importState} />
