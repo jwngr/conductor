@@ -56,9 +56,9 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
   const {feedItemId} = feedItem;
   const eventLogService = useEventLogService();
 
-  const handleAction = async (event: MouseEvent<HTMLDivElement>): Promise<void> => {
-    event.stopPropagation();
-    event.preventDefault();
+  const handleAction = async (event?: MouseEvent<HTMLDivElement>): Promise<void> => {
+    event?.stopPropagation();
+    event?.preventDefault();
 
     if (disabled) {
       return;
