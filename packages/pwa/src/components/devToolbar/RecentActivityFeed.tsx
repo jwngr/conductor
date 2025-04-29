@@ -28,14 +28,13 @@ export const RecentActivityFeed: React.FC = () => {
   }
 
   return (
-    // Use Popover component
     <Popover>
       <PopoverTrigger asChild>
         <ButtonIcon
           name={IconName.Inbox}
           tooltip="Recent Activity"
           size={32}
-          onClick={noop} // Radix handles popover via asChild
+          onClick={noop} // Click handled via `asChild`.
         />
       </PopoverTrigger>
 
