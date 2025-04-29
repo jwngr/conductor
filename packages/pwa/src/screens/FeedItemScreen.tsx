@@ -36,7 +36,9 @@ const useMarkFeedItemRead = (args: {
 
   const feedItemsService = useFeedItemsService();
 
-  const wasAlreadyMarkedReadAtMount = useRef(!SharedFeedItemHelpers.isUnread(feedItem));
+  const wasAlreadyMarkedReadAtMount = useRef(
+    feedItem ? !SharedFeedItemHelpers.isUnread(feedItem) : false
+  );
   const wasMarkedReadOnThisMount = useRef(false);
 
   // Variables exist so we don't need to include the entire feed item in the deps array.
