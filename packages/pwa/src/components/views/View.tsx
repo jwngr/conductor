@@ -21,6 +21,7 @@ import {useFeedItems} from '@sharedClient/services/feedItems.client';
 
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
+import {HoverFeedItemActions} from '@src/components/feedItems/FeedItemActions';
 import {FeedItemImportStatusBadge} from '@src/components/feedItems/FeedItemImportStatusBadge';
 import {ViewKeyboardShortcutHandler} from '@src/components/views/ViewKeyboardShortcutHandler';
 import {ViewOptionsDialog} from '@src/components/views/ViewOptionsDialog';
@@ -153,8 +154,10 @@ const ViewListItem: React.FC<{
 }> = ({feedItem}) => {
   const {focusedFeedItemId, setFocusedFeedItemId} = useFocusStore();
   const itemRef = useRef<HTMLDivElement>(null);
+  const [isHovered, setIsHovered] = useState(false);
 
   const isFocused = focusedFeedItemId === feedItem.feedItemId;
+  const shouldShowActions = isHovered || isFocused;
 
   useEffect(() => {
     if (isFocused && itemRef.current) {
@@ -169,22 +172,31 @@ const ViewListItem: React.FC<{
     <Link to={Urls.forFeedItem(feedItem.feedItemId)}>
       <div
         ref={itemRef}
-        className={`flex cursor-pointer flex-col justify-center gap-1 rounded p-2 outline-none hover:bg-neutral-100 focus-visible:bg-neutral-100 ${
+        className={`relative flex cursor-pointer flex-col justify-center gap-1 rounded p-2 outline-none hover:bg-neutral-100 focus-visible:bg-neutral-100 ${
           isFocused ? `bg-neutral-100 outline-2 outline-stone-500` : ''
         }`}
         tabIndex={0}
         onFocus={() => setFocusedFeedItemId(feedItem.feedItemId)}
         onBlur={() => setFocusedFeedItemId(null)}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        <div className="flex items-center gap-2">
-          <Text as="p" bold>
-            {feedItem.title || 'No title'}
+        <div>
+          <div className="flex items-center gap-2 pr-10">
+            <Text as="p" bold>
+              {feedItem.title || 'No title'}
+            </Text>
+            <FeedItemImportStatusBadge importState={feedItem.importState} />
+          </div>
+          <Text as="p" light>
+            {feedItem.url}
           </Text>
-          <FeedItemImportStatusBadge importState={feedItem.importState} />
         </div>
-        <Text as="p" light>
-          {feedItem.url}
-        </Text>
+        {shouldShowActions ? (
+          <div className="absolute top-1/2 right-2 -translate-y-1/2 transform">
+            <HoverFeedItemActions feedItem={feedItem} />
+          </div>
+        ) : null}
       </div>
     </Link>
   );

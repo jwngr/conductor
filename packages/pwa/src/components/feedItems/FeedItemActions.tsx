@@ -22,6 +22,8 @@ import type {Func} from '@shared/types/utils.types';
 import {useEventLogService} from '@sharedClient/services/eventLog.client';
 import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
 
+import type {MouseEvent} from '@sharedClient/types/utils.client.types';
+
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 
 import {toast} from '@src/lib/toasts';
@@ -54,7 +56,10 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
   const {feedItemId} = feedItem;
   const eventLogService = useEventLogService();
 
-  const handleAction = async (): Promise<void> => {
+  const handleAction = async (event: MouseEvent<HTMLDivElement>): Promise<void> => {
+    event.stopPropagation();
+    event.preventDefault();
+
     if (disabled) {
       return;
     }
@@ -255,12 +260,25 @@ export const FeedItemActions: React.FC<{
 }> = ({feedItem}) => {
   return (
     <div className="flex flex-row items-center gap-3">
-      <MarkDoneFeedItemActionIcon feedItem={feedItem} />
-      <SaveFeedItemActionIcon feedItem={feedItem} />
-      <MarkUnreadFeedItemActionIcon feedItem={feedItem} />
-      <StarFeedItemActionIcon feedItem={feedItem} />
-      <DebugSaveExampleActionIcon feedItem={feedItem} />
       <RetryImportActionIcon feedItem={feedItem} />
+      <DebugSaveExampleActionIcon feedItem={feedItem} />
+      <StarFeedItemActionIcon feedItem={feedItem} />
+      <MarkUnreadFeedItemActionIcon feedItem={feedItem} />
+      <SaveFeedItemActionIcon feedItem={feedItem} />
+      <MarkDoneFeedItemActionIcon feedItem={feedItem} />
+    </div>
+  );
+};
+
+export const HoverFeedItemActions: React.FC<{
+  readonly feedItem: FeedItem;
+}> = ({feedItem}) => {
+  return (
+    <div className="flex flex-row items-center gap-3">
+      <StarFeedItemActionIcon feedItem={feedItem} />
+      <MarkUnreadFeedItemActionIcon feedItem={feedItem} />
+      <SaveFeedItemActionIcon feedItem={feedItem} />
+      <MarkDoneFeedItemActionIcon feedItem={feedItem} />
     </div>
   );
 };
