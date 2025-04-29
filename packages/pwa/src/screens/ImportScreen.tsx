@@ -179,7 +179,9 @@ export const ImportScreen: React.FC = () => {
               className="max-w-sm"
             />
             {state.fileError ? (
-              <Text className="text-error text-sm">{state.fileError.message}</Text>
+              <Text as="p" className="text-error">
+                {state.fileError.message}
+              </Text>
             ) : null}
           </div>
 
@@ -220,8 +222,14 @@ const ImportItemRow: React.FC<WithChildren<ImportItemRowProps>> = ({
           <Text bold>{item.title}</Text>
           {children}
         </div>
-        <Text className="text-sm text-gray-500">{item.url}</Text>
-        {isError ? <Text className="text-error text-sm">{status.error.message}</Text> : null}
+        <Text as="p" light>
+          {item.url}
+        </Text>
+        {isError ? (
+          <Text as="p" className="text-error">
+            {status.error.message}
+          </Text>
+        ) : null}
       </div>
       <Button onClick={onImport} disabled={isImporting || isImported} size="sm">
         {buttonText}

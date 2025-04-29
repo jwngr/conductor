@@ -136,7 +136,9 @@ const FeedSubscriptionsList: React.FC = () => {
               <Text bold className={subscription.isActive ? undefined : 'text-error'}>
                 {subscription.title}
               </Text>
-              <Text className="text-sm">{subscription.url}</Text>
+              <Text as="p" light>
+                {subscription.url}
+              </Text>
             </div>
             {subscription.isActive ? (
               <Button

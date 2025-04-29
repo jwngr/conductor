@@ -92,21 +92,26 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
     }
 
     const isCurrentlyActive = getIsActive(feedItem);
-    const result = await performAction({isActive: isCurrentlyActive});
+    const originalActionResult = await performAction({isActive: isCurrentlyActive});
 
-    if (!result.success) {
-      toast.error(errorMessage, {description: result.error.message});
-      logger.error(prefixError(result.error, errorMessage), {feedItemId: feedItem.feedItemId});
+    if (!originalActionResult.success) {
+      toast.error(errorMessage, {description: originalActionResult.error.message});
+      logger.error(prefixError(originalActionResult.error, errorMessage), {feedItemId});
       return;
     }
 
-    // Log the successful action here (Restored original behaviour)
+    // Log the original action.
     void eventLogService.logFeedItemActionEvent({feedItemId, feedItemActionType});
 
     const handleToastUndo: UndoAction = async () => {
-      const undoResult = await result.value();
+      const undoResult = await originalActionResult.value();
       if (undoResult.success) {
         toast('Action undone');
+        void eventLogService.logFeedItemActionEvent({
+          feedItemId,
+          feedItemActionType: FeedItemActionType.Undo,
+          // TODO: Log details about the undone action.
+        });
       } else {
         toast.error('Failed to undo', {description: undoResult.error.message});
         logger.error(prefixError(undoResult.error, 'Toast undo action failed'), {feedItemId});

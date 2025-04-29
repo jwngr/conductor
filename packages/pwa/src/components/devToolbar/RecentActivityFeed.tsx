@@ -43,7 +43,7 @@ export const RecentActivityFeed: React.FC = () => {
           <Text as="h4" bold className="mb-1">
             Recent Activity
           </Text>
-          <ul className="flex max-h-[400px] flex-col gap-1 overflow-y-auto text-sm">
+          <ul className="flex max-h-[400px] flex-col gap-1 overflow-y-auto">
             {eventLogItems.map((item) => (
               <li key={item.eventId} className="border-border bg-background rounded border p-1">
                 <div className="flex justify-between">
