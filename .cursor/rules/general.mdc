@@ -78,6 +78,9 @@ Key data collections in Firestore:
 - Secure API key management
 - CORS configuration for storage
 
+### UI preferences
+- Use sentence case for headers
+
 ## Development Guidelines
 
 ### Testing

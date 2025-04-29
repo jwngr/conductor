@@ -26,7 +26,7 @@ interface ViewFilter<T> {
   readonly value: unknown;
 }
 
-export type ViewGroupByField = 'type' | 'importState';
+export type ViewGroupByField = 'type' | 'importState' | 'createdDate' | 'lastUpdatedDate';
 
 export interface ViewGroupByOption {
   readonly field: ViewGroupByField;

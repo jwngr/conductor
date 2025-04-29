@@ -5,12 +5,25 @@ import {TriageStatus} from '@shared/types/feedItems.types';
 import {QueryFilterOp} from '@shared/types/query.types';
 import {SystemTagId} from '@shared/types/tags.types';
 import {NavItemId} from '@shared/types/urls.types';
-import type {View, ViewGroupByField, ViewSortByField} from '@shared/types/views.types';
+import type {
+  View,
+  ViewGroupByField,
+  ViewGroupByOption,
+  ViewSortByField,
+} from '@shared/types/views.types';
 import {
   SORT_BY_CREATED_TIME_DESC_OPTION,
   SORT_BY_LAST_UPDATED_TIME_DESC_OPTION,
   ViewType,
 } from '@shared/types/views.types';
+
+const GROUP_BY_CREATED_DATE_OPTION: ViewGroupByOption = {
+  field: 'createdDate',
+};
+
+const GROUP_BY_LAST_UPDATED_DATE_OPTION: ViewGroupByOption = {
+  field: 'lastUpdatedDate',
+};
 
 const ALL_VIEW_CONFIGS: Record<ViewType, View<FeedItem>> = {
   [ViewType.Untriaged]: {
@@ -18,28 +31,28 @@ const ALL_VIEW_CONFIGS: Record<ViewType, View<FeedItem>> = {
     type: ViewType.Untriaged,
     filters: [{field: 'triageStatus', op: QueryFilterOp.Equals, value: TriageStatus.Untriaged}],
     sortBy: [SORT_BY_CREATED_TIME_DESC_OPTION],
-    groupBy: [],
+    groupBy: [GROUP_BY_CREATED_DATE_OPTION],
   },
   [ViewType.Saved]: {
     name: 'Saved',
     type: ViewType.Saved,
     filters: [{field: 'triageStatus', op: QueryFilterOp.Equals, value: TriageStatus.Saved}],
     sortBy: [SORT_BY_LAST_UPDATED_TIME_DESC_OPTION],
-    groupBy: [],
+    groupBy: [GROUP_BY_LAST_UPDATED_DATE_OPTION],
   },
   [ViewType.Done]: {
     name: 'Done',
     type: ViewType.Done,
     filters: [{field: 'triageStatus', op: QueryFilterOp.Equals, value: TriageStatus.Done}],
     sortBy: [SORT_BY_LAST_UPDATED_TIME_DESC_OPTION],
-    groupBy: [],
+    groupBy: [GROUP_BY_LAST_UPDATED_DATE_OPTION],
   },
   [ViewType.Trashed]: {
     name: 'Trashed',
     type: ViewType.Trashed,
     filters: [{field: 'triageStatus', op: QueryFilterOp.Equals, value: TriageStatus.Trashed}],
     sortBy: [SORT_BY_LAST_UPDATED_TIME_DESC_OPTION],
-    groupBy: [],
+    groupBy: [GROUP_BY_LAST_UPDATED_DATE_OPTION],
   },
   [ViewType.Unread]: {
     name: 'Unread',
@@ -50,7 +63,7 @@ const ALL_VIEW_CONFIGS: Record<ViewType, View<FeedItem>> = {
       {field: `tagIds.${SystemTagId.Unread}` as any, op: QueryFilterOp.Equals, value: true},
     ],
     sortBy: [SORT_BY_CREATED_TIME_DESC_OPTION],
-    groupBy: [],
+    groupBy: [GROUP_BY_CREATED_DATE_OPTION],
   },
   [ViewType.Starred]: {
     name: 'Starred',
@@ -61,14 +74,14 @@ const ALL_VIEW_CONFIGS: Record<ViewType, View<FeedItem>> = {
       {field: `tagIds.${SystemTagId.Starred}` as any, op: QueryFilterOp.Equals, value: true},
     ],
     sortBy: [SORT_BY_CREATED_TIME_DESC_OPTION],
-    groupBy: [],
+    groupBy: [GROUP_BY_CREATED_DATE_OPTION],
   },
   [ViewType.All]: {
     name: 'All',
     type: ViewType.All,
     filters: [],
     sortBy: [SORT_BY_CREATED_TIME_DESC_OPTION],
-    groupBy: [],
+    groupBy: [GROUP_BY_CREATED_DATE_OPTION],
   },
   [ViewType.Today]: {
     name: 'Today',
@@ -81,7 +94,7 @@ const ALL_VIEW_CONFIGS: Record<ViewType, View<FeedItem>> = {
       },
     ],
     sortBy: [SORT_BY_CREATED_TIME_DESC_OPTION],
-    groupBy: [],
+    groupBy: [GROUP_BY_CREATED_DATE_OPTION],
   },
 };
 
@@ -177,6 +190,10 @@ export function toViewGroupByOptionText(viewGroupByField: ViewGroupByField): str
       return 'Type';
     case 'importState':
       return 'Import state';
+    case 'createdDate':
+      return 'Created date';
+    case 'lastUpdatedDate':
+      return 'Last updated date';
     default:
       assertNever(viewGroupByField);
   }

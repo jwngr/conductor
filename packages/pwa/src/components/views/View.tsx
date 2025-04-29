@@ -103,6 +103,12 @@ function useSortedFeedItems(
   return sortedItems;
 }
 
+const getDateGroupKey = (date: Date | string): string => {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  // TODO: Use better names for group keys.
+  return d.toISOString().split('T')[0]; // YYYY-MM-DD format
+};
+
 /**
  * Returns a grouped list of feed items, keyed by values of the group field. Returns `null` if no
  * group field is provided.
@@ -113,7 +119,7 @@ function useGroupedFeedItems(
   feedItems: FeedItem[],
   groupByField: ViewGroupByField | null
 ): Record<string, FeedItem[]> | null {
-  const groupedItems = useMemo(() => {
+  return useMemo(() => {
     if (groupByField === null) {
       return null;
     }
@@ -132,7 +138,29 @@ function useGroupedFeedItems(
 
       case 'importState':
         for (const item of feedItems) {
-          const groupKey = item.importState?.status || 'UNKNOWN';
+          const groupKey = item.importState.status;
+          if (!groupedItems[groupKey]) {
+            groupedItems[groupKey] = [];
+          }
+          groupedItems[groupKey].push(item);
+        }
+        return groupedItems;
+
+      case 'createdDate':
+        // TODO: Handle timezones.
+        for (const item of feedItems) {
+          const groupKey = getDateGroupKey(item.createdTime);
+          if (!groupedItems[groupKey]) {
+            groupedItems[groupKey] = [];
+          }
+          groupedItems[groupKey].push(item);
+        }
+        return groupedItems;
+
+      case 'lastUpdatedDate':
+        // TODO: Handle timezones.
+        for (const item of feedItems) {
+          const groupKey = getDateGroupKey(item.lastUpdatedTime);
           if (!groupedItems[groupKey]) {
             groupedItems[groupKey] = [];
           }
@@ -144,8 +172,6 @@ function useGroupedFeedItems(
         assertNever(groupByField);
     }
   }, [feedItems, groupByField]);
-
-  return groupedItems;
 }
 
 const ViewListItem: React.FC<{
