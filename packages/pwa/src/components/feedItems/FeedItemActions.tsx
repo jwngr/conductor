@@ -14,7 +14,6 @@ import {
   TriageStatus,
 } from '@shared/types/feedItems.types';
 import type {IconName} from '@shared/types/icons.types';
-import type {AsyncResult, SuccessResult as SuccessResultType} from '@shared/types/results.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
 import type {Func} from '@shared/types/utils.types';
@@ -72,7 +71,7 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
     const result = await performAction({isActive: isCurrentlyActive});
 
     if (result.success === true) {
-      const undo = result.data.undo;
+      const {undo} = result.value;
 
       const handleToastUndo: UndoAction = async () => {
         const undoResult = await undo();
