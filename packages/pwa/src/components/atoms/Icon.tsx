@@ -38,6 +38,12 @@ function toLucideIconName(name: IconName): LucideIconName {
       return 'star';
     case IconName.RetryImport:
       return 'refresh-cw';
+    case IconName.SlidersHorizontal:
+      return 'sliders-horizontal';
+    case IconName.ArrowUp:
+      return 'arrow-up';
+    case IconName.ArrowDown:
+      return 'arrow-down';
     default:
       assertNever(name);
   }
