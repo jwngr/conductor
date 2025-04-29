@@ -55,7 +55,7 @@ export const ViewOptionsDialog: React.FC<{
     firstSortByOption.direction === 'asc' ? 'Sort Ascending' : 'Sort Descending';
 
   return (
-    <Popover>
+    <Popover modal>
       <PopoverTrigger asChild>
         <ButtonIcon
           name={IconName.SlidersHorizontal}
