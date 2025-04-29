@@ -4,11 +4,9 @@ import {logger} from '@shared/services/logger.shared';
 
 import {Urls} from '@shared/lib/urls.shared';
 import {assertNever} from '@shared/lib/utils.shared';
-import {toViewGroupByOptionText, toViewSortByOptionText, Views} from '@shared/lib/views.shared';
+import {Views} from '@shared/lib/views.shared';
 
 import type {FeedItem} from '@shared/types/feedItems.types';
-import type {SortDirection} from '@shared/types/query.types';
-import {SORT_BY_CREATED_TIME_DESC_OPTION} from '@shared/types/views.types';
 import type {
   ViewGroupByField,
   ViewGroupByOption,
@@ -25,6 +23,7 @@ import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
 import {FeedItemImportStatusBadge} from '@src/components/feedItems/FeedItemImportStatusBadge';
 import {ViewKeyboardShortcutHandler} from '@src/components/views/ViewKeyboardShortcutHandler';
+import {ViewOptionsDialog} from '@src/components/views/ViewOptionsDialog';
 
 function compareFeedItems(args: {
   a: FeedItem;
@@ -268,95 +267,29 @@ const ViewHeader: React.FC<{
   name: string;
   sortBy: readonly ViewSortByOption[];
   groupBy: readonly ViewGroupByOption[];
-  setViewOptions: React.Dispatch<React.SetStateAction<ViewRendererState>>;
-}> = ({name, sortBy, groupBy, setViewOptions}) => {
-  const firstSortByOption = sortBy[0] ?? SORT_BY_CREATED_TIME_DESC_OPTION;
-  const firstGroupByOption = groupBy.length === 0 ? null : groupBy[0].field;
-
-  const handleGroupByChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
-    setViewOptions((prevOptions) => ({
-      ...prevOptions,
-      groupBy:
-        event.target.value === 'none' ? [] : [{field: event.target.value as ViewGroupByField}],
-    }));
-  };
-
-  const handleSortFieldChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
-    setViewOptions((prevOptions) => ({
-      ...prevOptions,
-      sortBy: [
-        {
-          field: event.target.value as ViewSortByField,
-          direction: firstSortByOption.direction,
-        },
-      ],
-    }));
-  };
-
-  const handleSortDirectionChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
-    setViewOptions((prevOptions) => ({
-      ...prevOptions,
-      sortBy: [
-        {
-          field: firstSortByOption.field,
-          direction: event.target.value as SortDirection,
-        },
-      ],
-    }));
-  };
-
+  onSortByChange: React.Dispatch<React.SetStateAction<ViewSortByOption[]>>;
+  onGroupByChange: React.Dispatch<React.SetStateAction<ViewGroupByOption[]>>;
+}> = ({name, sortBy, groupBy, onSortByChange, onGroupByChange}) => {
   return (
     <div className="mb-4 flex items-center justify-between">
       <Text as="h2" bold>
         {name}
       </Text>
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-1">
-          <label htmlFor="groupBy">Group by:</label>
-          <select
-            id="groupBy"
-            value={firstGroupByOption ?? 'none'}
-            onChange={handleGroupByChange}
-            className="rounded border border-stone-300 p-1"
-          >
-            <option value={'none'}>None</option>
-            <option value={'type'}>{toViewGroupByOptionText('type')}</option>
-            <option value={'importState'}>{toViewGroupByOptionText('importState')}</option>
-          </select>
-        </div>
-        <div className="flex items-center gap-1">
-          <label htmlFor="sortField">Sort by:</label>
-          <select
-            id="sortField"
-            value={firstSortByOption.field}
-            onChange={handleSortFieldChange}
-            className="rounded border border-stone-300 p-1"
-          >
-            <option value={'createdTime'}>{toViewSortByOptionText('createdTime')}</option>
-            <option value={'lastUpdatedTime'}>{toViewSortByOptionText('lastUpdatedTime')}</option>
-            <option value={'title'}>{toViewSortByOptionText('title')}</option>
-          </select>
-        </div>
-        <div className="flex items-center gap-1">
-          <select
-            id="sortDirection"
-            value={firstSortByOption.direction}
-            onChange={handleSortDirectionChange}
-            className="rounded border border-stone-300 p-1"
-            aria-label="Sort direction"
-          >
-            <option value="asc">Ascending</option>
-            <option value="desc">Descending</option>
-          </select>
-        </div>
+      <div className="flex items-center gap-2">
+        <ViewOptionsDialog
+          sortBy={sortBy}
+          groupBy={groupBy}
+          onSortByChange={onSortByChange}
+          onGroupByChange={onGroupByChange}
+        />
       </div>
     </div>
   );
 };
 
 interface ViewRendererState {
-  sortBy: readonly ViewSortByOption[];
-  groupBy: readonly ViewGroupByOption[];
+  sortBy: ViewSortByOption[];
+  groupBy: ViewGroupByOption[];
 }
 
 export const ViewRenderer: React.FC<{
@@ -364,10 +297,13 @@ export const ViewRenderer: React.FC<{
 }> = ({viewType}) => {
   const defaultViewConfig = Views.get(viewType);
 
-  const [viewOptions, setViewOptions] = useState<ViewRendererState>(() => ({
-    sortBy: defaultViewConfig.sortBy,
-    groupBy: defaultViewConfig.groupBy,
-  }));
+  const [viewOptions, setViewOptions] = useState<ViewRendererState>(() => {
+    // Create mutable copies for the initial state.
+    return {
+      sortBy: [...defaultViewConfig.sortBy],
+      groupBy: [...defaultViewConfig.groupBy],
+    };
+  });
 
   return (
     <div className="flex flex-1 flex-col overflow-auto p-5">
@@ -375,7 +311,18 @@ export const ViewRenderer: React.FC<{
         name={defaultViewConfig.name}
         sortBy={viewOptions.sortBy}
         groupBy={viewOptions.groupBy}
-        setViewOptions={setViewOptions}
+        onSortByChange={(newSortBy) =>
+          setViewOptions((prev) => ({
+            ...prev,
+            sortBy: typeof newSortBy === 'function' ? newSortBy(prev.sortBy) : newSortBy,
+          }))
+        }
+        onGroupByChange={(newGroupBy) =>
+          setViewOptions((prev) => ({
+            ...prev,
+            groupBy: typeof newGroupBy === 'function' ? newGroupBy(prev.groupBy) : newGroupBy,
+          }))
+        }
       />
       <ViewList viewType={viewType} sortBy={viewOptions.sortBy} groupBy={viewOptions.groupBy} />
     </div>
