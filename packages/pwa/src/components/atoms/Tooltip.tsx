@@ -21,7 +21,7 @@ const TooltipContentComponent = React.forwardRef<
   <TooltipPrimitive.Content
     ref={ref}
     sideOffset={sideOffset}
-    className={`z-50 overflow-hidden rounded border border-neutral-500 bg-neutral-900 px-2 py-1 text-neutral-100 ${className ?? ''}`}
+    className={`border-neutral-3 bg-neutral-5 text-neutral-1 z-50 overflow-hidden rounded border px-2 py-1 ${className ?? ''}`}
     {...props}
   />
 ));

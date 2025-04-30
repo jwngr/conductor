@@ -28,8 +28,8 @@ const SidebarItem: React.FC<{
   readonly onClick: () => void;
 }> = ({$isActive, children, onClick}) => (
   <Text
-    className={`cursor-pointer rounded px-3 py-2 pl-6 hover:bg-neutral-200 ${
-      $isActive ? 'bg-neutral-200' : ''
+    className={`hover:bg-neutral-2 cursor-pointer rounded px-3 py-2 pl-6 ${
+      $isActive ? 'bg-neutral-2' : ''
     }`}
     onClick={onClick}
   >
@@ -79,8 +79,8 @@ export const StyleguideScreen: React.FC = () => {
   const sectionConfig = Styleguide.getSectionById(activeSectionId);
 
   return (
-    <div className="flex h-full w-full flex-row bg-neutral-100">
-      <div className="flex h-full w-[240px] flex-col gap-5 overflow-auto border-r border-neutral-300 p-5">
+    <div className="bg-neutral-1 flex h-full w-full flex-row">
+      <div className="border-neutral-3 flex h-full w-[240px] flex-col gap-5 overflow-auto border-r p-5">
         <Text as="h2" bold>
           Styleguide
         </Text>

@@ -78,7 +78,7 @@ export const LinkStories: React.FC = () => {
       </StorySection>
 
       <StorySection title="Link in Context">
-        <div className="rounded-lg border border-neutral-200 bg-white p-4">
+        <div className="border-neutral-2 rounded-lg border bg-white p-4">
           <Text>
             This is a paragraph with an{' '}
             <Link to="/example">

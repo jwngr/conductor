@@ -200,8 +200,8 @@ const ViewListItem: React.FC<{
     <Link to={Urls.forFeedItem(feedItem.feedItemId)}>
       <div
         ref={itemRef}
-        className={`relative flex cursor-pointer flex-col justify-center gap-1 rounded p-2 outline-none hover:bg-neutral-100 focus-visible:bg-neutral-100 ${
-          isFocused ? `bg-neutral-100 outline-2 outline-stone-500` : ''
+        className={`hover:bg-neutral-1 focus-visible:bg-neutral-1 relative flex cursor-pointer flex-col justify-center gap-1 rounded p-2 outline-none ${
+          isFocused ? `bg-neutral-1 outline-2 outline-stone-500` : ''
         }`}
         tabIndex={0}
         onFocus={() => setFocusedFeedItemId(feedItem.feedItemId)}

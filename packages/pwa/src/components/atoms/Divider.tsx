@@ -6,7 +6,7 @@ interface DividerProps {
 }
 
 export const Divider: FC<DividerProps> = ({x, y}) => {
-  const baseClasses = 'bg-neutral-400';
+  const baseClasses = 'bg-neutral-3';
 
   // If both `x` and `y` are provided, create a box.
   if (x && y) {
