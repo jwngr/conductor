@@ -233,6 +233,7 @@ export const vars = createThemeContract({
 export const lightTheme = createTheme(vars, {
   colors: {
     text: 'var(--color-text-default)',
+    textLight: 'var(--color-text-light)',
     textLink: 'var(--color-text-link)',
     error: 'var(--color-error)',
     success: 'var(--color-success)',

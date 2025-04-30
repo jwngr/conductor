@@ -71,37 +71,25 @@ const neutralLevels = ['1', '2', '3', '4', '5'] as const;
 type NeutralLevel = (typeof neutralLevels)[number];
 
 interface ColorSwatchProps {
-  name: string;
+  label: string;
   colorValue: string;
 }
 
-const ColorSwatch: React.FC<ColorSwatchProps> = ({name, colorValue}) => {
-  // Basic check for dark background to set text color
-  // This might need refinement based on specific color values
-  const isPotentiallyDark =
-    name.includes('950') ||
-    name.includes('900') ||
-    name.includes('850') ||
-    name.includes('800') ||
-    name.includes('700') ||
-    name === 'black' ||
-    name === 'background';
-  const textColor = isPotentiallyDark ? vars.colors.paper : vars.colors.black;
-
+const ColorSwatch: React.FC<ColorSwatchProps> = ({label, colorValue}) => {
   return (
     <div
       style={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: vars.spacing[1]}}
     >
       <div
         style={{
-          width: '64px',
-          height: '64px',
+          width: '48px',
+          height: '48px',
           backgroundColor: colorValue,
           border: `1px solid ${vars.colors.border}`,
           borderRadius: vars.radii.md,
         }}
       />
-      <Text style={{fontSize: '12px', color: textColor}}>{name}</Text>
+      <Text style={{fontSize: '12px', color: vars.colors.text}}>{label}</Text>
     </div>
   );
 };
@@ -138,29 +126,52 @@ export const ColorsVanillaStories: React.FC = () => {
               style={{
                 display: 'flex',
                 flexDirection: 'row',
-                flexWrap: 'wrap',
-                gap: vars.spacing[2],
-                alignItems: 'flex-end',
+                alignItems: 'center',
+                gap: vars.spacing[3],
               }}
             >
-              {shades.map((shade) => {
-                const name = `${colorName}-${shade}`;
-                const colorValue = vars.colors[colorName as BaseColorName][shade as Shade];
-                return <ColorSwatch key={name} name={name} colorValue={colorValue} />;
-              })}
+              <Text style={{width: '100px', textAlign: 'right', flexShrink: 0}}>{colorName}:</Text>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  flexWrap: 'wrap',
+                  gap: vars.spacing[2],
+                }}
+              >
+                {shades.map((shade) => {
+                  const colorValue = vars.colors[colorName as BaseColorName][shade as Shade];
+                  return (
+                    <ColorSwatch
+                      key={`${colorName}-${shade}`}
+                      label={shade}
+                      colorValue={colorValue}
+                    />
+                  );
+                })}
+              </div>
             </div>
           ))}
           <div
             style={{
               display: 'flex',
               flexDirection: 'row',
-              flexWrap: 'wrap',
-              gap: vars.spacing[2],
-              alignItems: 'flex-end',
+              alignItems: 'center',
+              gap: vars.spacing[3],
             }}
           >
-            <ColorSwatch key="black" name="black" colorValue={vars.colors.black} />
-            <ColorSwatch key="paper" name="paper" colorValue={vars.colors.paper} />
+            <Text style={{width: '100px', textAlign: 'right', flexShrink: 0}}>Special:</Text>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                gap: vars.spacing[2],
+              }}
+            >
+              <ColorSwatch key="black" label="black" colorValue={vars.colors.black} />
+              <ColorSwatch key="paper" label="paper" colorValue={vars.colors.paper} />
+            </div>
           </div>
         </div>
       </StorySection>
@@ -181,7 +192,7 @@ export const ColorsVanillaStories: React.FC = () => {
         >
           {semanticColorNames.map((name) => {
             const colorValue = vars.colors[name as SemanticColorName];
-            return <ColorSwatch key={name} name={name} colorValue={colorValue} />;
+            return <ColorSwatch key={name} label={name} colorValue={colorValue} />;
           })}
         </div>
 
@@ -219,7 +230,7 @@ export const ColorsVanillaStories: React.FC = () => {
           {neutralLevels.map((level) => {
             const name = `neutral-${level}`;
             const colorValue = vars.colors.neutral[level as NeutralLevel];
-            return <ColorSwatch key={name} name={name} colorValue={colorValue} />;
+            return <ColorSwatch key={name} label={name} colorValue={colorValue} />;
           })}
         </div>
 
@@ -242,7 +253,7 @@ export const ColorsVanillaStories: React.FC = () => {
                 const name = `${groupName}-${level}`;
                 const colorValue =
                   vars.colors[groupName as SemanticGroupName][level as SemanticGroupLevel];
-                return <ColorSwatch key={name} name={name} colorValue={colorValue} />;
+                return <ColorSwatch key={name} label={name} colorValue={colorValue} />;
               })}
             </div>
           ))}
