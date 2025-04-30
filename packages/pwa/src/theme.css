@@ -158,7 +158,7 @@
   --color-error: var(--color-red-600);
   --color-success: var(--color-green-600);
 
-  --color-text-default: var(--color-blue-600);
+  --color-text-default: var(--color-base-900);
   --color-text-light: var(--color-base-600);
   --color-text-link: var(--color-blue-600);
 
@@ -196,7 +196,7 @@
     --color-error: var(--color-red-400);
     --color-success: var(--color-green-400);
 
-    --color-text-default: var(--color-base-200);
+    --color-text-default: var(--color-base-50);
     --color-text-light: var(--color-base-500);
     --color-text-link: var(--color-blue-400);
 
