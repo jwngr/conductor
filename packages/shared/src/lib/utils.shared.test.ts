@@ -9,6 +9,7 @@ import {
   isDate,
   isValidEmail,
   makeUuid,
+  noopTrue,
   omitUndefined,
   partition,
   pluralize,
@@ -153,7 +154,7 @@ describe('partition', () => {
   });
 
   test('should handle empty array', () => {
-    const [trueValues, falseValues] = partition([], () => true);
+    const [trueValues, falseValues] = partition([], noopTrue);
     expect(trueValues).toEqual([]);
     expect(falseValues).toEqual([]);
   });

@@ -175,3 +175,21 @@ export function pluralizeWithCount(count: number, singular: string, plural?: str
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 export function noop(): void {}
+
+/**
+ * A no-op function that returns `true`.
+ *
+ * This is useful for providing a function to callbacks that should always return `true`.
+ */
+export function noopTrue(): true {
+  return true;
+}
+
+/**
+ * A no-op function that returns `false`.
+ *
+ * This is useful for providing a function to callbacks that should always return `false`.
+ */
+export function noopFalse(): false {
+  return false;
+}

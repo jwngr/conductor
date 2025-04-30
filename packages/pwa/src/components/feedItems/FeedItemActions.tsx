@@ -6,6 +6,7 @@ import {logger} from '@shared/services/logger.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
+import {noopFalse} from '@shared/lib/utils.shared';
 
 import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
 import {
@@ -17,7 +18,7 @@ import type {IconName} from '@shared/types/icons.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
-import type {UndoableActionFn, UndoAction} from '@shared/types/undo.types';
+import type {UndoableAction, UndoableActionFn, UndoAction} from '@shared/types/undo.types';
 import type {Func} from '@shared/types/utils.types';
 
 import {useEventLogService} from '@sharedClient/services/eventLog.client';
@@ -27,32 +28,33 @@ import type {MouseEvent} from '@sharedClient/types/utils.client.types';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 
-import {toast} from '@src/lib/toasts';
+import {toast, toastWithUndo} from '@src/lib/toasts';
 
 const performUpdateAndGetUndo = async (args: {
   readonly feedItemId: FeedItemId;
   readonly targetState: Partial<FeedItem> | Record<string, unknown>; // Allow deleteField
-  readonly originalState: Partial<FeedItem> | Record<string, unknown>; // Allow deleteField
+  readonly undoState: Partial<FeedItem> | Record<string, unknown>; // Allow deleteField
   readonly feedItemsService: ReturnType<typeof useFeedItemsService>;
-}): AsyncResult<UndoAction> => {
-  const {feedItemId, targetState, originalState, feedItemsService} = args;
+  readonly undoMessage: string | React.ReactNode;
+  readonly undoFailureMessage: string | React.ReactNode;
+}): AsyncResult<UndoableAction> => {
+  const {feedItemId, targetState, undoState, feedItemsService, undoMessage, undoFailureMessage} =
+    args;
 
-  const updateResult = await feedItemsService.updateFeedItem(
-    feedItemId,
-    targetState as Partial<FeedItem>
-  );
+  const updateResult = await feedItemsService.updateFeedItem(feedItemId, targetState);
   if (!updateResult.success) return updateResult;
 
   const undo = async (): AsyncResult<void> => {
-    const undoResult = await feedItemsService.updateFeedItem(
-      feedItemId,
-      originalState as Partial<FeedItem>
-    );
+    const undoResult = await feedItemsService.updateFeedItem(feedItemId, undoState);
     if (!undoResult.success) return undoResult;
     return makeSuccessResult(undefined);
   };
 
-  return makeSuccessResult(undo);
+  return makeSuccessResult({
+    undoAction: undo,
+    undoMessage,
+    undoFailureMessage,
+  });
 };
 
 interface GenericFeedItemActionIconProps {
@@ -101,29 +103,32 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
     // Log the original action.
     void eventLogService.logFeedItemActionEvent({feedItemId, feedItemActionType});
 
-    const undoFn = await originalActionResult.value;
-    if (undoFn === null) {
+    const undoableAction = await originalActionResult.value;
+
+    // Actions without undo just show a regular toast.
+    if (undoableAction === null) {
       toast(toastText);
       return;
     }
 
-    const handleToastUndo: UndoAction = async () => {
-      const undoResult = await undoFn();
-      if (undoResult.success) {
-        toast('Action undone');
+    // Actions with undo show a toast with an undo button.
+    toastWithUndo({
+      message: toastText,
+      undoMessage: undoableAction.undoMessage,
+      failureMessage: undoableAction.failureMessage,
+      undoAction: async () => {
+        const undoResult = await undoableAction.undoAction();
+        if (!undoResult.success) return undoResult;
+
         void eventLogService.logFeedItemActionEvent({
           feedItemId,
           feedItemActionType: FeedItemActionType.Undo,
-          // TODO: Log details about the undone action.
+          // TODO: Log more details like which action type is being undone.
         });
-      } else {
-        toast.error('Failed to undo', {description: undoResult.error.message});
-        logger.error(prefixError(undoResult.error, 'Toast undo action failed'), {feedItemId});
-      }
-      return undoResult;
-    };
 
-    toast.successWithUndo(toastText, handleToastUndo);
+        return undoResult;
+      },
+    });
     return;
   };
 
@@ -148,13 +153,17 @@ const MarkDoneFeedItemActionIcon: React.FC<{
 
   const performAction: UndoableActionFn = async ({isActive}) => {
     const targetState = {triageStatus: isActive ? TriageStatus.Untriaged : TriageStatus.Done};
-    const originalState = {triageStatus: isActive ? TriageStatus.Done : TriageStatus.Untriaged};
+    const undoState = {triageStatus: isActive ? TriageStatus.Done : TriageStatus.Untriaged};
 
     return await performUpdateAndGetUndo({
       feedItemId: feedItem.feedItemId,
       targetState,
-      originalState,
+      undoState,
       feedItemsService,
+      undoMessage: isDone ? 'Feed item marked as done' : 'Feed item marked as undone',
+      undoFailureMessage: isDone
+        ? 'Error marking feed item as done'
+        : 'Error marking feed item as undone',
     });
   };
 
@@ -184,13 +193,15 @@ const SaveFeedItemActionIcon: React.FC<{
 
   const performAction: UndoableActionFn = async ({isActive}) => {
     const targetState = {triageStatus: isActive ? TriageStatus.Untriaged : TriageStatus.Saved};
-    const originalState = {triageStatus: isActive ? TriageStatus.Saved : TriageStatus.Untriaged};
+    const undoState = {triageStatus: isActive ? TriageStatus.Saved : TriageStatus.Untriaged};
 
     return await performUpdateAndGetUndo({
       feedItemId: feedItem.feedItemId,
       targetState,
-      originalState,
+      undoState,
       feedItemsService,
+      undoMessage: isSaved ? 'Feed item saved' : 'Feed item unsaved',
+      undoFailureMessage: isSaved ? 'Error saving feed item' : 'Error unsaving feed item',
     });
   };
 
@@ -218,13 +229,17 @@ const MarkUnreadFeedItemActionIcon: React.FC<{
 
   const performAction: UndoableActionFn = async ({isActive}) => {
     const targetState = {[`tagIds.${SystemTagId.Unread}`]: isActive ? deleteField() : true};
-    const originalState = {[`tagIds.${SystemTagId.Unread}`]: isActive ? true : deleteField()};
+    const undoState = {[`tagIds.${SystemTagId.Unread}`]: isActive ? true : deleteField()};
 
     return await performUpdateAndGetUndo({
       feedItemId: feedItem.feedItemId,
       targetState,
-      originalState,
+      undoState,
       feedItemsService,
+      undoMessage: isUnread ? 'Feed item marked as unread' : 'Feed item marked as read',
+      undoFailureMessage: isUnread
+        ? 'Error marking feed item as unread'
+        : 'Error marking feed item as read',
     });
   };
 
@@ -254,13 +269,15 @@ const StarFeedItemActionIcon: React.FC<{
 
   const performAction: UndoableActionFn = async ({isActive}) => {
     const targetState = {[`tagIds.${SystemTagId.Starred}`]: isActive ? deleteField() : true};
-    const originalState = {[`tagIds.${SystemTagId.Starred}`]: isActive ? true : deleteField()};
+    const undoState = {[`tagIds.${SystemTagId.Starred}`]: isActive ? true : deleteField()};
 
     return await performUpdateAndGetUndo({
       feedItemId: feedItem.feedItemId,
       targetState,
-      originalState,
+      undoState,
       feedItemsService,
+      undoMessage: isStarred ? 'Feed item starred' : 'Feed item unstarred',
+      undoFailureMessage: isStarred ? 'Error starring feed item' : 'Error unstarring feed item',
     });
   };
 
@@ -305,11 +322,11 @@ const RetryImportActionIcon: React.FC<{
       icon={actionInfo.icon}
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}
-      getIsActive={() => false}
+      getIsActive={noopFalse}
       disabled={feedItem.importState.status === FeedItemImportStatus.Processing}
       performAction={performAction}
-      toastText={'Feed item queued for re-import'}
-      errorMessage={'Error queuing feed item for re-import'}
+      toastText="Feed item queued for re-import"
+      errorMessage="Error queuing feed item for re-import"
     />
   );
 };
@@ -334,10 +351,10 @@ const DebugSaveExampleActionIcon: React.FC<{
       icon={actionInfo.icon}
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}
-      getIsActive={() => false}
+      getIsActive={noopFalse}
       performAction={performAction}
-      toastText={'Feed item saved as example (TODO: Implement this)'}
-      errorMessage={'Error saving feed item as example (TODO: Implement this)'}
+      toastText="Feed item saved as example (TODO: Implement this)"
+      errorMessage="Error saving feed item as example (TODO: Implement this)"
     />
   );
 };

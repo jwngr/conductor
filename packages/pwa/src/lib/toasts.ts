@@ -1,29 +1,48 @@
 import {toast as sonnerToast} from 'sonner';
 import type {ExternalToast} from 'sonner';
 
+import {logger} from '@shared/services/logger.shared';
+
+import {prefixError} from '@shared/lib/errorUtils.shared';
+
 import type {UndoAction} from '@shared/types/undo.types';
 
-export const toast = sonnerToast as typeof sonnerToast & {successWithUndo: typeof successWithUndo};
+export const toast = sonnerToast as typeof sonnerToast;
 
 const DEFAULT_UNDO_TIMEOUT_MS = 5_000;
 
-/**
- * Shows a success toast with an Undo button.
- */
-function successWithUndo(
-  message: string | React.ReactNode,
-  onUndo: UndoAction,
-  options?: ExternalToast
-): void {
+export function toastWithUndo(args: {
+  readonly message: string | React.ReactNode;
+  readonly undoAction: UndoAction;
+  readonly undoMessage: string | React.ReactNode;
+  readonly failureMessage: string | React.ReactNode;
+  readonly options?: ExternalToast;
+}): void {
+  const {message, undoAction, undoMessage, failureMessage, options} = args;
+
   sonnerToast.success(message, {
     ...options,
     duration: options?.duration ?? DEFAULT_UNDO_TIMEOUT_MS,
     action: {
       label: 'Undo',
-      onClick: async () => await onUndo(),
+      onClick: async () => {
+        const undoResult = await undoAction();
+
+        if (!undoResult.success) {
+          // Undo action itself failed.
+          sonnerToast.error(failureMessage, {
+            description: undoResult.error.message,
+          });
+          logger.error(prefixError(undoResult.error, 'Failed to undo from toast'), {
+            message,
+            undoMessage,
+            failureMessage,
+          });
+        }
+
+        // Undo action succeeded.
+        sonnerToast.success(undoMessage);
+      },
     },
   });
 }
-
-// Add the new function to the exported object
-toast.successWithUndo = successWithUndo;
