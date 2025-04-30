@@ -12,6 +12,8 @@ import {Text} from '@src/components/atoms/Text';
 import {MarkdownStories} from '@src/components/Markdown.stories';
 import {ButtonStories} from '@src/components/styleguide/Button.stories';
 import {ButtonIconStories} from '@src/components/styleguide/ButtonIcon.stories';
+import {ColorsStories} from '@src/components/styleguide/Colors.stories';
+import {ColorsVanillaStories} from '@src/components/styleguide/ColorsVanilla.stories';
 import {DialogStories} from '@src/components/styleguide/Dialog.stories';
 import {DividerStories} from '@src/components/styleguide/Divider.stories';
 import {InputStories} from '@src/components/styleguide/Input.stories';
@@ -65,6 +67,10 @@ const StyleguideStoryGroupContent: React.FC<{readonly sectionId: StyleguideStory
       return <TypographyStories />;
     case StyleguideStoryGroupId.MarkdownContentViewer:
       return <MarkdownStories />;
+    case StyleguideStoryGroupId.Colors:
+      return <ColorsStories />;
+    case StyleguideStoryGroupId.COLORS_VANILLA:
+      return <ColorsVanillaStories />;
     default: {
       assertNever(sectionId);
     }

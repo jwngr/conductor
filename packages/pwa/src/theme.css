@@ -158,7 +158,7 @@
   --color-error: var(--color-red-600);
   --color-success: var(--color-green-600);
 
-  --color-text: var(--color-black);
+  --color-text-default: var(--color-blue-600);
   --color-text-light: var(--color-base-600);
   --color-text-link: var(--color-blue-600);
 
@@ -196,7 +196,7 @@
     --color-error: var(--color-red-400);
     --color-success: var(--color-green-400);
 
-    --color-text: var(--color-base-200);
+    --color-text-default: var(--color-base-200);
     --color-text-light: var(--color-base-500);
     --color-text-link: var(--color-blue-400);
 
@@ -226,7 +226,7 @@
   }
 }
 
-/* Define some semantic aliases for use in class names like `bg-red-2` and `text-success`. */
+/* Define semantic aliases for use in class names like `bg-red-2` and `text-success`. */
 @theme inline {
   --color-background: var(--color-background);
   --color-background-2: var(--color-background-2);
@@ -236,7 +236,7 @@
   --color-error: var(--color-error);
   --color-success: var(--color-success);
 
-  --color-text: var(--color-text);
+  --color-text-default: var(--color-text-default);
   --color-text-light: var(--color-text-light);
   --color-text-link: var(--color-text-link);
 

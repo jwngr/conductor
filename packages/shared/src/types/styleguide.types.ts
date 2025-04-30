@@ -11,6 +11,8 @@ export enum StyleguideStoryGroupId {
   Tooltip = 'TOOLTIP',
   Typography = 'TYPOGRAPHY',
   MarkdownContentViewer = 'MARKDOWN_CONTENT_VIEWER',
+  Colors = 'COLORS',
+  COLORS_VANILLA = 'COLORS_VANILLA',
 }
 
 export const DEFAULT_STYLEGUIDE_STORY_GROUP_ID = StyleguideStoryGroupId.Typography;
@@ -65,6 +67,14 @@ const STYLEGUIDE_STORY_GROUPS_BY_ID: Record<StyleguideStoryGroupId, StyleguideSt
     storyGroupId: StyleguideStoryGroupId.Typography,
     title: 'Typography',
   },
+  [StyleguideStoryGroupId.Colors]: {
+    storyGroupId: StyleguideStoryGroupId.Colors,
+    title: 'Colors (Tailwind)',
+  },
+  [StyleguideStoryGroupId.COLORS_VANILLA]: {
+    storyGroupId: StyleguideStoryGroupId.COLORS_VANILLA,
+    title: 'Colors (Vanilla)',
+  },
   [StyleguideStoryGroupId.MarkdownContentViewer]: {
     storyGroupId: StyleguideStoryGroupId.MarkdownContentViewer,
     title: 'Markdown',
@@ -73,6 +83,8 @@ const STYLEGUIDE_STORY_GROUPS_BY_ID: Record<StyleguideStoryGroupId, StyleguideSt
 
 const ORDERED_ATOMIC_COMPONENT_STORY_GROUP_IDS: StyleguideStoryGroupId[] = [
   StyleguideStoryGroupId.Typography,
+  StyleguideStoryGroupId.Colors,
+  StyleguideStoryGroupId.COLORS_VANILLA,
   StyleguideStoryGroupId.Link,
   StyleguideStoryGroupId.TextIcon,
   StyleguideStoryGroupId.ButtonIcon,

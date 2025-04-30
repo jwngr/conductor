@@ -10,7 +10,7 @@ export enum ThemePreference {
 
 export const DEFAULT_THEME_PREFERENCE = ThemePreference.System;
 
-export const DEFAULT_TEXT_COLOR = 'text-text';
+export const DEFAULT_TEXT_COLOR = 'text-text-default';
 export const DEFAULT_TEXT_LIGHT_COLOR = 'text-text-light';
 
-export const DEFAULT_ICON_COLOR = 'text-text';
+export const DEFAULT_ICON_COLOR = 'text-text-default';
