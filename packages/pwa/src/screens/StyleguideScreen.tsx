@@ -69,7 +69,7 @@ const StyleguideStoryGroupContent: React.FC<{readonly sectionId: StyleguideStory
       return <MarkdownStories />;
     case StyleguideStoryGroupId.Colors:
       return <ColorsStories />;
-    case StyleguideStoryGroupId.COLORS_VANILLA:
+    case StyleguideStoryGroupId.ColorsVanilla:
       return <ColorsVanillaStories />;
     default: {
       assertNever(sectionId);
