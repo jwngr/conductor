@@ -1,5 +1,6 @@
 import {deleteField} from 'firebase/firestore';
 import type React from 'react';
+import {useCallback, useMemo} from 'react';
 
 import {logger} from '@shared/services/logger.shared';
 
@@ -94,52 +95,65 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
   const {feedItemId} = feedItem;
   const eventLogService = useEventLogService();
 
-  const handleAction = async (event?: MouseEvent<HTMLDivElement>): Promise<void> => {
-    event?.stopPropagation();
-    event?.preventDefault();
+  const isCurrentlyActive = useMemo(() => getIsActive(feedItem), [getIsActive, feedItem]);
 
-    if (disabled) return;
+  const handleAction = useCallback(
+    async (event?: MouseEvent<HTMLDivElement>): Promise<void> => {
+      if (disabled) return;
 
-    const isCurrentlyActive = getIsActive(feedItem);
-    const originalActionResult = await performAction({isActive: isCurrentlyActive});
+      event?.stopPropagation();
+      event?.preventDefault();
 
-    if (!originalActionResult.success) {
-      toast.error(errorMessage, {description: originalActionResult.error.message});
-      logger.error(prefixError(originalActionResult.error, errorMessage), {feedItemId});
+      const originalActionResult = await performAction({isActive: isCurrentlyActive});
+
+      if (!originalActionResult.success) {
+        toast.error(errorMessage, {description: originalActionResult.error.message});
+        logger.error(prefixError(originalActionResult.error, errorMessage), {feedItemId});
+        return;
+      }
+
+      // Log the original action.
+      void eventLogService.logFeedItemActionEvent({feedItemId, feedItemActionType});
+
+      const undoableAction = originalActionResult.value;
+
+      // Actions without undo just show a regular toast.
+      if (undoableAction === null) {
+        toast(toastText);
+        return;
+      }
+
+      // Actions with undo show a toast with an undo button.
+      toastWithUndo({
+        message: toastText,
+        undoMessage: undoableAction.undoMessage,
+        undoFailureMessage: undoableAction.undoFailureMessage,
+        undoAction: async () => {
+          const undoResult = await undoableAction.undoAction();
+          if (!undoResult.success) return undoResult;
+
+          void eventLogService.logFeedItemActionEvent({
+            feedItemId,
+            feedItemActionType: FeedItemActionType.Undo,
+            // TODO: Log the original action type as additional details.
+          });
+
+          return undoResult;
+        },
+      });
       return;
-    }
-
-    // Log the original action.
-    void eventLogService.logFeedItemActionEvent({feedItemId, feedItemActionType});
-
-    const undoableAction = originalActionResult.value;
-
-    // Actions without undo just show a regular toast.
-    if (undoableAction === null) {
-      toast(toastText);
-      return;
-    }
-
-    // Actions with undo show a toast with an undo button.
-    toastWithUndo({
-      message: toastText,
-      undoMessage: undoableAction.undoMessage,
-      undoFailureMessage: undoableAction.undoFailureMessage,
-      undoAction: async () => {
-        const undoResult = await undoableAction.undoAction();
-        if (!undoResult.success) return undoResult;
-
-        void eventLogService.logFeedItemActionEvent({
-          feedItemId,
-          feedItemActionType: FeedItemActionType.Undo,
-          // TODO: Log the original action type as additional details.
-        });
-
-        return undoResult;
-      },
-    });
-    return;
-  };
+    },
+    [
+      disabled,
+      performAction,
+      isCurrentlyActive,
+      eventLogService,
+      feedItemId,
+      feedItemActionType,
+      toastText,
+      errorMessage,
+    ]
+  );
 
   return (
     <ButtonIcon
