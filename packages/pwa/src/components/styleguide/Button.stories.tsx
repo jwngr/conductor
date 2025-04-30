@@ -4,7 +4,7 @@ import {StorySection} from '@src/components/styleguide/StorySection';
 import {toast} from '@src/lib/toasts';
 
 const handleClick = (message: string): void => {
-  toast.success(message);
+  toast(message);
 };
 
 const handleDisabledClick = (): void => {
