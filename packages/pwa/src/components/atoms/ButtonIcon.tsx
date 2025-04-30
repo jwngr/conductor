@@ -48,7 +48,7 @@ export const ButtonIcon: React.FC<ButtonIconProps> = ({
     <div
       className={cn(
         'flex cursor-pointer items-center justify-center rounded',
-        'bg-neutral-200 hover:bg-neutral-300',
+        'bg-neutral-1 hover:bg-neutral-2',
         {
           'h-6 w-6': buttonIconSize === 24,
           'h-8 w-8': buttonIconSize === 32,

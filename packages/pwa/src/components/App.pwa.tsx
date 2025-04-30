@@ -127,7 +127,7 @@ export const App: React.FC = () => {
               <DevToolbar />
             </ErrorBoundary>
           </BrowserRouter>
-          <Toaster />
+          <Toaster richColors />
         </ThemeProvider>
       </TooltipProvider>
     </StrictMode>

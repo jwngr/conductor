@@ -27,6 +27,7 @@ export const TextIconStories: React.FC = () => {
         <div className="flex flex-row items-center gap-2">
           <TextIcon name={IconName.Star} size={32} className="text-error" />
           <TextIcon name={IconName.Star} size={32} className="text-success" />
+          <TextIcon name={IconName.Star} size={32} className="text-blue-2" />
         </div>
       </StorySection>
     </>

@@ -92,8 +92,8 @@ export const DevToolbar: React.FC = () => {
       onClick={handleToolbarClick}
       className={`border-border fixed right-4 bottom-4 border-2 border-solid shadow-md ${
         isOpen
-          ? 'h-auto w-[300px] cursor-default rounded-xl bg-neutral-100 p-4'
-          : 'h-8 w-8 cursor-pointer rounded-full bg-neutral-100 p-0'
+          ? 'bg-neutral-1 h-auto w-[300px] cursor-default rounded-xl p-4'
+          : 'bg-neutral-1 h-8 w-8 cursor-pointer rounded-full p-0'
       }`}
     >
       {isOpen ? <DevToolbarContent /> : <BugEmoji />}
