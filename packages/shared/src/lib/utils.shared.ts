@@ -167,3 +167,29 @@ export function pluralize(count: number, singular: string, plural?: string): str
 export function pluralizeWithCount(count: number, singular: string, plural?: string): string {
   return `${formatWithCommas(count)} ${pluralize(count, singular, plural)}`;
 }
+
+/**
+ * A no-op function.
+ *
+ * This is useful for providing a function to callbacks that are not used.
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+export function noop(): void {}
+
+/**
+ * A no-op function that returns `true`.
+ *
+ * This is useful for providing a function to callbacks that should always return `true`.
+ */
+export function noopTrue(): true {
+  return true;
+}
+
+/**
+ * A no-op function that returns `false`.
+ *
+ * This is useful for providing a function to callbacks that should always return `false`.
+ */
+export function noopFalse(): false {
+  return false;
+}

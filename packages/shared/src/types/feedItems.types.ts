@@ -363,6 +363,7 @@ export enum FeedItemActionType {
   Save = 'SAVE',
   Star = 'STAR',
   RetryImport = 'RETRY_IMPORT',
+  Undo = 'UNDO',
 }
 
 export interface FeedItemAction {

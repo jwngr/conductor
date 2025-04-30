@@ -27,7 +27,6 @@ import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types
 import type {AsyncResult} from '@shared/types/results.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
-import type {ViewType} from '@shared/types/views.types';
 
 import {
   ClientFirestoreCollectionService,
@@ -99,7 +98,7 @@ interface EventLogItemsState {
   readonly limit: number;
 }
 
-export function useEventLogItems({viewType}: {readonly viewType: ViewType}): EventLogItemsState {
+export function useEventLogItems(): EventLogItemsState {
   const eventLogService = useEventLogService();
 
   const [state, setState] = useState<EventLogItemsState>({
@@ -117,7 +116,7 @@ export function useEventLogItems({viewType}: {readonly viewType: ViewType}): Eve
         setState({eventLogItems: [], isLoading: false, error, limit: EVENT_LOG_LIMIT}),
     });
     return () => unsubscribe();
-  }, [viewType, eventLogService]);
+  }, [eventLogService]);
 
   return state;
 }
