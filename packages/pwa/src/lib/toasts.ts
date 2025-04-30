@@ -15,12 +15,12 @@ export function toastWithUndo(args: {
   readonly message: string | React.ReactNode;
   readonly undoAction: UndoAction;
   readonly undoMessage: string | React.ReactNode;
-  readonly failureMessage: string | React.ReactNode;
+  readonly undoFailureMessage: string | React.ReactNode;
   readonly options?: ExternalToast;
 }): void {
-  const {message, undoAction, undoMessage, failureMessage, options} = args;
+  const {message, undoAction, undoMessage, undoFailureMessage, options} = args;
 
-  sonnerToast.success(message, {
+  sonnerToast(message, {
     ...options,
     duration: options?.duration ?? DEFAULT_UNDO_TIMEOUT_MS,
     action: {
@@ -30,14 +30,15 @@ export function toastWithUndo(args: {
 
         if (!undoResult.success) {
           // Undo action itself failed.
-          sonnerToast.error(failureMessage, {
+          sonnerToast.error(undoFailureMessage, {
             description: undoResult.error.message,
           });
           logger.error(prefixError(undoResult.error, 'Failed to undo from toast'), {
             message,
             undoMessage,
-            failureMessage,
+            undoFailureMessage,
           });
+          return;
         }
 
         // Undo action succeeded.

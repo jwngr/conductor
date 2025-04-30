@@ -18,8 +18,8 @@ import type {IconName} from '@shared/types/icons.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
-import type {UndoableAction, UndoableActionFn, UndoAction} from '@shared/types/undo.types';
-import type {Func} from '@shared/types/utils.types';
+import type {UndoableAction, UndoableActionFn} from '@shared/types/undo.types';
+import type {Func, Task} from '@shared/types/utils.types';
 
 import {useEventLogService} from '@sharedClient/services/eventLog.client';
 import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
@@ -37,23 +37,32 @@ const performUpdateAndGetUndo = async (args: {
   readonly feedItemsService: ReturnType<typeof useFeedItemsService>;
   readonly undoMessage: string | React.ReactNode;
   readonly undoFailureMessage: string | React.ReactNode;
+  readonly originalActionType: FeedItemActionType;
 }): AsyncResult<UndoableAction> => {
-  const {feedItemId, targetState, undoState, feedItemsService, undoMessage, undoFailureMessage} =
-    args;
+  const {
+    feedItemId,
+    targetState,
+    undoState,
+    feedItemsService,
+    undoMessage,
+    undoFailureMessage,
+    originalActionType,
+  } = args;
 
   const updateResult = await feedItemsService.updateFeedItem(feedItemId, targetState);
   if (!updateResult.success) return updateResult;
 
-  const undo = async (): AsyncResult<void> => {
+  const undoAction = async (): AsyncResult<void> => {
     const undoResult = await feedItemsService.updateFeedItem(feedItemId, undoState);
     if (!undoResult.success) return undoResult;
     return makeSuccessResult(undefined);
   };
 
   return makeSuccessResult({
-    undoAction: undo,
+    undoAction,
     undoMessage,
     undoFailureMessage,
+    originalActionType,
   });
 };
 
@@ -115,7 +124,8 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
     toastWithUndo({
       message: toastText,
       undoMessage: undoableAction.undoMessage,
-      failureMessage: undoableAction.failureMessage,
+      undoFailureMessage: undoableAction.undoFailureMessage,
+      originalActionType: undoableAction.originalActionType,
       undoAction: async () => {
         const undoResult = await undoableAction.undoAction();
         if (!undoResult.success) return undoResult;
@@ -123,7 +133,7 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
         void eventLogService.logFeedItemActionEvent({
           feedItemId,
           feedItemActionType: FeedItemActionType.Undo,
-          // TODO: Log more details like which action type is being undone.
+          // TODO: Log the original action type as additional details.
         });
 
         return undoResult;
@@ -164,6 +174,7 @@ const MarkDoneFeedItemActionIcon: React.FC<{
       undoFailureMessage: isDone
         ? 'Error marking feed item as done'
         : 'Error marking feed item as undone',
+      originalActionType: FeedItemActionType.MarkDone,
     });
   };
 
@@ -202,6 +213,7 @@ const SaveFeedItemActionIcon: React.FC<{
       feedItemsService,
       undoMessage: isSaved ? 'Feed item saved' : 'Feed item unsaved',
       undoFailureMessage: isSaved ? 'Error saving feed item' : 'Error unsaving feed item',
+      originalActionType: FeedItemActionType.Save,
     });
   };
 
@@ -240,6 +252,7 @@ const MarkUnreadFeedItemActionIcon: React.FC<{
       undoFailureMessage: isUnread
         ? 'Error marking feed item as unread'
         : 'Error marking feed item as read',
+      originalActionType: FeedItemActionType.MarkUnread,
     });
   };
 
@@ -278,6 +291,7 @@ const StarFeedItemActionIcon: React.FC<{
       feedItemsService,
       undoMessage: isStarred ? 'Feed item starred' : 'Feed item unstarred',
       undoFailureMessage: isStarred ? 'Error starring feed item' : 'Error unstarring feed item',
+      originalActionType: FeedItemActionType.Star,
     });
   };
 
