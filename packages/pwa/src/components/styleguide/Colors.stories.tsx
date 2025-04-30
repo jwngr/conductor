@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 
 import {Text} from '@src/components/atoms/Text';
 import {StorySection} from '@src/components/styleguide/StorySection';
