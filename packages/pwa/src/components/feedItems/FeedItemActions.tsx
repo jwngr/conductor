@@ -87,9 +87,7 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
     event?.stopPropagation();
     event?.preventDefault();
 
-    if (disabled) {
-      return;
-    }
+    if (disabled) return;
 
     const isCurrentlyActive = getIsActive(feedItem);
     const originalActionResult = await performAction({isActive: isCurrentlyActive});
@@ -103,8 +101,14 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
     // Log the original action.
     void eventLogService.logFeedItemActionEvent({feedItemId, feedItemActionType});
 
+    const undoFn = await originalActionResult.value;
+    if (undoFn === null) {
+      toast(toastText);
+      return;
+    }
+
     const handleToastUndo: UndoAction = async () => {
-      const undoResult = await originalActionResult.value();
+      const undoResult = await undoFn();
       if (undoResult.success) {
         toast('Action undone');
         void eventLogService.logFeedItemActionEvent({
@@ -291,13 +295,7 @@ const RetryImportActionIcon: React.FC<{
     } as Partial<FeedItem>);
 
     if (!updateResult.success) return updateResult;
-
-    const undo = async (): AsyncResult<void> => {
-      logger.warn('Cannot undo Retry Import action', {feedItemId: feedItem.feedItemId});
-      return makeSuccessResult(undefined);
-    };
-
-    return makeSuccessResult(undo);
+    return makeSuccessResult(null);
   };
 
   return (
@@ -326,14 +324,7 @@ const DebugSaveExampleActionIcon: React.FC<{
       feedItemId: feedItem.feedItemId,
     });
 
-    const undo = async (): AsyncResult<void> => {
-      logger.warn('Cannot undo Debug Save Example action (TODO)', {
-        feedItemId: feedItem.feedItemId,
-      });
-      return makeSuccessResult(undefined);
-    };
-
-    return makeSuccessResult(undo);
+    return makeSuccessResult(null);
   };
 
   return (
