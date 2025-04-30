@@ -19,7 +19,7 @@ import type {AsyncResult} from '@shared/types/results.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
 import type {UndoableAction, UndoableActionFn} from '@shared/types/undo.types';
-import type {Func, Task} from '@shared/types/utils.types';
+import type {Func} from '@shared/types/utils.types';
 
 import {useEventLogService} from '@sharedClient/services/eventLog.client';
 import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
@@ -112,7 +112,7 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
     // Log the original action.
     void eventLogService.logFeedItemActionEvent({feedItemId, feedItemActionType});
 
-    const undoableAction = await originalActionResult.value;
+    const undoableAction = originalActionResult.value;
 
     // Actions without undo just show a regular toast.
     if (undoableAction === null) {
@@ -125,7 +125,6 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
       message: toastText,
       undoMessage: undoableAction.undoMessage,
       undoFailureMessage: undoableAction.undoFailureMessage,
-      originalActionType: undoableAction.originalActionType,
       undoAction: async () => {
         const undoResult = await undoableAction.undoAction();
         if (!undoResult.success) return undoResult;
