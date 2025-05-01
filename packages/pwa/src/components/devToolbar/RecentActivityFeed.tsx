@@ -32,7 +32,7 @@ export const RecentActivityFeed: React.FC = () => {
       <PopoverTrigger asChild>
         <ButtonIcon
           name={IconName.Inbox}
-          tooltip="Recent Activity"
+          tooltip="Recent activity"
           size={32}
           onClick={noop} // Click handled via `asChild`.
         />
