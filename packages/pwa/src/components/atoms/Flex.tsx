@@ -3,7 +3,7 @@ import type {HTMLAttributes} from 'react';
 import type {WithChildren} from '@sharedClient/types/utils.client.types';
 
 import * as styles from '@src/components/atoms/Flex.css';
-import type {FlexValue as FlexStyleValue} from '@src/components/atoms/Flex.css';
+import type {FlexValue} from '@src/components/atoms/Flex.css';
 
 import type {vars} from '@src/lib/theme.css';
 
@@ -18,7 +18,7 @@ interface FlexProps extends HTMLAttributes<HTMLDivElement> {
     | 'space-evenly';
   readonly gap?: keyof typeof vars.spacing;
   readonly wrap?: boolean;
-  readonly flex?: FlexStyleValue | boolean;
+  readonly flex?: FlexValue | boolean;
 }
 
 interface FlexWithDirectionProps extends FlexProps {
@@ -38,7 +38,7 @@ const FlexWithDirection: React.FC<FlexWithDirectionProps> = ({
   style,
   ...rest
 }) => {
-  const flexValue: FlexStyleValue | undefined =
+  const flexValue: FlexValue | undefined =
     flex === true ? 1 : flex === false ? 'none' : flex === undefined ? undefined : flex;
 
   return (
