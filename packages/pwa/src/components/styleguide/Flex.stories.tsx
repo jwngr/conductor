@@ -19,73 +19,76 @@ const Box: React.FC<{readonly children: React.ReactNode}> = ({children}) => (
 export const FlexStories: React.FC = () => {
   return (
     <>
-      <StorySection title="FlexRow with different alignments">
-        <FlexColumn gap={16}>
-          <FlexRow gap={8} align="flex-start">
+      <StorySection title="FlexRow vertical alignment">
+        <FlexColumn gap={4}>
+          <FlexRow gap={2} align="flex-start">
             <Box>
-              <Text>{`align="flex-start"`}</Text>
+              <Text>{`TOP [align="flex-start"]`}</Text>
             </Box>
             <Box>
-              <Text>Taller box</Text>
-              <Text>With more content</Text>
-            </Box>
-          </FlexRow>
-
-          <FlexRow gap={8} align="center">
-            <Box>
-              <Text>{`align="center"`}</Text>
-            </Box>
-            <Box>
-              <Text>Taller box</Text>
-              <Text>With more content</Text>
+              <Text>Row 1</Text>
+              <Text>Row 2</Text>
+              <Text>Row 3</Text>
             </Box>
           </FlexRow>
 
-          <FlexRow gap={8} align="flex-end">
+          <FlexRow gap={2} align="center">
             <Box>
-              <Text>{`align="flex-end"`}</Text>
+              <Text>{`CENTER [align="center"]`}</Text>
             </Box>
             <Box>
-              <Text>Taller box</Text>
-              <Text>With more content</Text>
+              <Text>Row 1</Text>
+              <Text>Row 2</Text>
+              <Text>Row 3</Text>
+            </Box>
+          </FlexRow>
+
+          <FlexRow gap={2} align="flex-end">
+            <Box>
+              <Text>{`BOTTOM [align="flex-end"]`}</Text>
+            </Box>
+            <Box>
+              <Text>Row 1</Text>
+              <Text>Row 2</Text>
+              <Text>Row 3</Text>
             </Box>
           </FlexRow>
         </FlexColumn>
       </StorySection>
 
-      <StorySection title="FlexRow with different justify">
-        <FlexColumn gap={16}>
-          <FlexRow gap={8} justify="flex-start">
+      <StorySection title="FlexRow horizontal spacing">
+        <FlexColumn gap={4}>
+          <FlexRow gap={2} justify="flex-start">
             <Box>
-              <Text>{`justify="flex-start"`}</Text>
+              <Text>{`LEFT [justify="flex-start"]`}</Text>
             </Box>
             <Box>
-              <Text>Second box</Text>
-            </Box>
-          </FlexRow>
-
-          <FlexRow gap={8} justify="center">
-            <Box>
-              <Text>{`justify="center"`}</Text>
-            </Box>
-            <Box>
-              <Text>Second box</Text>
+              <Text>To the left</Text>
             </Box>
           </FlexRow>
 
-          <FlexRow gap={8} justify="space-between">
+          <FlexRow gap={2} justify="center">
             <Box>
-              <Text>{`justify="space-between"`}</Text>
+              <Text>{`CENTER [justify="center"]`}</Text>
             </Box>
             <Box>
-              <Text>Second box</Text>
+              <Text>In the middle</Text>
+            </Box>
+          </FlexRow>
+
+          <FlexRow gap={2} justify="space-between">
+            <Box>
+              <Text>{`RIGHT [justify="space-between"]`}</Text>
+            </Box>
+            <Box>
+              <Text>To the right</Text>
             </Box>
           </FlexRow>
         </FlexColumn>
       </StorySection>
 
       <StorySection title="FlexColumn">
-        <FlexColumn gap={8}>
+        <FlexColumn gap={2}>
           <Box>
             <Text>First item</Text>
           </Box>
@@ -96,17 +99,6 @@ export const FlexStories: React.FC = () => {
             <Text>Third item</Text>
           </Box>
         </FlexColumn>
-      </StorySection>
-
-      <StorySection title="Responsive gap">
-        <FlexRow gap={{mobile: 8, desktop: 32}}>
-          <Box>
-            <Text>Gap changes on mobile</Text>
-          </Box>
-          <Box>
-            <Text>Second box</Text>
-          </Box>
-        </FlexRow>
       </StorySection>
     </>
   );

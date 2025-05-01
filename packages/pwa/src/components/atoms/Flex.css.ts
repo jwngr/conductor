@@ -1,31 +1,27 @@
-import {assignVars, createThemeContract, style} from '@vanilla-extract/css';
 import {recipe} from '@vanilla-extract/recipes';
 
+import {vars} from '@src/lib/theme.css';
+
 export type FlexValue = 1 | 'auto' | 'initial' | 'none';
-
-export const flexVars = createThemeContract({
-  mobileGap: null,
-  desktopGap: null,
-});
-
-const DEFAULT_GAP = {
-  mobileGap: '0px',
-  desktopGap: '0px',
-} as const;
 
 export const flex = recipe({
   base: {
     display: 'flex',
-    vars: assignVars(flexVars, DEFAULT_GAP),
-    gap: flexVars.mobileGap,
-    '@media': {
-      '(max-width: 768px)': {
-        gap: flexVars.desktopGap,
-      },
-    },
   },
 
   variants: {
+    gap: {
+      0: {gap: 0},
+      1: {gap: vars.spacing[1]},
+      2: {gap: vars.spacing[2]},
+      3: {gap: vars.spacing[3]},
+      4: {gap: vars.spacing[4]},
+      5: {gap: vars.spacing[5]},
+      6: {gap: vars.spacing[6]},
+      8: {gap: vars.spacing[8]},
+      10: {gap: vars.spacing[10]},
+      12: {gap: vars.spacing[12]},
+    },
     direction: {
       row: {flexDirection: 'row'},
       column: {flexDirection: 'column'},
@@ -57,24 +53,3 @@ export const flex = recipe({
     },
   },
 });
-
-export const assignResponsiveGap = (
-  gap: number | {mobile: number; desktop: number}
-): ReturnType<typeof style> => {
-  if (typeof gap === 'number') {
-    return style({
-      vars: assignVars(flexVars, {mobileGap: `${gap}px`, desktopGap: `${gap}px`}),
-    });
-  }
-
-  console.log('gap', gap);
-
-  return style({
-    vars: assignVars(flexVars, {mobileGap: `${gap.mobile}px`, desktopGap: `${gap.desktop}px`}),
-    '@media': {
-      '(max-width: 768px)': {
-        vars: assignVars(flexVars, {mobileGap: `${gap.mobile}px`, desktopGap: `${gap.desktop}px`}),
-      },
-    },
-  });
-};

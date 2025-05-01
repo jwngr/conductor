@@ -2,7 +2,8 @@ import type {HTMLAttributes} from 'react';
 
 import * as styles from '@src/components/atoms/Flex.css';
 import type {FlexValue as FlexStyleValue} from '@src/components/atoms/Flex.css';
-import {assignResponsiveGap} from '@src/components/atoms/Flex.css';
+
+import type {vars} from '@src/lib/theme.css';
 
 interface FlexProps extends HTMLAttributes<HTMLDivElement> {
   readonly direction: 'row' | 'column';
@@ -14,7 +15,7 @@ interface FlexProps extends HTMLAttributes<HTMLDivElement> {
     | 'space-between'
     | 'space-around'
     | 'space-evenly';
-  readonly gap?: number | {mobile: number; desktop: number};
+  readonly gap?: keyof typeof vars.spacing;
   readonly wrap?: boolean;
   readonly flex?: FlexStyleValue | boolean;
 }
@@ -33,28 +34,17 @@ const Flex: React.FC<FlexProps> = ({
   const flexStyleValue: FlexStyleValue | undefined =
     flex === true ? 1 : flex === false ? 'none' : flex === undefined ? undefined : flex;
 
-  const gapStyle = gap ? assignResponsiveGap(gap) : {};
-
-  const mobileGap = typeof gap === 'object' ? gap.mobile : (gap ?? 0);
-  const desktopGap = typeof gap === 'object' ? gap.desktop : (gap ?? 0);
-
   return (
     <div
       className={styles.flex({
         direction,
         align,
         justify,
+        gap,
         wrap: wrap,
         flexValue: flexStyleValue,
       })}
-      style={{
-        ...style,
-        // ...assignVars(flexVars, {
-        //   mobileGap: `${mobileGap}px`,
-        //   desktopGap: `${desktopGap}px`,
-        // }),
-        ...gapStyle,
-      }}
+      style={style}
       {...rest}
     >
       {children}
@@ -62,7 +52,7 @@ const Flex: React.FC<FlexProps> = ({
   );
 };
 
-type FlexRowColumnProps = Partial<Omit<FlexProps, 'direction'>> & {
+type FlexRowColumnProps = Partial<Omit<FlexProps, 'direction'> & {gap: FlexProps['gap']}> & {
   readonly children: React.ReactNode;
 };
 
