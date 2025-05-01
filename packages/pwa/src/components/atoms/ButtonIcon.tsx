@@ -9,6 +9,7 @@ import type {StyleAttributes} from '@shared/types/utils.types';
 
 import type {MouseEvent} from '@sharedClient/types/utils.client.types';
 
+import * as styles from '@src/components/atoms/ButtonIcon.css';
 import {Icon} from '@src/components/atoms/Icon';
 import type {TooltipContent} from '@src/components/atoms/Tooltip';
 import {Tooltip} from '@src/components/atoms/Tooltip';
@@ -44,20 +45,21 @@ export const ButtonIcon: React.FC<ButtonIconProps> = ({
     onClick?.(null as unknown as MouseEvent<HTMLDivElement>);
   }, [onClick]);
 
+  // Combine the base style, size variant, and any additional className
+  const combinedClassName = cn(
+    styles.buttonIconWrapper,
+    styles.buttonIconSize[buttonIconSize],
+    className
+  );
+
   const buttonIcon = (
     <div
-      className={cn(
-        'flex cursor-pointer items-center justify-center rounded',
-        'bg-neutral-1 hover:bg-neutral-2',
-        {
-          'h-6 w-6': buttonIconSize === 24,
-          'h-8 w-8': buttonIconSize === 32,
-          'h-10 w-10': buttonIconSize === 40,
-        }
-      )}
-      onClick={onClick}
+      className={combinedClassName}
+      // Disable pointer events and hover effect if disabled
+      style={disabled ? {pointerEvents: 'none', cursor: 'default'} : undefined}
+      onClick={!disabled ? onClick : undefined}
     >
-      <Icon className={className} name={name} size={iconSize} {...styleProps} />
+      <Icon name={name} size={iconSize} {...styleProps} />
     </div>
   );
 
