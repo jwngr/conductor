@@ -1,18 +1,19 @@
 export enum StyleguideStoryGroupId {
   Button = 'BUTTON',
   ButtonIcon = 'BUTTON_ICON',
+  Colors = 'COLORS',
+  ColorsVanilla = 'COLORS_VANILLA',
   Dialog = 'DIALOG',
   Divider = 'DIVIDER',
+  Flex = 'FLEX',
   Input = 'INPUT',
   Link = 'LINK',
+  MarkdownContentViewer = 'MARKDOWN_CONTENT_VIEWER',
   Spacer = 'SPACER',
   TextIcon = 'TEXT_ICON',
   Toast = 'TOAST',
   Tooltip = 'TOOLTIP',
   Typography = 'TYPOGRAPHY',
-  MarkdownContentViewer = 'MARKDOWN_CONTENT_VIEWER',
-  Colors = 'COLORS',
-  ColorsVanilla = 'COLORS_VANILLA',
 }
 
 export const DEFAULT_STYLEGUIDE_STORY_GROUP_ID = StyleguideStoryGroupId.Typography;
@@ -31,6 +32,14 @@ const STYLEGUIDE_STORY_GROUPS_BY_ID: Record<StyleguideStoryGroupId, StyleguideSt
     storyGroupId: StyleguideStoryGroupId.ButtonIcon,
     title: 'Button Icon',
   },
+  [StyleguideStoryGroupId.Colors]: {
+    storyGroupId: StyleguideStoryGroupId.Colors,
+    title: 'Colors (Tailwind)',
+  },
+  [StyleguideStoryGroupId.ColorsVanilla]: {
+    storyGroupId: StyleguideStoryGroupId.ColorsVanilla,
+    title: 'Colors (Vanilla)',
+  },
   [StyleguideStoryGroupId.Dialog]: {
     storyGroupId: StyleguideStoryGroupId.Dialog,
     title: 'Dialog',
@@ -39,6 +48,10 @@ const STYLEGUIDE_STORY_GROUPS_BY_ID: Record<StyleguideStoryGroupId, StyleguideSt
     storyGroupId: StyleguideStoryGroupId.Divider,
     title: 'Divider',
   },
+  [StyleguideStoryGroupId.Flex]: {
+    storyGroupId: StyleguideStoryGroupId.Flex,
+    title: 'Flex',
+  },
   [StyleguideStoryGroupId.Input]: {
     storyGroupId: StyleguideStoryGroupId.Input,
     title: 'Input',
@@ -46,6 +59,10 @@ const STYLEGUIDE_STORY_GROUPS_BY_ID: Record<StyleguideStoryGroupId, StyleguideSt
   [StyleguideStoryGroupId.Link]: {
     storyGroupId: StyleguideStoryGroupId.Link,
     title: 'Link',
+  },
+  [StyleguideStoryGroupId.MarkdownContentViewer]: {
+    storyGroupId: StyleguideStoryGroupId.MarkdownContentViewer,
+    title: 'Markdown',
   },
   [StyleguideStoryGroupId.Spacer]: {
     storyGroupId: StyleguideStoryGroupId.Spacer,
@@ -67,18 +84,6 @@ const STYLEGUIDE_STORY_GROUPS_BY_ID: Record<StyleguideStoryGroupId, StyleguideSt
     storyGroupId: StyleguideStoryGroupId.Typography,
     title: 'Typography',
   },
-  [StyleguideStoryGroupId.Colors]: {
-    storyGroupId: StyleguideStoryGroupId.Colors,
-    title: 'Colors (Tailwind)',
-  },
-  [StyleguideStoryGroupId.ColorsVanilla]: {
-    storyGroupId: StyleguideStoryGroupId.ColorsVanilla,
-    title: 'Colors (Vanilla)',
-  },
-  [StyleguideStoryGroupId.MarkdownContentViewer]: {
-    storyGroupId: StyleguideStoryGroupId.MarkdownContentViewer,
-    title: 'Markdown',
-  },
 };
 
 const ORDERED_ATOMIC_COMPONENT_STORY_GROUP_IDS: StyleguideStoryGroupId[] = [
@@ -94,6 +99,7 @@ const ORDERED_ATOMIC_COMPONENT_STORY_GROUP_IDS: StyleguideStoryGroupId[] = [
   StyleguideStoryGroupId.Toast,
   StyleguideStoryGroupId.Tooltip,
   StyleguideStoryGroupId.Divider,
+  StyleguideStoryGroupId.Flex,
   StyleguideStoryGroupId.Spacer,
 ];
 

@@ -16,6 +16,7 @@ import {ColorsStories} from '@src/components/styleguide/Colors.stories';
 import {ColorsVanillaStories} from '@src/components/styleguide/ColorsVanilla.stories';
 import {DialogStories} from '@src/components/styleguide/Dialog.stories';
 import {DividerStories} from '@src/components/styleguide/Divider.stories';
+import {FlexStories} from '@src/components/styleguide/Flex.stories';
 import {InputStories} from '@src/components/styleguide/Input.stories';
 import {LinkStories} from '@src/components/styleguide/Link.stories';
 import {SpacerStories} from '@src/components/styleguide/Spacer.stories';
@@ -47,14 +48,22 @@ const StyleguideStoryGroupContent: React.FC<{readonly sectionId: StyleguideStory
       return <ButtonStories />;
     case StyleguideStoryGroupId.ButtonIcon:
       return <ButtonIconStories />;
+    case StyleguideStoryGroupId.Colors:
+      return <ColorsStories />;
+    case StyleguideStoryGroupId.ColorsVanilla:
+      return <ColorsVanillaStories />;
     case StyleguideStoryGroupId.Dialog:
       return <DialogStories />;
     case StyleguideStoryGroupId.Divider:
       return <DividerStories />;
+    case StyleguideStoryGroupId.Flex:
+      return <FlexStories />;
     case StyleguideStoryGroupId.Input:
       return <InputStories />;
     case StyleguideStoryGroupId.Link:
       return <LinkStories />;
+    case StyleguideStoryGroupId.MarkdownContentViewer:
+      return <MarkdownStories />;
     case StyleguideStoryGroupId.Spacer:
       return <SpacerStories />;
     case StyleguideStoryGroupId.TextIcon:
@@ -65,12 +74,6 @@ const StyleguideStoryGroupContent: React.FC<{readonly sectionId: StyleguideStory
       return <TooltipStories />;
     case StyleguideStoryGroupId.Typography:
       return <TypographyStories />;
-    case StyleguideStoryGroupId.MarkdownContentViewer:
-      return <MarkdownStories />;
-    case StyleguideStoryGroupId.Colors:
-      return <ColorsStories />;
-    case StyleguideStoryGroupId.ColorsVanilla:
-      return <ColorsVanillaStories />;
     default: {
       assertNever(sectionId);
     }
