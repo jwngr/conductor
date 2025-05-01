@@ -1,12 +1,13 @@
 import type {HTMLAttributes} from 'react';
 
+import type {WithChildren} from '@sharedClient/types/utils.client.types';
+
 import * as styles from '@src/components/atoms/Flex.css';
 import type {FlexValue as FlexStyleValue} from '@src/components/atoms/Flex.css';
 
 import type {vars} from '@src/lib/theme.css';
 
 interface FlexProps extends HTMLAttributes<HTMLDivElement> {
-  readonly direction: 'row' | 'column';
   readonly align: 'flex-start' | 'flex-end' | 'center' | 'stretch' | 'baseline';
   readonly justify:
     | 'flex-start'
@@ -20,7 +21,11 @@ interface FlexProps extends HTMLAttributes<HTMLDivElement> {
   readonly flex?: FlexStyleValue | boolean;
 }
 
-const Flex: React.FC<FlexProps> = ({
+interface FlexPropsWithDirection extends FlexProps {
+  readonly direction: 'row' | 'column';
+}
+
+const Flex: React.FC<FlexPropsWithDirection> = ({
   children,
   direction,
   align,
@@ -31,19 +36,12 @@ const Flex: React.FC<FlexProps> = ({
   style,
   ...rest
 }) => {
-  const flexStyleValue: FlexStyleValue | undefined =
+  const flexValue: FlexStyleValue | undefined =
     flex === true ? 1 : flex === false ? 'none' : flex === undefined ? undefined : flex;
 
   return (
     <div
-      className={styles.flex({
-        direction,
-        align,
-        justify,
-        gap,
-        wrap: wrap,
-        flexValue: flexStyleValue,
-      })}
+      className={styles.flex({direction, align, justify, gap, wrap, flexValue})}
       style={style}
       {...rest}
     >
@@ -52,11 +50,7 @@ const Flex: React.FC<FlexProps> = ({
   );
 };
 
-type FlexRowColumnProps = Partial<Omit<FlexProps, 'direction'> & {gap: FlexProps['gap']}> & {
-  readonly children: React.ReactNode;
-};
-
-export const FlexRow: React.FC<FlexRowColumnProps> = ({
+export const FlexRow: React.FC<WithChildren<Partial<FlexProps>>> = ({
   align = 'center',
   justify = 'flex-start',
   gap,
@@ -80,7 +74,7 @@ export const FlexRow: React.FC<FlexRowColumnProps> = ({
   );
 };
 
-export const FlexColumn: React.FC<FlexRowColumnProps> = ({
+export const FlexColumn: React.FC<WithChildren<Partial<FlexProps>>> = ({
   align = 'stretch',
   justify = 'flex-start',
   gap,
