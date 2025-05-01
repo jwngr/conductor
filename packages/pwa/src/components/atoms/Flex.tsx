@@ -8,8 +8,8 @@ import type {FlexValue as FlexStyleValue} from '@src/components/atoms/Flex.css';
 import type {vars} from '@src/lib/theme.css';
 
 interface FlexProps extends HTMLAttributes<HTMLDivElement> {
-  readonly align: 'flex-start' | 'flex-end' | 'center' | 'stretch' | 'baseline';
-  readonly justify:
+  readonly align?: 'flex-start' | 'flex-end' | 'center' | 'stretch' | 'baseline';
+  readonly justify?:
     | 'flex-start'
     | 'flex-end'
     | 'center'
@@ -21,11 +21,13 @@ interface FlexProps extends HTMLAttributes<HTMLDivElement> {
   readonly flex?: FlexStyleValue | boolean;
 }
 
-interface FlexPropsWithDirection extends FlexProps {
+interface FlexWithDirectionProps extends FlexProps {
   readonly direction: 'row' | 'column';
+  readonly align: Required<FlexProps['align']>;
+  readonly justify: Required<FlexProps['justify']>;
 }
 
-const Flex: React.FC<FlexPropsWithDirection> = ({
+const FlexWithDirection: React.FC<FlexWithDirectionProps> = ({
   children,
   direction,
   align,
@@ -60,7 +62,7 @@ export const FlexRow: React.FC<WithChildren<Partial<FlexProps>>> = ({
   ...rest
 }) => {
   return (
-    <Flex
+    <FlexWithDirection
       direction="row"
       align={align}
       justify={justify}
@@ -70,7 +72,7 @@ export const FlexRow: React.FC<WithChildren<Partial<FlexProps>>> = ({
       {...rest}
     >
       {children}
-    </Flex>
+    </FlexWithDirection>
   );
 };
 
@@ -84,7 +86,7 @@ export const FlexColumn: React.FC<WithChildren<Partial<FlexProps>>> = ({
   ...rest
 }) => {
   return (
-    <Flex
+    <FlexWithDirection
       direction="column"
       align={align}
       justify={justify}
@@ -94,6 +96,6 @@ export const FlexColumn: React.FC<WithChildren<Partial<FlexProps>>> = ({
       {...rest}
     >
       {children}
-    </Flex>
+    </FlexWithDirection>
   );
 };
