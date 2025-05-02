@@ -5,11 +5,17 @@ import type {StyleAttributes} from '@shared/types/utils.types';
 
 import {cn} from '@src/lib/utils.pwa';
 
-interface LinkProps extends TanStackLinkProps, StyleAttributes {}
+interface LinkProps extends TanStackLinkProps, StyleAttributes {
+  readonly onClick?: React.MouseEventHandler<HTMLAnchorElement>;
+}
 
-export const Link: React.FC<LinkProps> = ({children, className, ...props}) => {
+export const Link: React.FC<LinkProps> = ({children, className, onClick, ...props}) => {
   return (
-    <TanStackLink className={cn('text-current no-underline', className)} {...props}>
+    <TanStackLink
+      className={cn('text-current no-underline', className)}
+      onClick={onClick}
+      {...props}
+    >
       {children}
     </TanStackLink>
   );

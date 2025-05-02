@@ -30,7 +30,7 @@ export const TooltipStories: React.FC = () => {
           trigger={<Button>Hover for shortcut</Button>}
           content="Save changes"
           shortcutId={KeyboardShortcutId.ToggleSaved}
-          onShortcutTrigger={() => {
+          onShortcutTrigger={async () => {
             toast.success('Keyboard shortcut triggered');
           }}
         />
