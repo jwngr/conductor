@@ -136,7 +136,6 @@ const FeedItemScreenMainContent: React.FC<{
 
 export const FeedItemScreen: React.FC = () => {
   const feedItemId = useFeedItemIdFromUrl();
-  console.log('feedItemId', feedItemId);
 
   const mainContent = feedItemId ? (
     <FeedItemScreenMainContent feedItemId={feedItemId} />
