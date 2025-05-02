@@ -2,7 +2,7 @@ import path from 'path';
 import {fileURLToPath} from 'url';
 
 import tailwindcss from '@tailwindcss/vite';
-import {TanStackRouterVite} from '@tanstack/router-plugin';
+import {TanStackRouterVite} from '@tanstack/router-plugin/vite';
 import {vanillaExtractPlugin} from '@vanilla-extract/vite-plugin';
 import react from '@vitejs/plugin-react';
 import {defineConfig} from 'vite';
