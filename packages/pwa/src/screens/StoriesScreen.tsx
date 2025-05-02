@@ -6,6 +6,7 @@ import {
   getDesignSystemSidebarItems,
   getRendererSidebarItems,
 } from '@shared/lib/stories.shared';
+import {Urls} from '@shared/lib/urls.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {RendererType} from '@shared/types/renderers.types';
@@ -23,6 +24,7 @@ import {DialogStories} from '@src/components/atoms/Dialog.stories';
 import {DividerStories} from '@src/components/atoms/Divider.stories';
 import {FlexStories} from '@src/components/atoms/Flex.stories';
 import {InputStories} from '@src/components/atoms/Input.stories';
+import {Link} from '@src/components/atoms/Link';
 import {LinkStories} from '@src/components/atoms/Link.stories';
 import {SpacerStories} from '@src/components/atoms/Spacer.stories';
 import {Text} from '@src/components/atoms/Text';
@@ -139,7 +141,7 @@ const StoriesSidebar: React.FC<{
   readonly onItemClick: Consumer<StoriesSidebarItem>;
 }> = ({activeSidebarItem, onItemClick}) => {
   return (
-    <div className="border-neutral-3 flex h-full w-[240px] flex-col gap-6 overflow-auto border-r p-4">
+    <div className="border-neutral-3 flex h-full w-[240px] flex-col gap-6 overflow-auto border-r p-4 pt-2">
       <SidebarSection
         title="Design system"
         items={getDesignSystemSidebarItems()}
@@ -200,10 +202,19 @@ export const StoriesScreen: React.FC = () => {
 
   return (
     <div className="bg-neutral-1 flex h-full w-full flex-row">
-      <StoriesSidebar
-        activeSidebarItem={selectedSidebarItem}
-        onItemClick={setSelectedSidebarItem}
-      />
+      <div className="border-neutral-3 flex h-full w-[240px] flex-col border-r">
+        <div className="py-2 pl-4">
+          <Link to={Urls.forRoot()}>
+            <Text as="p" underline="hover" light>
+              ← Back to app
+            </Text>
+          </Link>
+        </div>
+        <StoriesSidebar
+          activeSidebarItem={selectedSidebarItem}
+          onItemClick={setSelectedSidebarItem}
+        />
+      </div>
       <StoriesScreenMainContent activeSidebarItem={selectedSidebarItem} />
     </div>
   );
