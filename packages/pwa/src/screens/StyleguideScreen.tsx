@@ -3,11 +3,15 @@ import {useState} from 'react';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {
-  DEFAULT_STYLEGUIDE_STORY_GROUP_ID,
+  AtomicComponentType,
+  DEFAULT_STYLEGUIDE_SIDEBAR_ITEM,
+  DesignSystemComponentType,
+  RendererType,
   Styleguide,
-  StyleguideStoryGroupId,
+  StyleguideSidebarSectionId,
 } from '@shared/types/styleguide.types';
-import type {Consumer} from '@shared/types/utils.types';
+import type {StyleguideSidebarItem} from '@shared/types/styleguide.types';
+import type {Consumer, Task} from '@shared/types/utils.types';
 
 import {Text} from '@src/components/atoms/Text';
 import {MarkdownStories} from '@src/components/Markdown.stories';
@@ -27,12 +31,10 @@ import {TooltipStories} from '@src/components/styleguide/Tooltip.stories';
 import {TypographyStories} from '@src/components/styleguide/Typography.stories';
 
 const StoryGroupSidebarItem: React.FC<{
-  readonly sectionId: StyleguideStoryGroupId;
+  readonly title: string;
   readonly isActive: boolean;
-  readonly onClick: () => void;
-}> = ({sectionId, isActive, onClick}) => {
-  const section = Styleguide.getSectionById(sectionId);
-
+  readonly onClick: Task;
+}> = ({title, isActive, onClick}) => {
   return (
     <Text
       className={`hover:bg-neutral-2 ml-[-8px] cursor-pointer rounded p-2 ${
@@ -40,69 +42,87 @@ const StoryGroupSidebarItem: React.FC<{
       }`}
       onClick={onClick}
     >
-      {section.title}
+      {title}
     </Text>
   );
 };
 
-const StyleguideStoryGroupContent: React.FC<{readonly sectionId: StyleguideStoryGroupId}> = ({
-  sectionId,
-}) => {
-  switch (sectionId) {
-    case StyleguideStoryGroupId.Button:
+const AtomicComponentStoryContent: React.FC<{
+  readonly atomicComponentType: AtomicComponentType;
+}> = ({atomicComponentType}) => {
+  switch (atomicComponentType) {
+    case AtomicComponentType.Button:
       return <ButtonStories />;
-    case StyleguideStoryGroupId.ButtonIcon:
+    case AtomicComponentType.ButtonIcon:
       return <ButtonIconStories />;
-    case StyleguideStoryGroupId.Colors:
-      return <ColorsStories />;
-    case StyleguideStoryGroupId.ColorsVanilla:
-      return <ColorsVanillaStories />;
-    case StyleguideStoryGroupId.Dialog:
+    case AtomicComponentType.Dialog:
       return <DialogStories />;
-    case StyleguideStoryGroupId.Divider:
+    case AtomicComponentType.Divider:
       return <DividerStories />;
-    case StyleguideStoryGroupId.Flex:
+    case AtomicComponentType.Flex:
       return <FlexStories />;
-    case StyleguideStoryGroupId.Input:
+    case AtomicComponentType.Input:
       return <InputStories />;
-    case StyleguideStoryGroupId.Link:
+    case AtomicComponentType.Link:
       return <LinkStories />;
-    case StyleguideStoryGroupId.MarkdownRenderer:
-      return <MarkdownStories />;
-    case StyleguideStoryGroupId.Spacer:
+    case AtomicComponentType.Spacer:
       return <SpacerStories />;
-    case StyleguideStoryGroupId.TextIcon:
+    case AtomicComponentType.TextIcon:
       return <TextIconStories />;
-    case StyleguideStoryGroupId.Toast:
+    case AtomicComponentType.Toast:
       return <ToastStories />;
-    case StyleguideStoryGroupId.Tooltip:
+    case AtomicComponentType.Tooltip:
       return <TooltipStories />;
-    case StyleguideStoryGroupId.Typography:
+    default: {
+      assertNever(atomicComponentType);
+    }
+  }
+};
+
+const DesignSystemStoryContent: React.FC<{
+  readonly designSystemType: DesignSystemComponentType;
+}> = ({designSystemType}) => {
+  switch (designSystemType) {
+    case DesignSystemComponentType.Colors:
+      return <ColorsStories />;
+    case DesignSystemComponentType.ColorsVanilla:
+      return <ColorsVanillaStories />;
+    case DesignSystemComponentType.Typography:
       return <TypographyStories />;
     default: {
-      assertNever(sectionId);
+      assertNever(designSystemType);
+    }
+  }
+};
+
+const RendererStoryContent: React.FC<{readonly rendererType: RendererType}> = ({rendererType}) => {
+  switch (rendererType) {
+    case RendererType.Markdown:
+      return <MarkdownStories />;
+    default: {
+      assertNever(rendererType);
     }
   }
 };
 
 const StyleguideSidebarSection: React.FC<{
   readonly title: string;
-  readonly sectionIds: StyleguideStoryGroupId[];
-  readonly activeSectionId: StyleguideStoryGroupId;
-  readonly onItemClick: Consumer<StyleguideStoryGroupId>;
-}> = ({title, sectionIds, activeSectionId, onItemClick}) => {
+  readonly items: StyleguideSidebarItem[];
+  readonly activeSidebarItem: StyleguideSidebarItem;
+  readonly onItemClick: Consumer<StyleguideSidebarItem>;
+}> = ({title, items, activeSidebarItem, onItemClick}) => {
   return (
     <div className="flex flex-col gap-2">
       <Text as="h6" light>
         {title}
       </Text>
       <div className="flex flex-col">
-        {sectionIds.map((sectionId) => (
+        {items.map((item) => (
           <StoryGroupSidebarItem
-            key={sectionId}
-            sectionId={sectionId}
-            isActive={activeSectionId === sectionId}
-            onClick={() => onItemClick(sectionId)}
+            key={item.title}
+            title={item.title}
+            isActive={activeSidebarItem.sidebarItemId === item.sidebarItemId}
+            onClick={() => onItemClick(item)}
           />
         ))}
       </div>
@@ -111,27 +131,27 @@ const StyleguideSidebarSection: React.FC<{
 };
 
 const StyleguideSidebar: React.FC<{
-  readonly activeSectionId: StyleguideStoryGroupId;
-  readonly onItemClick: Consumer<StyleguideStoryGroupId>;
-}> = ({activeSectionId, onItemClick}) => {
+  readonly activeSidebarItem: StyleguideSidebarItem;
+  readonly onItemClick: Consumer<StyleguideSidebarItem>;
+}> = ({activeSidebarItem, onItemClick}) => {
   return (
     <div className="border-neutral-3 flex h-full w-[240px] flex-col gap-6 overflow-auto border-r p-4">
       <StyleguideSidebarSection
         title="Design system"
-        sectionIds={Styleguide.getOrderedDesignSystemIds()}
-        activeSectionId={activeSectionId}
+        items={Styleguide.getDesignSystemSidebarItems()}
+        activeSidebarItem={activeSidebarItem}
         onItemClick={onItemClick}
       />
       <StyleguideSidebarSection
         title="Atoms"
-        sectionIds={Styleguide.getOrderedAtomicComponentIds()}
-        activeSectionId={activeSectionId}
+        items={Styleguide.getAtomicComponentSidebarItems()}
+        activeSidebarItem={activeSidebarItem}
         onItemClick={onItemClick}
       />
       <StyleguideSidebarSection
         title="Renderers"
-        sectionIds={Styleguide.getOrderedRendererIds()}
-        activeSectionId={activeSectionId}
+        items={Styleguide.getRendererSidebarItems()}
+        activeSidebarItem={activeSidebarItem}
         onItemClick={onItemClick}
       />
     </div>
@@ -139,29 +159,48 @@ const StyleguideSidebar: React.FC<{
 };
 
 const StyleguideScreenMainContent: React.FC<{
-  readonly activeSectionId: StyleguideStoryGroupId;
-}> = ({activeSectionId}) => {
-  const sectionConfig = Styleguide.getSectionById(activeSectionId);
+  readonly activeSidebarItem: StyleguideSidebarItem;
+}> = ({activeSidebarItem}) => {
+  let mainContent: React.ReactNode;
+  switch (activeSidebarItem.type) {
+    case StyleguideSidebarSectionId.DesignSystem:
+      mainContent = <DesignSystemStoryContent designSystemType={activeSidebarItem.sidebarItemId} />;
+      break;
+    case StyleguideSidebarSectionId.AtomicComponents:
+      mainContent = (
+        <AtomicComponentStoryContent atomicComponentType={activeSidebarItem.sidebarItemId} />
+      );
+      break;
+    case StyleguideSidebarSectionId.Renderers:
+      mainContent = <RendererStoryContent rendererType={activeSidebarItem.sidebarItemId} />;
+      break;
+    default: {
+      assertNever(activeSidebarItem);
+    }
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-8 overflow-auto p-4">
       <Text as="h1" bold>
-        {sectionConfig.title}
+        {activeSidebarItem.title}
       </Text>
-      <StyleguideStoryGroupContent sectionId={activeSectionId} />
+      {mainContent}
     </div>
   );
 };
 
 export const StyleguideScreen: React.FC = () => {
-  const [activeSectionId, setActiveSectionId] = useState<StyleguideStoryGroupId>(
-    DEFAULT_STYLEGUIDE_STORY_GROUP_ID
+  const [selectedSidebarItem, setSelectedSidebarItem] = useState<StyleguideSidebarItem>(
+    DEFAULT_STYLEGUIDE_SIDEBAR_ITEM
   );
 
   return (
     <div className="bg-neutral-1 flex h-full w-full flex-row">
-      <StyleguideSidebar activeSectionId={activeSectionId} onItemClick={setActiveSectionId} />
-      <StyleguideScreenMainContent activeSectionId={activeSectionId} />
+      <StyleguideSidebar
+        activeSidebarItem={selectedSidebarItem}
+        onItemClick={setSelectedSidebarItem}
+      />
+      <StyleguideScreenMainContent activeSidebarItem={selectedSidebarItem} />
     </div>
   );
 };

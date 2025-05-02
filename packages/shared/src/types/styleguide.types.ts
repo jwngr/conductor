@@ -1,129 +1,184 @@
-export enum StyleguideStoryGroupId {
+import {assertNever} from '@shared/lib/utils.shared';
+
+export enum StyleguideSidebarSectionId {
+  AtomicComponents = 'ATOMIC_COMPONENTS',
+  DesignSystem = 'DESIGN_SYSTEM',
+  Renderers = 'RENDERERS',
+}
+
+export enum AtomicComponentType {
   Button = 'BUTTON',
   ButtonIcon = 'BUTTON_ICON',
-  Colors = 'COLORS',
-  ColorsVanilla = 'COLORS_VANILLA',
   Dialog = 'DIALOG',
   Divider = 'DIVIDER',
   Flex = 'FLEX',
   Input = 'INPUT',
   Link = 'LINK',
-  MarkdownRenderer = 'MARKDOWN_RENDERER',
   Spacer = 'SPACER',
   TextIcon = 'TEXT_ICON',
   Toast = 'TOAST',
   Tooltip = 'TOOLTIP',
-  Typography = 'TYPOGRAPHY',
 }
 
-export const DEFAULT_STYLEGUIDE_STORY_GROUP_ID = StyleguideStoryGroupId.Typography;
+export enum DesignSystemComponentType {
+  Typography = 'TYPOGRAPHY',
+  Colors = 'COLORS',
+  ColorsVanilla = 'COLORS_VANILLA',
+}
 
-interface StyleguideStoryGroup {
-  readonly storyGroupId: StyleguideStoryGroupId;
+export enum RendererType {
+  Markdown = 'MARKDOWN',
+}
+
+export type StyleguideSidebarItemId =
+  | AtomicComponentType
+  | DesignSystemComponentType
+  | RendererType;
+
+export interface AtomicComponentSidebarItem {
+  readonly type: StyleguideSidebarSectionId.AtomicComponents;
+  readonly sidebarItemId: AtomicComponentType;
   readonly title: string;
 }
 
-const STYLEGUIDE_STORY_GROUPS_BY_ID: Record<StyleguideStoryGroupId, StyleguideStoryGroup> = {
-  [StyleguideStoryGroupId.Button]: {
-    storyGroupId: StyleguideStoryGroupId.Button,
-    title: 'Buttons',
-  },
-  [StyleguideStoryGroupId.ButtonIcon]: {
-    storyGroupId: StyleguideStoryGroupId.ButtonIcon,
-    title: 'Button Icon',
-  },
-  [StyleguideStoryGroupId.Colors]: {
-    storyGroupId: StyleguideStoryGroupId.Colors,
-    title: 'Colors (Tailwind)',
-  },
-  [StyleguideStoryGroupId.ColorsVanilla]: {
-    storyGroupId: StyleguideStoryGroupId.ColorsVanilla,
-    title: 'Colors (Vanilla)',
-  },
-  [StyleguideStoryGroupId.Dialog]: {
-    storyGroupId: StyleguideStoryGroupId.Dialog,
-    title: 'Dialog',
-  },
-  [StyleguideStoryGroupId.Divider]: {
-    storyGroupId: StyleguideStoryGroupId.Divider,
-    title: 'Divider',
-  },
-  [StyleguideStoryGroupId.Flex]: {
-    storyGroupId: StyleguideStoryGroupId.Flex,
-    title: 'Flex',
-  },
-  [StyleguideStoryGroupId.Input]: {
-    storyGroupId: StyleguideStoryGroupId.Input,
-    title: 'Input',
-  },
-  [StyleguideStoryGroupId.Link]: {
-    storyGroupId: StyleguideStoryGroupId.Link,
-    title: 'Link',
-  },
-  [StyleguideStoryGroupId.MarkdownRenderer]: {
-    storyGroupId: StyleguideStoryGroupId.MarkdownRenderer,
-    title: 'Markdown',
-  },
-  [StyleguideStoryGroupId.Spacer]: {
-    storyGroupId: StyleguideStoryGroupId.Spacer,
-    title: 'Spacer',
-  },
-  [StyleguideStoryGroupId.TextIcon]: {
-    storyGroupId: StyleguideStoryGroupId.TextIcon,
-    title: 'Text Icon',
-  },
-  [StyleguideStoryGroupId.Toast]: {
-    storyGroupId: StyleguideStoryGroupId.Toast,
-    title: 'Toast',
-  },
-  [StyleguideStoryGroupId.Tooltip]: {
-    storyGroupId: StyleguideStoryGroupId.Tooltip,
-    title: 'Tooltip',
-  },
-  [StyleguideStoryGroupId.Typography]: {
-    storyGroupId: StyleguideStoryGroupId.Typography,
-    title: 'Typography',
-  },
-};
+export interface DesignSystemSidebarItem {
+  readonly type: StyleguideSidebarSectionId.DesignSystem;
+  readonly sidebarItemId: DesignSystemComponentType;
+  readonly title: string;
+}
 
-const ORDERED_DESIGN_SYSTEM_STORY_GROUP_IDS: StyleguideStoryGroupId[] = [
-  StyleguideStoryGroupId.Typography,
-  StyleguideStoryGroupId.Colors,
-  StyleguideStoryGroupId.ColorsVanilla,
+export interface RendererSidebarItem {
+  readonly type: StyleguideSidebarSectionId.Renderers;
+  readonly sidebarItemId: RendererType;
+  readonly title: string;
+}
+
+export type StyleguideSidebarItem =
+  | AtomicComponentSidebarItem
+  | DesignSystemSidebarItem
+  | RendererSidebarItem;
+
+const ORDERED_ATOMIC_COMPONENT_TYPES: AtomicComponentType[] = [
+  AtomicComponentType.Link,
+  AtomicComponentType.TextIcon,
+  AtomicComponentType.ButtonIcon,
+  AtomicComponentType.Button,
+  AtomicComponentType.Input,
+  AtomicComponentType.Dialog,
+  AtomicComponentType.Toast,
+  AtomicComponentType.Tooltip,
+  AtomicComponentType.Divider,
+  AtomicComponentType.Flex,
+  AtomicComponentType.Spacer,
 ];
 
-const ORDERED_ATOMIC_COMPONENT_STORY_GROUP_IDS: StyleguideStoryGroupId[] = [
-  StyleguideStoryGroupId.Link,
-  StyleguideStoryGroupId.TextIcon,
-  StyleguideStoryGroupId.ButtonIcon,
-  StyleguideStoryGroupId.Button,
-  StyleguideStoryGroupId.Input,
-  StyleguideStoryGroupId.Dialog,
-  StyleguideStoryGroupId.Toast,
-  StyleguideStoryGroupId.Tooltip,
-  StyleguideStoryGroupId.Divider,
-  StyleguideStoryGroupId.Flex,
-  StyleguideStoryGroupId.Spacer,
+const ORDERED_DESIGN_SYSTEM_COMPONENT_TYPES: DesignSystemComponentType[] = [
+  DesignSystemComponentType.Typography,
+  DesignSystemComponentType.Colors,
+  DesignSystemComponentType.ColorsVanilla,
 ];
 
-const ORDERED_RENDERER_STORY_GROUP_IDS: StyleguideStoryGroupId[] = [
-  StyleguideStoryGroupId.MarkdownRenderer,
-];
+const ORDERED_RENDERER_TYPES: RendererType[] = [RendererType.Markdown];
 
-export class Styleguide {
-  public static getSectionById(storyGroupId: StyleguideStoryGroupId): StyleguideStoryGroup {
-    return STYLEGUIDE_STORY_GROUPS_BY_ID[storyGroupId];
-  }
-
-  public static getOrderedDesignSystemIds(): StyleguideStoryGroupId[] {
-    return ORDERED_DESIGN_SYSTEM_STORY_GROUP_IDS;
-  }
-
-  public static getOrderedAtomicComponentIds(): StyleguideStoryGroupId[] {
-    return ORDERED_ATOMIC_COMPONENT_STORY_GROUP_IDS;
-  }
-
-  public static getOrderedRendererIds(): StyleguideStoryGroupId[] {
-    return ORDERED_RENDERER_STORY_GROUP_IDS;
+function getDesignSystemSidebarItemTitle(type: DesignSystemComponentType): string {
+  switch (type) {
+    case DesignSystemComponentType.Colors:
+      return 'Colors';
+    case DesignSystemComponentType.ColorsVanilla:
+      return 'Colors Vanilla';
+    case DesignSystemComponentType.Typography:
+      return 'Typography';
+    default: {
+      assertNever(type);
+    }
   }
 }
+
+function getAtomicComponentSidebarItemTitle(type: AtomicComponentType): string {
+  switch (type) {
+    case AtomicComponentType.ButtonIcon:
+      return 'ButtonIcon';
+    case AtomicComponentType.Button:
+      return 'Button';
+    case AtomicComponentType.Dialog:
+      return 'Dialog';
+    case AtomicComponentType.Divider:
+      return 'Divider';
+    case AtomicComponentType.Flex:
+      return 'Flex';
+    case AtomicComponentType.Input:
+      return 'Input';
+    case AtomicComponentType.Link:
+      return 'Link';
+    case AtomicComponentType.Spacer:
+      return 'Spacer';
+    case AtomicComponentType.TextIcon:
+      return 'TextIcon';
+    case AtomicComponentType.Toast:
+      return 'Toast';
+    case AtomicComponentType.Tooltip:
+      return 'Tooltip';
+    default: {
+      assertNever(type);
+    }
+  }
+}
+
+function getRendererSidebarItemTitle(type: RendererType): string {
+  switch (type) {
+    case RendererType.Markdown:
+      return 'Markdown';
+    default: {
+      assertNever(type);
+    }
+  }
+}
+
+export class Styleguide {
+  public static getDesignSystemSidebarItem(
+    type: DesignSystemComponentType
+  ): DesignSystemSidebarItem {
+    return {
+      title: getDesignSystemSidebarItemTitle(type),
+      sidebarItemId: type,
+      type: StyleguideSidebarSectionId.DesignSystem,
+    };
+  }
+
+  public static getDesignSystemSidebarItems(): DesignSystemSidebarItem[] {
+    return ORDERED_DESIGN_SYSTEM_COMPONENT_TYPES.map((id) =>
+      Styleguide.getDesignSystemSidebarItem(id)
+    );
+  }
+
+  public static getAtomicComponentSidebarItem(
+    type: AtomicComponentType
+  ): AtomicComponentSidebarItem {
+    return {
+      title: getAtomicComponentSidebarItemTitle(type),
+      sidebarItemId: type,
+      type: StyleguideSidebarSectionId.AtomicComponents,
+    };
+  }
+
+  public static getAtomicComponentSidebarItems(): AtomicComponentSidebarItem[] {
+    return ORDERED_ATOMIC_COMPONENT_TYPES.map((type) =>
+      Styleguide.getAtomicComponentSidebarItem(type)
+    );
+  }
+
+  public static getRendererSidebarItem(type: RendererType): RendererSidebarItem {
+    return {
+      title: getRendererSidebarItemTitle(type),
+      sidebarItemId: type,
+      type: StyleguideSidebarSectionId.Renderers,
+    };
+  }
+
+  public static getRendererSidebarItems(): RendererSidebarItem[] {
+    return ORDERED_RENDERER_TYPES.map((type) => Styleguide.getRendererSidebarItem(type));
+  }
+}
+
+export const DEFAULT_STYLEGUIDE_SIDEBAR_ITEM: StyleguideSidebarItem =
+  Styleguide.getDesignSystemSidebarItem(DesignSystemComponentType.Typography);
