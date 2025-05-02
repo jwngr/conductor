@@ -33,7 +33,6 @@ export const App: React.FC = () => {
   return (
     <StrictMode>
       <RouterProvider router={router} />
-      <Toaster richColors />
     </StrictMode>
   );
 };
