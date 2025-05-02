@@ -99,9 +99,9 @@ const PermanentGlobalSubscriptions: React.FC = () => {
  * Subscriptions that are active whenever there is a logged-in account.
  */
 const LoggedInGlobalSubscriptions: React.FC = () => {
-  const loggedInAccount = useMaybeLoggedInAccount();
+  const {isLoading, loggedInAccount} = useMaybeLoggedInAccount();
 
-  if (!loggedInAccount) return null;
+  if (isLoading || !loggedInAccount) return null;
 
   return (
     <RequireLoggedInAccount>
