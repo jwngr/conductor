@@ -1,16 +1,20 @@
 import {useState} from 'react';
 
+import {
+  DEFAULT_STYLEGUIDE_SIDEBAR_ITEM,
+  getAtomicComponentSidebarItems,
+  getDesignSystemSidebarItems,
+  getRendererSidebarItems,
+} from '@shared/lib/stories.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
+import {RendererType} from '@shared/types/renderers.types';
 import {
   AtomicComponentType,
-  DEFAULT_STYLEGUIDE_SIDEBAR_ITEM,
   DesignSystemComponentType,
-  RendererType,
-  Styleguide,
-  StyleguideSidebarSectionId,
+  StoriesSidebarSectionId,
 } from '@shared/types/styleguide.types';
-import type {StyleguideSidebarItem} from '@shared/types/styleguide.types';
+import type {StoriesSidebarItem} from '@shared/types/styleguide.types';
 import type {Consumer, Task} from '@shared/types/utils.types';
 
 import {Text} from '@src/components/atoms/Text';
@@ -105,11 +109,11 @@ const RendererStoryContent: React.FC<{readonly rendererType: RendererType}> = ({
   }
 };
 
-const StyleguideSidebarSection: React.FC<{
+const SidebarSection: React.FC<{
   readonly title: string;
-  readonly items: StyleguideSidebarItem[];
-  readonly activeSidebarItem: StyleguideSidebarItem;
-  readonly onItemClick: Consumer<StyleguideSidebarItem>;
+  readonly items: StoriesSidebarItem[];
+  readonly activeSidebarItem: StoriesSidebarItem;
+  readonly onItemClick: Consumer<StoriesSidebarItem>;
 }> = ({title, items, activeSidebarItem, onItemClick}) => {
   return (
     <div className="flex flex-col gap-2">
@@ -130,27 +134,27 @@ const StyleguideSidebarSection: React.FC<{
   );
 };
 
-const StyleguideSidebar: React.FC<{
-  readonly activeSidebarItem: StyleguideSidebarItem;
-  readonly onItemClick: Consumer<StyleguideSidebarItem>;
+const StoriesSidebar: React.FC<{
+  readonly activeSidebarItem: StoriesSidebarItem;
+  readonly onItemClick: Consumer<StoriesSidebarItem>;
 }> = ({activeSidebarItem, onItemClick}) => {
   return (
     <div className="border-neutral-3 flex h-full w-[240px] flex-col gap-6 overflow-auto border-r p-4">
-      <StyleguideSidebarSection
+      <SidebarSection
         title="Design system"
-        items={Styleguide.getDesignSystemSidebarItems()}
+        items={getDesignSystemSidebarItems()}
         activeSidebarItem={activeSidebarItem}
         onItemClick={onItemClick}
       />
-      <StyleguideSidebarSection
+      <SidebarSection
         title="Atoms"
-        items={Styleguide.getAtomicComponentSidebarItems()}
+        items={getAtomicComponentSidebarItems()}
         activeSidebarItem={activeSidebarItem}
         onItemClick={onItemClick}
       />
-      <StyleguideSidebarSection
+      <SidebarSection
         title="Renderers"
-        items={Styleguide.getRendererSidebarItems()}
+        items={getRendererSidebarItems()}
         activeSidebarItem={activeSidebarItem}
         onItemClick={onItemClick}
       />
@@ -158,20 +162,20 @@ const StyleguideSidebar: React.FC<{
   );
 };
 
-const StyleguideScreenMainContent: React.FC<{
-  readonly activeSidebarItem: StyleguideSidebarItem;
+const StoriesScreenMainContent: React.FC<{
+  readonly activeSidebarItem: StoriesSidebarItem;
 }> = ({activeSidebarItem}) => {
   let mainContent: React.ReactNode;
   switch (activeSidebarItem.type) {
-    case StyleguideSidebarSectionId.DesignSystem:
+    case StoriesSidebarSectionId.DesignSystem:
       mainContent = <DesignSystemStoryContent designSystemType={activeSidebarItem.sidebarItemId} />;
       break;
-    case StyleguideSidebarSectionId.AtomicComponents:
+    case StoriesSidebarSectionId.AtomicComponents:
       mainContent = (
         <AtomicComponentStoryContent atomicComponentType={activeSidebarItem.sidebarItemId} />
       );
       break;
-    case StyleguideSidebarSectionId.Renderers:
+    case StoriesSidebarSectionId.Renderers:
       mainContent = <RendererStoryContent rendererType={activeSidebarItem.sidebarItemId} />;
       break;
     default: {
@@ -189,18 +193,18 @@ const StyleguideScreenMainContent: React.FC<{
   );
 };
 
-export const StyleguideScreen: React.FC = () => {
-  const [selectedSidebarItem, setSelectedSidebarItem] = useState<StyleguideSidebarItem>(
+export const StoriesScreen: React.FC = () => {
+  const [selectedSidebarItem, setSelectedSidebarItem] = useState<StoriesSidebarItem>(
     DEFAULT_STYLEGUIDE_SIDEBAR_ITEM
   );
 
   return (
     <div className="bg-neutral-1 flex h-full w-full flex-row">
-      <StyleguideSidebar
+      <StoriesSidebar
         activeSidebarItem={selectedSidebarItem}
         onItemClick={setSelectedSidebarItem}
       />
-      <StyleguideScreenMainContent activeSidebarItem={selectedSidebarItem} />
+      <StoriesScreenMainContent activeSidebarItem={selectedSidebarItem} />
     </div>
   );
 };
