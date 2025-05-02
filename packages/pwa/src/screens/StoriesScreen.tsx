@@ -1,7 +1,7 @@
 import {useState} from 'react';
 
 import {
-  DEFAULT_STYLEGUIDE_SIDEBAR_ITEM,
+  DEFAULT_STORIES_SIDEBAR_ITEM,
   getAtomicComponentSidebarItems,
   getDesignSystemSidebarItems,
   getRendererSidebarItems,
@@ -13,26 +13,26 @@ import {
   AtomicComponentType,
   DesignSystemComponentType,
   StoriesSidebarSectionId,
-} from '@shared/types/styleguide.types';
-import type {StoriesSidebarItem} from '@shared/types/styleguide.types';
+} from '@shared/types/stories.types';
+import type {StoriesSidebarItem} from '@shared/types/stories.types';
 import type {Consumer, Task} from '@shared/types/utils.types';
 
+import {ButtonStories} from '@src/components/atoms/Button.stories';
+import {ButtonIconStories} from '@src/components/atoms/ButtonIcon.stories';
+import {DialogStories} from '@src/components/atoms/Dialog.stories';
+import {DividerStories} from '@src/components/atoms/Divider.stories';
+import {FlexStories} from '@src/components/atoms/Flex.stories';
+import {InputStories} from '@src/components/atoms/Input.stories';
+import {LinkStories} from '@src/components/atoms/Link.stories';
+import {SpacerStories} from '@src/components/atoms/Spacer.stories';
 import {Text} from '@src/components/atoms/Text';
+import {TextIconStories} from '@src/components/atoms/TextIcon.stories';
+import {ToastStories} from '@src/components/atoms/Toast.stories';
+import {TooltipStories} from '@src/components/atoms/Tooltip.stories';
 import {MarkdownStories} from '@src/components/Markdown.stories';
-import {ButtonStories} from '@src/components/styleguide/Button.stories';
-import {ButtonIconStories} from '@src/components/styleguide/ButtonIcon.stories';
-import {ColorsStories} from '@src/components/styleguide/Colors.stories';
-import {ColorsVanillaStories} from '@src/components/styleguide/ColorsVanilla.stories';
-import {DialogStories} from '@src/components/styleguide/Dialog.stories';
-import {DividerStories} from '@src/components/styleguide/Divider.stories';
-import {FlexStories} from '@src/components/styleguide/Flex.stories';
-import {InputStories} from '@src/components/styleguide/Input.stories';
-import {LinkStories} from '@src/components/styleguide/Link.stories';
-import {SpacerStories} from '@src/components/styleguide/Spacer.stories';
-import {TextIconStories} from '@src/components/styleguide/TextIcon.stories';
-import {ToastStories} from '@src/components/styleguide/Toast.stories';
-import {TooltipStories} from '@src/components/styleguide/Tooltip.stories';
-import {TypographyStories} from '@src/components/styleguide/Typography.stories';
+import {ColorsStories} from '@src/components/stories/Colors.stories';
+import {ColorsVanillaStories} from '@src/components/stories/ColorsVanilla.stories';
+import {TypographyStories} from '@src/components/stories/Typography.stories';
 
 const StoryGroupSidebarItem: React.FC<{
   readonly title: string;
@@ -195,7 +195,7 @@ const StoriesScreenMainContent: React.FC<{
 
 export const StoriesScreen: React.FC = () => {
   const [selectedSidebarItem, setSelectedSidebarItem] = useState<StoriesSidebarItem>(
-    DEFAULT_STYLEGUIDE_SIDEBAR_ITEM
+    DEFAULT_STORIES_SIDEBAR_ITEM
   );
 
   return (

@@ -69,7 +69,7 @@ export class Urls {
     return '/logout';
   }
 
-  static forStyleguide(): string {
-    return '/styleguide';
+  static forStories(): string {
+    return '/ui';
   }
 }

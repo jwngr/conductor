@@ -1,6 +1,6 @@
 import {Text} from '@src/components/atoms/Text';
 import {Markdown} from '@src/components/Markdown';
-import {StorySection} from '@src/components/styleguide/StorySection';
+import {StorySection} from '@src/components/stories/StorySection';
 
 export const TypographyStories: React.FC = () => {
   // Sample markdown content for headings and paragraphs

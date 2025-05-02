@@ -2,7 +2,7 @@ import {useState} from 'react';
 
 import {Input} from '@src/components/atoms/Input';
 import {Text} from '@src/components/atoms/Text';
-import {StorySection} from '@src/components/styleguide/StorySection';
+import {StorySection} from '@src/components/stories/StorySection';
 
 export const InputStories: React.FC = () => {
   const [controlledValue, setControlledValue] = useState('');

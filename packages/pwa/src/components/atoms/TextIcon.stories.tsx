@@ -1,7 +1,7 @@
 import {IconName} from '@shared/types/icons.types';
 
 import {TextIcon} from '@src/components/atoms/TextIcon';
-import {StorySection} from '@src/components/styleguide/StorySection';
+import {StorySection} from '@src/components/stories/StorySection';
 
 export const TextIconStories: React.FC = () => {
   return (

@@ -1,8 +1,8 @@
 import {useState} from 'react';
 
+import {StorySection} from '@src/components//StorySection';
 import {Dialog, DialogContent, DialogTrigger} from '@src/components/atoms/Dialog';
 import {Text} from '@src/components/atoms/Text';
-import {StorySection} from '@src/components/styleguide/StorySection';
 
 export const DialogStories: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);

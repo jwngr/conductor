@@ -5,12 +5,12 @@ import type {
   AtomicComponentSidebarItem,
   DesignSystemSidebarItem,
   RendererSidebarItem,
-} from '@shared/types/styleguide.types';
+} from '@shared/types/stories.types';
 import {
   AtomicComponentType,
   DesignSystemComponentType,
   StoriesSidebarSectionId,
-} from '@shared/types/styleguide.types';
+} from '@shared/types/stories.types';
 
 function getDesignSystemSidebarItemTitle(type: DesignSystemComponentType): string {
   switch (type) {
@@ -124,4 +124,4 @@ export function getRendererSidebarItems(): RendererSidebarItem[] {
   return ORDERED_RENDERER_TYPES.map((type) => makeRendererSidebarItem(type));
 }
 
-export const DEFAULT_STYLEGUIDE_SIDEBAR_ITEM = getDesignSystemSidebarItems()[0];
+export const DEFAULT_STORIES_SIDEBAR_ITEM = getDesignSystemSidebarItems()[0];
