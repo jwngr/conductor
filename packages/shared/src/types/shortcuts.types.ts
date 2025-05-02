@@ -1,4 +1,4 @@
-import type {Task} from '@shared/types/utils.types';
+import type {Supplier} from '@shared/types/utils.types';
 
 /**
  * Unique identifier for a keyboard shortcut.
@@ -57,7 +57,7 @@ export interface KeyboardShortcut {
   readonly keyPattern: string;
 }
 
-export type ShortcutHandler = Task;
+export type ShortcutHandler = Supplier<Promise<void>>;
 
 export interface RegisteredShortcut {
   readonly shortcut: KeyboardShortcut;

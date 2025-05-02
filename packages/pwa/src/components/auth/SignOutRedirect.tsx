@@ -1,5 +1,5 @@
+import {useNavigate} from '@tanstack/react-router';
 import {useEffect} from 'react';
-import {useNavigate} from 'react-router-dom';
 
 import {logger} from '@shared/services/logger.shared';
 
@@ -26,7 +26,7 @@ export const SignOutRedirect: React.FC = () => {
       }
 
       // Don't strand the user on a page they no longer have access to view.
-      navigate(Urls.forSignIn());
+      await navigate({to: Urls.forSignIn(), replace: true});
 
       // TODO: Clear other stuff from local storage.
     };

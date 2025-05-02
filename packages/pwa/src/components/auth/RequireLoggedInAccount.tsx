@@ -1,6 +1,6 @@
+import {Navigate} from '@tanstack/react-router';
 import {isSignInWithEmailLink} from 'firebase/auth';
 import type React from 'react';
-import {Navigate} from 'react-router-dom';
 
 import {Urls} from '@shared/lib/urls.shared';
 

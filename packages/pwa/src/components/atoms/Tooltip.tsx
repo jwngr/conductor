@@ -2,7 +2,7 @@ import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import React, {useEffect} from 'react';
 
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
-import type {Task} from '@shared/types/utils.types';
+import type {Supplier} from '@shared/types/utils.types';
 
 import {Text} from '@src/components/atoms/Text';
 
@@ -38,7 +38,7 @@ interface TooltipProps extends TooltipPrimitive.TooltipProps {
   readonly trigger: React.ReactNode;
   readonly content: TooltipContent;
   readonly shortcutId?: KeyboardShortcutId;
-  readonly onShortcutTrigger?: Task;
+  readonly onShortcutTrigger?: Supplier<Promise<void>>;
 }
 
 export const Tooltip: React.FC<TooltipProps> = ({

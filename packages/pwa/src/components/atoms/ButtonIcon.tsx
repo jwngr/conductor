@@ -40,7 +40,7 @@ export const ButtonIcon: React.FC<ButtonIconProps> = ({
 }) => {
   const iconSize = getIconSizeFromButtonIconSize(buttonIconSize);
 
-  const handleShortcut = useCallback(() => {
+  const handleShortcut = useCallback(async () => {
     // TODO: Clean up this type.
     onClick?.(null as unknown as MouseEvent<HTMLDivElement>);
   }, [onClick]);

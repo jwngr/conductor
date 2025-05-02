@@ -1,6 +1,6 @@
+import {useNavigate} from '@tanstack/react-router';
 import {isSignInWithEmailLink} from 'firebase/auth';
 import {useEffect} from 'react';
-import {useNavigate} from 'react-router-dom';
 
 import {logger} from '@shared/services/logger.shared';
 
@@ -81,7 +81,7 @@ const PasswordlessAuthSubscription: React.FC = () => {
       window.localStorage.removeItem('emailForSignIn');
 
       // Redirect to the root path.
-      navigate(Urls.forRoot());
+      await navigate({to: Urls.forRoot(), replace: true});
     };
 
     void go();

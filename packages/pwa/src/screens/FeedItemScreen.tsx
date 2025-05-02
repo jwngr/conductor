@@ -5,7 +5,6 @@ import {logger} from '@shared/services/logger.shared';
 
 import {prefixError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
-import {useFeedItemIdFromUrl} from '@shared/lib/router.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
@@ -25,6 +24,8 @@ import {WebsiteFeedItemRenderer} from '@src/components/feedItems/renderers/Websi
 import {XkcdFeedItemRenderer} from '@src/components/feedItems/renderers/XkcdFeedItemRenderer';
 import {YouTubeFeedItemRenderer} from '@src/components/feedItems/renderers/YouTubeFeedItemRenderer';
 import {LeftSidebar} from '@src/components/LeftSidebar';
+
+import {useFeedItemIdFromUrl} from '@src/lib/router.pwa';
 
 import {NotFoundScreen} from '@src/screens/404';
 
