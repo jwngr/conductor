@@ -3,7 +3,7 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 import {Urls} from '@shared/lib/urls.shared';
 
 import type {DevToolbarSectionInfo} from '@shared/types/devToolbar.types';
-import {Task} from '@shared/types/utils.types';
+import type {Task} from '@shared/types/utils.types';
 
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
