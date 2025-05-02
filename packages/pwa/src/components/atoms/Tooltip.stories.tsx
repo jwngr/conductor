@@ -3,7 +3,7 @@ import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {Button} from '@src/components/atoms/Button';
 import {Text} from '@src/components/atoms/Text';
 import {Tooltip} from '@src/components/atoms/Tooltip';
-import {StorySection} from '@src/components/styleguide/StorySection';
+import {StorySection} from '@src/components/stories/StorySection';
 
 import {toast} from '@src/lib/toasts';
 

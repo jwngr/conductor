@@ -70,6 +70,8 @@ export const SignInScreen: React.FC = () => {
   const [emailInputVal, setEmailInputVal] = useState('');
   const [successfulSignInLinkSentTo, setSuccessfulSignInLinkSentTo] = useState<string | null>(null);
   const [signInLinkError, setSignInLinkError] = useState<Error | null>(null);
+
+  // Redirect to root if already logged in.
   if (loggedInAccount) {
     return <Navigate to={Urls.forRoot()} replace />;
   }

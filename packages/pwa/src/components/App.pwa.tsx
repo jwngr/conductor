@@ -24,7 +24,7 @@ import {FeedItemScreen} from '@src/screens/FeedItemScreen';
 import {FeedSubscriptionsScreen} from '@src/screens/FeedSubscriptionsScreen';
 import {ImportScreen} from '@src/screens/ImportScreen';
 import {SignInScreen} from '@src/screens/SignInScreen';
-import {StyleguideScreen} from '@src/screens/StyleguideScreen';
+import {StoriesScreen} from '@src/screens/StoriesScreen';
 import {ViewScreen} from '@src/screens/ViewScreen';
 
 const CatchAllRoute: React.FC = () => {
@@ -40,7 +40,7 @@ const AllRoutes: React.FC = () => {
       {/* Publicly visible routes. */}
       <Route path={Urls.forSignIn()} element={<SignInScreen />} />
       <Route path={Urls.forSignOut()} element={<SignOutRedirect />} />
-      <Route path={Urls.forStyleguide()} element={<StyleguideScreen />} />
+      <Route path={Urls.forStories()} element={<StoriesScreen />} />
 
       {/* Authenticated routes. */}
       {viewTypes.map((viewType, i) => {
@@ -99,9 +99,9 @@ const PermanentGlobalSubscriptions: React.FC = () => {
  * Subscriptions that are active whenever there is a logged-in account.
  */
 const LoggedInGlobalSubscriptions: React.FC = () => {
-  const loggedInAccount = useMaybeLoggedInAccount();
+  const {isLoading, loggedInAccount} = useMaybeLoggedInAccount();
 
-  if (!loggedInAccount) return null;
+  if (isLoading || !loggedInAccount) return null;
 
   return (
     <RequireLoggedInAccount>

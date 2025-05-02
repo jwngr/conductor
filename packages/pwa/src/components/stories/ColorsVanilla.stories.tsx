@@ -1,7 +1,7 @@
 import type React from 'react';
 
 import {Text} from '@src/components/atoms/Text';
-import {StorySection} from '@src/components/styleguide/StorySection';
+import {StorySection} from '@src/components/stories/StorySection';
 
 import {vars} from '@src/lib/theme.css';
 

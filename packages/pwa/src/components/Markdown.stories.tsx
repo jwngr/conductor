@@ -1,5 +1,5 @@
 import {Markdown} from '@src/components/Markdown';
-import {StorySection} from '@src/components/styleguide/StorySection';
+import {StorySection} from '@src/components/stories/StorySection';
 
 export const MarkdownStories: React.FC = () => {
   const combinedMarkdownContent = `

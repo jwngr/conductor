@@ -2,7 +2,7 @@ import {IconName} from '@shared/types/icons.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
-import {StorySection} from '@src/components/styleguide/StorySection';
+import {StorySection} from '@src/components/stories/StorySection';
 
 import {toast} from '@src/lib/toasts';
 
