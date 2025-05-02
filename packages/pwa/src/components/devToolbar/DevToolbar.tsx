@@ -1,9 +1,13 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 
+import {Urls} from '@shared/lib/urls.shared';
+
 import type {DevToolbarSectionInfo} from '@shared/types/devToolbar.types';
+import {Task} from '@shared/types/utils.types';
 
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
+import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
 import {RequireLoggedInAccount} from '@src/components/auth/RequireLoggedInAccount';
 
@@ -18,10 +22,12 @@ const BugEmoji: React.FC = () => {
   );
 };
 
-const DevToolbarContent: React.FC = () => {
+const DevToolbarContent: React.FC<{
+  readonly onClose: Task;
+}> = ({onClose}) => {
   const devToolbarSections = useDevToolbarStore((state) => state.sections);
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       {devToolbarSections.map((section) =>
         section.requiresAuth ? (
           <RequireLoggedInAccount key={section.sectionType}>
@@ -31,6 +37,16 @@ const DevToolbarContent: React.FC = () => {
           <DevToolbarSectionComponent key={section.sectionType} section={section} />
         )
       )}
+      <div className="flex flex-col">
+        <Text as="h4" bold>
+          Links
+        </Text>
+        <Link to={Urls.forStories()} onClick={onClose}>
+          <Text as="p" underline="hover">
+            Design system & stories
+          </Text>
+        </Link>
+      </div>
     </div>
   );
 };
@@ -39,11 +55,11 @@ const DevToolbarSectionComponent: React.FC<{
   readonly section: DevToolbarSectionInfo;
 }> = ({section}) => {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-1">
       <Text as="h4" bold>
         {section.title}
       </Text>
-      {section.renderSection()}
+      <div className="flex flex-col gap-2">{section.renderSection()}</div>
     </div>
   );
 };
@@ -96,7 +112,7 @@ export const DevToolbar: React.FC = () => {
           : 'bg-neutral-1 h-8 w-8 cursor-pointer rounded-full p-0'
       }`}
     >
-      {isOpen ? <DevToolbarContent /> : <BugEmoji />}
+      {isOpen ? <DevToolbarContent onClose={() => setIsOpen(false)} /> : <BugEmoji />}
     </div>
   );
 };
