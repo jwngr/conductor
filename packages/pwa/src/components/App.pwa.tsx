@@ -2,8 +2,6 @@ import {createRouter, RouterProvider} from '@tanstack/react-router';
 import type React from 'react';
 import {StrictMode} from 'react';
 
-import {Toaster} from '@src/components/atoms/Toaster';
-
 import {rootRoute} from '@src/routes/__root';
 import {
   catchAllRoute,
