@@ -7,6 +7,7 @@ import {
   Styleguide,
   StyleguideStoryGroupId,
 } from '@shared/types/styleguide.types';
+import type {Consumer} from '@shared/types/utils.types';
 
 import {Text} from '@src/components/atoms/Text';
 import {MarkdownStories} from '@src/components/Markdown.stories';
@@ -25,20 +26,24 @@ import {ToastStories} from '@src/components/styleguide/Toast.stories';
 import {TooltipStories} from '@src/components/styleguide/Tooltip.stories';
 import {TypographyStories} from '@src/components/styleguide/Typography.stories';
 
-const SidebarItem: React.FC<{
-  readonly $isActive?: boolean;
-  readonly children: React.ReactNode;
+const StoryGroupSidebarItem: React.FC<{
+  readonly sectionId: StyleguideStoryGroupId;
+  readonly isActive: boolean;
   readonly onClick: () => void;
-}> = ({$isActive, children, onClick}) => (
-  <Text
-    className={`hover:bg-neutral-2 cursor-pointer rounded px-3 py-2 pl-6 ${
-      $isActive ? 'bg-neutral-2' : ''
-    }`}
-    onClick={onClick}
-  >
-    {children}
-  </Text>
-);
+}> = ({sectionId, isActive, onClick}) => {
+  const section = Styleguide.getSectionById(sectionId);
+
+  return (
+    <Text
+      className={`hover:bg-neutral-2 ml-[-8px] cursor-pointer rounded p-2 ${
+        isActive ? 'bg-neutral-2' : ''
+      }`}
+      onClick={onClick}
+    >
+      {section.title}
+    </Text>
+  );
+};
 
 const StyleguideStoryGroupContent: React.FC<{readonly sectionId: StyleguideStoryGroupId}> = ({
   sectionId,
@@ -62,7 +67,7 @@ const StyleguideStoryGroupContent: React.FC<{readonly sectionId: StyleguideStory
       return <InputStories />;
     case StyleguideStoryGroupId.Link:
       return <LinkStories />;
-    case StyleguideStoryGroupId.MarkdownContentViewer:
+    case StyleguideStoryGroupId.MarkdownRenderer:
       return <MarkdownStories />;
     case StyleguideStoryGroupId.Spacer:
       return <SpacerStories />;
@@ -80,64 +85,83 @@ const StyleguideStoryGroupContent: React.FC<{readonly sectionId: StyleguideStory
   }
 };
 
+const StyleguideSidebarSection: React.FC<{
+  readonly title: string;
+  readonly sectionIds: StyleguideStoryGroupId[];
+  readonly activeSectionId: StyleguideStoryGroupId;
+  readonly onItemClick: Consumer<StyleguideStoryGroupId>;
+}> = ({title, sectionIds, activeSectionId, onItemClick}) => {
+  return (
+    <div className="flex flex-col gap-2">
+      <Text as="h6" light>
+        {title}
+      </Text>
+      <div className="flex flex-col">
+        {sectionIds.map((sectionId) => (
+          <StoryGroupSidebarItem
+            key={sectionId}
+            sectionId={sectionId}
+            isActive={activeSectionId === sectionId}
+            onClick={() => onItemClick(sectionId)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const StyleguideSidebar: React.FC<{
+  readonly activeSectionId: StyleguideStoryGroupId;
+  readonly onItemClick: Consumer<StyleguideStoryGroupId>;
+}> = ({activeSectionId, onItemClick}) => {
+  return (
+    <div className="border-neutral-3 flex h-full w-[240px] flex-col gap-6 overflow-auto border-r p-4">
+      <StyleguideSidebarSection
+        title="Design system"
+        sectionIds={Styleguide.getOrderedDesignSystemIds()}
+        activeSectionId={activeSectionId}
+        onItemClick={onItemClick}
+      />
+      <StyleguideSidebarSection
+        title="Atoms"
+        sectionIds={Styleguide.getOrderedAtomicComponentIds()}
+        activeSectionId={activeSectionId}
+        onItemClick={onItemClick}
+      />
+      <StyleguideSidebarSection
+        title="Renderers"
+        sectionIds={Styleguide.getOrderedRendererIds()}
+        activeSectionId={activeSectionId}
+        onItemClick={onItemClick}
+      />
+    </div>
+  );
+};
+
+const StyleguideScreenMainContent: React.FC<{
+  readonly activeSectionId: StyleguideStoryGroupId;
+}> = ({activeSectionId}) => {
+  const sectionConfig = Styleguide.getSectionById(activeSectionId);
+
+  return (
+    <div className="flex flex-1 flex-col gap-8 overflow-auto p-4">
+      <Text as="h1" bold>
+        {sectionConfig.title}
+      </Text>
+      <StyleguideStoryGroupContent sectionId={activeSectionId} />
+    </div>
+  );
+};
+
 export const StyleguideScreen: React.FC = () => {
   const [activeSectionId, setActiveSectionId] = useState<StyleguideStoryGroupId>(
     DEFAULT_STYLEGUIDE_STORY_GROUP_ID
   );
 
-  const sectionConfig = Styleguide.getSectionById(activeSectionId);
-
   return (
     <div className="bg-neutral-1 flex h-full w-full flex-row">
-      <div className="border-neutral-3 flex h-full w-[240px] flex-col gap-5 overflow-auto border-r p-5">
-        <Text as="h2" bold>
-          Styleguide
-        </Text>
-        <div className="flex flex-col gap-16">
-          <div className="flex flex-col gap-4">
-            <Text as="h6" light className="px-3 py-2">
-              Atomic components
-            </Text>
-            {Styleguide.getOrderedAtomicComponentIds().map((sectionId) => {
-              const section = Styleguide.getSectionById(sectionId);
-              return (
-                <SidebarItem
-                  key={section.storyGroupId}
-                  $isActive={activeSectionId === section.storyGroupId}
-                  onClick={() => setActiveSectionId(section.storyGroupId)}
-                >
-                  {section.title}
-                </SidebarItem>
-              );
-            })}
-          </div>
-          <div className="flex flex-col gap-4">
-            <Text as="h6" light className="px-3 py-2">
-              Content viewers
-            </Text>
-            {Styleguide.getOrderedContentViewerIds().map((sectionId) => {
-              const section = Styleguide.getSectionById(sectionId);
-              return (
-                <SidebarItem
-                  key={section.storyGroupId}
-                  $isActive={activeSectionId === section.storyGroupId}
-                  onClick={() => setActiveSectionId(section.storyGroupId)}
-                >
-                  {section.title}
-                </SidebarItem>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-      <div className="flex flex-1 flex-col gap-8 overflow-auto p-5">
-        <Text as="h1" bold>
-          {sectionConfig.title}
-        </Text>
-        <div className="flex flex-col gap-8">
-          <StyleguideStoryGroupContent sectionId={activeSectionId} />
-        </div>
-      </div>
+      <StyleguideSidebar activeSectionId={activeSectionId} onItemClick={setActiveSectionId} />
+      <StyleguideScreenMainContent activeSectionId={activeSectionId} />
     </div>
   );
 };

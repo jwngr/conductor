@@ -8,7 +8,7 @@ export enum StyleguideStoryGroupId {
   Flex = 'FLEX',
   Input = 'INPUT',
   Link = 'LINK',
-  MarkdownContentViewer = 'MARKDOWN_CONTENT_VIEWER',
+  MarkdownRenderer = 'MARKDOWN_RENDERER',
   Spacer = 'SPACER',
   TextIcon = 'TEXT_ICON',
   Toast = 'TOAST',
@@ -60,8 +60,8 @@ const STYLEGUIDE_STORY_GROUPS_BY_ID: Record<StyleguideStoryGroupId, StyleguideSt
     storyGroupId: StyleguideStoryGroupId.Link,
     title: 'Link',
   },
-  [StyleguideStoryGroupId.MarkdownContentViewer]: {
-    storyGroupId: StyleguideStoryGroupId.MarkdownContentViewer,
+  [StyleguideStoryGroupId.MarkdownRenderer]: {
+    storyGroupId: StyleguideStoryGroupId.MarkdownRenderer,
     title: 'Markdown',
   },
   [StyleguideStoryGroupId.Spacer]: {
@@ -86,10 +86,13 @@ const STYLEGUIDE_STORY_GROUPS_BY_ID: Record<StyleguideStoryGroupId, StyleguideSt
   },
 };
 
-const ORDERED_ATOMIC_COMPONENT_STORY_GROUP_IDS: StyleguideStoryGroupId[] = [
+const ORDERED_DESIGN_SYSTEM_STORY_GROUP_IDS: StyleguideStoryGroupId[] = [
   StyleguideStoryGroupId.Typography,
   StyleguideStoryGroupId.Colors,
   StyleguideStoryGroupId.ColorsVanilla,
+];
+
+const ORDERED_ATOMIC_COMPONENT_STORY_GROUP_IDS: StyleguideStoryGroupId[] = [
   StyleguideStoryGroupId.Link,
   StyleguideStoryGroupId.TextIcon,
   StyleguideStoryGroupId.ButtonIcon,
@@ -103,8 +106,8 @@ const ORDERED_ATOMIC_COMPONENT_STORY_GROUP_IDS: StyleguideStoryGroupId[] = [
   StyleguideStoryGroupId.Spacer,
 ];
 
-const ORDERED_CONTENT_VIEWER_STORY_GROUP_IDS: StyleguideStoryGroupId[] = [
-  StyleguideStoryGroupId.MarkdownContentViewer,
+const ORDERED_RENDERER_STORY_GROUP_IDS: StyleguideStoryGroupId[] = [
+  StyleguideStoryGroupId.MarkdownRenderer,
 ];
 
 export class Styleguide {
@@ -112,11 +115,15 @@ export class Styleguide {
     return STYLEGUIDE_STORY_GROUPS_BY_ID[storyGroupId];
   }
 
+  public static getOrderedDesignSystemIds(): StyleguideStoryGroupId[] {
+    return ORDERED_DESIGN_SYSTEM_STORY_GROUP_IDS;
+  }
+
   public static getOrderedAtomicComponentIds(): StyleguideStoryGroupId[] {
     return ORDERED_ATOMIC_COMPONENT_STORY_GROUP_IDS;
   }
 
-  public static getOrderedContentViewerIds(): StyleguideStoryGroupId[] {
-    return ORDERED_CONTENT_VIEWER_STORY_GROUP_IDS;
+  public static getOrderedRendererIds(): StyleguideStoryGroupId[] {
+    return ORDERED_RENDERER_STORY_GROUP_IDS;
   }
 }
