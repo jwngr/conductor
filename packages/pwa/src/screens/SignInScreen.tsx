@@ -1,6 +1,6 @@
+import {Navigate} from '@tanstack/react-router';
 import type {ActionCodeSettings} from 'firebase/auth';
 import {useState} from 'react';
-import {Navigate} from 'react-router-dom';
 
 import {Urls} from '@shared/lib/urls.shared';
 import {isValidEmail} from '@shared/lib/utils.shared';

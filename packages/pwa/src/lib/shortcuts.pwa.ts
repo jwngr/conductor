@@ -1,5 +1,5 @@
+import {useNavigate} from '@tanstack/react-router';
 import {useEffect} from 'react';
-import {useNavigate} from 'react-router-dom';
 
 import {SharedKeyboardShortcutsService} from '@shared/services/keyboardShortcuts.shared';
 
@@ -44,5 +44,5 @@ export function useShortcuts(shortcutsWithHandlers: ShortcutWithHandler[]): void
  */
 export function useNavShortcut(shortcut: KeyboardShortcut, url: string): void {
   const navigate = useNavigate();
-  useShortcut(shortcut, () => navigate(url));
+  useShortcut(shortcut, async () => navigate({to: url}));
 }

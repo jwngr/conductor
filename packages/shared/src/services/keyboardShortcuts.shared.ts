@@ -148,12 +148,12 @@ export class SharedKeyboardShortcutsService {
       this.unsubscribeTinykeys();
     }
 
-    const shortcutMap: Record<string, (e: Event) => void> = {};
+    const shortcutMap: Record<string, (e: Event) => Promise<void>> = {};
 
     this.registeredShortcuts.forEach(({shortcut, handler}) => {
-      shortcutMap[shortcut.keyPattern] = (e: Event) => {
+      shortcutMap[shortcut.keyPattern] = async (e: Event) => {
         e.preventDefault();
-        handler();
+        await handler();
       };
     });
 
