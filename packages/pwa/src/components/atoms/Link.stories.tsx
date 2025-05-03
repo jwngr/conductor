@@ -1,8 +1,14 @@
+import type {WithChildren} from '@sharedClient/types/utils.client.types';
+
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
 import {StorySection} from '@src/components/stories/StorySection';
 
 import {rootRoute} from '@src/routes/__root';
+
+const StoryNavLink: React.FC<WithChildren> = ({children}) => {
+  return <Link to={rootRoute.fullPath}>{children}</Link>;
+};
 
 export const LinkStories: React.FC = () => {
   return (
@@ -14,9 +20,9 @@ export const LinkStories: React.FC = () => {
             <Text className="w-32" light>
               Default:
             </Text>
-            <Link to={rootRoute.fullPath}>
+            <StoryNavLink>
               <Text underline="always">Click to navigate</Text>
-            </Link>
+            </StoryNavLink>
           </div>
 
           {/* Interactive hover underline */}
@@ -24,9 +30,9 @@ export const LinkStories: React.FC = () => {
             <Text className="w-32" light>
               Hover underline:
             </Text>
-            <Link to={rootRoute.fullPath}>
+            <StoryNavLink>
               <Text underline="hover">Hover me</Text>
-            </Link>
+            </StoryNavLink>
           </div>
 
           {/* Colored link */}
@@ -34,11 +40,11 @@ export const LinkStories: React.FC = () => {
             <Text className="w-32" light>
               Colored:
             </Text>
-            <Link to={rootRoute.fullPath}>
+            <StoryNavLink>
               <Text className="text-text-link" underline="hover">
                 Blue link
               </Text>
-            </Link>
+            </StoryNavLink>
           </div>
 
           {/* Bold link */}
@@ -46,11 +52,11 @@ export const LinkStories: React.FC = () => {
             <Text className="w-32" light>
               Bold:
             </Text>
-            <Link to={rootRoute.fullPath}>
+            <StoryNavLink>
               <Text bold underline="hover">
                 Bold link
               </Text>
-            </Link>
+            </StoryNavLink>
           </div>
 
           {/* Disabled style */}
@@ -58,11 +64,11 @@ export const LinkStories: React.FC = () => {
             <Text className="w-32" light>
               Disabled style:
             </Text>
-            <Link to={rootRoute.fullPath}>
+            <StoryNavLink>
               <Text light className="cursor-not-allowed">
                 Disabled-looking link
               </Text>
-            </Link>
+            </StoryNavLink>
           </div>
 
           {/* Complex link */}
@@ -70,11 +76,11 @@ export const LinkStories: React.FC = () => {
             <Text className="w-32" light>
               Complex:
             </Text>
-            <Link to={rootRoute.fullPath}>
+            <StoryNavLink>
               <Text bold underline="hover" className="text-text-link transition-colors">
                 Interactive complex link
               </Text>
-            </Link>
+            </StoryNavLink>
           </div>
         </div>
       </StorySection>
@@ -83,11 +89,11 @@ export const LinkStories: React.FC = () => {
         <div className="border-neutral-2 rounded-lg border bg-white p-4">
           <Text>
             This is a paragraph with an{' '}
-            <Link to={rootRoute.fullPath}>
+            <StoryNavLink>
               <Text underline="hover" className="text-text-link inline">
                 embedded link
               </Text>
-            </Link>{' '}
+            </StoryNavLink>
             in the middle of the text to show how it looks in context.
           </Text>
         </div>

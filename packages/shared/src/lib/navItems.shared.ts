@@ -62,7 +62,7 @@ export class NavItems {
   }
 }
 
-export const DEFAULT_FOCUSED_NAV_ITEM: NavItemId = NavItemId.Untriaged;
+export const DEFAULT_NAV_ITEM: NavItem = NavItems.fromId(NavItemId.Untriaged);
 
 export const ORDERED_VIEW_NAV_ITEMS: NavItem[] = [
   NavItems.fromId(NavItemId.Untriaged),

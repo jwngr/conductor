@@ -1,6 +1,7 @@
 import {useNavigate} from '@tanstack/react-router';
 import type React from 'react';
 
+import {DEFAULT_NAV_ITEM} from '@shared/lib/navItems.shared';
 import {
   DEFAULT_STORIES_SIDEBAR_ITEM,
   getAtomicComponentSidebarItems,
@@ -24,7 +25,6 @@ import {DialogStories} from '@src/components/atoms/Dialog.stories';
 import {DividerStories} from '@src/components/atoms/Divider.stories';
 import {FlexStories} from '@src/components/atoms/Flex.stories';
 import {InputStories} from '@src/components/atoms/Input.stories';
-import {Link} from '@src/components/atoms/Link';
 import {LinkStories} from '@src/components/atoms/Link.stories';
 import {SpacerStories} from '@src/components/atoms/Spacer.stories';
 import {Text} from '@src/components/atoms/Text';
@@ -32,13 +32,13 @@ import {TextIconStories} from '@src/components/atoms/TextIcon.stories';
 import {ToastStories} from '@src/components/atoms/Toast.stories';
 import {TooltipStories} from '@src/components/atoms/Tooltip.stories';
 import {MarkdownStories} from '@src/components/Markdown.stories';
+import {NavItemLink} from '@src/components/nav/NavItemLink';
 import {ColorsStories} from '@src/components/stories/Colors.stories';
 import {ColorsVanillaStories} from '@src/components/stories/ColorsVanilla.stories';
 import {TypographyStories} from '@src/components/stories/Typography.stories';
 
 import {useSelectedStoryFromUrl} from '@src/lib/router.pwa';
 
-import {rootRoute} from '@src/routes/__root';
 import {storiesRoute} from '@src/routes/index';
 
 const StoryGroupSidebarItem: React.FC<{
@@ -217,11 +217,11 @@ export const StoriesScreen: React.FC = () => {
     <div className="bg-neutral-1 flex h-full w-full flex-row">
       <div className="border-neutral-3 flex h-full w-[240px] flex-col border-r">
         <div className="py-2 pl-4">
-          <Link to={rootRoute.fullPath}>
+          <NavItemLink navItemId={DEFAULT_NAV_ITEM.id}>
             <Text as="p" underline="hover" light>
               ← Back to app
             </Text>
-          </Link>
+          </NavItemLink>
         </div>
         <StoriesSidebar
           activeSidebarItem={selectedSidebarItem}

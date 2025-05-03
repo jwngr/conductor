@@ -2,7 +2,7 @@ import type {ViewType} from '@shared/types/views.types';
 
 import {AppHeader} from '@src/components/AppHeader';
 import {FeedItemScreenKeyboardHandler} from '@src/components/feedItems/FeedItemScreenEscapeHandler';
-import {LeftSidebar} from '@src/components/LeftSidebar';
+import {LeftSidebar} from '@src/components/nav/LeftSidebar';
 import {ViewRenderer} from '@src/components/views/View';
 
 export const ViewScreen: React.FC<{
