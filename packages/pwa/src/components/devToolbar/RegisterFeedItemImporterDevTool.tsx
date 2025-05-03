@@ -23,6 +23,7 @@ enum ImportStatus {
 
 interface BaseImportState {
   readonly url: string;
+  readonly status: ImportStatus;
 }
 
 interface IdleImportState extends BaseImportState {
