@@ -1,8 +1,5 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 
-import {DEFAULT_STORIES_SIDEBAR_ITEM} from '@shared/lib/stories.shared';
-import {Urls} from '@shared/lib/urls.shared';
-
 import type {DevToolbarSectionInfo} from '@shared/types/devToolbar.types';
 import type {Task} from '@shared/types/utils.types';
 
@@ -11,6 +8,8 @@ import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
 import {RequireLoggedInAccount} from '@src/components/auth/RequireLoggedInAccount';
+
+import {storiesDefaultRoute} from '@src/routes';
 
 const BugEmoji: React.FC = () => {
   return (
@@ -42,14 +41,7 @@ const DevToolbarContent: React.FC<{
         <Text as="h4" bold>
           Links
         </Text>
-        <Link
-          to="/ui/$storiesSidebarSectionId/$sidebarItemId"
-          params={{
-            storiesSidebarSectionId: DEFAULT_STORIES_SIDEBAR_ITEM.sidebarSectionId,
-            sidebarItemId: DEFAULT_STORIES_SIDEBAR_ITEM.sidebarItemId,
-          }}
-          onClick={onClose}
-        >
+        <Link to={storiesDefaultRoute.fullPath} onClick={onClose}>
           <Text as="p" underline="hover">
             Design system & stories
           </Text>

@@ -3,7 +3,6 @@ import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {logger} from '@shared/services/logger.shared';
 
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
-import {Urls} from '@shared/lib/urls.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
 
@@ -26,6 +25,8 @@ import {HoverFeedItemActions} from '@src/components/feedItems/FeedItemActions';
 import {FeedItemImportStatusBadge} from '@src/components/feedItems/FeedItemImportStatusBadge';
 import {ViewKeyboardShortcutHandler} from '@src/components/views/ViewKeyboardShortcutHandler';
 import {ViewOptionsDialog} from '@src/components/views/ViewOptionsDialog';
+
+import {feedItemRoute} from '@src/routes';
 
 function compareFeedItems(args: {
   a: FeedItem;
@@ -197,7 +198,7 @@ const ViewListItem: React.FC<{
   }, [isFocused]);
 
   return (
-    <Link to="/items/$feedItemId" params={{feedItemId: feedItem.feedItemId}}>
+    <Link to={feedItemRoute.fullPath} params={{feedItemId: feedItem.feedItemId}}>
       <div
         ref={itemRef}
         className={`hover:bg-neutral-1 focus-visible:bg-neutral-1 relative flex cursor-pointer flex-col justify-center gap-1 rounded p-2 outline-none ${

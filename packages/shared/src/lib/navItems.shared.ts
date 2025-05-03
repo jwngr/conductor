@@ -1,5 +1,4 @@
 import {makeEmojiIcon} from '@shared/lib/customIcons.shared';
-import {Urls} from '@shared/lib/urls.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import type {NavItem} from '@shared/types/urls.types';
@@ -41,13 +40,11 @@ const ALL_NAV_ITEMS: Record<NavItemId, NavItem> = {
   }),
   [NavItemId.Feeds]: {
     id: NavItemId.Feeds,
-    url: Urls.forFeedSubscriptions(),
     icon: makeEmojiIcon('📰'),
     title: 'Feeds',
   },
   [NavItemId.Import]: {
     id: NavItemId.Import,
-    url: Urls.forImport(),
     icon: makeEmojiIcon('📥'),
     title: 'Import',
   },
@@ -91,7 +88,6 @@ export function makeNavItemForView(
 ): NavItem {
   return {
     id: navItemId,
-    url: Urls.forView(viewType),
     icon: args.icon,
     title: args.title,
   };

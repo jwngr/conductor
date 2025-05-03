@@ -5,6 +5,8 @@ import type {
   AtomicComponentSidebarItem,
   DesignSystemSidebarItem,
   RendererSidebarItem,
+  StoriesSidebarItem,
+  StoriesSidebarItemId,
 } from '@shared/types/stories.types';
 import {
   AtomicComponentType,
@@ -78,7 +80,7 @@ function makeAtomicComponentSidebarItem(type: AtomicComponentType): AtomicCompon
   return {
     title: getAtomicComponentSidebarItemTitle(type),
     sidebarItemId: type,
-    type: StoriesSidebarSectionId.AtomicComponents,
+    sidebarSectionId: StoriesSidebarSectionId.AtomicComponents,
   };
 }
 
@@ -86,7 +88,7 @@ function makeRendererSidebarItem(type: RendererType): RendererSidebarItem {
   return {
     title: getRendererSidebarItemTitle(type),
     sidebarItemId: type,
-    type: StoriesSidebarSectionId.Renderers,
+    sidebarSectionId: StoriesSidebarSectionId.Renderers,
   };
 }
 
@@ -125,3 +127,23 @@ export function getRendererSidebarItems(): RendererSidebarItem[] {
 }
 
 export const DEFAULT_STORIES_SIDEBAR_ITEM = getDesignSystemSidebarItems()[0];
+
+export function findStoriesSidebarItemById(
+  itemId: StoriesSidebarItemId
+): StoriesSidebarItem | null {
+  const designSystemSidebarItems = getDesignSystemSidebarItems();
+  const designSystemItem = designSystemSidebarItems.find((item) => item.sidebarItemId === itemId);
+  if (designSystemItem) return designSystemItem;
+
+  const atomicComponentSidebarItems = getAtomicComponentSidebarItems();
+  const atomicComponentItem = atomicComponentSidebarItems.find(
+    (item) => item.sidebarItemId === itemId
+  );
+  if (atomicComponentItem) return atomicComponentItem;
+
+  const rendererSidebarItems = getRendererSidebarItems();
+  const rendererItem = rendererSidebarItems.find((item) => item.sidebarItemId === itemId);
+  if (rendererItem) return rendererItem;
+
+  return null;
+}

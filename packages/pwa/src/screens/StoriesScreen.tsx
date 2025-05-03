@@ -1,5 +1,5 @@
-import {useNavigate, useParams} from '@tanstack/react-router';
-import React from 'react';
+import {useNavigate} from '@tanstack/react-router';
+import type React from 'react';
 
 import {
   DEFAULT_STORIES_SIDEBAR_ITEM,
@@ -7,7 +7,6 @@ import {
   getDesignSystemSidebarItems,
   getRendererSidebarItems,
 } from '@shared/lib/stories.shared';
-import {Urls} from '@shared/lib/urls.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {RendererType} from '@shared/types/renderers.types';
@@ -37,6 +36,9 @@ import {ColorsStories} from '@src/components/stories/Colors.stories';
 import {ColorsVanillaStories} from '@src/components/stories/ColorsVanilla.stories';
 import {TypographyStories} from '@src/components/stories/Typography.stories';
 
+import {useSelectedStoryFromUrl} from '@src/lib/router.pwa';
+
+import {rootRoute} from '@src/routes/__root';
 import {storiesRoute} from '@src/routes/index';
 
 const StoryGroupSidebarItem: React.FC<{
@@ -198,49 +200,24 @@ const StoriesScreenMainContent: React.FC<{
   );
 };
 
-const findSidebarItem = (
-  storiesSidebarSectionId: StoriesSidebarSectionId,
-  sidebarItemId: string
-): StoriesSidebarItem | null => {
-  const allItems = [
-    ...getDesignSystemSidebarItems(),
-    ...getAtomicComponentSidebarItems(),
-    ...getRendererSidebarItems(),
-  ];
-
-  return (
-    allItems.find(
-      (item) =>
-        item.sidebarSectionId === storiesSidebarSectionId && item.sidebarItemId === sidebarItemId
-    ) ?? null
-  );
-};
-
 export const StoriesScreen: React.FC = () => {
   const navigate = useNavigate();
-  const {storiesSidebarSectionId, sidebarItemId} = storiesRoute.useParams();
 
-  // If no parameters are provided, use the default item
-  const selectedSidebarItem = storiesSidebarSectionId
-    ? (findSidebarItem(storiesSidebarSectionId, sidebarItemId) ?? DEFAULT_STORIES_SIDEBAR_ITEM)
-    : DEFAULT_STORIES_SIDEBAR_ITEM;
-
-  // If we're at /ui or if no sidebar item is found, navigate to the default one
-  React.useEffect(() => {
-    if (!storiesSidebarSectionId || !selectedSidebarItem) {
-      void navigate({to: Urls.forStories(DEFAULT_STORIES_SIDEBAR_ITEM)});
-    }
-  }, [navigate, selectedSidebarItem, storiesSidebarSectionId]);
+  const sidebarItemIdFromUrl = useSelectedStoryFromUrl();
+  const selectedSidebarItem = sidebarItemIdFromUrl ?? DEFAULT_STORIES_SIDEBAR_ITEM;
 
   const handleSidebarItemClick = (item: StoriesSidebarItem): void => {
-    void navigate({to: Urls.forStories(item)});
+    void navigate({
+      to: storiesRoute.fullPath,
+      params: {sidebarItemId: item.sidebarItemId},
+    });
   };
 
   return (
     <div className="bg-neutral-1 flex h-full w-full flex-row">
       <div className="border-neutral-3 flex h-full w-[240px] flex-col border-r">
         <div className="py-2 pl-4">
-          <Link to="/">
+          <Link to={rootRoute.fullPath}>
             <Text as="p" underline="hover" light>
               ← Back to app
             </Text>

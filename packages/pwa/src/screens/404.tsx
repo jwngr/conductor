@@ -5,13 +5,15 @@ import {NavItemId} from '@shared/types/urls.types';
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
 
+import {rootRoute} from '@src/routes/__root';
+
 export const NotFoundScreen: React.FC<{readonly message: string}> = ({message}) => {
   const navItem = NavItems.fromId(NavItemId.Untriaged);
   return (
     <div className="flex h-full w-full flex-col items-center justify-center gap-2">
       <Text as="h1">404</Text>
       <Text as="p">{message}</Text>
-      <Link to="/">
+      <Link to={rootRoute.fullPath}>
         <Text as="p" underline="always">
           Go to {navItem.title}
         </Text>

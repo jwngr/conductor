@@ -4,9 +4,10 @@ import {useEffect} from 'react';
 import {logger} from '@shared/services/logger.shared';
 
 import {prefixError} from '@shared/lib/errorUtils.shared';
-import {Urls} from '@shared/lib/urls.shared';
 
 import {authService} from '@sharedClient/services/auth.client';
+
+import {signInRoute} from '@src/routes';
 
 /**
  * Signs out the current account and redirects them to sign in page.
@@ -26,13 +27,13 @@ export const SignOutRedirect: React.FC = () => {
       }
 
       // Don't strand the user on a page they no longer have access to view.
-      await navigate({to: Urls.forSignIn(), replace: true});
+      await navigate({to: signInRoute.fullPath});
 
       // TODO: Clear other stuff from local storage.
     };
 
     void go();
-  }, [navigate]);
+  }, []);
 
   return null;
 };

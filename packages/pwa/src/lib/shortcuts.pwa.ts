@@ -44,5 +44,5 @@ export function useShortcuts(shortcutsWithHandlers: ShortcutWithHandler[]): void
  */
 export function useNavShortcut(shortcut: KeyboardShortcut, url: string): void {
   const navigate = useNavigate();
-  useShortcut(shortcut, async () => navigate({to: url}));
+  useShortcut(shortcut, async () => await navigate({to: url}));
 }

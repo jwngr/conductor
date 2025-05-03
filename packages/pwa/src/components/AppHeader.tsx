@@ -1,7 +1,5 @@
 import type React from 'react';
 
-import {Urls} from '@shared/lib/urls.shared';
-
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
 import {Link} from '@src/components/atoms/Link';
@@ -10,6 +8,8 @@ import {Text} from '@src/components/atoms/Text';
 import {RecentActivityFeed} from '@src/components/devToolbar/RecentActivityFeed';
 
 import {cn} from '@src/lib/utils.pwa';
+
+import {allViewRoute} from '@src/routes';
 
 export const AppHeader: React.FC = () => {
   const loggedInAccount = useLoggedInAccount();
@@ -22,7 +22,7 @@ export const AppHeader: React.FC = () => {
       <Spacer flex />
       <Text light>{loggedInAccount.email}</Text>
       <Spacer x={12} />
-      <Link to="/logout">
+      <Link to={allViewRoute.fullPath}>
         <Text as="p" underline="hover">
           Sign out
         </Text>

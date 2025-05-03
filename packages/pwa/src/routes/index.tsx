@@ -1,7 +1,8 @@
 import {createRoute} from '@tanstack/react-router';
 
-import {Urls} from '@shared/lib/urls.shared';
 import {Views} from '@shared/lib/views.shared';
+
+import {ViewType} from '@shared/types/views.types';
 
 import {RequireLoggedInAccount} from '@src/components/auth/RequireLoggedInAccount';
 import {SignOutRedirect} from '@src/components/auth/SignOutRedirect';
@@ -30,32 +31,100 @@ export const signOutRoute = createRoute({
   component: SignOutRedirect,
 });
 
-export const storiesRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/ui/$storiesSidebarSectionId/$sidebarItemId',
-  component: StoriesScreen,
-});
-
 export const storiesDefaultRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/ui',
   component: StoriesScreen,
 });
 
+export const storiesRoute = createRoute({
+  getParentRoute: () => storiesDefaultRoute,
+  path: '/$sidebarItemId',
+  component: StoriesScreen,
+});
+
 ///////////////////////////
 //  AUTHENTICATED ROUTES //
 ///////////////////////////
-export const viewRoutes = Views.getAllViewTypes().map((viewType) =>
-  createRoute({
-    getParentRoute: () => rootRoute,
-    path: Urls.forView(viewType),
-    component: () => (
-      <RequireLoggedInAccount>
-        <ViewScreen viewType={viewType} />
-      </RequireLoggedInAccount>
-    ),
-  })
-);
+export const allViewRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/all',
+  component: () => (
+    <RequireLoggedInAccount>
+      <ViewScreen viewType={ViewType.All} />
+    </RequireLoggedInAccount>
+  ),
+});
+
+export const todayViewRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/today',
+  component: () => (
+    <RequireLoggedInAccount>
+      <ViewScreen viewType={ViewType.Today} />
+    </RequireLoggedInAccount>
+  ),
+});
+
+export const untriagedViewRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/',
+  component: () => (
+    <RequireLoggedInAccount>
+      <ViewScreen viewType={ViewType.Untriaged} />
+    </RequireLoggedInAccount>
+  ),
+});
+
+export const unreadViewRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/unread',
+  component: () => (
+    <RequireLoggedInAccount>
+      <ViewScreen viewType={ViewType.Unread} />
+    </RequireLoggedInAccount>
+  ),
+});
+
+export const starredViewRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/starred',
+  component: () => (
+    <RequireLoggedInAccount>
+      <ViewScreen viewType={ViewType.Starred} />
+    </RequireLoggedInAccount>
+  ),
+});
+
+export const savedViewRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/saved',
+  component: () => (
+    <RequireLoggedInAccount>
+      <ViewScreen viewType={ViewType.Saved} />
+    </RequireLoggedInAccount>
+  ),
+});
+
+export const doneViewRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/done',
+  component: () => (
+    <RequireLoggedInAccount>
+      <ViewScreen viewType={ViewType.Done} />
+    </RequireLoggedInAccount>
+  ),
+});
+
+export const trashedViewRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/trashed',
+  component: () => (
+    <RequireLoggedInAccount>
+      <ViewScreen viewType={ViewType.Trashed} />
+    </RequireLoggedInAccount>
+  ),
+});
 
 export const feedItemRoute = createRoute({
   getParentRoute: () => rootRoute,

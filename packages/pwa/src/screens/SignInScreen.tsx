@@ -2,7 +2,6 @@ import {Navigate} from '@tanstack/react-router';
 import type {ActionCodeSettings} from 'firebase/auth';
 import {useState} from 'react';
 
-import {Urls} from '@shared/lib/urls.shared';
 import {isValidEmail} from '@shared/lib/utils.shared';
 
 import {parseEmailAddress} from '@shared/parsers/accounts.parser';
@@ -19,6 +18,8 @@ import {Spacer} from '@src/components/atoms/Spacer';
 import {Text} from '@src/components/atoms/Text';
 
 import type {OnClick} from '@src/types/utils.pwa.types';
+
+import {rootRoute} from '@src/routes/__root';
 
 const PASSWORDLESS_AUTH_ACTION_CODE_SETTINGS: ActionCodeSettings = {
   url: import.meta.env.VITE_CONDUCTOR_URL, // URL to redirect back to.
@@ -73,7 +74,7 @@ export const SignInScreen: React.FC = () => {
 
   // Redirect to root if already logged in.
   if (loggedInAccount) {
-    return <Navigate to={Urls.forRoot()} replace />;
+    return <Navigate to={rootRoute.path} replace />;
   }
 
   return (
