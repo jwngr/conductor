@@ -83,8 +83,8 @@ const PasswordlessAuthSubscription: React.FC = () => {
       // Clear the email from local storage since we no longer need it.
       window.localStorage.removeItem('emailForSignIn');
 
-      // Redirect to the root path.
-      await navigate({to: rootRoute.fullPath});
+      // Navigate away from the sign-in route.
+      await navigate({to: rootRoute.fullPath, replace: true});
     };
 
     void go();

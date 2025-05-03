@@ -9,7 +9,7 @@ import {RecentActivityFeed} from '@src/components/devToolbar/RecentActivityFeed'
 
 import {cn} from '@src/lib/utils.pwa';
 
-import {allViewRoute} from '@src/routes';
+import {signOutRoute} from '@src/routes';
 
 export const AppHeader: React.FC = () => {
   const loggedInAccount = useLoggedInAccount();
@@ -22,7 +22,7 @@ export const AppHeader: React.FC = () => {
       <Spacer flex />
       <Text light>{loggedInAccount.email}</Text>
       <Spacer x={12} />
-      <Link to={allViewRoute.fullPath}>
+      <Link to={signOutRoute.fullPath} replace>
         <Text as="p" underline="hover">
           Sign out
         </Text>
