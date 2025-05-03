@@ -74,7 +74,7 @@ export const SignInScreen: React.FC = () => {
 
   // Redirect to root if already logged in.
   if (loggedInAccount) {
-    return <Navigate to={rootRoute.path} replace />;
+    return <Navigate to={rootRoute.fullPath} replace />;
   }
 
   return (
