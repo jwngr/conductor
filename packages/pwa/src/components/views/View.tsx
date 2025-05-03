@@ -197,7 +197,7 @@ const ViewListItem: React.FC<{
   }, [isFocused]);
 
   return (
-    <Link to={Urls.forFeedItem(feedItem.feedItemId)}>
+    <Link to="/items/$feedItemId" params={{feedItemId: feedItem.feedItemId}}>
       <div
         ref={itemRef}
         className={`hover:bg-neutral-1 focus-visible:bg-neutral-1 relative flex cursor-pointer flex-col justify-center gap-1 rounded p-2 outline-none ${

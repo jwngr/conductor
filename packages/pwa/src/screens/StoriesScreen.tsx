@@ -1,4 +1,5 @@
-import {useState} from 'react';
+import {useNavigate, useParams} from '@tanstack/react-router';
+import React from 'react';
 
 import {
   DEFAULT_STORIES_SIDEBAR_ITEM,
@@ -35,6 +36,8 @@ import {MarkdownStories} from '@src/components/Markdown.stories';
 import {ColorsStories} from '@src/components/stories/Colors.stories';
 import {ColorsVanillaStories} from '@src/components/stories/ColorsVanilla.stories';
 import {TypographyStories} from '@src/components/stories/Typography.stories';
+
+import {storiesRoute} from '@src/routes/index';
 
 const StoryGroupSidebarItem: React.FC<{
   readonly title: string;
@@ -168,7 +171,7 @@ const StoriesScreenMainContent: React.FC<{
   readonly activeSidebarItem: StoriesSidebarItem;
 }> = ({activeSidebarItem}) => {
   let mainContent: React.ReactNode;
-  switch (activeSidebarItem.type) {
+  switch (activeSidebarItem.sidebarSectionId) {
     case StoriesSidebarSectionId.DesignSystem:
       mainContent = <DesignSystemStoryContent designSystemType={activeSidebarItem.sidebarItemId} />;
       break;
@@ -195,16 +198,49 @@ const StoriesScreenMainContent: React.FC<{
   );
 };
 
-export const StoriesScreen: React.FC = () => {
-  const [selectedSidebarItem, setSelectedSidebarItem] = useState<StoriesSidebarItem>(
-    DEFAULT_STORIES_SIDEBAR_ITEM
+const findSidebarItem = (
+  storiesSidebarSectionId: StoriesSidebarSectionId,
+  sidebarItemId: string
+): StoriesSidebarItem | null => {
+  const allItems = [
+    ...getDesignSystemSidebarItems(),
+    ...getAtomicComponentSidebarItems(),
+    ...getRendererSidebarItems(),
+  ];
+
+  return (
+    allItems.find(
+      (item) =>
+        item.sidebarSectionId === storiesSidebarSectionId && item.sidebarItemId === sidebarItemId
+    ) ?? null
   );
+};
+
+export const StoriesScreen: React.FC = () => {
+  const navigate = useNavigate();
+  const {storiesSidebarSectionId, sidebarItemId} = storiesRoute.useParams();
+
+  // If no parameters are provided, use the default item
+  const selectedSidebarItem = storiesSidebarSectionId
+    ? (findSidebarItem(storiesSidebarSectionId, sidebarItemId) ?? DEFAULT_STORIES_SIDEBAR_ITEM)
+    : DEFAULT_STORIES_SIDEBAR_ITEM;
+
+  // If we're at /ui or if no sidebar item is found, navigate to the default one
+  React.useEffect(() => {
+    if (!storiesSidebarSectionId || !selectedSidebarItem) {
+      void navigate({to: Urls.forStories(DEFAULT_STORIES_SIDEBAR_ITEM)});
+    }
+  }, [navigate, selectedSidebarItem, storiesSidebarSectionId]);
+
+  const handleSidebarItemClick = (item: StoriesSidebarItem): void => {
+    void navigate({to: Urls.forStories(item)});
+  };
 
   return (
     <div className="bg-neutral-1 flex h-full w-full flex-row">
       <div className="border-neutral-3 flex h-full w-[240px] flex-col border-r">
         <div className="py-2 pl-4">
-          <Link to={Urls.forRoot()}>
+          <Link to="/">
             <Text as="p" underline="hover" light>
               ← Back to app
             </Text>
@@ -212,7 +248,7 @@ export const StoriesScreen: React.FC = () => {
         </div>
         <StoriesSidebar
           activeSidebarItem={selectedSidebarItem}
-          onItemClick={setSelectedSidebarItem}
+          onItemClick={handleSidebarItemClick}
         />
       </div>
       <StoriesScreenMainContent activeSidebarItem={selectedSidebarItem} />

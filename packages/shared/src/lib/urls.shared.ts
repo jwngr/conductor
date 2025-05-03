@@ -2,6 +2,7 @@ import {syncTry} from '@shared/lib/errorUtils.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import type {FeedItemId} from '@shared/types/feedItems.types';
+import type {StoriesSidebarItem} from '@shared/types/stories.types';
 import {ViewType} from '@shared/types/views.types';
 
 // TODO: Make URL validation more robust.
@@ -41,16 +42,8 @@ export class Urls {
     }
   }
 
-  static forFeedItemRoot(): string {
-    return '/items';
-  }
-
   static forFeedItem(feedItemId: FeedItemId): string {
-    return `${this.forFeedItemRoot()}/${feedItemId}`;
-  }
-
-  static forFeedItemUnsafe(maybeFeedItemId: string): string {
-    return `${this.forFeedItemRoot()}/${maybeFeedItemId}`;
+    return `items/${feedItemId}`;
   }
 
   static forFeedSubscriptions(): string {
@@ -69,7 +62,11 @@ export class Urls {
     return '/logout';
   }
 
-  static forStories(): string {
-    return '/ui';
+  static forStories(item?: StoriesSidebarItem): string {
+    if (!item) {
+      return '/ui';
+    }
+
+    return `/ui/${item.sidebarSectionId}/${item.sidebarItemId}`;
   }
 }

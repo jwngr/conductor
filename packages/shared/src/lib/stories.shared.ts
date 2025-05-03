@@ -70,7 +70,7 @@ function makeDesignSystemSidebarItem(type: DesignSystemComponentType): DesignSys
   return {
     title: getDesignSystemSidebarItemTitle(type),
     sidebarItemId: type,
-    type: StoriesSidebarSectionId.DesignSystem,
+    sidebarSectionId: StoriesSidebarSectionId.DesignSystem,
   };
 }
 

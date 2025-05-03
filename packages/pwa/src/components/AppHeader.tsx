@@ -22,7 +22,7 @@ export const AppHeader: React.FC = () => {
       <Spacer flex />
       <Text light>{loggedInAccount.email}</Text>
       <Spacer x={12} />
-      <Link to={Urls.forSignOut()}>
+      <Link to="/logout">
         <Text as="p" underline="hover">
           Sign out
         </Text>

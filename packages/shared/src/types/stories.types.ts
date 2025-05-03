@@ -33,7 +33,7 @@ export interface AtomicComponentSidebarItem {
 }
 
 export interface DesignSystemSidebarItem {
-  readonly type: StoriesSidebarSectionId.DesignSystem;
+  readonly sidebarSectionId: StoriesSidebarSectionId.DesignSystem;
   readonly sidebarItemId: DesignSystemComponentType;
   readonly title: string;
 }

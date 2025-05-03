@@ -20,19 +20,25 @@ import {ViewScreen} from '@src/screens/ViewScreen';
 ////////////////////
 export const signInRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: Urls.forSignIn(),
+  path: '/login',
   component: SignInScreen,
 });
 
 export const signOutRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: Urls.forSignOut(),
+  path: '/logout',
   component: SignOutRedirect,
 });
 
 export const storiesRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: Urls.forStories(),
+  path: '/ui/$storiesSidebarSectionId/$sidebarItemId',
+  component: StoriesScreen,
+});
+
+export const storiesDefaultRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/ui',
   component: StoriesScreen,
 });
 
@@ -53,7 +59,7 @@ export const viewRoutes = Views.getAllViewTypes().map((viewType) =>
 
 export const feedItemRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: Urls.forFeedItemUnsafe('$feedItemId'),
+  path: '/items/$feedItemId',
   component: () => (
     <RequireLoggedInAccount>
       <FeedItemScreen />
@@ -63,7 +69,7 @@ export const feedItemRoute = createRoute({
 
 export const feedSubscriptionsRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: Urls.forFeedSubscriptions(),
+  path: '/feeds',
   component: () => (
     <RequireLoggedInAccount>
       <FeedSubscriptionsScreen />
@@ -73,7 +79,7 @@ export const feedSubscriptionsRoute = createRoute({
 
 export const importRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: Urls.forImport(),
+  path: '/import',
   component: () => (
     <RequireLoggedInAccount>
       <ImportScreen />

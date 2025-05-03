@@ -12,7 +12,7 @@ export const LinkStories: React.FC = () => {
             <Text className="w-32" light>
               Default:
             </Text>
-            <Link to="/example">
+            <Link to="/">
               <Text underline="always">Click to navigate</Text>
             </Link>
           </div>
@@ -22,7 +22,7 @@ export const LinkStories: React.FC = () => {
             <Text className="w-32" light>
               Hover underline:
             </Text>
-            <Link to="/example">
+            <Link to="/">
               <Text underline="hover">Hover me</Text>
             </Link>
           </div>
@@ -32,7 +32,7 @@ export const LinkStories: React.FC = () => {
             <Text className="w-32" light>
               Colored:
             </Text>
-            <Link to="/example">
+            <Link to="/">
               <Text className="text-text-link" underline="hover">
                 Blue link
               </Text>
@@ -44,7 +44,7 @@ export const LinkStories: React.FC = () => {
             <Text className="w-32" light>
               Bold:
             </Text>
-            <Link to="/example">
+            <Link to="/">
               <Text bold underline="hover">
                 Bold link
               </Text>
@@ -56,7 +56,7 @@ export const LinkStories: React.FC = () => {
             <Text className="w-32" light>
               Disabled style:
             </Text>
-            <Link to="/example">
+            <Link to="/">
               <Text light className="cursor-not-allowed">
                 Disabled-looking link
               </Text>
@@ -68,7 +68,7 @@ export const LinkStories: React.FC = () => {
             <Text className="w-32" light>
               Complex:
             </Text>
-            <Link to="/example">
+            <Link to="/">
               <Text bold underline="hover" className="text-text-link transition-colors">
                 Interactive complex link
               </Text>
@@ -81,7 +81,7 @@ export const LinkStories: React.FC = () => {
         <div className="border-neutral-2 rounded-lg border bg-white p-4">
           <Text>
             This is a paragraph with an{' '}
-            <Link to="/example">
+            <Link to="/">
               <Text underline="hover" className="text-text-link inline">
                 embedded link
               </Text>

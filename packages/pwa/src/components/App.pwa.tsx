@@ -10,6 +10,7 @@ import {
   importRoute,
   signInRoute,
   signOutRoute,
+  storiesDefaultRoute,
   storiesRoute,
   viewRoutes,
 } from '@src/routes/index';
@@ -18,6 +19,7 @@ const routeTree = rootRoute.addChildren([
   signInRoute,
   signOutRoute,
   storiesRoute,
+  storiesDefaultRoute,
   ...viewRoutes,
   feedItemRoute,
   feedSubscriptionsRoute,
@@ -26,6 +28,12 @@ const routeTree = rootRoute.addChildren([
 ]);
 
 const router = createRouter({routeTree});
+
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router;
+  }
+}
 
 export const App: React.FC = () => {
   return (
