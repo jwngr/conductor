@@ -19,13 +19,13 @@ import {parsePocketCsvContent} from '@sharedClient/lib/pocket.client';
 
 import type {WithChildren} from '@sharedClient/types/utils.client.types';
 
-import {AppHeader} from '@src/components/AppHeader';
 import {Button} from '@src/components/atoms/Button';
 import {Input} from '@src/components/atoms/Input';
 import {ExternalLink} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
 import {FeedItemImportStatusBadge} from '@src/components/feedItems/FeedItemImportStatusBadge';
-import {LeftSidebar} from '@src/components/nav/LeftSidebar';
+
+import {Screen} from '@src/screens/Screen';
 
 interface ImportScreenState {
   // List of items to import pulled from the CSV file.
@@ -156,39 +156,35 @@ export const ImportScreen: React.FC = () => {
   };
 
   return (
-    <div className="flex h-full w-full flex-col">
-      <AppHeader />
-      <div className="flex flex-1 items-stretch overflow-hidden">
-        <LeftSidebar />
-        <div className="flex flex-1 flex-col gap-6 overflow-auto p-5">
-          <Text as="h2" bold>
-            Import
+    <Screen withHeader withLeftSidebar>
+      <div className="flex flex-1 flex-col gap-6 overflow-auto p-5">
+        <Text as="h2" bold>
+          Import
+        </Text>
+
+        <div className="flex flex-col gap-2">
+          <Text as="h2">Pocket</Text>
+          <Text as="p" light>
+            Download CSV file from{' '}
+            <ExternalLink href="https://getpocket.com/export">Pocket</ExternalLink>
           </Text>
-
-          <div className="flex flex-col gap-2">
-            <Text as="h2">Pocket</Text>
-            <Text as="p" light>
-              Download CSV file from{' '}
-              <ExternalLink href="https://getpocket.com/export">Pocket</ExternalLink>
+          <Input
+            id="pocket-csv-input"
+            type="file"
+            accept=".csv"
+            onChange={handleFileChange}
+            className="max-w-sm"
+          />
+          {state.fileError ? (
+            <Text as="p" className="text-error">
+              {state.fileError.message}
             </Text>
-            <Input
-              id="pocket-csv-input"
-              type="file"
-              accept=".csv"
-              onChange={handleFileChange}
-              className="max-w-sm"
-            />
-            {state.fileError ? (
-              <Text as="p" className="text-error">
-                {state.fileError.message}
-              </Text>
-            ) : null}
-          </div>
-
-          {renderParsedItems()}
+          ) : null}
         </div>
+
+        {renderParsedItems()}
       </div>
-    </div>
+    </Screen>
   );
 };
 

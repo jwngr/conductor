@@ -20,6 +20,7 @@ import {Text} from '@src/components/atoms/Text';
 import type {OnClick} from '@src/types/utils.pwa.types';
 
 import {rootRoute} from '@src/routes/__root';
+import {Screen} from '@src/screens/Screen';
 
 const PASSWORDLESS_AUTH_ACTION_CODE_SETTINGS: ActionCodeSettings = {
   url: import.meta.env.VITE_CONDUCTOR_URL, // URL to redirect back to.
@@ -78,7 +79,7 @@ export const SignInScreen: React.FC = () => {
   }
 
   return (
-    <div className="flex h-full w-full items-center justify-center">
+    <Screen align="center" justify="center" gap={4} maxWidth={480}>
       <div className="flex w-full max-w-[480px] flex-col gap-4">
         <Text as="h1" bold align="center">
           Conductor
@@ -141,6 +142,6 @@ export const SignInScreen: React.FC = () => {
           </Text>
         ) : null}
       </div>
-    </div>
+    </Screen>
   );
 };

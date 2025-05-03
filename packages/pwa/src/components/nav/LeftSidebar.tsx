@@ -2,14 +2,14 @@ import type React from 'react';
 
 import type {CustomIcon} from '@shared/lib/customIcons.shared';
 import {CustomIconType} from '@shared/lib/customIcons.shared';
-import {NavItems, ORDERED_VIEW_NAV_ITEMS} from '@shared/lib/navItems.shared';
+import {ORDERED_SOURCE_NAV_ITEMS, ORDERED_VIEW_NAV_ITEMS} from '@shared/lib/navItems.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import type {NavItem} from '@shared/types/urls.types';
-import {NavItemId} from '@shared/types/urls.types';
 
 import {useFocusStore} from '@sharedClient/stores/FocusStore';
 
+import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
 import {TextIcon} from '@src/components/atoms/TextIcon';
 import * as styles from '@src/components/nav/LeftSidebar.css';
@@ -36,11 +36,11 @@ const LeftSidebarSection: React.FC<{
 }> = ({title, navItems}) => {
   const {focusedNavItemId, setFocusedNavItemId} = useFocusStore();
   return (
-    <div className={styles.sidebarSectionWrapper}>
+    <FlexColumn gap={3}>
       <Text as="h5" light>
         {title}
       </Text>
-      <div className={styles.sidebarSectionItemsWrapper}>
+      <FlexColumn>
         {navItems.map((navItem, i) => (
           <NavItemLink
             key={`${i}-${navItem.id}`}
@@ -48,25 +48,22 @@ const LeftSidebarSection: React.FC<{
             onClick={() => setFocusedNavItemId(navItem.id)}
             className={`${styles.sidebarItemLink} ${focusedNavItemId === navItem.id ? 'active' : ''}`.trim()}
           >
-            <div className={styles.sidebarItemDiv}>
+            <FlexRow gap={2}>
               <LeftSidebarItemAvatar icon={navItem.icon} />
               <Text as="p">{navItem.title}</Text>
-            </div>
+            </FlexRow>
           </NavItemLink>
         ))}
-      </div>
-    </div>
+      </FlexColumn>
+    </FlexColumn>
   );
 };
 
 export const LeftSidebar: React.FC = () => {
   return (
-    <div className={styles.sidebarWrapper}>
+    <FlexColumn overflow="auto" gap={4} padding={2} className={styles.sidebarWrapper}>
       <LeftSidebarSection title="Views" navItems={ORDERED_VIEW_NAV_ITEMS} />
-      <LeftSidebarSection
-        title="Feeds & Imports"
-        navItems={[NavItems.fromId(NavItemId.Feeds), NavItems.fromId(NavItemId.Import)]}
-      />
-    </div>
+      <LeftSidebarSection title="Sources" navItems={ORDERED_SOURCE_NAV_ITEMS} />
+    </FlexColumn>
   );
 };

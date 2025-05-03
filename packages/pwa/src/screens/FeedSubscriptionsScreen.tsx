@@ -6,11 +6,12 @@ import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.typ
 
 import {useUserFeedSubscriptionsService} from '@sharedClient/services/userFeedSubscriptions.client';
 
-import {AppHeader} from '@src/components/AppHeader';
 import {Button} from '@src/components/atoms/Button';
+import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Input} from '@src/components/atoms/Input';
 import {Text} from '@src/components/atoms/Text';
-import {LeftSidebar} from '@src/components/nav/LeftSidebar';
+
+import {Screen} from '@src/screens/Screen';
 
 const FeedAdder: React.FC = () => {
   const [url, setUrl] = useState('');
@@ -37,7 +38,7 @@ const FeedAdder: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <FlexColumn flex={1}>
       <Text as="h3" bold>
         Add new feed
       </Text>
@@ -78,7 +79,7 @@ const FeedAdder: React.FC = () => {
           </Button>
         </div>
       </div>
-    </div>
+    </FlexColumn>
   );
 };
 
@@ -122,11 +123,12 @@ const FeedSubscriptionsList: React.FC = () => {
     }
 
     if (subscriptions.length === 0) {
-      return <Text>No feed subscriptions yet. Add one above to get started!</Text>;
+      // TODO: Add better empty state.
+      return <Text>None</Text>;
     }
 
     return (
-      <div className="flex flex-col gap-3">
+      <FlexColumn flex={1}>
         {subscriptions.map((subscription) => (
           <div
             key={subscription.userFeedSubscriptionId}
@@ -150,31 +152,27 @@ const FeedSubscriptionsList: React.FC = () => {
             ) : null}
           </div>
         ))}
-      </div>
+      </FlexColumn>
     );
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <FlexColumn style={{width: 360}}>
       <Text as="h3" bold>
-        Active feed subscriptions
+        Active subscriptions
       </Text>
       {renderMainContent()}
-    </div>
+    </FlexColumn>
   );
 };
 
 export const FeedSubscriptionsScreen: React.FC = () => {
   return (
-    <div className="flex h-full w-full flex-col">
-      <AppHeader />
-      <div className="flex flex-1 items-stretch overflow-hidden">
-        <LeftSidebar />
-        <div className="flex flex-1 flex-col gap-6 overflow-auto p-5">
-          <FeedAdder />
-          <FeedSubscriptionsList />
-        </div>
-      </div>
-    </div>
+    <Screen withHeader withLeftSidebar>
+      <FlexRow flex={1} align="flex-start" gap={8} padding={4} overflow="auto">
+        <FeedAdder />
+        <FeedSubscriptionsList />
+      </FlexRow>
+    </Screen>
   );
 };

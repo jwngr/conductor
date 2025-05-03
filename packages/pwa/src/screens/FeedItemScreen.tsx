@@ -13,7 +13,6 @@ import {SystemTagId} from '@shared/types/tags.types';
 
 import {useFeedItem, useFeedItemsService} from '@sharedClient/services/feedItems.client';
 
-import {AppHeader} from '@src/components/AppHeader';
 import {Text} from '@src/components/atoms/Text';
 import {RegisterIndividualFeedItemDevToolbarSection} from '@src/components/devToolbar/RegisterIndividualFeedItemSection';
 import {FeedItemScreenKeyboardHandler} from '@src/components/feedItems/FeedItemScreenEscapeHandler';
@@ -23,11 +22,11 @@ import {VideoFeedItemRenderer} from '@src/components/feedItems/renderers/VideoFe
 import {WebsiteFeedItemRenderer} from '@src/components/feedItems/renderers/WebsiteFeedItemRenderer';
 import {XkcdFeedItemRenderer} from '@src/components/feedItems/renderers/XkcdFeedItemRenderer';
 import {YouTubeFeedItemRenderer} from '@src/components/feedItems/renderers/YouTubeFeedItemRenderer';
-import {LeftSidebar} from '@src/components/nav/LeftSidebar';
 
 import {useFeedItemIdFromUrl} from '@src/lib/router.pwa';
 
 import {NotFoundScreen} from '@src/screens/404';
+import {Screen} from '@src/screens/Screen';
 
 const useMarkFeedItemRead = (args: {
   readonly feedItemId: FeedItemId;
@@ -144,13 +143,9 @@ export const FeedItemScreen: React.FC = () => {
   );
 
   return (
-    <div className="flex h-full w-full flex-col">
-      <AppHeader />
-      <div className="flex flex-1 items-stretch overflow-hidden">
-        <LeftSidebar />
-        {mainContent}
-      </div>
+    <Screen withHeader withLeftSidebar>
+      {mainContent}
       <FeedItemScreenKeyboardHandler />
-    </div>
+    </Screen>
   );
 };

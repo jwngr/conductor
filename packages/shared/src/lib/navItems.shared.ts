@@ -74,3 +74,8 @@ export const ORDERED_VIEW_NAV_ITEMS: NavItem[] = [
   NavItems.fromId(NavItemId.Trashed),
   NavItems.fromId(NavItemId.Today),
 ];
+
+export const ORDERED_SOURCE_NAV_ITEMS: NavItem[] = [
+  NavItems.fromId(NavItemId.Feeds),
+  NavItems.fromId(NavItemId.Import),
+];

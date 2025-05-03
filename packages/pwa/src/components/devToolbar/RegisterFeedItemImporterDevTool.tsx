@@ -84,7 +84,7 @@ const FeedItemImporter: React.FC = () => {
       const addFeedItemResult = await feedItemsService.createFeedItem({
         url: trimmedUrl,
         feedItemSource: FEED_ITEM_APP_SOURCE,
-        title: `[IMPORT] ${trimmedUrl}`,
+        title: trimmedUrl,
       });
 
       if (addFeedItemResult.success) {

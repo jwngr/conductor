@@ -2,8 +2,6 @@ import {recipe} from '@vanilla-extract/recipes';
 
 import {vars} from '@src/lib/theme.css';
 
-export type FlexValue = 1 | 'auto' | 'initial' | 'none';
-
 export const flex = recipe({
   base: {
     display: 'flex',
@@ -50,6 +48,25 @@ export const flex = recipe({
       auto: {flex: 'auto'},
       initial: {flex: 'initial'},
       none: {flex: 'none'},
+    },
+    overflow: {
+      auto: {overflow: 'auto'},
+      clip: {overflow: 'clip'},
+      hidden: {overflow: 'hidden'},
+      scroll: {overflow: 'scroll'},
+      visible: {overflow: 'visible'},
+    },
+    padding: {
+      0: {padding: 0},
+      1: {padding: vars.spacing[1]},
+      2: {padding: vars.spacing[2]},
+      3: {padding: vars.spacing[3]},
+      4: {padding: vars.spacing[4]},
+      5: {padding: vars.spacing[5]},
+      6: {padding: vars.spacing[6]},
+      8: {padding: vars.spacing[8]},
+      10: {padding: vars.spacing[10]},
+      12: {padding: vars.spacing[12]},
     },
   },
 });

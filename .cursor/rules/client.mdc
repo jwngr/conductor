@@ -4,24 +4,24 @@ globs: packages/pwa/**,packages/sharedClient/**,packages/extension/**
 alwaysApply: false
 ---
 ### React Patterns
-- Functional components
-- React hooks for state management
+- Functional components using `React.FC`
 - Client/server component separation
 - Handle loading + error states
-- Functional components using `React.FC`
 - Props usually inlined, except when large, then named `<COMPONENT_NAME>Props`
 
 ### State Management
+- Use `useState` / `useReducer` when possible
 - Zustand for global state
 - Firebase for server state
-- Use useState / useReducer when possible
 
-### UI & Styling
-- Tailwind v4 (yes, it exists) for utility-first styling
-- Radix UI for accessible components
+### UI Components & Styling
+- Theme available in @theme.css.ts @theme.types.ts
+- When possible, use atomic components from /components/atoms
+- If needed, extend an atomic components styles with `vanilla-extract`
+- Tailwind v4 (yes, it exists) is used for utility-first styling, but `vanilla-extract` preferred
 - Mobile-first responsive design
-- Consistent theme system
-- Use new tailwind v4 semantic, i.e. size-4 instead of h-4 w-4 etc
+- Radix UI used for accessible components
+- Use semantic `block` and `inline` instead of `x` and `y`
 
 ### Performance
 - Code splitting
