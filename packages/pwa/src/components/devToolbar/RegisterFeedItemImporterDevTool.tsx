@@ -140,6 +140,10 @@ const FeedItemImporter: React.FC = () => {
         title: 'Personal blog post',
       })}
       {renderImportFeedItemButton({
+        url: 'https://wattenberger.com/thoughts/the-internet-for-the-mind',
+        title: 'Complex blog post',
+      })}
+      {renderImportFeedItemButton({
         url: 'https://www.youtube.com/watch?v=p_di4Zn4wz4',
         title: 'YouTube video',
       })}
