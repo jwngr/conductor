@@ -72,7 +72,7 @@ interface SignInScreenState {
   readonly signInLinkError: Error | null;
 }
 
-const INITIAL_STATE: SignInScreenState = {
+const INITIAL_SIGN_IN_SCREEN_STATE: SignInScreenState = {
   emailInputVal: '',
   successfulSignInLinkSentTo: null,
   signInLinkError: null,
@@ -81,7 +81,7 @@ const INITIAL_STATE: SignInScreenState = {
 export const SignInScreen: React.FC = () => {
   const {loggedInAccount} = useMaybeLoggedInAccount();
 
-  const [state, setState] = useState<SignInScreenState>(INITIAL_STATE);
+  const [state, setState] = useState<SignInScreenState>(INITIAL_SIGN_IN_SCREEN_STATE);
 
   const renderPasswordlessAuthButton = useCallback(
     ({maybeEmail, text}: {readonly maybeEmail: string; readonly text: string}): React.ReactNode => (

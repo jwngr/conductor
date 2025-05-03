@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 
 import {isValidUrl} from '@shared/lib/urls.shared';
 
@@ -13,29 +13,53 @@ import {Text} from '@src/components/atoms/Text';
 
 import {Screen} from '@src/screens/Screen';
 
+interface FeedAdderState {
+  readonly url: string;
+  readonly status: string;
+}
+
+const INITIAL_FEED_ADDER_STATE: FeedAdderState = {
+  url: '',
+  status: '',
+};
+
 const FeedAdder: React.FC = () => {
-  const [url, setUrl] = useState('');
-  const [status, setStatus] = useState('');
+  const [state, setState] = useState<FeedAdderState>(INITIAL_FEED_ADDER_STATE);
   const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
 
-  const handleSubscribeToFeedUrl = async (feedUrl: string): Promise<void> => {
-    setStatus('Subscribing to feed source...');
+  const handleSubscribeToFeedUrl = useCallback(
+    async (feedUrl: string): Promise<void> => {
+      setState((current) => ({
+        ...current,
+        status: 'Subscribing to feed source...',
+      }));
 
-    const trimmedUrl = feedUrl.trim();
-    if (!isValidUrl(trimmedUrl)) {
-      setStatus('Error: URL is not valid');
-      return;
-    }
+      const trimmedUrl = feedUrl.trim();
+      if (!isValidUrl(trimmedUrl)) {
+        setState((current) => ({
+          ...current,
+          status: 'Error: URL is not valid',
+        }));
+        return;
+      }
 
-    const subscribeResult = await userFeedSubscriptionsService.subscribeToUrl(trimmedUrl);
-    if (!subscribeResult.success) {
-      setStatus(`Error subscribing to feed source: ${subscribeResult.error.message}`);
-      return;
-    }
+      const subscribeResult = await userFeedSubscriptionsService.subscribeToUrl(trimmedUrl);
+      if (!subscribeResult.success) {
+        setState((current) => ({
+          ...current,
+          status: `Error subscribing to feed source: ${subscribeResult.error.message}`,
+        }));
+        return;
+      }
 
-    setStatus(`Successfully subscribed to feed source`);
-    setUrl('');
-  };
+      setState((current) => ({
+        ...current,
+        status: `Successfully subscribed to feed source`,
+        url: '',
+      }));
+    },
+    [userFeedSubscriptionsService]
+  );
 
   return (
     <FlexColumn flex={1}>
@@ -46,12 +70,12 @@ const FeedAdder: React.FC = () => {
       <div className="flex w-full gap-3">
         <Input
           type="text"
-          value={url}
+          value={state.url}
           placeholder="Enter RSS feed URL"
-          onChange={(e) => setUrl(e.target.value)}
+          onChange={(e) => setState((current) => ({...current, url: e.target.value}))}
           className="flex-1"
         />
-        <Button onClick={async () => void handleSubscribeToFeedUrl(url)}>Subscribe</Button>
+        <Button onClick={async () => void handleSubscribeToFeedUrl(state.url)}>Subscribe</Button>
       </div>
 
       {status ? (
