@@ -1,50 +1,52 @@
 import type {HTMLAttributes} from 'react';
 
+import type {
+  FlexAlign,
+  FlexGap,
+  FlexJustify,
+  FlexOverflow,
+  FlexValue,
+} from '@shared/types/flex.types';
+import type {ThemeSpacing} from '@shared/types/theme.types';
+
 import type {WithChildren} from '@sharedClient/types/utils.client.types';
 
 import * as styles from '@src/components/atoms/Flex.css';
-import type {FlexValue} from '@src/components/atoms/Flex.css';
 
-import type {vars} from '@src/lib/theme.css';
+import {cn} from '@src/lib/utils.pwa';
 
-interface FlexProps extends HTMLAttributes<HTMLDivElement> {
-  readonly align?: 'flex-start' | 'flex-end' | 'center' | 'stretch' | 'baseline';
-  readonly justify?:
-    | 'flex-start'
-    | 'flex-end'
-    | 'center'
-    | 'space-between'
-    | 'space-around'
-    | 'space-evenly';
-  readonly gap?: keyof typeof vars.spacing;
+export interface FlexProps extends HTMLAttributes<HTMLDivElement> {
+  readonly align?: FlexAlign;
+  readonly justify?: FlexJustify;
+  readonly gap?: FlexGap;
   readonly wrap?: boolean;
   readonly flex?: FlexValue | boolean;
+  readonly overflow?: FlexOverflow;
+  readonly padding?: ThemeSpacing;
 }
 
-interface FlexWithDirectionProps extends FlexProps {
-  readonly direction: 'row' | 'column';
-  readonly align: Required<FlexProps['align']>;
-  readonly justify: Required<FlexProps['justify']>;
-}
+const getFlexValue = (value: FlexValue | boolean | undefined): FlexValue | undefined => {
+  return value === true ? 1 : value === false ? 'none' : value === undefined ? undefined : value;
+};
 
-const FlexWithDirection: React.FC<FlexWithDirectionProps> = ({
-  children,
-  direction,
-  align,
-  justify,
-  gap,
-  wrap,
-  flex,
-  style,
-  ...rest
-}) => {
-  const flexValue: FlexValue | undefined =
-    flex === true ? 1 : flex === false ? 'none' : flex === undefined ? undefined : flex;
+export const FlexRow: React.FC<WithChildren<Partial<FlexProps>>> = (props) => {
+  const {align, justify, gap, wrap, flex, overflow, padding, children, className, ...rest} = props;
 
   return (
     <div
-      className={styles.flex({direction, align, justify, gap, wrap, flexValue})}
-      style={style}
+      className={cn(
+        styles.flex({
+          direction: 'row',
+          align: align ?? 'center',
+          justify: justify ?? 'flex-start',
+          flexValue: getFlexValue(flex),
+          gap,
+          wrap,
+          overflow,
+          padding,
+        }),
+        className
+      )}
       {...rest}
     >
       {children}
@@ -52,50 +54,27 @@ const FlexWithDirection: React.FC<FlexWithDirectionProps> = ({
   );
 };
 
-export const FlexRow: React.FC<WithChildren<Partial<FlexProps>>> = ({
-  align = 'center',
-  justify = 'flex-start',
-  gap,
-  wrap,
-  flex,
-  children,
-  ...rest
-}) => {
-  return (
-    <FlexWithDirection
-      direction="row"
-      align={align}
-      justify={justify}
-      gap={gap}
-      wrap={wrap}
-      flex={flex}
-      {...rest}
-    >
-      {children}
-    </FlexWithDirection>
-  );
-};
+export const FlexColumn: React.FC<WithChildren<Partial<FlexProps>>> = (props) => {
+  const {align, justify, gap, wrap, flex, overflow, padding, children, className, ...rest} = props;
 
-export const FlexColumn: React.FC<WithChildren<Partial<FlexProps>>> = ({
-  align = 'stretch',
-  justify = 'flex-start',
-  gap,
-  wrap,
-  flex,
-  children,
-  ...rest
-}) => {
   return (
-    <FlexWithDirection
-      direction="column"
-      align={align}
-      justify={justify}
-      gap={gap}
-      wrap={wrap}
-      flex={flex}
+    <div
+      className={cn(
+        styles.flex({
+          direction: 'column',
+          align: align ?? 'stretch',
+          justify: justify ?? 'flex-start',
+          flexValue: getFlexValue(flex),
+          gap,
+          wrap,
+          overflow,
+          padding,
+        }),
+        className
+      )}
       {...rest}
     >
       {children}
-    </FlexWithDirection>
+    </div>
   );
 };

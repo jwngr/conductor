@@ -19,6 +19,7 @@ import {useFocusStore} from '@sharedClient/stores/FocusStore';
 
 import {useFeedItems} from '@sharedClient/services/feedItems.client';
 
+import {FlexColumn} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
 import {HoverFeedItemActions} from '@src/components/feedItems/FeedItemActions';
@@ -347,7 +348,7 @@ export const ViewRenderer: React.FC<{
   });
 
   return (
-    <div className="flex flex-1 flex-col overflow-auto p-5">
+    <FlexColumn flex={1} overflow="auto" padding={4}>
       <ViewHeader
         name={defaultViewConfig.name}
         sortBy={viewOptions.sortBy}
@@ -366,6 +367,6 @@ export const ViewRenderer: React.FC<{
         }
       />
       <ViewList viewType={viewType} sortBy={viewOptions.sortBy} groupBy={viewOptions.groupBy} />
-    </div>
+    </FlexColumn>
   );
 };

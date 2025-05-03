@@ -1,6 +1,8 @@
 import {createTheme, createThemeContract} from '@vanilla-extract/css';
 
-const SHARED_SPACING = {
+import type {ThemeSpacing} from '@shared/types/theme.types';
+
+const SHARED_SPACING: Record<ThemeSpacing, string> = {
   '1': '4px',
   '2': '8px',
   '3': '12px',

@@ -3,26 +3,9 @@ import {style} from '@vanilla-extract/css';
 import {vars} from '@src/lib/theme.css';
 
 export const sidebarWrapper = style({
-  backgroundColor: vars.colors.neutral[1],
-  borderColor: vars.colors.neutral[2],
-  borderRightWidth: 1,
   width: 200,
-  display: 'flex',
-  flexDirection: 'column',
-  gap: vars.spacing[4],
-  overflow: 'auto',
-  padding: vars.spacing[5],
-});
-
-export const sidebarSectionWrapper = style({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: vars.spacing[3],
-});
-
-export const sidebarSectionItemsWrapper = style({
-  display: 'flex',
-  flexDirection: 'column',
+  backgroundColor: vars.colors.neutral[1],
+  borderRight: `solid 1px ${vars.colors.neutral[2]}`,
 });
 
 export const sidebarItemLink = style({
@@ -40,11 +23,4 @@ export const sidebarItemLink = style({
       backgroundColor: vars.colors.orange[2],
     },
   },
-});
-
-export const sidebarItemDiv = style({
-  display: 'flex',
-  flexDirection: 'row',
-  alignItems: 'center',
-  gap: vars.spacing[2],
 });

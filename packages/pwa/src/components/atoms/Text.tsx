@@ -2,6 +2,7 @@ import type {HTMLAttributes} from 'react';
 
 import {assertNever} from '@shared/lib/utils.shared';
 
+import type {FlexValue} from '@shared/types/flex.types';
 import {DEFAULT_TEXT_COLOR, DEFAULT_TEXT_LIGHT_COLOR} from '@shared/types/theme.types';
 
 import {cn} from '@src/lib/utils.pwa';
@@ -43,6 +44,8 @@ function getTextAlignClasses(args: {readonly align?: 'left' | 'center' | 'right'
  */
 function getColorClasses(args: {readonly light?: boolean}): string {
   const {light} = args;
+  // TODO: Move this default somewhere else so that every text component doesn't need to set it. It
+  // also overrides color of any text component it is inside, which breaks the `span` use case.
   return light ? DEFAULT_TEXT_LIGHT_COLOR : DEFAULT_TEXT_COLOR;
 }
 
@@ -62,8 +65,6 @@ function getUnderlineClasses(args: {readonly underline?: 'always' | 'hover' | 'n
       return assertNever(underline);
   }
 }
-
-export type FlexValue = 1 | 'auto' | 'initial' | 'none' | boolean;
 
 function getFlexClasses(args: {readonly flex?: FlexValue}): string {
   const {flex} = args;
