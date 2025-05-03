@@ -1,6 +1,6 @@
 import {Navigate} from '@tanstack/react-router';
 import type {ActionCodeSettings} from 'firebase/auth';
-import {useState} from 'react';
+import {useCallback, useState} from 'react';
 
 import {isValidEmail} from '@shared/lib/utils.shared';
 
@@ -66,12 +66,54 @@ const PasswordlessAuthButton: React.FC<{
   );
 };
 
+interface SignInScreenState {
+  readonly emailInputVal: string;
+  readonly successfulSignInLinkSentTo: string | null;
+  readonly signInLinkError: Error | null;
+}
+
+const INITIAL_SIGN_IN_SCREEN_STATE: SignInScreenState = {
+  emailInputVal: '',
+  successfulSignInLinkSentTo: null,
+  signInLinkError: null,
+};
+
 export const SignInScreen: React.FC = () => {
   const {loggedInAccount} = useMaybeLoggedInAccount();
 
-  const [emailInputVal, setEmailInputVal] = useState('');
-  const [successfulSignInLinkSentTo, setSuccessfulSignInLinkSentTo] = useState<string | null>(null);
-  const [signInLinkError, setSignInLinkError] = useState<Error | null>(null);
+  const [state, setState] = useState<SignInScreenState>(INITIAL_SIGN_IN_SCREEN_STATE);
+
+  const renderPasswordlessAuthButton = useCallback(
+    ({maybeEmail, text}: {readonly maybeEmail: string; readonly text: string}): React.ReactNode => (
+      <PasswordlessAuthButton
+        maybeEmail={maybeEmail}
+        onClick={() => {
+          setState((current) => ({
+            ...current,
+            signInLinkError: null,
+            successfulSignInLinkSentTo: null,
+          }));
+        }}
+        onSuccess={(email) => {
+          setState((current) => ({
+            ...current,
+            successfulSignInLinkSentTo: email,
+            signInLinkError: null,
+          }));
+        }}
+        onError={(error) => {
+          setState((current) => ({
+            ...current,
+            signInLinkError: error,
+            successfulSignInLinkSentTo: null,
+          }));
+        }}
+      >
+        {text}
+      </PasswordlessAuthButton>
+    ),
+    []
+  );
 
   // Redirect to root if already logged in.
   if (loggedInAccount) {
@@ -80,68 +122,41 @@ export const SignInScreen: React.FC = () => {
 
   return (
     <Screen align="center" justify="center" gap={4} maxWidth={480}>
-      <div className="flex w-full max-w-[480px] flex-col gap-4">
-        <Text as="h1" bold align="center">
-          Conductor
+      <Text as="h1" bold align="center">
+        Conductor
+      </Text>
+      <Spacer y={8} />
+      <Text as="h3" bold align="center">
+        Enter email for a passwordless sign in link
+      </Text>
+      <Input
+        type="email"
+        value={state.emailInputVal}
+        placeholder="Enter email"
+        onChange={(event) =>
+          setState((current) => ({...current, emailInputVal: event.target.value}))
+        }
+      />
+      {renderPasswordlessAuthButton({
+        maybeEmail: state.emailInputVal,
+        text: 'Send link',
+      })}
+      {/* TODO: Remove this debug button. */}
+      {renderPasswordlessAuthButton({
+        maybeEmail: 'wenger.jacob@gmail.com',
+        text: 'Send link to myself',
+      })}
+
+      {state.successfulSignInLinkSentTo ? (
+        <Text align="center">
+          Check <b>{state.successfulSignInLinkSentTo}</b> for the sign in link.
         </Text>
-        <Spacer y={16} />
-        <Text as="h3" bold align="center">
-          Enter email for a passwordless sign in link
+      ) : null}
+      {state.signInLinkError ? (
+        <Text className="text-error" align="center">
+          <Text bold>Error signing in:</Text> {state.signInLinkError.message}
         </Text>
-        <Input
-          type="email"
-          value={emailInputVal}
-          placeholder="Enter email"
-          onChange={(event) => setEmailInputVal(event.target.value)}
-        />
-        <PasswordlessAuthButton
-          maybeEmail={emailInputVal}
-          onClick={() => {
-            setSignInLinkError(null);
-            setSuccessfulSignInLinkSentTo(null);
-          }}
-          onSuccess={(email) => {
-            setSuccessfulSignInLinkSentTo(email);
-            setSignInLinkError(null);
-            setEmailInputVal('');
-          }}
-          onError={(error) => {
-            setSignInLinkError(error);
-            setSuccessfulSignInLinkSentTo(null);
-          }}
-        >
-          Send link
-        </PasswordlessAuthButton>
-        {/* TODO: Remove this debug button. */}
-        <PasswordlessAuthButton
-          maybeEmail="wenger.jacob@gmail.com"
-          onClick={() => {
-            setSignInLinkError(null);
-            setSuccessfulSignInLinkSentTo(null);
-          }}
-          onSuccess={(email) => {
-            setSuccessfulSignInLinkSentTo(email);
-            setSignInLinkError(null);
-            setEmailInputVal('');
-          }}
-          onError={(error) => {
-            setSignInLinkError(error);
-            setSuccessfulSignInLinkSentTo(null);
-          }}
-        >
-          Send link to myself
-        </PasswordlessAuthButton>
-        {successfulSignInLinkSentTo ? (
-          <Text align="center">
-            Check <b>{successfulSignInLinkSentTo}</b> for the sign in link.
-          </Text>
-        ) : null}
-        {signInLinkError ? (
-          <Text className="text-error" align="center">
-            <Text bold>Error signing in:</Text> {signInLinkError.message}
-          </Text>
-        ) : null}
-      </div>
+      ) : null}
     </Screen>
   );
 };

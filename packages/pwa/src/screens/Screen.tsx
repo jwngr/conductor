@@ -19,6 +19,7 @@ interface ScreenProps extends WithChildren {
 
 export const Screen: React.FC<ScreenProps> = ({
   children,
+  gap,
   align,
   justify,
   maxWidth,
@@ -33,6 +34,7 @@ export const Screen: React.FC<ScreenProps> = ({
         <FlexColumn
           flex={1}
           overflow="auto"
+          gap={gap}
           align={align}
           justify={justify}
           className={styles.screenMainContent}

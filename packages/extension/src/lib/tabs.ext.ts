@@ -2,16 +2,20 @@ import {useEffect, useState} from 'react';
 
 import {asyncTry} from '@shared/lib/errorUtils.shared';
 
-interface UseCurrentTabReturnValue {
+interface CurrentTabState {
   readonly currentTab: chrome.tabs.Tab | null;
   readonly isLoading: boolean;
   readonly error: Error | null;
 }
 
-export function useCurrentTab(): UseCurrentTabReturnValue {
-  const [currentTab, setCurrentTab] = useState<chrome.tabs.Tab | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+const INITIAL_CURRENT_TAB_STATE: CurrentTabState = {
+  currentTab: null,
+  isLoading: true,
+  error: null,
+};
+
+export function useCurrentTab(): CurrentTabState {
+  const [state, setState] = useState<CurrentTabState>(INITIAL_CURRENT_TAB_STATE);
 
   useEffect(() => {
     async function fetchCurrentTab(): Promise<void> {
@@ -20,16 +24,22 @@ export function useCurrentTab(): UseCurrentTabReturnValue {
         return tab;
       });
       if (tabResult.success) {
-        setCurrentTab(tabResult.value);
-        setIsLoading(false);
+        setState({
+          currentTab: tabResult.value,
+          isLoading: false,
+          error: null,
+        });
       } else {
-        setError(tabResult.error);
-        setIsLoading(false);
+        setState({
+          currentTab: null,
+          isLoading: false,
+          error: tabResult.error,
+        });
       }
     }
 
     void fetchCurrentTab();
   }, []);
 
-  return {currentTab, isLoading, error};
+  return state;
 }
