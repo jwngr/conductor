@@ -56,6 +56,15 @@ const FeedItemImporter: React.FC = () => {
     [feedItemsService]
   );
 
+  const renderImportFeedItemButton = useCallback(
+    ({url, title}: {readonly url: string; readonly title: string}) => (
+      <Button key={url} variant="outline" onClick={async () => void handleAddItemToQueue(url)}>
+        {title}
+      </Button>
+    ),
+    [handleAddItemToQueue]
+  );
+
   return (
     <>
       <Input
@@ -64,36 +73,23 @@ const FeedItemImporter: React.FC = () => {
         placeholder="Enter URL to test"
         onChange={(e) => setUrl(e.target.value)}
       />
-      <Button
-        variant="outline"
-        onClick={async () =>
-          void handleAddItemToQueue('https://jwn.gr/posts/migrating-from-gatsby-to-astro/')
-        }
-      >
-        Import personal blog post
-      </Button>
-      <Button
-        variant="outline"
-        onClick={async () =>
-          void handleAddItemToQueue('https://www.youtube.com/watch?v=p_di4Zn4wz4')
-        }
-      >
-        Import YouTube video
-      </Button>
-      <Button
-        variant="outline"
-        onClick={async () => void handleAddItemToQueue('https://xkcd.com/927/')}
-      >
-        Import XKCD comic
-      </Button>
-      <Button
-        variant="outline"
-        onClick={async () =>
-          void handleAddItemToQueue('https://wattenberger.com/thoughts/the-internet-for-the-mind')
-        }
-      >
-        Import complex blog post
-      </Button>
+
+      {renderImportFeedItemButton({
+        url: 'https://dev.to/jsmanifest/14-beneficial-tips-to-write-cleaner-code-in-react-apps-1gcf',
+        title: 'React article',
+      })}
+      {renderImportFeedItemButton({
+        url: 'https://jwn.gr/posts/migrating-from-gatsby-to-astro/',
+        title: 'Personal blog post',
+      })}
+      {renderImportFeedItemButton({
+        url: 'https://www.youtube.com/watch?v=p_di4Zn4wz4',
+        title: 'YouTube video',
+      })}
+      {renderImportFeedItemButton({
+        url: 'https://xkcd.com/927/',
+        title: 'XKCD comic',
+      })}
 
       <Button variant="outline" onClick={async () => void handleAddItemToQueue(url)}>
         Test URL import
