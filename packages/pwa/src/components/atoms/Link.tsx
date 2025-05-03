@@ -5,7 +5,7 @@ import type {StyleAttributes} from '@shared/types/utils.types';
 
 import {cn} from '@src/lib/utils.pwa';
 
-interface LinkProps extends TanStackLinkProps, StyleAttributes {
+export interface LinkProps extends TanStackLinkProps, StyleAttributes {
   readonly onClick?: React.MouseEventHandler<HTMLAnchorElement>;
 }
 

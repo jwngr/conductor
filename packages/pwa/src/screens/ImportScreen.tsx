@@ -25,7 +25,7 @@ import {Input} from '@src/components/atoms/Input';
 import {ExternalLink} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
 import {FeedItemImportStatusBadge} from '@src/components/feedItems/FeedItemImportStatusBadge';
-import {LeftSidebar} from '@src/components/LeftSidebar';
+import {LeftSidebar} from '@src/components/nav/LeftSidebar';
 
 interface ImportScreenState {
   // List of items to import pulled from the CSV file.

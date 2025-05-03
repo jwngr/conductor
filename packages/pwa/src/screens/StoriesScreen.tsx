@@ -1,12 +1,13 @@
-import {useState} from 'react';
+import {useNavigate} from '@tanstack/react-router';
+import type React from 'react';
 
+import {DEFAULT_NAV_ITEM} from '@shared/lib/navItems.shared';
 import {
   DEFAULT_STORIES_SIDEBAR_ITEM,
   getAtomicComponentSidebarItems,
   getDesignSystemSidebarItems,
   getRendererSidebarItems,
 } from '@shared/lib/stories.shared';
-import {Urls} from '@shared/lib/urls.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {RendererType} from '@shared/types/renderers.types';
@@ -24,7 +25,6 @@ import {DialogStories} from '@src/components/atoms/Dialog.stories';
 import {DividerStories} from '@src/components/atoms/Divider.stories';
 import {FlexStories} from '@src/components/atoms/Flex.stories';
 import {InputStories} from '@src/components/atoms/Input.stories';
-import {Link} from '@src/components/atoms/Link';
 import {LinkStories} from '@src/components/atoms/Link.stories';
 import {SpacerStories} from '@src/components/atoms/Spacer.stories';
 import {Text} from '@src/components/atoms/Text';
@@ -32,9 +32,14 @@ import {TextIconStories} from '@src/components/atoms/TextIcon.stories';
 import {ToastStories} from '@src/components/atoms/Toast.stories';
 import {TooltipStories} from '@src/components/atoms/Tooltip.stories';
 import {MarkdownStories} from '@src/components/Markdown.stories';
+import {NavItemLink} from '@src/components/nav/NavItemLink';
 import {ColorsStories} from '@src/components/stories/Colors.stories';
 import {ColorsVanillaStories} from '@src/components/stories/ColorsVanilla.stories';
 import {TypographyStories} from '@src/components/stories/Typography.stories';
+
+import {useSelectedStoryFromUrl} from '@src/lib/router.pwa';
+
+import {storiesRoute} from '@src/routes/index';
 
 const StoryGroupSidebarItem: React.FC<{
   readonly title: string;
@@ -168,7 +173,7 @@ const StoriesScreenMainContent: React.FC<{
   readonly activeSidebarItem: StoriesSidebarItem;
 }> = ({activeSidebarItem}) => {
   let mainContent: React.ReactNode;
-  switch (activeSidebarItem.type) {
+  switch (activeSidebarItem.sidebarSectionId) {
     case StoriesSidebarSectionId.DesignSystem:
       mainContent = <DesignSystemStoryContent designSystemType={activeSidebarItem.sidebarItemId} />;
       break;
@@ -196,23 +201,31 @@ const StoriesScreenMainContent: React.FC<{
 };
 
 export const StoriesScreen: React.FC = () => {
-  const [selectedSidebarItem, setSelectedSidebarItem] = useState<StoriesSidebarItem>(
-    DEFAULT_STORIES_SIDEBAR_ITEM
-  );
+  const navigate = useNavigate();
+
+  const sidebarItemIdFromUrl = useSelectedStoryFromUrl();
+  const selectedSidebarItem = sidebarItemIdFromUrl ?? DEFAULT_STORIES_SIDEBAR_ITEM;
+
+  const handleSidebarItemClick = (item: StoriesSidebarItem): void => {
+    void navigate({
+      to: storiesRoute.fullPath,
+      params: {sidebarItemId: item.sidebarItemId},
+    });
+  };
 
   return (
     <div className="bg-neutral-1 flex h-full w-full flex-row">
       <div className="border-neutral-3 flex h-full w-[240px] flex-col border-r">
         <div className="py-2 pl-4">
-          <Link to={Urls.forRoot()}>
+          <NavItemLink navItemId={DEFAULT_NAV_ITEM.id}>
             <Text as="p" underline="hover" light>
               ← Back to app
             </Text>
-          </Link>
+          </NavItemLink>
         </div>
         <StoriesSidebar
           activeSidebarItem={selectedSidebarItem}
-          onItemClick={setSelectedSidebarItem}
+          onItemClick={handleSidebarItemClick}
         />
       </div>
       <StoriesScreenMainContent activeSidebarItem={selectedSidebarItem} />

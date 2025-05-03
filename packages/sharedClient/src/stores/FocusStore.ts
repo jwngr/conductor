@@ -1,6 +1,6 @@
 import {create, type StateCreator} from 'zustand';
 
-import {DEFAULT_FOCUSED_NAV_ITEM} from '@shared/lib/navItems.shared';
+import {DEFAULT_NAV_ITEM} from '@shared/lib/navItems.shared';
 
 import type {FeedItemId} from '@shared/types/feedItems.types';
 import type {NavItemId} from '@shared/types/urls.types';
@@ -24,7 +24,7 @@ interface FocusState {
 
 const createFocusStore: StateCreator<FocusState> = (set) => ({
   // Initial state.
-  focusedNavItemId: DEFAULT_FOCUSED_NAV_ITEM,
+  focusedNavItemId: DEFAULT_NAV_ITEM.id,
   focusedFeedItemId: null,
 
   // Actions.

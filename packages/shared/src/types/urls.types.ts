@@ -15,7 +15,6 @@ export enum NavItemId {
 
 export interface NavItem {
   readonly id: NavItemId;
-  readonly url: string;
   readonly icon: CustomIcon;
   readonly title: string;
 }

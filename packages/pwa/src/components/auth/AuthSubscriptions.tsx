@@ -5,7 +5,6 @@ import {useEffect} from 'react';
 import {logger} from '@shared/services/logger.shared';
 
 import {prefixError} from '@shared/lib/errorUtils.shared';
-import {Urls} from '@shared/lib/urls.shared';
 
 import {parseEmailAddress} from '@shared/parsers/accounts.parser';
 
@@ -13,6 +12,8 @@ import {useAuthStore} from '@sharedClient/stores/AuthStore';
 
 import {authService} from '@sharedClient/services/auth.client';
 import {firebaseService} from '@sharedClient/services/firebase.client';
+
+import {rootRoute} from '@src/routes/__root';
 
 const AuthServiceSubscription: React.FC = () => {
   const {setLoggedInAccount} = useAuthStore();
@@ -33,7 +34,7 @@ const AuthServiceSubscription: React.FC = () => {
 
 const PasswordlessAuthSubscription: React.FC = () => {
   const navigate = useNavigate();
-  const {setLoggedInAccount} = useAuthStore();
+
   useEffect(() => {
     const go = async (): Promise<void> => {
       // Only do something if the current URL is a "sign-in with email" link.
@@ -77,15 +78,17 @@ const PasswordlessAuthSubscription: React.FC = () => {
         throw prefixError(authCredentialResult.error, `Error signing in with email link`);
       }
 
+      // Authentication successful. `AuthStore` will be updated via `AuthServiceSubscription`.
+
       // Clear the email from local storage since we no longer need it.
       window.localStorage.removeItem('emailForSignIn');
 
-      // Redirect to the root path.
-      await navigate({to: Urls.forRoot(), replace: true});
+      // Navigate away from the sign-in route.
+      await navigate({to: rootRoute.fullPath, replace: true});
     };
 
     void go();
-  }, [navigate, setLoggedInAccount]);
+  }, [navigate]);
   return null;
 };
 

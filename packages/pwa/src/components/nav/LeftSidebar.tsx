@@ -10,10 +10,10 @@ import {NavItemId} from '@shared/types/urls.types';
 
 import {useFocusStore} from '@sharedClient/stores/FocusStore';
 
-import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
 import {TextIcon} from '@src/components/atoms/TextIcon';
-import * as styles from '@src/components/LeftSidebar.css';
+import * as styles from '@src/components/nav/LeftSidebar.css';
+import {NavItemLink} from '@src/components/nav/NavItemLink';
 
 const LeftSidebarItemAvatar: React.FC<{
   readonly icon: CustomIcon;
@@ -42,9 +42,9 @@ const LeftSidebarSection: React.FC<{
       </Text>
       <div className={styles.sidebarSectionItemsWrapper}>
         {navItems.map((navItem, i) => (
-          <Link
-            key={`${i}-${navItem.url}`}
-            to={navItem.url}
+          <NavItemLink
+            key={`${i}-${navItem.id}`}
+            navItemId={navItem.id}
             onClick={() => setFocusedNavItemId(navItem.id)}
             className={`${styles.sidebarItemLink} ${focusedNavItemId === navItem.id ? 'active' : ''}`.trim()}
           >
@@ -52,7 +52,7 @@ const LeftSidebarSection: React.FC<{
               <LeftSidebarItemAvatar icon={navItem.icon} />
               <Text as="p">{navItem.title}</Text>
             </div>
-          </Link>
+          </NavItemLink>
         ))}
       </div>
     </div>

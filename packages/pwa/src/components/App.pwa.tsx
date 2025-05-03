@@ -4,21 +4,37 @@ import {StrictMode} from 'react';
 
 import {rootRoute} from '@src/routes/__root';
 import {
+  allViewRoute,
   catchAllRoute,
+  doneViewRoute,
   feedItemRoute,
   feedSubscriptionsRoute,
   importRoute,
+  savedViewRoute,
   signInRoute,
   signOutRoute,
+  starredViewRoute,
+  storiesDefaultRoute,
   storiesRoute,
-  viewRoutes,
+  todayViewRoute,
+  trashedViewRoute,
+  unreadViewRoute,
+  untriagedViewRoute,
 } from '@src/routes/index';
 
 const routeTree = rootRoute.addChildren([
   signInRoute,
   signOutRoute,
+  storiesDefaultRoute,
   storiesRoute,
-  ...viewRoutes,
+  allViewRoute,
+  todayViewRoute,
+  untriagedViewRoute,
+  unreadViewRoute,
+  starredViewRoute,
+  savedViewRoute,
+  doneViewRoute,
+  trashedViewRoute,
   feedItemRoute,
   feedSubscriptionsRoute,
   importRoute,
@@ -26,6 +42,12 @@ const routeTree = rootRoute.addChildren([
 ]);
 
 const router = createRouter({routeTree});
+
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router;
+  }
+}
 
 export const App: React.FC = () => {
   return (

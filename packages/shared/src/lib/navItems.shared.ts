@@ -1,53 +1,56 @@
 import {makeEmojiIcon} from '@shared/lib/customIcons.shared';
-import {Urls} from '@shared/lib/urls.shared';
-import {assertNever} from '@shared/lib/utils.shared';
 
 import type {NavItem} from '@shared/types/urls.types';
 import {NavItemId} from '@shared/types/urls.types';
-import {ViewType} from '@shared/types/views.types';
 
 const ALL_NAV_ITEMS: Record<NavItemId, NavItem> = {
-  [NavItemId.Untriaged]: makeNavItemForView(NavItemId.Untriaged, ViewType.Untriaged, {
+  [NavItemId.Untriaged]: {
+    id: NavItemId.Untriaged,
     icon: makeEmojiIcon('🆕'),
     title: 'New',
-  }),
-  [NavItemId.Saved]: makeNavItemForView(NavItemId.Saved, ViewType.Saved, {
+  },
+  [NavItemId.Saved]: {
+    id: NavItemId.Saved,
     icon: makeEmojiIcon('💾'),
     title: 'Saved',
-  }),
-  [NavItemId.Done]: makeNavItemForView(NavItemId.Done, ViewType.Done, {
+  },
+  [NavItemId.Done]: {
+    id: NavItemId.Done,
     icon: makeEmojiIcon('✅'),
     title: 'Done',
-  }),
-  [NavItemId.Unread]: makeNavItemForView(NavItemId.Unread, ViewType.Unread, {
+  },
+  [NavItemId.Unread]: {
+    id: NavItemId.Unread,
     icon: makeEmojiIcon('👀'),
     title: 'Unread',
-  }),
-  [NavItemId.Starred]: makeNavItemForView(NavItemId.Starred, ViewType.Starred, {
+  },
+  [NavItemId.Starred]: {
+    id: NavItemId.Starred,
     icon: makeEmojiIcon('⭐️'),
     title: 'Starred',
-  }),
-  [NavItemId.All]: makeNavItemForView(NavItemId.All, ViewType.All, {
+  },
+  [NavItemId.All]: {
+    id: NavItemId.All,
     icon: makeEmojiIcon('📚'),
     title: 'All',
-  }),
-  [NavItemId.Trashed]: makeNavItemForView(NavItemId.Trashed, ViewType.Trashed, {
+  },
+  [NavItemId.Trashed]: {
+    id: NavItemId.Trashed,
     icon: makeEmojiIcon('🗑️'),
     title: 'Trashed',
-  }),
-  [NavItemId.Today]: makeNavItemForView(NavItemId.Today, ViewType.Today, {
+  },
+  [NavItemId.Today]: {
+    id: NavItemId.Today,
     icon: makeEmojiIcon('📅'),
     title: 'Today',
-  }),
+  },
   [NavItemId.Feeds]: {
     id: NavItemId.Feeds,
-    url: Urls.forFeedSubscriptions(),
     icon: makeEmojiIcon('📰'),
     title: 'Feeds',
   },
   [NavItemId.Import]: {
     id: NavItemId.Import,
-    url: Urls.forImport(),
     icon: makeEmojiIcon('📥'),
     title: 'Import',
   },
@@ -57,45 +60,9 @@ export class NavItems {
   static fromId(navItemId: NavItemId): NavItem {
     return ALL_NAV_ITEMS[navItemId];
   }
-
-  static fromViewType(viewType: ViewType): NavItem {
-    switch (viewType) {
-      case ViewType.Untriaged:
-        return NavItems.fromId(NavItemId.Untriaged);
-      case ViewType.Saved:
-        return NavItems.fromId(NavItemId.Saved);
-      case ViewType.Done:
-        return NavItems.fromId(NavItemId.Done);
-      case ViewType.Unread:
-        return NavItems.fromId(NavItemId.Unread);
-      case ViewType.Starred:
-        return NavItems.fromId(NavItemId.Starred);
-      case ViewType.All:
-        return NavItems.fromId(NavItemId.All);
-      case ViewType.Today:
-        return NavItems.fromId(NavItemId.Today);
-      case ViewType.Trashed:
-        return NavItems.fromId(NavItemId.Trashed);
-      default:
-        assertNever(viewType);
-    }
-  }
 }
 
-export const DEFAULT_FOCUSED_NAV_ITEM: NavItemId = NavItemId.Untriaged;
-
-export function makeNavItemForView(
-  navItemId: NavItemId,
-  viewType: ViewType,
-  args: Omit<NavItem, 'id' | 'url'>
-): NavItem {
-  return {
-    id: navItemId,
-    url: Urls.forView(viewType),
-    icon: args.icon,
-    title: args.title,
-  };
-}
+export const DEFAULT_NAV_ITEM: NavItem = NavItems.fromId(NavItemId.Untriaged);
 
 export const ORDERED_VIEW_NAV_ITEMS: NavItem[] = [
   NavItems.fromId(NavItemId.Untriaged),

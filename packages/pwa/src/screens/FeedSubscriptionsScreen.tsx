@@ -10,7 +10,7 @@ import {AppHeader} from '@src/components/AppHeader';
 import {Button} from '@src/components/atoms/Button';
 import {Input} from '@src/components/atoms/Input';
 import {Text} from '@src/components/atoms/Text';
-import {LeftSidebar} from '@src/components/LeftSidebar';
+import {LeftSidebar} from '@src/components/nav/LeftSidebar';
 
 const FeedAdder: React.FC = () => {
   const [url, setUrl] = useState('');

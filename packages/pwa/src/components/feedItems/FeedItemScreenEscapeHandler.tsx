@@ -8,7 +8,7 @@ export const FeedItemScreenKeyboardHandler: React.FC = () => {
   const {focusedNavItemId} = useFocusStore();
   const focusedNavItem = NavItems.fromId(focusedNavItemId);
 
-  useNavShortcut(keyboardShortcutsService.forClose(), focusedNavItem.url);
+  useNavShortcut(keyboardShortcutsService.forClose(), focusedNavItem.id);
 
   return null;
 };

@@ -1,4 +1,6 @@
-import type {RendererType} from '@shared/types/renderers.types';
+import {z} from 'zod';
+
+import {RendererType} from '@shared/types/renderers.types';
 
 export enum StoriesSidebarSectionId {
   AtomicComponents = 'ATOMIC_COMPONENTS',
@@ -27,24 +29,35 @@ export enum DesignSystemComponentType {
 }
 
 export interface AtomicComponentSidebarItem {
-  readonly type: StoriesSidebarSectionId.AtomicComponents;
+  readonly sidebarSectionId: StoriesSidebarSectionId.AtomicComponents;
   readonly sidebarItemId: AtomicComponentType;
   readonly title: string;
 }
 
 export interface DesignSystemSidebarItem {
-  readonly type: StoriesSidebarSectionId.DesignSystem;
+  readonly sidebarSectionId: StoriesSidebarSectionId.DesignSystem;
   readonly sidebarItemId: DesignSystemComponentType;
   readonly title: string;
 }
 
 export interface RendererSidebarItem {
-  readonly type: StoriesSidebarSectionId.Renderers;
+  readonly sidebarSectionId: StoriesSidebarSectionId.Renderers;
   readonly sidebarItemId: RendererType;
   readonly title: string;
 }
+
+export type StoriesSidebarItemId = AtomicComponentType | DesignSystemComponentType | RendererType;
 
 export type StoriesSidebarItem =
   | AtomicComponentSidebarItem
   | DesignSystemSidebarItem
   | RendererSidebarItem;
+
+/**
+ * Zod schema for a {@link StoriesSidebarItemId}.
+ */
+export const StoriesSidebarItemIdSchema = z.union([
+  z.nativeEnum(AtomicComponentType),
+  z.nativeEnum(DesignSystemComponentType),
+  z.nativeEnum(RendererType),
+]);

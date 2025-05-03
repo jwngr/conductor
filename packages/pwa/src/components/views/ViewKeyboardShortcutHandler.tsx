@@ -2,13 +2,13 @@ import {useNavigate} from '@tanstack/react-router';
 import {useCallback, useMemo} from 'react';
 import type React from 'react';
 
-import {Urls} from '@shared/lib/urls.shared';
-
 import type {FeedItem} from '@shared/types/feedItems.types';
 
 import {useFocusStore} from '@sharedClient/stores/FocusStore';
 
 import {keyboardShortcutsService, useShortcuts} from '@src/lib/shortcuts.pwa';
+
+import {feedItemRoute} from '@src/routes';
 
 export const ViewKeyboardShortcutHandler: React.FC<{
   readonly feedItems: readonly FeedItem[];
@@ -46,7 +46,7 @@ export const ViewKeyboardShortcutHandler: React.FC<{
     if (!feedItems.length) return;
     if (!focusedFeedItemId) return;
 
-    await navigate({to: Urls.forFeedItem(focusedFeedItemId)});
+    await navigate({to: feedItemRoute.fullPath, params: {feedItemId: focusedFeedItemId}});
   }, [feedItems, focusedFeedItemId, navigate]);
 
   useShortcuts([

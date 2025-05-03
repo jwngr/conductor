@@ -23,7 +23,7 @@ import {VideoFeedItemRenderer} from '@src/components/feedItems/renderers/VideoFe
 import {WebsiteFeedItemRenderer} from '@src/components/feedItems/renderers/WebsiteFeedItemRenderer';
 import {XkcdFeedItemRenderer} from '@src/components/feedItems/renderers/XkcdFeedItemRenderer';
 import {YouTubeFeedItemRenderer} from '@src/components/feedItems/renderers/YouTubeFeedItemRenderer';
-import {LeftSidebar} from '@src/components/LeftSidebar';
+import {LeftSidebar} from '@src/components/nav/LeftSidebar';
 
 import {useFeedItemIdFromUrl} from '@src/lib/router.pwa';
 
