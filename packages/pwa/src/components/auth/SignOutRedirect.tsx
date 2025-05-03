@@ -33,7 +33,7 @@ export const SignOutRedirect: React.FC = () => {
     };
 
     void go();
-  }, []);
+  }, [navigate]);
 
   return null;
 };

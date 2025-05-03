@@ -1,7 +1,5 @@
 import {createRoute} from '@tanstack/react-router';
 
-import {Views} from '@shared/lib/views.shared';
-
 import {ViewType} from '@shared/types/views.types';
 
 import {RequireLoggedInAccount} from '@src/components/auth/RequireLoggedInAccount';
