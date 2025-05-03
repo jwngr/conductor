@@ -7,6 +7,7 @@ import {assertNever} from '@shared/lib/utils.shared';
 
 import type {NavItem} from '@shared/types/urls.types';
 import {NavItemId} from '@shared/types/urls.types';
+import type {StyleAttributes, Task} from '@shared/types/utils.types';
 
 import {useFocusStore} from '@sharedClient/stores/FocusStore';
 
@@ -14,6 +15,19 @@ import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
 import {TextIcon} from '@src/components/atoms/TextIcon';
 import * as styles from '@src/components/LeftSidebar.css';
+
+import {
+  allViewRoute,
+  doneViewRoute,
+  feedSubscriptionsRoute,
+  importRoute,
+  savedViewRoute,
+  starredViewRoute,
+  todayViewRoute,
+  trashedViewRoute,
+  unreadViewRoute,
+  untriagedViewRoute,
+} from '@src/routes';
 
 const LeftSidebarItemAvatar: React.FC<{
   readonly icon: CustomIcon;
@@ -30,6 +44,85 @@ const LeftSidebarItemAvatar: React.FC<{
   }
 };
 
+interface LeftSidebarItemLinkProps extends StyleAttributes {
+  readonly navItem: NavItem;
+  readonly onClick: Task;
+}
+
+const LeftSidebarItemLink: React.FC<LeftSidebarItemLinkProps> = ({navItem, onClick, className}) => {
+  const innerContent = (
+    <div className={styles.sidebarItemDiv}>
+      <LeftSidebarItemAvatar icon={navItem.icon} />
+      <Text as="p">{navItem.title}</Text>
+    </div>
+  );
+
+  switch (navItem.id) {
+    case NavItemId.All:
+      return (
+        <Link to={allViewRoute.fullPath} onClick={onClick} className={className}>
+          {innerContent}
+        </Link>
+      );
+    case NavItemId.Done:
+      return (
+        <Link to={doneViewRoute.fullPath} onClick={onClick} className={className}>
+          {innerContent}
+        </Link>
+      );
+    case NavItemId.Saved:
+      return (
+        <Link to={savedViewRoute.fullPath} onClick={onClick} className={className}>
+          {innerContent}
+        </Link>
+      );
+    case NavItemId.Starred:
+      return (
+        <Link to={starredViewRoute.fullPath} onClick={onClick} className={className}>
+          {innerContent}
+        </Link>
+      );
+    case NavItemId.Today:
+      return (
+        <Link to={todayViewRoute.fullPath} onClick={onClick} className={className}>
+          {innerContent}
+        </Link>
+      );
+    case NavItemId.Trashed:
+      return (
+        <Link to={trashedViewRoute.fullPath} onClick={onClick} className={className}>
+          {innerContent}
+        </Link>
+      );
+    case NavItemId.Unread:
+      return (
+        <Link to={unreadViewRoute.fullPath} onClick={onClick} className={className}>
+          {innerContent}
+        </Link>
+      );
+    case NavItemId.Untriaged:
+      return (
+        <Link to={untriagedViewRoute.fullPath} onClick={onClick} className={className}>
+          {innerContent}
+        </Link>
+      );
+    case NavItemId.Feeds:
+      return (
+        <Link to={feedSubscriptionsRoute.fullPath} onClick={onClick} className={className}>
+          {innerContent}
+        </Link>
+      );
+    case NavItemId.Import:
+      return (
+        <Link to={importRoute.fullPath} onClick={onClick} className={className}>
+          {innerContent}
+        </Link>
+      );
+    default:
+      assertNever(navItem.id);
+  }
+};
+
 const LeftSidebarSection: React.FC<{
   readonly title: string;
   readonly navItems: readonly NavItem[];
@@ -42,17 +135,12 @@ const LeftSidebarSection: React.FC<{
       </Text>
       <div className={styles.sidebarSectionItemsWrapper}>
         {navItems.map((navItem, i) => (
-          <Link
-            key={`${i}-${navItem.url}`}
-            to={navItem.url}
+          <LeftSidebarItemLink
+            key={`${i}-${navItem.id}`}
+            navItem={navItem}
             onClick={() => setFocusedNavItemId(navItem.id)}
             className={`${styles.sidebarItemLink} ${focusedNavItemId === navItem.id ? 'active' : ''}`.trim()}
-          >
-            <div className={styles.sidebarItemDiv}>
-              <LeftSidebarItemAvatar icon={navItem.icon} />
-              <Text as="p">{navItem.title}</Text>
-            </div>
-          </Link>
+          />
         ))}
       </div>
     </div>

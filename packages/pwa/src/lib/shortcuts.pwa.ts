@@ -3,9 +3,25 @@ import {useEffect} from 'react';
 
 import {SharedKeyboardShortcutsService} from '@shared/services/keyboardShortcuts.shared';
 
+import {assertNever} from '@shared/lib/utils.shared';
+
 import type {KeyboardShortcut, ShortcutHandler} from '@shared/types/shortcuts.types';
+import {NavItemId} from '@shared/types/urls.types';
 
 import {IS_MAC} from '@src/lib/environment.pwa';
+
+import {
+  allViewRoute,
+  doneViewRoute,
+  feedSubscriptionsRoute,
+  importRoute,
+  savedViewRoute,
+  starredViewRoute,
+  todayViewRoute,
+  trashedViewRoute,
+  unreadViewRoute,
+  untriagedViewRoute,
+} from '@src/routes';
 
 interface ShortcutWithHandler {
   readonly shortcut: KeyboardShortcut;
@@ -42,7 +58,42 @@ export function useShortcuts(shortcutsWithHandlers: ShortcutWithHandler[]): void
 /**
  * Navigates to a URL when a shortcut is triggered. Included as a helper for a common use case.
  */
-export function useNavShortcut(shortcut: KeyboardShortcut, url: string): void {
+export function useNavShortcut(shortcut: KeyboardShortcut, navItemId: NavItemId): void {
   const navigate = useNavigate();
-  useShortcut(shortcut, async () => await navigate({to: url}));
+  useShortcut(shortcut, async () => {
+    switch (navItemId) {
+      case NavItemId.All:
+        await navigate({to: allViewRoute.fullPath});
+        break;
+      case NavItemId.Done:
+        await navigate({to: doneViewRoute.fullPath});
+        break;
+      case NavItemId.Saved:
+        await navigate({to: savedViewRoute.fullPath});
+        break;
+      case NavItemId.Starred:
+        await navigate({to: starredViewRoute.fullPath});
+        break;
+      case NavItemId.Today:
+        await navigate({to: todayViewRoute.fullPath});
+        break;
+      case NavItemId.Trashed:
+        await navigate({to: trashedViewRoute.fullPath});
+        break;
+      case NavItemId.Unread:
+        await navigate({to: unreadViewRoute.fullPath});
+        break;
+      case NavItemId.Untriaged:
+        await navigate({to: untriagedViewRoute.fullPath});
+        break;
+      case NavItemId.Feeds:
+        await navigate({to: feedSubscriptionsRoute.fullPath});
+        break;
+      case NavItemId.Import:
+        await navigate({to: importRoute.fullPath});
+        break;
+      default:
+        assertNever(navItemId);
+    }
+  });
 }
