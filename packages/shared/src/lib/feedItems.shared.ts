@@ -4,6 +4,7 @@ import {prefixError, upgradeUnknownError} from '@shared/lib/errorUtils.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
+import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
 import {
   FeedItemActionType,
   FeedItemType,
@@ -17,6 +18,7 @@ import type {Result} from '@shared/types/results.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
 import type {TagId} from '@shared/types/tags.types';
+import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 
 type MaybeFeedItem = FeedItem | undefined | null;
 
@@ -221,4 +223,16 @@ export class SharedFeedItemHelpers {
   public static hasEverBeenImported(feedItem: FeedItem): boolean {
     return feedItem.importState.lastSuccessfulImportTime !== null;
   }
+}
+
+export function findDeliveryScheduleForFeedSubscription(args: {
+  readonly feedSubscriptionId: UserFeedSubscriptionId;
+  readonly deliverySchedules: DeliverySchedule[];
+}): DeliverySchedule | null {
+  const {feedSubscriptionId, deliverySchedules} = args;
+  const matchingDeliverySchedule = deliverySchedules.find(
+    (deliverySchedule) => deliverySchedule.userFeedSubscriptionId === feedSubscriptionId
+  );
+
+  return matchingDeliverySchedule ?? null;
 }

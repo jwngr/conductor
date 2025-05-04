@@ -1,6 +1,6 @@
 import {z} from 'zod';
 
-import {IMMEDIATELY_DELIVERY_SCHEDULE} from '@shared/lib/deliverySchedules.shared';
+import {makeImmediateDeliverySchedule} from '@shared/lib/deliverySchedules.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {makeUuid} from '@shared/lib/utils.shared';
 
@@ -10,11 +10,8 @@ import {
   DeliveryScheduleFromStorageSchema,
   type DeliverySchedule,
 } from '@shared/types/deliverySchedules.types';
-import {
-  FeedSourceIdSchema,
-  type FeedSource,
-  type FeedSourceId,
-} from '@shared/types/feedSources.types';
+import type {FeedSource, FeedSourceId} from '@shared/types/feedSources.types';
+import {FeedSourceIdSchema} from '@shared/types/feedSources.types';
 import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {Result} from '@shared/types/results.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
@@ -36,6 +33,11 @@ export const UserFeedSubscriptionIdSchema = z.string().uuid();
 export function makeUserFeedSubscriptionId(): UserFeedSubscriptionId {
   return makeUuid<UserFeedSubscriptionId>();
 }
+
+/**
+ * A sentinel {@link UserFeedSubscriptionId} used for feed subscriptions that failed parsing.
+ */
+export const INVALID_USER_FEED_SUBSCRIPTION_ID = 'INVALID_USER_FEED_SUBSCRIPTION_ID';
 
 /**
  * An individual account's subscription to a feed source.
@@ -85,14 +87,18 @@ export function makeUserFeedSubscription(newItemArgs: {
   readonly feedSource: FeedSource;
   readonly accountId: AccountId;
 }): Result<UserFeedSubscription> {
+  const {feedSource, accountId} = newItemArgs;
+
+  const userFeedSubscriptionId = makeUserFeedSubscriptionId();
+
   const userFeedSubscription: UserFeedSubscription = {
-    userFeedSubscriptionId: makeUserFeedSubscriptionId(),
-    accountId: newItemArgs.accountId,
-    feedSourceId: newItemArgs.feedSource.feedSourceId,
-    url: newItemArgs.feedSource.url,
-    title: newItemArgs.feedSource.title,
+    userFeedSubscriptionId,
+    accountId,
+    feedSourceId: feedSource.feedSourceId,
+    url: feedSource.url,
+    title: feedSource.title,
     isActive: true,
-    deliverySchedule: IMMEDIATELY_DELIVERY_SCHEDULE,
+    deliverySchedule: makeImmediateDeliverySchedule({userFeedSubscriptionId}),
     // TODO(timestamps): Use server timestamps instead.
     createdTime: new Date(),
     lastUpdatedTime: new Date(),

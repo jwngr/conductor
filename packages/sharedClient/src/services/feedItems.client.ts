@@ -13,25 +13,32 @@ import {
   FEED_ITEMS_STORAGE_COLLECTION,
 } from '@shared/lib/constants.shared';
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
+import {
+  findDeliveryScheduleForFeedSubscription,
+  SharedFeedItemHelpers,
+} from '@shared/lib/feedItems.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
-import {omitUndefined} from '@shared/lib/utils.shared';
+import {assertNever, omitUndefined} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
 
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 
 import type {AccountId, AuthStateChangedUnsubscribe} from '@shared/types/accounts.types';
-import type {
-  FeedItem,
-  FeedItemId,
-  FeedItemSource,
-  XkcdFeedItem,
+import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
+import {DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
+import {
+  FeedItemSourceType,
+  type FeedItem,
+  type FeedItemId,
+  type FeedItemRSSSource,
+  type FeedItemSource,
+  type XkcdFeedItem,
 } from '@shared/types/feedItems.types';
 import {fromQueryFilterOp} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {Consumer} from '@shared/types/utils.types';
-import type {ViewType} from '@shared/types/views.types';
+import {ViewType} from '@shared/types/views.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';
 import {
@@ -90,23 +97,118 @@ export function useFeedItem(feedItemId: FeedItemId): {
   return state;
 }
 
-export function useFeedItems({viewType}: {readonly viewType: ViewType}): {
+/**
+ * Returns true if the feed item should be shown in the untriaged view. This is used for items that
+ * exist but are hidden due to delivery schedules.
+ */
+function isRSSFeedItemDelivered(args: {
+  readonly createdTime: Date;
+  readonly rssSource: FeedItemRSSSource;
+  readonly deliverySchedules: DeliverySchedule[];
+}): boolean {
+  const {createdTime, rssSource, deliverySchedules} = args;
+
+  const matchingDeliverySchedule = findDeliveryScheduleForFeedSubscription({
+    feedSubscriptionId: rssSource.userFeedSubscriptionId,
+    deliverySchedules,
+  });
+
+  // Default to showing feed items without a delivery schedule to avoid hiding things by default.
+  if (!matchingDeliverySchedule) return true;
+
+  switch (matchingDeliverySchedule.type) {
+    case DeliveryScheduleType.Immediate:
+      // Immediate delivery schedules are always delivered.
+      return true;
+    case DeliveryScheduleType.Never:
+      // Never delivery schedules are never delivered.
+      return false;
+    case DeliveryScheduleType.DaysAndTimesOfWeek:
+    case DeliveryScheduleType.EveryNHours: {
+      logger.log('TODO: Fix this logic.');
+      // Temporarily hide for 5 seconds for debugging.
+      if (createdTime < new Date(Date.now() - 5000)) {
+        return false;
+      }
+      return true;
+    }
+    default:
+      assertNever(matchingDeliverySchedule);
+  }
+}
+
+/**
+ * Filters out feed items with delivery schedules that prevent them from being shown.
+ */
+function filterFeedItemsByDeliverySchedules(args: {
+  readonly feedItems: FeedItem[];
+  readonly deliverySchedules: DeliverySchedule[];
+}): FeedItem[] {
+  const {feedItems, deliverySchedules} = args;
+
+  return feedItems.filter((feedItem) => {
+    switch (feedItem.feedItemSource.type) {
+      case FeedItemSourceType.App:
+      case FeedItemSourceType.Extension:
+      case FeedItemSourceType.PocketExport:
+        // These sources are always shown.
+        return true;
+      case FeedItemSourceType.RSS: {
+        // RSS items have delivery schedules which determine if they are shown.
+        return isRSSFeedItemDelivered({
+          createdTime: feedItem.createdTime,
+          rssSource: feedItem.feedItemSource,
+          deliverySchedules,
+        });
+      }
+      default:
+        return false;
+    }
+  });
+}
+
+interface FeedItemsState {
   readonly feedItems: FeedItem[];
   readonly isLoading: boolean;
   readonly error: Error | null;
-} {
+}
+
+const INITIAL_FEED_ITEMS_STATE: FeedItemsState = {
+  feedItems: [],
+  isLoading: true,
+  error: null,
+} as const;
+
+export function useFeedItems({viewType}: {readonly viewType: ViewType}): FeedItemsState {
   const feedItemsService = useFeedItemsService();
-  const [state, setState] = useState<{
-    readonly feedItems: FeedItem[];
-    readonly isLoading: boolean;
-    readonly error: Error | null;
-  }>({feedItems: [], isLoading: true, error: null});
+  const deliverySchedules = useDeliverySchedules();
+
+  const [state, setState] = useState<FeedItemsState>(INITIAL_FEED_ITEMS_STATE);
 
   useEffect(() => {
     const unsubscribe = feedItemsService.watchFeedItemsQuery({
       viewType,
-      successCallback: (feedItems) => setState({feedItems, isLoading: false, error: null}),
-      errorCallback: (error) => setState({feedItems: [], isLoading: false, error}),
+      successCallback: (feedItems) => {
+        let filteredFeedItems: FeedItem[];
+        switch (viewType) {
+          case ViewType.All:
+          case ViewType.Done:
+          case ViewType.Saved:
+          case ViewType.Starred:
+          case ViewType.Today:
+          case ViewType.Trashed:
+          case ViewType.Unread:
+            filteredFeedItems = feedItems;
+            break;
+          case ViewType.Untriaged:
+            filteredFeedItems = filterFeedItemsByDeliverySchedules({feedItems, deliverySchedules});
+            break;
+        }
+        setState({feedItems: filteredFeedItems, isLoading: false, error: null});
+      },
+      errorCallback: (error) => {
+        setState({feedItems: [], isLoading: false, error});
+      },
     });
     return () => unsubscribe();
   }, [viewType, feedItemsService]);
