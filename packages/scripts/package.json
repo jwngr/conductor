@@ -23,6 +23,7 @@
     "ci": "rm -rf node_modules/ && yarn install",
     "build": "exit 0",
     "clean": "rm -rf dist/ distIgnore/",
-    "test": "echo 'No tests implemented'"
+    "test": "echo 'No tests implemented'",
+    "metrics": "tsx ./src/metrics/trackCodeMetrics.ts"
   }
 }

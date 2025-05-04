@@ -61,7 +61,7 @@
     "test:extension": "yarn workspace @conductor/extension test",
     "test:functions": "yarn workspace @conductor/functions test",
     "test:coverage": "yarn workspaces foreach --all -p -t run test:coverage",
-    "metrics": "tsx ./packages/scripts/src/metrics/trackCodeMetrics.ts"
+    "metrics": "yarn workspace @conductor/scripts metrics"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.1",
