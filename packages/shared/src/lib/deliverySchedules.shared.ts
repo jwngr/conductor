@@ -1,7 +1,7 @@
 import {logger} from '@shared/services/logger.shared';
 
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
-import {validateHour, validateMinute, validateTimeOfDay} from '@shared/lib/time.shared';
+import {validateHour, validateTimeOfDay} from '@shared/lib/time.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import type {
