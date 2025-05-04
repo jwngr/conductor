@@ -1,10 +1,15 @@
 import {z} from 'zod';
 
+import {IMMEDIATELY_DELIVERY_SCHEDULE} from '@shared/lib/deliverySchedules.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {makeUuid} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import {AccountIdSchema} from '@shared/types/accounts.types';
+import {
+  DeliveryScheduleFromStorageSchema,
+  type DeliverySchedule,
+} from '@shared/types/deliverySchedules.types';
 import {
   FeedSourceIdSchema,
   type FeedSource,
@@ -48,6 +53,7 @@ export interface UserFeedSubscription extends BaseStoreItem {
   readonly url: string;
   readonly title: string;
   readonly isActive: boolean;
+  readonly deliverySchedule: DeliverySchedule;
   readonly unsubscribedTime?: Date | undefined;
 }
 
@@ -64,6 +70,7 @@ export const UserFeedSubscriptionFromStorageSchema = z.object({
   unsubscribedTime: FirestoreTimestampSchema.or(z.date()).optional(),
   createdTime: FirestoreTimestampSchema.or(z.date()),
   lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
+  deliverySchedule: DeliveryScheduleFromStorageSchema,
 });
 
 /**
@@ -85,6 +92,7 @@ export function makeUserFeedSubscription(newItemArgs: {
     url: newItemArgs.feedSource.url,
     title: newItemArgs.feedSource.title,
     isActive: true,
+    deliverySchedule: IMMEDIATELY_DELIVERY_SCHEDULE,
     // TODO(timestamps): Use server timestamps instead.
     createdTime: new Date(),
     lastUpdatedTime: new Date(),
