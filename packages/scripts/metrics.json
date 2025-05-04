@@ -1,0 +1,527 @@
+{
+  "sharedServer": {
+    "timestamp": "2025-05-04T06:18:51.195Z",
+    "totalFiles": 26,
+    "totalBlank": 301,
+    "totalComment": 208,
+    "totalCode": 1511,
+    "css": {
+      "files": 3,
+      "blank": 49,
+      "comment": 7,
+      "code": 280
+    },
+    "json": {
+      "files": 22,
+      "blank": 50,
+      "comment": 0,
+      "code": 9180
+    },
+    "md": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "yaml": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "csv": {
+      "files": 5,
+      "blank": 28,
+      "comment": 0,
+      "code": 41205
+    },
+    "html": {
+      "files": 3,
+      "blank": 30,
+      "comment": 6,
+      "code": 40491
+    },
+    "js": {
+      "files": 20,
+      "blank": 3,
+      "comment": 146,
+      "code": 1102
+    },
+    "mjs": {
+      "files": 5,
+      "blank": 9,
+      "comment": 6,
+      "code": 79
+    },
+    "jsx": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "ts": {
+      "files": 124,
+      "blank": 1534,
+      "comment": 1122,
+      "code": 8706
+    },
+    "tsx": {
+      "files": 78,
+      "blank": 871,
+      "comment": 155,
+      "code": 5310
+    },
+    "svg": 0,
+    "png": 0
+  },
+  "sharedClient": {
+    "timestamp": "2025-05-04T06:18:51.199Z",
+    "totalFiles": 48,
+    "totalBlank": 546,
+    "totalComment": 359,
+    "totalCode": 2736,
+    "css": {
+      "files": 3,
+      "blank": 49,
+      "comment": 7,
+      "code": 280
+    },
+    "json": {
+      "files": 22,
+      "blank": 50,
+      "comment": 0,
+      "code": 9180
+    },
+    "md": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "yaml": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "csv": {
+      "files": 5,
+      "blank": 28,
+      "comment": 0,
+      "code": 41205
+    },
+    "html": {
+      "files": 3,
+      "blank": 30,
+      "comment": 6,
+      "code": 40491
+    },
+    "js": {
+      "files": 20,
+      "blank": 3,
+      "comment": 146,
+      "code": 1102
+    },
+    "mjs": {
+      "files": 5,
+      "blank": 9,
+      "comment": 6,
+      "code": 79
+    },
+    "jsx": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "ts": {
+      "files": 124,
+      "blank": 1534,
+      "comment": 1122,
+      "code": 8706
+    },
+    "tsx": {
+      "files": 78,
+      "blank": 871,
+      "comment": 155,
+      "code": 5310
+    },
+    "svg": 0,
+    "png": 0
+  },
+  "shared": {
+    "timestamp": "2025-05-04T06:18:51.207Z",
+    "totalFiles": 103,
+    "totalBlank": 1257,
+    "totalComment": 991,
+    "totalCode": 6804,
+    "css": {
+      "files": 3,
+      "blank": 49,
+      "comment": 7,
+      "code": 280
+    },
+    "json": {
+      "files": 22,
+      "blank": 50,
+      "comment": 0,
+      "code": 9180
+    },
+    "md": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "yaml": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "csv": {
+      "files": 5,
+      "blank": 28,
+      "comment": 0,
+      "code": 41205
+    },
+    "html": {
+      "files": 3,
+      "blank": 30,
+      "comment": 6,
+      "code": 40491
+    },
+    "js": {
+      "files": 20,
+      "blank": 3,
+      "comment": 146,
+      "code": 1102
+    },
+    "mjs": {
+      "files": 5,
+      "blank": 9,
+      "comment": 6,
+      "code": 79
+    },
+    "jsx": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "ts": {
+      "files": 124,
+      "blank": 1534,
+      "comment": 1122,
+      "code": 8706
+    },
+    "tsx": {
+      "files": 78,
+      "blank": 871,
+      "comment": 155,
+      "code": 5310
+    },
+    "svg": 0,
+    "png": 0
+  },
+  "scripts": {
+    "timestamp": "2025-05-04T06:18:51.268Z",
+    "totalFiles": 139,
+    "totalBlank": 1396,
+    "totalComment": 1149,
+    "totalCode": 98752,
+    "css": {
+      "files": 3,
+      "blank": 49,
+      "comment": 7,
+      "code": 280
+    },
+    "json": {
+      "files": 22,
+      "blank": 50,
+      "comment": 0,
+      "code": 9180
+    },
+    "md": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "yaml": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "csv": {
+      "files": 5,
+      "blank": 28,
+      "comment": 0,
+      "code": 41205
+    },
+    "html": {
+      "files": 3,
+      "blank": 30,
+      "comment": 6,
+      "code": 40491
+    },
+    "js": {
+      "files": 20,
+      "blank": 3,
+      "comment": 146,
+      "code": 1102
+    },
+    "mjs": {
+      "files": 5,
+      "blank": 9,
+      "comment": 6,
+      "code": 79
+    },
+    "jsx": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "ts": {
+      "files": 124,
+      "blank": 1534,
+      "comment": 1122,
+      "code": 8706
+    },
+    "tsx": {
+      "files": 78,
+      "blank": 871,
+      "comment": 155,
+      "code": 5310
+    },
+    "svg": 0,
+    "png": 0
+  },
+  "pwa": {
+    "timestamp": "2025-05-04T06:18:51.317Z",
+    "totalFiles": 241,
+    "totalBlank": 2407,
+    "totalComment": 1384,
+    "totalCode": 105517,
+    "css": {
+      "files": 3,
+      "blank": 49,
+      "comment": 7,
+      "code": 280
+    },
+    "json": {
+      "files": 22,
+      "blank": 50,
+      "comment": 0,
+      "code": 9180
+    },
+    "md": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "yaml": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "csv": {
+      "files": 5,
+      "blank": 28,
+      "comment": 0,
+      "code": 41205
+    },
+    "html": {
+      "files": 3,
+      "blank": 30,
+      "comment": 6,
+      "code": 40491
+    },
+    "js": {
+      "files": 20,
+      "blank": 3,
+      "comment": 146,
+      "code": 1102
+    },
+    "mjs": {
+      "files": 5,
+      "blank": 9,
+      "comment": 6,
+      "code": 79
+    },
+    "jsx": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "ts": {
+      "files": 124,
+      "blank": 1534,
+      "comment": 1122,
+      "code": 8706
+    },
+    "tsx": {
+      "files": 78,
+      "blank": 871,
+      "comment": 155,
+      "code": 5310
+    },
+    "svg": 1,
+    "png": 0
+  },
+  "functions": {
+    "timestamp": "2025-05-04T06:18:51.327Z",
+    "totalFiles": 249,
+    "totalBlank": 2525,
+    "totalComment": 1435,
+    "totalCode": 106086,
+    "css": {
+      "files": 3,
+      "blank": 49,
+      "comment": 7,
+      "code": 280
+    },
+    "json": {
+      "files": 22,
+      "blank": 50,
+      "comment": 0,
+      "code": 9180
+    },
+    "md": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "yaml": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "csv": {
+      "files": 5,
+      "blank": 28,
+      "comment": 0,
+      "code": 41205
+    },
+    "html": {
+      "files": 3,
+      "blank": 30,
+      "comment": 6,
+      "code": 40491
+    },
+    "js": {
+      "files": 20,
+      "blank": 3,
+      "comment": 146,
+      "code": 1102
+    },
+    "mjs": {
+      "files": 5,
+      "blank": 9,
+      "comment": 6,
+      "code": 79
+    },
+    "jsx": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "ts": {
+      "files": 124,
+      "blank": 1534,
+      "comment": 1122,
+      "code": 8706
+    },
+    "tsx": {
+      "files": 78,
+      "blank": 871,
+      "comment": 155,
+      "code": 5310
+    },
+    "svg": 1,
+    "png": 0
+  },
+  "extension": {
+    "timestamp": "2025-05-04T06:18:51.328Z",
+    "totalFiles": 260,
+    "totalBlank": 2574,
+    "totalComment": 1442,
+    "totalCode": 106353,
+    "css": {
+      "files": 3,
+      "blank": 49,
+      "comment": 7,
+      "code": 280
+    },
+    "json": {
+      "files": 22,
+      "blank": 50,
+      "comment": 0,
+      "code": 9180
+    },
+    "md": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "yaml": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "csv": {
+      "files": 5,
+      "blank": 28,
+      "comment": 0,
+      "code": 41205
+    },
+    "html": {
+      "files": 3,
+      "blank": 30,
+      "comment": 6,
+      "code": 40491
+    },
+    "js": {
+      "files": 20,
+      "blank": 3,
+      "comment": 146,
+      "code": 1102
+    },
+    "mjs": {
+      "files": 5,
+      "blank": 9,
+      "comment": 6,
+      "code": 79
+    },
+    "jsx": {
+      "files": 0,
+      "blank": 0,
+      "comment": 0,
+      "code": 0
+    },
+    "ts": {
+      "files": 124,
+      "blank": 1534,
+      "comment": 1122,
+      "code": 8706
+    },
+    "tsx": {
+      "files": 78,
+      "blank": 871,
+      "comment": 155,
+      "code": 5310
+    },
+    "svg": 1,
+    "png": 0
+  }
+}
