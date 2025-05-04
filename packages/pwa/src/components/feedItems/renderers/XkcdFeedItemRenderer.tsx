@@ -6,6 +6,7 @@ import type {XkcdFeedItem} from '@shared/types/feedItems.types';
 
 import {useExplainXkcdMarkdown} from '@sharedClient/services/feedItems.client';
 
+import {FlexColumn} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
 import {FeedItemHeader, FeedItemWrapper} from '@src/components/feedItems/FeedItem';
 import {ImportingFeedItem} from '@src/components/feedItems/ImportingFeedItem';
@@ -19,13 +20,13 @@ const XkcdImageAndAltText: React.FC<{
 
   // TODO: Handle more complex comics, like https://xkcd.com/3081/ which is wrapped in a link.
   return (
-    <div className="flex flex-col items-center gap-4">
+    <FlexColumn gap={4} align="center">
       <img className="w-auto max-w-[960px]" src={imageUrl} alt={altText} />
       <Text as="h5">Title text</Text>
       <Text as="p" light className="max-w-prose italic">
         {altText}
       </Text>
-    </div>
+    </FlexColumn>
   );
 };
 
