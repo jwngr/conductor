@@ -3,9 +3,9 @@ import {resolve} from 'path';
 
 import cloc from 'cloc';
 
-import {logger} from '@shared/services/logger';
+import {logger} from '@shared/services/logger.shared';
 
-import {asyncTry} from '@shared/lib/errors';
+import {asyncTry} from '@shared/lib/errorUtils.shared';
 
 interface LanguageMetrics {
   readonly files: number;
@@ -109,7 +109,7 @@ async function main(): Promise<void> {
   });
 
   if (!generateMetricsResult.success) {
-    logger.error('Error generating metrics', {error: generateMetricsResult.error});
+    logger.error(new Error('Failed to generate metrics'), {error: generateMetricsResult.error});
     process.exit(1);
   }
 
@@ -120,7 +120,7 @@ async function main(): Promise<void> {
   });
 
   if (!saveMetricsResult.success) {
-    logger.error('Error saving metrics', {error: saveMetricsResult.error});
+    logger.error(new Error('Failed to save metrics'), {error: saveMetricsResult.error});
     process.exit(1);
   }
 
