@@ -12,6 +12,7 @@ import {
 } from '@shared/types/migration.types';
 import type {ExternalMigrationItemState} from '@shared/types/migration.types';
 import type {PocketImportItem} from '@shared/types/pocket.types';
+import type {Task} from '@shared/types/utils.types';
 
 import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
 
@@ -20,6 +21,7 @@ import {parsePocketCsvContent} from '@sharedClient/lib/pocket.client';
 import type {WithChildren} from '@sharedClient/types/utils.client.types';
 
 import {Button} from '@src/components/atoms/Button';
+import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Input} from '@src/components/atoms/Input';
 import {ExternalLink} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
@@ -128,17 +130,17 @@ export const ImportScreen: React.FC = () => {
     }
 
     return (
-      <div className="flex flex-col gap-4">
+      <FlexColumn gap={4}>
         <Text bold>
           Found {pluralizeWithCount(state.pocketImportItems.length, 'item')} to import:
         </Text>
-        <div className="flex flex-col gap-3">
+        <FlexColumn gap={3}>
           {state.pocketImportItems.map((item, index) => {
             const key = `${item.url}-${index}`;
             const importStatus = state.importStates[key];
 
             return (
-              <ImportItemRow
+              <IndividualImportItem
                 key={key}
                 item={item}
                 status={importStatus}
@@ -147,22 +149,22 @@ export const ImportScreen: React.FC = () => {
                 {importStatus.status === ExternalMigrationItemStatus.FeedItemExists ? (
                   <FeedItemImportStatusBadge importState={importStatus.feedItem.importState} />
                 ) : null}
-              </ImportItemRow>
+              </IndividualImportItem>
             );
           })}
-        </div>
-      </div>
+        </FlexColumn>
+      </FlexColumn>
     );
   };
 
   return (
     <Screen withHeader withLeftSidebar>
-      <div className="flex flex-1 flex-col gap-6 overflow-auto p-5">
+      <FlexColumn flex={1} gap={6} padding={5} overflow="auto">
         <Text as="h2" bold>
           Import
         </Text>
 
-        <div className="flex flex-col gap-2">
+        <FlexColumn gap={2}>
           <Text as="h2">Pocket</Text>
           <Text as="p" light>
             Download CSV file from{' '}
@@ -180,22 +182,21 @@ export const ImportScreen: React.FC = () => {
               {state.fileError.message}
             </Text>
           ) : null}
-        </div>
+        </FlexColumn>
 
         {renderParsedItems()}
-      </div>
+      </FlexColumn>
     </Screen>
   );
 };
 
-// Individual import item row component
-interface ImportItemRowProps {
+interface IndividualImportItemProps {
   readonly item: PocketImportItem;
   readonly status: ExternalMigrationItemState;
-  readonly onImport: () => void;
+  readonly onImport: Task;
 }
 
-const ImportItemRow: React.FC<WithChildren<ImportItemRowProps>> = ({
+const IndividualImportItem: React.FC<WithChildren<IndividualImportItemProps>> = ({
   item,
   status,
   onImport,
@@ -212,12 +213,12 @@ const ImportItemRow: React.FC<WithChildren<ImportItemRowProps>> = ({
   if (isError) buttonText = 'Retry';
 
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-gray-200 p-3">
-      <div className="flex flex-1 flex-col gap-1">
-        <div className="flex items-center gap-2">
+    <FlexRow gap={3} padding={3} className="rounded-lg border border-gray-200">
+      <FlexColumn flex={1} gap={1}>
+        <FlexRow gap={2}>
           <Text bold>{item.title}</Text>
           {children}
-        </div>
+        </FlexRow>
         <Text as="p" light>
           {item.url}
         </Text>
@@ -226,10 +227,10 @@ const ImportItemRow: React.FC<WithChildren<ImportItemRowProps>> = ({
             {status.error.message}
           </Text>
         ) : null}
-      </div>
+      </FlexColumn>
       <Button onClick={onImport} disabled={isImporting || isImported} size="sm">
         {buttonText}
       </Button>
-    </div>
+    </FlexRow>
   );
 };

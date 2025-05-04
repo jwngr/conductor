@@ -1,5 +1,6 @@
 import type {WithChildren} from '@sharedClient/types/utils.client.types';
 
+import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
 import {StorySection} from '@src/components/stories/StorySection';
@@ -15,28 +16,28 @@ export const LinkStories: React.FC = () => {
     <>
       <StorySection title="Link Styles">
         {/* Default link with underline */}
-        <div className="flex flex-col gap-8">
-          <div className="flex items-center gap-4">
+        <FlexColumn gap={8}>
+          <FlexRow gap={4}>
             <Text className="w-32" light>
               Default:
             </Text>
             <StoryNavLink>
               <Text underline="always">Click to navigate</Text>
             </StoryNavLink>
-          </div>
+          </FlexRow>
 
           {/* Interactive hover underline */}
-          <div className="flex items-center gap-4">
+          <FlexRow gap={4}>
             <Text className="w-32" light>
               Hover underline:
             </Text>
             <StoryNavLink>
               <Text underline="hover">Hover me</Text>
             </StoryNavLink>
-          </div>
+          </FlexRow>
 
           {/* Colored link */}
-          <div className="flex items-center gap-4">
+          <FlexRow gap={4}>
             <Text className="w-32" light>
               Colored:
             </Text>
@@ -45,10 +46,10 @@ export const LinkStories: React.FC = () => {
                 Blue link
               </Text>
             </StoryNavLink>
-          </div>
+          </FlexRow>
 
           {/* Bold link */}
-          <div className="flex items-center gap-4">
+          <FlexRow gap={4}>
             <Text className="w-32" light>
               Bold:
             </Text>
@@ -57,10 +58,10 @@ export const LinkStories: React.FC = () => {
                 Bold link
               </Text>
             </StoryNavLink>
-          </div>
+          </FlexRow>
 
           {/* Disabled style */}
-          <div className="flex items-center gap-4">
+          <FlexRow gap={4}>
             <Text className="w-32" light>
               Disabled style:
             </Text>
@@ -69,10 +70,10 @@ export const LinkStories: React.FC = () => {
                 Disabled-looking link
               </Text>
             </StoryNavLink>
-          </div>
+          </FlexRow>
 
           {/* Complex link */}
-          <div className="flex items-center gap-4">
+          <FlexRow gap={4}>
             <Text className="w-32" light>
               Complex:
             </Text>
@@ -81,8 +82,8 @@ export const LinkStories: React.FC = () => {
                 Interactive complex link
               </Text>
             </StoryNavLink>
-          </div>
-        </div>
+          </FlexRow>
+        </FlexColumn>
       </StorySection>
 
       <StorySection title="Link in Context">

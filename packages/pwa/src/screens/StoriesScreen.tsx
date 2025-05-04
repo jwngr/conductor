@@ -23,6 +23,7 @@ import {ButtonStories} from '@src/components/atoms/Button.stories';
 import {ButtonIconStories} from '@src/components/atoms/ButtonIcon.stories';
 import {DialogStories} from '@src/components/atoms/Dialog.stories';
 import {DividerStories} from '@src/components/atoms/Divider.stories';
+import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {FlexStories} from '@src/components/atoms/Flex.stories';
 import {InputStories} from '@src/components/atoms/Input.stories';
 import {LinkStories} from '@src/components/atoms/Link.stories';
@@ -123,11 +124,11 @@ const SidebarSection: React.FC<{
   readonly onItemClick: Consumer<StoriesSidebarItem>;
 }> = ({title, items, activeSidebarItem, onItemClick}) => {
   return (
-    <div className="flex flex-col gap-2">
+    <FlexColumn gap={2}>
       <Text as="h6" light>
         {title}
       </Text>
-      <div className="flex flex-col">
+      <FlexColumn>
         {items.map((item) => (
           <StoryGroupSidebarItem
             key={item.title}
@@ -136,8 +137,8 @@ const SidebarSection: React.FC<{
             onClick={() => onItemClick(item)}
           />
         ))}
-      </div>
-    </div>
+      </FlexColumn>
+    </FlexColumn>
   );
 };
 
@@ -146,7 +147,11 @@ const StoriesSidebar: React.FC<{
   readonly onItemClick: Consumer<StoriesSidebarItem>;
 }> = ({activeSidebarItem, onItemClick}) => {
   return (
-    <div className="border-neutral-3 flex h-full w-[240px] flex-col gap-6 overflow-auto border-r p-4 pt-2">
+    <FlexColumn
+      gap={6}
+      padding={4}
+      className="border-neutral-3 h-full w-[240px] overflow-auto border-r pt-2"
+    >
       <SidebarSection
         title="Design system"
         items={getDesignSystemSidebarItems()}
@@ -165,7 +170,7 @@ const StoriesSidebar: React.FC<{
         activeSidebarItem={activeSidebarItem}
         onItemClick={onItemClick}
       />
-    </div>
+    </FlexColumn>
   );
 };
 
@@ -191,12 +196,12 @@ const StoriesScreenMainContent: React.FC<{
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-8 overflow-auto p-4">
+    <FlexColumn flex={1} gap={8} padding={4} overflow="auto">
       <Text as="h1" bold>
         {activeSidebarItem.title}
       </Text>
       {mainContent}
-    </div>
+    </FlexColumn>
   );
 };
 
@@ -214,8 +219,8 @@ export const StoriesScreen: React.FC = () => {
   };
 
   return (
-    <div className="bg-neutral-1 flex h-full w-full flex-row">
-      <div className="border-neutral-3 flex h-full w-[240px] flex-col border-r">
+    <FlexRow className="bg-neutral-1 h-full w-full">
+      <FlexColumn className="border-neutral-3 h-full w-[240px] border-r">
         <div className="py-2 pl-4">
           <NavItemLink navItemId={DEFAULT_NAV_ITEM.id}>
             <Text as="p" underline="hover" light>
@@ -227,8 +232,8 @@ export const StoriesScreen: React.FC = () => {
           activeSidebarItem={selectedSidebarItem}
           onItemClick={handleSidebarItemClick}
         />
-      </div>
+      </FlexColumn>
       <StoriesScreenMainContent activeSidebarItem={selectedSidebarItem} />
-    </div>
+    </FlexRow>
   );
 };

@@ -1,5 +1,6 @@
 import type React from 'react';
 
+import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
 import {StorySection} from '@src/components/stories/StorySection';
 
@@ -72,10 +73,10 @@ const ColorSwatch: React.FC<{
   readonly className?: string;
 }> = ({name, className}) => {
   return (
-    <div className="flex flex-col items-center gap-1">
+    <FlexColumn gap={1} align="center">
       <div className={cn('border-border size-16 rounded border', className)} />
       <Text className={cn('text-xs', 'text-text-default')}>{name}</Text>
-    </div>
+    </FlexColumn>
   );
 };
 
@@ -84,10 +85,10 @@ const TextColorDisplay: React.FC<{
   readonly className?: string;
 }> = ({name, className}) => {
   return (
-    <div className="flex flex-col items-start gap-1">
+    <FlexColumn gap={1} align="start">
       <Text className={cn('text-lg', className)}>Text sample</Text>
       <Text className="text-xs">{name}</Text>
-    </div>
+    </FlexColumn>
   );
 };
 
@@ -95,64 +96,64 @@ export const ColorsStories: React.FC = () => {
   return (
     <>
       <StorySection title="Base colors">
-        <div className="flex flex-col gap-4">
+        <FlexColumn gap={4}>
           {baseColorNames.map((colorName) => (
-            <div key={colorName} className="flex flex-row flex-wrap items-end gap-2">
+            <FlexRow key={colorName} gap={2} align="end" wrap>
               {shades.map((shade) => {
                 const name = `${colorName}-${shade}`;
                 const bgClass = `bg-${name}`;
                 return <ColorSwatch key={name} name={name} className={bgClass} />;
               })}
-            </div>
+            </FlexRow>
           ))}
           {/* Add black and paper */}
-          <div className="flex flex-row flex-wrap items-end gap-2">
+          <FlexRow gap={2} align="end" wrap>
             <ColorSwatch key="black" name="black" className="bg-black" />
             <ColorSwatch key="paper" name="paper" className="bg-paper" />
-          </div>
-        </div>
+          </FlexRow>
+        </FlexColumn>
       </StorySection>
 
       <StorySection title="Semantic colors">
         <Text className="mb-2">General</Text>
-        <div className="mb-4 flex flex-row flex-wrap items-end gap-2">
+        <FlexRow gap={2} align="end" wrap>
           {semanticColorNames.map((name) => {
             const bgClass = `bg-${name}`;
             return <ColorSwatch key={name} name={name} className={bgClass} />;
           })}
-        </div>
+        </FlexRow>
 
         <Text className="mb-2">Text</Text>
-        <div className="mb-4 grid grid-cols-2 items-start gap-4">
+        <FlexRow gap={2} align="end" wrap>
           {textColorNames.map((name) => {
             const textClass = name; // Class name is the variable name itself
             return <TextColorDisplay key={name} name={name} className={textClass} />;
           })}
-        </div>
+        </FlexRow>
 
         <Text className="mb-2">Neutral Scale</Text>
-        <div className="mb-4 flex flex-row flex-wrap items-end gap-2">
+        <FlexRow gap={2} align="end" wrap>
           {neutralColorNames.map((name) => {
             const bgClass = `bg-${name}`;
             return <ColorSwatch key={name} name={name} className={bgClass} />;
           })}
-        </div>
+        </FlexRow>
 
         <Text className="mb-2">Level 1 Colors</Text>
-        <div className="mb-4 flex flex-row flex-wrap items-end gap-2">
+        <FlexRow gap={2} align="end" wrap>
           {level1ColorNames.map((name) => {
             const bgClass = `bg-${name}`;
             return <ColorSwatch key={name} name={name} className={bgClass} />;
           })}
-        </div>
+        </FlexRow>
 
         <Text className="mb-2">Level 2 Colors</Text>
-        <div className="flex flex-row flex-wrap items-end gap-2">
+        <FlexRow gap={2} align="end" wrap>
           {level2ColorNames.map((name) => {
             const bgClass = `bg-${name}`;
             return <ColorSwatch key={name} name={name} className={bgClass} />;
           })}
-        </div>
+        </FlexRow>
       </StorySection>
     </>
   );

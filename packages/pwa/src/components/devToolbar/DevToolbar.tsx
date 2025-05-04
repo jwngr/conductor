@@ -5,6 +5,7 @@ import type {Task} from '@shared/types/utils.types';
 
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
+import {FlexColumn} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
 import {RequireLoggedInAccount} from '@src/components/auth/RequireLoggedInAccount';
@@ -27,7 +28,7 @@ const DevToolbarContent: React.FC<{
 }> = ({onClose}) => {
   const devToolbarSections = useDevToolbarStore((state) => state.sections);
   return (
-    <div className="flex flex-col gap-4">
+    <FlexColumn gap={4}>
       {devToolbarSections.map((section) =>
         section.requiresAuth ? (
           <RequireLoggedInAccount key={section.sectionType}>
@@ -37,7 +38,7 @@ const DevToolbarContent: React.FC<{
           <DevToolbarSectionComponent key={section.sectionType} section={section} />
         )
       )}
-      <div className="flex flex-col">
+      <FlexColumn>
         <Text as="h4" bold>
           Links
         </Text>
@@ -46,8 +47,8 @@ const DevToolbarContent: React.FC<{
             Design system & stories
           </Text>
         </Link>
-      </div>
-    </div>
+      </FlexColumn>
+    </FlexColumn>
   );
 };
 
@@ -55,12 +56,12 @@ const DevToolbarSectionComponent: React.FC<{
   readonly section: DevToolbarSectionInfo;
 }> = ({section}) => {
   return (
-    <div className="flex flex-col gap-1">
+    <FlexColumn gap={1}>
       <Text as="h4" bold>
         {section.title}
       </Text>
-      <div className="flex flex-col gap-2">{section.renderSection()}</div>
-    </div>
+      <FlexColumn gap={2}>{section.renderSection()}</FlexColumn>
+    </FlexColumn>
   );
 };
 
