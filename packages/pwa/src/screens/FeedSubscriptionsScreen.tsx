@@ -62,12 +62,12 @@ const FeedAdder: React.FC = () => {
   );
 
   return (
-    <FlexColumn flex={1}>
+    <FlexColumn flex={1} gap={3}>
       <Text as="h3" bold>
         Add new feed
       </Text>
 
-      <div className="flex w-full gap-3">
+      <FlexRow gap={3} flex={1}>
         <Input
           type="text"
           value={state.url}
@@ -76,15 +76,15 @@ const FeedAdder: React.FC = () => {
           className="flex-1"
         />
         <Button onClick={async () => void handleSubscribeToFeedUrl(state.url)}>Subscribe</Button>
-      </div>
+      </FlexRow>
 
       {status ? (
         <Text className={status.includes('Error') ? 'text-error' : 'text-success'}>{status}</Text>
       ) : null}
 
-      <div className="flex flex-col gap-3">
+      <FlexColumn gap={3}>
         <Text bold>Quick add feeds</Text>
-        <div className="flex flex-wrap gap-3">
+        <FlexRow gap={3}>
           <Button
             variant="secondary"
             onClick={async () => void handleSubscribeToFeedUrl('https://jwn.gr/rss.xml')}
@@ -101,8 +101,8 @@ const FeedAdder: React.FC = () => {
           >
             Dummy feed w/ 30s updates
           </Button>
-        </div>
-      </div>
+        </FlexRow>
+      </FlexColumn>
     </FlexColumn>
   );
 };
@@ -154,18 +154,20 @@ const FeedSubscriptionsList: React.FC = () => {
     return (
       <FlexColumn flex={1}>
         {subscriptions.map((subscription) => (
-          <div
+          <FlexRow
             key={subscription.userFeedSubscriptionId}
-            className="flex items-center gap-3 rounded-lg border border-gray-200 p-3"
+            gap={3}
+            padding={3}
+            className="rounded-lg border border-gray-200"
           >
-            <div className="flex flex-1 flex-col gap-1">
+            <FlexColumn flex={1} gap={1}>
               <Text bold className={subscription.isActive ? undefined : 'text-error'}>
                 {subscription.title}
               </Text>
               <Text as="p" light>
                 {subscription.url}
               </Text>
-            </div>
+            </FlexColumn>
             {subscription.isActive ? (
               <Button
                 variant="secondary"
@@ -174,14 +176,14 @@ const FeedSubscriptionsList: React.FC = () => {
                 Unsubscribe
               </Button>
             ) : null}
-          </div>
+          </FlexRow>
         ))}
       </FlexColumn>
     );
   };
 
   return (
-    <FlexColumn style={{width: 360}}>
+    <FlexColumn gap={3} style={{width: 360}}>
       <Text as="h3" bold>
         Active subscriptions
       </Text>
