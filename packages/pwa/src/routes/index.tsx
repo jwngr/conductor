@@ -1,4 +1,7 @@
-import {createRoute} from '@tanstack/react-router';
+import {createRoute, useNavigate} from '@tanstack/react-router';
+import {useEffect} from 'react';
+
+import {DEFAULT_STORIES_SIDEBAR_ITEM} from '@shared/lib/stories.shared';
 
 import {ViewType} from '@shared/types/views.types';
 
@@ -29,15 +32,28 @@ export const signOutRoute = createRoute({
   component: SignOutRedirect,
 });
 
-export const storiesDefaultRoute = createRoute({
+const StoriesDefaultRedirect: React.FC = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    void navigate({
+      to: storiesRoute.fullPath,
+      params: {sidebarItemId: DEFAULT_STORIES_SIDEBAR_ITEM.sidebarItemId},
+    });
+  }, [navigate]);
+
+  return null;
+};
+
+export const storiesRedirectRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/ui',
-  component: StoriesScreen,
+  component: StoriesDefaultRedirect,
 });
 
 export const storiesRoute = createRoute({
-  getParentRoute: () => storiesDefaultRoute,
-  path: '/$sidebarItemId',
+  getParentRoute: () => rootRoute,
+  path: '/ui/$sidebarItemId',
   component: StoriesScreen,
 });
 

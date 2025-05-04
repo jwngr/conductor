@@ -14,7 +14,7 @@ import {
   signInRoute,
   signOutRoute,
   starredViewRoute,
-  storiesDefaultRoute,
+  storiesRedirectRoute,
   storiesRoute,
   todayViewRoute,
   trashedViewRoute,
@@ -25,7 +25,6 @@ import {
 const routeTree = rootRoute.addChildren([
   signInRoute,
   signOutRoute,
-  storiesDefaultRoute,
   storiesRoute,
   allViewRoute,
   todayViewRoute,
@@ -37,6 +36,7 @@ const routeTree = rootRoute.addChildren([
   trashedViewRoute,
   feedItemRoute,
   feedSubscriptionsRoute,
+  storiesRedirectRoute,
   importRoute,
   catchAllRoute,
 ]);
