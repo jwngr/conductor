@@ -97,8 +97,8 @@ const PasswordlessAuthSubscription: React.FC = () => {
       // Clear the email from local storage since we no longer need it.
       window.localStorage.removeItem('emailForSignIn');
 
-      // The user will get redirected to the app's root screen via the `RequireLoggedInAccount`
-      // component, but the router does not update. Update the URL to remove the used sign-in link.
+      // Logic in `RequireLoggedInAccount` updates the UI when the logged-in state changes in
+      // `AuthStore`, but it does not update the URL. Update it to remove the used sign-in link.
       await navigate({to: rootRoute.fullPath, replace: true});
     };
 
