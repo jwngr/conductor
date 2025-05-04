@@ -358,41 +358,12 @@ const RetryImportActionIcon: React.FC<{
   );
 };
 
-const DebugSaveExampleActionIcon: React.FC<{
-  readonly feedItem: FeedItem;
-}> = ({feedItem}) => {
-  const actionInfo = SharedFeedItemHelpers.getDebugSaveExampleFeedItemActionInfo();
-
-  const performAction: UndoableActionFn = async () => {
-    logger.log('DebugSaveExampleActionIcon action performed (TODO)', {
-      feedItemId: feedItem.feedItemId,
-    });
-
-    return makeSuccessResult(null);
-  };
-
-  return (
-    <GenericFeedItemActionIcon
-      feedItem={feedItem}
-      feedItemActionType={FeedItemActionType.DebugSaveExample}
-      icon={actionInfo.icon}
-      tooltip={actionInfo.text}
-      shortcutId={actionInfo.shortcutId}
-      getIsActive={noopFalse}
-      performAction={performAction}
-      toastText="Feed item saved as example (TODO: Implement this)"
-      errorMessage="Error saving feed item as example (TODO: Implement this)"
-    />
-  );
-};
-
 export const FeedItemActions: React.FC<{
   readonly feedItem: FeedItem;
 }> = ({feedItem}) => {
   return (
     <div className="flex flex-row items-center gap-3">
       <RetryImportActionIcon feedItem={feedItem} />
-      <DebugSaveExampleActionIcon feedItem={feedItem} />
       <StarFeedItemActionIcon feedItem={feedItem} />
       <MarkUnreadFeedItemActionIcon feedItem={feedItem} />
       <SaveFeedItemActionIcon feedItem={feedItem} />

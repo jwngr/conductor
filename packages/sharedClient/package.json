@@ -24,6 +24,6 @@
     "clean": "rm -rf dist/ tsconfig.tsbuildinfo",
     "ci": "rm -rf node_modules/ && yarn install",
     "build": "yarn run clean && tsc --build",
-    "test": "echo 'TODO: Implement tests'"
+    "test": "echo 'No tests implemented'"
   }
 }

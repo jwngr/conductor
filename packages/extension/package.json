@@ -29,7 +29,7 @@
     "ci": "rm -rf node_modules/ && yarn install",
     "build": "yarn run clean && vite build",
     "preview": "vite preview",
-    "test": "echo 'TODO: Implement tests for extension'"
+    "test": "echo 'No tests implemented'"
   },
   "browserslist": [
     ">0.2%",

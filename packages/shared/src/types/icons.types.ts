@@ -1,6 +1,6 @@
 export enum IconName {
   Cancel = 'CANCEL',
-  DebugSaveExample = 'DEBUG_SAVE_EXAMPLE',
+  Debug = 'DEBUG',
   Inbox = 'INBOX',
   MarkDone = 'MARK_DONE',
   MarkUnread = 'MARK_UNREAD',

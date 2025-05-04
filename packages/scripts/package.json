@@ -22,6 +22,6 @@
     "ci": "rm -rf node_modules/ && yarn install",
     "build": "exit 0",
     "clean": "rm -rf dist/ distIgnore/",
-    "test": "echo 'TODO: Implement tests for scripts'"
+    "test": "echo 'No tests implemented'"
   }
 }

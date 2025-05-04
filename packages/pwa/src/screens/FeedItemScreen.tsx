@@ -1,5 +1,6 @@
 import {deleteField} from 'firebase/firestore';
 import {useEffect, useRef} from 'react';
+import {toast} from 'sonner';
 
 import {logger} from '@shared/services/logger.shared';
 
@@ -13,7 +14,6 @@ import {SystemTagId} from '@shared/types/tags.types';
 
 import {useFeedItem, useFeedItemsService} from '@sharedClient/services/feedItems.client';
 
-import {Text} from '@src/components/atoms/Text';
 import {RegisterIndividualFeedItemDevToolbarSection} from '@src/components/devToolbar/RegisterIndividualFeedItemSection';
 import {FeedItemScreenKeyboardHandler} from '@src/components/feedItems/FeedItemScreenEscapeHandler';
 import {ArticleFeedItemRenderer} from '@src/components/feedItems/renderers/ArticleFeedItemRenderer';
@@ -26,6 +26,7 @@ import {YouTubeFeedItemRenderer} from '@src/components/feedItems/renderers/YouTu
 import {useFeedItemIdFromUrl} from '@src/lib/router.pwa';
 
 import {NotFoundScreen} from '@src/screens/404';
+import {ErrorScreen} from '@src/screens/ErrorScreen';
 import {Screen} from '@src/screens/Screen';
 
 const useMarkFeedItemRead = (args: {
@@ -71,7 +72,7 @@ const useMarkFeedItemRead = (args: {
           prefixError(markFeedItemAsReadResult.error, 'Unread manager failed to mark item as read'),
           {feedItemId}
         );
-        // TODO: Show an error toast.
+        toast.error('Failed to mark item as read');
       }
     }
 
@@ -87,14 +88,14 @@ const FeedItemScreenMainContent: React.FC<{
   useMarkFeedItemRead({feedItem, feedItemId});
 
   if (isItemLoading) {
-    // TODO: Introduce proper loading state.
+    // TODO: Introduce proper loading component.
     return <div>Loading...</div>;
   }
 
   if (feedItemError) {
-    logger.error(prefixError(feedItemError, 'Error fetching feed item'));
-    // TODO: Introduce proper error screen.
-    return <Text as="p">Something went wrong while loading this item</Text>;
+    const betterError = prefixError(feedItemError, 'Failed to load item');
+    logger.error(betterError, {feedItemId, isItemLoading});
+    return <ErrorScreen error={betterError} />;
   }
 
   if (!feedItem) {
