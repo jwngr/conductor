@@ -8,7 +8,6 @@ import {assertNever} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
 
 import type {FeedItem} from '@shared/types/feedItems.types';
-import {Consumer} from '@shared/types/utils.types';
 import {ViewType} from '@shared/types/views.types';
 import type {
   ViewGroupByField,
