@@ -67,8 +67,7 @@ type SemanticGroupName = (typeof semanticGroupNames)[number];
 const semanticGroupLevels = ['1', '2'] as const;
 type SemanticGroupLevel = (typeof semanticGroupLevels)[number];
 
-// Define neutral color group (key with nested levels '1' through '5')
-const neutralLevels = ['1', '2', '3', '4', '5'] as const;
+const neutralLevels = ['0', '1', '2', '3', '4', '5'] as const;
 type NeutralLevel = (typeof neutralLevels)[number];
 
 interface ColorSwatchProps {
@@ -200,7 +199,7 @@ export const ColorsVanillaStories: React.FC = () => {
         </div>
 
         <Text bold className="mb-2">
-          Neutral Scale
+          Neutral scale
         </Text>
         <FlexRow wrap gap={2} align="end">
           {neutralLevels.map((level) => {

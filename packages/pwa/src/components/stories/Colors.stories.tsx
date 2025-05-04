@@ -40,11 +40,21 @@ const semanticColorNames = [
   'border',
   'error',
   'success',
+  'destructive',
+  'primary',
+  'primary-foreground',
 ];
 
 const textColorNames = ['text-default', 'text-light', 'text-link'];
 
-const neutralColorNames = ['neutral-1', 'neutral-2', 'neutral-3', 'neutral-4', 'neutral-5'];
+const neutralColorNames = [
+  'neutral-0',
+  'neutral-1',
+  'neutral-2',
+  'neutral-3',
+  'neutral-4',
+  'neutral-5',
+];
 
 const level1ColorNames = [
   'red-1',
@@ -131,7 +141,7 @@ export const ColorsStories: React.FC = () => {
           })}
         </FlexRow>
 
-        <Text className="mb-2">Neutral Scale</Text>
+        <Text className="mb-2">Neutral scale</Text>
         <FlexRow gap={2} align="end" wrap>
           {neutralColorNames.map((name) => {
             const bgClass = `bg-${name}`;
@@ -139,7 +149,7 @@ export const ColorsStories: React.FC = () => {
           })}
         </FlexRow>
 
-        <Text className="mb-2">Level 1 Colors</Text>
+        <Text className="mb-2">Level 1 colors</Text>
         <FlexRow gap={2} align="end" wrap>
           {level1ColorNames.map((name) => {
             const bgClass = `bg-${name}`;
@@ -147,7 +157,7 @@ export const ColorsStories: React.FC = () => {
           })}
         </FlexRow>
 
-        <Text className="mb-2">Level 2 Colors</Text>
+        <Text className="mb-2">Level 2 colors</Text>
         <FlexRow gap={2} align="end" wrap>
           {level2ColorNames.map((name) => {
             const bgClass = `bg-${name}`;
