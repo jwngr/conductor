@@ -1,7 +1,5 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 
-import {DEFAULT_STORIES_SIDEBAR_ITEM} from '@shared/lib/stories.shared';
-
 import type {DevToolbarSectionInfo} from '@shared/types/devToolbar.types';
 import type {Task} from '@shared/types/utils.types';
 
