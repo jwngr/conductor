@@ -50,6 +50,8 @@ function getAtomicComponentSidebarItemTitle(type: AtomicComponentType): string {
       return 'Link';
     case AtomicComponentType.Spacer:
       return 'Spacer';
+    case AtomicComponentType.Text:
+      return 'Text';
     case AtomicComponentType.TextIcon:
       return 'TextIcon';
     case AtomicComponentType.Toast:
@@ -108,6 +110,7 @@ export function getDesignSystemSidebarItems(): DesignSystemSidebarItem[] {
 }
 
 const ORDERED_ATOMIC_COMPONENT_TYPES: AtomicComponentType[] = [
+  AtomicComponentType.Text,
   AtomicComponentType.Link,
   AtomicComponentType.TextIcon,
   AtomicComponentType.ButtonIcon,

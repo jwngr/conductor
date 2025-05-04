@@ -31,6 +31,7 @@ import {InputStories} from '@src/components/atoms/Input.stories';
 import {LinkStories} from '@src/components/atoms/Link.stories';
 import {SpacerStories} from '@src/components/atoms/Spacer.stories';
 import {Text} from '@src/components/atoms/Text';
+import {TextStories} from '@src/components/atoms/Text.stories';
 import {TextIconStories} from '@src/components/atoms/TextIcon.stories';
 import {ToastStories} from '@src/components/atoms/Toast.stories';
 import {TooltipStories} from '@src/components/atoms/Tooltip.stories';
@@ -67,6 +68,8 @@ const AtomicComponentStoryContent: React.FC<{
       return <LinkStories />;
     case AtomicComponentType.Spacer:
       return <SpacerStories />;
+    case AtomicComponentType.Text:
+      return <TextStories />;
     case AtomicComponentType.TextIcon:
       return <TextIconStories />;
     case AtomicComponentType.Toast:

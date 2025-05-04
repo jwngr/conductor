@@ -18,6 +18,7 @@ export enum AtomicComponentType {
   Input = 'INPUT',
   Link = 'LINK',
   Spacer = 'SPACER',
+  Text = 'TEXT',
   TextIcon = 'TEXT_ICON',
   Toast = 'TOAST',
   Tooltip = 'TOOLTIP',
