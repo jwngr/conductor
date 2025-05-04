@@ -9,6 +9,7 @@ export enum StoriesSidebarSectionId {
 }
 
 export enum AtomicComponentType {
+  Badge = 'BADGE',
   Button = 'BUTTON',
   ButtonIcon = 'BUTTON_ICON',
   Dialog = 'DIALOG',
@@ -26,6 +27,7 @@ export enum DesignSystemComponentType {
   Typography = 'TYPOGRAPHY',
   Colors = 'COLORS',
   ColorsVanilla = 'COLORS_VANILLA',
+  Icons = 'ICONS',
 }
 
 export interface AtomicComponentSidebarItem {

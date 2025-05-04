@@ -30,10 +30,12 @@ function getDesignSystemSidebarItemTitle(type: DesignSystemComponentType): strin
 
 function getAtomicComponentSidebarItemTitle(type: AtomicComponentType): string {
   switch (type) {
-    case AtomicComponentType.ButtonIcon:
-      return 'ButtonIcon';
+    case AtomicComponentType.Badge:
+      return 'Badge';
     case AtomicComponentType.Button:
       return 'Button';
+    case AtomicComponentType.ButtonIcon:
+      return 'ButtonIcon';
     case AtomicComponentType.Dialog:
       return 'Dialog';
     case AtomicComponentType.Divider:
@@ -96,6 +98,7 @@ const ORDERED_DESIGN_SYSTEM_COMPONENT_TYPES: DesignSystemComponentType[] = [
   DesignSystemComponentType.Typography,
   DesignSystemComponentType.Colors,
   DesignSystemComponentType.ColorsVanilla,
+  DesignSystemComponentType.Icon,
 ];
 
 export function getDesignSystemSidebarItems(): DesignSystemSidebarItem[] {
@@ -107,6 +110,7 @@ const ORDERED_ATOMIC_COMPONENT_TYPES: AtomicComponentType[] = [
   AtomicComponentType.TextIcon,
   AtomicComponentType.ButtonIcon,
   AtomicComponentType.Button,
+  AtomicComponentType.Badge,
   AtomicComponentType.Input,
   AtomicComponentType.Dialog,
   AtomicComponentType.Toast,
