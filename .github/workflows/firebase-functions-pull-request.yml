@@ -15,9 +15,8 @@ on:
       - '.github/actions/setup-workflow/**'
       - '.github/workflows/firebase-functions-pull-request.yml'
 permissions:
-  checks: write
   contents: read
-  pull-requests: write
+  id-token: write
 jobs:
   deploy_functions_stag:
     runs-on: ubuntu-latest

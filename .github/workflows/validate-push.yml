@@ -1,5 +1,7 @@
 name: Run validate on push
 on: [push]
+permissions:
+  contents: read
 jobs:
   validate:
     runs-on: ubuntu-latest
