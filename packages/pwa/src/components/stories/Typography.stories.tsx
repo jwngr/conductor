@@ -1,3 +1,4 @@
+import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
 import {Markdown} from '@src/components/Markdown';
 import {StorySection} from '@src/components/stories/StorySection';
@@ -24,8 +25,8 @@ _Italic paragraph text_
   return (
     <>
       <StorySection title="Headings">
-        <div className="flex flex-row items-start gap-8">
-          <div className="flex flex-1 flex-col gap-2">
+        <FlexRow gap={8} align="start">
+          <FlexColumn gap={2}>
             <Text as="h6" light>
               Normal Typography
             </Text>
@@ -35,35 +36,35 @@ _Italic paragraph text_
             <Text as="h4">Heading 4</Text>
             <Text as="h5">Heading 5</Text>
             <Text as="h6">Heading 6</Text>
-          </div>
+          </FlexColumn>
 
-          <div className="flex flex-1 flex-col gap-2">
+          <FlexColumn gap={2}>
             <Text as="h6" light>
               Markdown Typography
             </Text>
             <Markdown content={headingsMarkdown} />
-          </div>
-        </div>
+          </FlexColumn>
+        </FlexRow>
       </StorySection>
 
       <StorySection title="Paragraphs">
-        <div className="flex flex-row items-start gap-8">
-          <div className="flex flex-1 flex-col gap-2">
+        <FlexRow gap={8} align="start">
+          <FlexColumn gap={2}>
             <Text as="h6" light>
               Normal Typography
             </Text>
             <Text>Regular paragraph text</Text>
             <Text bold>Bold paragraph text</Text>
             <Text className="italic">Italic paragraph text</Text>
-          </div>
+          </FlexColumn>
 
-          <div className="flex flex-1 flex-col gap-2">
+          <FlexColumn gap={2}>
             <Text as="h6" light>
               Markdown Typography
             </Text>
             <Markdown content={paragraphsMarkdown} />
-          </div>
-        </div>
+          </FlexColumn>
+        </FlexRow>
       </StorySection>
     </>
   );
