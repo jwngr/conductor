@@ -33,11 +33,6 @@ export function makeUserFeedSubscriptionId(): UserFeedSubscriptionId {
 }
 
 /**
- * A sentinel {@link UserFeedSubscriptionId} used for feed subscriptions that failed parsing.
- */
-export const INVALID_USER_FEED_SUBSCRIPTION_ID = 'INVALID_USER_FEED_SUBSCRIPTION_ID';
-
-/**
  * An individual account's subscription to a feed source.
  *
  * A single {@link FeedSource} can have multiple {@link UserFeedSubscription}s, one for each

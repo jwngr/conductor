@@ -1,8 +1,5 @@
 import {z} from 'zod';
 
-import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
-import {UserFeedSubscriptionIdSchema} from '@shared/types/userFeedSubscriptions.types';
-
 export enum DeliveryScheduleType {
   Immediate = 'IMMEDIATE',
   Never = 'NEVER',
@@ -56,7 +53,6 @@ export interface TimeOfDay {
 
 const BaseDeliveryScheduleFromStorageSchema = z.object({
   type: z.nativeEnum(DeliveryScheduleType),
-  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
 });
 
 const ImmediateDeliveryScheduleFromStorageSchema = BaseDeliveryScheduleFromStorageSchema.extend({
