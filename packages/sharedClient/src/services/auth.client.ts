@@ -15,7 +15,7 @@ import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
 
 import type {AuthStateChangedCallback} from '@shared/types/accounts.types';
 import type {AsyncResult} from '@shared/types/results.types';
-import type {Consumer, EmailAddress} from '@shared/types/utils.types';
+import type {Consumer, EmailAddress, Task} from '@shared/types/utils.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';
 
@@ -82,7 +82,7 @@ class ClientAuthService {
    * Registers a callback to be notified of future auth state changes. Fires immediately with
    * the currently logged in account. Fired with `null` if not logged in.
    */
-  public onAuthStateChanged(callbacks: AuthServiceSubscriptionCallbacks): () => void {
+  public onAuthStateChanged(callbacks: AuthServiceSubscriptionCallbacks): Task {
     // Immediately call with current account if available.
     if (this.currentAccount) {
       callbacks.successCallback(this.currentAccount);
