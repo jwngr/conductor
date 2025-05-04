@@ -7,6 +7,9 @@ on:
       - 'firestore.rules'
       - '.github/actions/setup-workflow/**'
       - '.github/workflows/firestore-rules-merge.yml'
+permissions:
+  contents: read
+  id-token: write
 jobs:
   deploy_firestore_rules_prod:
     runs-on: ubuntu-latest

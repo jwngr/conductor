@@ -16,6 +16,9 @@ on:
       - 'yarn.lock'
       - '.github/actions/setup-workflow/**'
       - '.github/workflows/firebase-functions-merge.yml'
+permissions:
+  contents: read
+  id-token: write
 jobs:
   deploy_functions_prod:
     runs-on: ubuntu-latest
