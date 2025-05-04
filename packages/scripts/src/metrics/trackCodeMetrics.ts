@@ -7,6 +7,7 @@ import {logger} from '@shared/services/logger.shared';
 
 import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
 
+// TODO: Can I use `sloc.extension`?
 type TrackedExtensions =
   | 'ts'
   | 'tsx'
