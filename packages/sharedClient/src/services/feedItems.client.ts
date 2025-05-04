@@ -12,11 +12,15 @@ import {
   FEED_ITEMS_DB_COLLECTION,
   FEED_ITEMS_STORAGE_COLLECTION,
 } from '@shared/lib/constants.shared';
+import {isDeliveredAccordingToSchedule} from '@shared/lib/deliverySchedules.shared';
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
+import {
+  findDeliveryScheduleForFeedSubscription,
+  SharedFeedItemHelpers,
+} from '@shared/lib/feedItems.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
-import {omitUndefined} from '@shared/lib/utils.shared';
+import {assertNever, omitUndefined} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
 
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
@@ -28,8 +32,10 @@ import type {
   FeedItemSource,
   XkcdFeedItem,
 } from '@shared/types/feedItems.types';
+import {FeedItemSourceType} from '@shared/types/feedItems.types';
 import {fromQueryFilterOp} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/results.types';
+import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 import type {Consumer} from '@shared/types/utils.types';
 import type {ViewType} from '@shared/types/views.types';
 
@@ -38,6 +44,7 @@ import {
   ClientFirestoreCollectionService,
   makeFirestoreDataConverter,
 } from '@sharedClient/services/firestore.client';
+import {useUserFeedSubscriptions} from '@sharedClient/services/userFeedSubscriptions.client';
 
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 import {useIsMounted} from '@sharedClient/hooks/utils.hook';
@@ -90,17 +97,61 @@ export function useFeedItem(feedItemId: FeedItemId): {
   return state;
 }
 
-export function useFeedItems({viewType}: {readonly viewType: ViewType}): {
+/**
+ * Filters out feed items with delivery schedules that prevent them from being shown.
+ */
+function filterFeedItemsByDeliverySchedules(args: {
+  readonly feedItems: FeedItem[];
+  readonly userFeedSubscriptions: UserFeedSubscription[];
+}): FeedItem[] {
+  const {feedItems, userFeedSubscriptions} = args;
+
+  return feedItems.filter((feedItem) => {
+    switch (feedItem.feedItemSource.type) {
+      case FeedItemSourceType.App:
+      case FeedItemSourceType.Extension:
+      case FeedItemSourceType.PocketExport:
+        // These sources are always shown.
+        return true;
+      case FeedItemSourceType.RSS: {
+        // Some sources have delivery schedules which determine when they are shown.
+        const matchingDeliverySchedule = findDeliveryScheduleForFeedSubscription({
+          userFeedSubscriptionId: feedItem.feedItemSource.userFeedSubscriptionId,
+          userFeedSubscriptions,
+        });
+
+        return isDeliveredAccordingToSchedule({
+          createdTime: feedItem.createdTime,
+          deliverySchedule: matchingDeliverySchedule,
+        });
+      }
+      default:
+        assertNever(feedItem.feedItemSource);
+    }
+  });
+}
+
+interface FeedItemsState {
   readonly feedItems: FeedItem[];
   readonly isLoading: boolean;
   readonly error: Error | null;
-} {
+}
+
+const INITIAL_FEED_ITEMS_STATE: FeedItemsState = {
+  feedItems: [],
+  isLoading: true,
+  error: null,
+} as const;
+
+/**
+ * Internal helper for fetching all feed items for a view, ignoring delivery schedules. Works for
+ * all views.
+ */
+function useFeedItemsInternal(args: {readonly viewType: ViewType}): FeedItemsState {
+  const {viewType} = args;
   const feedItemsService = useFeedItemsService();
-  const [state, setState] = useState<{
-    readonly feedItems: FeedItem[];
-    readonly isLoading: boolean;
-    readonly error: Error | null;
-  }>({feedItems: [], isLoading: true, error: null});
+
+  const [state, setState] = useState<FeedItemsState>(INITIAL_FEED_ITEMS_STATE);
 
   useEffect(() => {
     const unsubscribe = feedItemsService.watchFeedItemsQuery({
@@ -112,6 +163,54 @@ export function useFeedItems({viewType}: {readonly viewType: ViewType}): {
   }, [viewType, feedItemsService]);
 
   return state;
+}
+
+/**
+ * Fetches all feed items for a view, ignoring delivery schedules. Used for most views.
+ *
+ * Note: Use `useFeedItemsRespectingDelivery` for views like Untriaged which should filter based on
+ * delivery schedules.
+ */
+export function useFeedItemsIgnoringDelivery(args: {
+  readonly viewType: Exclude<ViewType, ViewType.Untriaged>;
+}): FeedItemsState {
+  return useFeedItemsInternal({viewType: args.viewType});
+}
+
+/**
+ * Fetches all feed items for a view while filtering out items based on delivery schedules. Only
+ * used for the Untriaged view, although could be used for other views in the future.
+ *
+ * Note: Use `useFeedItemsIgnoringDelivery` for views which should not filter based on delivery
+ * schedules.
+ */
+export function useFeedItemsRespectingDelivery(args: {
+  readonly viewType: ViewType.Untriaged;
+}): FeedItemsState {
+  const {viewType} = args;
+
+  const feedItemsState = useFeedItemsInternal({viewType});
+  const userFeedSubscriptionsState = useUserFeedSubscriptions();
+
+  const isSomethingLoading = userFeedSubscriptionsState.isLoading || feedItemsState.isLoading;
+
+  const filteredFeedItems = useMemo(() => {
+    // Cannot filter until everything loads.
+    if (isSomethingLoading) return [];
+
+    // Everything is loaded and ready to filter. There may be an error, but we still want to show
+    // any pre-existing data.
+    return filterFeedItemsByDeliverySchedules({
+      feedItems: feedItemsState.feedItems,
+      userFeedSubscriptions: userFeedSubscriptionsState.subscriptions,
+    });
+  }, [isSomethingLoading, feedItemsState.feedItems, userFeedSubscriptionsState.subscriptions]);
+
+  return {
+    feedItems: filteredFeedItems,
+    isLoading: isSomethingLoading,
+    error: feedItemsState.error ?? userFeedSubscriptionsState.error,
+  };
 }
 
 interface UseFeedItemFileResult {

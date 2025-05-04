@@ -1,10 +1,13 @@
-import {useCallback, useEffect, useState} from 'react';
+import {useCallback, useState} from 'react';
 
 import {isValidUrl} from '@shared/lib/urls.shared';
 
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
-import {useUserFeedSubscriptionsService} from '@sharedClient/services/userFeedSubscriptions.client';
+import {
+  useUserFeedSubscriptions,
+  useUserFeedSubscriptionsService,
+} from '@sharedClient/services/userFeedSubscriptions.client';
 
 import {Button} from '@src/components/atoms/Button';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
@@ -108,52 +111,65 @@ const FeedAdder: React.FC = () => {
 };
 
 const FeedSubscriptionsList: React.FC = () => {
-  const [subscriptions, setSubscriptions] = useState<UserFeedSubscription[]>([]);
-  const [error, setError] = useState<string>('');
+  const userFeedSubscriptionsState = useUserFeedSubscriptions();
   const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
-
-  useEffect(() => {
-    const unsubscribe = userFeedSubscriptionsService.watchAllSubscriptions({
-      successCallback: (updatedSubscriptions) => {
-        setSubscriptions(updatedSubscriptions);
-        setError('');
-      },
-      errorCallback: () => {
-        setError('Error loading feed subscriptions');
-      },
-    });
-
-    return () => unsubscribe();
-  }, [userFeedSubscriptionsService]);
+  const [unsubscribeError, setUnsubscribeError] = useState<Error | null>(null);
 
   const handleUnsubscribe = async (subscription: UserFeedSubscription): Promise<void> => {
     const unsubscribeResult = await userFeedSubscriptionsService.updateSubscription(
       subscription.userFeedSubscriptionId,
-      {
-        isActive: false,
-        unsubscribedTime: new Date(),
-      }
+      {isActive: false, unsubscribedTime: new Date()}
     );
 
     if (!unsubscribeResult.success) {
-      setError(`Error unsubscribing from feed: ${unsubscribeResult.error.message}`);
+      setUnsubscribeError(unsubscribeResult.error);
       return;
     }
+
+    // The item will disappear from the list, so no other success state is shown. We still want to
+    // reset any pre-existing error state.
+    setUnsubscribeError(null);
   };
 
   const renderMainContent = (): React.ReactNode => {
-    if (error) {
-      return <Text className="text-error">Error loading feed subscriptions</Text>;
+    if (userFeedSubscriptionsState.error) {
+      return (
+        <Text as="p" className="text-error">
+          Error loading feed subscriptions
+        </Text>
+      );
     }
 
-    if (subscriptions.length === 0) {
+    if (userFeedSubscriptionsState.isLoading) {
+      return (
+        <Text as="p" light>
+          Loading...
+        </Text>
+      );
+    }
+
+    const unsubscribeErrorContent = unsubscribeError ? (
+      <Text as="p" className="text-error">
+        Error unsubscribing from feed: {unsubscribeError.message}
+      </Text>
+    ) : null;
+
+    if (userFeedSubscriptionsState.subscriptions.length === 0) {
       // TODO: Add better empty state.
-      return <Text>None</Text>;
+      return (
+        <>
+          <Text as="p" light>
+            None
+          </Text>
+          {unsubscribeErrorContent}
+        </>
+      );
     }
 
     return (
       <FlexColumn flex={1}>
-        {subscriptions.map((subscription) => (
+        {unsubscribeErrorContent}
+        {userFeedSubscriptionsState.subscriptions.map((subscription) => (
           <FlexRow
             key={subscription.userFeedSubscriptionId}
             gap={3}

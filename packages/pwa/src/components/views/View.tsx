@@ -8,17 +8,20 @@ import {assertNever} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
 
 import type {FeedItem} from '@shared/types/feedItems.types';
+import {ViewType} from '@shared/types/views.types';
 import type {
   ViewGroupByField,
   ViewGroupByOption,
   ViewSortByField,
   ViewSortByOption,
-  ViewType,
 } from '@shared/types/views.types';
 
 import {useFocusStore} from '@sharedClient/stores/FocusStore';
 
-import {useFeedItems} from '@sharedClient/services/feedItems.client';
+import {
+  useFeedItemsIgnoringDelivery,
+  useFeedItemsRespectingDelivery,
+} from '@sharedClient/services/feedItems.client';
 
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
@@ -289,7 +292,34 @@ const ViewList: React.FC<{
   readonly sortBy: readonly ViewSortByOption[];
   readonly groupBy: readonly ViewGroupByOption[];
 }> = ({viewType, sortBy, groupBy}) => {
-  const {feedItems, isLoading, error} = useFeedItems({viewType});
+  // Split views based on whether or not they filter items based on delivery schedules. This is
+  // because fetching delivery schedules is more expensive, so we want to avoid doing so for views
+  // which do not need them.
+  switch (viewType) {
+    case ViewType.Untriaged:
+      return <ViewListRespectingDelivery viewType={viewType} sortBy={sortBy} groupBy={groupBy} />;
+    case ViewType.Saved:
+    case ViewType.Done:
+    case ViewType.Trashed:
+    case ViewType.Unread:
+    case ViewType.Starred:
+    case ViewType.All:
+    case ViewType.Today:
+      return <ViewListIgnoringDelivery viewType={viewType} sortBy={sortBy} groupBy={groupBy} />;
+    default:
+      assertNever(viewType);
+  }
+};
+
+/**
+ * Primary list component for views which do not filter items based on delivery schedules.
+ */
+const ViewListIgnoringDelivery: React.FC<{
+  readonly viewType: Exclude<ViewType, ViewType.Untriaged>;
+  readonly sortBy: readonly ViewSortByOption[];
+  readonly groupBy: readonly ViewGroupByOption[];
+}> = ({viewType, sortBy, groupBy}) => {
+  const {feedItems, isLoading, error} = useFeedItemsIgnoringDelivery({viewType});
 
   if (isLoading) {
     // TODO: Introduce proper loading component.
@@ -297,7 +327,33 @@ const ViewList: React.FC<{
   }
 
   if (error) {
-    const betterError = prefixError(error, 'Failed to load items');
+    const betterError = prefixError(error, 'Failed to load items ignoring delivery schedules');
+    logger.error(betterError, {viewType, sortBy, groupBy});
+    return <ErrorScreen error={betterError} />;
+  }
+
+  return (
+    <LoadedViewList viewType={viewType} feedItems={feedItems} sortBy={sortBy} groupBy={groupBy} />
+  );
+};
+
+/**
+ * Primary list component for views which filter items based on delivery schedules.
+ */
+const ViewListRespectingDelivery: React.FC<{
+  readonly viewType: ViewType.Untriaged;
+  readonly sortBy: readonly ViewSortByOption[];
+  readonly groupBy: readonly ViewGroupByOption[];
+}> = ({viewType, sortBy, groupBy}) => {
+  const {feedItems, isLoading, error} = useFeedItemsRespectingDelivery({viewType});
+
+  if (isLoading) {
+    // TODO: Introduce proper loading component.
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    const betterError = prefixError(error, 'Failed to load items respecting delivery schedules');
     logger.error(betterError, {viewType, sortBy, groupBy});
     return <ErrorScreen error={betterError} />;
   }

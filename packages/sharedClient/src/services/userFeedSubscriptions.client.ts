@@ -1,7 +1,7 @@
 import {limit, orderBy, where} from 'firebase/firestore';
 import type {Functions, HttpsCallable} from 'firebase/functions';
 import {httpsCallable} from 'firebase/functions';
-import {useMemo} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 
 import {USER_FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {asyncTry, prefixResultIfError} from '@shared/lib/errorUtils.shared';
@@ -166,3 +166,45 @@ export function useUserFeedSubscriptionsService(): ClientUserFeedSubscriptionsSe
 
   return userFeedSubscriptionsService;
 }
+
+interface UserFeedSubscriptionsState {
+  readonly subscriptions: UserFeedSubscription[];
+  readonly isLoading: boolean;
+  readonly error: Error | null;
+}
+
+const INITIAL_USER_FEED_SUBSCRIPTIONS_STATE: UserFeedSubscriptionsState = {
+  subscriptions: [],
+  isLoading: true,
+  error: null,
+} as const;
+
+export const useUserFeedSubscriptions = (): UserFeedSubscriptionsState => {
+  const [state, setState] = useState<UserFeedSubscriptionsState>(
+    INITIAL_USER_FEED_SUBSCRIPTIONS_STATE
+  );
+  const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
+
+  useEffect(() => {
+    const unsubscribe = userFeedSubscriptionsService.watchAllSubscriptions({
+      successCallback: (updatedSubscriptions) => {
+        setState(() => ({
+          subscriptions: updatedSubscriptions,
+          isLoading: false,
+          error: null,
+        }));
+      },
+      errorCallback: (error) => {
+        setState((current) => ({
+          ...current,
+          isLoading: false,
+          error,
+        }));
+      },
+    });
+
+    return () => unsubscribe();
+  }, [userFeedSubscriptionsService]);
+
+  return state;
+};

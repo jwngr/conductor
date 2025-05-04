@@ -4,6 +4,10 @@ import {makeSuccessResult} from '@shared/lib/results.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
+import {
+  parseDeliverySchedule,
+  toStorageDeliverySchedule,
+} from '@shared/parsers/deliverySchedules.parser';
 import {parseFeedSourceId} from '@shared/parsers/feedSources.parser';
 
 import type {Result} from '@shared/types/results.types';
@@ -57,6 +61,9 @@ export function parseUserFeedSubscription(
   );
   if (!parsedUserFeedSubscriptionIdResult.success) return parsedUserFeedSubscriptionIdResult;
 
+  const parsedDeliveryScheduleResult = parseDeliverySchedule(parsedResult.value.deliverySchedule);
+  if (!parsedDeliveryScheduleResult.success) return parsedDeliveryScheduleResult;
+
   return makeSuccessResult(
     omitUndefined({
       userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
@@ -70,6 +77,7 @@ export function parseUserFeedSubscription(
         : undefined,
       createdTime: parseStorageTimestamp(parsedResult.value.createdTime),
       lastUpdatedTime: parseStorageTimestamp(parsedResult.value.lastUpdatedTime),
+      deliverySchedule: parsedDeliveryScheduleResult.value,
     })
   );
 }
@@ -91,5 +99,6 @@ export function toStorageUserFeedSubscription(
     unsubscribedTime: userFeedSubscription.unsubscribedTime,
     createdTime: userFeedSubscription.createdTime,
     lastUpdatedTime: userFeedSubscription.lastUpdatedTime,
+    deliverySchedule: toStorageDeliverySchedule(userFeedSubscription.deliverySchedule),
   });
 }
