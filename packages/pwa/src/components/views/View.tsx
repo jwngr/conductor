@@ -19,7 +19,7 @@ import {useFocusStore} from '@sharedClient/stores/FocusStore';
 
 import {useFeedItems} from '@sharedClient/services/feedItems.client';
 
-import {FlexColumn} from '@src/components/atoms/Flex';
+import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
 import {HoverFeedItemActions} from '@src/components/feedItems/FeedItemActions';
@@ -30,10 +30,10 @@ import {ViewOptionsDialog} from '@src/components/views/ViewOptionsDialog';
 import {feedItemRoute} from '@src/routes';
 
 function compareFeedItems(args: {
-  a: FeedItem;
-  b: FeedItem;
-  field: ViewSortByField;
-  direction: 1 | -1;
+  readonly a: FeedItem;
+  readonly b: FeedItem;
+  readonly field: ViewSortByField;
+  readonly direction: 1 | -1;
 }): number {
   const {a, b, field, direction} = args;
 
@@ -212,12 +212,12 @@ const ViewListItem: React.FC<{
         onMouseLeave={() => setIsHovered(false)}
       >
         <div>
-          <div className="flex items-center gap-2 pr-10">
+          <FlexRow gap={3}>
             <Text as="p" bold={isUnread}>
               {feedItem.title || 'No title'}
             </Text>
             <FeedItemImportStatusBadge importState={feedItem.importState} />
-          </div>
+          </FlexRow>
           <Text as="p" light>
             {feedItem.url}
           </Text>
@@ -233,10 +233,10 @@ const ViewListItem: React.FC<{
 };
 
 const LoadedViewList: React.FC<{
-  viewType: ViewType;
-  feedItems: FeedItem[];
-  sortBy: readonly ViewSortByOption[];
-  groupBy: readonly ViewGroupByOption[];
+  readonly viewType: ViewType;
+  readonly feedItems: FeedItem[];
+  readonly sortBy: readonly ViewSortByOption[];
+  readonly groupBy: readonly ViewGroupByOption[];
 }> = ({viewType, feedItems, sortBy, groupBy}) => {
   const sortedItems = useSortedFeedItems(feedItems, sortBy);
   const groupByField = groupBy.length === 0 ? null : groupBy[0].field;
@@ -259,7 +259,7 @@ const LoadedViewList: React.FC<{
     );
   } else {
     mainContent = (
-      <div className="flex flex-col gap-4">
+      <FlexColumn gap={4}>
         {Object.entries(groupedItems).map(([groupKey, items]) => (
           <React.Fragment key={`${viewType}-${groupKey}`}>
             <Text as="h3">{groupKey}</Text>
@@ -270,7 +270,7 @@ const LoadedViewList: React.FC<{
             </ul>
           </React.Fragment>
         ))}
-      </div>
+      </FlexColumn>
     );
   }
 
@@ -283,9 +283,9 @@ const LoadedViewList: React.FC<{
 };
 
 const ViewList: React.FC<{
-  viewType: ViewType;
-  sortBy: readonly ViewSortByOption[];
-  groupBy: readonly ViewGroupByOption[];
+  readonly viewType: ViewType;
+  readonly sortBy: readonly ViewSortByOption[];
+  readonly groupBy: readonly ViewGroupByOption[];
 }> = ({viewType, sortBy, groupBy}) => {
   const {feedItems, isLoading, error} = useFeedItems({viewType});
 
@@ -313,29 +313,29 @@ const ViewHeader: React.FC<{
   onGroupByChange: React.Dispatch<React.SetStateAction<ViewGroupByOption[]>>;
 }> = ({name, sortBy, groupBy, onSortByChange, onGroupByChange}) => {
   return (
-    <div className="mb-4 flex items-center justify-between">
+    <FlexRow justify="between" padding={4}>
       <Text as="h2" bold>
         {name}
       </Text>
-      <div className="flex items-center gap-2">
+      <FlexRow gap={2}>
         <ViewOptionsDialog
           sortBy={sortBy}
           groupBy={groupBy}
           onSortByChange={onSortByChange}
           onGroupByChange={onGroupByChange}
         />
-      </div>
-    </div>
+      </FlexRow>
+    </FlexRow>
   );
 };
 
 interface ViewRendererState {
-  sortBy: ViewSortByOption[];
-  groupBy: ViewGroupByOption[];
+  readonly sortBy: ViewSortByOption[];
+  readonly groupBy: ViewGroupByOption[];
 }
 
 export const ViewRenderer: React.FC<{
-  viewType: ViewType;
+  readonly viewType: ViewType;
 }> = ({viewType}) => {
   const defaultViewConfig = Views.get(viewType);
 
