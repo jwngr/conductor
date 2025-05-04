@@ -41,23 +41,7 @@ import {TypographyStories} from '@src/components/stories/Typography.stories';
 import {useSelectedStoryFromUrl} from '@src/lib/router.pwa';
 
 import {storiesRoute} from '@src/routes/index';
-
-const StoryGroupSidebarItem: React.FC<{
-  readonly title: string;
-  readonly isActive: boolean;
-  readonly onClick: Task;
-}> = ({title, isActive, onClick}) => {
-  return (
-    <Text
-      className={`hover:bg-neutral-2 ml-[-8px] cursor-pointer rounded p-2 ${
-        isActive ? 'bg-neutral-2' : ''
-      }`}
-      onClick={onClick}
-    >
-      {title}
-    </Text>
-  );
-};
+import * as styles from '@src/screens/StoriesScreen.css';
 
 const AtomicComponentStoryContent: React.FC<{
   readonly atomicComponentType: AtomicComponentType;
@@ -130,46 +114,54 @@ const SidebarSection: React.FC<{
       </Text>
       <FlexColumn>
         {items.map((item) => (
-          <StoryGroupSidebarItem
+          <Text
             key={item.title}
-            title={item.title}
-            isActive={activeSidebarItem.sidebarItemId === item.sidebarItemId}
+            className={styles.storyGroupSidebarItem({
+              isActive: activeSidebarItem.sidebarItemId === item.sidebarItemId,
+            })}
             onClick={() => onItemClick(item)}
-          />
+          >
+            {item.title}
+          </Text>
         ))}
       </FlexColumn>
     </FlexColumn>
   );
 };
 
-const StoriesSidebar: React.FC<{
+const StoriesLeftSidebar: React.FC<{
   readonly activeSidebarItem: StoriesSidebarItem;
   readonly onItemClick: Consumer<StoriesSidebarItem>;
 }> = ({activeSidebarItem, onItemClick}) => {
   return (
-    <FlexColumn
-      gap={6}
-      padding={4}
-      className="border-neutral-3 h-full w-[240px] overflow-auto border-r pt-2"
-    >
-      <SidebarSection
-        title="Design system"
-        items={getDesignSystemSidebarItems()}
-        activeSidebarItem={activeSidebarItem}
-        onItemClick={onItemClick}
-      />
-      <SidebarSection
-        title="Atoms"
-        items={getAtomicComponentSidebarItems()}
-        activeSidebarItem={activeSidebarItem}
-        onItemClick={onItemClick}
-      />
-      <SidebarSection
-        title="Renderers"
-        items={getRendererSidebarItems()}
-        activeSidebarItem={activeSidebarItem}
-        onItemClick={onItemClick}
-      />
+    <FlexColumn overflow="auto" className={styles.storiesLeftSidebar}>
+      <div className="pt-4 pl-4">
+        <NavItemLink navItemId={DEFAULT_NAV_ITEM.id}>
+          <Text as="p" underline="hover" light>
+            ← Back to app
+          </Text>
+        </NavItemLink>
+      </div>
+      <FlexColumn flex={1} gap={6} padding={4}>
+        <SidebarSection
+          title="Design system"
+          items={getDesignSystemSidebarItems()}
+          activeSidebarItem={activeSidebarItem}
+          onItemClick={onItemClick}
+        />
+        <SidebarSection
+          title="Atoms"
+          items={getAtomicComponentSidebarItems()}
+          activeSidebarItem={activeSidebarItem}
+          onItemClick={onItemClick}
+        />
+        <SidebarSection
+          title="Renderers"
+          items={getRendererSidebarItems()}
+          activeSidebarItem={activeSidebarItem}
+          onItemClick={onItemClick}
+        />
+      </FlexColumn>
     </FlexColumn>
   );
 };
@@ -196,7 +188,13 @@ const StoriesScreenMainContent: React.FC<{
   }
 
   return (
-    <FlexColumn flex={1} gap={8} padding={4} overflow="auto">
+    <FlexColumn
+      flex={1}
+      gap={8}
+      padding={4}
+      overflow="auto"
+      className={styles.storiesScreenMainContent}
+    >
       <Text as="h1" bold>
         {activeSidebarItem.title}
       </Text>
@@ -219,20 +217,11 @@ export const StoriesScreen: React.FC = () => {
   };
 
   return (
-    <FlexRow className="bg-neutral-1 h-full w-full">
-      <FlexColumn className="border-neutral-3 h-full w-[240px] border-r">
-        <div className="py-2 pl-4">
-          <NavItemLink navItemId={DEFAULT_NAV_ITEM.id}>
-            <Text as="p" underline="hover" light>
-              ← Back to app
-            </Text>
-          </NavItemLink>
-        </div>
-        <StoriesSidebar
-          activeSidebarItem={selectedSidebarItem}
-          onItemClick={handleSidebarItemClick}
-        />
-      </FlexColumn>
+    <FlexRow overflow="hidden" className={styles.storiesScreen}>
+      <StoriesLeftSidebar
+        activeSidebarItem={selectedSidebarItem}
+        onItemClick={handleSidebarItemClick}
+      />
       <StoriesScreenMainContent activeSidebarItem={selectedSidebarItem} />
     </FlexRow>
   );
