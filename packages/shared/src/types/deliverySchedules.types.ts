@@ -64,8 +64,8 @@ const NeverDeliveryScheduleFromStorageSchema = BaseDeliveryScheduleFromStorageSc
 });
 
 const TimeOfDaySchema = z.object({
-  hour: z.number(),
-  minute: z.number(),
+  hour: z.number().int().min(0).max(23),
+  minute: z.number().int().min(0).max(59),
 });
 
 const DaysAndTimesOfWeekDeliveryScheduleFromStorageSchema =
@@ -77,7 +77,7 @@ const DaysAndTimesOfWeekDeliveryScheduleFromStorageSchema =
 
 const EveryNHoursDeliveryScheduleFromStorageSchema = BaseDeliveryScheduleFromStorageSchema.extend({
   type: z.literal(DeliveryScheduleType.EveryNHours),
-  hours: z.number(),
+  hours: z.number().int().min(1).max(24),
 });
 
 /**

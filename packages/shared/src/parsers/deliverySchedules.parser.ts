@@ -38,16 +38,12 @@ export function parseDeliverySchedule(maybeDeliverySchedule: unknown): Result<De
     case DeliveryScheduleType.Never:
       return makeSuccessResult(NEVER_DELIVERY_SCHEDULE);
     case DeliveryScheduleType.DaysAndTimesOfWeek:
-      return makeSuccessResult(
-        makeDaysAndTimesOfWeekDeliverySchedule({
-          days: parsedDeliverySchedule.days,
-          times: parsedDeliverySchedule.times,
-        })
-      );
+      return makeDaysAndTimesOfWeekDeliverySchedule({
+        days: parsedDeliverySchedule.days,
+        times: parsedDeliverySchedule.times,
+      });
     case DeliveryScheduleType.EveryNHours:
-      return makeSuccessResult(
-        makeEveryNHoursDeliverySchedule({hours: parsedDeliverySchedule.hours})
-      );
+      return makeEveryNHoursDeliverySchedule({hours: parsedDeliverySchedule.hours});
     default: {
       const error = new Error('Unknown delivery schedule type');
       logger.error(error, {parsedDeliverySchedule});

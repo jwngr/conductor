@@ -20,7 +20,7 @@ import {
 } from '@shared/lib/feedItems.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
-import {omitUndefined} from '@shared/lib/utils.shared';
+import {assertNever, omitUndefined} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
 
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
@@ -126,7 +126,7 @@ function filterFeedItemsByDeliverySchedules(args: {
         });
       }
       default:
-        return false;
+        assertNever(feedItem.feedItemSource);
     }
   });
 }

@@ -1,5 +1,7 @@
 import {logger} from '@shared/services/logger.shared';
 
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {validateHour, validateMinute, validateTimeOfDay} from '@shared/lib/time.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import type {
@@ -12,10 +14,10 @@ import type {
   TimeOfDay,
 } from '@shared/types/deliverySchedules.types';
 import {DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
+import type {Result} from '@shared/types/results.types';
 
-export function makeTimeOfDay(hour: number, minute: number): TimeOfDay {
-  // TODO: Add validation.
-  return {hour, minute};
+export function makeTimeOfDay(hour: number, minute: number): Result<TimeOfDay> {
+  return validateTimeOfDay({hour, minute});
 }
 
 export const IMMEDIATE_DELIVERY_SCHEDULE: ImmediateDeliverySchedule = {
@@ -29,25 +31,41 @@ export const NEVER_DELIVERY_SCHEDULE: NeverDeliverySchedule = {
 export function makeDaysAndTimesOfWeekDeliverySchedule(args: {
   days: DayOfWeek[];
   times: TimeOfDay[];
-}): DaysAndTimesOfWeekDeliverySchedule {
+}): Result<DaysAndTimesOfWeekDeliverySchedule> {
   const {days, times} = args;
 
-  return {
+  if (days.length === 0) {
+    return makeErrorResult(new Error('Days must not be empty'));
+  }
+
+  if (times.length === 0) {
+    return makeErrorResult(new Error('Times must not be empty'));
+  }
+
+  for (const time of times) {
+    const timeValidationResult = validateTimeOfDay(time);
+    if (!timeValidationResult.success) return timeValidationResult;
+  }
+
+  return makeSuccessResult({
     type: DeliveryScheduleType.DaysAndTimesOfWeek,
     days,
     times,
-  };
+  });
 }
 
 export function makeEveryNHoursDeliverySchedule(args: {
   hours: number;
-}): EveryNHoursDeliverySchedule {
+}): Result<EveryNHoursDeliverySchedule> {
   const {hours} = args;
 
-  return {
+  const hoursResult = validateHour(hours);
+  if (!hoursResult.success) return hoursResult;
+
+  return makeSuccessResult({
     type: DeliveryScheduleType.EveryNHours,
     hours,
-  };
+  });
 }
 
 export function isDeliveredAccordingToSchedule(args: {
