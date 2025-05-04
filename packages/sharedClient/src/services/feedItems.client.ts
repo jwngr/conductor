@@ -12,6 +12,7 @@ import {
   FEED_ITEMS_DB_COLLECTION,
   FEED_ITEMS_STORAGE_COLLECTION,
 } from '@shared/lib/constants.shared';
+import {isDeliveredAccordingToSchedule} from '@shared/lib/deliverySchedules.shared';
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {
   findDeliveryScheduleForFeedSubscription,
@@ -98,47 +99,6 @@ export function useFeedItem(feedItemId: FeedItemId): {
 }
 
 /**
- * Returns true if the feed item should be shown in the untriaged view. This is used for items that
- * exist but are hidden due to delivery schedules.
- */
-function isRSSFeedItemDelivered(args: {
-  readonly createdTime: Date;
-  readonly rssSource: FeedItemRSSSource;
-  readonly deliverySchedules: DeliverySchedule[];
-  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-}): boolean {
-  const {createdTime, rssSource, deliverySchedules, userFeedSubscriptionId} = args;
-
-  const matchingDeliverySchedule = findDeliveryScheduleForFeedSubscription({
-    feedSubscriptionId: userFeedSubscriptionId,
-    deliverySchedules,
-  });
-
-  // Default to showing feed items without a delivery schedule to avoid hiding things by default.
-  if (!matchingDeliverySchedule) return true;
-
-  switch (matchingDeliverySchedule.type) {
-    case DeliveryScheduleType.Immediate:
-      // Immediate delivery schedules are always delivered.
-      return true;
-    case DeliveryScheduleType.Never:
-      // Never delivery schedules are never delivered.
-      return false;
-    case DeliveryScheduleType.DaysAndTimesOfWeek:
-    case DeliveryScheduleType.EveryNHours: {
-      logger.log('TODO: Fix this logic.');
-      // Temporarily hide for 5 seconds for debugging.
-      if (createdTime < new Date(Date.now() - 5000)) {
-        return false;
-      }
-      return true;
-    }
-    default:
-      assertNever(matchingDeliverySchedule);
-  }
-}
-
-/**
  * Filters out feed items with delivery schedules that prevent them from being shown.
  */
 function filterFeedItemsByDeliverySchedules(args: {
@@ -155,12 +115,15 @@ function filterFeedItemsByDeliverySchedules(args: {
         // These sources are always shown.
         return true;
       case FeedItemSourceType.RSS: {
-        // RSS items have delivery schedules which determine if they are shown.
-        return isRSSFeedItemDelivered({
-          userFeedSubscriptionId: feedItem.userFeedSubscriptionId,
-          createdTime: feedItem.createdTime,
-          rssSource: feedItem.feedItemSource,
+        // Some sources have delivery schedules which determine when they are shown.
+        const matchingDeliverySchedule = findDeliveryScheduleForFeedSubscription({
+          userFeedSubscriptionId: feedItem.feedItemSource.userFeedSubscriptionId,
           deliverySchedules,
+        });
+
+        return isDeliveredAccordingToSchedule({
+          createdTime: feedItem.createdTime,
+          deliverySchedule: matchingDeliverySchedule,
         });
       }
       default:

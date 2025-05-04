@@ -226,12 +226,12 @@ export class SharedFeedItemHelpers {
 }
 
 export function findDeliveryScheduleForFeedSubscription(args: {
-  readonly feedSubscriptionId: UserFeedSubscriptionId;
+  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
   readonly deliverySchedules: DeliverySchedule[];
 }): DeliverySchedule | null {
-  const {feedSubscriptionId, deliverySchedules} = args;
+  const {userFeedSubscriptionId, deliverySchedules} = args;
   const matchingDeliverySchedule = deliverySchedules.find(
-    (deliverySchedule) => deliverySchedule.userFeedSubscriptionId === feedSubscriptionId
+    (schedule) => schedule.userFeedSubscriptionId === userFeedSubscriptionId
   );
 
   return matchingDeliverySchedule ?? null;
