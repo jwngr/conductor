@@ -20,13 +20,12 @@ import {
 } from '@shared/lib/feedItems.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
-import {omitUndefined} from '@shared/lib/utils.shared';
+import {assertNever, omitUndefined} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
 
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 
 import type {AccountId, AuthStateChangedUnsubscribe} from '@shared/types/accounts.types';
-import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
 import type {
   FeedItem,
   FeedItemId,
@@ -36,6 +35,7 @@ import type {
 import {FeedItemSourceType} from '@shared/types/feedItems.types';
 import {fromQueryFilterOp} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/results.types';
+import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 import type {Consumer} from '@shared/types/utils.types';
 import {ViewType} from '@shared/types/views.types';
 
@@ -44,6 +44,7 @@ import {
   ClientFirestoreCollectionService,
   makeFirestoreDataConverter,
 } from '@sharedClient/services/firestore.client';
+import {useUserFeedSubscriptions} from '@sharedClient/services/userFeedSubscriptions.client';
 
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 import {useIsMounted} from '@sharedClient/hooks/utils.hook';
@@ -101,9 +102,9 @@ export function useFeedItem(feedItemId: FeedItemId): {
  */
 function filterFeedItemsByDeliverySchedules(args: {
   readonly feedItems: FeedItem[];
-  readonly deliverySchedules: DeliverySchedule[];
+  readonly userFeedSubscriptions: UserFeedSubscription[];
 }): FeedItem[] {
-  const {feedItems, deliverySchedules} = args;
+  const {feedItems, userFeedSubscriptions} = args;
 
   return feedItems.filter((feedItem) => {
     switch (feedItem.feedItemSource.type) {
@@ -116,7 +117,7 @@ function filterFeedItemsByDeliverySchedules(args: {
         // Some sources have delivery schedules which determine when they are shown.
         const matchingDeliverySchedule = findDeliveryScheduleForFeedSubscription({
           userFeedSubscriptionId: feedItem.feedItemSource.userFeedSubscriptionId,
-          deliverySchedules,
+          userFeedSubscriptions,
         });
 
         return isDeliveredAccordingToSchedule({
@@ -142,14 +143,9 @@ const INITIAL_FEED_ITEMS_STATE: FeedItemsState = {
   error: null,
 } as const;
 
-const useDeliverySchedules = (): DeliverySchedule[] => {
-  // TODO: Fetch all of these.
-  return [];
-};
-
 export function useFeedItems({viewType}: {readonly viewType: ViewType}): FeedItemsState {
   const feedItemsService = useFeedItemsService();
-  const deliverySchedules = useDeliverySchedules();
+  const userFeedSubscriptions = useUserFeedSubscriptions();
 
   const [state, setState] = useState<FeedItemsState>(INITIAL_FEED_ITEMS_STATE);
 
@@ -165,12 +161,30 @@ export function useFeedItems({viewType}: {readonly viewType: ViewType}): FeedIte
           case ViewType.Starred:
           case ViewType.Today:
           case ViewType.Trashed:
-          case ViewType.Unread:
+          case ViewType.Unread: {
             filteredFeedItems = feedItems;
             break;
-          case ViewType.Untriaged:
-            filteredFeedItems = filterFeedItemsByDeliverySchedules({feedItems, deliverySchedules});
+          }
+          case ViewType.Untriaged: {
+            const {subscriptions} = userFeedSubscriptions;
+            // TODO: Handle loading state and errors.
+            // const {subscriptions, isLoading, error} = userFeedSubscriptions;
+            // if (isLoading) {
+            //   setState({feedItems: [], isLoading: true, error: null});
+            //   break;
+            // }
+            // if (error) {
+            //   setState({feedItems: [], isLoading: false, error});
+            //   break;
+            // }
+            filteredFeedItems = filterFeedItemsByDeliverySchedules({
+              feedItems,
+              userFeedSubscriptions: subscriptions,
+            });
             break;
+          }
+          default:
+            assertNever(viewType);
         }
         setState({feedItems: filteredFeedItems, isLoading: false, error: null});
       },
@@ -179,7 +193,7 @@ export function useFeedItems({viewType}: {readonly viewType: ViewType}): FeedIte
       },
     });
     return () => unsubscribe();
-  }, [viewType, feedItemsService, deliverySchedules]);
+  }, [viewType, feedItemsService, userFeedSubscriptions]);
 
   return state;
 }

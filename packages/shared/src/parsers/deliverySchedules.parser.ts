@@ -1,10 +1,10 @@
 import {logger} from '@shared/services/logger.shared';
 
 import {
+  IMMEDIATE_DELIVERY_SCHEDULE,
   makeDaysAndTimesOfWeekDeliverySchedule,
   makeEveryNHoursDeliverySchedule,
-  makeImmediateDeliverySchedule,
-  makeNeverDeliverySchedule,
+  NEVER_DELIVERY_SCHEDULE,
 } from '@shared/lib/deliverySchedules.shared';
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseZodResult} from '@shared/lib/parser.shared';
@@ -44,9 +44,9 @@ export function parseDeliverySchedule(maybeDeliverySchedule: unknown): Result<De
 
   switch (parsedDeliverySchedule.type) {
     case DeliveryScheduleType.Immediate:
-      return makeSuccessResult(makeImmediateDeliverySchedule({userFeedSubscriptionId}));
+      return makeSuccessResult(IMMEDIATE_DELIVERY_SCHEDULE);
     case DeliveryScheduleType.Never:
-      return makeSuccessResult(makeNeverDeliverySchedule({userFeedSubscriptionId}));
+      return makeSuccessResult(NEVER_DELIVERY_SCHEDULE);
     case DeliveryScheduleType.DaysAndTimesOfWeek:
       return makeSuccessResult(
         makeDaysAndTimesOfWeekDeliverySchedule({
@@ -81,25 +81,21 @@ export function toStorageDeliverySchedule(
     case DeliveryScheduleType.Immediate:
       return {
         type: DeliveryScheduleType.Immediate,
-        userFeedSubscriptionId: deliverySchedule.userFeedSubscriptionId,
       };
     case DeliveryScheduleType.Never:
       return {
         type: DeliveryScheduleType.Never,
-        userFeedSubscriptionId: deliverySchedule.userFeedSubscriptionId,
       };
     case DeliveryScheduleType.DaysAndTimesOfWeek:
       return {
         type: DeliveryScheduleType.DaysAndTimesOfWeek,
         days: deliverySchedule.days,
         times: deliverySchedule.times,
-        userFeedSubscriptionId: deliverySchedule.userFeedSubscriptionId,
       };
     case DeliveryScheduleType.EveryNHours:
       return {
         type: DeliveryScheduleType.EveryNHours,
         hours: deliverySchedule.hours,
-        userFeedSubscriptionId: deliverySchedule.userFeedSubscriptionId,
       };
     default:
       logger.error(new Error('Unknown delivery schedule type'), {deliverySchedule});

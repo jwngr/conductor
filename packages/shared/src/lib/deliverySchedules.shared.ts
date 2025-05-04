@@ -12,62 +12,41 @@ import type {
   TimeOfDay,
 } from '@shared/types/deliverySchedules.types';
 import {DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
-import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 
 export function makeTimeOfDay(hour: number, minute: number): TimeOfDay {
-  return {
-    hour,
-    minute,
-  };
+  // TODO: Add validation.
+  return {hour, minute};
 }
 
-export function makeImmediateDeliverySchedule(args: {
-  userFeedSubscriptionId: UserFeedSubscriptionId;
-}): ImmediateDeliverySchedule {
-  const {userFeedSubscriptionId} = args;
+export const IMMEDIATE_DELIVERY_SCHEDULE: ImmediateDeliverySchedule = {
+  type: DeliveryScheduleType.Immediate,
+};
 
-  return {
-    type: DeliveryScheduleType.Immediate,
-    userFeedSubscriptionId,
-  };
-}
-
-export function makeNeverDeliverySchedule(args: {
-  userFeedSubscriptionId: UserFeedSubscriptionId;
-}): NeverDeliverySchedule {
-  const {userFeedSubscriptionId} = args;
-
-  return {
-    type: DeliveryScheduleType.Never,
-    userFeedSubscriptionId,
-  };
-}
+export const NEVER_DELIVERY_SCHEDULE: NeverDeliverySchedule = {
+  type: DeliveryScheduleType.Never,
+};
 
 export function makeDaysAndTimesOfWeekDeliverySchedule(args: {
   days: DayOfWeek[];
   times: TimeOfDay[];
-  userFeedSubscriptionId: UserFeedSubscriptionId;
 }): DaysAndTimesOfWeekDeliverySchedule {
-  const {days, times, userFeedSubscriptionId} = args;
+  const {days, times} = args;
 
   return {
     type: DeliveryScheduleType.DaysAndTimesOfWeek,
     days,
     times,
-    userFeedSubscriptionId,
   };
 }
 
 export function makeEveryNHoursDeliverySchedule(args: {
   hours: number;
-  userFeedSubscriptionId: UserFeedSubscriptionId;
 }): EveryNHoursDeliverySchedule {
-  const {hours, userFeedSubscriptionId} = args;
+  const {hours} = args;
 
   return {
     type: DeliveryScheduleType.EveryNHours,
     hours,
-    userFeedSubscriptionId,
   };
 }
 

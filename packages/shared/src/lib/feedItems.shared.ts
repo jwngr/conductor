@@ -18,7 +18,10 @@ import type {Result} from '@shared/types/results.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
 import type {TagId} from '@shared/types/tags.types';
-import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
+import type {
+  UserFeedSubscription,
+  UserFeedSubscriptionId,
+} from '@shared/types/userFeedSubscriptions.types';
 
 type MaybeFeedItem = FeedItem | undefined | null;
 
@@ -227,12 +230,11 @@ export class SharedFeedItemHelpers {
 
 export function findDeliveryScheduleForFeedSubscription(args: {
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-  readonly deliverySchedules: DeliverySchedule[];
+  readonly userFeedSubscriptions: UserFeedSubscription[];
 }): DeliverySchedule | null {
-  const {userFeedSubscriptionId, deliverySchedules} = args;
-  const matchingDeliverySchedule = deliverySchedules.find(
-    (schedule) => schedule.userFeedSubscriptionId === userFeedSubscriptionId
+  const {userFeedSubscriptionId, userFeedSubscriptions} = args;
+  const matchingUserFeedSubscription = userFeedSubscriptions.find(
+    (subscription) => subscription.userFeedSubscriptionId === userFeedSubscriptionId
   );
-
-  return matchingDeliverySchedule ?? null;
+  return matchingUserFeedSubscription?.deliverySchedule ?? null;
 }

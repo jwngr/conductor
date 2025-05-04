@@ -1,6 +1,6 @@
 import {z} from 'zod';
 
-import {makeImmediateDeliverySchedule} from '@shared/lib/deliverySchedules.shared';
+import {IMMEDIATE_DELIVERY_SCHEDULE} from '@shared/lib/deliverySchedules.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {makeUuid} from '@shared/lib/utils.shared';
 
@@ -47,12 +47,14 @@ export const INVALID_USER_FEED_SUBSCRIPTION_ID = 'INVALID_USER_FEED_SUBSCRIPTION
  * inactive. They are only deleted when an account is wiped out.
  */
 export interface UserFeedSubscription extends BaseStoreItem {
+  // HEREREERERE
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
   readonly feedSourceId: FeedSourceId;
   readonly accountId: AccountId;
   readonly url: string;
   readonly title: string;
   readonly isActive: boolean;
+  // AND HERE
   readonly deliverySchedule: DeliverySchedule;
   readonly unsubscribedTime?: Date | undefined;
 }
@@ -96,7 +98,7 @@ export function makeUserFeedSubscription(newItemArgs: {
     url: feedSource.url,
     title: feedSource.title,
     isActive: true,
-    deliverySchedule: makeImmediateDeliverySchedule({userFeedSubscriptionId}),
+    deliverySchedule: IMMEDIATE_DELIVERY_SCHEDULE,
     // TODO(timestamps): Use server timestamps instead.
     createdTime: new Date(),
     lastUpdatedTime: new Date(),

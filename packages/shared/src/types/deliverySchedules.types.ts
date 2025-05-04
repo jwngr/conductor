@@ -12,7 +12,6 @@ export enum DeliveryScheduleType {
 
 interface BaseDeliverySchedule {
   readonly type: DeliveryScheduleType;
-  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
 }
 
 export interface NeverDeliverySchedule extends BaseDeliverySchedule {
