@@ -152,6 +152,10 @@ const INITIAL_FEED_ITEMS_STATE: FeedItemsState = {
 export function useFeedItemsIgnoringDelivery(args: {
   readonly viewType: Exclude<ViewType, ViewType.Untriaged>;
 }): FeedItemsState {
+  return useFeedItemsInternal({viewType: args.viewType});
+}
+
+function useFeedItemsInternal(args: {readonly viewType: ViewType}): FeedItemsState {
   const {viewType} = args;
   const feedItemsService = useFeedItemsService();
 
@@ -160,12 +164,8 @@ export function useFeedItemsIgnoringDelivery(args: {
   useEffect(() => {
     const unsubscribe = feedItemsService.watchFeedItemsQuery({
       viewType,
-      successCallback: (feedItems) => {
-        setState({feedItems, isLoading: false, error: null});
-      },
-      errorCallback: (error) => {
-        setState({feedItems: [], isLoading: false, error});
-      },
+      successCallback: (feedItems) => setState({feedItems, isLoading: false, error: null}),
+      errorCallback: (error) => setState({feedItems: [], isLoading: false, error}),
     });
     return () => unsubscribe();
   }, [viewType, feedItemsService]);
@@ -185,40 +185,40 @@ export function useFeedItemsRespectingDelivery(args: {
 }): FeedItemsState {
   const {viewType} = args;
 
-  const feedItemsService = useFeedItemsService();
-  const userFeedSubscriptions = useUserFeedSubscriptions();
+  const feedItemsState = useFeedItemsInternal({viewType});
+  const userFeedSubscriptionsState = useUserFeedSubscriptions();
 
-  const [state, setState] = useState<FeedItemsState>(INITIAL_FEED_ITEMS_STATE);
+  const isSomethingLoading = userFeedSubscriptionsState.isLoading || feedItemsState.isLoading;
 
-  useEffect(() => {
-    const unsubscribe = feedItemsService.watchFeedItemsQuery({
-      viewType,
-      successCallback: (feedItems) => {
-        const {subscriptions} = userFeedSubscriptions;
-        // TODO: Handle loading state and errors.
-        // const {subscriptions, isLoading, error} = userFeedSubscriptions;
-        // if (isLoading) {
-        //   setState({feedItems: [], isLoading: true, error: null});
-        //   break;
-        // }
-        // if (error) {
-        //   setState({feedItems: [], isLoading: false, error});
-        //   break;
-        // }
-        const filteredFeedItems = filterFeedItemsByDeliverySchedules({
-          feedItems,
-          userFeedSubscriptions: subscriptions,
-        });
-        setState({feedItems: filteredFeedItems, isLoading: false, error: null});
-      },
-      errorCallback: (error) => {
-        setState({feedItems: [], isLoading: false, error});
-      },
+  const filteredFeedItems = useMemo(() => {
+    // We cannot filter feed items until everything has loaded.
+    if (isSomethingLoading) return [];
+
+    // If the feed items failed to load, there will be no feed items to filter.
+    if (feedItemsState.error) return [];
+
+    // If there was an error fetching the user feed subscriptions, assume everything is delivered to
+    // avoid hiding any items.
+    if (userFeedSubscriptionsState.error) return feedItemsState.feedItems;
+
+    // Everything is loaded and ready to filter.
+    return filterFeedItemsByDeliverySchedules({
+      feedItems: feedItemsState.feedItems,
+      userFeedSubscriptions: userFeedSubscriptionsState.subscriptions,
     });
-    return () => unsubscribe();
-  }, [feedItemsService, userFeedSubscriptions, viewType]);
+  }, [
+    isSomethingLoading,
+    feedItemsState.error,
+    feedItemsState.feedItems,
+    userFeedSubscriptionsState.error,
+    userFeedSubscriptionsState.subscriptions,
+  ]);
 
-  return state;
+  return {
+    feedItems: filteredFeedItems,
+    isLoading: isSomethingLoading,
+    error: feedItemsState.error ?? userFeedSubscriptionsState.error,
+  };
 }
 
 interface UseFeedItemFileResult {
