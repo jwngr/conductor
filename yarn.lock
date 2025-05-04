@@ -510,6 +510,7 @@ __metadata:
     "@conductor/shared-server": "workspace:*"
     "@mendable/firecrawl-js": "npm:^1.24.0"
     "@types/node": "npm:^22.15.3"
+    cloc: "npm:^2.11.0"
     dotenv: "npm:^16.5.0"
   languageName: unknown
   linkType: soft
@@ -6163,6 +6164,15 @@ __metadata:
     strip-ansi: "npm:^6.0.1"
     wrap-ansi: "npm:^7.0.0"
   checksum: 10c0/4bda0f09c340cbb6dfdc1ed508b3ca080f12992c18d68c6be4d9cf51756033d5266e61ec57529e610dacbf4da1c634423b0c1b11037709cc6b09045cbd815df5
+  languageName: node
+  linkType: hard
+
+"cloc@npm:^2.11.0":
+  version: 2.11.0
+  resolution: "cloc@npm:2.11.0"
+  bin:
+    cloc: lib/cloc
+  checksum: 10c0/9f08ab6db81f015f725271522b8af074d06abe7425f4d44d3499b5635b87b3160962b4c7a68e0dcb7a5f54234e5ef89ecc6a979697e0b567633a2e45c42eaee9
   languageName: node
   linkType: hard
 
