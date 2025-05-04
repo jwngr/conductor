@@ -17,7 +17,7 @@ import {
   StoriesSidebarSectionId,
 } from '@shared/types/stories.types';
 import type {StoriesSidebarItem} from '@shared/types/stories.types';
-import type {Consumer, Task} from '@shared/types/utils.types';
+import type {Consumer} from '@shared/types/utils.types';
 
 import {ButtonStories} from '@src/components/atoms/Button.stories';
 import {ButtonIconStories} from '@src/components/atoms/ButtonIcon.stories';
