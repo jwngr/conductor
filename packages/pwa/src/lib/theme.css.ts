@@ -72,7 +72,6 @@ export const vars = createThemeContract({
       '2': null,
     },
     neutral: {
-      '0': null,
       '1': null,
       '2': null,
       '3': null,

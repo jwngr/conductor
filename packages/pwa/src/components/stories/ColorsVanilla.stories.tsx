@@ -70,7 +70,7 @@ type SemanticGroupName = (typeof semanticGroupNames)[number];
 const semanticGroupLevels = ['1', '2'] as const;
 type SemanticGroupLevel = (typeof semanticGroupLevels)[number];
 
-const neutralLevels = ['0', '1', '2', '3', '4', '5'] as const;
+const neutralLevels = ['1', '2', '3', '4', '5'] as const;
 type NeutralLevel = (typeof neutralLevels)[number];
 
 interface ColorSwatchProps {
