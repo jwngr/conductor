@@ -283,7 +283,6 @@ export const lightTheme = createTheme(vars, {
       '2': 'var(--color-magenta-2)',
     },
     neutral: {
-      '0': 'var(--color-neutral-0)',
       '1': 'var(--color-neutral-1)',
       '2': 'var(--color-neutral-2)',
       '3': 'var(--color-neutral-3)',
@@ -479,7 +478,6 @@ export const darkTheme = createTheme(vars, {
       '2': 'var(--color-magenta-2)',
     },
     neutral: {
-      '0': 'var(--color-neutral-0)',
       '1': 'var(--color-neutral-1)',
       '2': 'var(--color-neutral-2)',
       '3': 'var(--color-neutral-3)',

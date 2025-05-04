@@ -47,14 +47,7 @@ const semanticColorNames = [
 
 const textColorNames = ['text-default', 'text-light', 'text-link'];
 
-const neutralColorNames = [
-  'neutral-0',
-  'neutral-1',
-  'neutral-2',
-  'neutral-3',
-  'neutral-4',
-  'neutral-5',
-];
+const neutralColorNames = ['neutral-1', 'neutral-2', 'neutral-3', 'neutral-4', 'neutral-5'];
 
 const level1ColorNames = [
   'red-1',
