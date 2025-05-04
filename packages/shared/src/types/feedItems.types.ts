@@ -357,7 +357,6 @@ export type FeedItem =
 
 export enum FeedItemActionType {
   Cancel = 'CANCEL',
-  DebugSaveExample = 'DEBUG_SAVE_EXAMPLE',
   MarkDone = 'MARK_DONE',
   MarkUnread = 'MARK_UNREAD',
   Save = 'SAVE',

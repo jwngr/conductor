@@ -53,7 +53,7 @@
     "build": "yarn run clean && yarn run hack-cookie-type && vite build",
     "preview": "vite preview",
     "deploy": "firebase deploy --only hosting",
-    "test": "echo 'TODO: Implement tests for PWA'",
+    "test": "echo 'No tests implemented'",
     "hack-cookie-type": "test -f ../../node_modules/@types/request/index.d.ts && sed -i.bak '/setCookie(/d' ../../node_modules/@types/request/index.d.ts || true"
   },
   "browserslist": [

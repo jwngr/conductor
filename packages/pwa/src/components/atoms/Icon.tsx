@@ -24,7 +24,7 @@ function toLucideIconName(name: IconName): LucideIconName {
   switch (name) {
     case IconName.Cancel:
       return 'x';
-    case IconName.DebugSaveExample:
+    case IconName.Debug:
       return 'bug';
     case IconName.Inbox:
       return 'inbox';

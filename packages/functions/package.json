@@ -31,7 +31,7 @@
     "start": "yarn run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "test": "echo 'TODO: Implement tests for functions'",
+    "test": "echo 'No tests implemented'",
     "hack-type": "test -f ../../node_modules/@types/request/index.d.ts && sed -i.bak '/setCookie(/d' ../../node_modules/@types/request/index.d.ts || true"
   }
 }

@@ -1,5 +1,6 @@
 import {deleteField} from 'firebase/firestore';
 import {useEffect, useRef} from 'react';
+import {toast} from 'sonner';
 
 import {logger} from '@shared/services/logger.shared';
 
@@ -71,7 +72,7 @@ const useMarkFeedItemRead = (args: {
           prefixError(markFeedItemAsReadResult.error, 'Unread manager failed to mark item as read'),
           {feedItemId}
         );
-        // TODO: Show an error toast.
+        toast.error('Failed to mark item as read');
       }
     }
 

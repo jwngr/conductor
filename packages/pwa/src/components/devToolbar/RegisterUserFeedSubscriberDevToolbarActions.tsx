@@ -7,6 +7,7 @@ import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 import {useUserFeedSubscriptionsService} from '@sharedClient/services/userFeedSubscriptions.client';
 
 import {Button} from '@src/components/atoms/Button';
+import {Text} from '@src/components/atoms/Text';
 
 const AccountFeedSubscriber: React.FC = () => {
   const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
@@ -32,7 +33,7 @@ const AccountFeedSubscriber: React.FC = () => {
         variant="outline"
         onClick={async () => void handleSubscribeToFeedUrl('https://jwn.gr/rss.xml')}
       >
-        Subscribe to personal blog feed
+        Personal blog feed
       </Button>
       <Button
         variant="outline"
@@ -42,11 +43,12 @@ const AccountFeedSubscriber: React.FC = () => {
           )
         }
       >
-        Subscribe to 30s feed
+        Every 30s feed
       </Button>
-      {/* TODO: Add unsubscribe button. */}
       {status ? (
-        <div className={`text-xs ${isError ? 'text-error' : 'text-success'}`}>{status}</div>
+        <Text as="p" className={isError ? 'text-error' : 'text-success'}>
+          {status}
+        </Text>
       ) : null}
     </>
   );

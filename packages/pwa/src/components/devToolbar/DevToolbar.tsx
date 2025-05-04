@@ -10,6 +10,8 @@ import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
 import {RequireLoggedInAccount} from '@src/components/auth/RequireLoggedInAccount';
 
+import {IS_DEVELOPMENT} from '@src/lib/environment.pwa';
+
 import {storiesRedirectRoute} from '@src/routes';
 
 const BugEmoji: React.FC = () => {
@@ -101,7 +103,9 @@ export const DevToolbar: React.FC = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  // TODO: Add `!IS_DEVELOPMENT` check back here.
+  if (!IS_DEVELOPMENT) {
+    return null;
+  }
 
   return (
     <div

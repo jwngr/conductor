@@ -153,14 +153,6 @@ export class SharedFeedItemHelpers {
     };
   }
 
-  public static getDebugSaveExampleFeedItemActionInfo(): FeedItemAction {
-    return {
-      type: FeedItemActionType.DebugSaveExample,
-      text: 'Save example',
-      icon: IconName.DebugSaveExample,
-    };
-  }
-
   public static getCancelFeedItemActionInfo(): FeedItemAction {
     return {
       type: FeedItemActionType.Cancel,
