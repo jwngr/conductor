@@ -144,17 +144,9 @@ const INITIAL_FEED_ITEMS_STATE: FeedItemsState = {
 } as const;
 
 /**
- * Fetches all feed items for a view, ignoring delivery schedules. Used for most views.
- *
- * Note: Use `useFeedItemsRespectingDelivery` for views like Untriaged which should filter based on
- * delivery schedules.
+ * Internal helper for fetching all feed items for a view, ignoring delivery schedules. Works for
+ * all views.
  */
-export function useFeedItemsIgnoringDelivery(args: {
-  readonly viewType: Exclude<ViewType, ViewType.Untriaged>;
-}): FeedItemsState {
-  return useFeedItemsInternal({viewType: args.viewType});
-}
-
 function useFeedItemsInternal(args: {readonly viewType: ViewType}): FeedItemsState {
   const {viewType} = args;
   const feedItemsService = useFeedItemsService();
@@ -171,6 +163,18 @@ function useFeedItemsInternal(args: {readonly viewType: ViewType}): FeedItemsSta
   }, [viewType, feedItemsService]);
 
   return state;
+}
+
+/**
+ * Fetches all feed items for a view, ignoring delivery schedules. Used for most views.
+ *
+ * Note: Use `useFeedItemsRespectingDelivery` for views like Untriaged which should filter based on
+ * delivery schedules.
+ */
+export function useFeedItemsIgnoringDelivery(args: {
+  readonly viewType: Exclude<ViewType, ViewType.Untriaged>;
+}): FeedItemsState {
+  return useFeedItemsInternal({viewType: args.viewType});
 }
 
 /**
@@ -191,28 +195,16 @@ export function useFeedItemsRespectingDelivery(args: {
   const isSomethingLoading = userFeedSubscriptionsState.isLoading || feedItemsState.isLoading;
 
   const filteredFeedItems = useMemo(() => {
-    // We cannot filter feed items until everything has loaded.
+    // Cannot filter until everything loads.
     if (isSomethingLoading) return [];
 
-    // If the feed items failed to load, there will be no feed items to filter.
-    if (feedItemsState.error) return [];
-
-    // If there was an error fetching the user feed subscriptions, assume everything is delivered to
-    // avoid hiding any items.
-    if (userFeedSubscriptionsState.error) return feedItemsState.feedItems;
-
-    // Everything is loaded and ready to filter.
+    // Everything is loaded and ready to filter. There may be an error, but we still want to show
+    // any pre-existing data.
     return filterFeedItemsByDeliverySchedules({
       feedItems: feedItemsState.feedItems,
       userFeedSubscriptions: userFeedSubscriptionsState.subscriptions,
     });
-  }, [
-    isSomethingLoading,
-    feedItemsState.error,
-    feedItemsState.feedItems,
-    userFeedSubscriptionsState.error,
-    userFeedSubscriptionsState.subscriptions,
-  ]);
+  }, [isSomethingLoading, feedItemsState.feedItems, userFeedSubscriptionsState.subscriptions]);
 
   return {
     feedItems: filteredFeedItems,
