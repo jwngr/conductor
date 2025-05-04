@@ -19,9 +19,6 @@ export const ButtonStories: React.FC = () => {
           <Button variant="default" onClick={() => handleClick('Clicked on primary button')}>
             Primary
           </Button>
-          <Button variant="secondary" onClick={() => handleClick('Clicked on secondary button')}>
-            Secondary
-          </Button>
           <Button
             variant="destructive"
             onClick={() => handleClick('Clicked on destructive button')}
@@ -44,9 +41,6 @@ export const ButtonStories: React.FC = () => {
         <div className="flex flex-row items-center gap-4">
           <Button disabled onClick={handleDisabledClick}>
             Primary
-          </Button>
-          <Button disabled variant="secondary" onClick={handleDisabledClick}>
-            Secondary
           </Button>
           <Button disabled variant="outline" onClick={handleDisabledClick}>
             Outline
@@ -74,8 +68,22 @@ export const ButtonStories: React.FC = () => {
           <Button size="lg" onClick={() => handleClick('Clicked on primary large button')}>
             Large
           </Button>
-          <Button size="icon" onClick={() => handleClick('Clicked on primary button')}>
-            Icon
+        </div>
+      </StorySection>
+
+      <StorySection title="Custom buttons">
+        <div className="flex flex-row items-center gap-4">
+          <Button
+            className="bg-purple-2 hover:bg-purple-2/80"
+            onClick={() => handleClick('Clicked on purple button')}
+          >
+            Purple
+          </Button>
+          <Button className="uppercase" onClick={() => handleClick('Clicked on uppercase button')}>
+            Uppercase
+          </Button>
+          <Button className="p-8" onClick={() => handleClick('Clicked on padding button')}>
+            More padding
           </Button>
         </div>
       </StorySection>

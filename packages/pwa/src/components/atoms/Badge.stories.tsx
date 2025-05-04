@@ -8,7 +8,6 @@ export const BadgeStories: React.FC = () => {
         <div className="flex flex-row items-center gap-4">
           <Badge variant="default">Default</Badge>
           <Badge variant="outline">Outline</Badge>
-          <Badge variant="secondary">Secondary</Badge>
           <Badge variant="destructive">Destructive</Badge>
         </div>
       </StorySection>
