@@ -14,7 +14,6 @@ import {SystemTagId} from '@shared/types/tags.types';
 
 import {useFeedItem, useFeedItemsService} from '@sharedClient/services/feedItems.client';
 
-import {Text} from '@src/components/atoms/Text';
 import {RegisterIndividualFeedItemDevToolbarSection} from '@src/components/devToolbar/RegisterIndividualFeedItemSection';
 import {FeedItemScreenKeyboardHandler} from '@src/components/feedItems/FeedItemScreenEscapeHandler';
 import {ArticleFeedItemRenderer} from '@src/components/feedItems/renderers/ArticleFeedItemRenderer';
