@@ -20,22 +20,20 @@ import {
 } from '@shared/lib/feedItems.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
-import {assertNever, omitUndefined} from '@shared/lib/utils.shared';
+import {omitUndefined} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
 
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 
 import type {AccountId, AuthStateChangedUnsubscribe} from '@shared/types/accounts.types';
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
-import {DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
-import {
-  FeedItemSourceType,
-  type FeedItem,
-  type FeedItemId,
-  type FeedItemRSSSource,
-  type FeedItemSource,
-  type XkcdFeedItem,
+import type {
+  FeedItem,
+  FeedItemId,
+  FeedItemSource,
+  XkcdFeedItem,
 } from '@shared/types/feedItems.types';
+import {FeedItemSourceType} from '@shared/types/feedItems.types';
 import {fromQueryFilterOp} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {Consumer} from '@shared/types/utils.types';
@@ -181,7 +179,7 @@ export function useFeedItems({viewType}: {readonly viewType: ViewType}): FeedIte
       },
     });
     return () => unsubscribe();
-  }, [viewType, feedItemsService]);
+  }, [viewType, feedItemsService, deliverySchedules]);
 
   return state;
 }
