@@ -20,7 +20,7 @@ import {
 } from '@shared/lib/feedItems.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
-import {assertNever, omitUndefined} from '@shared/lib/utils.shared';
+import {omitUndefined} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
 
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
@@ -37,7 +37,7 @@ import {fromQueryFilterOp} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 import type {Consumer} from '@shared/types/utils.types';
-import {ViewType} from '@shared/types/views.types';
+import type {ViewType} from '@shared/types/views.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';
 import {
@@ -143,7 +143,48 @@ const INITIAL_FEED_ITEMS_STATE: FeedItemsState = {
   error: null,
 } as const;
 
-export function useFeedItems({viewType}: {readonly viewType: ViewType}): FeedItemsState {
+/**
+ * Fetches all feed items for a view, ignoring delivery schedules. Used for most views.
+ *
+ * Note: Use `useFeedItemsRespectingDelivery` for views like Untriaged which should filter based on
+ * delivery schedules.
+ */
+export function useFeedItemsIgnoringDelivery(args: {
+  readonly viewType: Exclude<ViewType, ViewType.Untriaged>;
+}): FeedItemsState {
+  const {viewType} = args;
+  const feedItemsService = useFeedItemsService();
+
+  const [state, setState] = useState<FeedItemsState>(INITIAL_FEED_ITEMS_STATE);
+
+  useEffect(() => {
+    const unsubscribe = feedItemsService.watchFeedItemsQuery({
+      viewType,
+      successCallback: (feedItems) => {
+        setState({feedItems, isLoading: false, error: null});
+      },
+      errorCallback: (error) => {
+        setState({feedItems: [], isLoading: false, error});
+      },
+    });
+    return () => unsubscribe();
+  }, [viewType, feedItemsService]);
+
+  return state;
+}
+
+/**
+ * Fetches all feed items for a view while filtering out items based on delivery schedules. Only
+ * used for the Untriaged view, although could be used for other views in the future.
+ *
+ * Note: Use `useFeedItemsIgnoringDelivery` for views which should not filter based on delivery
+ * schedules.
+ */
+export function useFeedItemsRespectingDelivery(args: {
+  readonly viewType: ViewType.Untriaged;
+}): FeedItemsState {
+  const {viewType} = args;
+
   const feedItemsService = useFeedItemsService();
   const userFeedSubscriptions = useUserFeedSubscriptions();
 
@@ -153,39 +194,21 @@ export function useFeedItems({viewType}: {readonly viewType: ViewType}): FeedIte
     const unsubscribe = feedItemsService.watchFeedItemsQuery({
       viewType,
       successCallback: (feedItems) => {
-        let filteredFeedItems: FeedItem[];
-        switch (viewType) {
-          case ViewType.All:
-          case ViewType.Done:
-          case ViewType.Saved:
-          case ViewType.Starred:
-          case ViewType.Today:
-          case ViewType.Trashed:
-          case ViewType.Unread: {
-            filteredFeedItems = feedItems;
-            break;
-          }
-          case ViewType.Untriaged: {
-            const {subscriptions} = userFeedSubscriptions;
-            // TODO: Handle loading state and errors.
-            // const {subscriptions, isLoading, error} = userFeedSubscriptions;
-            // if (isLoading) {
-            //   setState({feedItems: [], isLoading: true, error: null});
-            //   break;
-            // }
-            // if (error) {
-            //   setState({feedItems: [], isLoading: false, error});
-            //   break;
-            // }
-            filteredFeedItems = filterFeedItemsByDeliverySchedules({
-              feedItems,
-              userFeedSubscriptions: subscriptions,
-            });
-            break;
-          }
-          default:
-            assertNever(viewType);
-        }
+        const {subscriptions} = userFeedSubscriptions;
+        // TODO: Handle loading state and errors.
+        // const {subscriptions, isLoading, error} = userFeedSubscriptions;
+        // if (isLoading) {
+        //   setState({feedItems: [], isLoading: true, error: null});
+        //   break;
+        // }
+        // if (error) {
+        //   setState({feedItems: [], isLoading: false, error});
+        //   break;
+        // }
+        const filteredFeedItems = filterFeedItemsByDeliverySchedules({
+          feedItems,
+          userFeedSubscriptions: subscriptions,
+        });
         setState({feedItems: filteredFeedItems, isLoading: false, error: null});
       },
       errorCallback: (error) => {
@@ -193,7 +216,7 @@ export function useFeedItems({viewType}: {readonly viewType: ViewType}): FeedIte
       },
     });
     return () => unsubscribe();
-  }, [viewType, feedItemsService, userFeedSubscriptions]);
+  }, [feedItemsService, userFeedSubscriptions, viewType]);
 
   return state;
 }

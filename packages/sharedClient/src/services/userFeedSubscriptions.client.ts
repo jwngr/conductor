@@ -188,8 +188,7 @@ export const useUserFeedSubscriptions = (): UserFeedSubscriptionsState => {
   useEffect(() => {
     const unsubscribe = userFeedSubscriptionsService.watchAllSubscriptions({
       successCallback: (updatedSubscriptions) => {
-        setState((current) => ({
-          ...current,
+        setState(() => ({
           subscriptions: updatedSubscriptions,
           isLoading: false,
           error: null,
