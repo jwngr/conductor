@@ -179,6 +179,11 @@ const INITIAL_FEED_ITEMS_STATE: FeedItemsState = {
   error: null,
 } as const;
 
+const useDeliverySchedules = (): DeliverySchedule[] => {
+  // TODO: Fetch all of these.
+  return [];
+};
+
 export function useFeedItems({viewType}: {readonly viewType: ViewType}): FeedItemsState {
   const feedItemsService = useFeedItemsService();
   const deliverySchedules = useDeliverySchedules();
