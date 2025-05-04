@@ -17,6 +17,8 @@ import {Input} from '@src/components/atoms/Input';
 import {Spacer} from '@src/components/atoms/Spacer';
 import {Text} from '@src/components/atoms/Text';
 
+import {IS_DEVELOPMENT} from '@src/lib/environment.pwa';
+
 import type {OnClick} from '@src/types/utils.pwa.types';
 
 import {rootRoute} from '@src/routes/__root';
@@ -141,11 +143,13 @@ export const SignInScreen: React.FC = () => {
         maybeEmail: state.emailInputVal,
         text: 'Send link',
       })}
-      {/* TODO: Remove this debug button. */}
-      {renderPasswordlessAuthButton({
-        maybeEmail: 'wenger.jacob@gmail.com',
-        text: 'Send link to myself',
-      })}
+
+      {IS_DEVELOPMENT
+        ? renderPasswordlessAuthButton({
+            maybeEmail: 'wenger.jacob@gmail.com',
+            text: 'Send link to myself',
+          })
+        : null}
 
       {state.successfulSignInLinkSentTo ? (
         <Text align="center">

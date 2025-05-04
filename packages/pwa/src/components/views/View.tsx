@@ -2,6 +2,7 @@ import React, {useEffect, useMemo, useRef, useState} from 'react';
 
 import {logger} from '@shared/services/logger.shared';
 
+import {prefixError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
@@ -28,6 +29,7 @@ import {ViewKeyboardShortcutHandler} from '@src/components/views/ViewKeyboardSho
 import {ViewOptionsDialog} from '@src/components/views/ViewOptionsDialog';
 
 import {feedItemRoute} from '@src/routes';
+import {ErrorScreen} from '@src/screens/ErrorScreen';
 
 function compareFeedItems(args: {
   readonly a: FeedItem;
@@ -243,7 +245,7 @@ const LoadedViewList: React.FC<{
   const groupedItems = useGroupedFeedItems(sortedItems, groupByField);
 
   if (feedItems.length === 0) {
-    // TODO: Introduce proper empty state screen.
+    // TODO: Introduce proper empty state.
     return <div>No items</div>;
   }
 
@@ -290,14 +292,14 @@ const ViewList: React.FC<{
   const {feedItems, isLoading, error} = useFeedItems({viewType});
 
   if (isLoading) {
-    // TODO: Introduce proper loading screen.
+    // TODO: Introduce proper loading component.
     return <div>Loading...</div>;
   }
 
   if (error) {
-    // TODO: Introduce proper error screen.
-    logger.error(new Error('Error loading feed items'), {error, viewType});
-    return <div>Error: {error.message}</div>;
+    const betterError = prefixError(error, 'Failed to load items');
+    logger.error(betterError, {viewType, sortBy, groupBy});
+    return <ErrorScreen error={betterError} />;
   }
 
   return (

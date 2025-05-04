@@ -2,12 +2,6 @@ import {requestPost} from '@shared/lib/requests.shared';
 
 import type {AsyncResult} from '@shared/types/results.types';
 
-// TODO: Confirm if this is actually needed.
-// interface SuperfeedrResponse {
-//   readonly status: number;
-//   readonly message?: string;
-// }
-
 const SUPERFEEDR_BASE_URL = 'https://push.superfeedr.com/';
 
 export class SuperfeedrService {
@@ -34,10 +28,7 @@ export class SuperfeedrService {
     return `${this.webhookBaseUrl}/handleSuperfeedrWebhook`;
   }
 
-  public async subscribeToUrl(
-    feedUrl: string
-    // TODO Confirm what the return type actually is.
-  ): AsyncResult<string> {
+  public async subscribeToUrl(feedUrl: string): AsyncResult<string> {
     return await requestPost<string>(
       SUPERFEEDR_BASE_URL,
       {
@@ -58,7 +49,6 @@ export class SuperfeedrService {
     return await requestPost<undefined>(SUPERFEEDR_BASE_URL, {
       headers: {
         Authorization: this.getSuperfeedrAuthHeader(),
-        // TODO: Maybe not needed?
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
