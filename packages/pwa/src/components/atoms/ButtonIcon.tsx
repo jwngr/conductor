@@ -1,102 +1,71 @@
-import React, {useCallback} from 'react';
-import styled from 'styled-components';
+import type React from 'react';
+import {useCallback} from 'react';
 
-import {getIconSizeFromButtonIconSize} from '@shared/lib/icons';
-import {assertNever} from '@shared/lib/utils';
+import {getIconSizeFromButtonIconSize} from '@shared/lib/icons.shared';
 
-import type {ButtonIconSize} from '@shared/types/icons.types';
-import {IconName} from '@shared/types/icons.types';
+import type {ButtonIconSize, IconName} from '@shared/types/icons.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
-import {ThemeColor} from '@shared/types/theme.types';
 import type {StyleAttributes} from '@shared/types/utils.types';
 
-import InboxIcon from '@shared/icons/inbox.svg?react';
-import MarkDoneIcon from '@shared/icons/markDone.svg?react';
-import MarkUnreadIcon from '@shared/icons/markUnread.svg?react';
-import SaveIcon from '@shared/icons/save.svg?react';
-import StarIcon from '@shared/icons/star.svg?react';
+import type {MouseEvent} from '@sharedClient/types/utils.client.types';
 
+import * as styles from '@src/components/atoms/ButtonIcon.css';
+import {Icon} from '@src/components/atoms/Icon';
 import type {TooltipContent} from '@src/components/atoms/Tooltip';
 import {Tooltip} from '@src/components/atoms/Tooltip';
 
+import {cn} from '@src/lib/utils.pwa';
+
 import type {OnClick} from '@src/types/utils.pwa.types';
-
-interface ButtonIconWrapperProps {
-  readonly $color: ThemeColor;
-  readonly $size: number;
-}
-
-const ButtonIconWrapper = styled.div<ButtonIconWrapperProps>`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  width: ${({$size}) => $size}px;
-  height: ${({$size}) => $size}px;
-  border-radius: 4px;
-
-  background-color: ${({theme}) => theme.colors[ThemeColor.Neutral100]};
-  &:hover {
-    background-color: ${({theme}) => theme.colors[ThemeColor.Neutral200]};
-  }
-
-  svg * {
-    stroke: ${({theme, $color}) => theme.colors[$color]};
-    fill: ${({theme, $color}) => theme.colors[$color]};
-  }
-`;
 
 interface ButtonIconProps extends StyleAttributes {
   readonly name: IconName;
   readonly size: ButtonIconSize;
-  readonly color?: ThemeColor;
   readonly onClick: OnClick<HTMLDivElement>;
   readonly shortcutId?: KeyboardShortcutId;
   readonly tooltip: TooltipContent;
+  readonly className?: string;
+  readonly disabled?: boolean;
 }
 
 export const ButtonIcon: React.FC<ButtonIconProps> = ({
   name,
   tooltip,
   size: buttonIconSize,
-  color = ThemeColor.Neutral900,
   onClick,
   shortcutId,
+  className,
+  disabled,
   ...styleProps
 }) => {
-  let IconComponent: React.ElementType;
-  switch (name) {
-    case IconName.MarkDone:
-      IconComponent = MarkDoneIcon;
-      break;
-    case IconName.Save:
-      IconComponent = SaveIcon;
-      break;
-    case IconName.Inbox:
-      IconComponent = InboxIcon;
-      break;
-    case IconName.MarkUnread:
-      IconComponent = MarkUnreadIcon;
-      break;
-    case IconName.Star:
-      IconComponent = StarIcon;
-      break;
-    default:
-      assertNever(name);
-  }
-
   const iconSize = getIconSizeFromButtonIconSize(buttonIconSize);
 
-  const handleShortcut = useCallback(() => {
+  const handleShortcut = useCallback(async () => {
     // TODO: Clean up this type.
-    onClick?.(null as unknown as React.MouseEvent<HTMLDivElement>);
+    onClick?.(null as unknown as MouseEvent<HTMLDivElement>);
   }, [onClick]);
 
-  const buttonIcon = (
-    <ButtonIconWrapper $color={color} $size={buttonIconSize} onClick={onClick}>
-      <IconComponent width={iconSize} height={iconSize} {...styleProps} />
-    </ButtonIconWrapper>
+  // Combine the base style, size variant, and any additional className
+  const combinedClassName = cn(
+    styles.buttonIconWrapper,
+    styles.buttonIconSize[buttonIconSize],
+    className
   );
+
+  const buttonIcon = (
+    <div
+      className={combinedClassName}
+      // Disable pointer events and hover effect if disabled
+      style={disabled ? {pointerEvents: 'none', cursor: 'default'} : undefined}
+      onClick={!disabled ? onClick : undefined}
+    >
+      <Icon name={name} size={iconSize} {...styleProps} />
+    </div>
+  );
+
+  if (disabled) {
+    return buttonIcon;
+  }
 
   return (
     <Tooltip

@@ -1,20 +1,22 @@
-import type {AsyncResult} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import {requestPost} from '@shared/lib/requests.shared';
 
-// TODO: Confirm if this is actually needed.
-// interface SuperfeedrResponse {
-//   readonly status: number;
-//   readonly message?: string;
-// }
+import type {AsyncResult} from '@shared/types/results.types';
 
 const SUPERFEEDR_BASE_URL = 'https://push.superfeedr.com/';
 
 export class SuperfeedrService {
   private readonly superfeedrUser: string;
   private readonly superfeedrApiKey: string;
-  constructor(args: {readonly superfeedrUser: string; readonly superfeedrApiKey: string}) {
+  private readonly webhookBaseUrl: string;
+
+  constructor(args: {
+    readonly superfeedrUser: string;
+    readonly superfeedrApiKey: string;
+    readonly webhookBaseUrl: string;
+  }) {
     this.superfeedrUser = args.superfeedrUser;
     this.superfeedrApiKey = args.superfeedrApiKey;
+    this.webhookBaseUrl = args.webhookBaseUrl;
   }
 
   private getSuperfeedrAuthHeader(): string {
@@ -22,48 +24,31 @@ export class SuperfeedrService {
   }
 
   private getSuperfeedrWebhookUrl(): string {
-    // TODO: FIX ME.
-    return `https://${process.env.FIREBASE_PROJECT_ID}.firebaseapp.com/api/superfeedr-webhook`;
+    // This path needs to match the Firebase Function name.
+    return `${this.webhookBaseUrl}/handleSuperfeedrWebhook`;
   }
 
-  public async subscribeToFeed(
-    feedUrl: string
-    // TODO Confirm what the return type actually is.
-  ): AsyncResult<string> {
-    const superfeedrResponse = await fetch(SUPERFEEDR_BASE_URL, {
-      method: 'POST',
-      headers: {
-        Authorization: this.getSuperfeedrAuthHeader(),
-        // TODO: Maybe not needed?
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
+  public async subscribeToUrl(feedUrl: string): AsyncResult<string> {
+    return await requestPost<string>(
+      SUPERFEEDR_BASE_URL,
+      {
         'hub.mode': 'subscribe',
         'hub.topic': feedUrl,
         'hub.callback': this.getSuperfeedrWebhookUrl(),
         format: 'json',
-      }),
-    });
-
-    const responseText = await superfeedrResponse.text();
-
-    if (!superfeedrResponse.ok || superfeedrResponse.status >= 400) {
-      return makeErrorResult(
-        new Error(
-          `Error while subscribing to feed ${feedUrl} with Superfeedr: [${superfeedrResponse.status}] ${responseText}`
-        )
-      );
-    }
-
-    return makeSuccessResult(responseText);
+      },
+      {
+        headers: {
+          Authorization: this.getSuperfeedrAuthHeader(),
+        },
+      }
+    );
   }
 
   public async unsubscribeFromFeed(feedUrl: string): AsyncResult<void> {
-    const superfeedrResponse = await fetch(SUPERFEEDR_BASE_URL, {
-      method: 'POST',
+    return await requestPost<undefined>(SUPERFEEDR_BASE_URL, {
       headers: {
         Authorization: this.getSuperfeedrAuthHeader(),
-        // TODO: Maybe not needed?
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
@@ -73,17 +58,5 @@ export class SuperfeedrService {
         format: 'json',
       }),
     });
-
-    const responseText = await superfeedrResponse.text();
-
-    if (!superfeedrResponse.ok || superfeedrResponse.status >= 400) {
-      return makeErrorResult(
-        new Error(
-          `Error while unsubscribing from feed ${feedUrl} with Superfeedr: [${superfeedrResponse.status}] ${responseText}`
-        )
-      );
-    }
-
-    return makeSuccessResult(undefined);
   }
 }

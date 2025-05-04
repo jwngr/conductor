@@ -1,63 +1,67 @@
-import {
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  onSnapshot,
-  query,
-  setDoc,
-  updateDoc,
-  where,
-} from 'firebase/firestore';
-import type {CollectionReference} from 'firebase/firestore';
+import {where} from 'firebase/firestore';
 import type {StorageReference} from 'firebase/storage';
-import {getDownloadURL, ref as storageRef} from 'firebase/storage';
+import {getBlob, ref as storageRef} from 'firebase/storage';
 import {useEffect, useMemo, useState} from 'react';
 
-import {makeImportQueueItem} from '@shared/services/importQueue';
+import {logger} from '@shared/services/logger.shared';
 
 import {
+  FEED_ITEM_FILE_NAME_LLM_CONTEXT,
+  FEED_ITEM_FILE_NAME_TRANSCRIPT,
+  FEED_ITEM_FILE_NAME_XKCD_EXPLAIN,
   FEED_ITEMS_DB_COLLECTION,
   FEED_ITEMS_STORAGE_COLLECTION,
-  IMPORT_QUEUE_DB_COLLECTION,
-} from '@shared/lib/constants';
-import {asyncTry, asyncTryAllPromises} from '@shared/lib/errors';
+} from '@shared/lib/constants.shared';
+import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
-import {isValidUrl} from '@shared/lib/urls';
-import {Views} from '@shared/lib/views';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {isValidUrl} from '@shared/lib/urls.shared';
+import {omitUndefined} from '@shared/lib/utils.shared';
+import {Views} from '@shared/lib/views.shared';
 
-import {
-  FeedItemType,
-  type FeedItem,
-  type FeedItemId,
-  type FeedItemSource,
+import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
+
+import type {AccountId, AuthStateChangedUnsubscribe} from '@shared/types/accounts.types';
+import type {
+  FeedItem,
+  FeedItemId,
+  FeedItemSource,
+  XkcdFeedItem,
 } from '@shared/types/feedItems.types';
-import type {ImportQueueItemId} from '@shared/types/importQueue.types';
-import {fromFilterOperator, type ViewType} from '@shared/types/query.types';
-import type {AsyncResult} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import type {AuthStateChangedUnsubscribe, UserId} from '@shared/types/user.types';
+import {fromQueryFilterOp} from '@shared/types/query.types';
+import type {AsyncResult} from '@shared/types/results.types';
 import type {Consumer} from '@shared/types/utils.types';
+import type {ViewType} from '@shared/types/views.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';
+import {
+  ClientFirestoreCollectionService,
+  makeFirestoreDataConverter,
+} from '@sharedClient/services/firestore.client';
 
-import {useLoggedInUser} from '@sharedClient/hooks/auth.hooks';
+import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
+import {useIsMounted} from '@sharedClient/hooks/utils.hook';
 
-const feedItemsDbRef = collection(firebaseService.firestore, FEED_ITEMS_DB_COLLECTION);
-const importQueueDbRef = collection(firebaseService.firestore, IMPORT_QUEUE_DB_COLLECTION);
 const feedItemsStorageRef = storageRef(firebaseService.storage, FEED_ITEMS_STORAGE_COLLECTION);
 
+const feedItemFirestoreConverter = makeFirestoreDataConverter(toStorageFeedItem, parseFeedItem);
+
 export function useFeedItemsService(): ClientFeedItemsService {
-  const loggedInUser = useLoggedInUser();
+  const loggedInAccount = useLoggedInAccount();
 
   const feedItemsService = useMemo(() => {
-    return new ClientFeedItemsService({
-      feedItemsDbRef,
-      importQueueDbRef,
-      feedItemsStorageRef,
-      userId: loggedInUser.userId,
+    const feedItemsCollectionService = new ClientFirestoreCollectionService({
+      collectionPath: FEED_ITEMS_DB_COLLECTION,
+      converter: feedItemFirestoreConverter,
+      parseId: parseFeedItemId,
     });
-  }, [loggedInUser]);
+
+    return new ClientFeedItemsService({
+      feedItemsCollectionService,
+      feedItemsStorageRef,
+      accountId: loggedInAccount.accountId,
+    });
+  }, [loggedInAccount.accountId]);
 
   return feedItemsService;
 }
@@ -110,93 +114,103 @@ export function useFeedItems({viewType}: {readonly viewType: ViewType}): {
   return state;
 }
 
-export function useFeedItemMarkdown(
-  feedItemId: FeedItemId,
-  isFeedItemImported: boolean
-): {
-  readonly markdown: string | null;
+interface UseFeedItemFileResult {
+  readonly content: string | null;
   readonly isLoading: boolean;
   readonly error: Error | null;
-} {
+}
+
+const INITIAL_USE_FEED_ITEM_FILE_STATE: UseFeedItemFileResult = {
+  content: null,
+  isLoading: true,
+  error: null,
+};
+
+export function useFeedItemFile(args: {
+  readonly feedItem: FeedItem;
+  readonly filename: string;
+}): UseFeedItemFileResult {
+  const {feedItem, filename} = args;
+  const feedItemId = feedItem.feedItemId;
+  const hasFeedItemEverBeenImported = SharedFeedItemHelpers.hasEverBeenImported(feedItem);
+
+  const isMounted = useIsMounted();
   const feedItemsService = useFeedItemsService();
-  const [state, setState] = useState<{
-    readonly markdown: string | null;
-    readonly isLoading: boolean;
-    readonly error: Error | null;
-  }>({markdown: null, isLoading: true, error: null});
+  const [state, setState] = useState(INITIAL_USE_FEED_ITEM_FILE_STATE);
 
   useEffect(() => {
-    let isMounted = true;
+    async function go(): Promise<void> {
+      if (!hasFeedItemEverBeenImported) {
+        const error = new Error('Cannot fetch file for feed item that has never been imported');
+        logger.error(error, {feedItemId, filename});
+        setState({content: null, isLoading: false, error});
+        return;
+      }
 
-    async function go() {
-      // Wait to fetch markdown until the feed item has been imported.
-      if (!isFeedItemImported) return;
+      const contentsResult = await feedItemsService.getFileFromStorage({feedItemId, filename});
 
-      const markdownResult = await feedItemsService.getFeedItemMarkdown(feedItemId);
-      if (isMounted) {
-        if (markdownResult.success) {
-          setState({markdown: markdownResult.value, isLoading: false, error: null});
-        } else {
-          setState({markdown: null, isLoading: false, error: markdownResult.error});
-        }
+      if (!isMounted.current) return;
+
+      if (contentsResult.success) {
+        setState({content: contentsResult.value, isLoading: false, error: null});
+      } else {
+        setState({content: null, isLoading: false, error: contentsResult.error});
       }
     }
 
     void go();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [feedItemId, isFeedItemImported, feedItemsService]);
+  }, [feedItemId, filename, hasFeedItemEverBeenImported, feedItemsService, isMounted]);
 
   return state;
 }
 
+export function useFeedItemMarkdown(feedItem: FeedItem): UseFeedItemFileResult {
+  return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_NAME_LLM_CONTEXT});
+}
+
+export function useYouTubeFeedItemTranscript(feedItem: FeedItem): UseFeedItemFileResult {
+  return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_NAME_TRANSCRIPT});
+}
+
+export function useExplainXkcdMarkdown(feedItem: XkcdFeedItem): UseFeedItemFileResult {
+  return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_NAME_XKCD_EXPLAIN});
+}
+
+type FeedItemsCollectionService = ClientFirestoreCollectionService<FeedItemId, FeedItem>;
+
 export class ClientFeedItemsService {
-  private readonly feedItemsDbRef: CollectionReference;
-  private readonly importQueueDbRef: CollectionReference;
+  private readonly feedItemsCollectionService: FeedItemsCollectionService;
   private readonly feedItemsStorageRef: StorageReference;
-  private readonly userId: UserId;
+  private readonly accountId: AccountId;
 
   constructor(args: {
-    readonly feedItemsDbRef: CollectionReference;
-    readonly importQueueDbRef: CollectionReference;
+    readonly feedItemsCollectionService: FeedItemsCollectionService;
     readonly feedItemsStorageRef: StorageReference;
-    readonly userId: UserId;
+    readonly accountId: AccountId;
   }) {
-    this.feedItemsDbRef = args.feedItemsDbRef;
-    this.importQueueDbRef = args.importQueueDbRef;
+    this.feedItemsCollectionService = args.feedItemsCollectionService;
     this.feedItemsStorageRef = args.feedItemsStorageRef;
-    this.userId = args.userId;
+    this.accountId = args.accountId;
   }
 
-  async getFeedItem(feedItemId: FeedItemId): AsyncResult<FeedItem | null> {
-    return asyncTry<FeedItem | null>(async () => {
-      const snapshot = await getDoc(doc(this.feedItemsDbRef, feedItemId));
-      return snapshot.exists() ? ({...snapshot.data(), feedItemId: snapshot.id} as FeedItem) : null;
-    });
+  public async fetchById(feedItemId: FeedItemId): AsyncResult<FeedItem | null> {
+    return this.feedItemsCollectionService.fetchById(feedItemId);
   }
 
-  watchFeedItem(
+  public watchFeedItem(
     feedItemId: FeedItemId,
     successCallback: Consumer<FeedItem | null>, // null means feed item does not exist.
     errorCallback: Consumer<Error>
   ): AuthStateChangedUnsubscribe {
-    const unsubscribe = onSnapshot(
-      doc(this.feedItemsDbRef, feedItemId),
-      (snapshot) => {
-        if (snapshot.exists()) {
-          successCallback({...snapshot.data(), feedItemId: snapshot.id} as FeedItem);
-        } else {
-          successCallback(null);
-        }
-      },
+    const unsubscribe = this.feedItemsCollectionService.watchDoc(
+      feedItemId,
+      successCallback,
       errorCallback
     );
     return () => unsubscribe();
   }
 
-  watchFeedItemsQuery(args: {
+  public watchFeedItemsQuery(args: {
     readonly viewType: ViewType;
     readonly successCallback: Consumer<FeedItem[]>;
     readonly errorCallback: Consumer<Error>;
@@ -206,105 +220,111 @@ export class ClientFeedItemsService {
     // Construct Firestore queries from the view config.
     const viewConfig = Views.get(viewType);
     const whereClauses = [
-      where('userId', '==', this.userId),
+      where('accountId', '==', this.accountId),
       ...viewConfig.filters.map((filter) =>
-        where(filter.field, fromFilterOperator(filter.op), filter.value)
+        where(filter.field, fromQueryFilterOp(filter.op), filter.value)
       ),
+      // TODO: Order by created time to ensure a consistent order.
+      // orderBy(viewConfig.sort.field, viewConfig.sort.direction),
     ];
-    const itemsQuery = query(
-      this.feedItemsDbRef,
-      ...whereClauses
-      // TODO: Add order by condition.
-      // orderBy(viewConfig.sort.field, fromSortDirection(viewConfig.sort.direction))
-    );
+    const itemsQuery = this.feedItemsCollectionService.query(whereClauses);
 
-    const unsubscribe = onSnapshot(
+    const unsubscribe = this.feedItemsCollectionService.watchDocs(
       itemsQuery,
-      (snapshot) => {
-        const feedItems = snapshot.docs.map((doc) => doc.data() as FeedItem);
-        successCallback(feedItems);
-      },
+      successCallback,
       errorCallback
     );
     return () => unsubscribe();
   }
 
-  async addFeedItem(args: {
+  public async createFeedItem(args: {
     readonly url: string;
-    readonly source: FeedItemSource;
-  }): AsyncResult<FeedItemId | null> {
-    const {url, source} = args;
+    readonly feedItemSource: FeedItemSource;
+    readonly title: string;
+  }): AsyncResult<FeedItem> {
+    const {url, feedItemSource, title} = args;
 
     const trimmedUrl = url.trim();
     if (!isValidUrl(trimmedUrl)) {
       return makeErrorResult(new Error(`Invalid URL provided for feed item: "${url}"`));
     }
 
-    const feedItemDoc = doc(this.feedItemsDbRef);
-
-    const feedItem = SharedFeedItemHelpers.makeFeedItem({
-      feedItemId: feedItemDoc.id as FeedItemId,
-      type: FeedItemType.Website,
+    const feedItemResult = SharedFeedItemHelpers.makeFeedItem({
       url: trimmedUrl,
-      // TODO: Make this dynamic based on the actual content. Maybe it should be null initially
-      // until we've done the import? Or should we compute this at save time?
-      source,
-      userId: this.userId,
+      feedItemSource,
+      accountId: this.accountId,
+      title,
+      description: null,
     });
+    if (!feedItemResult.success) return feedItemResult;
+    const feedItem = feedItemResult.value;
 
-    // Generate a push ID for the feed item.
-    const importQueueItemId = doc(this.importQueueDbRef).id as ImportQueueItemId;
-
-    // Add the feed item to the import queue.
-    const importQueueItem = makeImportQueueItem({
-      importQueueItemId,
-      feedItemId: feedItem.feedItemId,
-      userId: this.userId,
-      url: trimmedUrl,
-    });
-
-    // TODO: Do these in a transaction.
-    const addFeedItemResult = await asyncTryAllPromises([
-      setDoc(feedItemDoc, feedItem),
-      setDoc(doc(this.importQueueDbRef, importQueueItemId), importQueueItem),
-    ]);
-
-    const addFeedItemResultError = addFeedItemResult.success
-      ? addFeedItemResult.value.results.find((result) => !result.success)?.error
-      : addFeedItemResult.error;
-    if (addFeedItemResultError) {
-      return makeErrorResult(addFeedItemResultError);
+    const addFeedItemResult = await this.feedItemsCollectionService.setDoc(
+      feedItem.feedItemId,
+      feedItem
+    );
+    if (!addFeedItemResult.success) {
+      return makeErrorResult(addFeedItemResult.error);
     }
 
-    return makeSuccessResult(feedItem.feedItemId);
+    return makeSuccessResult(feedItem);
   }
 
-  async updateFeedItem(feedItemId: FeedItemId, item: Partial<FeedItem>): AsyncResult<undefined> {
-    return asyncTry<undefined>(async () => {
-      await updateDoc(doc(this.feedItemsDbRef, feedItemId), item);
-    });
+  public async updateFeedItem(
+    feedItemId: FeedItemId,
+    updates: Partial<
+      Pick<FeedItem, 'url' | 'title' | 'description' | 'outgoingLinks' | 'triageStatus' | 'tagIds'>
+    >
+  ): AsyncResult<void> {
+    const updateResult = await this.feedItemsCollectionService.updateDoc(
+      feedItemId,
+      omitUndefined(updates)
+    );
+    return prefixResultIfError(updateResult, 'Error updating feed item');
   }
 
-  async deleteFeedItem(feedItemId: FeedItemId): AsyncResult<undefined> {
-    return asyncTry<undefined>(async () => {
-      await deleteDoc(doc(this.feedItemsDbRef, feedItemId));
-    });
+  public async deleteFeedItem(feedItemId: FeedItemId): AsyncResult<void> {
+    const deleteResult = await this.feedItemsCollectionService.deleteDoc(feedItemId);
+    return prefixResultIfError(deleteResult, 'Error deleting feed item');
   }
 
-  async getFeedItemMarkdown(feedItemId: FeedItemId): AsyncResult<string> {
-    // TODO: Clean up error handling here.
-    return asyncTry<string>(async () => {
-      const fileRef = storageRef(
-        this.feedItemsStorageRef,
-        `${this.userId}/${feedItemId}/llmContext.md`
-      );
-      const downloadUrl = await getDownloadURL(fileRef);
-      // TODO: Use shared `request` helper instead of `fetch`.
-      const response = await fetch(downloadUrl);
-      if (!response.ok) {
-        throw new Error(`Response status ${response.status}: ${response.statusText}`);
-      }
-      return await response.text();
-    });
+  /**
+   * Returns an account-specific path to a file in Firebase Storage for a given feed item.
+   */
+  public getFilePath(args: {readonly feedItemId: FeedItemId; readonly filename: string}): string {
+    const {feedItemId, filename} = args;
+    return `${this.accountId}/${feedItemId}/${filename}`;
+  }
+
+  /**
+   * Fetches a file from Firebase Storage as a string.
+   */
+  public async getFileFromStorage(args: {
+    readonly feedItemId: FeedItemId;
+    readonly filename: string;
+  }): AsyncResult<string> {
+    const {feedItemId, filename} = args;
+
+    const filePath = this.getFilePath({feedItemId, filename});
+    const fileRef = storageRef(this.feedItemsStorageRef, filePath);
+
+    // Fetch the download URL for the file.
+    const downloadUrlResult = await asyncTry(async () => getBlob(fileRef));
+    if (!downloadUrlResult.success) {
+      return prefixErrorResult(downloadUrlResult, 'Error fetching feed item download URL');
+    }
+
+    // TODO: Handle various expected Firebase errors.
+
+    const parseBlobResult = await asyncTry(async () => downloadUrlResult.value.text());
+    return prefixResultIfError(parseBlobResult, 'Error parsing downloaded file blob');
+  }
+
+  public async getFeedItemMarkdown(feedItemId: FeedItemId): AsyncResult<string> {
+    return this.getFileFromStorage({feedItemId, filename: FEED_ITEM_FILE_NAME_LLM_CONTEXT});
+  }
+
+  public async getFeedItemTranscript(feedItemId: FeedItemId): AsyncResult<string> {
+    return this.getFileFromStorage({feedItemId, filename: FEED_ITEM_FILE_NAME_TRANSCRIPT});
   }
 }

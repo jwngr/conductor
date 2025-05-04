@@ -19,6 +19,7 @@
     "validate:scripts": "yarn workspace @conductor/scripts validate",
     "validate:extension": "yarn workspace @conductor/extension validate",
     "validate:functions": "yarn workspace @conductor/functions validate",
+    "validate:knip": "knip",
     "format": "yarn workspaces foreach --all -p -t run format",
     "lint:fix": "yarn workspaces foreach --all -p -t run lint:fix",
     "clean": "yarn workspaces foreach --all -p -t run clean",
@@ -49,6 +50,8 @@
     "test": "yarn workspaces foreach --all -p -t run test",
     "test:shared": "yarn workspace @conductor/shared test",
     "test:shared:watch": "yarn workspace @conductor/shared test:watch",
+    "test:shared:coverage": "yarn workspace @conductor/shared test:coverage",
+    "test:shared:coverage:open": "yarn workspace @conductor/shared test:coverage:open",
     "test:sharedClient": "yarn workspace @conductor/shared-client test",
     "test:sharedClient:watch": "yarn workspace @conductor/shared-client test:watch",
     "test:sharedServer": "yarn workspace @conductor/shared-server test",
@@ -57,6 +60,7 @@
     "test:scripts": "yarn workspace @conductor/scripts test",
     "test:extension": "yarn workspace @conductor/extension test",
     "test:functions": "yarn workspace @conductor/functions test",
+    "test:coverage": "yarn workspaces foreach --all -p -t run test:coverage",
     "metrics": "tsx ./packages/scripts/src/metrics/trackCodeMetrics.ts"
   },
   "dependencies": {
@@ -64,19 +68,20 @@
     "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@eslint/js": "^9.16.0",
-    "@ianvs/prettier-plugin-sort-imports": "^4.4.0",
-    "@types/eslint__js": "^8.42.3",
+    "@eslint/js": "^9.25.1",
+    "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
     "@types/jest": "^29.5.14",
-    "@types/lodash": "^4.17.13",
-    "@types/node": "^22.10.1",
-    "eslint": "^9.16.0",
-    "eslint-plugin-react-hooks": "^5.0.0",
-    "globals": "^15.13.0",
+    "@types/node": "^22.15.3",
+    "eslint": "^9.25.1",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^16.0.0",
     "jest": "^29.7.0",
-    "prettier": "^3.4.1",
-    "ts-jest": "^29.2.5",
-    "typescript": "^5.7.2",
-    "typescript-eslint": "^8.17.0"
+    "knip": "^5.52.0",
+    "prettier": "^3.5.3",
+    "prettier-plugin-tailwindcss": "^0.6.11",
+    "ts-jest": "^29.3.2",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.31.1"
   }
 }

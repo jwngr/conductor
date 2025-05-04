@@ -6,9 +6,8 @@ on:
       - '.github/actions/setup-workflow/**'
       - '.github/workflows/storage-rules-pull-request.yml'
 permissions:
-  checks: write
   contents: read
-  pull-requests: write
+  id-token: write
 jobs:
   deploy_storage_rules_stag:
     runs-on: ubuntu-latest

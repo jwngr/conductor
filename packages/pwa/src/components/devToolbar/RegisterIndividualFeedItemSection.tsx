@@ -5,6 +5,7 @@ import type {FeedItem} from '@shared/types/feedItems.types';
 
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
+import {Button} from '@src/components/atoms/Button';
 import {
   Dialog,
   DialogContent,
@@ -18,7 +19,11 @@ const IndividualFeedItemDevToolbarSection: React.FC<{
 }> = ({feedItem}) => {
   return (
     <Dialog>
-      <DialogTrigger>View feed item as JSON</DialogTrigger>
+      <DialogTrigger>
+        <Button variant="outline" className="w-full">
+          View feed item as JSON
+        </Button>
+      </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Feed item JSON</DialogTitle>
@@ -39,6 +44,7 @@ export const RegisterIndividualFeedItemDevToolbarSection: React.FC<{
       sectionType: DevToolbarSectionType.IndividualFeedItemActions,
       title: 'Current feed item',
       renderSection: () => <IndividualFeedItemDevToolbarSection feedItem={feedItem} />,
+      requiresAuth: false,
     });
   }, [registerSection, feedItem]);
 

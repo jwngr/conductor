@@ -1,12 +1,18 @@
-import {serverTimestamp} from 'firebase/firestore';
+import {z} from 'zod';
 
-import {makeId} from '@shared/lib/utils';
+import {makeSuccessResult} from '@shared/lib/results.shared';
+import {makeUuid} from '@shared/lib/utils.shared';
 
-import type {Feed, FeedId} from '@shared/types/feeds.types';
-import type {Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import type {UserId} from '@shared/types/user.types';
-import type {BaseStoreItem, Timestamp} from '@shared/types/utils.types';
+import type {AccountId} from '@shared/types/accounts.types';
+import {AccountIdSchema} from '@shared/types/accounts.types';
+import {
+  FeedSourceIdSchema,
+  type FeedSource,
+  type FeedSourceId,
+} from '@shared/types/feedSources.types';
+import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
+import type {Result} from '@shared/types/results.types';
+import type {BaseStoreItem} from '@shared/types/utils.types';
 
 /**
  * Strongly-typed type for a {@link UserFeedSubscription}'s unique identifier. Prefer this over
@@ -15,69 +21,73 @@ import type {BaseStoreItem, Timestamp} from '@shared/types/utils.types';
 export type UserFeedSubscriptionId = string & {readonly __brand: 'UserFeedSubscriptionIdBrand'};
 
 /**
- * An individual user's subscription to a feed.
+ * Zod schema for a {@link UserFeedSubscriptionId}.
+ */
+export const UserFeedSubscriptionIdSchema = z.string().uuid();
+
+/**
+ * Creates a new random {@link UserFeedSubscriptionId}.
+ */
+export function makeUserFeedSubscriptionId(): UserFeedSubscriptionId {
+  return makeUuid<UserFeedSubscriptionId>();
+}
+
+/**
+ * An individual account's subscription to a feed source.
  *
- * A single {@link Feed} can have multiple {@link UserFeedSubscription}s, one for each
- * {@link User} subscribed to it.
+ * A single {@link FeedSource} can have multiple {@link UserFeedSubscription}s, one for each
+ * {@link Account} subscribed to it.
  *
- * These are not deleted when a user unsubscribes from a feed. Instead, they are marked as
- * inactive. They are only deleted when a user is wiped out.
+ * These are not deleted when an account unsubscribes from a feed. Instead, they are marked as
+ * inactive. They are only deleted when an account is wiped out.
  */
 export interface UserFeedSubscription extends BaseStoreItem {
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-  readonly feedId: FeedId;
-  readonly userId: UserId;
+  readonly feedSourceId: FeedSourceId;
+  readonly accountId: AccountId;
   readonly url: string;
   readonly title: string;
   readonly isActive: boolean;
-  readonly unsubscribedTime?: Timestamp;
+  readonly unsubscribedTime?: Date | undefined;
 }
 
 /**
- * Checks if a value is a valid {@link UserFeedSubscriptionId}.
+ * Zod schema for a {@link UserFeedSubscription} persisted to Firestore.
  */
-export function isUserFeedSubscriptionId(
-  userFeedSubscriptionId: unknown
-): userFeedSubscriptionId is UserFeedSubscriptionId {
-  return typeof userFeedSubscriptionId === 'string' && userFeedSubscriptionId.length > 0;
-}
+export const UserFeedSubscriptionFromStorageSchema = z.object({
+  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
+  feedSourceId: FeedSourceIdSchema,
+  accountId: AccountIdSchema,
+  url: z.string().url(),
+  title: z.string(),
+  isActive: z.boolean(),
+  unsubscribedTime: FirestoreTimestampSchema.or(z.date()).optional(),
+  createdTime: FirestoreTimestampSchema.or(z.date()),
+  lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
+});
 
 /**
- * Creates a {@link UserFeedSubscriptionId} from a plain string. Returns an error if the string
- * is not valid.
+ * Type for a {@link UserFeedSubscription} persisted to Firestore.
  */
-export function makeUserFeedSubscriptionId(
-  maybeUserFeedSubscriptionId: string = makeId()
-): Result<UserFeedSubscriptionId> {
-  if (!isUserFeedSubscriptionId(maybeUserFeedSubscriptionId)) {
-    return makeErrorResult(
-      new Error(`Invalid user feed subscription ID: "${maybeUserFeedSubscriptionId}"`)
-    );
-  }
-  return makeSuccessResult(maybeUserFeedSubscriptionId);
-}
+export type UserFeedSubscriptionFromStorage = z.infer<typeof UserFeedSubscriptionFromStorageSchema>;
 
 /**
- * Creates a {@link UserFeedSubscription} object.
+ * Creates a new {@link UserFeedSubscription} object.
  */
-export function makeUserFeedSubscription(args: {
-  readonly feed: Feed;
-  readonly userId: UserId;
+export function makeUserFeedSubscription(newItemArgs: {
+  readonly feedSource: FeedSource;
+  readonly accountId: AccountId;
 }): Result<UserFeedSubscription> {
-  const {feed, userId} = args;
-  const userFeedSubscriptionIdResult = makeUserFeedSubscriptionId();
-  if (!userFeedSubscriptionIdResult.success) return userFeedSubscriptionIdResult;
-  const userFeedSubscriptionId = userFeedSubscriptionIdResult.value;
-
   const userFeedSubscription: UserFeedSubscription = {
-    userFeedSubscriptionId,
-    userId,
-    feedId: feed.feedId,
-    url: feed.url,
-    title: feed.title,
+    userFeedSubscriptionId: makeUserFeedSubscriptionId(),
+    accountId: newItemArgs.accountId,
+    feedSourceId: newItemArgs.feedSource.feedSourceId,
+    url: newItemArgs.feedSource.url,
+    title: newItemArgs.feedSource.title,
     isActive: true,
-    createdTime: serverTimestamp(),
-    lastUpdatedTime: serverTimestamp(),
+    // TODO(timestamps): Use server timestamps instead.
+    createdTime: new Date(),
+    lastUpdatedTime: new Date(),
   };
 
   return makeSuccessResult(userFeedSubscription);

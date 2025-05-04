@@ -20,14 +20,19 @@ packages/scripts/src/resources/
 
 # Build output.
 dist/
+distIgnore/
 
 # Environment variables.
 .env
 .env.*
 
-# Firebase debug log
+# Firebase.
+firebaseServiceAccount.json
 ui-debug.log
 firebase-debug.log
 functions-debug.log
 database-debug.log
 firestore-debug.log
+
+# Test coverage.
+packages/*/coverage/**

@@ -6,9 +6,8 @@ on:
       - '.github/actions/setup-workflow/**'
       - '.github/workflows/firestore-rules-pull-request.yml'
 permissions:
-  checks: write
   contents: read
-  pull-requests: write
+  id-token: write
 jobs:
   deploy_firestore_rules_stag:
     runs-on: ubuntu-latest

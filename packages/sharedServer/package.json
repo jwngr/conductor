@@ -4,18 +4,37 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@conductor/shared": "1.0.0"
+    "@conductor/shared": "workspace:*",
+    "@genkit-ai/firebase": "^1.7.0",
+    "@genkit-ai/googleai": "^1.7.0",
+    "@google-cloud/firestore": "^7.11.0",
+    "@rowanmanning/feed-parser": "^2.0.2",
+    "cheerio": "^1.0.0",
+    "csv-parse": "^5.6.0",
+    "firebase-admin": "^13.3.0",
+    "genkit": "^1.7.0",
+    "jsdom": "^26.1.0",
+    "turndown": "^7.2.0",
+    "youtube-transcript": "^1.2.1",
+    "zod": "^3.24.3"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^21.1.7",
+    "@types/turndown": "^5.0.5"
   },
   "scripts": {
     "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",
     "validate:lint": "eslint src",
     "validate:lint:fix": "eslint src --fix",
-    "validate:types": "yarn workspace @conductor/shared build && tsc --noEmit",
+    "validate:types": "tsc --build",
     "validate:format": "prettier --check 'src/**/*.{js,jsx,ts,tsx,json,css,svg}'",
     "format": "prettier --write 'src/**/*.{js,jsx,ts,tsx,json,css,svg}'",
     "clean": "rm -rf dist/ tsconfig.tsbuildinfo",
     "ci": "rm -rf node_modules/ && yarn install",
-    "build": "yarn run clean && yarn workspace @conductor/shared build && tsc --build",
-    "test": "echo 'TODO: Implement tests'"
+    "build": "yarn run clean && tsc --build",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
+    "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "test:coverage:open": "NODE_OPTIONS=--experimental-vm-modules jest --coverage && open coverage/index.html"
   }
 }

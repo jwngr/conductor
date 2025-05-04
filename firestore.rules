@@ -9,26 +9,26 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
+    function isOwner(accountId) {
+      return isAuthenticated() && request.auth.uid == accountId;
     }
 
     function isResourceOwner() {
-      return isOwner(resource.data.userId);
+      return isOwner(resource.data.accountId);
     }
 
     function isNewResourceOwner() {
-      return isOwner(request.resource.data.userId);
+      return isOwner(request.resource.data.accountId);
     }
 
     function isValidFeedItemDoc(feedItemId) {
       return request.resource.data.keys().hasAll([
         'feedItemId',
         'type',
-        'source',
+        'feedItemSource',
+        'importState',
         'url',
         'title',
-        'description',
         'outgoingLinks',
         'triageStatus',
         'tagIds',
@@ -37,11 +37,10 @@ service cloud.firestore {
       ]) &&
       request.resource.data.feedItemId is string &&
       request.resource.data.feedItemId == feedItemId &&
-      request.resource.data.type in ['ARTICLE', 'VIDEO', 'WEBSITE', 'TWEET', 'XKCD'] &&
-      request.resource.data.source.type in ['APP', 'EXTENSION', 'RSS'] &&
+      request.resource.data.type in ['ARTICLE', 'VIDEO', 'WEBSITE', 'TWEET', 'XKCD', 'YOUTUBE'] &&
+      request.resource.data.feedItemSource.type in ['APP', 'EXTENSION', 'RSS', 'POCKET_EXPORT'] &&
       request.resource.data.url is string &&
       request.resource.data.title is string &&
-      request.resource.data.description is string &&
       request.resource.data.outgoingLinks is list &&
       request.resource.data.triageStatus in ['UNTRIAGED', 'SAVED', 'DONE', 'TRASHED'] &&
       request.resource.data.tagIds is map &&
@@ -52,7 +51,7 @@ service cloud.firestore {
     function isValidUserFeedSubscriptionDoc(userFeedSubscriptionId) {
       return request.resource.data.keys().hasAll([
         'userFeedSubscriptionId',
-        'userId',
+        'accountId',
         'url',
         'title',
         'isActive',
@@ -66,33 +65,23 @@ service cloud.firestore {
       request.resource.data.lastUpdatedTime is timestamp;
     }
 
-    function isValidImportQueueDoc(importQueueItemId) {
-      return request.resource.data.keys().hasAll([
-        'importQueueItemId',
-        'userId',
-        'feedItemId', 
-        'url',
-        'createdTime',
-        'lastUpdatedTime'
-      ]) &&
-      request.resource.data.importQueueItemId is string &&
-      request.resource.data.importQueueItemId == importQueueItemId &&
-      request.resource.data.feedItemId is string &&
-      request.resource.data.url is string &&
-      request.resource.data.createdTime is timestamp &&
-      request.resource.data.lastUpdatedTime is timestamp;
-    }
-
     function isValidEventLogItemDoc(eventId) {
       return request.resource.data.keys().hasAll([
         'eventId',
         'eventType',
+        'accountId',
+        'actor',
+        'environment',
         'createdTime',
         'lastUpdatedTime'
       ]) &&
       request.resource.data.eventId is string &&
       request.resource.data.eventId == eventId &&
       request.resource.data.eventType is string &&
+      request.resource.data.actor is map &&
+      request.resource.data.actor.keys().hasAll(['accountId']) &&
+      request.resource.data.actor.accountId == request.auth.uid &&
+      request.resource.data.environment is string &&
       request.resource.data.createdTime is timestamp &&
       request.resource.data.lastUpdatedTime is timestamp;
     }
@@ -100,10 +89,10 @@ service cloud.firestore {
     /////////////
     //  Rules  //
     /////////////
-    match /users/{userId} {
-      // Allow users to manage their own user data.
+    match /accounts/{accountId} {
+      // Allow accounts to manage their own data.
       // TODO: Some fields should not be user-editable.
-      allow read: if isOwner(userId) && isResourceOwner();
+      allow read: if isOwner(accountId) && isResourceOwner();
       allow create: if isNewResourceOwner();
       allow update: if isResourceOwner() && isNewResourceOwner();
 
@@ -111,16 +100,16 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    match /feeds/{feedId} {
-      // Feeds are publicly readable.
+    match /feedSources/{feedSourceId} {
+      // Feed sources are publicly readable.
       allow read: if true;
 
-      // Feeds are only writable via the admin SDK.
+      // Feed sources are only writable via the admin SDK.
       allow create, update, delete: if false;
     }
 
     match /feedItems/{feedItemId} {
-      // Allow users to manage their own feed items.
+      // Allow accounts to manage their own feed items.
       // TODO: Some fields should not be user-editable.
       allow read: if isResourceOwner();
       allow create: if isNewResourceOwner() && isValidFeedItemDoc(feedItemId);
@@ -129,7 +118,7 @@ service cloud.firestore {
     }
 
     match /userFeedSubscriptions/{userFeedSubscriptionId} {
-      // Allow users to manage their own feed subscriptions.
+      // Allow accounts to manage their own feed subscriptions.
       // TODO: Some fields should not be user-editable.
       allow read: if isResourceOwner();
       allow create: if isNewResourceOwner() && isValidUserFeedSubscriptionDoc(userFeedSubscriptionId);
@@ -137,26 +126,15 @@ service cloud.firestore {
       allow delete: if isResourceOwner();
     }
 
-    match /importQueue/{importQueueItemId} {
-      // Allow creation if the current user owns the new document.
-      allow create: if isNewResourceOwner() && isValidImportQueueDoc(importQueueItemId);
-      allow update: if isNewResourceOwner() && isValidImportQueueDoc(importQueueItemId);
-
-      // Only allow reads or writes via the admin SDK - only the import queue server needs access.
-      allow read: if false
-      allow delete: if false
-    }
-
     match /eventLog/{eventId} {
-      // Allow users to read their own event log.
+      // Allow accounts to read their own events.
       allow read: if isResourceOwner();
 
-      // Allow creation and deletion if the current user owns the new document.
+      // Allow creation and deletion if the current account owns the new document.
       allow create: if isNewResourceOwner() && isValidEventLogItemDoc(eventId);
-      allow delete: if isResourceOwner();
 
-      // Event log items cannot be updated, only created or deleted.
-      allow update: if false;
+      // Event log items cannot be updated or deleted, only created.
+      allow update, delete: if false;
     }
   }
 }

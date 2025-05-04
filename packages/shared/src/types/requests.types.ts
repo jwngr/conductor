@@ -1,11 +1,11 @@
-import type {ErrorResult, SuccessResult} from '@shared/types/result.types';
+import type {ErrorResult, SuccessResult} from '@shared/types/results.types';
 
-export type RequestHeaders = Record<string, string>;
+type RequestHeaders = Record<string, string>;
 export type RequestBody = Record<
   string,
   object | number | string | boolean | null | Array<object | number | string | boolean | null>
 >;
-export type RequestParams = Record<string, string>;
+type RequestParams = Record<string, string>;
 
 export interface RequestOptions {
   readonly headers?: RequestHeaders;
@@ -14,24 +14,28 @@ export interface RequestOptions {
   // TODO: Add timeouts and retries.
 }
 
-interface SuccessRequestResult<T extends object> extends SuccessResult<T> {
+interface SuccessResponseResult<T> extends SuccessResult<T> {
   readonly statusCode: number;
 }
 
-interface ErrorRequestResult extends ErrorResult {
+interface ErrorResponseResult<E = Error> extends ErrorResult<E> {
   readonly statusCode: number;
 }
 
-export function makeSuccessResponse<T extends object>(
+export function makeSuccessResponseResult<T>(
   value: T,
   statusCode: number
-): SuccessRequestResult<T> {
+): SuccessResponseResult<T> {
   return {success: true, value, statusCode};
 }
 
-export function makeErrorResponse(error: Error, statusCode: number): ErrorRequestResult {
+export function makeErrorResponseResult(error: Error, statusCode: number): ErrorResponseResult {
   return {success: false, error, statusCode};
 }
+
+type ResponseResult<T, E = Error> = SuccessResponseResult<T> | ErrorResponseResult<E>;
+
+export type AsyncResponseResult<T, E = Error> = Promise<ResponseResult<T, E>>;
 
 export enum HttpMethod {
   GET = 'GET',

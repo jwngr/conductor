@@ -1,5 +1,7 @@
 name: Run validate on push
 on: [push]
+permissions:
+  contents: read
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -14,5 +16,7 @@ jobs:
         run: yarn run validate:format
       - name: Validate lint
         run: yarn run validate:lint
+      # - name: Validate unused exports and deps
+      # run: yarn run validate:knip
       - name: Validate types
         run: yarn run validate:types

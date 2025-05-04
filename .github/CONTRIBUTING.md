@@ -1,4 +1,4 @@
-# Conductor
+# Conductor | Contributing
 
 ## Packages
 
@@ -7,7 +7,7 @@ The repo is organized into TypeScript packages which share code and are managed 
 
 The packages are:
 
-- `/shared` - Common types, libraries, icons, etc. shared across all packages, client and server
+- `/shared` - Common types, schemas, and libraries shared across all packages, client and server
 - `/sharedClient` - Common code shared across client-side packages
 - `/sharedServer` - Common code shared across server-side packages
 - `/pwa` - Progressive Web App, for web, desktop, and mobile
@@ -102,6 +102,12 @@ This repo is configured to work with the
 
 1. Set `VITE_FIREBASE_USE_EMULATOR=true` in `.env` file at the root of the repo.
 
+1. Build the `functions` package:
+
+   ```bash
+   $ yarn run build:functions
+   ```
+
 1. Start the Firebase emulator suite:
 
    ```bash
@@ -110,10 +116,14 @@ This repo is configured to work with the
 
 1. Restart other packages (e.g. PWA, extension) which rely on Firebase.
 
-The Firebase emulator admin UI opens at http://localhost:4000.
+1. Visit the Firebase emulator admin UI at http://localhost:4000.
 
-When signing in, any email address will work. A fully authenticated sign-in URL is output to the
-same shell which ran the `yarn` command. Visit tha URL to sign in as that user.
+1. Enter any valid email address and click the login button. No email will actually be sent.
+
+1. Copy the fully authenticated sign-in URL from the same shell which ran the `yarn` command above.
+
+1. Visit the URL to sign into the account associated to the email address you entered. The account
+   will be created if it does not already exist.
 
 ## Open browser extension locally
 

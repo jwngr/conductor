@@ -1,6 +1,6 @@
 {
-  "include": ["src"],
-  "extends": "../../tsconfig.json",
+  "include": ["src/**/*", "src/**/*.json"],
+  "extends": "../../tsconfig.base.json",
 
   // This package consumes some shared packages.
   "references": [{"path": "../shared"}, {"path": "../sharedClient"}],
@@ -14,6 +14,9 @@
 
     // Build is handled by Vite.
     "moduleResolution": "bundler",
+
+    // Emit `tsc` output to an ignored directory to not override the Vite build output.
+    "outDir": "./distIgnore",
 
     // Import aliases.
     "baseUrl": ".",

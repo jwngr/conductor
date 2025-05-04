@@ -1,30 +1,33 @@
+import {useNavigate} from '@tanstack/react-router';
 import {useEffect} from 'react';
-import {useNavigate} from 'react-router-dom';
 
-import {logger} from '@shared/services/logger';
+import {logger} from '@shared/services/logger.shared';
 
-import {Urls} from '@shared/lib/urls';
+import {prefixError} from '@shared/lib/errorUtils.shared';
 
 import {authService} from '@sharedClient/services/auth.client';
 
+import {signInRoute} from '@src/routes';
+
 /**
- * Signs the user out and redirects them to sign in page.
+ * Signs out the current account and redirects them to sign in page.
  */
 export const SignOutRedirect: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const go = async () => {
+    const go = async (): Promise<void> => {
       const signOutResult = await authService.signOut();
       if (!signOutResult.success) {
-        // TODO: Filter out error message that are expected user error.
-        logger.error('Failed to sign out user', {error: signOutResult.error});
+        // TODO: Can this be de-duped with the error handler in `AuthServiceSubscription`?
+        // TODO: Filter out expected user errors..
+        logger.error(prefixError(signOutResult.error, 'Failed to sign out account'));
         // TODO: Surface error to user.
         return;
       }
 
       // Don't strand the user on a page they no longer have access to view.
-      navigate(Urls.forSignIn());
+      await navigate({to: signInRoute.fullPath, replace: true});
 
       // TODO: Clear other stuff from local storage.
     };

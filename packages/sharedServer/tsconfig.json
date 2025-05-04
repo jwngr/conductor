@@ -1,6 +1,6 @@
 {
-  "include": ["src"],
-  "extends": "../../tsconfig.json",
+  "include": ["src/**/*", "src/**/*.json"],
+  "extends": "../../tsconfig.base.json",
 
   // This package consumes the `shared` package.
   "references": [{"path": "../shared"}],
@@ -15,6 +15,7 @@
     "declarationMap": true,
 
     // Import aliases.
+    "baseUrl": ".",
     "paths": {
       "@shared/*": ["../shared/src/*"],
       // Despite this being in the `sharedServer` package itself, prefer `@sharedServer` imports
