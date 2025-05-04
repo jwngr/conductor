@@ -63,10 +63,6 @@
     "test:coverage": "yarn workspaces foreach --all -p -t run test:coverage",
     "metrics": "tsx ./packages/scripts/src/metrics/trackCodeMetrics.ts"
   },
-  "dependencies": {
-    "firebase": "^11.0.2",
-    "lodash": "^4.17.21"
-  },
   "devDependencies": {
     "@eslint/js": "^9.25.1",
     "@ianvs/prettier-plugin-sort-imports": "^4.4.1",

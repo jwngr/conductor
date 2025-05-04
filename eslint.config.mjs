@@ -48,8 +48,6 @@ function makeSharedRules({
   disallowSharedServerImports,
 }) {
   return {
-    '@typescript-eslint/no-empty-object-type': 'off',
-
     'no-console': 'error',
     'react/jsx-no-useless-fragment': 'error',
     'react/jsx-no-leaked-render': ['error', {validStrategies: ['ternary']}],
@@ -73,6 +71,7 @@ function makeSharedRules({
     ],
     '@typescript-eslint/no-floating-promises': 'error',
     '@typescript-eslint/no-extraneous-class': 'off',
+    '@typescript-eslint/no-empty-object-type': 'off',
     '@typescript-eslint/promise-function-async': 'error',
     'no-restricted-syntax': [
       'error',
