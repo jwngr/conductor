@@ -22,6 +22,8 @@ function getDesignSystemSidebarItemTitle(type: DesignSystemComponentType): strin
       return 'Colors Vanilla';
     case DesignSystemComponentType.Typography:
       return 'Typography';
+    case DesignSystemComponentType.Icons:
+      return 'Icons';
     default: {
       assertNever(type);
     }
@@ -98,7 +100,7 @@ const ORDERED_DESIGN_SYSTEM_COMPONENT_TYPES: DesignSystemComponentType[] = [
   DesignSystemComponentType.Typography,
   DesignSystemComponentType.Colors,
   DesignSystemComponentType.ColorsVanilla,
-  DesignSystemComponentType.Icon,
+  DesignSystemComponentType.Icons,
 ];
 
 export function getDesignSystemSidebarItems(): DesignSystemSidebarItem[] {

@@ -26,7 +26,7 @@ import {DialogStories} from '@src/components/atoms/Dialog.stories';
 import {DividerStories} from '@src/components/atoms/Divider.stories';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {FlexStories} from '@src/components/atoms/Flex.stories';
-import IconStories from '@src/components/atoms/Icon.stories';
+import {IconStories} from '@src/components/atoms/Icon.stories';
 import {InputStories} from '@src/components/atoms/Input.stories';
 import {LinkStories} from '@src/components/atoms/Link.stories';
 import {SpacerStories} from '@src/components/atoms/Spacer.stories';
