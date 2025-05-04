@@ -176,21 +176,21 @@ export const FlexStories: React.FC = () => {
           </FlexColumnTest>
 
           <FlexColumnTest justify="between" className="h-60">
-            <TextBox>{`SPACE BETWEEN [justify="between"]`}</TextBox>
-            <TextBox>SPACE BETWEEN</TextBox>
-            <TextBox>SPACE BETWEEN</TextBox>
+            <TextBox>{`TOP [justify="between"]`}</TextBox>
+            <TextBox>CENTER</TextBox>
+            <TextBox>BOTTOM</TextBox>
           </FlexColumnTest>
 
           <FlexColumnTest justify="around" className="h-60">
-            <TextBox>{`SPACE AROUND [justify="around"]`}</TextBox>
-            <TextBox>SPACE AROUND</TextBox>
-            <TextBox>SPACE AROUND</TextBox>
+            <TextBox>{`TOP [justify="around"]`}</TextBox>
+            <TextBox>CENTER</TextBox>
+            <TextBox>BOTTOM</TextBox>
           </FlexColumnTest>
 
           <FlexColumnTest justify="evenly" className="h-60">
-            <TextBox>{`SPACE EVENLY [justify="evenly"]`}</TextBox>
-            <TextBox>SPACE EVENLY</TextBox>
-            <TextBox>SPACE EVENLY</TextBox>
+            <TextBox>{`TOP [justify="evenly"]`}</TextBox>
+            <TextBox>CENTER</TextBox>
+            <TextBox>BOTTOM</TextBox>
           </FlexColumnTest>
         </FlexColumn>
       </StorySection>

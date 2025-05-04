@@ -94,7 +94,7 @@ export const LinkStories: React.FC = () => {
               <Text underline="hover" className="text-text-link inline">
                 embedded link
               </Text>
-            </StoryNavLink>
+            </StoryNavLink>{' '}
             in the middle of the text to show how it looks in context.
           </Text>
         </div>
