@@ -12,7 +12,8 @@
     "zustand": "^5.0.4"
   },
   "devDependencies": {
-    "@types/react": "^19.1.2"
+    "@types/react": "^19.1.2",
+    "jest-environment-jsdom": "^29.7.0"
   },
   "scripts": {
     "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",
@@ -24,6 +25,9 @@
     "clean": "rm -rf dist/ tsconfig.tsbuildinfo",
     "ci": "rm -rf node_modules/ && yarn install",
     "build": "yarn run clean && tsc --build",
-    "test": "echo 'No tests implemented'"
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
+    "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "test:coverage:open": "NODE_OPTIONS=--experimental-vm-modules jest --coverage && open coverage/index.html"
   }
 }

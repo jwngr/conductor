@@ -32,6 +32,9 @@
     "clean": "rm -rf dist/ tsconfig.tsbuildinfo",
     "ci": "rm -rf node_modules/ && yarn install",
     "build": "yarn run clean && tsc --build",
-    "test": "echo 'No tests implemented'"
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
+    "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "test:coverage:open": "NODE_OPTIONS=--experimental-vm-modules jest --coverage && open coverage/index.html"
   }
 }
