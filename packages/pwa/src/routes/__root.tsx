@@ -3,13 +3,13 @@ import {TanStackRouterDevtools} from '@tanstack/react-router-devtools';
 
 import {useMaybeLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
-import {ErrorBoundary} from '@src/components/atoms/ErrorBoundary';
 import {Toaster} from '@src/components/atoms/Toaster';
 import {TooltipProvider} from '@src/components/atoms/Tooltip';
 import {AuthSubscriptions} from '@src/components/auth/AuthSubscriptions';
 import {DevToolbar} from '@src/components/devToolbar/DevToolbar';
 import {RegisterFeedItemImporterDevToolbarSection} from '@src/components/devToolbar/RegisterFeedItemImporterDevTool';
 import {RegisterAccountFeedSubscriberDevToolbarSection} from '@src/components/devToolbar/RegisterUserFeedSubscriberDevToolbarActions';
+import {ErrorBoundary} from '@src/components/errors/ErrorBoundary';
 import {ThemeProvider} from '@src/components/ThemeProvider';
 
 import {IS_DEVELOPMENT} from '@src/lib/environment.pwa';

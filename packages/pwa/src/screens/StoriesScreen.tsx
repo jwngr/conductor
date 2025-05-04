@@ -19,16 +19,19 @@ import {
 import type {StoriesSidebarItem} from '@shared/types/stories.types';
 import type {Consumer} from '@shared/types/utils.types';
 
+import {BadgeStories} from '@src/components/atoms/Badge.stories';
 import {ButtonStories} from '@src/components/atoms/Button.stories';
 import {ButtonIconStories} from '@src/components/atoms/ButtonIcon.stories';
 import {DialogStories} from '@src/components/atoms/Dialog.stories';
 import {DividerStories} from '@src/components/atoms/Divider.stories';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {FlexStories} from '@src/components/atoms/Flex.stories';
+import {IconStories} from '@src/components/atoms/Icon.stories';
 import {InputStories} from '@src/components/atoms/Input.stories';
 import {LinkStories} from '@src/components/atoms/Link.stories';
 import {SpacerStories} from '@src/components/atoms/Spacer.stories';
 import {Text} from '@src/components/atoms/Text';
+import {TextStories} from '@src/components/atoms/Text.stories';
 import {TextIconStories} from '@src/components/atoms/TextIcon.stories';
 import {ToastStories} from '@src/components/atoms/Toast.stories';
 import {TooltipStories} from '@src/components/atoms/Tooltip.stories';
@@ -47,6 +50,8 @@ const AtomicComponentStoryContent: React.FC<{
   readonly atomicComponentType: AtomicComponentType;
 }> = ({atomicComponentType}) => {
   switch (atomicComponentType) {
+    case AtomicComponentType.Badge:
+      return <BadgeStories />;
     case AtomicComponentType.Button:
       return <ButtonStories />;
     case AtomicComponentType.ButtonIcon:
@@ -63,6 +68,8 @@ const AtomicComponentStoryContent: React.FC<{
       return <LinkStories />;
     case AtomicComponentType.Spacer:
       return <SpacerStories />;
+    case AtomicComponentType.Text:
+      return <TextStories />;
     case AtomicComponentType.TextIcon:
       return <TextIconStories />;
     case AtomicComponentType.Toast:
@@ -85,6 +92,8 @@ const DesignSystemStoryContent: React.FC<{
       return <ColorsVanillaStories />;
     case DesignSystemComponentType.Typography:
       return <TypographyStories />;
+    case DesignSystemComponentType.Icons:
+      return <IconStories />;
     default: {
       assertNever(designSystemType);
     }

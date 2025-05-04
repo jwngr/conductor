@@ -22,6 +22,8 @@ function getDesignSystemSidebarItemTitle(type: DesignSystemComponentType): strin
       return 'Colors Vanilla';
     case DesignSystemComponentType.Typography:
       return 'Typography';
+    case DesignSystemComponentType.Icons:
+      return 'Icons';
     default: {
       assertNever(type);
     }
@@ -30,10 +32,12 @@ function getDesignSystemSidebarItemTitle(type: DesignSystemComponentType): strin
 
 function getAtomicComponentSidebarItemTitle(type: AtomicComponentType): string {
   switch (type) {
-    case AtomicComponentType.ButtonIcon:
-      return 'ButtonIcon';
+    case AtomicComponentType.Badge:
+      return 'Badge';
     case AtomicComponentType.Button:
       return 'Button';
+    case AtomicComponentType.ButtonIcon:
+      return 'ButtonIcon';
     case AtomicComponentType.Dialog:
       return 'Dialog';
     case AtomicComponentType.Divider:
@@ -46,6 +50,8 @@ function getAtomicComponentSidebarItemTitle(type: AtomicComponentType): string {
       return 'Link';
     case AtomicComponentType.Spacer:
       return 'Spacer';
+    case AtomicComponentType.Text:
+      return 'Text';
     case AtomicComponentType.TextIcon:
       return 'TextIcon';
     case AtomicComponentType.Toast:
@@ -96,6 +102,7 @@ const ORDERED_DESIGN_SYSTEM_COMPONENT_TYPES: DesignSystemComponentType[] = [
   DesignSystemComponentType.Typography,
   DesignSystemComponentType.Colors,
   DesignSystemComponentType.ColorsVanilla,
+  DesignSystemComponentType.Icons,
 ];
 
 export function getDesignSystemSidebarItems(): DesignSystemSidebarItem[] {
@@ -103,10 +110,12 @@ export function getDesignSystemSidebarItems(): DesignSystemSidebarItem[] {
 }
 
 const ORDERED_ATOMIC_COMPONENT_TYPES: AtomicComponentType[] = [
+  AtomicComponentType.Text,
   AtomicComponentType.Link,
   AtomicComponentType.TextIcon,
   AtomicComponentType.ButtonIcon,
   AtomicComponentType.Button,
+  AtomicComponentType.Badge,
   AtomicComponentType.Input,
   AtomicComponentType.Dialog,
   AtomicComponentType.Toast,
