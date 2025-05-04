@@ -86,13 +86,13 @@ const FeedAdder: React.FC = () => {
         <Text bold>Quick add feeds</Text>
         <FlexRow gap={3}>
           <Button
-            variant="secondary"
+            variant="default"
             onClick={async () => void handleSubscribeToFeedUrl('https://jwn.gr/rss.xml')}
           >
             Personal blog feed
           </Button>
           <Button
-            variant="secondary"
+            variant="default"
             onClick={async () =>
               void handleSubscribeToFeedUrl(
                 'https://lorem-rss.herokuapp.com/feed?unit=second&interval=30'
@@ -169,10 +169,7 @@ const FeedSubscriptionsList: React.FC = () => {
               </Text>
             </FlexColumn>
             {subscription.isActive ? (
-              <Button
-                variant="secondary"
-                onClick={async () => void handleUnsubscribe(subscription)}
-              >
+              <Button variant="default" onClick={async () => void handleUnsubscribe(subscription)}>
                 Unsubscribe
               </Button>
             ) : null}

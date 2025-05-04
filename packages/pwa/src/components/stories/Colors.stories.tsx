@@ -35,14 +35,14 @@ const shades = [
 
 const semanticColorNames = [
   'background',
-  'background-2',
   'foreground',
-  'border',
   'error',
+  'error-foreground',
   'success',
-  'destructive',
+  'success-foreground',
   'primary',
   'primary-foreground',
+  'border',
 ];
 
 const textColorNames = ['text-default', 'text-light', 'text-link'];

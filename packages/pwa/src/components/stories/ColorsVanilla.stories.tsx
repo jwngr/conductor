@@ -40,11 +40,14 @@ type Shade = (typeof shades)[number];
 // Define semantic color names (top-level keys in vars.colors)
 const semanticColorNames = [
   'background',
-  'background2',
   'foreground',
-  'border',
+  'primary',
+  'primaryForeground',
   'error',
+  'errorForeground',
   'success',
+  'successForeground',
+  'border',
 ] as const;
 type SemanticColorName = (typeof semanticColorNames)[number];
 
