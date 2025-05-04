@@ -6,6 +6,7 @@ export default {
   testEnvironment: 'node',
   moduleNameMapper: {
     '^@sharedClient/(.*)$': '<rootDir>/src/$1',
+    '^@shared/(.*)$': '<rootDir>/../shared/src/$1',
   },
   transform: {
     '^.+\\.tsx?$': ['ts-jest', {useESM: true}],
