@@ -1,9 +1,7 @@
 import {z} from 'zod';
 
-import {
-  UserFeedSubscriptionIdSchema,
-  type UserFeedSubscriptionId,
-} from '@shared/types/userFeedSubscriptions.types';
+import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
+import {UserFeedSubscriptionIdSchema} from '@shared/types/userFeedSubscriptions.types';
 
 export enum DeliveryScheduleType {
   Immediate = 'IMMEDIATE',

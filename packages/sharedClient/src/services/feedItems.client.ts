@@ -105,11 +105,12 @@ function isRSSFeedItemDelivered(args: {
   readonly createdTime: Date;
   readonly rssSource: FeedItemRSSSource;
   readonly deliverySchedules: DeliverySchedule[];
+  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
 }): boolean {
-  const {createdTime, rssSource, deliverySchedules} = args;
+  const {createdTime, rssSource, deliverySchedules, userFeedSubscriptionId} = args;
 
   const matchingDeliverySchedule = findDeliveryScheduleForFeedSubscription({
-    feedSubscriptionId: rssSource.userFeedSubscriptionId,
+    feedSubscriptionId: userFeedSubscriptionId,
     deliverySchedules,
   });
 
@@ -156,6 +157,7 @@ function filterFeedItemsByDeliverySchedules(args: {
       case FeedItemSourceType.RSS: {
         // RSS items have delivery schedules which determine if they are shown.
         return isRSSFeedItemDelivered({
+          userFeedSubscriptionId: feedItem.userFeedSubscriptionId,
           createdTime: feedItem.createdTime,
           rssSource: feedItem.feedItemSource,
           deliverySchedules,

@@ -6,10 +6,8 @@ import {makeUuid} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import {AccountIdSchema} from '@shared/types/accounts.types';
-import {
-  DeliveryScheduleFromStorageSchema,
-  type DeliverySchedule,
-} from '@shared/types/deliverySchedules.types';
+import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
+import {DeliveryScheduleFromStorageSchema} from '@shared/types/deliverySchedules.types';
 import type {FeedSource, FeedSourceId} from '@shared/types/feedSources.types';
 import {FeedSourceIdSchema} from '@shared/types/feedSources.types';
 import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
