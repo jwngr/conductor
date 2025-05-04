@@ -195,7 +195,7 @@ const FeedSubscriptionsList: React.FC = () => {
 export const FeedSubscriptionsScreen: React.FC = () => {
   return (
     <Screen withHeader withLeftSidebar>
-      <FlexRow flex={1} align="flex-start" gap={8} padding={4} overflow="auto">
+      <FlexRow flex={1} align="start" gap={8} padding={4} overflow="auto">
         <FeedAdder />
         <FeedSubscriptionsList />
       </FlexRow>

@@ -38,7 +38,7 @@ export const FlexRow: React.FC<WithChildren<Partial<FlexProps>>> = (props) => {
         styles.flex({
           direction: 'row',
           align: align ?? 'center',
-          justify: justify ?? 'flex-start',
+          justify: justify ?? 'start',
           flexValue: getFlexValue(flex),
           gap,
           wrap,
@@ -63,7 +63,7 @@ export const FlexColumn: React.FC<WithChildren<Partial<FlexProps>>> = (props) =>
         styles.flex({
           direction: 'column',
           align: align ?? 'stretch',
-          justify: justify ?? 'flex-start',
+          justify: justify ?? 'start',
           flexValue: getFlexValue(flex),
           gap,
           wrap,

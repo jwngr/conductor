@@ -59,8 +59,8 @@ export const FlexStories: React.FC = () => {
     <>
       <StorySection title="FlexRow + align">
         <FlexColumn gap={4}>
-          <FlexRowTest align="flex-start">
-            <TextBox>{`TOP [align="flex-start"]`}</TextBox>
+          <FlexRowTest align="start">
+            <TextBox>{`TOP [align="start"]`}</TextBox>
             <StackedTextBox count={3} />
           </FlexRowTest>
 
@@ -69,8 +69,8 @@ export const FlexStories: React.FC = () => {
             <StackedTextBox count={3} />
           </FlexRowTest>
 
-          <FlexRowTest align="flex-end">
-            <TextBox>{`BOTTOM [align="flex-end"]`}</TextBox>
+          <FlexRowTest align="end">
+            <TextBox>{`BOTTOM [align="end"]`}</TextBox>
             <StackedTextBox count={3} />
           </FlexRowTest>
 
@@ -88,8 +88,8 @@ export const FlexStories: React.FC = () => {
 
       <StorySection title="FlexRow + justify">
         <FlexColumn gap={4}>
-          <FlexRowTest justify="flex-start">
-            <TextBox>{`LEFT [justify="flex-start"]`}</TextBox>
+          <FlexRowTest justify="start">
+            <TextBox>{`LEFT [justify="start"]`}</TextBox>
             <TextBox>LEFT</TextBox>
             <TextBox>LEFT</TextBox>
           </FlexRowTest>
@@ -100,26 +100,26 @@ export const FlexStories: React.FC = () => {
             <TextBox>CENTER</TextBox>
           </FlexRowTest>
 
-          <FlexRowTest justify="flex-end">
-            <TextBox>{`RIGHT [justify="flex-end"]`}</TextBox>
+          <FlexRowTest justify="end">
+            <TextBox>{`RIGHT [justify="end"]`}</TextBox>
             <TextBox>RIGHT</TextBox>
             <TextBox>RIGHT</TextBox>
           </FlexRowTest>
 
-          <FlexRowTest justify="space-between">
-            <TextBox>{`LEFT [justify="space-between"]`}</TextBox>
+          <FlexRowTest justify="between">
+            <TextBox>{`LEFT [justify="between"]`}</TextBox>
             <TextBox>CENTER</TextBox>
             <TextBox>RIGHT</TextBox>
           </FlexRowTest>
 
-          <FlexRowTest justify="space-around">
-            <TextBox>{`LEFT [justify="space-around"]`}</TextBox>
+          <FlexRowTest justify="around">
+            <TextBox>{`LEFT [justify="around"]`}</TextBox>
             <TextBox>CENTER</TextBox>
             <TextBox>RIGHT</TextBox>
           </FlexRowTest>
 
-          <FlexRowTest justify="space-evenly">
-            <TextBox>{`LEFT [justify="space-evenly"]`}</TextBox>
+          <FlexRowTest justify="evenly">
+            <TextBox>{`LEFT [justify="evenly"]`}</TextBox>
             <TextBox>CENTER</TextBox>
             <TextBox>RIGHT</TextBox>
           </FlexRowTest>
@@ -128,8 +128,8 @@ export const FlexStories: React.FC = () => {
 
       <StorySection title="FlexColumn + align">
         <FlexColumn gap={4}>
-          <FlexColumnTest align="flex-start">
-            <TextBox>{`LEFT [align="flex-start"]`}</TextBox>
+          <FlexColumnTest align="start">
+            <TextBox>{`LEFT [align="start"]`}</TextBox>
             <TextBox>LEFT</TextBox>
           </FlexColumnTest>
 
@@ -138,8 +138,8 @@ export const FlexStories: React.FC = () => {
             <TextBox>CENTER</TextBox>
           </FlexColumnTest>
 
-          <FlexColumnTest align="flex-end">
-            <TextBox>{`RIGHT [align="flex-end"]`}</TextBox>
+          <FlexColumnTest align="end">
+            <TextBox>{`RIGHT [align="end"]`}</TextBox>
             <TextBox>RIGHT</TextBox>
           </FlexColumnTest>
 
@@ -157,8 +157,8 @@ export const FlexStories: React.FC = () => {
 
       <StorySection title="FlexColumn + justify">
         <FlexColumn gap={4}>
-          <FlexColumnTest justify="flex-start" className="h-60">
-            <TextBox>{`TOP [justify="flex-start"]`}</TextBox>
+          <FlexColumnTest justify="start" className="h-60">
+            <TextBox>{`TOP [justify="start"]`}</TextBox>
             <TextBox>LEFT</TextBox>
             <TextBox>LEFT</TextBox>
           </FlexColumnTest>
@@ -169,26 +169,26 @@ export const FlexStories: React.FC = () => {
             <TextBox>CENTER</TextBox>
           </FlexColumnTest>
 
-          <FlexColumnTest justify="flex-end" className="h-60">
-            <TextBox>{`BOTTOM [justify="flex-end"]`}</TextBox>
+          <FlexColumnTest justify="end" className="h-60">
+            <TextBox>{`BOTTOM [justify="end"]`}</TextBox>
             <TextBox>BOTTOM</TextBox>
             <TextBox>BOTTOM</TextBox>
           </FlexColumnTest>
 
-          <FlexColumnTest justify="space-between" className="h-60">
-            <TextBox>{`SPACE BETWEEN [justify="space-between"]`}</TextBox>
+          <FlexColumnTest justify="between" className="h-60">
+            <TextBox>{`SPACE BETWEEN [justify="between"]`}</TextBox>
             <TextBox>SPACE BETWEEN</TextBox>
             <TextBox>SPACE BETWEEN</TextBox>
           </FlexColumnTest>
 
-          <FlexColumnTest justify="space-around" className="h-60">
-            <TextBox>{`SPACE AROUND [justify="space-around"]`}</TextBox>
+          <FlexColumnTest justify="around" className="h-60">
+            <TextBox>{`SPACE AROUND [justify="around"]`}</TextBox>
             <TextBox>SPACE AROUND</TextBox>
             <TextBox>SPACE AROUND</TextBox>
           </FlexColumnTest>
 
-          <FlexColumnTest justify="space-evenly" className="h-60">
-            <TextBox>{`SPACE EVENLY [justify="space-evenly"]`}</TextBox>
+          <FlexColumnTest justify="evenly" className="h-60">
+            <TextBox>{`SPACE EVENLY [justify="evenly"]`}</TextBox>
             <TextBox>SPACE EVENLY</TextBox>
             <TextBox>SPACE EVENLY</TextBox>
           </FlexColumnTest>

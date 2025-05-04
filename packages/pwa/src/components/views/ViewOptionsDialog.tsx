@@ -10,6 +10,7 @@ import type {
 import {SORT_BY_CREATED_TIME_DESC_OPTION} from '@shared/types/views.types';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
+import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Popover, PopoverContent, PopoverTrigger} from '@src/components/atoms/Popover';
 
 export const ViewOptionsDialog: React.FC<{
@@ -67,8 +68,8 @@ export const ViewOptionsDialog: React.FC<{
       </PopoverTrigger>
 
       <PopoverContent className="w-auto" align="end" side="bottom">
-        <div className="flex flex-col gap-4 p-4">
-          <div className="flex items-center justify-between gap-2">
+        <FlexColumn gap={4} padding={4}>
+          <FlexRow gap={2} justify="between">
             <label htmlFor="groupBy" className="text-sm font-medium">
               Group by
             </label>
@@ -82,8 +83,8 @@ export const ViewOptionsDialog: React.FC<{
               <option value="type">{toViewGroupByOptionText('type')}</option>
               <option value="importState">{toViewGroupByOptionText('importState')}</option>
             </select>
-          </div>
-          <div className="flex items-center justify-between gap-2">
+          </FlexRow>
+          <FlexRow gap={2} justify="between">
             <label htmlFor="sortField" className="text-sm font-medium">
               Sort by
             </label>
@@ -106,8 +107,8 @@ export const ViewOptionsDialog: React.FC<{
                 aria-label="Toggle sort direction"
               />
             </div>
-          </div>
-        </div>
+          </FlexRow>
+        </FlexColumn>
       </PopoverContent>
     </Popover>
   );

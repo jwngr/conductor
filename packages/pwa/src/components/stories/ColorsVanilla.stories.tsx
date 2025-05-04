@@ -1,5 +1,6 @@
 import type React from 'react';
 
+import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
 import {StorySection} from '@src/components/stories/StorySection';
 
@@ -101,17 +102,10 @@ interface TextColorDisplayProps {
 
 const TextColorDisplay: React.FC<TextColorDisplayProps> = ({name, colorValue}) => {
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-start',
-        gap: vars.spacing[1],
-      }}
-    >
+    <FlexColumn align="start" gap={1}>
       <Text style={{fontSize: '16px', color: colorValue}}>Text sample</Text>
       <Text style={{fontSize: '12px'}}>{name}</Text>
-    </div>
+    </FlexColumn>
   );
 };
 
@@ -180,21 +174,12 @@ export const ColorsVanillaStories: React.FC = () => {
         <Text bold className="mb-2">
           General
         </Text>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            gap: vars.spacing[2],
-            marginBottom: vars.spacing[4],
-            alignItems: 'flex-end',
-          }}
-        >
+        <FlexRow wrap gap={2} align="end">
           {semanticColorNames.map((name) => {
             const colorValue = vars.colors[name as SemanticColorName];
             return <ColorSwatch key={name} label={name} colorValue={colorValue} />;
           })}
-        </div>
+        </FlexRow>
 
         <Text bold className="mb-2">
           Text
@@ -217,47 +202,29 @@ export const ColorsVanillaStories: React.FC = () => {
         <Text bold className="mb-2">
           Neutral Scale
         </Text>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            gap: vars.spacing[2],
-            marginBottom: vars.spacing[4],
-            alignItems: 'flex-end',
-          }}
-        >
+        <FlexRow wrap gap={2} align="end">
           {neutralLevels.map((level) => {
             const name = `neutral-${level}`;
             const colorValue = vars.colors.neutral[level as NeutralLevel];
             return <ColorSwatch key={name} label={name} colorValue={colorValue} />;
           })}
-        </div>
+        </FlexRow>
 
         <Text bold className="mb-2">
           Level 1 & 2 Colors
         </Text>
-        <div style={{display: 'flex', flexDirection: 'column', gap: vars.spacing[4]}}>
+        <FlexColumn gap={4}>
           {semanticGroupNames.map((groupName) => (
-            <div
-              key={groupName}
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                flexWrap: 'wrap',
-                gap: vars.spacing[2],
-                alignItems: 'flex-end',
-              }}
-            >
+            <FlexRow key={groupName} wrap gap={2} align="end">
               {semanticGroupLevels.map((level) => {
                 const name = `${groupName}-${level}`;
                 const colorValue =
                   vars.colors[groupName as SemanticGroupName][level as SemanticGroupLevel];
                 return <ColorSwatch key={name} label={name} colorValue={colorValue} />;
               })}
-            </div>
+            </FlexRow>
           ))}
-        </div>
+        </FlexColumn>
       </StorySection>
     </>
   );
