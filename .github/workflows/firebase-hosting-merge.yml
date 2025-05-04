@@ -19,6 +19,7 @@ on:
 permissions:
   contents: read
   id-token: write
+  checks: write
 jobs:
   deploy_hosting_prod:
     runs-on: ubuntu-latest
