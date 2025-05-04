@@ -1,6 +1,6 @@
 import {useNavigate} from '@tanstack/react-router';
 import {isSignInWithEmailLink} from 'firebase/auth';
-import {useEffect} from 'react';
+import {useEffect, useRef} from 'react';
 
 import {logger} from '@shared/services/logger.shared';
 
@@ -15,6 +15,10 @@ import {firebaseService} from '@sharedClient/services/firebase.client';
 
 import {rootRoute} from '@src/routes/__root';
 
+/**
+ * Listener which updates the auth store when the user's authentication state changes in the auth
+ * service.
+ */
 const AuthServiceSubscription: React.FC = () => {
   const {setLoggedInAccount} = useAuthStore();
   useEffect(() => {
@@ -32,14 +36,23 @@ const AuthServiceSubscription: React.FC = () => {
   return null;
 };
 
+/**
+ * Listener which signs in the user when they visit a passwordless email link.
+ */
 const PasswordlessAuthSubscription: React.FC = () => {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const go = async (): Promise<void> => {
-      // Only do something if the current URL is a "sign-in with email" link.
-      if (!isSignInWithEmailLink(firebaseService.auth, window.location.href)) return;
+  const isFirstMount = useRef(true);
 
+  useEffect(() => {
+    // Only run this once on first mount.
+    if (!isFirstMount.current) return;
+    isFirstMount.current = false;
+
+    // Only do something if the current URL is a "sign-in with email" link.
+    if (!isSignInWithEmailLink(firebaseService.auth, window.location.href)) return;
+
+    const go = async (): Promise<void> => {
       // The sign in screen persisted the email to login in local storage. If the sign-in link was
       // opened using the same browser as the one used to sign in, this value will be present.
       let maybeEmail = window.localStorage.getItem('emailForSignIn');
@@ -78,12 +91,14 @@ const PasswordlessAuthSubscription: React.FC = () => {
         throw prefixError(authCredentialResult.error, `Error signing in with email link`);
       }
 
-      // Authentication successful. `AuthStore` will be updated via `AuthServiceSubscription`.
+      // Authentication successful. `AuthStore` will be updated via `AuthServiceSubscription`, but
+      // there is some other clean up to do.
 
       // Clear the email from local storage since we no longer need it.
       window.localStorage.removeItem('emailForSignIn');
 
-      // Navigate away from the sign-in route.
+      // Logic in `RequireLoggedInAccount` updates the UI when the logged-in state changes in
+      // `AuthStore`, but it does not update the URL. Update it to remove the used sign-in link.
       await navigate({to: rootRoute.fullPath, replace: true});
     };
 
