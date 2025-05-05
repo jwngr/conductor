@@ -1,11 +1,8 @@
-import {logger} from '@shared/services/logger.shared';
-
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
-import {validateHour, validateTimeOfDay} from '@shared/lib/time.shared';
+import {makeTimeOfDay, validateHour} from '@shared/lib/time.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import type {
-  DayOfWeek,
   DaysAndTimesOfWeekDeliverySchedule,
   DeliverySchedule,
   EveryNHoursDeliverySchedule,
@@ -13,12 +10,8 @@ import type {
   NeverDeliverySchedule,
   TimeOfDay,
 } from '@shared/types/deliverySchedules.types';
-import {DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
+import {DayOfWeek, DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
 import type {Result} from '@shared/types/results.types';
-
-export function makeTimeOfDay(hour: number, minute: number): Result<TimeOfDay> {
-  return validateTimeOfDay({hour, minute});
-}
 
 export const IMMEDIATE_DELIVERY_SCHEDULE: ImmediateDeliverySchedule = {
   type: DeliveryScheduleType.Immediate,
@@ -43,7 +36,7 @@ export function makeDaysAndTimesOfWeekDeliverySchedule(args: {
   }
 
   for (const time of times) {
-    const timeValidationResult = validateTimeOfDay(time);
+    const timeValidationResult = makeTimeOfDay(time);
     if (!timeValidationResult.success) return timeValidationResult;
   }
 
@@ -104,10 +97,54 @@ function isDeliveredAccordingToDaysAndTimesOfWeekSchedule(args: {
   readonly deliverySchedule: DaysAndTimesOfWeekDeliverySchedule;
 }): boolean {
   const {createdTime, deliverySchedule} = args;
-
   const {days, times} = deliverySchedule;
 
-  return false;
+  const now = new Date();
+
+  // Find the most recent delivery time before current time
+  let mostRecentDeliveryDate = new Date();
+  mostRecentDeliveryDate.setDate(mostRecentDeliveryDate.getDate() - 7); // Start with a date in the past
+
+  // For each day and time combination
+  for (const day of days) {
+    for (const time of times) {
+      // Create a date for this day and time starting from current time
+      const deliveryDateCandidate = new Date();
+
+      // Set to the correct day of week (0-6, where 0 is Sunday)
+      const dayIndex = Object.values(DayOfWeek).indexOf(day);
+      const currentDayOfWeek = deliveryDateCandidate.getDay();
+      const daysToAdd = (dayIndex - currentDayOfWeek + 7) % 7;
+      deliveryDateCandidate.setDate(deliveryDateCandidate.getDate() + daysToAdd);
+
+      // Set the time
+      deliveryDateCandidate.setHours(time.hour, time.minute, 0, 0);
+
+      // If this candidate is in the future or equal to current time, go back a week
+      if (deliveryDateCandidate.getTime() >= now.getTime()) {
+        deliveryDateCandidate.setDate(deliveryDateCandidate.getDate() - 7);
+      }
+
+      // Keep the most recent past delivery date
+      if (deliveryDateCandidate.getTime() > mostRecentDeliveryDate.getTime()) {
+        mostRecentDeliveryDate = deliveryDateCandidate;
+      }
+    }
+  }
+
+  // Find the next delivery date
+  const nextDeliveryDate = new Date(mostRecentDeliveryDate);
+  nextDeliveryDate.setDate(nextDeliveryDate.getDate() + 7);
+
+  // Item should be delivered if:
+  // 1. It was created before or at the most recent delivery date AND
+  // 2. The current time is after or equal to the most recent delivery date AND
+  // 3. The current time is before the next delivery date
+  return (
+    createdTime.getTime() <= mostRecentDeliveryDate.getTime() &&
+    now.getTime() >= mostRecentDeliveryDate.getTime() &&
+    now.getTime() < nextDeliveryDate.getTime()
+  );
 }
 
 function isDeliveredAccordingToEveryNHoursSchedule(args: {
@@ -115,11 +152,32 @@ function isDeliveredAccordingToEveryNHoursSchedule(args: {
   readonly deliverySchedule: EveryNHoursDeliverySchedule;
 }): boolean {
   const {createdTime, deliverySchedule} = args;
+  const {hours} = deliverySchedule;
 
-  const hours = deliverySchedule.hours;
+  const now = new Date();
 
-  const previousInstance = createdTime.getTime() - hours * 60 * 60 * 1000;
-  const nextInstance = createdTime.getTime() + hours * 60 * 60 * 1000;
+  // Calculate milliseconds for the interval
+  const intervalMs = hours * 60 * 60 * 1000;
 
-  return false;
+  // Calculate how many complete intervals have passed since creation
+  const msSinceCreation = now.getTime() - createdTime.getTime();
+  const completedIntervals = Math.floor(msSinceCreation / intervalMs);
+
+  // Calculate the most recent delivery time before current time
+  const mostRecentDeliveryTime = new Date(
+    createdTime.getTime() + Math.max(0, completedIntervals - 1) * intervalMs
+  );
+
+  // Calculate the next delivery time
+  const nextDeliveryTime = new Date(mostRecentDeliveryTime.getTime() + intervalMs);
+
+  // Item should be delivered if:
+  // 1. The current time is after or equal to the most recent delivery time AND
+  // 2. The current time is before the next delivery time AND
+  // 3. The item was created before or at the most recent delivery time
+  return (
+    now.getTime() >= mostRecentDeliveryTime.getTime() &&
+    now.getTime() < nextDeliveryTime.getTime() &&
+    createdTime.getTime() <= mostRecentDeliveryTime.getTime()
+  );
 }
