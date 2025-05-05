@@ -1,4 +1,4 @@
-import {addDays, set, setHours, setMinutes} from 'date-fns';
+import {setHours, setMinutes} from 'date-fns';
 
 import {
   IMMEDIATE_DELIVERY_SCHEDULE,
