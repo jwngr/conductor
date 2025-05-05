@@ -22,6 +22,8 @@ function timeOfDay(hour: number, minute: number): Result<TimeOfDay> {
 describe('deliverySchedules', () => {
   beforeEach(() => {
     jest.useFakeTimers();
+    // Set a default time of Monday, January 1, 2024 at 9:00 AM
+    jest.setSystemTime(new Date(2024, 0, 1, 9, 0));
   });
 
   afterEach(() => {
