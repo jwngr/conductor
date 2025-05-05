@@ -1,4 +1,4 @@
-import {addDays, setHours, setMinutes} from 'date-fns';
+import {addDays, set, setHours, setMinutes} from 'date-fns';
 
 import {
   IMMEDIATE_DELIVERY_SCHEDULE,
@@ -295,9 +295,9 @@ describe('deliverySchedules', () => {
     });
 
     it('should deliver if created at exact time that schedule triggers', () => {
-      // Set current time to same as created time
-      const createdTime = setHours(MONDAY_JAN_1_2024, 4); // 4:00 AM
-      jest.setSystemTime(createdTime);
+      // Set current time to same as created time.
+      const createdTime = setHours(MONDAY_JAN_1_2024, 8); // 8:00 AM
+      jest.setSystemTime(createdTime); // 8:00 AM
 
       expect(isDeliveredAccordingToSchedule({createdTime, deliverySchedule: schedule})).toBe(true);
     });
@@ -312,59 +312,54 @@ describe('deliverySchedules', () => {
     });
 
     it('should deliver 1 minute after midnight when created in the evening', () => {
-      // Created at 9 PM
       const createdTime = setHours(MONDAY_JAN_1_2024, 21); // 9:00 PM
 
-      // Set current time to 1 minute after midnight next day
-      const currentTime = setMinutes(setHours(TUESDAY_JAN_2_2024, 0), 1); // 12:01 AM next day
-      jest.setSystemTime(currentTime);
-
+      jest.setSystemTime(setMinutes(setHours(TUESDAY_JAN_2_2024, 0), 1)); // 12:01 AM next day
       expect(isDeliveredAccordingToSchedule({createdTime, deliverySchedule: schedule})).toBe(true);
     });
 
     it('should not deliver 1 minute before midnight when created in the evening', () => {
-      // Created at 9 PM
       const createdTime = setHours(MONDAY_JAN_1_2024, 21); // 9:00 PM
 
-      // Set current time to 11:59 PM same day
-      const currentTime = setMinutes(setHours(MONDAY_JAN_1_2024, 23), 59); // 11:59 PM
-      jest.setSystemTime(currentTime);
-
+      jest.setSystemTime(setMinutes(setHours(MONDAY_JAN_1_2024, 23), 59)); // 11:59 PM
       expect(isDeliveredAccordingToSchedule({createdTime, deliverySchedule: schedule})).toBe(false);
     });
 
     it('should handle multiple intervals across days', () => {
-      const createdTime = setHours(MONDAY_JAN_1_2024, 20); // 8:00 PM
+      const createdTime = setMinutes(setHours(MONDAY_JAN_1_2024, 20), 1); // Mon 8:01 PM
 
       // Test at 11 PM same day => not delivered
-      jest.setSystemTime(setHours(MONDAY_JAN_1_2024, 23)); // 11:00 PM
+      jest.setSystemTime(setHours(MONDAY_JAN_1_2024, 23)); // Mon 11:00 PM
       expect(isDeliveredAccordingToSchedule({createdTime, deliverySchedule: schedule})).toBe(false);
 
       // Test at 11:59 PM same day => not delivered
-      jest.setSystemTime(setMinutes(setHours(MONDAY_JAN_1_2024, 23), 59)); // 11:59 PM
+      jest.setSystemTime(setMinutes(setHours(MONDAY_JAN_1_2024, 23), 59)); // Mon 11:59 PM
       expect(isDeliveredAccordingToSchedule({createdTime, deliverySchedule: schedule})).toBe(false);
 
       // Test at 12:01 AM next day => delivered
-      jest.setSystemTime(setHours(TUESDAY_JAN_2_2024, 0)); // 12:00 AM
+      jest.setSystemTime(setHours(TUESDAY_JAN_2_2024, 0)); // Tue 12:00 AM
       expect(isDeliveredAccordingToSchedule({createdTime, deliverySchedule: schedule})).toBe(true);
 
       // Test at 12:01 AM next day => delivered
-      jest.setSystemTime(setMinutes(setHours(TUESDAY_JAN_2_2024, 0), 1)); // 12:01 AM
+      jest.setSystemTime(setMinutes(setHours(TUESDAY_JAN_2_2024, 0), 1)); // Tue 12:01 AM
       expect(isDeliveredAccordingToSchedule({createdTime, deliverySchedule: schedule})).toBe(true);
 
       // Test at 4 AM next day => delivered
-      jest.setSystemTime(setHours(TUESDAY_JAN_2_2024, 4)); // 4:00 AM
+      jest.setSystemTime(setHours(TUESDAY_JAN_2_2024, 4)); // Tue 4:00 AM
+      expect(isDeliveredAccordingToSchedule({createdTime, deliverySchedule: schedule})).toBe(true);
+    });
+
+    it('should consider midnight a delivery time', () => {
+      const createdTime = setMinutes(setHours(MONDAY_JAN_1_2024, 23), 59); // Mon 11:59 PM
+
+      jest.setSystemTime(setMinutes(setHours(TUESDAY_JAN_2_2024, 0), 1)); // Tues 12:01 AM
       expect(isDeliveredAccordingToSchedule({createdTime, deliverySchedule: schedule})).toBe(true);
     });
 
     it('should handle intervals that span multiple days', () => {
-      // Created at 8 PM, test after 2 days
-      const createdTime = setHours(MONDAY_JAN_1_2024, 20); // 8:00 PM
+      const createdTime = setMinutes(setHours(MONDAY_JAN_1_2024, 9), 15); // Mon 9:15 AM
 
-      // Set current time to 8 PM two days later
-      const currentTime = setHours(addDays(MONDAY_JAN_1_2024, 2), 20); // 8:00 PM Wednesday
-      jest.setSystemTime(currentTime);
-
+      jest.setSystemTime(setMinutes(setHours(WEDNESDAY_JAN_3_2024, 9), 15)); // Wed 9:15 AM
       expect(isDeliveredAccordingToSchedule({createdTime, deliverySchedule: schedule})).toBe(true);
     });
   });
