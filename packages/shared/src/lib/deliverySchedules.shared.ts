@@ -85,16 +85,41 @@ export function isDeliveredAccordingToSchedule(args: {
       // Never delivery schedules are never delivered.
       return false;
     case DeliveryScheduleType.DaysAndTimesOfWeek:
-    case DeliveryScheduleType.EveryNHours: {
-      // TODO: Implement the correct logic here. Ideally build some interface that abstracts away
-      // this entire switch statement and includes `Immediate` and `Never` as well.
-      logger.log('WARNING: This logic is not fully implemented!');
-      if (createdTime < new Date(Date.now() - 5000)) {
-        return false;
-      }
-      return true;
-    }
+      return isDeliveredAccordingToDaysAndTimesOfWeekSchedule({
+        createdTime,
+        deliverySchedule,
+      });
+    case DeliveryScheduleType.EveryNHours:
+      return isDeliveredAccordingToEveryNHoursSchedule({
+        createdTime,
+        deliverySchedule,
+      });
     default:
       assertNever(deliverySchedule);
   }
+}
+
+function isDeliveredAccordingToDaysAndTimesOfWeekSchedule(args: {
+  readonly createdTime: Date;
+  readonly deliverySchedule: DaysAndTimesOfWeekDeliverySchedule;
+}): boolean {
+  const {createdTime, deliverySchedule} = args;
+
+  const {days, times} = deliverySchedule;
+
+  return false;
+}
+
+function isDeliveredAccordingToEveryNHoursSchedule(args: {
+  readonly createdTime: Date;
+  readonly deliverySchedule: EveryNHoursDeliverySchedule;
+}): boolean {
+  const {createdTime, deliverySchedule} = args;
+
+  const hours = deliverySchedule.hours;
+
+  const previousInstance = createdTime.getTime() - hours * 60 * 60 * 1000;
+  const nextInstance = createdTime.getTime() + hours * 60 * 60 * 1000;
+
+  return false;
 }
