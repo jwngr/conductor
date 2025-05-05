@@ -17,6 +17,7 @@ import type {
 import {
   DeliveryScheduleFromStorageSchema,
   DeliveryScheduleType,
+  DeliveryScheduleTypeFromStorageSchema,
 } from '@shared/types/deliverySchedules.types';
 import type {Result} from '@shared/types/results.types';
 
@@ -50,6 +51,12 @@ export function parseDeliverySchedule(maybeDeliverySchedule: unknown): Result<De
       return makeErrorResult(error);
     }
   }
+}
+
+export function parseDeliveryScheduleType(
+  maybeDeliveryScheduleType: unknown
+): Result<DeliveryScheduleType> {
+  return parseZodResult(DeliveryScheduleTypeFromStorageSchema, maybeDeliveryScheduleType);
 }
 
 /**

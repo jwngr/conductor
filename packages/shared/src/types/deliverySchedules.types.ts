@@ -94,3 +94,13 @@ export const DeliveryScheduleFromStorageSchema = z.discriminatedUnion('type', [
  * Type for a {@link DeliverySchedule} persisted to Firestore.
  */
 export type DeliveryScheduleFromStorage = z.infer<typeof DeliveryScheduleFromStorageSchema>;
+
+/**
+ * Zod schema for a {@link DeliveryScheduleType} persisted to Firestore.
+ */
+export const DeliveryScheduleTypeFromStorageSchema = z.nativeEnum(DeliveryScheduleType);
+
+/**
+ * Type for a {@link DeliveryScheduleType} persisted to Firestore.
+ */
+export type DeliveryScheduleTypeFromStorage = z.infer<typeof DeliveryScheduleTypeFromStorageSchema>;

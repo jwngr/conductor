@@ -86,7 +86,9 @@ export class ClientUserFeedSubscriptionsService {
    */
   public async updateSubscription(
     userFeedSubscriptionId: UserFeedSubscriptionId,
-    update: Partial<Pick<UserFeedSubscription, 'isActive' | 'unsubscribedTime'>>
+    update: Partial<
+      Pick<UserFeedSubscription, 'isActive' | 'unsubscribedTime' | 'deliverySchedule'>
+    >
   ): AsyncResult<void> {
     const updateResult = await this.userFeedSubscriptionsCollectionService.updateDoc(
       userFeedSubscriptionId,
