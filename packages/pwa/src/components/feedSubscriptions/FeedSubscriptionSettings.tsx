@@ -9,18 +9,12 @@ import {
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {assertNever, noop} from '@shared/lib/utils.shared';
 
-import {
-  parseDeliverySchedule,
-  parseDeliveryScheduleType,
-} from '@shared/parsers/deliverySchedules.parser';
+import {parseDeliveryScheduleType} from '@shared/parsers/deliverySchedules.parser';
 
-import {
-  DayOfWeek,
-  DeliverySchedule,
-  DeliveryScheduleType,
-} from '@shared/types/deliverySchedules.types';
+import {DayOfWeek, DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
+import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
 import {IconName} from '@shared/types/icons.types';
-import {Result} from '@shared/types/results.types';
+import type {Result} from '@shared/types/results.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
 import {useUserFeedSubscriptionsService} from '@sharedClient/services/userFeedSubscriptions.client';
