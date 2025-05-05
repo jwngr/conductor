@@ -119,16 +119,16 @@ function isDeliveredAccordingToDaysAndTimesOfWeekSchedule(args: {
       case DayOfWeek.Saturday:
         return 6;
       default:
-        return -1; // Should never happen
+        assertNever(day);
     }
-  }) as Array<0 | 1 | 2 | 3 | 4 | 5 | 6 | -1>;
+  }) as Array<0 | 1 | 2 | 3 | 4 | 5 | 6>;
 
   const currentDayOfWeek = now.getDay(); // 0-6, where 0 is Sunday
   const currentHour = now.getHours();
   const currentMinute = now.getMinutes();
 
   // Check if today is a delivery day
-  if (dayIndices.includes(currentDayOfWeek as 0 | 1 | 2 | 3 | 4 | 5 | 6 | -1)) {
+  if (dayIndices.includes(currentDayOfWeek as 0 | 1 | 2 | 3 | 4 | 5 | 6)) {
     // Check if current time is after any scheduled delivery time today
     for (const time of times) {
       if (currentHour > time.hour || (currentHour === time.hour && currentMinute >= time.minute)) {
@@ -154,7 +154,7 @@ function isDeliveredAccordingToDaysAndTimesOfWeekSchedule(args: {
     const pastDate = new Date(now.getTime() - daysAgo * msPerDay);
     const pastDayOfWeek = pastDate.getDay();
 
-    if (dayIndices.includes(pastDayOfWeek as 0 | 1 | 2 | 3 | 4 | 5 | 6 | -1)) {
+    if (dayIndices.includes(pastDayOfWeek as 0 | 1 | 2 | 3 | 4 | 5 | 6)) {
       // This past day is a delivery day, check all delivery times
       for (const time of times) {
         const pastDeliveryTime = new Date(pastDate);
@@ -183,69 +183,29 @@ function isDeliveredAccordingToDaysAndTimesOfWeekSchedule(args: {
   return false;
 }
 
+const MILLIS_PER_HOUR = 1000 * 60 * 60;
+
 function isDeliveredAccordingToEveryNHoursSchedule(args: {
   readonly createdTime: Date;
   readonly deliverySchedule: EveryNHoursDeliverySchedule;
 }): boolean {
   const {createdTime, deliverySchedule} = args;
-  const {hours} = deliverySchedule;
 
   const now = new Date();
 
-  // Special case for midnight delivery from evening creation
-  // Test if the item was created in the evening and we're checking right after midnight
-  if (now.getHours() === 0 && now.getMinutes() <= 5) {
-    const yesterday = new Date(now);
-    yesterday.setDate(yesterday.getDate() - 1);
+  // Start at midnight at the start of today.
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
 
-    // If created yesterday evening
-    if (
-      createdTime.getDate() === yesterday.getDate() &&
-      createdTime.getMonth() === yesterday.getMonth() &&
-      createdTime.getFullYear() === yesterday.getFullYear() &&
-      createdTime.getHours() >= 20
-    ) {
-      return true;
-    }
+  // TODO: This might mess up the first delivery if it's not actually schedule at midnight.
+
+  // Find the latest delivery before now.
+  let latestDeliveryDateBeforeNow = new Date(startOfToday.getTime());
+  let nextOccurrence = new Date(startOfToday.getTime() + MILLIS_PER_HOUR * deliverySchedule.hours);
+  while (nextOccurrence < now) {
+    latestDeliveryDateBeforeNow = nextOccurrence;
+    nextOccurrence = new Date(nextOccurrence.getTime() + MILLIS_PER_HOUR * deliverySchedule.hours);
   }
 
-  // Calculate milliseconds for the interval
-  const intervalMs = hours * 60 * 60 * 1000;
-
-  // Calculate how many complete intervals have passed since creation
-  const msSinceCreation = now.getTime() - createdTime.getTime();
-  const completedIntervals = Math.floor(msSinceCreation / intervalMs);
-
-  // Special case for 7:59 AM test
-  if (now.getHours() === 7 && now.getMinutes() === 59) {
-    return false;
-  }
-
-  // If no complete intervals have passed, item shouldn't be delivered yet
-  if (completedIntervals < 1) {
-    return false;
-  }
-
-  // Calculate the most recent interval boundary
-  const mostRecentDeliveryTime = new Date(createdTime.getTime() + completedIntervals * intervalMs);
-
-  // Calculate the next interval boundary
-  const nextDeliveryTime = new Date(createdTime.getTime() + (completedIntervals + 1) * intervalMs);
-
-  // For the test "should handle multiple intervals across days", we need to check
-  // if we're at exactly 8 AM on the second day, which is a special case
-  const isAt8AM = now.getHours() === 8 && now.getMinutes() === 0;
-  const hoursSinceCreation = msSinceCreation / (60 * 60 * 1000);
-  const isExactlyAtIntervalBoundary = hoursSinceCreation % hours === 0;
-
-  // Special case for the interval boundary
-  if (isAt8AM && isExactlyAtIntervalBoundary) {
-    return true;
-  }
-
-  // Item should be delivered if the current time is between the most recent
-  // delivery time and the next delivery time
-  return (
-    now.getTime() >= mostRecentDeliveryTime.getTime() && now.getTime() < nextDeliveryTime.getTime()
-  );
+  return createdTime.getTime() <= latestDeliveryDateBeforeNow.getTime();
 }
