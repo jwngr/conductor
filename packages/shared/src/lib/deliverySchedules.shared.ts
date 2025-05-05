@@ -197,13 +197,20 @@ function isDeliveredAccordingToEveryNHoursSchedule(args: {
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
 
+  // If right now exactly matches a delivery time, return true since everything is delivered.
+  const isNowADeliveryTime =
+    ((now.getTime() - startOfToday.getTime()) / MILLIS_PER_HOUR) % deliverySchedule.hours === 0;
+  if (isNowADeliveryTime) {
+    return true;
+  }
+
   // TODO: This might mess up the first delivery if it's not actually schedule at midnight.
 
   // Find the latest delivery before now.
   let latestDeliveryDateBeforeNow = new Date(startOfToday.getTime());
-  let nextOccurrence = new Date(startOfToday.getTime() + MILLIS_PER_HOUR * deliverySchedule.hours);
+  let nextOccurrence = new Date(startOfToday.getTime());
   while (nextOccurrence < now) {
-    latestDeliveryDateBeforeNow = nextOccurrence;
+    latestDeliveryDateBeforeNow = new Date(nextOccurrence.getTime());
     nextOccurrence = new Date(nextOccurrence.getTime() + MILLIS_PER_HOUR * deliverySchedule.hours);
   }
 
