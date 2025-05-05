@@ -1,9 +1,24 @@
 import {useCallback, useState} from 'react';
 
+import {
+  IMMEDIATE_DELIVERY_SCHEDULE,
+  makeDaysAndTimesOfWeekDeliverySchedule,
+  makeEveryNHoursDeliverySchedule,
+  NEVER_DELIVERY_SCHEDULE,
+} from '@shared/lib/deliverySchedules.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
-import {noop} from '@shared/lib/utils.shared';
+import {assertNever, noop} from '@shared/lib/utils.shared';
 
-import {DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
+import {
+  parseDeliverySchedule,
+  parseDeliveryScheduleType,
+} from '@shared/parsers/deliverySchedules.parser';
+
+import {
+  DayOfWeek,
+  DeliverySchedule,
+  DeliveryScheduleType,
+} from '@shared/types/deliverySchedules.types';
 import {IconName} from '@shared/types/icons.types';
 import {Result} from '@shared/types/results.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
@@ -19,8 +34,61 @@ import {Text} from '@src/components/atoms/Text';
 const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
   readonly userFeedSubscription: UserFeedSubscription;
 }> = ({userFeedSubscription}) => {
-  const handleDeliveryScheduleChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
-    console.log('+++ handleDeliveryScheduleChange:', event.target.value);
+  const feedSubscriptionsService = useUserFeedSubscriptionsService();
+  const [manageScheduleError, setManageScheduleError] = useState<Error | null>(null);
+
+  const handleDeliveryScheduleChange = async (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ): Promise<void> => {
+    const deliveryScheduleTypeResult = parseDeliveryScheduleType(event.target.value);
+    if (!deliveryScheduleTypeResult.success) {
+      setManageScheduleError(deliveryScheduleTypeResult.error);
+      return;
+    }
+
+    let makeDeliveryScheduleResult: Result<DeliverySchedule>;
+    switch (deliveryScheduleTypeResult.value) {
+      case DeliveryScheduleType.Immediate:
+        makeDeliveryScheduleResult = makeSuccessResult(IMMEDIATE_DELIVERY_SCHEDULE);
+        break;
+      case DeliveryScheduleType.Never:
+        makeDeliveryScheduleResult = makeSuccessResult(NEVER_DELIVERY_SCHEDULE);
+        break;
+      case DeliveryScheduleType.DaysAndTimesOfWeek:
+        // TODO: Allow user to specify days and times.
+        makeDeliveryScheduleResult = makeDaysAndTimesOfWeekDeliverySchedule({
+          days: [DayOfWeek.Monday, DayOfWeek.Tuesday],
+          times: [
+            {hour: 8, minute: 0},
+            {hour: 12, minute: 0},
+            {hour: 16, minute: 0},
+          ],
+        });
+        break;
+      case DeliveryScheduleType.EveryNHours:
+        // TODO: Allow user to specify hours.
+        makeDeliveryScheduleResult = makeEveryNHoursDeliverySchedule({
+          hours: 12,
+        });
+        break;
+      default:
+        assertNever(deliveryScheduleTypeResult.value);
+    }
+
+    if (!makeDeliveryScheduleResult.success) {
+      setManageScheduleError(makeDeliveryScheduleResult.error);
+      return;
+    }
+
+    const updateDeliveryScheduleResult = await feedSubscriptionsService.updateSubscription(
+      userFeedSubscription.userFeedSubscriptionId,
+      {deliverySchedule: makeDeliveryScheduleResult.value}
+    );
+
+    if (!updateDeliveryScheduleResult.success) {
+      setManageScheduleError(updateDeliveryScheduleResult.error);
+      return;
+    }
   };
 
   return (
@@ -30,7 +98,7 @@ const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
       </label>
       <select
         id="deliverySchedule"
-        value={userFeedSubscription.deliverySchedule.toString()}
+        value={userFeedSubscription.deliverySchedule.type}
         onChange={handleDeliveryScheduleChange}
         className="border-neutral-3 rounded border p-1 text-sm"
       >
@@ -39,6 +107,11 @@ const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
         <option value={DeliveryScheduleType.DaysAndTimesOfWeek}>Days and times of week</option>
         <option value={DeliveryScheduleType.EveryNHours}>Every N Hours</option>
       </select>
+      {manageScheduleError ? (
+        <Text as="p" className="text-error">
+          {manageScheduleError.message}
+        </Text>
+      ) : null}
     </FlexRow>
   );
 };

@@ -1,13 +1,6 @@
 import {useCallback, useState} from 'react';
 
-import {
-  IMMEDIATE_DELIVERY_SCHEDULE,
-  NEVER_DELIVERY_SCHEDULE,
-} from '@shared/lib/deliverySchedules.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
-
-import {IconName} from '@shared/types/icons.types';
-import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
 import {
   useUserFeedSubscriptions,
@@ -15,7 +8,6 @@ import {
 } from '@sharedClient/services/userFeedSubscriptions.client';
 
 import {Button} from '@src/components/atoms/Button';
-import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Input} from '@src/components/atoms/Input';
 import {Text} from '@src/components/atoms/Text';
