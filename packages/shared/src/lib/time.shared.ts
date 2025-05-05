@@ -3,7 +3,7 @@ import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import type {TimeOfDay} from '@shared/types/deliverySchedules.types';
 import type {Result} from '@shared/types/results.types';
 
-export function validateTimeOfDay(timeOfDay: TimeOfDay): Result<TimeOfDay> {
+export function makeTimeOfDay(timeOfDay: TimeOfDay): Result<TimeOfDay> {
   const hourResult = validateHour(timeOfDay.hour);
   if (!hourResult.success) return hourResult;
 
