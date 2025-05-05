@@ -13,3 +13,5 @@ export const FEED_ITEM_FILE_NAME_HTML = 'raw.html';
 export const FEED_ITEM_FILE_NAME_LLM_CONTEXT = 'llmContext.md';
 export const FEED_ITEM_FILE_NAME_TRANSCRIPT = 'transcript.md';
 export const FEED_ITEM_FILE_NAME_XKCD_EXPLAIN = 'xkcdExplain.md';
+
+export const MILLIS_PER_HOUR = 1000 * 60 * 60;
