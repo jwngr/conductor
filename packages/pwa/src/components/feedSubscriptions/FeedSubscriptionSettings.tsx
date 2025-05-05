@@ -34,6 +34,9 @@ const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
   const handleDeliveryScheduleChange = async (
     event: React.ChangeEvent<HTMLSelectElement>
   ): Promise<void> => {
+    // Clear any existing error.
+    setManageScheduleError(null);
+
     const deliveryScheduleTypeResult = parseDeliveryScheduleType(event.target.value);
     if (!deliveryScheduleTypeResult.success) {
       setManageScheduleError(deliveryScheduleTypeResult.error);
@@ -117,6 +120,9 @@ const FeedSubscriptionUnsubscribeButton: React.FC<{
   const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
 
   const handleToggleSubscription = useCallback(async (): Promise<void> => {
+    // Clear any existing error.
+    setManageSubscriptionError(null);
+
     let result: Result<void, Error>;
     if (userFeedSubscription.isActive) {
       result = await userFeedSubscriptionsService.updateSubscription(
