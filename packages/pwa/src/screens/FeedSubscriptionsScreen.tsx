@@ -1,7 +1,12 @@
 import {useCallback, useState} from 'react';
 
+import {
+  IMMEDIATE_DELIVERY_SCHEDULE,
+  NEVER_DELIVERY_SCHEDULE,
+} from '@shared/lib/deliverySchedules.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
 
+import {IconName} from '@shared/types/icons.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
 import {
@@ -10,9 +15,11 @@ import {
 } from '@sharedClient/services/userFeedSubscriptions.client';
 
 import {Button} from '@src/components/atoms/Button';
+import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Input} from '@src/components/atoms/Input';
 import {Text} from '@src/components/atoms/Text';
+import {FeedSubscriptionSettingsButton} from '@src/components/feedSubscriptions/FeedSubscriptionSettings';
 
 import {Screen} from '@src/screens/Screen';
 
@@ -112,24 +119,6 @@ const FeedAdder: React.FC = () => {
 
 const FeedSubscriptionsList: React.FC = () => {
   const userFeedSubscriptionsState = useUserFeedSubscriptions();
-  const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
-  const [unsubscribeError, setUnsubscribeError] = useState<Error | null>(null);
-
-  const handleUnsubscribe = async (subscription: UserFeedSubscription): Promise<void> => {
-    const unsubscribeResult = await userFeedSubscriptionsService.updateSubscription(
-      subscription.userFeedSubscriptionId,
-      {isActive: false, unsubscribedTime: new Date()}
-    );
-
-    if (!unsubscribeResult.success) {
-      setUnsubscribeError(unsubscribeResult.error);
-      return;
-    }
-
-    // The item will disappear from the list, so no other success state is shown. We still want to
-    // reset any pre-existing error state.
-    setUnsubscribeError(null);
-  };
 
   const renderMainContent = (): React.ReactNode => {
     if (userFeedSubscriptionsState.error) {
@@ -148,27 +137,17 @@ const FeedSubscriptionsList: React.FC = () => {
       );
     }
 
-    const unsubscribeErrorContent = unsubscribeError ? (
-      <Text as="p" className="text-error">
-        Error unsubscribing from feed: {unsubscribeError.message}
-      </Text>
-    ) : null;
-
     if (userFeedSubscriptionsState.subscriptions.length === 0) {
       // TODO: Add better empty state.
       return (
-        <>
-          <Text as="p" light>
-            None
-          </Text>
-          {unsubscribeErrorContent}
-        </>
+        <Text as="p" light>
+          None
+        </Text>
       );
     }
 
     return (
       <FlexColumn flex={1}>
-        {unsubscribeErrorContent}
         {userFeedSubscriptionsState.subscriptions.map((subscription) => (
           <FlexRow
             key={subscription.userFeedSubscriptionId}
@@ -184,11 +163,7 @@ const FeedSubscriptionsList: React.FC = () => {
                 {subscription.url}
               </Text>
             </FlexColumn>
-            {subscription.isActive ? (
-              <Button variant="default" onClick={async () => void handleUnsubscribe(subscription)}>
-                Unsubscribe
-              </Button>
-            ) : null}
+            <FeedSubscriptionSettingsButton userFeedSubscription={subscription} />
           </FlexRow>
         ))}
       </FlexColumn>

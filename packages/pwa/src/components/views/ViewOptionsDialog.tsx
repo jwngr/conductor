@@ -14,10 +14,10 @@ import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Popover, PopoverContent, PopoverTrigger} from '@src/components/atoms/Popover';
 
 export const ViewOptionsDialog: React.FC<{
-  sortBy: readonly ViewSortByOption[];
-  groupBy: readonly ViewGroupByOption[];
-  onSortByChange: React.Dispatch<React.SetStateAction<ViewSortByOption[]>>;
-  onGroupByChange: React.Dispatch<React.SetStateAction<ViewGroupByOption[]>>;
+  readonly sortBy: readonly ViewSortByOption[];
+  readonly groupBy: readonly ViewGroupByOption[];
+  readonly onSortByChange: React.Dispatch<React.SetStateAction<ViewSortByOption[]>>;
+  readonly onGroupByChange: React.Dispatch<React.SetStateAction<ViewGroupByOption[]>>;
 }> = ({sortBy, groupBy, onSortByChange, onGroupByChange}) => {
   const firstSortByOption = sortBy[0] ?? SORT_BY_CREATED_TIME_DESC_OPTION;
   const firstGroupByOption = groupBy.length === 0 ? null : groupBy[0].field;
