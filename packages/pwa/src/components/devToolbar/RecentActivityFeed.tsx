@@ -6,7 +6,7 @@ import {IconName} from '@shared/types/icons.types';
 
 import {useEventLogItems} from '@sharedClient/services/eventLog.client';
 
-import {formatRelativeTime} from '@sharedClient/lib/time.client';
+import {formatRelativeTime} from '@sharedClient/lib/datetime.client';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {Popover, PopoverContent, PopoverTrigger} from '@src/components/atoms/Popover';

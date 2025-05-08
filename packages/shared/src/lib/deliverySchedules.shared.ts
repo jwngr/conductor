@@ -1,8 +1,8 @@
 import {addHours, setHours} from 'date-fns';
 
 import {MILLIS_PER_HOUR} from '@shared/lib/constants.shared';
+import {makeTimeOfDay, validateHour} from '@shared/lib/datetime.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
-import {makeTimeOfDay, validateHour} from '@shared/lib/time.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import type {

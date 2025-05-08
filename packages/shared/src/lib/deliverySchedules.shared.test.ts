@@ -1,5 +1,6 @@
 import {setHours, setMinutes} from 'date-fns';
 
+import {makeTimeOfDay} from '@shared/lib/datetime.shared';
 import {
   IMMEDIATE_DELIVERY_SCHEDULE,
   isDeliveredAccordingToSchedule,
@@ -7,7 +8,6 @@ import {
   makeEveryNHoursDeliverySchedule,
   NEVER_DELIVERY_SCHEDULE,
 } from '@shared/lib/deliverySchedules.shared';
-import {makeTimeOfDay} from '@shared/lib/time.shared';
 
 import {DayOfWeek} from '@shared/types/deliverySchedules.types';
 import type {
