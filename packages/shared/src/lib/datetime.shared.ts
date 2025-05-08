@@ -1,9 +1,11 @@
+import {formatDistanceToNowStrict} from 'date-fns';
+
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {TimeOfDay} from '@shared/types/deliverySchedules.types';
 import type {Result} from '@shared/types/results.types';
 
-export function validateTimeOfDay(timeOfDay: TimeOfDay): Result<TimeOfDay> {
+export function makeTimeOfDay(timeOfDay: TimeOfDay): Result<TimeOfDay> {
   const hourResult = validateHour(timeOfDay.hour);
   if (!hourResult.success) return hourResult;
 
@@ -25,4 +27,11 @@ export function validateMinute(minute: number): Result<number> {
     return makeErrorResult(new Error('Minute must be between 0 and 59'));
   }
   return makeSuccessResult(minute);
+}
+
+/**
+ * Formats a date into a relative time string (e.g., "5 minutes ago", "yesterday").
+ */
+export function formatRelativeTime(date: Date): string {
+  return formatDistanceToNowStrict(date, {addSuffix: true});
 }
