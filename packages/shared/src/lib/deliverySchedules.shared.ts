@@ -1,7 +1,7 @@
 import {logger} from '@shared/services/logger.shared';
 
+import {makeTimeOfDay, validateHour} from '@shared/lib/datetime.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
-import {validateHour, validateTimeOfDay} from '@shared/lib/time.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import type {
@@ -15,10 +15,6 @@ import type {
 } from '@shared/types/deliverySchedules.types';
 import {DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
 import type {Result} from '@shared/types/results.types';
-
-export function makeTimeOfDay(hour: number, minute: number): Result<TimeOfDay> {
-  return validateTimeOfDay({hour, minute});
-}
 
 export const IMMEDIATE_DELIVERY_SCHEDULE: ImmediateDeliverySchedule = {
   type: DeliveryScheduleType.Immediate,
@@ -43,7 +39,7 @@ export function makeDaysAndTimesOfWeekDeliverySchedule(args: {
   }
 
   for (const time of times) {
-    const timeValidationResult = validateTimeOfDay(time);
+    const timeValidationResult = makeTimeOfDay(time);
     if (!timeValidationResult.success) return timeValidationResult;
   }
 
