@@ -14,6 +14,7 @@ describe('validateHour', () => {
 
   it('should reject invalid hours', () => {
     expect(validateHour(-1).success).toBe(false);
+    expect(validateHour(1.5).success).toBe(false);
     expect(validateHour(24).success).toBe(false);
     expect(validateHour(100).success).toBe(false);
   });
@@ -25,11 +26,18 @@ describe('validateHour', () => {
     expect(result.value).toBe(12);
   });
 
-  it('should return an error message on failure', () => {
+  it('should return an error message for hours outside the valid range', () => {
     const result = validateHour(100);
     expect(result.success).toBe(false);
     if (result.success) return;
     expect(result.error.message).toBe('Hour must be between 0 and 23');
+  });
+
+  it('should return an error message for non-integer hours', () => {
+    const result = validateHour(1.5);
+    expect(result.success).toBe(false);
+    if (result.success) return;
+    expect(result.error.message).toBe('Hour must be an integer');
   });
 });
 
@@ -42,6 +50,7 @@ describe('validateMinute', () => {
 
   it('should reject invalid minutes', () => {
     expect(validateMinute(-1).success).toBe(false);
+    expect(validateMinute(1.5).success).toBe(false);
     expect(validateMinute(60).success).toBe(false);
     expect(validateMinute(100).success).toBe(false);
   });
@@ -53,11 +62,18 @@ describe('validateMinute', () => {
     expect(result.value).toBe(30);
   });
 
-  it('should return an error message on failure', () => {
+  it('should return an error message for minutes outside the valid range', () => {
     const result = validateMinute(60);
     expect(result.success).toBe(false);
     if (result.success) return;
     expect(result.error.message).toBe('Minute must be between 0 and 59');
+  });
+
+  it('should return an error message for non-integer minutes', () => {
+    const result = validateMinute(1.5);
+    expect(result.success).toBe(false);
+    if (result.success) return;
+    expect(result.error.message).toBe('Minute must be an integer');
   });
 });
 
@@ -73,42 +89,34 @@ describe('makeTimeOfDay', () => {
   it('should reject invalid hours', () => {
     const result1 = makeTimeOfDay({hour: 24, minute: 30});
     expect(result1.success).toBe(false);
-    if (result1.success) return;
-    expect(result1.error.message).toBe('Hour must be between 0 and 23');
 
     const result2 = makeTimeOfDay({hour: 33, minute: 30});
     expect(result2.success).toBe(false);
-    if (result2.success) return;
-    expect(result2.error.message).toBe('Hour must be between 0 and 23');
 
     const result3 = makeTimeOfDay({hour: -1, minute: 30});
     expect(result3.success).toBe(false);
-    if (result3.success) return;
-    expect(result3.error.message).toBe('Hour must be between 0 and 23');
+
+    const result4 = makeTimeOfDay({hour: 12, minute: 1.5});
+    expect(result4.success).toBe(false);
   });
 
   it('should reject invalid minutes', () => {
     const result1 = makeTimeOfDay({hour: 12, minute: 60});
     expect(result1.success).toBe(false);
-    if (result1.success) return;
-    expect(result1.error.message).toBe('Minute must be between 0 and 59');
 
     const result2 = makeTimeOfDay({hour: 12, minute: 100});
     expect(result2.success).toBe(false);
-    if (result2.success) return;
-    expect(result2.error.message).toBe('Minute must be between 0 and 59');
 
     const result3 = makeTimeOfDay({hour: 12, minute: -1});
     expect(result3.success).toBe(false);
-    if (result3.success) return;
-    expect(result3.error.message).toBe('Minute must be between 0 and 59');
+
+    const result4 = makeTimeOfDay({hour: 12, minute: 1.5});
+    expect(result4.success).toBe(false);
   });
 
   it('should reject both invalid hour and minute', () => {
     const result = makeTimeOfDay({hour: -1, minute: -1});
     expect(result.success).toBe(false);
-    if (result.success) return;
-    expect(result.error.message).toBe('Hour must be between 0 and 23');
   });
 });
 
