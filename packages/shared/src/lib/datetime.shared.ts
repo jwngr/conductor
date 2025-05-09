@@ -19,6 +19,11 @@ export function validateHour(hour: number): Result<number> {
   if (hour < 0 || hour > 23) {
     return makeErrorResult(new Error('Hour must be between 0 and 23'));
   }
+
+  if (hour % 1 !== 0) {
+    return makeErrorResult(new Error('Hour must be an integer'));
+  }
+
   return makeSuccessResult(hour);
 }
 
@@ -26,6 +31,11 @@ export function validateMinute(minute: number): Result<number> {
   if (minute < 0 || minute > 59) {
     return makeErrorResult(new Error('Minute must be between 0 and 59'));
   }
+
+  if (minute % 1 !== 0) {
+    return makeErrorResult(new Error('Minute must be an integer'));
+  }
+
   return makeSuccessResult(minute);
 }
 

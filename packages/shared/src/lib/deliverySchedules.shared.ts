@@ -1,7 +1,6 @@
-import {addHours, setHours} from 'date-fns';
+import {addHours, startOfDay} from 'date-fns';
 
-import {MILLIS_PER_HOUR} from '@shared/lib/constants.shared';
-import {makeTimeOfDay, validateHour} from '@shared/lib/datetime.shared';
+import {makeTimeOfDay} from '@shared/lib/datetime.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
@@ -55,8 +54,14 @@ export function makeEveryNHoursDeliverySchedule(args: {
 }): Result<EveryNHoursDeliverySchedule> {
   const {hours} = args;
 
-  const hoursResult = validateHour(hours);
-  if (!hoursResult.success) return hoursResult;
+  // For now, this schedule only supports hour increments within a single day.
+  if (hours < 1 || hours > 24) {
+    return makeErrorResult(new Error('Hours must be between 1 and 24'));
+  }
+
+  if (hours % 1 !== 0) {
+    return makeErrorResult(new Error('Hours must be an integer'));
+  }
 
   return makeSuccessResult({
     type: DeliveryScheduleType.EveryNHours,
@@ -191,6 +196,29 @@ function isDeliveredAccordingToDaysAndTimesOfWeekSchedule(args: {
 }
 
 /**
+ * Returns the most recent time before now that the provided delivery schedule delivered. Midnight
+ * is always considered a delivery time, which is why this is always guaranteed to return a date.
+ */
+// export function findMostRecentDeliveryDateForDaysAndTimesOfWeekSchedule(args: {
+//   readonly deliverySchedule: DaysAndTimesOfWeekDeliverySchedule;
+// }): Date {
+//   const {deliverySchedule} = args;
+
+//   const now = new Date();
+
+//   // Find the most recent completed delivery from today. Midnight is always considered a delivery
+//   // time, so start there.
+//   let mostRecentDeliveryDate = startOfDay(now);
+//   let nextDeliveryDate = addHours(mostRecentDeliveryDate, deliverySchedule.hours);
+//   while (nextDeliveryDate.getTime() <= now.getTime()) {
+//     mostRecentDeliveryDate = nextDeliveryDate;
+//     nextDeliveryDate = addHours(nextDeliveryDate, deliverySchedule.hours);
+//   }
+
+//   return mostRecentDeliveryDate;
+// }
+
+/**
  * Determines if a feed item should be delivered according to an "Every N hours" delivery schedule.
  */
 function isDeliveredAccordingToEveryNHoursSchedule(args: {
@@ -199,29 +227,32 @@ function isDeliveredAccordingToEveryNHoursSchedule(args: {
 }): boolean {
   const {createdTime, deliverySchedule} = args;
 
+  // If the item was created before the most recent delivery, it is delivered.
+  const mostRecentDeliveryDate = findMostRecentDeliveryDateForEveryNHourSchedule({
+    deliverySchedule,
+  });
+  return createdTime.getTime() <= mostRecentDeliveryDate.getTime();
+}
+
+/**
+ * Returns the most recent time before now that the provided delivery schedule delivered. Midnight
+ * is always considered a delivery time, which is why this is always guaranteed to return a date.
+ */
+export function findMostRecentDeliveryDateForEveryNHourSchedule(args: {
+  readonly deliverySchedule: EveryNHoursDeliverySchedule;
+}): Date {
+  const {deliverySchedule} = args;
+
   const now = new Date();
-  const startOfToday = setHours(new Date(), 0);
 
-  // If right now exactly matches a delivery time, return true since everything is delivered.
-  const millisSinceStartOfToday = now.getTime() - startOfToday.getTime();
-  const hoursSinceStartOfToday = millisSinceStartOfToday / MILLIS_PER_HOUR;
-  const isNowADeliveryTime =
-    millisSinceStartOfToday % MILLIS_PER_HOUR === 0 &&
-    hoursSinceStartOfToday % deliverySchedule.hours === 0;
-  if (isNowADeliveryTime) {
-    return true;
+  // Find the most recent completed delivery from today. Midnight is always considered a delivery
+  // time, so start there.
+  let mostRecentDeliveryDate = startOfDay(now);
+  let nextDeliveryDate = addHours(mostRecentDeliveryDate, deliverySchedule.hours);
+  while (nextDeliveryDate.getTime() <= now.getTime()) {
+    mostRecentDeliveryDate = nextDeliveryDate;
+    nextDeliveryDate = addHours(nextDeliveryDate, deliverySchedule.hours);
   }
 
-  // TODO: This might mess up the first delivery if it's not actually schedule at midnight.
-
-  // Find the latest delivery before now, considering midnight as a delivery time.
-  let latestDeliveryDateBeforeNow = new Date(startOfToday.getTime());
-  let nextOccurrence = new Date(startOfToday.getTime());
-  while (nextOccurrence < now) {
-    latestDeliveryDateBeforeNow = new Date(nextOccurrence.getTime());
-    nextOccurrence = addHours(nextOccurrence, deliverySchedule.hours);
-  }
-
-  // If the item was created before the latest delivery, it is delivered.
-  return createdTime.getTime() <= latestDeliveryDateBeforeNow.getTime();
+  return mostRecentDeliveryDate;
 }
