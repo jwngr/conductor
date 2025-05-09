@@ -1,8 +1,10 @@
 import {formatDistanceToNowStrict} from 'date-fns';
 
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 
-import type {TimeOfDay} from '@shared/types/deliverySchedules.types';
+import {DayOfWeek} from '@shared/types/datetime.types';
+import type {DayOfWeekIndex, TimeOfDay} from '@shared/types/datetime.types';
 import type {Result} from '@shared/types/results.types';
 
 export function makeTimeOfDay(timeOfDay: TimeOfDay): Result<TimeOfDay> {
@@ -44,4 +46,30 @@ export function validateMinute(minute: number): Result<number> {
  */
 export function formatRelativeTime(date: Date): string {
   return formatDistanceToNowStrict(date, {addSuffix: true});
+}
+
+/**
+ * Converts a {@link DayOfWeek} enum value to a numerical index, where 0 is Sunday and 6 is the
+ * following Saturday.
+ */
+export function dayOfWeekToIndex(day: DayOfWeek): DayOfWeekIndex {
+  switch (day) {
+    case DayOfWeek.Sunday:
+      return 0;
+    case DayOfWeek.Monday:
+      return 1;
+    case DayOfWeek.Tuesday:
+      return 2;
+    case DayOfWeek.Wednesday:
+      return 3;
+    case DayOfWeek.Thursday:
+      return 4;
+    case DayOfWeek.Friday:
+      return 5;
+    case DayOfWeek.Saturday:
+      return 6;
+    /* istanbul ignore next */
+    default:
+      assertNever(day);
+  }
 }

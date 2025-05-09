@@ -11,7 +11,8 @@ import {assertNever, noop} from '@shared/lib/utils.shared';
 
 import {parseDeliveryScheduleType} from '@shared/parsers/deliverySchedules.parser';
 
-import {DayOfWeek, DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
+import {DayOfWeek} from '@shared/types/datetime.types';
+import {DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/results.types';

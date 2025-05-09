@@ -1,18 +1,18 @@
 import {addHours, startOfDay, subDays} from 'date-fns';
 
-import {makeTimeOfDay} from '@shared/lib/datetime.shared';
+import {dayOfWeekToIndex, makeTimeOfDay} from '@shared/lib/datetime.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
+import type {DayOfWeek, DayOfWeekIndex, TimeOfDay} from '@shared/types/datetime.types';
 import type {
   DaysAndTimesOfWeekDeliverySchedule,
   DeliverySchedule,
   EveryNHoursDeliverySchedule,
   ImmediateDeliverySchedule,
   NeverDeliverySchedule,
-  TimeOfDay,
 } from '@shared/types/deliverySchedules.types';
-import {DayOfWeek, DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
+import {DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
 import type {Result} from '@shared/types/results.types';
 
 export const IMMEDIATE_DELIVERY_SCHEDULE: ImmediateDeliverySchedule = {
@@ -102,33 +102,6 @@ export function isDeliveredAccordingToSchedule(args: {
     /* istanbul ignore next */
     default:
       assertNever(deliverySchedule);
-  }
-}
-
-type DayOfWeekIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6;
-
-/**
- * Converts a {@link DayOfWeek} enum value to a numerical index, where 0 is Sunday and 6 is the
- * following Saturday.
- */
-function dayOfWeekToIndex(day: DayOfWeek): DayOfWeekIndex {
-  switch (day) {
-    case DayOfWeek.Sunday:
-      return 0;
-    case DayOfWeek.Monday:
-      return 1;
-    case DayOfWeek.Tuesday:
-      return 2;
-    case DayOfWeek.Wednesday:
-      return 3;
-    case DayOfWeek.Thursday:
-      return 4;
-    case DayOfWeek.Friday:
-      return 5;
-    case DayOfWeek.Saturday:
-      return 6;
-    default:
-      assertNever(day);
   }
 }
 
