@@ -21,11 +21,19 @@ interface AssertNeverOptions {
   readonly testNoLog?: boolean;
 }
 
+const DEFAULT_ASSERT_NEVER_OPTIONS: AssertNeverOptions = {
+  testNoLog: false,
+};
+
 /**
  * Throws an error if the provided value is not of type `never`. This is useful for exhaustive
  * switch statements.
  */
-export function assertNever(val: never, {testNoLog = false}: {testNoLog?: boolean} = {}): never {
+export function assertNever(
+  val: never,
+  options: AssertNeverOptions = DEFAULT_ASSERT_NEVER_OPTIONS
+): never {
+  const {testNoLog = false} = options;
   if (!testNoLog) {
     logger.error(new Error('assertNever received non-empty value'), {val});
   }
