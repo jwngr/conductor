@@ -211,11 +211,11 @@ describe('assertNever', () => {
     // TypeScript would normally prevent us from calling this with a non-never type
     // but for testing purposes we can cast to any and then to never
     expect(() => {
-      assertNever('not never' as never);
+      assertNever('not never' as never, {testNoLog: true});
     }).toThrow();
 
     expect(() => {
-      assertNever(123 as never);
+      assertNever(123 as never, {testNoLog: true});
     }).toThrow();
   });
 });

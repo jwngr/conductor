@@ -1,10 +1,20 @@
 import {syncTry} from '@shared/lib/errorUtils.shared';
 
-// TODO: Make URL validation more robust.
-export function isValidUrl(url: string): boolean {
-  const isValidUrlResult1 = syncTry(() => new URL(url));
-  if (isValidUrlResult1.success) return true;
+function tryParseUrl(url: string): URL | null {
+  if (!url || !url.includes('.')) return null;
 
-  const isValidUrlResult2 = syncTry(() => new URL('https://' + url));
-  return isValidUrlResult2.success;
+  const withProtocol = syncTry(() => new URL(url));
+  if (withProtocol.success) return withProtocol.value;
+
+  const withHttps = syncTry(() => new URL(`https://${url}`));
+  return withHttps.success ? withHttps.value : null;
+}
+
+export function isValidUrl(url: string): boolean {
+  return tryParseUrl(url) !== null;
+}
+
+export function parseUrl(url: string): string | null {
+  const parsedUrl = tryParseUrl(url);
+  return parsedUrl ? parsedUrl.toString() : null;
 }
