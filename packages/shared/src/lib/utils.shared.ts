@@ -16,12 +16,27 @@ export const formatWithCommas = (val: number): string => {
   return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 };
 
+interface AssertNeverOptions {
+  /** Test-only option to avoid noisy logs for the `assertNever` tests themselves. */
+  readonly testNoLog?: boolean;
+}
+
+const DEFAULT_ASSERT_NEVER_OPTIONS: AssertNeverOptions = {
+  testNoLog: false,
+};
+
 /**
  * Throws an error if the provided value is not of type `never`. This is useful for exhaustive
  * switch statements.
  */
-export function assertNever(val: never): never {
-  logger.error(new Error('assertNever received non-empty value'), {val});
+export function assertNever(
+  val: never,
+  options: AssertNeverOptions = DEFAULT_ASSERT_NEVER_OPTIONS
+): never {
+  const {testNoLog = false} = options;
+  if (!testNoLog) {
+    logger.error(new Error('assertNever received non-empty value'), {val});
+  }
   // eslint-disable-next-line no-restricted-syntax
   throw new Error(`Unexpected value: ${val}`);
 }
