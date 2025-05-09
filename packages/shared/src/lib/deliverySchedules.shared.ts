@@ -37,6 +37,10 @@ export function makeDaysAndTimesOfWeekDeliverySchedule(args: {
     return makeErrorResult(new Error('Times must not be empty'));
   }
 
+  if (new Set(days).size !== days.length) {
+    return makeErrorResult(new Error('Days must not contain duplicates'));
+  }
+
   for (const time of times) {
     const timeValidationResult = makeTimeOfDay(time);
     if (!timeValidationResult.success) return timeValidationResult;
