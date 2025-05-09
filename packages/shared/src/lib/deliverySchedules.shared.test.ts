@@ -18,6 +18,16 @@ import type {
   TimeOfDay,
 } from '@shared/types/deliverySchedules.types';
 
+const EVERY_DAY_OF_WEEK = [
+  DayOfWeek.Monday,
+  DayOfWeek.Tuesday,
+  DayOfWeek.Wednesday,
+  DayOfWeek.Thursday,
+  DayOfWeek.Friday,
+  DayOfWeek.Saturday,
+  DayOfWeek.Sunday,
+];
+
 /** Unsafe test helper for creating a {@link TimeOfDay} briefly. */
 function timeOfDay(hour: number, minute: number): TimeOfDay {
   const result = makeTimeOfDay({hour, minute});
@@ -123,6 +133,21 @@ describe('deliverySchedules', () => {
           type: DeliveryScheduleType.DaysAndTimesOfWeek,
           days: [DayOfWeek.Monday, DayOfWeek.Wednesday],
           times: [timeOfDay(9, 0), timeOfDay(15, 0)],
+        });
+      });
+
+      it('should accept every day of the week', () => {
+        const scheduleResult = makeDaysAndTimesOfWeekDeliverySchedule({
+          days: EVERY_DAY_OF_WEEK,
+          times: [timeOfDay(9, 0)],
+        });
+        expect(scheduleResult.success).toBe(true);
+        if (!scheduleResult.success) return;
+
+        expect(scheduleResult.value).toEqual({
+          type: DeliveryScheduleType.DaysAndTimesOfWeek,
+          days: EVERY_DAY_OF_WEEK,
+          times: [timeOfDay(9, 0)],
         });
       });
 
