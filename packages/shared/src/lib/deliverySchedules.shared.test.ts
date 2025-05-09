@@ -1,4 +1,4 @@
-import {setHours, setMinutes} from 'date-fns';
+import {setHours, setMinutes, subDays} from 'date-fns';
 
 import {makeTimeOfDay} from '@shared/lib/datetime.shared';
 import {
@@ -166,23 +166,39 @@ describe('deliverySchedules', () => {
       multiDaySchedule = multiDayResult.value;
     });
 
-    // describe('findMostRecentDeliveryDateForDaysAndTimesOfWeekSchedule', () => {
-    //   it('should return the most recent delivery date', () => {
-    //     jest.setSystemTime(setHours(MONDAY_JAN_1_2024, 8)); // Mon 8:00 AM
-    //     const date = findMostRecentDeliveryDateForDaysAndTimesOfWeekSchedule({
-    //       deliverySchedule: mondaySchedule,
-    //     });
-    //     expect(date).toEqual(setHours(MONDAY_JAN_1_2024, 9)); // Mon 9:00 AM
-    //   });
+    describe('findMostRecentDeliveryDateForDaysAndTimesOfWeekSchedule', () => {
+      it('should return the first scheduled time of the day before the second one has occurred', () => {
+        jest.setSystemTime(setHours(MONDAY_JAN_1_2024, 10)); // Mon 10:00 AM
+        const date = findMostRecentDeliveryDateForDaysAndTimesOfWeekSchedule({
+          deliverySchedule: multiDaySchedule,
+        });
+        expect(date).toEqual(setHours(MONDAY_JAN_1_2024, 9)); // Mon 9:00 AM
+      });
 
-    //   it('should return the most recent delivery date for a multi-day schedule', () => {
-    //     jest.setSystemTime(setHours(MONDAY_JAN_1_2024, 8)); // Mon 8:00 AM
-    //     const date = findMostRecentDeliveryDateForDaysAndTimesOfWeekSchedule({
-    //       deliverySchedule: multiDaySchedule,
-    //     });
-    //     expect(date).toEqual(setHours(MONDAY_JAN_1_2024, 9)); // Mon 9:00 AM
-    //   });
-    // });
+      it('should return the second scheduled time of the day as soon as it occurs', () => {
+        jest.setSystemTime(setHours(MONDAY_JAN_1_2024, 15)); // Mon 3:00 PM
+        const date = findMostRecentDeliveryDateForDaysAndTimesOfWeekSchedule({
+          deliverySchedule: multiDaySchedule,
+        });
+        expect(date).toEqual(setHours(MONDAY_JAN_1_2024, 15)); // Mon 3:00 PM
+      });
+
+      it('should return the second scheduled time of the day after it occurs', () => {
+        jest.setSystemTime(setHours(MONDAY_JAN_1_2024, 16)); // Mon 4:00 PM
+        const date = findMostRecentDeliveryDateForDaysAndTimesOfWeekSchedule({
+          deliverySchedule: multiDaySchedule,
+        });
+        expect(date).toEqual(setHours(MONDAY_JAN_1_2024, 15)); // Mon 3:00 PM
+      });
+
+      it("should return a preceding day's last scheduled time if the first scheduled time of the day has not occurred", () => {
+        jest.setSystemTime(setHours(MONDAY_JAN_1_2024, 8)); // Mon 8:00 AM
+        const date = findMostRecentDeliveryDateForDaysAndTimesOfWeekSchedule({
+          deliverySchedule: multiDaySchedule,
+        });
+        expect(date).toEqual(setHours(subDays(MONDAY_JAN_1_2024, 5), 15)); // Previous Wed 3:00 PM
+      });
+    });
 
     describe('single day and time schedule', () => {
       it('should deliver 1 minute after scheduled time', () => {

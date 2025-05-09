@@ -1,4 +1,4 @@
-import {addHours, startOfDay} from 'date-fns';
+import {addHours, startOfDay, subDays} from 'date-fns';
 
 import {makeTimeOfDay} from '@shared/lib/datetime.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
@@ -100,6 +100,42 @@ export function isDeliveredAccordingToSchedule(args: {
   }
 }
 
+type DayOfWeekIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
+/**
+ * Converts a {@link DayOfWeek} enum value to a numerical index, where 0 is Sunday and 6 is the
+ * following Saturday.
+ */
+function dayOfWeekToIndex(day: DayOfWeek): DayOfWeekIndex {
+  switch (day) {
+    case DayOfWeek.Sunday:
+      return 0;
+    case DayOfWeek.Monday:
+      return 1;
+    case DayOfWeek.Tuesday:
+      return 2;
+    case DayOfWeek.Wednesday:
+      return 3;
+    case DayOfWeek.Thursday:
+      return 4;
+    case DayOfWeek.Friday:
+      return 5;
+    case DayOfWeek.Saturday:
+      return 6;
+    default:
+      assertNever(day);
+  }
+}
+
+/**
+ * Creates a Date object set to the specified time on the given date
+ */
+function createDateWithTime(date: Date, time: TimeOfDay): Date {
+  const result = new Date(date);
+  result.setHours(time.hour, time.minute, 0, 0);
+  return result;
+}
+
 /**
  * Determines if a feed item should be delivered according to a "Days and times of week" delivery
  * schedule.
@@ -109,114 +145,69 @@ function isDeliveredAccordingToDaysAndTimesOfWeekSchedule(args: {
   readonly deliverySchedule: DaysAndTimesOfWeekDeliverySchedule;
 }): boolean {
   const {createdTime, deliverySchedule} = args;
-  const {days, times} = deliverySchedule;
 
-  const now = new Date();
-
-  // Convert DayOfWeek enum values to JavaScript day indices (0=Sunday, 1=Monday, etc.)
-  const dayIndices = days.map((day) => {
-    switch (day) {
-      case DayOfWeek.Sunday:
-        return 0;
-      case DayOfWeek.Monday:
-        return 1;
-      case DayOfWeek.Tuesday:
-        return 2;
-      case DayOfWeek.Wednesday:
-        return 3;
-      case DayOfWeek.Thursday:
-        return 4;
-      case DayOfWeek.Friday:
-        return 5;
-      case DayOfWeek.Saturday:
-        return 6;
-      default:
-        assertNever(day);
-    }
-  }) as Array<0 | 1 | 2 | 3 | 4 | 5 | 6>;
-
-  const currentDayOfWeek = now.getDay(); // 0-6, where 0 is Sunday
-  const currentHour = now.getHours();
-  const currentMinute = now.getMinutes();
-
-  // Check if today is a delivery day
-  if (dayIndices.includes(currentDayOfWeek as 0 | 1 | 2 | 3 | 4 | 5 | 6)) {
-    // Check if current time is after any scheduled delivery time today
-    for (const time of times) {
-      if (currentHour > time.hour || (currentHour === time.hour && currentMinute >= time.minute)) {
-        // Current time is after this delivery time and it's a delivery day
-        // Check if the item was created before this delivery time
-        const deliveryTimeToday = new Date(now);
-        deliveryTimeToday.setHours(time.hour, time.minute, 0, 0);
-
-        if (createdTime.getTime() <= deliveryTimeToday.getTime()) {
-          return true;
-        }
-      }
-    }
-  }
-
-  // If not delivered today, check if it should be delivered based on previous delivery days
-  // Find the most recent delivery day before today
-  const msPerDay = 24 * 60 * 60 * 1000;
-  let mostRecentDeliveryDate: Date | null = null;
-
-  // Check the past 7 days to find the most recent delivery day
-  for (let daysAgo = 1; daysAgo <= 7; daysAgo++) {
-    const pastDate = new Date(now.getTime() - daysAgo * msPerDay);
-    const pastDayOfWeek = pastDate.getDay();
-
-    if (dayIndices.includes(pastDayOfWeek as 0 | 1 | 2 | 3 | 4 | 5 | 6)) {
-      // This past day is a delivery day, check all delivery times
-      for (const time of times) {
-        const pastDeliveryTime = new Date(pastDate);
-        pastDeliveryTime.setHours(time.hour, time.minute, 0, 0);
-
-        // If this past delivery time is the most recent we've found so far
-        if (
-          mostRecentDeliveryDate === null ||
-          pastDeliveryTime.getTime() > mostRecentDeliveryDate.getTime()
-        ) {
-          mostRecentDeliveryDate = pastDeliveryTime;
-        }
-      }
-    }
-  }
-
-  // If we found a most recent delivery date and the item was created before it
-  if (
-    mostRecentDeliveryDate !== null &&
-    createdTime.getTime() <= mostRecentDeliveryDate.getTime() &&
-    now.getTime() >= mostRecentDeliveryDate.getTime()
-  ) {
-    return true;
-  }
-
-  return false;
+  // If the item was created before the most recent delivery, it is delivered.
+  const mostRecentDeliveryDate = findMostRecentDeliveryDateForDaysAndTimesOfWeekSchedule({
+    deliverySchedule,
+  });
+  return createdTime.getTime() <= mostRecentDeliveryDate.getTime();
 }
 
 /**
- * Returns the most recent time before now that the provided delivery schedule delivered. Midnight
- * is always considered a delivery time, which is why this is always guaranteed to return a date.
+ * Returns the most recent {@link TimeOfDay} that a delivery schedule includes that has already
+ * happened today. Returns null if no such time exists.
  */
-// export function findMostRecentDeliveryDateForDaysAndTimesOfWeekSchedule(args: {
-//   readonly deliverySchedule: DaysAndTimesOfWeekDeliverySchedule;
-// }): Date {
-//   const {deliverySchedule} = args;
+function getMostRecentDeliveryTimeToday(times: TimeOfDay[]): Date | null {
+  const now = new Date();
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
 
-//   const now = new Date();
+  for (let i = times.length - 1; i >= 0; i--) {
+    const time = times[i];
+    if (currentHour > time.hour || (currentHour === time.hour && currentMinute >= time.minute)) {
+      return createDateWithTime(now, time);
+    }
+  }
 
-//   // Find the most recent completed delivery from today. Midnight is always considered a delivery
-//   // time, so start there.
-//   let mostRecentDeliveryDate = startOfDay(now);
-//   let nextDeliveryDate = addHours(mostRecentDeliveryDate, deliverySchedule.hours);
-//   while (nextDeliveryDate.getTime() <= now.getTime()) {
-//     mostRecentDeliveryDate = nextDeliveryDate;
-//     nextDeliveryDate = addHours(nextDeliveryDate, deliverySchedule.hours);
-//   }
+  return null;
+}
 
-//   return mostRecentDeliveryDate;
-// }
+/**
+ * Returns the most recent time before now that the provided delivery schedule delivered.
+ */
+export function findMostRecentDeliveryDateForDaysAndTimesOfWeekSchedule(args: {
+  readonly deliverySchedule: DaysAndTimesOfWeekDeliverySchedule;
+}): Date {
+  const {deliverySchedule} = args;
+  const {days, times} = deliverySchedule;
+
+  const now = new Date();
+  const currentDayOfWeek = now.getDay();
+
+  const dayIndices = days.map(dayOfWeekToIndex);
+
+  // Check today first.
+  if (dayIndices.includes(currentDayOfWeek as DayOfWeekIndex)) {
+    const mostRecentDeliveryTime = getMostRecentDeliveryTimeToday(times);
+    if (mostRecentDeliveryTime) return mostRecentDeliveryTime;
+  }
+
+  // Check the preceding 6 days.
+  for (let daysAgo = 1; daysAgo <= 7; daysAgo++) {
+    const pastDate = subDays(now, daysAgo);
+    const pastDayOfWeek = pastDate.getDay() as DayOfWeekIndex;
+
+    if (dayIndices.includes(pastDayOfWeek)) {
+      // This entire day is in the past, so the last time of the day will be most recent.
+      const lastTime = times[times.length - 1];
+      return createDateWithTime(pastDate, lastTime);
+    }
+  }
+
+  // This should never happen, but return `now` if no delivery time is found. This ensures items
+  // default to being shown if the delivery schedule is not set instead of hiding them forever.
+  return now;
+}
 
 /**
  * Determines if a feed item should be delivered according to an "Every N hours" delivery schedule.
