@@ -1,5 +1,8 @@
 import {z} from 'zod';
 
+import {DayOfWeek, TimeOfDaySchema} from '@shared/types/datetime.types';
+import type {TimeOfDay} from '@shared/types/datetime.types';
+
 export enum DeliveryScheduleType {
   Immediate = 'IMMEDIATE',
   Never = 'NEVER',
@@ -36,21 +39,6 @@ export type DeliverySchedule =
   | DaysAndTimesOfWeekDeliverySchedule
   | EveryNHoursDeliverySchedule;
 
-export enum DayOfWeek {
-  Monday = 'MON',
-  Tuesday = 'TUE',
-  Wednesday = 'WED',
-  Thursday = 'THU',
-  Friday = 'FRI',
-  Saturday = 'SAT',
-  Sunday = 'SUN',
-}
-
-export interface TimeOfDay {
-  readonly hour: number; // 0–23
-  readonly minute: number; // 0–59
-}
-
 const BaseDeliveryScheduleFromStorageSchema = z.object({
   type: z.nativeEnum(DeliveryScheduleType),
 });
@@ -61,11 +49,6 @@ const ImmediateDeliveryScheduleFromStorageSchema = BaseDeliveryScheduleFromStora
 
 const NeverDeliveryScheduleFromStorageSchema = BaseDeliveryScheduleFromStorageSchema.extend({
   type: z.literal(DeliveryScheduleType.Never),
-});
-
-const TimeOfDaySchema = z.object({
-  hour: z.number().int().min(0).max(23),
-  minute: z.number().int().min(0).max(59),
 });
 
 const DaysAndTimesOfWeekDeliveryScheduleFromStorageSchema =

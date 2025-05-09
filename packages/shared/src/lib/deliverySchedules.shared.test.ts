@@ -11,11 +11,12 @@ import {
   NEVER_DELIVERY_SCHEDULE,
 } from '@shared/lib/deliverySchedules.shared';
 
-import {DayOfWeek, DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
+import {DayOfWeek} from '@shared/types/datetime.types';
+import type {TimeOfDay} from '@shared/types/datetime.types';
+import {DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
 import type {
   DaysAndTimesOfWeekDeliverySchedule,
   EveryNHoursDeliverySchedule,
-  TimeOfDay,
 } from '@shared/types/deliverySchedules.types';
 
 const EVERY_DAY_OF_WEEK = [

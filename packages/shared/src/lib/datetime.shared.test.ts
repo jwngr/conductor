@@ -1,9 +1,12 @@
 import {
+  dayOfWeekToIndex,
   formatRelativeTime,
   makeTimeOfDay,
   validateHour,
   validateMinute,
 } from '@shared/lib/datetime.shared';
+
+import {DayOfWeek} from '@shared/types/datetime.types';
 
 describe('validateHour', () => {
   it('should accept valid hours', () => {
@@ -182,5 +185,17 @@ describe('formatRelativeTime', () => {
     jest.setSystemTime(now);
     const oneYearFromNow = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
     expect(formatRelativeTime(oneYearFromNow)).toBe('in 1 year');
+  });
+});
+
+describe('dayOfWeekToIndex', () => {
+  it('should be correct for every day of the week', () => {
+    expect(dayOfWeekToIndex(DayOfWeek.Sunday)).toBe(0);
+    expect(dayOfWeekToIndex(DayOfWeek.Monday)).toBe(1);
+    expect(dayOfWeekToIndex(DayOfWeek.Tuesday)).toBe(2);
+    expect(dayOfWeekToIndex(DayOfWeek.Wednesday)).toBe(3);
+    expect(dayOfWeekToIndex(DayOfWeek.Thursday)).toBe(4);
+    expect(dayOfWeekToIndex(DayOfWeek.Friday)).toBe(5);
+    expect(dayOfWeekToIndex(DayOfWeek.Saturday)).toBe(6);
   });
 });
