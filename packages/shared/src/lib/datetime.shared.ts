@@ -68,6 +68,7 @@ export function dayOfWeekToIndex(day: DayOfWeek): DayOfWeekIndex {
       return 5;
     case DayOfWeek.Saturday:
       return 6;
+    /* istanbul ignore next */
     default:
       assertNever(day);
   }
