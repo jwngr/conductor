@@ -1,5 +1,7 @@
 import {v4 as uuidv4} from 'uuid';
 
+import {logger} from '@shared/services/logger.shared';
+
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AsyncResult, Result} from '@shared/types/results.types';
@@ -18,10 +20,10 @@ export const formatWithCommas = (val: number): string => {
  * Throws an error if the provided value is not of type `never`. This is useful for exhaustive
  * switch statements.
  */
-export function assertNever(x: never): never {
-  // TODO: Add logging. Or a global error handler.
+export function assertNever(val: never): never {
+  logger.error(new Error('assertNever received non-empty value'), {val});
   // eslint-disable-next-line no-restricted-syntax
-  throw new Error(`Unexpected object: ${x}`);
+  throw new Error(`Unexpected value: ${val}`);
 }
 
 /**
