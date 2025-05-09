@@ -44,6 +44,13 @@ describe('deliverySchedules', () => {
     jest.useRealTimers();
   });
 
+  describe('No schedule', () => {
+    it('should always deliver', () => {
+      const createdTime = setMinutes(setHours(MONDAY_JAN_1_2024, 2), 17); // Mon 2:17 AM
+      expect(isDeliveredAccordingToSchedule({createdTime, deliverySchedule: null})).toBe(true);
+    });
+  });
+
   describe('Immediate schedule', () => {
     it('should always deliver', () => {
       const createdTime = setMinutes(setHours(MONDAY_JAN_1_2024, 2), 17); // Mon 2:17 AM
@@ -135,6 +142,14 @@ describe('deliverySchedules', () => {
         expect(scheduleResult.success).toBe(false);
       });
 
+      it('should reject invalid times array', () => {
+        const scheduleResult = makeDaysAndTimesOfWeekDeliverySchedule({
+          days: [DayOfWeek.Monday],
+          times: [{hour: 100, minute: 0}],
+        });
+        expect(scheduleResult.success).toBe(false);
+      });
+
       it('should reject days array with duplicate days', () => {
         const scheduleResult = makeDaysAndTimesOfWeekDeliverySchedule({
           days: [DayOfWeek.Monday, DayOfWeek.Monday],
@@ -175,6 +190,18 @@ describe('deliverySchedules', () => {
           deliverySchedule: multiDaySchedule,
         });
         expect(date).toEqual(setHours(subDays(MONDAY_JAN_1_2024, 5), 15)); // Previous Wed 3:00 PM
+      });
+
+      it('should return now if no scheduled times', () => {
+        jest.setSystemTime(setHours(MONDAY_JAN_1_2024, 8)); // Mon 8:00 AM
+        const date = findMostRecentDeliveryDateForDaysAndTimesOfWeekSchedule({
+          deliverySchedule: {
+            type: DeliveryScheduleType.DaysAndTimesOfWeek,
+            days: [],
+            times: [],
+          },
+        });
+        expect(date).toEqual(setHours(MONDAY_JAN_1_2024, 8)); // Mon 8:00 AM
       });
     });
 

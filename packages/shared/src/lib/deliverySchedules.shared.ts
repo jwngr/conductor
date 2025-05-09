@@ -99,6 +99,7 @@ export function isDeliveredAccordingToSchedule(args: {
         createdTime,
         deliverySchedule,
       });
+    /* istanbul ignore next */
     default:
       assertNever(deliverySchedule);
   }
@@ -208,8 +209,8 @@ export function findMostRecentDeliveryDateForDaysAndTimesOfWeekSchedule(args: {
     }
   }
 
-  // This should never happen, but return `now` if no delivery time is found. This ensures items
-  // default to being shown if the delivery schedule is not set instead of hiding them forever.
+  // The delivery schedule may be invalid for some reason which leads to no most recent delivery
+  // date being found. Fall back to `now` to ensure items default to being shown rather than hidden.
   return now;
 }
 
