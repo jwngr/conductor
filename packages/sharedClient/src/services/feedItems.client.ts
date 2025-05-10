@@ -26,6 +26,7 @@ import {Views} from '@shared/lib/views.shared';
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 
 import type {AccountId, AuthStateChangedUnsubscribe} from '@shared/types/accounts.types';
+import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {
   FeedItem,
   FeedItemId,
@@ -46,6 +47,7 @@ import {
 } from '@sharedClient/services/firestore.client';
 import {useUserFeedSubscriptions} from '@sharedClient/services/userFeedSubscriptions.client';
 
+import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 import {useIsMounted} from '@sharedClient/hooks/utils.hook';
 
@@ -79,22 +81,29 @@ export function useFeedItem(feedItemId: FeedItemId): {
   readonly error: Error | null;
 } {
   const feedItemsService = useFeedItemsService();
-  const [state, setState] = useState<{
-    readonly feedItem: FeedItem | null;
-    readonly isLoading: boolean;
-    readonly error: Error | null;
-  }>({feedItem: null, isLoading: true, error: null});
+  const {asyncState, setPending, setError, setSuccess} = useAsyncState<FeedItem | null>();
 
   useEffect(() => {
+    setPending();
     const unsubscribe = feedItemsService.watchFeedItem(
       feedItemId,
-      (feedItem) => setState({feedItem, isLoading: false, error: null}),
-      (error) => setState({feedItem: null, isLoading: false, error})
+      (feedItem) => setSuccess(feedItem),
+      (error) => setError(error)
     );
     return () => unsubscribe();
-  }, [feedItemId, feedItemsService]);
+  }, [feedItemId, setPending, setError, setSuccess, feedItemsService]);
 
-  return state;
+  switch (asyncState.status) {
+    case AsyncStatus.Idle:
+    case AsyncStatus.Pending:
+      return {feedItem: null, isLoading: true, error: null};
+    case AsyncStatus.Error:
+      return {feedItem: null, isLoading: false, error: asyncState.error};
+    case AsyncStatus.Success:
+      return {feedItem: asyncState.value, isLoading: false, error: null};
+    default:
+      assertNever(asyncState);
+  }
 }
 
 /**

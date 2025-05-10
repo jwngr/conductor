@@ -83,19 +83,19 @@ const useMarkFeedItemRead = (args: {
 const FeedItemScreenMainContent: React.FC<{
   readonly feedItemId: FeedItemId;
 }> = ({feedItemId}) => {
-  const {feedItem, isLoading: isItemLoading, error: feedItemError} = useFeedItem(feedItemId);
+  const {feedItem, isLoading, error} = useFeedItem(feedItemId);
 
   useMarkFeedItemRead({feedItem, feedItemId});
 
-  if (isItemLoading) {
-    // TODO: Introduce proper loading component.
-    return <div>Loading...</div>;
+  if (error) {
+    const betterError = prefixError(error, 'Failed to load item');
+    logger.error(betterError, {feedItemId, isLoading});
+    return <ErrorScreen error={betterError} />;
   }
 
-  if (feedItemError) {
-    const betterError = prefixError(feedItemError, 'Failed to load item');
-    logger.error(betterError, {feedItemId, isItemLoading});
-    return <ErrorScreen error={betterError} />;
+  if (isLoading) {
+    // TODO: Introduce proper loading component.
+    return <div>Loading...</div>;
   }
 
   if (!feedItem) {
