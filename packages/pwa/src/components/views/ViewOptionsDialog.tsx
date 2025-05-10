@@ -11,6 +11,7 @@ import {SORT_BY_CREATED_TIME_DESC_OPTION} from '@shared/types/views.types';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
+import {Label} from '@src/components/atoms/Label';
 import {Popover, PopoverContent, PopoverTrigger} from '@src/components/atoms/Popover';
 
 export const ViewOptionsDialog: React.FC<{
@@ -70,9 +71,7 @@ export const ViewOptionsDialog: React.FC<{
       <PopoverContent className="w-auto" align="end" side="bottom">
         <FlexColumn gap={4} padding={4}>
           <FlexRow gap={2} justify="between">
-            <label htmlFor="groupBy" className="text-sm font-medium">
-              Group by
-            </label>
+            <Label htmlFor="groupBy">Group by</Label>
             <select
               id="groupBy"
               value={firstGroupByOption ?? 'none'}
@@ -85,9 +84,7 @@ export const ViewOptionsDialog: React.FC<{
             </select>
           </FlexRow>
           <FlexRow gap={2} justify="between">
-            <label htmlFor="sortField" className="text-sm font-medium">
-              Sort by
-            </label>
+            <Label htmlFor="sortField">Sort by</Label>
             <div className="flex items-center gap-1">
               <select
                 id="sortField"

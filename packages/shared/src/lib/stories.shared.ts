@@ -38,6 +38,8 @@ function getAtomicComponentSidebarItemTitle(type: AtomicComponentType): string {
       return 'Button';
     case AtomicComponentType.ButtonIcon:
       return 'ButtonIcon';
+    case AtomicComponentType.Checkbox:
+      return 'Checkbox';
     case AtomicComponentType.Dialog:
       return 'Dialog';
     case AtomicComponentType.Divider:
@@ -116,6 +118,7 @@ const ORDERED_ATOMIC_COMPONENT_TYPES: AtomicComponentType[] = [
   AtomicComponentType.ButtonIcon,
   AtomicComponentType.Button,
   AtomicComponentType.Badge,
+  AtomicComponentType.Checkbox,
   AtomicComponentType.Input,
   AtomicComponentType.Dialog,
   AtomicComponentType.Toast,
