@@ -14,7 +14,7 @@ export function isValidUrl(url: string): boolean {
   return tryParseUrl(url) !== null;
 }
 
-export function parseUrl(url: string): string | null {
+export function parseUrl(url: string): URL | null {
   const parsedUrl = tryParseUrl(url);
-  return parsedUrl ? parsedUrl.toString() : null;
+  return parsedUrl ? parsedUrl : null;
 }

@@ -29,7 +29,6 @@ import {
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
 import {FeedItemImportStatus} from '@shared/types/feedItems.types';
-import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 
 import {ServerAccountsService} from '@sharedServer/services/accounts.server';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
@@ -46,9 +45,12 @@ import {WipeoutService} from '@sharedServer/services/wipeout.server';
 
 import {wipeoutAccountHelper} from '@src/lib/accountWipeout';
 import {feedItemImportHelper} from '@src/lib/feedItemImport';
-import {subscribeAccountToFeedHelper} from '@src/lib/feedSubscription';
 import {handleFeedUnsubscribeHelper} from '@src/lib/feedUnsubscribe';
+import {validateUrlParam, verifyAuth} from '@src/lib/middleware';
 import {handleSuperfeedrWebhookHelper} from '@src/lib/superfeedrWebhook';
+
+import {handleSubscribeAccountToFeedOnCallRequest} from '@src/reqHandlers/handleSubscribeAccountToFeedOnCall';
+import type {SubscribeAccountToFeedOnCallResponse} from '@src/reqHandlers/handleSubscribeAccountToFeedOnCall';
 
 const FIRECRAWL_API_KEY = defineString('FIRECRAWL_API_KEY');
 const SUPERFEEDR_USER = defineString('SUPERFEEDR_USER');
@@ -185,10 +187,13 @@ export const wipeoutAccountOnAuthDelete = auth.user().onDelete(async (firebaseUs
 export const subscribeAccountToFeedOnCall = onCall(
   // TODO: Lock down CORS to only allow requests from my domains.
   {cors: true},
-  async (request): Promise<{readonly userFeedSubscriptionId: UserFeedSubscriptionId}> => {
-    return subscribeAccountToFeedHelper({
-      auth: request.auth,
-      data: request.data,
+  async (request): Promise<SubscribeAccountToFeedOnCallResponse> => {
+    const accountId = verifyAuth(request);
+    const parsedUrl = validateUrlParam(request);
+
+    return await handleSubscribeAccountToFeedOnCallRequest({
+      accountId,
+      parsedUrl,
       rssFeedService,
     });
   }

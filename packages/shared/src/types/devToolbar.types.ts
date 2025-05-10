@@ -2,7 +2,6 @@ import type {Func, Supplier, Unsubscribe} from '@shared/types/utils.types';
 
 export enum DevToolbarSectionType {
   FeedItemImporter = 'FEED_ITEM_IMPORTER',
-  AccountFeedSubscriber = 'ACCOUNT_FEED_SUBSCRIBER',
   IndividualFeedItemActions = 'INDIVIDUAL_FEED_ITEM_ACTIONS',
 }
 
