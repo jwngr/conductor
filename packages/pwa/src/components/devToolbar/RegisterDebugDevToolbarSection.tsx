@@ -4,23 +4,32 @@ import {DevToolbarSectionType} from '@shared/types/devToolbar.types';
 
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
+import {Checkbox} from '@src/components/atoms/Checkbox';
 import {FlexColumn} from '@src/components/atoms/Flex';
-import {Text} from '@src/components/atoms/Text';
 
 const DebugDevToolbarSection: React.FC = () => {
-  const showDevTools = useDevToolbarStore((state) => state.showRouterDevTools);
-  const toggleDevTools = useDevToolbarStore((state) => state.toggleRouterDevTools);
+  const toggleRouterDevTools = useDevToolbarStore((state) => state.toggleRouterDevTools);
+  const shouldShowRouterDevTools = useDevToolbarStore((state) => state.shouldShowRouterDevTools);
+  const toggleDebugActions = useDevToolbarStore((state) => state.toggleDebugActions);
+  const shouldShowDebugActions = useDevToolbarStore((state) => state.shouldShowDebugActions);
 
   return (
     <FlexColumn>
       <label className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          checked={showDevTools}
-          onChange={() => toggleDevTools()}
-          className="h-4 w-4"
+        <Checkbox
+          id="debugRouterDevTools"
+          checked={shouldShowRouterDevTools}
+          onClick={() => toggleRouterDevTools()}
         />
-        <Text as="p">{showDevTools ? 'Hide' : 'Show'} router dev tools</Text>
+        <label htmlFor="debugRouterDevTools">Show router dev tools</label>
+      </label>
+      <label className="flex items-center gap-2">
+        <Checkbox
+          id="debugActions"
+          checked={shouldShowDebugActions}
+          onClick={() => toggleDebugActions()}
+        />
+        <label htmlFor="debugActions">Show debug actions</label>
       </label>
     </FlexColumn>
   );

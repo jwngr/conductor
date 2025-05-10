@@ -42,7 +42,7 @@ const LoggedInGlobalSubscriptions: React.FC = () => {
 };
 
 const RootComponent: React.FC = () => {
-  const showDevTools = useDevToolbarStore((state) => state.showRouterDevTools);
+  const shouldShowRouterDevTools = useDevToolbarStore((state) => state.shouldShowRouterDevTools);
 
   return (
     <TooltipProvider>
@@ -53,7 +53,7 @@ const RootComponent: React.FC = () => {
           <PermanentGlobalSubscriptions />
           <LoggedInGlobalSubscriptions />
           <DevToolbar />
-          {IS_DEVELOPMENT && showDevTools ? <TanStackRouterDevtools /> : null}
+          {IS_DEVELOPMENT && shouldShowRouterDevTools ? <TanStackRouterDevtools /> : null}
         </ErrorBoundary>
       </ThemeProvider>
     </TooltipProvider>

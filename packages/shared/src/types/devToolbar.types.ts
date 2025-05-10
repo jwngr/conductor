@@ -16,6 +16,10 @@ export interface DevToolbarSectionInfo {
 export interface DevToolbarStore {
   readonly sections: readonly DevToolbarSectionInfo[];
   readonly registerSection: Func<DevToolbarSectionInfo, Unsubscribe>;
-  readonly showRouterDevTools: boolean;
+
+  // Debug section.
+  readonly shouldShowRouterDevTools: boolean;
   readonly toggleRouterDevTools: Task;
+  readonly shouldShowDebugActions: boolean;
+  readonly toggleDebugActions: Task;
 }

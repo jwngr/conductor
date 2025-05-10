@@ -22,6 +22,7 @@ import type {Consumer} from '@shared/types/utils.types';
 import {BadgeStories} from '@src/components/atoms/Badge.stories';
 import {ButtonStories} from '@src/components/atoms/Button.stories';
 import {ButtonIconStories} from '@src/components/atoms/ButtonIcon.stories';
+import {CheckboxStories} from '@src/components/atoms/Checkbox.stories';
 import {DialogStories} from '@src/components/atoms/Dialog.stories';
 import {DividerStories} from '@src/components/atoms/Divider.stories';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
@@ -56,6 +57,8 @@ const AtomicComponentStoryContent: React.FC<{
       return <ButtonStories />;
     case AtomicComponentType.ButtonIcon:
       return <ButtonIconStories />;
+    case AtomicComponentType.Checkbox:
+      return <CheckboxStories />;
     case AtomicComponentType.Dialog:
       return <DialogStories />;
     case AtomicComponentType.Divider:
