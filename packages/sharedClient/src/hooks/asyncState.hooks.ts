@@ -5,9 +5,9 @@ import {
   makeErrorAsyncState,
   makeSuccessAsyncState,
   PENDING_ASYNC_STATE,
-} from '@shared/lib/asyncState.types';
+} from '@shared/lib/asyncState.shared';
 
-import type {AsyncState} from '@shared/types/asyncState.type';
+import type {AsyncState} from '@shared/types/asyncState.types';
 import type {Consumer} from '@shared/types/utils.types';
 
 /**

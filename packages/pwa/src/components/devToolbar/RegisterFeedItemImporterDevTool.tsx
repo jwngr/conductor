@@ -3,7 +3,7 @@ import {useCallback, useEffect, useState} from 'react';
 import {isValidUrl} from '@shared/lib/urls.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
-import {AsyncStatus} from '@shared/types/asyncState.type';
+import {AsyncStatus} from '@shared/types/asyncState.types';
 import {DevToolbarSectionType} from '@shared/types/devToolbar.types';
 import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems.types';
 
