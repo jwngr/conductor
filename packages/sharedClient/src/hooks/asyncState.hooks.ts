@@ -30,7 +30,7 @@ import type {Consumer} from '@shared/types/utils.types';
  *
  * switch (asyncState.status) {
  *   case AsyncStatus.Idle:
- *     return null;
+ *     return <button onClick={handleClick}>Click me</button>;
  *   case AsyncStatus.Pending:
  *     return <p>Loading...</p>;
  *   case AsyncStatus.Error:

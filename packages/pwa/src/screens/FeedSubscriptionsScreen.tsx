@@ -2,8 +2,10 @@ import {useCallback, useState} from 'react';
 
 import {prefixError} from '@shared/lib/errorUtils.shared';
 import {parseUrl} from '@shared/lib/urls.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
+import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
 import {
   useUserFeedSubscriptions,
@@ -21,9 +23,10 @@ import {FeedSubscriptionSettingsButton} from '@src/components/feedSubscriptions/
 import {Screen} from '@src/screens/Screen';
 
 const FeedAdder: React.FC = () => {
+  const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
+
   const [urlInputValue, setUrlInputValue] = useState('');
   const {asyncState, setPending, setError, setSuccess} = useAsyncState<undefined>();
-  const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
 
   const handleSubscribeToRssFeedByUrl = useCallback(
     async (rssFeedUrl: string): Promise<void> => {
@@ -107,57 +110,69 @@ const FeedAdder: React.FC = () => {
   );
 };
 
+const LoadedFeedSubscriptionsListMainContent: React.FC<{
+  subscriptions: UserFeedSubscription[];
+}> = ({subscriptions}) => {
+  if (subscriptions.length === 0) {
+    // TODO: Add better empty state.
+    return (
+      <Text as="p" light>
+        None
+      </Text>
+    );
+  }
+
+  return (
+    <FlexColumn flex={1}>
+      {subscriptions.map((subscription) => (
+        <FlexRow
+          key={subscription.userFeedSubscriptionId}
+          gap={3}
+          padding={3}
+          className="rounded-lg border border-gray-200"
+        >
+          <FlexColumn flex={1} gap={1}>
+            <Text bold className={subscription.isActive ? undefined : 'text-error'}>
+              {subscription.title}
+            </Text>
+            <Text as="p" light>
+              {subscription.url}
+            </Text>
+          </FlexColumn>
+          <FeedSubscriptionSettingsButton userFeedSubscription={subscription} />
+        </FlexRow>
+      ))}
+    </FlexColumn>
+  );
+};
+
 const FeedSubscriptionsList: React.FC = () => {
   const userFeedSubscriptionsState = useUserFeedSubscriptions();
 
   const renderMainContent = (): React.ReactNode => {
-    if (userFeedSubscriptionsState.error) {
-      return (
-        <Text as="p" className="text-error">
-          Error loading feed subscriptions
-        </Text>
-      );
+    switch (userFeedSubscriptionsState.status) {
+      case AsyncStatus.Idle:
+      case AsyncStatus.Pending:
+        return (
+          <Text as="p" light>
+            Loading...
+          </Text>
+        );
+      case AsyncStatus.Error:
+        return (
+          <Text as="p" className="text-error">
+            Error loading feed subscriptions
+          </Text>
+        );
+      case AsyncStatus.Success:
+        return (
+          <LoadedFeedSubscriptionsListMainContent
+            subscriptions={userFeedSubscriptionsState.value}
+          />
+        );
+      default:
+        assertNever(userFeedSubscriptionsState);
     }
-
-    if (userFeedSubscriptionsState.isLoading) {
-      return (
-        <Text as="p" light>
-          Loading...
-        </Text>
-      );
-    }
-
-    if (userFeedSubscriptionsState.subscriptions.length === 0) {
-      // TODO: Add better empty state.
-      return (
-        <Text as="p" light>
-          None
-        </Text>
-      );
-    }
-
-    return (
-      <FlexColumn flex={1}>
-        {userFeedSubscriptionsState.subscriptions.map((subscription) => (
-          <FlexRow
-            key={subscription.userFeedSubscriptionId}
-            gap={3}
-            padding={3}
-            className="rounded-lg border border-gray-200"
-          >
-            <FlexColumn flex={1} gap={1}>
-              <Text bold className={subscription.isActive ? undefined : 'text-error'}>
-                {subscription.title}
-              </Text>
-              <Text as="p" light>
-                {subscription.url}
-              </Text>
-            </FlexColumn>
-            <FeedSubscriptionSettingsButton userFeedSubscription={subscription} />
-          </FlexRow>
-        ))}
-      </FlexColumn>
-    );
   };
 
   return (

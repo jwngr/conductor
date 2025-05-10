@@ -9,7 +9,7 @@ import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
 import {useCurrentTab} from '@src/lib/tabs.ext';
 
 export const App: React.FC = () => {
-  const [status, setStatus] = useState<string>('');
+  const [status, setStatus] = useState('');
   const {currentTab} = useCurrentTab();
   const feedItemsService = useFeedItemsService();
 

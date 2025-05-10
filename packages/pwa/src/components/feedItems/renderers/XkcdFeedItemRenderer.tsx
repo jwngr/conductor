@@ -1,7 +1,9 @@
 import type React from 'react';
 
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 
+import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {XkcdFeedItem} from '@shared/types/feedItems.types';
 
 import {useExplainXkcdMarkdown} from '@sharedClient/services/feedItems.client';
@@ -33,28 +35,26 @@ const XkcdImageAndAltText: React.FC<{
 const ExplainXkcdContent: React.FC<{readonly feedItem: XkcdFeedItem}> = ({feedItem}) => {
   const markdownState = useExplainXkcdMarkdown(feedItem);
 
-  if (markdownState.error) {
-    return (
-      <Text as="p" className="text-error">
-        Error loading Explain XKCD content: {markdownState.error.message}
-      </Text>
-    );
+  switch (markdownState.status) {
+    case AsyncStatus.Idle:
+    case AsyncStatus.Pending:
+      return <Text as="p">Loading Explain XKCD content...</Text>;
+    case AsyncStatus.Error:
+      return (
+        <Text as="p" className="text-error">
+          Error loading Explain XKCD content: {markdownState.error.message}
+        </Text>
+      );
+    case AsyncStatus.Success:
+      return (
+        <>
+          <Text as="h5">Explanation from Explain XKCD</Text>
+          <Markdown content={markdownState.value} />
+        </>
+      );
+    default:
+      assertNever(markdownState);
   }
-
-  if (markdownState.isLoading) {
-    return <Text as="p">Loading Explain XKCD content...</Text>;
-  }
-
-  if (!markdownState.content) {
-    return <Text as="p">No Explain XKCD content</Text>;
-  }
-
-  return (
-    <>
-      <Text as="h5">Explanation from Explain XKCD</Text>
-      <Markdown content={markdownState.content} />
-    </>
-  );
 };
 
 export const XkcdFeedItemRenderer: React.FC<{readonly feedItem: XkcdFeedItem}> = ({feedItem}) => {

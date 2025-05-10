@@ -32,7 +32,7 @@ const FeedItemImporter: React.FC = () => {
   const feedItemsService = useFeedItemsService();
 
   const [urlInputValue, setUrlInputValue] = useState('');
-  const {asyncState, setPending, setError, setSuccess} = useAsyncState();
+  const {asyncState, setPending, setError, setSuccess} = useAsyncState<undefined>();
 
   const handleAddItemToQueue = useCallback(
     async (maybeUrl: string) => {

@@ -1,7 +1,9 @@
 import type React from 'react';
 
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 
+import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {YouTubeFeedItem} from '@shared/types/feedItems.types';
 
 import {useYouTubeFeedItemTranscript} from '@sharedClient/services/feedItems.client';
@@ -14,23 +16,21 @@ import {Markdown} from '@src/components/Markdown';
 const YouTubeFeedItemTranscript: React.FC<{readonly feedItem: YouTubeFeedItem}> = ({feedItem}) => {
   const transcriptState = useYouTubeFeedItemTranscript(feedItem);
 
-  if (transcriptState.error) {
-    return (
-      <Text as="p" className="text-error">
-        Error loading transcript: {transcriptState.error.message}
-      </Text>
-    );
+  switch (transcriptState.status) {
+    case AsyncStatus.Idle:
+    case AsyncStatus.Pending:
+      return <Text as="p">Loading transcript...</Text>;
+    case AsyncStatus.Error:
+      return (
+        <Text as="p" className="text-error">
+          Error loading transcript: {transcriptState.error.message}
+        </Text>
+      );
+    case AsyncStatus.Success:
+      return <Markdown content={transcriptState.value} />;
+    default:
+      assertNever(transcriptState);
   }
-
-  if (transcriptState.isLoading) {
-    return <Text as="p">Loading transcript...</Text>;
-  }
-
-  if (transcriptState.content) {
-    return <Markdown content={transcriptState.content} />;
-  }
-
-  return <Text as="p">No transcript</Text>;
 };
 
 export const YouTubeFeedItemRenderer: React.FC<{readonly feedItem: YouTubeFeedItem}> = ({

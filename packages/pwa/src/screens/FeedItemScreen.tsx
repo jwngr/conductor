@@ -8,6 +8,7 @@ import {prefixError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
+import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
 import {FeedItemType} from '@shared/types/feedItems.types';
 import {SystemTagId} from '@shared/types/tags.types';
@@ -80,27 +81,10 @@ const useMarkFeedItemRead = (args: {
   }, [feedItemId, isFeedItemNull, feedItemsService, hasFeedItemBeenImported]);
 };
 
-const FeedItemScreenMainContent: React.FC<{
-  readonly feedItemId: FeedItemId;
-}> = ({feedItemId}) => {
-  const {feedItem, isLoading, error} = useFeedItem(feedItemId);
-
-  useMarkFeedItemRead({feedItem, feedItemId});
-
-  if (error) {
-    const betterError = prefixError(error, 'Failed to load item');
-    logger.error(betterError, {feedItemId, isLoading});
-    return <ErrorScreen error={betterError} />;
-  }
-
-  if (isLoading) {
-    // TODO: Introduce proper loading component.
-    return <div>Loading...</div>;
-  }
-
-  if (!feedItem) {
-    return <NotFoundScreen message="Feed item not found" />;
-  }
+const LoadedFeedItemScreenMainContent: React.FC<{
+  readonly feedItem: FeedItem;
+}> = ({feedItem}) => {
+  useMarkFeedItemRead({feedItem, feedItemId: feedItem.feedItemId});
 
   let feedItemContent: React.ReactNode;
   switch (feedItem.type) {
@@ -132,6 +116,31 @@ const FeedItemScreenMainContent: React.FC<{
       <RegisterIndividualFeedItemDevToolbarSection feedItem={feedItem} />
     </>
   );
+};
+
+const FeedItemScreenMainContent: React.FC<{
+  readonly feedItemId: FeedItemId;
+}> = ({feedItemId}) => {
+  const feedItemState = useFeedItem(feedItemId);
+
+  switch (feedItemState.status) {
+    case AsyncStatus.Idle:
+    case AsyncStatus.Pending:
+      // TODO: Introduce proper loading component.
+      return <div>Loading...</div>;
+    case AsyncStatus.Error: {
+      const betterError = prefixError(feedItemState.error, 'Failed to load item');
+      logger.error(betterError, {feedItemId});
+      return <ErrorScreen error={betterError} />;
+    }
+    case AsyncStatus.Success:
+      if (!feedItemState.value) {
+        return <NotFoundScreen message="Feed item not found" />;
+      }
+      return <LoadedFeedItemScreenMainContent feedItem={feedItemState.value} />;
+    default:
+      assertNever(feedItemState);
+  }
 };
 
 export const FeedItemScreen: React.FC = () => {

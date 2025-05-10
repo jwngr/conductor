@@ -5,7 +5,6 @@ import {useEffect, useMemo} from 'react';
 
 import {USER_FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {asyncTry, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {assertNever} from '@shared/lib/utils.shared';
 
 import {
   parseUserFeedSubscription,
@@ -14,7 +13,7 @@ import {
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import {AsyncStatus} from '@shared/types/asyncState.types';
+import type {AsyncState} from '@shared/types/asyncState.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {
   UserFeedSubscription,
@@ -174,19 +173,7 @@ export function useUserFeedSubscriptionsService(): ClientUserFeedSubscriptionsSe
   return userFeedSubscriptionsService;
 }
 
-interface UserFeedSubscriptionsState {
-  readonly subscriptions: UserFeedSubscription[];
-  readonly isLoading: boolean;
-  readonly error: Error | null;
-}
-
-const INITIAL_USER_FEED_SUBSCRIPTIONS_STATE: UserFeedSubscriptionsState = {
-  subscriptions: [],
-  isLoading: true,
-  error: null,
-} as const;
-
-export const useUserFeedSubscriptions = (): UserFeedSubscriptionsState => {
+export const useUserFeedSubscriptions = (): AsyncState<UserFeedSubscription[]> => {
   const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
 
   const {asyncState, setPending, setError, setSuccess} = useAsyncState<UserFeedSubscription[]>();
@@ -194,26 +181,12 @@ export const useUserFeedSubscriptions = (): UserFeedSubscriptionsState => {
   useEffect(() => {
     setPending();
     const unsubscribe = userFeedSubscriptionsService.watchAllSubscriptions({
-      successCallback: (updatedSubscriptions) => {
-        setSuccess(updatedSubscriptions);
-      },
-      errorCallback: (error) => {
-        setError(error);
-      },
+      successCallback: setSuccess,
+      errorCallback: setError,
     });
 
     return () => unsubscribe();
   }, [userFeedSubscriptionsService, setPending, setError, setSuccess]);
 
-  switch (asyncState.status) {
-    case AsyncStatus.Idle:
-    case AsyncStatus.Pending:
-      return INITIAL_USER_FEED_SUBSCRIPTIONS_STATE;
-    case AsyncStatus.Error:
-      return {subscriptions: [], isLoading: false, error: asyncState.error};
-    case AsyncStatus.Success:
-      return {subscriptions: asyncState.value, isLoading: false, error: null};
-    default:
-      assertNever(asyncState);
-  }
+  return asyncState;
 };

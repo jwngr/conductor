@@ -5,6 +5,7 @@ import {useEffect, useMemo} from 'react';
 
 import {logger} from '@shared/services/logger.shared';
 
+import {makeErrorAsyncState, makeSuccessAsyncState} from '@shared/lib/asyncState.shared';
 import {
   FEED_ITEM_FILE_NAME_LLM_CONTEXT,
   FEED_ITEM_FILE_NAME_TRANSCRIPT,
@@ -27,6 +28,7 @@ import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers
 
 import type {AccountId, AuthStateChangedUnsubscribe} from '@shared/types/accounts.types';
 import {AsyncStatus} from '@shared/types/asyncState.types';
+import type {AsyncState} from '@shared/types/asyncState.types';
 import type {
   FeedItem,
   FeedItemId,
@@ -75,12 +77,9 @@ export function useFeedItemsService(): ClientFeedItemsService {
   return feedItemsService;
 }
 
-export function useFeedItem(feedItemId: FeedItemId): {
-  readonly feedItem: FeedItem | null;
-  readonly isLoading: boolean;
-  readonly error: Error | null;
-} {
+export function useFeedItem(feedItemId: FeedItemId): AsyncState<FeedItem | null> {
   const feedItemsService = useFeedItemsService();
+
   const {asyncState, setPending, setError, setSuccess} = useAsyncState<FeedItem | null>();
 
   useEffect(() => {
@@ -93,17 +92,7 @@ export function useFeedItem(feedItemId: FeedItemId): {
     return () => unsubscribe();
   }, [feedItemId, setPending, setError, setSuccess, feedItemsService]);
 
-  switch (asyncState.status) {
-    case AsyncStatus.Idle:
-    case AsyncStatus.Pending:
-      return {feedItem: null, isLoading: true, error: null};
-    case AsyncStatus.Error:
-      return {feedItem: null, isLoading: false, error: asyncState.error};
-    case AsyncStatus.Success:
-      return {feedItem: asyncState.value, isLoading: false, error: null};
-    default:
-      assertNever(asyncState);
-  }
+  return asyncState;
 }
 
 /**
@@ -140,17 +129,11 @@ function filterFeedItemsByDeliverySchedules(args: {
   });
 }
 
-interface FeedItemsState {
-  readonly feedItems: FeedItem[];
-  readonly isLoading: boolean;
-  readonly error: Error | null;
-}
-
 /**
  * Internal helper for fetching all feed items for a view, ignoring delivery schedules. Works for
  * all views.
  */
-function useFeedItemsInternal(args: {readonly viewType: ViewType}): FeedItemsState {
+function useFeedItemsInternal(args: {readonly viewType: ViewType}): AsyncState<FeedItem[]> {
   const {viewType} = args;
   const feedItemsService = useFeedItemsService();
 
@@ -166,17 +149,7 @@ function useFeedItemsInternal(args: {readonly viewType: ViewType}): FeedItemsSta
     return () => unsubscribe();
   }, [viewType, feedItemsService, setPending, setError, setSuccess]);
 
-  switch (asyncState.status) {
-    case AsyncStatus.Idle:
-    case AsyncStatus.Pending:
-      return {feedItems: [], isLoading: true, error: null};
-    case AsyncStatus.Error:
-      return {feedItems: [], isLoading: false, error: asyncState.error};
-    case AsyncStatus.Success:
-      return {feedItems: asyncState.value, isLoading: false, error: null};
-    default:
-      assertNever(asyncState);
-  }
+  return asyncState;
 }
 
 /**
@@ -187,7 +160,7 @@ function useFeedItemsInternal(args: {readonly viewType: ViewType}): FeedItemsSta
  */
 export function useFeedItemsIgnoringDelivery(args: {
   readonly viewType: Exclude<ViewType, ViewType.Untriaged>;
-}): FeedItemsState {
+}): AsyncState<FeedItem[]> {
   return useFeedItemsInternal({viewType: args.viewType});
 }
 
@@ -200,55 +173,58 @@ export function useFeedItemsIgnoringDelivery(args: {
  */
 export function useFeedItemsRespectingDelivery(args: {
   readonly viewType: ViewType.Untriaged;
-}): FeedItemsState {
+}): AsyncState<FeedItem[]> {
   const {viewType} = args;
 
   const feedItemsState = useFeedItemsInternal({viewType});
   const userFeedSubscriptionsState = useUserFeedSubscriptions();
 
-  const isSomethingLoading = userFeedSubscriptionsState.isLoading || feedItemsState.isLoading;
-
   const filteredFeedItems = useMemo(() => {
-    // Cannot filter until everything loads.
-    if (isSomethingLoading) return [];
+    // Everything is loaded and ready to filter.
+    switch (feedItemsState.status) {
+      case AsyncStatus.Idle:
+      case AsyncStatus.Pending:
+        return [];
+      case AsyncStatus.Error:
+        // TODO: Show any previously fetched items even when an error happens.
+        return [];
+      case AsyncStatus.Success:
+        if (userFeedSubscriptionsState.status !== AsyncStatus.Success) {
+          return [];
+        }
+        return filterFeedItemsByDeliverySchedules({
+          feedItems: feedItemsState.value,
+          userFeedSubscriptions: userFeedSubscriptionsState.value,
+        });
+      default:
+        assertNever(feedItemsState);
+    }
+  }, [feedItemsState, userFeedSubscriptionsState]);
 
-    // Everything is loaded and ready to filter. There may be an error, but we still want to show
-    // any pre-existing data.
-    return filterFeedItemsByDeliverySchedules({
-      feedItems: feedItemsState.feedItems,
-      userFeedSubscriptions: userFeedSubscriptionsState.subscriptions,
-    });
-  }, [isSomethingLoading, feedItemsState.feedItems, userFeedSubscriptionsState.subscriptions]);
-
-  return {
-    feedItems: filteredFeedItems,
-    isLoading: isSomethingLoading,
-    error: feedItemsState.error ?? userFeedSubscriptionsState.error,
-  };
+  switch (feedItemsState.status) {
+    case AsyncStatus.Idle:
+    case AsyncStatus.Pending:
+      return feedItemsState;
+    case AsyncStatus.Error:
+      return makeErrorAsyncState(feedItemsState.error);
+    case AsyncStatus.Success:
+      return makeSuccessAsyncState(filteredFeedItems);
+    default:
+      assertNever(feedItemsState);
+  }
 }
-
-interface UseFeedItemFileResult {
-  readonly content: string | null;
-  readonly isLoading: boolean;
-  readonly error: Error | null;
-}
-
-const INITIAL_USE_FEED_ITEM_FILE_STATE: UseFeedItemFileResult = {
-  content: null,
-  isLoading: true,
-  error: null,
-};
 
 export function useFeedItemFile(args: {
   readonly feedItem: FeedItem;
   readonly filename: string;
-}): UseFeedItemFileResult {
+}): AsyncState<string> {
   const {feedItem, filename} = args;
   const feedItemId = feedItem.feedItemId;
   const hasFeedItemEverBeenImported = SharedFeedItemHelpers.hasEverBeenImported(feedItem);
 
   const isMounted = useIsMounted();
   const feedItemsService = useFeedItemsService();
+
   const {asyncState, setPending, setError, setSuccess} = useAsyncState<string>();
 
   useEffect(() => {
@@ -284,28 +260,18 @@ export function useFeedItemFile(args: {
     setSuccess,
   ]);
 
-  switch (asyncState.status) {
-    case AsyncStatus.Idle:
-    case AsyncStatus.Pending:
-      return INITIAL_USE_FEED_ITEM_FILE_STATE;
-    case AsyncStatus.Error:
-      return {content: null, isLoading: false, error: asyncState.error};
-    case AsyncStatus.Success:
-      return {content: asyncState.value, isLoading: false, error: null};
-    default:
-      assertNever(asyncState);
-  }
+  return asyncState;
 }
 
-export function useFeedItemMarkdown(feedItem: FeedItem): UseFeedItemFileResult {
+export function useFeedItemMarkdown(feedItem: FeedItem): AsyncState<string> {
   return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_NAME_LLM_CONTEXT});
 }
 
-export function useYouTubeFeedItemTranscript(feedItem: FeedItem): UseFeedItemFileResult {
+export function useYouTubeFeedItemTranscript(feedItem: FeedItem): AsyncState<string> {
   return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_NAME_TRANSCRIPT});
 }
 
-export function useExplainXkcdMarkdown(feedItem: XkcdFeedItem): UseFeedItemFileResult {
+export function useExplainXkcdMarkdown(feedItem: XkcdFeedItem): AsyncState<string> {
   return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_NAME_XKCD_EXPLAIN});
 }
 
