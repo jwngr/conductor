@@ -42,14 +42,12 @@ export function makeUserFeedSubscriptionId(): UserFeedSubscriptionId {
  * inactive. They are only deleted when an account is wiped out.
  */
 export interface UserFeedSubscription extends BaseStoreItem {
-  // HEREREERERE
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
   readonly feedSourceId: FeedSourceId;
   readonly accountId: AccountId;
   readonly url: string;
   readonly title: string;
   readonly isActive: boolean;
-  // AND HERE
   readonly deliverySchedule: DeliverySchedule;
   readonly unsubscribedTime?: Date | undefined;
 }

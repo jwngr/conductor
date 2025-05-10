@@ -8,7 +8,6 @@ import {TooltipProvider} from '@src/components/atoms/Tooltip';
 import {AuthSubscriptions} from '@src/components/auth/AuthSubscriptions';
 import {DevToolbar} from '@src/components/devToolbar/DevToolbar';
 import {RegisterFeedItemImporterDevToolbarSection} from '@src/components/devToolbar/RegisterFeedItemImporterDevTool';
-import {RegisterAccountFeedSubscriberDevToolbarSection} from '@src/components/devToolbar/RegisterUserFeedSubscriberDevToolbarActions';
 import {ErrorBoundary} from '@src/components/errors/ErrorBoundary';
 import {ThemeProvider} from '@src/components/ThemeProvider';
 
@@ -31,12 +30,7 @@ const LoggedInGlobalSubscriptions: React.FC = () => {
 
   if (isLoading || !loggedInAccount) return null;
 
-  return (
-    <>
-      <RegisterFeedItemImporterDevToolbarSection />
-      <RegisterAccountFeedSubscriberDevToolbarSection />
-    </>
-  );
+  return <RegisterFeedItemImporterDevToolbarSection />;
 };
 
 export const rootRoute = createRootRoute({

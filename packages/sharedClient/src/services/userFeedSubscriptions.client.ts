@@ -63,14 +63,16 @@ export class ClientUserFeedSubscriptionsService {
    *
    * This is done via Firebase Functions since managing feed sources is a privileged operation.
    */
-  public async subscribeToUrl(url: string): AsyncResult<UserFeedSubscriptionId> {
+  public async subscribeToRssFeed(url: URL): AsyncResult<UserFeedSubscriptionId> {
     const callSubscribeAccountToFeed: CallSubscribeUserToFeedFn = httpsCallable(
       this.functions,
       'subscribeAccountToFeedOnCall'
     );
 
     // Hit Firebase Functions endpoint to subscribe account to feed source.
-    const subscribeResponseResult = await asyncTry(async () => callSubscribeAccountToFeed({url}));
+    const subscribeResponseResult = await asyncTry(async () =>
+      callSubscribeAccountToFeed({url: url.href})
+    );
     if (!subscribeResponseResult.success) return subscribeResponseResult;
     const subscribeResponse = subscribeResponseResult.value;
 
