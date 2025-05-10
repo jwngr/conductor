@@ -26,6 +26,7 @@ import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {Button} from '@src/components/atoms/Button';
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
+import {Label} from '@src/components/atoms/Label';
 import {Popover, PopoverContent, PopoverTrigger} from '@src/components/atoms/Popover';
 import {Text} from '@src/components/atoms/Text';
 
@@ -113,9 +114,7 @@ const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
 
   return (
     <FlexRow gap={2} justify="between">
-      <label htmlFor="deliverySchedule" className="text-sm font-medium">
-        Delivery schedule
-      </label>
+      <Label htmlFor="deliverySchedule">Delivery schedule</Label>
       <select
         id="deliverySchedule"
         value={userFeedSubscription.deliverySchedule.type}
@@ -190,9 +189,9 @@ const FeedSubscriptionUnsubscribeButton: React.FC<{
 
   return (
     <FlexRow gap={2} justify="between">
-      <label htmlFor="deliverySchedule" className="text-sm font-medium">
+      <Label htmlFor="deliverySchedule">
         Subscription {userFeedSubscription.isActive ? 'active' : 'inactive'}
-      </label>
+      </Label>
 
       <Button variant="outline" onClick={handleToggleSubscription}>
         {userFeedSubscription.isActive ? 'Unsubscribe' : 'Subscribe'}

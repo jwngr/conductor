@@ -2,6 +2,7 @@ import {useState} from 'react';
 
 import {Checkbox} from '@src/components/atoms/Checkbox';
 import {FlexColumn} from '@src/components/atoms/Flex';
+import {Label} from '@src/components/atoms/Label';
 import {Text} from '@src/components/atoms/Text';
 import {StorySection} from '@src/components/stories/StorySection';
 
@@ -29,12 +30,7 @@ export const CheckboxStories: React.FC = () => {
         <FlexColumn gap={2}>
           <div className="flex items-center gap-2">
             <Checkbox id="terms" />
-            <label
-              htmlFor="terms"
-              className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Accept terms and conditions
-            </label>
+            <Label htmlFor="terms">Accept terms and conditions</Label>
           </div>
         </FlexColumn>
       </StorySection>

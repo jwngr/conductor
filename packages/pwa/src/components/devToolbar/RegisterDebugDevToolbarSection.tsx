@@ -5,7 +5,8 @@ import {DevToolbarSectionType} from '@shared/types/devToolbar.types';
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
 import {Checkbox} from '@src/components/atoms/Checkbox';
-import {FlexColumn} from '@src/components/atoms/Flex';
+import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
+import {Label} from '@src/components/atoms/Label';
 
 const DebugDevToolbarSection: React.FC = () => {
   const toggleRouterDevTools = useDevToolbarStore((state) => state.toggleRouterDevTools);
@@ -15,22 +16,22 @@ const DebugDevToolbarSection: React.FC = () => {
 
   return (
     <FlexColumn>
-      <label className="flex items-center gap-2">
+      <FlexRow gap={2}>
         <Checkbox
           id="debugRouterDevTools"
           checked={shouldShowRouterDevTools}
           onClick={() => toggleRouterDevTools()}
         />
-        <label htmlFor="debugRouterDevTools">Show router dev tools</label>
-      </label>
-      <label className="flex items-center gap-2">
+        <Label htmlFor="debugRouterDevTools">Show router dev tools</Label>
+      </FlexRow>
+      <FlexRow gap={2}>
         <Checkbox
           id="debugActions"
           checked={shouldShowDebugActions}
           onClick={() => toggleDebugActions()}
         />
-        <label htmlFor="debugActions">Show debug actions</label>
-      </label>
+        <Label htmlFor="debugActions">Show debug actions</Label>
+      </FlexRow>
     </FlexColumn>
   );
 };
