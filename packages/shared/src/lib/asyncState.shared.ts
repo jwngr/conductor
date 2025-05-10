@@ -3,8 +3,8 @@ import type {
   IdleAsyncState,
   PendingAsyncState,
   SuccessAsyncState,
-} from '@shared/types/asyncState.type';
-import {AsyncStatus} from '@shared/types/asyncState.type';
+} from '@shared/types/asyncState.types';
+import {AsyncStatus} from '@shared/types/asyncState.types';
 
 export const IDLE_ASYNC_STATE: IdleAsyncState = {status: AsyncStatus.Idle} as const;
 

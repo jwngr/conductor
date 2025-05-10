@@ -3,10 +3,14 @@ import {useCallback, useState} from 'react';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 import {parseUrl} from '@shared/lib/urls.shared';
 
+import {AsyncStatus} from '@shared/types/asyncState.types';
+
 import {
   useUserFeedSubscriptions,
   useUserFeedSubscriptionsService,
 } from '@sharedClient/services/userFeedSubscriptions.client';
+
+import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 
 import {Button} from '@src/components/atoms/Button';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
@@ -16,41 +20,10 @@ import {FeedSubscriptionSettingsButton} from '@src/components/feedSubscriptions/
 
 import {Screen} from '@src/screens/Screen';
 
-interface FeedAdderState {
-  readonly url: string;
-  readonly isSubscribing: boolean;
-  readonly successMessage: string | null;
-  readonly error: Error | null;
-}
-
-const INITIAL_FEED_ADDER_STATE: FeedAdderState = {
-  url: '',
-  isSubscribing: false,
-  successMessage: null,
-  error: null,
-};
-
 const FeedAdder: React.FC = () => {
-  const [state, setState] = useState<FeedAdderState>(INITIAL_FEED_ADDER_STATE);
+  const [url, setUrl] = useState('');
+  const {asyncState, setPending, setError, setSuccess} = useAsyncState<undefined>();
   const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
-
-  const setPending = useCallback(() => {
-    setState((current) => ({...current, error: null, successMessage: null, isSubscribing: true}));
-  }, []);
-
-  const setError = useCallback((error: Error | null) => {
-    setState((current) => ({...current, successMessage: null, error, isSubscribing: false}));
-  }, []);
-
-  const setSubscribed = useCallback(() => {
-    setState((current) => ({
-      ...current,
-      successMessage: `Successfully subscribed to feed source`,
-      url: '',
-      error: null,
-      isSubscribing: false,
-    }));
-  }, []);
 
   const handleSubscribeToRssFeedByUrl = useCallback(
     async (rssFeedUrl: string): Promise<void> => {
@@ -68,18 +41,16 @@ const FeedAdder: React.FC = () => {
         return;
       }
 
-      setSubscribed();
+      setSuccess(undefined);
+      setUrl('');
     },
-    [setError, setPending, setSubscribed, userFeedSubscriptionsService]
+    [setError, setPending, setSuccess, userFeedSubscriptionsService]
   );
 
   const handleSubscribeToDummyFeed = useCallback(async (): Promise<void> => {
     setPending();
-
-    // TODO: Implement this.
-
-    setSubscribed();
-  }, [setPending, setSubscribed]);
+    setError(new Error('TODO: Not implemented'));
+  }, [setError, setPending]);
 
   return (
     <FlexColumn flex={1} gap={3}>
@@ -90,22 +61,20 @@ const FeedAdder: React.FC = () => {
       <FlexRow gap={3} flex={1}>
         <Input
           type="text"
-          value={state.url}
+          value={url}
           placeholder="Enter RSS feed URL"
-          onChange={(e) => setState((current) => ({...current, url: e.target.value}))}
+          onChange={(e) => setUrl(e.target.value)}
           className="flex-1"
         />
-        <Button onClick={async () => void handleSubscribeToRssFeedByUrl(state.url)}>
-          Subscribe
-        </Button>
+        <Button onClick={async () => void handleSubscribeToRssFeedByUrl(url)}>Subscribe</Button>
       </FlexRow>
 
-      {state.error ? (
-        <Text className="text-error">{state.error.message}</Text>
-      ) : state.isSubscribing ? (
+      {asyncState.status === AsyncStatus.Error ? (
+        <Text className="text-error">{asyncState.error.message}</Text>
+      ) : asyncState.status === AsyncStatus.Pending ? (
         <Text light>Subscribing to feed...</Text>
-      ) : state.successMessage ? (
-        <Text className="text-success">{state.successMessage}</Text>
+      ) : asyncState.status === AsyncStatus.Success ? (
+        <Text className="text-success">Successfully subscribed to feed source</Text>
       ) : null}
 
       <FlexColumn gap={3}>
