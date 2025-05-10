@@ -1,12 +1,15 @@
 import {createRootRoute, Outlet} from '@tanstack/react-router';
 import {TanStackRouterDevtools} from '@tanstack/react-router-devtools';
 
+import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
+
 import {useMaybeLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
 import {Toaster} from '@src/components/atoms/Toaster';
 import {TooltipProvider} from '@src/components/atoms/Tooltip';
 import {AuthSubscriptions} from '@src/components/auth/AuthSubscriptions';
 import {DevToolbar} from '@src/components/devToolbar/DevToolbar';
+import {RegisterDebugDevToolbarSection} from '@src/components/devToolbar/RegisterDebugDevToolbarSection';
 import {RegisterFeedItemImporterDevToolbarSection} from '@src/components/devToolbar/RegisterFeedItemImporterDevTool';
 import {ErrorBoundary} from '@src/components/errors/ErrorBoundary';
 import {ThemeProvider} from '@src/components/ThemeProvider';
@@ -19,7 +22,12 @@ import {ErrorScreen} from '@src/screens/ErrorScreen';
  * Subscriptions that are always active whenever the app is loaded.
  */
 const PermanentGlobalSubscriptions: React.FC = () => {
-  return <AuthSubscriptions />;
+  return (
+    <>
+      <AuthSubscriptions />
+      <RegisterDebugDevToolbarSection />
+    </>
+  );
 };
 
 /**
@@ -33,8 +41,10 @@ const LoggedInGlobalSubscriptions: React.FC = () => {
   return <RegisterFeedItemImporterDevToolbarSection />;
 };
 
-export const rootRoute = createRootRoute({
-  component: () => (
+const RootComponent: React.FC = () => {
+  const showDevTools = useDevToolbarStore((state) => state.showRouterDevTools);
+
+  return (
     <TooltipProvider>
       <ThemeProvider>
         <ErrorBoundary fallback={(error) => <ErrorScreen error={error} />}>
@@ -43,9 +53,13 @@ export const rootRoute = createRootRoute({
           <PermanentGlobalSubscriptions />
           <LoggedInGlobalSubscriptions />
           <DevToolbar />
-          {IS_DEVELOPMENT ? <TanStackRouterDevtools /> : null}
+          {IS_DEVELOPMENT && showDevTools ? <TanStackRouterDevtools /> : null}
         </ErrorBoundary>
       </ThemeProvider>
     </TooltipProvider>
-  ),
+  );
+};
+
+export const rootRoute = createRootRoute({
+  component: RootComponent,
 });

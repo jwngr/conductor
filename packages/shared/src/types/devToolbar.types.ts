@@ -1,8 +1,9 @@
-import type {Func, Supplier, Unsubscribe} from '@shared/types/utils.types';
+import type {Func, Supplier, Task, Unsubscribe} from '@shared/types/utils.types';
 
 export enum DevToolbarSectionType {
   FeedItemImporter = 'FEED_ITEM_IMPORTER',
   IndividualFeedItemActions = 'INDIVIDUAL_FEED_ITEM_ACTIONS',
+  Debug = 'DEBUG',
 }
 
 export interface DevToolbarSectionInfo {
@@ -15,4 +16,6 @@ export interface DevToolbarSectionInfo {
 export interface DevToolbarStore {
   readonly sections: readonly DevToolbarSectionInfo[];
   readonly registerSection: Func<DevToolbarSectionInfo, Unsubscribe>;
+  readonly showRouterDevTools: boolean;
+  readonly toggleRouterDevTools: Task;
 }

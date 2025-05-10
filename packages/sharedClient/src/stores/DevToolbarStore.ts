@@ -5,6 +5,7 @@ import {type DevToolbarStore} from '@shared/types/devToolbar.types';
 const createDevToolbarStore: StateCreator<DevToolbarStore> = (set) => ({
   // Initial state.
   sections: [],
+  showRouterDevTools: false,
 
   registerSection: (section) => {
     set((state) => ({
@@ -17,6 +18,13 @@ const createDevToolbarStore: StateCreator<DevToolbarStore> = (set) => ({
         ...state,
         sections: state.sections.filter((s) => s.sectionType !== section.sectionType),
       }));
+  },
+
+  toggleRouterDevTools: () => {
+    set((state) => ({
+      ...state,
+      showRouterDevTools: !state.showRouterDevTools,
+    }));
   },
 });
 
