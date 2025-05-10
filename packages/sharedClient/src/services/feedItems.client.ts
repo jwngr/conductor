@@ -1,7 +1,7 @@
 import {where} from 'firebase/firestore';
 import type {StorageReference} from 'firebase/storage';
 import {getBlob, ref as storageRef} from 'firebase/storage';
-import {useEffect, useMemo, useState} from 'react';
+import {useEffect, useMemo} from 'react';
 
 import {logger} from '@shared/services/logger.shared';
 
@@ -146,12 +146,6 @@ interface FeedItemsState {
   readonly error: Error | null;
 }
 
-const INITIAL_FEED_ITEMS_STATE: FeedItemsState = {
-  feedItems: [],
-  isLoading: true,
-  error: null,
-} as const;
-
 /**
  * Internal helper for fetching all feed items for a view, ignoring delivery schedules. Works for
  * all views.
@@ -160,18 +154,29 @@ function useFeedItemsInternal(args: {readonly viewType: ViewType}): FeedItemsSta
   const {viewType} = args;
   const feedItemsService = useFeedItemsService();
 
-  const [state, setState] = useState<FeedItemsState>(INITIAL_FEED_ITEMS_STATE);
+  const {asyncState, setPending, setError, setSuccess} = useAsyncState<FeedItem[]>();
 
   useEffect(() => {
+    setPending();
     const unsubscribe = feedItemsService.watchFeedItemsQuery({
       viewType,
-      successCallback: (feedItems) => setState({feedItems, isLoading: false, error: null}),
-      errorCallback: (error) => setState({feedItems: [], isLoading: false, error}),
+      successCallback: (feedItems) => setSuccess(feedItems),
+      errorCallback: (error) => setError(error),
     });
     return () => unsubscribe();
-  }, [viewType, feedItemsService]);
+  }, [viewType, feedItemsService, setPending, setError, setSuccess]);
 
-  return state;
+  switch (asyncState.status) {
+    case AsyncStatus.Idle:
+    case AsyncStatus.Pending:
+      return {feedItems: [], isLoading: true, error: null};
+    case AsyncStatus.Error:
+      return {feedItems: [], isLoading: false, error: asyncState.error};
+    case AsyncStatus.Success:
+      return {feedItems: asyncState.value, isLoading: false, error: null};
+    default:
+      assertNever(asyncState);
+  }
 }
 
 /**
@@ -244,32 +249,52 @@ export function useFeedItemFile(args: {
 
   const isMounted = useIsMounted();
   const feedItemsService = useFeedItemsService();
-  const [state, setState] = useState(INITIAL_USE_FEED_ITEM_FILE_STATE);
+  const {asyncState, setPending, setError, setSuccess} = useAsyncState<string>();
 
   useEffect(() => {
     async function go(): Promise<void> {
       if (!hasFeedItemEverBeenImported) {
         const error = new Error('Cannot fetch file for feed item that has never been imported');
         logger.error(error, {feedItemId, filename});
-        setState({content: null, isLoading: false, error});
+        setError(error);
         return;
       }
 
+      setPending();
       const contentsResult = await feedItemsService.getFileFromStorage({feedItemId, filename});
 
       if (!isMounted.current) return;
 
       if (contentsResult.success) {
-        setState({content: contentsResult.value, isLoading: false, error: null});
+        setSuccess(contentsResult.value);
       } else {
-        setState({content: null, isLoading: false, error: contentsResult.error});
+        setError(contentsResult.error);
       }
     }
 
     void go();
-  }, [feedItemId, filename, hasFeedItemEverBeenImported, feedItemsService, isMounted]);
+  }, [
+    feedItemId,
+    filename,
+    hasFeedItemEverBeenImported,
+    feedItemsService,
+    isMounted,
+    setPending,
+    setError,
+    setSuccess,
+  ]);
 
-  return state;
+  switch (asyncState.status) {
+    case AsyncStatus.Idle:
+    case AsyncStatus.Pending:
+      return INITIAL_USE_FEED_ITEM_FILE_STATE;
+    case AsyncStatus.Error:
+      return {content: null, isLoading: false, error: asyncState.error};
+    case AsyncStatus.Success:
+      return {content: asyncState.value, isLoading: false, error: null};
+    default:
+      assertNever(asyncState);
+  }
 }
 
 export function useFeedItemMarkdown(feedItem: FeedItem): UseFeedItemFileResult {

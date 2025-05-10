@@ -23,8 +23,8 @@ import {parseLoggedInAccount} from '@sharedClient/types/accounts.client.types';
 import type {LoggedInAccount} from '@sharedClient/types/accounts.client.types';
 
 interface AuthServiceSubscriptionCallbacks {
-  successCallback: AuthStateChangedCallback;
-  errorCallback: Consumer<Error>;
+  readonly successCallback: AuthStateChangedCallback;
+  readonly errorCallback: Consumer<Error>;
 }
 
 /**

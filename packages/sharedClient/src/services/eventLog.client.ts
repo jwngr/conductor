@@ -6,7 +6,7 @@ import {logger} from '@shared/services/logger.shared';
 import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
-import {filterNull} from '@shared/lib/utils.shared';
+import {assertNever, filterNull} from '@shared/lib/utils.shared';
 
 import {
   parseEventId,
@@ -16,6 +16,7 @@ import {
 
 import type {AccountId} from '@shared/types/accounts.types';
 import {makeUserActor} from '@shared/types/actors.types';
+import {AsyncStatus} from '@shared/types/asyncState.types';
 import {
   Environment,
   EventType,
@@ -33,6 +34,7 @@ import {
   makeFirestoreDataConverter,
 } from '@sharedClient/services/firestore.client';
 
+import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
 // TODO: This is a somewhat arbitrary limit. Reconsider what the logic should be here.
@@ -101,24 +103,33 @@ interface EventLogItemsState {
 export function useEventLogItems(): EventLogItemsState {
   const eventLogService = useEventLogService();
 
-  const [state, setState] = useState<EventLogItemsState>({
-    eventLogItems: [],
-    isLoading: true,
-    error: null,
-    limit: 0,
-  });
+  const {asyncState, setPending, setError, setSuccess} = useAsyncState<EventLogItem[]>();
 
   useEffect(() => {
+    setPending();
     const unsubscribe = eventLogService.watchEventLog({
-      successCallback: (eventLogItems) =>
-        setState({eventLogItems, isLoading: false, error: null, limit: EVENT_LOG_LIMIT}),
-      errorCallback: (error) =>
-        setState({eventLogItems: [], isLoading: false, error, limit: EVENT_LOG_LIMIT}),
+      successCallback: (eventLogItems) => setSuccess(eventLogItems),
+      errorCallback: (error) => setError(error),
     });
     return () => unsubscribe();
-  }, [eventLogService]);
+  }, [eventLogService, setPending, setError, setSuccess]);
 
-  return state;
+  switch (asyncState.status) {
+    case AsyncStatus.Idle:
+    case AsyncStatus.Pending:
+      return {eventLogItems: [], isLoading: true, error: null, limit: EVENT_LOG_LIMIT};
+    case AsyncStatus.Error:
+      return {eventLogItems: [], isLoading: false, error: asyncState.error, limit: EVENT_LOG_LIMIT};
+    case AsyncStatus.Success:
+      return {
+        eventLogItems: asyncState.value,
+        isLoading: false,
+        error: null,
+        limit: EVENT_LOG_LIMIT,
+      };
+    default:
+      assertNever(asyncState);
+  }
 }
 
 type ClientEventLogCollectionService = ClientFirestoreCollectionService<EventId, EventLogItem>;

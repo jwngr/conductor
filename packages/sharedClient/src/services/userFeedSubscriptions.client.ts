@@ -1,10 +1,11 @@
 import {limit, orderBy, where} from 'firebase/firestore';
 import type {Functions, HttpsCallable} from 'firebase/functions';
 import {httpsCallable} from 'firebase/functions';
-import {useEffect, useMemo, useState} from 'react';
+import {useEffect, useMemo} from 'react';
 
 import {USER_FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {asyncTry, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 
 import {
   parseUserFeedSubscription,
@@ -13,6 +14,7 @@ import {
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
+import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {
   UserFeedSubscription,
@@ -26,6 +28,7 @@ import {
   makeFirestoreDataConverter,
 } from '@sharedClient/services/firestore.client';
 
+import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
 interface SubscribeToFeedRequest {
@@ -184,31 +187,33 @@ const INITIAL_USER_FEED_SUBSCRIPTIONS_STATE: UserFeedSubscriptionsState = {
 } as const;
 
 export const useUserFeedSubscriptions = (): UserFeedSubscriptionsState => {
-  const [state, setState] = useState<UserFeedSubscriptionsState>(
-    INITIAL_USER_FEED_SUBSCRIPTIONS_STATE
-  );
   const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
 
+  const {asyncState, setPending, setError, setSuccess} = useAsyncState<UserFeedSubscription[]>();
+
   useEffect(() => {
+    setPending();
     const unsubscribe = userFeedSubscriptionsService.watchAllSubscriptions({
       successCallback: (updatedSubscriptions) => {
-        setState(() => ({
-          subscriptions: updatedSubscriptions,
-          isLoading: false,
-          error: null,
-        }));
+        setSuccess(updatedSubscriptions);
       },
       errorCallback: (error) => {
-        setState((current) => ({
-          ...current,
-          isLoading: false,
-          error,
-        }));
+        setError(error);
       },
     });
 
     return () => unsubscribe();
-  }, [userFeedSubscriptionsService]);
+  }, [userFeedSubscriptionsService, setPending, setError, setSuccess]);
 
-  return state;
+  switch (asyncState.status) {
+    case AsyncStatus.Idle:
+    case AsyncStatus.Pending:
+      return INITIAL_USER_FEED_SUBSCRIPTIONS_STATE;
+    case AsyncStatus.Error:
+      return {subscriptions: [], isLoading: false, error: asyncState.error};
+    case AsyncStatus.Success:
+      return {subscriptions: asyncState.value, isLoading: false, error: null};
+    default:
+      assertNever(asyncState);
+  }
 };

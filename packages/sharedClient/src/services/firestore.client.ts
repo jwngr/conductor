@@ -174,10 +174,7 @@ export class ClientFirestoreCollectionService<
       }
     };
 
-    const handleError: Consumer<Error> = (error) => {
-      onError(error);
-    };
-
+    const handleError: Consumer<Error> = (error) => onError(error);
     return onSnapshot(this.getDocRef(docId), handleSnapshot, handleError);
   }
 

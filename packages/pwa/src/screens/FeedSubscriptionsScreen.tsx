@@ -21,7 +21,7 @@ import {FeedSubscriptionSettingsButton} from '@src/components/feedSubscriptions/
 import {Screen} from '@src/screens/Screen';
 
 const FeedAdder: React.FC = () => {
-  const [url, setUrl] = useState('');
+  const [urlInputValue, setUrlInputValue] = useState('');
   const {asyncState, setPending, setError, setSuccess} = useAsyncState<undefined>();
   const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
 
@@ -42,7 +42,7 @@ const FeedAdder: React.FC = () => {
       }
 
       setSuccess(undefined);
-      setUrl('');
+      setUrlInputValue('');
     },
     [setError, setPending, setSuccess, userFeedSubscriptionsService]
   );
@@ -61,12 +61,14 @@ const FeedAdder: React.FC = () => {
       <FlexRow gap={3} flex={1}>
         <Input
           type="text"
-          value={url}
+          value={urlInputValue}
           placeholder="Enter RSS feed URL"
-          onChange={(e) => setUrl(e.target.value)}
+          onChange={(e) => setUrlInputValue(e.target.value)}
           className="flex-1"
         />
-        <Button onClick={async () => void handleSubscribeToRssFeedByUrl(url)}>Subscribe</Button>
+        <Button onClick={async () => void handleSubscribeToRssFeedByUrl(urlInputValue)}>
+          Subscribe
+        </Button>
       </FlexRow>
 
       {asyncState.status === AsyncStatus.Error ? (
