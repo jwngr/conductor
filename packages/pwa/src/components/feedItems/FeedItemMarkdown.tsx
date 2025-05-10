@@ -1,5 +1,8 @@
 import type React from 'react';
 
+import {assertNever} from '@shared/lib/utils.shared';
+
+import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {FeedItem} from '@shared/types/feedItems.types';
 
 import {useFeedItemMarkdown} from '@sharedClient/services/feedItems.client';
@@ -10,21 +13,19 @@ import {Markdown} from '@src/components/Markdown';
 export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
   const markdownState = useFeedItemMarkdown(feedItem);
 
-  if (markdownState.error) {
-    return (
-      <Text as="p" className="text-error">
-        Error loading markdown: {markdownState.error.message}
-      </Text>
-    );
+  switch (markdownState.status) {
+    case AsyncStatus.Idle:
+    case AsyncStatus.Pending:
+      return <Text as="p">Loading markdown...</Text>;
+    case AsyncStatus.Error:
+      return (
+        <Text as="p" className="text-error">
+          Error loading markdown: {markdownState.error.message}
+        </Text>
+      );
+    case AsyncStatus.Success:
+      return <Markdown content={markdownState.value} />;
+    default:
+      assertNever(markdownState);
   }
-
-  if (markdownState.isLoading) {
-    return <Text as="p">Loading markdown...</Text>;
-  }
-
-  if (markdownState.content) {
-    return <Markdown content={markdownState.content} />;
-  }
-
-  return <Text as="p">No markdown</Text>;
 };

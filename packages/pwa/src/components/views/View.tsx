@@ -7,6 +7,7 @@ import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
 
+import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {FeedItem} from '@shared/types/feedItems.types';
 import {ViewType} from '@shared/types/views.types';
 import type {
@@ -319,22 +320,34 @@ const ViewListIgnoringDelivery: React.FC<{
   readonly sortBy: readonly ViewSortByOption[];
   readonly groupBy: readonly ViewGroupByOption[];
 }> = ({viewType, sortBy, groupBy}) => {
-  const {feedItems, isLoading, error} = useFeedItemsIgnoringDelivery({viewType});
+  const feedItemsState = useFeedItemsIgnoringDelivery({viewType});
 
-  if (isLoading) {
-    // TODO: Introduce proper loading component.
-    return <div>Loading...</div>;
+  switch (feedItemsState.status) {
+    case AsyncStatus.Idle:
+    case AsyncStatus.Pending:
+      // TODO: Introduce proper loading component.
+      return <div>Loading...</div>;
+    case AsyncStatus.Error: {
+      const betterError = prefixError(
+        feedItemsState.error,
+        'Failed to load items ignoring delivery schedules'
+      );
+      logger.error(betterError, {viewType, sortBy, groupBy});
+      return <ErrorScreen error={betterError} />;
+    }
+    case AsyncStatus.Success: {
+      return (
+        <LoadedViewList
+          viewType={viewType}
+          feedItems={feedItemsState.value}
+          sortBy={sortBy}
+          groupBy={groupBy}
+        />
+      );
+    }
+    default:
+      assertNever(feedItemsState);
   }
-
-  if (error) {
-    const betterError = prefixError(error, 'Failed to load items ignoring delivery schedules');
-    logger.error(betterError, {viewType, sortBy, groupBy});
-    return <ErrorScreen error={betterError} />;
-  }
-
-  return (
-    <LoadedViewList viewType={viewType} feedItems={feedItems} sortBy={sortBy} groupBy={groupBy} />
-  );
 };
 
 /**
@@ -345,22 +358,34 @@ const ViewListRespectingDelivery: React.FC<{
   readonly sortBy: readonly ViewSortByOption[];
   readonly groupBy: readonly ViewGroupByOption[];
 }> = ({viewType, sortBy, groupBy}) => {
-  const {feedItems, isLoading, error} = useFeedItemsRespectingDelivery({viewType});
+  const feedItemsState = useFeedItemsRespectingDelivery({viewType});
 
-  if (isLoading) {
-    // TODO: Introduce proper loading component.
-    return <div>Loading...</div>;
+  switch (feedItemsState.status) {
+    case AsyncStatus.Idle:
+    case AsyncStatus.Pending:
+      // TODO: Introduce proper loading component.
+      return <div>Loading...</div>;
+    case AsyncStatus.Error: {
+      const betterError = prefixError(
+        feedItemsState.error,
+        'Failed to load items respecting delivery schedules'
+      );
+      logger.error(betterError, {viewType, sortBy, groupBy});
+      return <ErrorScreen error={betterError} />;
+    }
+    case AsyncStatus.Success: {
+      return (
+        <LoadedViewList
+          viewType={viewType}
+          feedItems={feedItemsState.value}
+          sortBy={sortBy}
+          groupBy={groupBy}
+        />
+      );
+    }
+    default:
+      assertNever(feedItemsState);
   }
-
-  if (error) {
-    const betterError = prefixError(error, 'Failed to load items respecting delivery schedules');
-    logger.error(betterError, {viewType, sortBy, groupBy});
-    return <ErrorScreen error={betterError} />;
-  }
-
-  return (
-    <LoadedViewList viewType={viewType} feedItems={feedItems} sortBy={sortBy} groupBy={groupBy} />
-  );
 };
 
 const ViewHeader: React.FC<{

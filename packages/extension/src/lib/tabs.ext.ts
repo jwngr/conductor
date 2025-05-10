@@ -1,45 +1,32 @@
-import {useEffect, useState} from 'react';
+import {useEffect} from 'react';
 
 import {asyncTry} from '@shared/lib/errorUtils.shared';
 
-interface CurrentTabState {
-  readonly currentTab: chrome.tabs.Tab | null;
-  readonly isLoading: boolean;
-  readonly error: Error | null;
-}
+import type {AsyncState} from '@shared/types/asyncState.types';
 
-const INITIAL_CURRENT_TAB_STATE: CurrentTabState = {
-  currentTab: null,
-  isLoading: true,
-  error: null,
-};
+import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 
-export function useCurrentTab(): CurrentTabState {
-  const [state, setState] = useState<CurrentTabState>(INITIAL_CURRENT_TAB_STATE);
+export function useCurrentTab(): AsyncState<chrome.tabs.Tab> {
+  const {asyncState, setPending, setError, setSuccess} = useAsyncState<chrome.tabs.Tab>();
 
   useEffect(() => {
     async function fetchCurrentTab(): Promise<void> {
+      setPending();
       const tabResult = await asyncTry(async () => {
         const [tab] = await chrome.tabs.query({active: true, lastFocusedWindow: true});
         return tab;
       });
-      if (tabResult.success) {
-        setState({
-          currentTab: tabResult.value,
-          isLoading: false,
-          error: null,
-        });
-      } else {
-        setState({
-          currentTab: null,
-          isLoading: false,
-          error: tabResult.error,
-        });
+
+      if (!tabResult.success) {
+        setError(tabResult.error);
+        return;
       }
+
+      setSuccess(tabResult.value);
     }
 
     void fetchCurrentTab();
-  }, []);
+  }, [setError, setPending, setSuccess]);
 
-  return state;
+  return asyncState;
 }

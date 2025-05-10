@@ -1,4 +1,4 @@
-import {useCallback, useState} from 'react';
+import {useCallback} from 'react';
 
 import {
   IMMEDIATE_DELIVERY_SCHEDULE,
@@ -11,6 +11,7 @@ import {assertNever, noop} from '@shared/lib/utils.shared';
 
 import {parseDeliveryScheduleType} from '@shared/parsers/deliverySchedules.parser';
 
+import {AsyncStatus} from '@shared/types/asyncState.types';
 import {DayOfWeek} from '@shared/types/datetime.types';
 import {DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
@@ -19,6 +20,8 @@ import type {Result} from '@shared/types/results.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
 import {useUserFeedSubscriptionsService} from '@sharedClient/services/userFeedSubscriptions.client';
+
+import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 
 import {Button} from '@src/components/atoms/Button';
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
@@ -30,17 +33,16 @@ const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
   readonly userFeedSubscription: UserFeedSubscription;
 }> = ({userFeedSubscription}) => {
   const feedSubscriptionsService = useUserFeedSubscriptionsService();
-  const [manageScheduleError, setManageScheduleError] = useState<Error | null>(null);
+  const {asyncState, setPending, setError, setSuccess} = useAsyncState<undefined>();
 
   const handleDeliveryScheduleChange = async (
     event: React.ChangeEvent<HTMLSelectElement>
   ): Promise<void> => {
-    // Clear any existing error.
-    setManageScheduleError(null);
+    setPending();
 
     const deliveryScheduleTypeResult = parseDeliveryScheduleType(event.target.value);
     if (!deliveryScheduleTypeResult.success) {
-      setManageScheduleError(deliveryScheduleTypeResult.error);
+      setError(deliveryScheduleTypeResult.error);
       return;
     }
 
@@ -74,7 +76,7 @@ const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
     }
 
     if (!makeDeliveryScheduleResult.success) {
-      setManageScheduleError(makeDeliveryScheduleResult.error);
+      setError(makeDeliveryScheduleResult.error);
       return;
     }
 
@@ -84,10 +86,30 @@ const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
     );
 
     if (!updateDeliveryScheduleResult.success) {
-      setManageScheduleError(updateDeliveryScheduleResult.error);
+      setError(updateDeliveryScheduleResult.error);
       return;
     }
+
+    setSuccess(undefined);
   };
+
+  let footer: React.ReactNode | null;
+  switch (asyncState.status) {
+    case AsyncStatus.Idle:
+    case AsyncStatus.Pending:
+    case AsyncStatus.Success:
+      footer = null;
+      break;
+    case AsyncStatus.Error:
+      footer = (
+        <Text as="p" className="text-error">
+          {asyncState.error.message}
+        </Text>
+      );
+      break;
+    default:
+      assertNever(asyncState);
+  }
 
   return (
     <FlexRow gap={2} justify="between">
@@ -105,11 +127,7 @@ const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
         <option value={DeliveryScheduleType.DaysAndTimesOfWeek}>Days and times of week</option>
         <option value={DeliveryScheduleType.EveryNHours}>Every N Hours</option>
       </select>
-      {manageScheduleError ? (
-        <Text as="p" className="text-error">
-          {manageScheduleError.message}
-        </Text>
-      ) : null}
+      {footer}
     </FlexRow>
   );
 };
@@ -117,12 +135,12 @@ const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
 const FeedSubscriptionUnsubscribeButton: React.FC<{
   readonly userFeedSubscription: UserFeedSubscription;
 }> = ({userFeedSubscription}) => {
-  const [manageSubscriptionError, setManageSubscriptionError] = useState<Error | null>(null);
   const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
 
+  const {asyncState, setPending, setError, setSuccess} = useAsyncState<undefined>();
+
   const handleToggleSubscription = useCallback(async (): Promise<void> => {
-    // Clear any existing error.
-    setManageSubscriptionError(null);
+    setPending();
 
     let result: Result<void, Error>;
     if (userFeedSubscription.isActive) {
@@ -138,14 +156,37 @@ const FeedSubscriptionUnsubscribeButton: React.FC<{
     }
 
     if (!result.success) {
-      setManageSubscriptionError(result.error);
+      setError(result.error);
       return;
     }
+
+    setSuccess(undefined);
   }, [
     userFeedSubscription.isActive,
     userFeedSubscription.userFeedSubscriptionId,
     userFeedSubscriptionsService,
+    setError,
+    setPending,
+    setSuccess,
   ]);
+
+  let footer: React.ReactNode | null;
+  switch (asyncState.status) {
+    case AsyncStatus.Idle:
+    case AsyncStatus.Pending:
+    case AsyncStatus.Success:
+      footer = null;
+      break;
+    case AsyncStatus.Error:
+      footer = (
+        <Text as="p" className="text-error">
+          {asyncState.error.message}
+        </Text>
+      );
+      break;
+    default:
+      assertNever(asyncState);
+  }
 
   return (
     <FlexRow gap={2} justify="between">
@@ -157,11 +198,7 @@ const FeedSubscriptionUnsubscribeButton: React.FC<{
         {userFeedSubscription.isActive ? 'Unsubscribe' : 'Subscribe'}
       </Button>
 
-      {manageSubscriptionError ? (
-        <Text as="p" className="text-error">
-          {manageSubscriptionError.message}
-        </Text>
-      ) : null}
+      {footer}
     </FlexRow>
   );
 };

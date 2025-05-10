@@ -1,7 +1,7 @@
 import {limit, orderBy, where} from 'firebase/firestore';
 import type {Functions, HttpsCallable} from 'firebase/functions';
 import {httpsCallable} from 'firebase/functions';
-import {useEffect, useMemo, useState} from 'react';
+import {useEffect, useMemo} from 'react';
 
 import {USER_FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {asyncTry, prefixResultIfError} from '@shared/lib/errorUtils.shared';
@@ -13,6 +13,7 @@ import {
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
+import type {AsyncState} from '@shared/types/asyncState.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {
   UserFeedSubscription,
@@ -26,6 +27,7 @@ import {
   makeFirestoreDataConverter,
 } from '@sharedClient/services/firestore.client';
 
+import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
 interface SubscribeToFeedRequest {
@@ -171,44 +173,20 @@ export function useUserFeedSubscriptionsService(): ClientUserFeedSubscriptionsSe
   return userFeedSubscriptionsService;
 }
 
-interface UserFeedSubscriptionsState {
-  readonly subscriptions: UserFeedSubscription[];
-  readonly isLoading: boolean;
-  readonly error: Error | null;
-}
-
-const INITIAL_USER_FEED_SUBSCRIPTIONS_STATE: UserFeedSubscriptionsState = {
-  subscriptions: [],
-  isLoading: true,
-  error: null,
-} as const;
-
-export const useUserFeedSubscriptions = (): UserFeedSubscriptionsState => {
-  const [state, setState] = useState<UserFeedSubscriptionsState>(
-    INITIAL_USER_FEED_SUBSCRIPTIONS_STATE
-  );
+export const useUserFeedSubscriptions = (): AsyncState<UserFeedSubscription[]> => {
   const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
 
+  const {asyncState, setPending, setError, setSuccess} = useAsyncState<UserFeedSubscription[]>();
+
   useEffect(() => {
+    setPending();
     const unsubscribe = userFeedSubscriptionsService.watchAllSubscriptions({
-      successCallback: (updatedSubscriptions) => {
-        setState(() => ({
-          subscriptions: updatedSubscriptions,
-          isLoading: false,
-          error: null,
-        }));
-      },
-      errorCallback: (error) => {
-        setState((current) => ({
-          ...current,
-          isLoading: false,
-          error,
-        }));
-      },
+      successCallback: setSuccess,
+      errorCallback: setError,
     });
 
     return () => unsubscribe();
-  }, [userFeedSubscriptionsService]);
+  }, [userFeedSubscriptionsService, setPending, setError, setSuccess]);
 
-  return state;
+  return asyncState;
 };
