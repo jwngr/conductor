@@ -13,11 +13,7 @@ runs:
     - uses: actions/setup-node@v4
       with:
         node-version: 22
-    - name: Install Bun
-      shell: bash
-      run: |
-        curl -fsSL https://bun.sh/install | bash
-        source ~/.bashrc
+    - uses: oven-sh/setup-bun@v2
     - name: Install Firebase CLI
       if: inputs.install-firebase == 'true'
       shell: bash
