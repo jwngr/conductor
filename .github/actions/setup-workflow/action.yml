@@ -15,7 +15,9 @@ runs:
         node-version: 22
     - name: Install Bun
       shell: bash
-      run: curl -fsSL https://bun.sh/install | bash
+      run: |
+        curl -fsSL https://bun.sh/install | bash
+        source ~/.bashrc
     - name: Install Firebase CLI
       if: inputs.install-firebase == 'true'
       shell: bash
