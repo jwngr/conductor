@@ -22,3 +22,6 @@ runs:
       if: inputs.install-deps == 'true'
       shell: bash
       run: bun install
+    - name: Version Bun
+      shell: bash
+      run: bun --version

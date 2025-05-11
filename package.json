@@ -4,7 +4,7 @@
   "workspaces": [
     "packages/*"
   ],
-  "packageManager": "bun@1.0.0",
+  "packageManager": "bun@1.2.13",
   "scripts": {
     "start:pwa": "bun run --cwd packages/pwa start",
     "validate": "bun run --filter '@conductor/*' validate",
