@@ -12,11 +12,11 @@ jobs:
         uses: ./.github/actions/setup-workflow
         with:
           install-deps: 'true'
-      - name: Validate format
-        run: bun run validate:format
       - name: Validate lint
         run: bun run validate:lint
-      # - name: Validate unused exports and deps
-      # run: bun run validate:knip
+        # - name: Validate unused exports and deps
+        # run: bun run validate:knip
       - name: Validate types
         run: bun run validate:types
+      - name: Validate format
+        run: bun run validate:format
