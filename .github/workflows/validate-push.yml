@@ -8,15 +8,15 @@ jobs:
     environment: staging
     steps:
       - uses: actions/checkout@v4
-      - name: CI setup for yarn install
+      - name: Common CI setup
         uses: ./.github/actions/setup-workflow
         with:
           install-deps: 'true'
       - name: Validate format
-        run: yarn run validate:format
+        run: bun run validate:format
       - name: Validate lint
-        run: yarn run validate:lint
+        run: bun run validate:lint
       # - name: Validate unused exports and deps
-      # run: yarn run validate:knip
+      # run: bun run validate:knip
       - name: Validate types
-        run: yarn run validate:types
+        run: bun run validate:types

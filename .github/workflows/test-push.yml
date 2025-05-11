@@ -8,9 +8,9 @@ jobs:
     environment: staging
     steps:
       - uses: actions/checkout@v4
-      - name: CI setup for yarn install
+      - name: Common CI setup
         uses: ./.github/actions/setup-workflow
         with:
           install-deps: 'true'
       - name: Run tests
-        run: yarn test
+        run: bun test
