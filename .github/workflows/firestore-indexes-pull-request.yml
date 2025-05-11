@@ -14,7 +14,7 @@ jobs:
     environment: staging
     steps:
       - uses: actions/checkout@v4
-      - name: CI setup action for Firebase deploy
+      - name: Common CI setup
         uses: ./.github/actions/setup-workflow
         with:
           install-deps: 'true'
