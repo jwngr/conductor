@@ -25,3 +25,9 @@ runs:
     - name: Version Bun
       shell: bash
       run: bun --version
+    - name: Bun workspaces
+      shell: bash
+      run: bun workspaces list
+    - name: List packages
+      shell: bash
+      run: ls -R packages/
