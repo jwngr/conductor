@@ -13,7 +13,7 @@ on:
       - 'firebase.json'
       - 'package.json'
       - 'tsconfig.json'
-      - 'yarn.lock'
+      - 'bun.lock'
       - '.github/actions/setup-workflow/**'
       - '.github/workflows/firebase-hosting-merge.yml'
 permissions:
@@ -32,9 +32,9 @@ jobs:
           install-deps: 'true'
           install-firebase: 'true'
       - name: Validate PWA
-        run: yarn run validate:pwa
+        run: bun run validate:pwa
       - name: Build PWA
-        run: yarn run build:pwa
+        run: bun run build:pwa
         env:
           VITE_CONDUCTOR_URL: ${{ secrets.VITE_CONDUCTOR_URL }}
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}

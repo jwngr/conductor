@@ -24,15 +24,11 @@ The packages are:
     $ cd conductor
     ```
 
-1.  Install [Yarn v4](https://yarnpkg.com/getting-started/install). Yarn workspaces are used to
-    share code across several packages (e.g `pwa`, `extension`, and `functions`):
+1.  Install [Bun](https://bun.sh/docs/installation). [Bun workspaces](https://bun.sh/docs/install/workspaces)
+    are used to share code across packages:
 
     ```bash
-    $ corepack enable
-    # If above fails: run `npm install -g corepack` then try again
-    $ corepack prepare yarn@4 --activate
-    $ yarn --version
-    # Confirm above outputted 4.x.x
+    $ curl -fsSL https://bun.sh/install | bash
     ```
 
 1.  Install the [Firebase CLI] as a global dependency, which will be used for running the local
@@ -40,13 +36,13 @@ The packages are:
 
     ```bash
     # Note this is `firebase-tools`, not `firebase`!
-    $ yarn global add firebase-tools
+    $ bun add --global firebase-tools
     ```
 
 1.  Install all dependencies:
 
     ```bash
-    $ yarn install
+    $ bun install
     ```
 
 1.  Create a new [Firebase project](https://firebase.google.com/) for local development. Enable the
@@ -84,7 +80,7 @@ The packages are:
 To start the PWA (Progressive Web App) at http://localhost:5173/, run:
 
 ```bash
-$ yarn run start:pwa
+$ bun run start:pwa
 ```
 
 ## Run Firebase emulator suite locally
@@ -105,25 +101,24 @@ This repo is configured to work with the
 1. Build the `functions` package:
 
    ```bash
-   $ yarn run build:functions
+   $ bun run build:functions
    ```
 
 1. Start the Firebase emulator suite:
 
    ```bash
-   $ yarn run firebase:local
+   $ bun run firebase:local
    ```
 
 1. Restart other packages (e.g. PWA, extension) which rely on Firebase.
 
 1. Visit the Firebase emulator admin UI at http://localhost:4000.
 
-1. Enter any valid email address and click the login button. No email will actually be sent.
+1. Enter a valid email address and click to login. No email will actually be sent.
 
-1. Copy the fully authenticated sign-in URL from the same shell which ran the `yarn` command above.
+1. Copy the fully authenticated sign-in URL from the shell running the Firebase emulator.
 
-1. Visit the URL to sign into the account associated to the email address you entered. The account
-   will be created if it does not already exist.
+1. Visit the URL to sign in. The account will be created if it does not already exist.
 
 ## Open browser extension locally
 
