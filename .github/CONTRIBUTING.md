@@ -125,7 +125,7 @@ This repo is configured to work with the
 1. Build the extension:
 
    ```bash
-   $ yarn run build:extension
+   $ bun run build:extension
    ```
 
 1. Go to [`chrome://extensions`](chrome://extensions).
