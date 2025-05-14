@@ -20,7 +20,7 @@ The project is organized into several TypeScript packages managed via Yarn works
 - `/extension` - Browser extension for Chromium-based browsers
 - `/functions` - Firebase Cloud Functions
 - `/scripts` - Maintenance and utility scripts
-- `/rssServer` - Mock RSS server implementation for local development
+- `/rssServer` - In-memory RSS feed provider implementation for local development
 
 ### Key Technologies
 - **Frontend**: React 19, TypeScript, Tailwind v4, Radix UI, Zod

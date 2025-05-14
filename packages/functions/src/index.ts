@@ -56,7 +56,7 @@ import type {SubscribeAccountToFeedOnCallResponse} from '@src/reqHandlers/handle
 
 const FIRECRAWL_API_KEY = defineString('FIRECRAWL_API_KEY');
 const LOCAL_RSS_FEED_PROVIDER_PORT = defineString('LOCAL_RSS_FEED_PROVIDER_PORT');
-const USE_SUPERFEEDR = defineString('USE_SUPERFEEDR');
+const RSS_FEED_PROVIDER_TYPE = defineString('RSS_FEED_PROVIDER_TYPE');
 const SUPERFEEDR_USER = defineString('SUPERFEEDR_USER');
 const SUPERFEEDR_API_KEY = defineString('SUPERFEEDR_API_KEY');
 
@@ -70,19 +70,32 @@ let rssFeedService: ServerRssFeedService;
 let feedItemsService: ServerFeedItemsService;
 
 function getRssFeedProvider(): RssFeedProvider {
-  const callbackUrl = `https://${FIREBASE_FUNCTIONS_REGION}-${projectID.value()}.cloudfunctions.net/handleSuperfeedrWebhook`;
-  if (USE_SUPERFEEDR.value() === 'false') {
-    return new LocalRssFeedProvider({
-      port: parseInt(LOCAL_RSS_FEED_PROVIDER_PORT.value(), 10),
-      callbackUrl,
-    });
-  }
+  const feedProviderType = RSS_FEED_PROVIDER_TYPE.value();
 
-  return new SuperfeedrService({
-    superfeedrUser: SUPERFEEDR_USER.value(),
-    superfeedrApiKey: SUPERFEEDR_API_KEY.value(),
-    callbackUrl,
-  });
+  const callbackUrl = `https://${FIREBASE_FUNCTIONS_REGION}-${projectID.value()}.cloudfunctions.net/handleSuperfeedrWebhook`;
+
+  switch (feedProviderType) {
+    case 'local':
+      return new LocalRssFeedProvider({
+        port: parseInt(LOCAL_RSS_FEED_PROVIDER_PORT.value(), 10),
+        callbackUrl,
+      });
+    case 'superfeedr':
+      return new SuperfeedrService({
+        superfeedrUser: SUPERFEEDR_USER.value(),
+        superfeedrApiKey: SUPERFEEDR_API_KEY.value(),
+        callbackUrl,
+      });
+    default: {
+      const error = new Error(
+        'Unexpected feed provider. Make sure RSS_FEED_PROVIDER_TYPE is set to a valid value.'
+      );
+      logger.error(error, {feedProviderType});
+      // This is considered a fatal error, so allow this to throw.
+      // eslint-disable-next-line no-restricted-syntax
+      throw error;
+    }
+  }
 }
 
 // Initialize services on startup

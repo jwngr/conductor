@@ -61,7 +61,7 @@ export class ServerRssFeedService {
 
     const feedSource = fetchFeedSourceResult.value;
 
-    // Subscribe to the feed source in Superfeedr.
+    // Subscribe to the feed source in the feed provider.
     const subscribeResult = await this.rssFeedProvider.subscribeToUrl(feedSource.url);
     if (!subscribeResult.success) {
       return prefixErrorResult(subscribeResult, 'Error subscribing to RSS feed');
