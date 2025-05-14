@@ -7,6 +7,7 @@
   "packageManager": "yarn@4.5.1",
   "scripts": {
     "start:pwa": "yarn workspace @conductor/pwa start",
+    "start:rss": "yarn workspace @conductor/rss-server start",
     "validate": "yarn workspaces foreach --all -p -t run validate",
     "validate:lint": "yarn workspaces foreach --all -p -t run validate:lint",
     "validate:lint:fix": "yarn workspaces foreach --all -p -t run validate:lint:fix",
@@ -19,7 +20,7 @@
     "validate:scripts": "yarn workspace @conductor/scripts validate",
     "validate:extension": "yarn workspace @conductor/extension validate",
     "validate:functions": "yarn workspace @conductor/functions validate",
-    "validate:rssServer": "yarn workspace @conductor/rss-server validate",
+    "validate:rss": "yarn workspace @conductor/rss-server validate",
     "validate:knip": "knip",
     "format": "yarn workspaces foreach --all -p -t run format",
     "lint:fix": "yarn workspaces foreach --all -p -t run lint:fix",
@@ -31,7 +32,7 @@
     "clean:scripts": "yarn workspace @conductor/scripts clean",
     "clean:extension": "yarn workspace @conductor/extension clean",
     "clean:functions": "yarn workspace @conductor/functions clean",
-    "clean:rssServer": "yarn workspace @conductor/rss-server clean",
+    "clean:rss": "yarn workspace @conductor/rss-server clean",
     "ci": "rm yarn.lock && yarn install",
     "build": "yarn workspaces foreach --all -p -t run build",
     "build:shared": "yarn workspace @conductor/shared build",
@@ -41,7 +42,7 @@
     "build:scripts": "yarn workspace @conductor/scripts build",
     "build:extension": "yarn workspace @conductor/extension build",
     "build:functions": "yarn workspace @conductor/functions build",
-    "build:rssServer": "yarn workspace @conductor/rss-server build",
+    "build:rss": "yarn workspace @conductor/rss-server build",
     "firebase:local": "firebase emulators:start",
     "deploy:pwa": "yarn workspace @conductor/pwa deploy",
     "deploy:functions": "yarn workspace @conductor/functions deploy",
@@ -64,7 +65,7 @@
     "test:extension": "yarn workspace @conductor/extension test",
     "test:functions": "yarn workspace @conductor/functions test",
     "test:coverage": "yarn workspaces foreach --all -p -t run test:coverage",
-    "test:rssServer": "yarn workspace @conductor/rss-server test"
+    "test:rss": "yarn workspace @conductor/rss-server test"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.1",

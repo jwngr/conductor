@@ -109,10 +109,16 @@ This repo is configured to work with the
    $ yarn run build:functions
    ```
 
-1. Start the Firebase emulator suite:
+1. Start the local Firebase emulator suite:
 
    ```bash
    $ yarn run firebase:local
+   ```
+
+1. Start the local RSS server:
+
+   ```bash
+   $ yarn run start:rss
    ```
 
 1. Restart other packages (e.g. PWA, extension) which rely on Firebase.
