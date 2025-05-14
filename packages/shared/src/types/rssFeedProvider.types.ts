@@ -22,9 +22,6 @@ export interface RssFeed {
 
 /** Provides a way to subscribe to RSS feeds and be notified of new items. */
 export interface RssFeedProvider {
-  /** Subscribes to a feed URL. */
-  subscribe(feedUrl: string): AsyncResult<void>;
-
-  /** Unsubscribes from a feed URL. */
-  unsubscribe(feedUrl: string): AsyncResult<void>;
+  subscribeToUrl(feedUrl: string): AsyncResult<void>;
+  unsubscribeFromUrl(feedUrl: string): AsyncResult<void>;
 }

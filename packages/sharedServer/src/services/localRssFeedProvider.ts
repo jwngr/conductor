@@ -22,7 +22,7 @@ export class LocalRssFeedProvider implements RssFeedProvider {
     this.callbackBaseUrl = args.callbackBaseUrl;
   }
 
-  public async subscribe(feedUrl: string): AsyncResult<void> {
+  public async subscribeToUrl(feedUrl: string): AsyncResult<void> {
     const result = await requestPost<undefined>(`${LOCAL_RSS_SERVER_URL}/subscribe`, {
       feedUrl,
       callbackBaseUrl: this.callbackBaseUrl,
@@ -31,7 +31,7 @@ export class LocalRssFeedProvider implements RssFeedProvider {
     return prefixResultIfError(result, 'Failed to subscribe to feed');
   }
 
-  public async unsubscribe(feedUrl: string): AsyncResult<void> {
+  public async unsubscribeFromUrl(feedUrl: string): AsyncResult<void> {
     const result = await requestPost<undefined>(`${LOCAL_RSS_SERVER_URL}/unsubscribe`, {
       feedUrl,
     });

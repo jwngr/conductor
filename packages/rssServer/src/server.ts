@@ -5,8 +5,11 @@ import type {Context} from 'hono';
 
 import {logger} from '@shared/services/logger.shared';
 
-import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
+import {prefixError} from '@shared/lib/errorUtils.shared';
 import {requestPost} from '@shared/lib/requests.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+
+import type {AsyncResult, Result} from '@shared/types/results.types';
 
 import type {RssFeed, RssFeedItem} from '@src/types';
 
@@ -89,6 +92,7 @@ export class RssServer {
     return new Promise((resolve) => {
       serve(
         {
+          // eslint-disable-next-line no-restricted-syntax
           fetch: this.app.fetch,
           port: this.port,
         },
@@ -100,17 +104,18 @@ export class RssServer {
     });
   }
 
-  public addFeed(feed: RssFeed): void {
+  public addFeed(feed: RssFeed): Result<void> {
     this.feeds.set(feed.id, feed);
+    return makeSuccessResult(undefined);
   }
 
-  public updateFeed(feedId: string, items: RssFeedItem[]): void {
+  public async updateFeed(feedId: string, items: RssFeedItem[]): AsyncResult<void> {
     const feed = this.feeds.get(feedId);
     if (!feed) {
-      throw new Error(`Feed ${feedId} not found`);
+      return makeErrorResult(new Error(`Feed ${feedId} not found`));
     }
 
-    const updatedFeed = {
+    const updatedFeed: RssFeed = {
       ...feed,
       items: [...feed.items, ...items],
     };
@@ -120,8 +125,9 @@ export class RssServer {
     const feedSubscriptions = this.subscriptions.get(feed.link);
     if (feedSubscriptions) {
       for (const subscription of feedSubscriptions) {
-        const result = asyncTry(async () => {
-          await requestPost(`${subscription.webhookBaseUrl}/handleSuperfeedrWebhook`, {
+        const postResult = await requestPost(
+          `${subscription.webhookBaseUrl}/handleSuperfeedrWebhook`,
+          {
             status: {
               code: 200,
               http: '200',
@@ -135,17 +141,19 @@ export class RssServer {
               published: item.pubDate.getTime(),
               updated: item.pubDate.getTime(),
             })),
-          });
-        });
-        if (!result.success) {
-          logger.error(prefixError(result.error, 'Error notifying feed subscribers'), {
-            error: result.error,
+          }
+        );
+        if (!postResult.success) {
+          logger.error(prefixError(postResult.error, 'Error notifying feed subscribers'), {
+            error: postResult.error,
             feedId,
             webhookBaseUrl: subscription.webhookBaseUrl,
           });
         }
       }
     }
+
+    return makeSuccessResult(undefined);
   }
 
   private convertToRss2(feed: RssFeed): string {
@@ -199,8 +207,8 @@ export class RssServer {
         id: item.id,
         published: item.pubDate.toISOString(),
         content: item.content ?? null,
-        feed: null as any, // Required by FeedItem type but not used in our mock
-        element: null as any, // Required by FeedItem type but not used in our mock
+        feed: null, // Required by FeedItem type but not used in our mock
+        element: null, // Required by FeedItem type but not used in our mock
         url: item.link,
         updated: item.pubDate.toISOString(),
         author: null,

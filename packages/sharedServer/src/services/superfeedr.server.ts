@@ -33,7 +33,7 @@ export class SuperfeedrService implements RssFeedProvider {
     return `${this.webhookBaseUrl}/handleSuperfeedrWebhook`;
   }
 
-  public async subscribe(
+  public async subscribeToUrl(
     feedUrl: string,
     callback: (newItems: RssFeedItem[]) => Promise<void>
   ): AsyncResult<void> {
@@ -63,7 +63,7 @@ export class SuperfeedrService implements RssFeedProvider {
     return makeSuccessResult(undefined);
   }
 
-  public async unsubscribe(feedUrl: string): AsyncResult<void> {
+  public async unsubscribeFromUrl(feedUrl: string): AsyncResult<void> {
     // Remove callback
     this.callbacks.delete(feedUrl);
 

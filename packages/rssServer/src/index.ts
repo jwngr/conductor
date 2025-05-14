@@ -34,7 +34,7 @@ async function main(): Promise<void> {
   await server.start();
 
   // Add a new item to the feed after 5 seconds
-  setTimeout(() => {
+  setTimeout(async () => {
     const newItem: RssFeedItem = {
       id: '2',
       title: 'Second Post',
@@ -44,7 +44,7 @@ async function main(): Promise<void> {
       content: '<p>This is the content of post #2</p>',
     };
 
-    server.updateFeed('test-feed', [newItem]);
+    await server.updateFeed('test-feed', [newItem]);
   }, 5000);
 }
 
