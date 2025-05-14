@@ -3,7 +3,7 @@ import {requestPost} from '@shared/lib/requests.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AsyncResult} from '@shared/types/results.types';
-import type {RssFeedItem, RssFeedProvider} from '@shared/types/rssFeedProvider.types';
+import type {RssFeedProvider} from '@shared/types/rss.types';
 
 const SUPERFEEDR_BASE_URL = 'https://push.superfeedr.com/';
 
@@ -11,7 +11,6 @@ export class SuperfeedrService implements RssFeedProvider {
   private readonly superfeedrUser: string;
   private readonly superfeedrApiKey: string;
   private readonly webhookBaseUrl: string;
-  private readonly callbacks: Map<string, (newItems: RssFeedItem[]) => Promise<void>>;
 
   constructor(args: {
     readonly superfeedrUser: string;
@@ -21,7 +20,6 @@ export class SuperfeedrService implements RssFeedProvider {
     this.superfeedrUser = args.superfeedrUser;
     this.superfeedrApiKey = args.superfeedrApiKey;
     this.webhookBaseUrl = args.webhookBaseUrl;
-    this.callbacks = new Map();
   }
 
   private getSuperfeedrAuthHeader(): string {
@@ -33,13 +31,7 @@ export class SuperfeedrService implements RssFeedProvider {
     return `${this.webhookBaseUrl}/handleSuperfeedrWebhook`;
   }
 
-  public async subscribeToUrl(
-    feedUrl: string,
-    callback: (newItems: RssFeedItem[]) => Promise<void>
-  ): AsyncResult<void> {
-    // Store callback for later use
-    this.callbacks.set(feedUrl, callback);
-
+  public async subscribeToUrl(feedUrl: string): AsyncResult<void> {
     // Subscribe to the feed on Superfeedr
     const result = await requestPost<string>(
       SUPERFEEDR_BASE_URL,
@@ -64,9 +56,6 @@ export class SuperfeedrService implements RssFeedProvider {
   }
 
   public async unsubscribeFromUrl(feedUrl: string): AsyncResult<void> {
-    // Remove callback
-    this.callbacks.delete(feedUrl);
-
     // Unsubscribe from the feed on Superfeedr
     const result = await requestPost<undefined>(SUPERFEEDR_BASE_URL, {
       headers: {

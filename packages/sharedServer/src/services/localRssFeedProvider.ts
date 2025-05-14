@@ -1,12 +1,9 @@
-import {logger} from '@shared/services/logger.shared';
-
-import {asyncTry, prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {requestGet, requestPost} from '@shared/lib/requests.shared';
-import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {requestPost} from '@shared/lib/requests.shared';
 
 import type {AsyncResult} from '@shared/types/results.types';
-import type {RssFeed, RssFeedProvider} from '@shared/types/rssFeedProvider.types';
+import type {RssFeedProvider} from '@shared/types/rss.types';
 
+// TODO: Move to shared config.
 const LOCAL_RSS_SERVER_PORT = 6556;
 const LOCAL_RSS_SERVER_URL = `http://localhost:${LOCAL_RSS_SERVER_PORT}`;
 
@@ -23,19 +20,15 @@ export class LocalRssFeedProvider implements RssFeedProvider {
   }
 
   public async subscribeToUrl(feedUrl: string): AsyncResult<void> {
-    const result = await requestPost<undefined>(`${LOCAL_RSS_SERVER_URL}/subscribe`, {
+    return await requestPost<undefined>(`${LOCAL_RSS_SERVER_URL}/subscribe`, {
       feedUrl,
       callbackBaseUrl: this.callbackBaseUrl,
     });
-
-    return prefixResultIfError(result, 'Failed to subscribe to feed');
   }
 
   public async unsubscribeFromUrl(feedUrl: string): AsyncResult<void> {
-    const result = await requestPost<undefined>(`${LOCAL_RSS_SERVER_URL}/unsubscribe`, {
+    return await requestPost<undefined>(`${LOCAL_RSS_SERVER_URL}/unsubscribe`, {
       feedUrl,
     });
-
-    return prefixResultIfError(result, 'Failed to unsubscribe from feed');
   }
 }

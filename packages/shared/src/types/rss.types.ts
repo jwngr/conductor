@@ -1,4 +1,5 @@
-// TODO: Rename this.
+import type {AsyncResult} from '@conductor/shared/src/types/results.types';
+
 export interface RssFeed {
   readonly id: string;
   readonly title: string;
@@ -7,7 +8,6 @@ export interface RssFeed {
   readonly items: RssFeedItem[];
 }
 
-// TODO: Rename this.
 export interface RssFeedItem {
   readonly id: string;
   readonly title: string;
@@ -15,4 +15,10 @@ export interface RssFeedItem {
   readonly link: string;
   readonly pubDate: Date;
   readonly content?: string;
+}
+
+/** Provides a way to subscribe to RSS feeds and be notified of new items. */
+export interface RssFeedProvider {
+  subscribeToUrl(feedUrl: string): AsyncResult<void>;
+  unsubscribeFromUrl(feedUrl: string): AsyncResult<void>;
 }

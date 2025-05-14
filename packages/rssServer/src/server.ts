@@ -10,8 +10,7 @@ import {requestPost} from '@shared/lib/requests.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AsyncResult, Result} from '@shared/types/results.types';
-
-import type {RssFeed, RssFeedItem} from '@src/types';
+import type {RssFeed, RssFeedItem} from '@shared/types/rss.types';
 
 interface Subscription {
   readonly feedUrl: string;

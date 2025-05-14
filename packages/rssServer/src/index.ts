@@ -1,7 +1,8 @@
 import {logger} from '@shared/services/logger.shared';
 
+import type {RssFeed, RssFeedItem} from '@shared/types/rss.types';
+
 import {RssServer} from '@src/server';
-import type {RssFeed, RssFeedItem} from '@src/types';
 
 // TODO: Move this to a config file.
 const RSS_SERVER_PORT = 6556;
