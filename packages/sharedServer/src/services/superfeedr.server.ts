@@ -31,7 +31,6 @@ export class SuperfeedrService implements RssFeedProvider {
   }
 
   public async subscribeToUrl(feedUrl: string): AsyncResult<void> {
-    // Subscribe to the feed on Superfeedr
     const result = await requestPost<string>(
       SUPERFEEDR_BASE_URL,
       {
@@ -55,7 +54,6 @@ export class SuperfeedrService implements RssFeedProvider {
   }
 
   public async unsubscribeFromUrl(feedUrl: string): AsyncResult<void> {
-    // Unsubscribe from the feed on Superfeedr
     const result = await requestPost<undefined>(SUPERFEEDR_BASE_URL, {
       headers: {
         Authorization: this.getSuperfeedrAuthHeader(),
