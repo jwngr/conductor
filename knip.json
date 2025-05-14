@@ -9,7 +9,12 @@
         "packages/functions/src/index.ts"
       ],
       "project": "packages/{pwa,extension,functions,rssServer,shared,sharedClient,sharedServer}/src/**/*.{ts,tsx,js,jsx}",
-      "ignoreDependencies": ["@types/chrome", "@conductor/shared", "@conductor/shared-client"]
+      "ignoreDependencies": [
+        "@types/chrome",
+        "@conductor/shared",
+        "@conductor/shared-client",
+        "@conductor/shared-server"
+      ]
     },
     "packages/scripts": {
       "entry": "src/scripts/**/*.{ts,js}",
