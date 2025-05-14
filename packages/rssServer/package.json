@@ -1,0 +1,29 @@
+{
+  "name": "@conductor/rss-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@conductor/shared": "workspace:*",
+    "@conductor/shared-server": "workspace:*",
+    "@hono/node-server": "^1.8.2",
+    "hono": "^4.0.0",
+    "rss": "^1.2.2"
+  },
+  "scripts": {
+    "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",
+    "validate:lint": "eslint src",
+    "validate:lint:fix": "eslint src --fix",
+    "validate:types": "tsc --build",
+    "validate:format": "prettier --check 'src/**/*.{js,jsx,ts,tsx,json,css,svg}'",
+    "format": "prettier --write 'src/**/*.{js,jsx,ts,tsx,json,css,svg}'",
+    "clean": "rm -rf dist/ tsconfig.tsbuildinfo",
+    "ci": "rm -rf node_modules/ && yarn install",
+    "build": "yarn run clean && tsc --build",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
+    "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "test:coverage:open": "NODE_OPTIONS=--experimental-vm-modules jest --coverage && open coverage/index.html",
+    "dev": "tsx watch src/index.ts"
+  }
+}

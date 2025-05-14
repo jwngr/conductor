@@ -8,7 +8,7 @@
         "packages/extension/src/background.ts",
         "packages/functions/src/index.ts"
       ],
-      "project": "packages/{pwa,extension,functions,shared,sharedClient,sharedServer}/src/**/*.{ts,tsx,js,jsx}",
+      "project": "packages/{pwa,extension,functions,rssServer,shared,sharedClient,sharedServer}/src/**/*.{ts,tsx,js,jsx}",
       "ignoreDependencies": ["@types/chrome", "@conductor/shared", "@conductor/shared-client"]
     },
     "packages/scripts": {

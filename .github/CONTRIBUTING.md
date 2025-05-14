@@ -14,6 +14,7 @@ The packages are:
 - `/extension` - Browser extension, for Chromium-based browsers
 - `/functions` - Firebase Cloud Functions, for "serverless" server-side actions
 - `/scripts` - Helpful scripts for maintaining the repo
+- `/rssServer` - Mock RSS server implementation for local development
 
 ## Initial setup
 
