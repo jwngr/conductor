@@ -29,6 +29,7 @@ import {
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
 import {FeedItemImportStatus} from '@shared/types/feedItems.types';
+import type {RssFeedProvider} from '@shared/types/rss.types';
 
 import {ServerAccountsService} from '@sharedServer/services/accounts.server';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
@@ -38,6 +39,7 @@ import {
   makeFirestoreDataConverter,
   ServerFirestoreCollectionService,
 } from '@sharedServer/services/firestore.server';
+import {LocalRssFeedProvider} from '@sharedServer/services/localRssFeedProvider';
 import {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
 import {SuperfeedrService} from '@sharedServer/services/superfeedr.server';
 import {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
@@ -53,6 +55,8 @@ import {handleSubscribeAccountToFeedOnCallRequest} from '@src/reqHandlers/handle
 import type {SubscribeAccountToFeedOnCallResponse} from '@src/reqHandlers/handleSubscribeAccountToFeedOnCall';
 
 const FIRECRAWL_API_KEY = defineString('FIRECRAWL_API_KEY');
+const LOCAL_RSS_FEED_PROVIDER_PORT = defineString('LOCAL_RSS_FEED_PROVIDER_PORT');
+const USE_SUPERFEEDR = defineString('USE_SUPERFEEDR');
 const SUPERFEEDR_USER = defineString('SUPERFEEDR_USER');
 const SUPERFEEDR_API_KEY = defineString('SUPERFEEDR_API_KEY');
 
@@ -65,14 +69,24 @@ let wipeoutService: WipeoutService;
 let rssFeedService: ServerRssFeedService;
 let feedItemsService: ServerFeedItemsService;
 
-// Initialize services on startup
-onInit(() => {
-  const superfeedrService = new SuperfeedrService({
+function getRssFeedProvider(): RssFeedProvider {
+  const callbackUrl = `https://${FIREBASE_FUNCTIONS_REGION}-${projectID.value()}.cloudfunctions.net/handleSuperfeedrWebhook`;
+  if (USE_SUPERFEEDR.value() === 'false') {
+    return new LocalRssFeedProvider({
+      port: parseInt(LOCAL_RSS_FEED_PROVIDER_PORT.value(), 10),
+      callbackUrl,
+    });
+  }
+
+  return new SuperfeedrService({
     superfeedrUser: SUPERFEEDR_USER.value(),
     superfeedrApiKey: SUPERFEEDR_API_KEY.value(),
-    webhookBaseUrl: `https://${FIREBASE_FUNCTIONS_REGION}-${projectID.value()}.cloudfunctions.net`,
+    callbackUrl,
   });
+}
 
+// Initialize services on startup
+onInit(() => {
   const feedSourceFirestoreConverter = makeFirestoreDataConverter(
     toStorageFeedSource,
     parseFeedSource
@@ -133,7 +147,7 @@ onInit(() => {
   });
 
   rssFeedService = new ServerRssFeedService({
-    superfeedrService,
+    rssFeedProvider: getRssFeedProvider(),
     feedSourcesService,
     userFeedSubscriptionsService,
   });

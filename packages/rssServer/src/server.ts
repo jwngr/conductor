@@ -14,7 +14,7 @@ import type {RssFeed, RssFeedItem} from '@shared/types/rss.types';
 
 interface Subscription {
   readonly feedUrl: string;
-  readonly webhookBaseUrl: string;
+  readonly callbackUrl: string;
 }
 
 export class RssServer {
@@ -49,16 +49,13 @@ export class RssServer {
 
     // Subscribe to a feed
     this.app.post('/subscribe', async (c: Context) => {
-      const {feedUrl, webhookBaseUrl} = await c.req.json();
+      const {feedUrl, callbackUrl} = await c.req.json();
 
-      if (!feedUrl || !webhookBaseUrl) {
+      if (!feedUrl || !callbackUrl) {
         return c.text('Missing required parameters', 400);
       }
 
-      const subscription: Subscription = {
-        feedUrl,
-        webhookBaseUrl,
-      };
+      const subscription: Subscription = {feedUrl, callbackUrl};
 
       const feedSubscriptions = this.subscriptions.get(feedUrl) ?? new Set();
       feedSubscriptions.add(subscription);
@@ -124,29 +121,26 @@ export class RssServer {
     const feedSubscriptions = this.subscriptions.get(feed.link);
     if (feedSubscriptions) {
       for (const subscription of feedSubscriptions) {
-        const postResult = await requestPost(
-          `${subscription.webhookBaseUrl}/handleSuperfeedrWebhook`,
-          {
-            status: {
-              code: 200,
-              http: '200',
-              feed: feed.link,
-            },
-            items: items.map((item) => ({
-              id: item.id,
-              title: item.title,
-              summary: item.description ?? '',
-              permalinkUrl: item.link,
-              published: item.pubDate.getTime(),
-              updated: item.pubDate.getTime(),
-            })),
-          }
-        );
+        const postResult = await requestPost(subscription.callbackUrl, {
+          status: {
+            code: 200,
+            http: '200',
+            feed: feed.link,
+          },
+          items: items.map((item) => ({
+            id: item.id,
+            title: item.title,
+            summary: item.description ?? '',
+            permalinkUrl: item.link,
+            published: item.pubDate.getTime(),
+            updated: item.pubDate.getTime(),
+          })),
+        });
         if (!postResult.success) {
           logger.error(prefixError(postResult.error, 'Error notifying feed subscribers'), {
             error: postResult.error,
             feedId,
-            webhookBaseUrl: subscription.webhookBaseUrl,
+            callbackUrl: subscription.callbackUrl,
           });
         }
       }

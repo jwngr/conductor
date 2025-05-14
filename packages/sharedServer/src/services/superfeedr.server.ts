@@ -10,16 +10,16 @@ const SUPERFEEDR_BASE_URL = 'https://push.superfeedr.com/';
 export class SuperfeedrService implements RssFeedProvider {
   private readonly superfeedrUser: string;
   private readonly superfeedrApiKey: string;
-  private readonly webhookBaseUrl: string;
+  private readonly callbackUrl: string;
 
   constructor(args: {
     readonly superfeedrUser: string;
     readonly superfeedrApiKey: string;
-    readonly webhookBaseUrl: string;
+    readonly callbackUrl: string;
   }) {
     this.superfeedrUser = args.superfeedrUser;
     this.superfeedrApiKey = args.superfeedrApiKey;
-    this.webhookBaseUrl = args.webhookBaseUrl;
+    this.callbackUrl = args.callbackUrl;
   }
 
   private getSuperfeedrAuthHeader(): string {
@@ -27,8 +27,7 @@ export class SuperfeedrService implements RssFeedProvider {
   }
 
   private getSuperfeedrWebhookUrl(): string {
-    // This path needs to match the Firebase Function name.
-    return `${this.webhookBaseUrl}/handleSuperfeedrWebhook`;
+    return `${this.callbackUrl}/handleSuperfeedrWebhook`;
   }
 
   public async subscribeToUrl(feedUrl: string): AsyncResult<void> {

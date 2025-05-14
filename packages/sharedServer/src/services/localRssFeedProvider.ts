@@ -3,31 +3,35 @@ import {requestPost} from '@shared/lib/requests.shared';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {RssFeedProvider} from '@shared/types/rss.types';
 
-// TODO: Move to shared config.
-const LOCAL_RSS_SERVER_PORT = 6556;
-const LOCAL_RSS_SERVER_URL = `http://localhost:${LOCAL_RSS_SERVER_PORT}`;
-
 interface LocalRssFeedProviderArgs {
+  /** The port to run the local RSS server on. */
+  readonly port: number;
   /** The URL to POST to when subscribed feeds have new items. */
-  readonly callbackBaseUrl: string;
+  readonly callbackUrl: string;
 }
 
 export class LocalRssFeedProvider implements RssFeedProvider {
-  private readonly callbackBaseUrl: string;
+  private readonly port: number;
+  private readonly callbackUrl: string;
 
   constructor(args: LocalRssFeedProviderArgs) {
-    this.callbackBaseUrl = args.callbackBaseUrl;
+    this.port = args.port;
+    this.callbackUrl = args.callbackUrl;
+  }
+
+  private getBaseUrl(): string {
+    return `http://localhost:${this.port}`;
   }
 
   public async subscribeToUrl(feedUrl: string): AsyncResult<void> {
-    return await requestPost<undefined>(`${LOCAL_RSS_SERVER_URL}/subscribe`, {
+    return await requestPost<undefined>(`${this.getBaseUrl()}/subscribe`, {
       feedUrl,
-      callbackBaseUrl: this.callbackBaseUrl,
+      callbackUrl: this.callbackUrl,
     });
   }
 
   public async unsubscribeFromUrl(feedUrl: string): AsyncResult<void> {
-    return await requestPost<undefined>(`${LOCAL_RSS_SERVER_URL}/unsubscribe`, {
+    return await requestPost<undefined>(`${this.getBaseUrl()}/unsubscribe`, {
       feedUrl,
     });
   }

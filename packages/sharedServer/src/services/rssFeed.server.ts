@@ -6,10 +6,10 @@ import {makeSuccessResult} from '@shared/lib/results.shared';
 import type {AccountId} from '@shared/types/accounts.types';
 import type {FeedSourceId} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/results.types';
+import type {RssFeedProvider} from '@shared/types/rss.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
 import type {ServerFeedSourcesService} from '@sharedServer/services/feedSources.server';
-import type {SuperfeedrService} from '@sharedServer/services/superfeedr.server';
 import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
 
 import {parseRssFeed} from '@sharedServer/lib/rss.server';
@@ -17,16 +17,16 @@ import {parseRssFeed} from '@sharedServer/lib/rss.server';
 const DEFAULT_FEED_TITLE = '(no title)';
 
 export class ServerRssFeedService {
-  private readonly superfeedrService: SuperfeedrService;
+  private readonly rssFeedProvider: RssFeedProvider;
   private readonly feedSourcesService: ServerFeedSourcesService;
   private readonly userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
 
   constructor(args: {
-    readonly superfeedrService: SuperfeedrService;
+    readonly rssFeedProvider: RssFeedProvider;
     readonly feedSourcesService: ServerFeedSourcesService;
     readonly userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
   }) {
-    this.superfeedrService = args.superfeedrService;
+    this.rssFeedProvider = args.rssFeedProvider;
     this.feedSourcesService = args.feedSourcesService;
     this.userFeedSubscriptionsService = args.userFeedSubscriptionsService;
   }
@@ -62,9 +62,9 @@ export class ServerRssFeedService {
     const feedSource = fetchFeedSourceResult.value;
 
     // Subscribe to the feed source in Superfeedr.
-    const subscribeToSuperfeedrResult = await this.superfeedrService.subscribeToUrl(feedSource.url);
-    if (!subscribeToSuperfeedrResult.success) {
-      return prefixErrorResult(subscribeToSuperfeedrResult, 'Error subscribing to Superfeedr feed');
+    const subscribeResult = await this.rssFeedProvider.subscribeToUrl(feedSource.url);
+    if (!subscribeResult.success) {
+      return prefixErrorResult(subscribeResult, 'Error subscribing to RSS feed');
     }
 
     // Create a user feed subscription in the database.
@@ -103,6 +103,6 @@ export class ServerRssFeedService {
       {feedSourceId, accountId, url}
     );
 
-    return await this.superfeedrService.unsubscribeFromFeed(url);
+    return await this.rssFeedProvider.unsubscribeFromUrl(url);
   }
 }
