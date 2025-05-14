@@ -5,25 +5,27 @@ import type {Context} from 'hono';
 
 import {logger} from '@shared/services/logger.shared';
 
-import {prefixError} from '@shared/lib/errorUtils.shared';
+import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
+import {requestPost} from '@shared/lib/requests.shared';
 
-import type {MockSuperfeedrConfig, MockSuperfeedrState, RssFeed, RssFeedItem} from '@src/types';
+import type {RssFeed, RssFeedItem} from '@src/types';
+
+interface Subscription {
+  feedUrl: string;
+  webhookBaseUrl: string;
+}
 
 export class RssServer {
   private readonly app: Hono;
   private readonly feeds: Map<string, RssFeed>;
-  private readonly superfeedrState: MockSuperfeedrState;
-  private readonly config: MockSuperfeedrConfig;
+  private readonly subscriptions: Map<string, Set<Subscription>>;
+  private readonly port: number;
 
-  constructor(config: MockSuperfeedrConfig) {
+  constructor(args: {port: number}) {
     this.app = new Hono();
     this.feeds = new Map();
-    this.superfeedrState = {
-      subscribedFeeds: new Set(),
-      webhookCallbacks: new Map(),
-    };
-    this.config = config;
-
+    this.subscriptions = new Map();
+    this.port = args.port;
     this.setupRoutes();
   }
 
@@ -37,50 +39,47 @@ export class RssServer {
         return c.text('Feed not found', 404);
       }
 
-      // Convert feed to RSS 2.0 format
       const rss = this.convertToRss2(feed);
       return c.text(rss, 200, {
         'Content-Type': 'application/xml',
       });
     });
 
-    // Superfeedr subscription endpoint
-    this.app.post('/superfeedr/subscribe', async (c: Context) => {
-      const formData = await c.req.formData();
-      const topic = formData.get('hub.topic') as string;
-      const callback = formData.get('hub.callback') as string;
+    // Subscribe to a feed
+    this.app.post('/subscribe', async (c: Context) => {
+      const {feedUrl, webhookBaseUrl} = await c.req.json();
 
-      if (!topic || !callback) {
+      if (!feedUrl || !webhookBaseUrl) {
         return c.text('Missing required parameters', 400);
       }
 
-      this.superfeedrState.subscribedFeeds.add(topic);
-      this.superfeedrState.webhookCallbacks.set(topic, async (feed) => {
-        try {
-          await fetch(callback, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(feed),
-          });
-        } catch (error) {
-          logger.error('Error calling webhook', {error, callback});
-        }
-      });
+      const subscription: Subscription = {
+        feedUrl,
+        webhookBaseUrl,
+      };
+
+      const feedSubscriptions = this.subscriptions.get(feedUrl) ?? new Set();
+      feedSubscriptions.add(subscription);
+      this.subscriptions.set(feedUrl, feedSubscriptions);
 
       return c.text('OK', 200);
     });
 
-    // Superfeedr unsubscribe endpoint
-    this.app.post('/superfeedr/unsubscribe', async (c: Context) => {
-      const formData = await c.req.formData();
-      const topic = formData.get('hub.topic') as string;
+    // Unsubscribe from a feed
+    this.app.post('/unsubscribe', async (c: Context) => {
+      const {feedUrl} = await c.req.json();
 
-      if (!topic) {
-        return c.text('Missing topic parameter', 400);
+      if (!feedUrl) {
+        return c.text('Missing required parameters', 400);
       }
 
-      this.superfeedrState.subscribedFeeds.delete(topic);
-      this.superfeedrState.webhookCallbacks.delete(topic);
+      const feedSubscriptions = this.subscriptions.get(feedUrl);
+      if (feedSubscriptions) {
+        feedSubscriptions.clear();
+        if (feedSubscriptions.size === 0) {
+          this.subscriptions.delete(feedUrl);
+        }
+      }
 
       return c.text('OK', 200);
     });
@@ -91,7 +90,7 @@ export class RssServer {
       serve(
         {
           fetch: this.app.fetch,
-          port: this.config.port,
+          port: this.port,
         },
         (info: {port: number}) => {
           logger.log('RSS server started', {port: info.port});
@@ -111,21 +110,40 @@ export class RssServer {
       throw new Error(`Feed ${feedId} not found`);
     }
 
-    this.feeds.set(feedId, {
+    const updatedFeed = {
       ...feed,
       items: [...feed.items, ...items],
-    });
+    };
+    this.feeds.set(feedId, updatedFeed);
 
-    // Notify Superfeedr subscribers
-    if (this.superfeedrState.subscribedFeeds.has(feed.link)) {
-      const callback = this.superfeedrState.webhookCallbacks.get(feed.link);
-      if (callback) {
-        callback(this.convertToFeed(feed)).catch((error) => {
-          logger.error(prefixError(error, 'Error notifying Superfeedr subscribers'), {
-            error,
-            feedId,
+    // Notify subscribers via Firebase function
+    const feedSubscriptions = this.subscriptions.get(feed.link);
+    if (feedSubscriptions) {
+      for (const subscription of feedSubscriptions) {
+        const result = asyncTry(async () => {
+          await requestPost(`${subscription.webhookBaseUrl}/handleSuperfeedrWebhook`, {
+            status: {
+              code: 200,
+              http: '200',
+              feed: feed.link,
+            },
+            items: items.map((item) => ({
+              id: item.id,
+              title: item.title,
+              summary: item.description ?? '',
+              permalinkUrl: item.link,
+              published: item.pubDate.getTime(),
+              updated: item.pubDate.getTime(),
+            })),
           });
         });
+        if (!result.success) {
+          logger.error(prefixError(result.error, 'Error notifying feed subscribers'), {
+            error: result.error,
+            feedId,
+            webhookBaseUrl: subscription.webhookBaseUrl,
+          });
+        }
       }
     }
   }
@@ -140,7 +158,7 @@ export class RssServer {
     <link>${feed.link}</link>
     ${feed.items
       .map(
-        (item) => `
+        (item: RssFeedItem) => `
     <item>
       <title>${item.title}</title>
       ${item.description ? `<description>${item.description}</description>` : ''}
@@ -174,7 +192,7 @@ export class RssServer {
       image: null,
       authors: [],
       categories: [],
-      items: rssFeed.items.map((item) => ({
+      items: rssFeed.items.map((item: RssFeedItem) => ({
         title: item.title,
         description: item.description ?? null,
         link: item.link,

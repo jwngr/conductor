@@ -1,28 +1,28 @@
-import type {Feed} from '@rowanmanning/feed-parser/lib/feed/base';
+import type {RssFeed, RssFeedItem} from '@shared/types/rssFeedProvider.types';
 
-export interface RssFeed {
-  readonly id: string;
-  readonly title: string;
-  readonly description?: string;
-  readonly link: string;
-  readonly items: RssFeedItem[];
-}
-
-export interface RssFeedItem {
-  readonly id: string;
-  readonly title: string;
-  readonly description?: string;
-  readonly link: string;
-  readonly pubDate: Date;
-  readonly content?: string;
-}
-
-export interface MockSuperfeedrConfig {
+export interface RssServerConfig {
   readonly port: number;
   readonly webhookBaseUrl: string;
 }
 
-export interface MockSuperfeedrState {
+export interface RssServerState {
   readonly subscribedFeeds: Set<string>;
-  readonly webhookCallbacks: Map<string, (feed: Feed) => Promise<void>>;
+  readonly webhookCallbacks: Map<string, (feed: RssFeed) => Promise<void>>;
+}
+
+export interface RssFeed {
+  id: string;
+  title: string;
+  description?: string;
+  link: string;
+  items: RssFeedItem[];
+}
+
+export interface RssFeedItem {
+  id: string;
+  title: string;
+  description?: string;
+  link: string;
+  pubDate: Date;
+  content?: string;
 }
