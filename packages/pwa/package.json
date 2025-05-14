@@ -48,7 +48,7 @@
     "validate:types": "tsc --build",
     "validate:format": "prettier --check 'src/**/*.{js,jsx,ts,tsx,json,css,svg}'",
     "format": "prettier --write 'src/**/*.{js,jsx,ts,tsx,json,css,svg}'",
-    "start": "vite",
+    "dev": "vite",
     "clean": "rm -rf dist/ distIgnore/",
     "ci": "rm -rf node_modules/ && yarn install",
     "build": "yarn run clean && vite build",

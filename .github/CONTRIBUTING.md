@@ -85,7 +85,7 @@ The packages are:
 To start the PWA (Progressive Web App) at http://localhost:5173/, run:
 
 ```bash
-$ yarn run start:pwa
+$ yarn run dev:pwa
 ```
 
 ## Run Firebase emulator suite locally
@@ -112,13 +112,7 @@ This repo is configured to work with the
 1. Start the local Firebase emulator suite:
 
    ```bash
-   $ yarn run firebase:local
-   ```
-
-1. Start the local RSS server:
-
-   ```bash
-   $ yarn run start:rss
+   $ yarn run dev:functions
    ```
 
 1. Restart other packages (e.g. PWA, extension) which rely on Firebase.
@@ -131,6 +125,16 @@ This repo is configured to work with the
 
 1. Visit the URL to sign into the account associated to the email address you entered. The account
    will be created if it does not already exist.
+
+## Run RSS server locally
+
+The `/rssServer` package implements an in-memory RSS server for local development. To run it:
+
+```bash
+$ yarn run dev:rss
+```
+
+It will be accessible at http://localhost:6556.
 
 ## Open browser extension locally
 
