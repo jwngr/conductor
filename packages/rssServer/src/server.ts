@@ -1,5 +1,4 @@
 import {serve} from '@hono/node-server';
-import type {Feed} from '@rowanmanning/feed-parser/lib/feed/base';
 import {Hono} from 'hono';
 import type {Context} from 'hono';
 
@@ -11,6 +10,9 @@ import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AsyncResult, Result} from '@shared/types/results.types';
 import type {RssFeed, RssFeedItem} from '@shared/types/rss.types';
+
+// TODO: Move this to a config file.
+const RSS_SERVER_PORT = 6556;
 
 interface Subscription {
   readonly feedUrl: string;
@@ -41,7 +43,7 @@ export class RssServer {
         return c.text('Feed not found', 404);
       }
 
-      const rss = this.convertToRss2(feed);
+      const rss = this.convertToRssXml(feed);
       return c.text(rss, 200, {
         'Content-Type': 'application/xml',
       });
@@ -149,7 +151,7 @@ export class RssServer {
     return makeSuccessResult(undefined);
   }
 
-  private convertToRss2(feed: RssFeed): string {
+  private convertToRssXml(feed: RssFeed): string {
     // Basic RSS 2.0 format
     return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
@@ -173,45 +175,14 @@ export class RssServer {
   </channel>
 </rss>`;
   }
-
-  private convertToFeed(rssFeed: RssFeed): Feed {
-    // Convert to the format expected by the feed parser
-    const feed = {
-      meta: {
-        type: 'rss',
-        version: '2.0',
-      },
-      language: null,
-      title: rssFeed.title,
-      description: rssFeed.description ?? null,
-      copyright: null,
-      url: rssFeed.link,
-      self: null,
-      published: null,
-      updated: null,
-      generator: null,
-      image: null,
-      authors: [],
-      categories: [],
-      items: rssFeed.items.map((item: RssFeedItem) => ({
-        title: item.title,
-        description: item.description ?? null,
-        link: item.link,
-        id: item.id,
-        published: item.pubDate.toISOString(),
-        content: item.content ?? null,
-        feed: null, // Required by FeedItem type but not used in our mock
-        element: null, // Required by FeedItem type but not used in our mock
-        url: item.link,
-        updated: item.pubDate.toISOString(),
-        author: null,
-        categories: [],
-        enclosures: [],
-        image: null,
-        itunes: null,
-        media: null,
-      })),
-    };
-    return feed as unknown as Feed;
-  }
 }
+
+async function main(): Promise<void> {
+  const server = new RssServer({port: RSS_SERVER_PORT});
+  await server.start();
+}
+
+main().catch((error) => {
+  logger.error(prefixError(error, 'Error starting RSS server'));
+  process.exit(1);
+});
