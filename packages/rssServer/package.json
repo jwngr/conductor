@@ -16,7 +16,7 @@
     "validate:format": "prettier --check 'src/**/*.{js,ts,json}'",
     "format": "prettier --write 'src/**/*.{js,ts,json}'",
     "dev": "tsx src/server.ts",
-    "build": "yarn run clean && tsc",
+    "build": "yarn run clean && tsc --build",
     "clean": "rm -rf dist/",
     "test": "jest"
   }
