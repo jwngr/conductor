@@ -11,8 +11,8 @@ import {requestPost} from '@shared/lib/requests.shared';
 import type {RssFeed, RssFeedItem} from '@src/types';
 
 interface Subscription {
-  feedUrl: string;
-  webhookBaseUrl: string;
+  readonly feedUrl: string;
+  readonly webhookBaseUrl: string;
 }
 
 export class RssServer {

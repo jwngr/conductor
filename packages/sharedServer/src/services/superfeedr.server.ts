@@ -1,11 +1,9 @@
-import {logger} from '@shared/services/logger.shared';
-
-import {asyncTry, prefixError, prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {requestGet, requestPost} from '@shared/lib/requests.shared';
+import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
+import {requestPost} from '@shared/lib/requests.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AsyncResult} from '@shared/types/results.types';
-import type {RssFeed, RssFeedItem, RssFeedProvider} from '@shared/types/rssFeedProvider.types';
+import type {RssFeedItem, RssFeedProvider} from '@shared/types/rssFeedProvider.types';
 
 const SUPERFEEDR_BASE_URL = 'https://push.superfeedr.com/';
 
@@ -88,66 +86,5 @@ export class SuperfeedrService implements RssFeedProvider {
     }
 
     return makeSuccessResult(undefined);
-  }
-
-  public async getFeed(feedUrl: string): AsyncResult<RssFeed> {
-    // Fetch the feed from Superfeedr
-    const result = await requestGet<{
-      status: {
-        feed: string;
-        http: string;
-        code: number;
-      };
-      title: string;
-      description?: string;
-      items: Array<{
-        id: string;
-        title: string;
-        description?: string;
-        link: string;
-        published: string;
-        content?: string;
-      }>;
-    }>(`${SUPERFEEDR_BASE_URL}?hub.topic=${encodeURIComponent(feedUrl)}&format=json`, {
-      headers: {
-        Authorization: this.getSuperfeedrAuthHeader(),
-      },
-    });
-
-    if (!result.success) {
-      return prefixErrorResult(result, 'Failed to get feed');
-    }
-
-    // Convert Superfeedr response to our RssFeed format
-    return makeSuccessResult({
-      metadata: {
-        title: result.value.title,
-        description: result.value.description,
-        link: result.value.status.feed,
-      },
-      items: result.value.items.map((item) => ({
-        id: item.id,
-        title: item.title,
-        description: item.description,
-        link: item.link,
-        pubDate: new Date(item.published),
-        content: item.content,
-      })),
-    });
-  }
-
-  // This method would be called by the webhook handler when Superfeedr sends updates
-  public async handleWebhook(feedUrl: string, items: RssFeedItem[]): Promise<void> {
-    const callback = this.callbacks.get(feedUrl);
-    if (callback) {
-      const result = await asyncTry(async () => {
-        await callback(items);
-      });
-      if (!result.success) {
-        logger.error(prefixError(result.error, 'Error handling Superfeedr webhook callback'), {
-          feedUrl,
-        });
-      }
-    }
   }
 }

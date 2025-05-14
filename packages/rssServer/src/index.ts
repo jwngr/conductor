@@ -8,10 +8,7 @@ const RSS_SERVER_PORT = 6556;
 
 async function main(): Promise<void> {
   // Create a new RSS server instance.
-  const server = new RssServer({
-    port: RSS_SERVER_PORT,
-    webhookBaseUrl: 'http://localhost:3000', // TODO: This is probably wrong.
-  });
+  const server = new RssServer({port: RSS_SERVER_PORT});
 
   // Add a sample feed.
   const feed: RssFeed = {

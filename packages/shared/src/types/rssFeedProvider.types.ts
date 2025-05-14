@@ -27,8 +27,4 @@ export interface RssFeedProvider {
 
   /** Unsubscribes from a feed URL. */
   unsubscribe(feedUrl: string): AsyncResult<void>;
-
-  /** Gets the current state of a feed. */
-  // TODO: Is this needed?
-  getFeed(feedUrl: string): AsyncResult<RssFeed>;
 }
