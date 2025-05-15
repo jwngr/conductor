@@ -507,7 +507,6 @@ __metadata:
   resolution: "@conductor/rss-server@workspace:packages/rssServer"
   dependencies:
     "@hono/node-server": "npm:^1.8.2"
-    "@rowanmanning/feed-parser": "npm:^1.0.0"
     dotenv: "npm:^16.5.0"
     hono: "npm:^4.0.5"
   languageName: unknown
@@ -4189,16 +4188,6 @@ __metadata:
   version: 4.40.2
   resolution: "@rollup/rollup-win32-x64-msvc@npm:4.40.2"
   conditions: os=win32 & cpu=x64
-  languageName: node
-  linkType: hard
-
-"@rowanmanning/feed-parser@npm:^1.0.0":
-  version: 1.1.2
-  resolution: "@rowanmanning/feed-parser@npm:1.1.2"
-  dependencies:
-    fast-xml-parser: "npm:^5.0.8"
-    html-entities: "npm:^2.3.3"
-  checksum: 10c0/4f3af3d075f0b6c51d348244065cc0f6bb878bb0b4b636fe3380e9b6c6f69807ded1576d3ad5ba130ea08e38b71acfc9d7690b6c367a0c7ffc72bc3d30c760df
   languageName: node
   linkType: hard
 
