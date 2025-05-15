@@ -6,10 +6,16 @@
         "packages/pwa/src/index.tsx",
         "packages/extension/src/index.tsx",
         "packages/extension/src/background.ts",
-        "packages/functions/src/index.ts"
+        "packages/functions/src/index.ts",
+        "packages/rssServer/src/server.ts"
       ],
-      "project": "packages/{pwa,extension,functions,shared,sharedClient,sharedServer}/src/**/*.{ts,tsx,js,jsx}",
-      "ignoreDependencies": ["@types/chrome", "@conductor/shared", "@conductor/shared-client"]
+      "project": "packages/{pwa,extension,functions,rssServer,shared,sharedClient,sharedServer}/src/**/*.{ts,tsx,js,jsx}",
+      "ignoreDependencies": [
+        "@types/chrome",
+        "@conductor/shared",
+        "@conductor/shared-client",
+        "@conductor/shared-server"
+      ]
     },
     "packages/scripts": {
       "entry": "src/scripts/**/*.{ts,js}",

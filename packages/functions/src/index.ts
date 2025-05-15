@@ -13,7 +13,9 @@ import {
   FEED_SOURCES_DB_COLLECTION,
   USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
 } from '@shared/lib/constants.shared';
-import {prefixError} from '@shared/lib/errorUtils.shared';
+import {prefixError, prefixErrorResult} from '@shared/lib/errorUtils.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {assertNever, isValidPort} from '@shared/lib/utils.shared';
 
 import {parseAccount, parseAccountId, toStorageAccount} from '@shared/parsers/accounts.parser';
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
@@ -22,6 +24,7 @@ import {
   parseFeedSourceId,
   toStorageFeedSource,
 } from '@shared/parsers/feedSources.parser';
+import {parseRssFeedProviderType} from '@shared/parsers/rss.parser';
 import {
   parseUserFeedSubscription,
   parseUserFeedSubscriptionId,
@@ -29,6 +32,8 @@ import {
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
 import {FeedItemImportStatus} from '@shared/types/feedItems.types';
+import type {Result} from '@shared/types/results.types';
+import type {RssFeedProvider} from '@shared/types/rss.types';
 
 import {ServerAccountsService} from '@sharedServer/services/accounts.server';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
@@ -38,6 +43,7 @@ import {
   makeFirestoreDataConverter,
   ServerFirestoreCollectionService,
 } from '@sharedServer/services/firestore.server';
+import {LocalRssFeedProvider} from '@sharedServer/services/localRssFeedProvider';
 import {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
 import {SuperfeedrService} from '@sharedServer/services/superfeedr.server';
 import {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
@@ -53,11 +59,64 @@ import {handleSubscribeAccountToFeedOnCallRequest} from '@src/reqHandlers/handle
 import type {SubscribeAccountToFeedOnCallResponse} from '@src/reqHandlers/handleSubscribeAccountToFeedOnCall';
 
 const FIRECRAWL_API_KEY = defineString('FIRECRAWL_API_KEY');
+const LOCAL_RSS_FEED_PROVIDER_PORT = defineString('LOCAL_RSS_FEED_PROVIDER_PORT');
+const RSS_FEED_PROVIDER_TYPE = defineString('RSS_FEED_PROVIDER_TYPE');
 const SUPERFEEDR_USER = defineString('SUPERFEEDR_USER');
 const SUPERFEEDR_API_KEY = defineString('SUPERFEEDR_API_KEY');
 
-// TODO: This should be an environment variable.
+// TODO: Make region an environment variable.
 const FIREBASE_FUNCTIONS_REGION = 'us-central1';
+
+function getFunctionsBaseUrl(): string {
+  return `https://${FIREBASE_FUNCTIONS_REGION}-${projectID.value()}.cloudfunctions.net`;
+}
+
+function getRssFeedProvider(): Result<RssFeedProvider> {
+  const rawRssFeedProviderType = RSS_FEED_PROVIDER_TYPE.value();
+  const parsedFeedProviderTypeResult = parseRssFeedProviderType(rawRssFeedProviderType);
+  if (!parsedFeedProviderTypeResult.success) {
+    return prefixErrorResult(
+      parsedFeedProviderTypeResult,
+      `Invalid RSS feed provider type: "${rawRssFeedProviderType}". Make sure RSS_FEED_PROVIDER_TYPE is set.`
+    );
+  }
+
+  const feedProviderType = parsedFeedProviderTypeResult.value;
+
+  // TODO: Consider using a different callback URL for the local feed provider.
+  const callbackUrl = `${getFunctionsBaseUrl()}/handleSuperfeedrWebhook`;
+
+  const rssServerPort = parseInt(LOCAL_RSS_FEED_PROVIDER_PORT.value() ?? '', 10);
+  if (isNaN(rssServerPort) || !isValidPort(rssServerPort)) {
+    const error = new Error(
+      'RSS feed provider port is not valid. Make sure LOCAL_RSS_FEED_PROVIDER_PORT is set in .env'
+    );
+    logger.error(error, {port: rssServerPort});
+    return makeErrorResult(error);
+  }
+
+  let rssFeedProvider: RssFeedProvider;
+  switch (feedProviderType) {
+    case 'local':
+      rssFeedProvider = new LocalRssFeedProvider({
+        port: rssServerPort,
+        callbackUrl,
+      });
+      break;
+    case 'superfeedr':
+      rssFeedProvider = new SuperfeedrService({
+        superfeedrUser: SUPERFEEDR_USER.value(),
+        superfeedrApiKey: SUPERFEEDR_API_KEY.value(),
+        callbackUrl,
+      });
+      break;
+    default: {
+      assertNever(feedProviderType);
+    }
+  }
+
+  return makeSuccessResult(rssFeedProvider);
+}
 
 let feedSourcesService: ServerFeedSourcesService;
 let userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
@@ -65,14 +124,8 @@ let wipeoutService: WipeoutService;
 let rssFeedService: ServerRssFeedService;
 let feedItemsService: ServerFeedItemsService;
 
-// Initialize services on startup
+// Initialize services on startup.
 onInit(() => {
-  const superfeedrService = new SuperfeedrService({
-    superfeedrUser: SUPERFEEDR_USER.value(),
-    superfeedrApiKey: SUPERFEEDR_API_KEY.value(),
-    webhookBaseUrl: `https://${FIREBASE_FUNCTIONS_REGION}-${projectID.value()}.cloudfunctions.net`,
-  });
-
   const feedSourceFirestoreConverter = makeFirestoreDataConverter(
     toStorageFeedSource,
     parseFeedSource
@@ -132,8 +185,16 @@ onInit(() => {
     feedItemsService,
   });
 
+  const rssFeedProviderResult = getRssFeedProvider();
+  if (!rssFeedProviderResult.success) {
+    logger.error(rssFeedProviderResult.error);
+    // This is considered a fatal error, so allow this to throw.
+    // eslint-disable-next-line no-restricted-syntax
+    throw rssFeedProviderResult.error;
+  }
+
   rssFeedService = new ServerRssFeedService({
-    superfeedrService,
+    rssFeedProvider: rssFeedProviderResult.value,
     feedSourcesService,
     userFeedSubscriptionsService,
   });
@@ -320,6 +381,6 @@ export const handleFeedUnsubscribeOnUpdate = onDocumentUpdated(
       return;
     }
 
-    logger.log('[UNSUBSCRIBE] Successfully unsubscribed account from Superfeedr feed', logDetails);
+    logger.log('[UNSUBSCRIBE] Successfully unsubscribed account from feed', logDetails);
   }
 );

@@ -278,5 +278,18 @@ export default tseslint.config(
       disallowFirebaseAdminImports: false,
       disallowSharedServerImports: false,
     }),
+  },
+
+  // RSS server package config.
+  {
+    files: ['packages/rssServer/**/*.ts'],
+    languageOptions: SHARED_LANGUAGE_OPTIONS,
+    plugins: SHARED_PLUGINS,
+    rules: makeSharedRules({
+      disallowFirebaseClientImports: true,
+      disallowSharedClientImports: true,
+      disallowFirebaseAdminImports: false,
+      disallowSharedServerImports: false,
+    }),
   }
 );

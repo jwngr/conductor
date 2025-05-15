@@ -502,6 +502,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@conductor/rss-server@workspace:packages/rssServer":
+  version: 0.0.0-use.local
+  resolution: "@conductor/rss-server@workspace:packages/rssServer"
+  dependencies:
+    "@hono/node-server": "npm:^1.8.2"
+    dotenv: "npm:^16.5.0"
+    hono: "npm:^4.0.5"
+  languageName: unknown
+  linkType: soft
+
 "@conductor/scripts@workspace:packages/scripts":
   version: 0.0.0-use.local
   resolution: "@conductor/scripts@workspace:packages/scripts"
@@ -1808,6 +1818,15 @@ __metadata:
   bin:
     proto-loader-gen-types: build/bin/proto-loader-gen-types.js
   checksum: 10c0/514a134a724b56d73d0a202b7e02c84479da21e364547bacb2f4995ebc0d52412a1a21653add9f004ebd146c1e6eb4bcb0b8846fdfe1bfa8a98ed8f3d203da4a
+  languageName: node
+  linkType: hard
+
+"@hono/node-server@npm:^1.8.2":
+  version: 1.14.1
+  resolution: "@hono/node-server@npm:1.14.1"
+  peerDependencies:
+    hono: ^4
+  checksum: 10c0/b5261c0179a0c87ebe063e2e68c0e22cbd1214a9a33af7e29c14703671edf62278a1a2f5fa120c9a3d09fd22179f39b27c80b29de1849b96a842f0485dd3910b
   languageName: node
   linkType: hard
 
@@ -8704,6 +8723,13 @@ __metadata:
   dependencies:
     "@types/hast": "npm:^3.0.0"
   checksum: 10c0/b898bc9fe27884b272580d15260b6bbdabe239973a147e97fa98c45fa0ffec967a481aaa42291ec34fb56530dc2d484d473d7e2bae79f39c83f3762307edfea8
+  languageName: node
+  linkType: hard
+
+"hono@npm:^4.0.5":
+  version: 4.7.9
+  resolution: "hono@npm:4.7.9"
+  checksum: 10c0/40b0926a47af9aed859f3306fe87c24a411315db4d7538884476aac8950a9dd3d66960ee411b1ec59773f5273d94a9a49dd0861e46041b3931becd7b9c04c7f2
   languageName: node
   linkType: hard
 
