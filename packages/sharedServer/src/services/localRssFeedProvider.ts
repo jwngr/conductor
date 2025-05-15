@@ -1,5 +1,7 @@
 import {requestPost} from '@shared/lib/requests.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {isValidUrl} from '@shared/lib/urls.shared';
+import {isValidPort} from '@shared/lib/utils.shared';
 
 import type {AsyncResult} from '@shared/types/results.types';
 import type {RssFeedProvider} from '@shared/types/rss.types';
@@ -17,7 +19,16 @@ export class LocalRssFeedProvider implements RssFeedProvider {
 
   constructor(args: LocalRssFeedProviderArgs) {
     this.port = args.port;
+    if (!isValidPort(this.port)) {
+      // eslint-disable-next-line no-restricted-syntax
+      throw new Error('Invalid port number');
+    }
+
     this.callbackUrl = args.callbackUrl;
+    if (!isValidUrl(this.callbackUrl)) {
+      // eslint-disable-next-line no-restricted-syntax
+      throw new Error('Invalid callback URL');
+    }
   }
 
   private getApiBaseUrl(): string {
@@ -30,7 +41,7 @@ export class LocalRssFeedProvider implements RssFeedProvider {
       callbackUrl: this.callbackUrl,
     });
     if (!result.success) {
-      if (result.error.message.includes('fetch failed')) {
+      if (result.error.message.toLowerCase().includes('fetch failed')) {
         return makeErrorResult(
           new Error('Could not connect to local RSS server. Make sure it is running.')
         );

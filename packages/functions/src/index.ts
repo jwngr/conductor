@@ -14,8 +14,8 @@ import {
   USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
 } from '@shared/lib/constants.shared';
 import {prefixError, prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {makeSuccessResult} from '@shared/lib/results.shared';
-import {assertNever} from '@shared/lib/utils.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {assertNever, isValidPort} from '@shared/lib/utils.shared';
 
 import {parseAccount, parseAccountId, toStorageAccount} from '@shared/parsers/accounts.parser';
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
@@ -85,11 +85,20 @@ function getRssFeedProvider(): Result<RssFeedProvider> {
 
   const callbackUrl = `${getFunctionsBaseUrl()}/handleSuperfeedrWebhook`;
 
+  const rssServerPort = parseInt(LOCAL_RSS_FEED_PROVIDER_PORT.value() ?? '', 10);
+  if (isNaN(rssServerPort) || !isValidPort(rssServerPort)) {
+    const error = new Error(
+      'RSS feed provider port is not valid. Make sure LOCAL_RSS_FEED_PROVIDER_PORT is set in .env'
+    );
+    logger.error(error, {port: rssServerPort});
+    return makeErrorResult(error);
+  }
+
   let rssFeedProvider: RssFeedProvider;
   switch (feedProviderType) {
     case 'local':
       rssFeedProvider = new LocalRssFeedProvider({
-        port: parseInt(LOCAL_RSS_FEED_PROVIDER_PORT.value(), 10),
+        port: rssServerPort,
         callbackUrl,
       });
       break;
