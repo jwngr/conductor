@@ -4,7 +4,15 @@ import {logger as honoLogger} from 'hono/logger';
 
 import {logger} from '@shared/services/logger.shared';
 
-import type {RssFeed, RssFeedItem, RssFeedManager} from '@shared/types/rss.types';
+import {asyncTry} from '@shared/lib/errorUtils.shared';
+import {isValidUrl} from '@shared/lib/urls.shared';
+
+import type {
+  RssFeed,
+  RssFeedItem,
+  RssFeedManager,
+  RssFeedSubscription,
+} from '@shared/types/rss.types';
 import type {Func} from '@shared/types/utils.types';
 
 export function setupRoutes(feedManager: RssFeedManager): Hono {
@@ -39,16 +47,19 @@ function makeSubscribeToFeedRouteHandler(
   feedManager: RssFeedManager
 ): Func<Context, Promise<Response>> {
   return async (c) => {
-    const {feedUrl, callbackUrl} = await c.req.json();
+    const jsonResult = await asyncTry(async () => c.req.json<RssFeedSubscription>());
+    if (!jsonResult.success) return c.json(jsonResult.error, 400);
+
+    const {feedUrl, callbackUrl} = jsonResult.value;
 
     logger.log('Subscribing to feed', {feedUrl, callbackUrl});
 
-    if (!feedUrl || !callbackUrl) {
-      return c.text('Missing required parameters', 400);
-    }
+    if (!isValidUrl(feedUrl)) return c.text('Invalid feed URL', 400);
+    if (!isValidUrl(callbackUrl)) return c.text('Invalid callback URL', 400);
 
     feedManager.subscribe({feedUrl, callbackUrl});
-    return c.text('OK', 200);
+
+    return c.json({success: true}, 200);
   };
 }
 
@@ -56,16 +67,18 @@ function makeUnsubscribeFromFeedRouteHandler(
   feedManager: RssFeedManager
 ): Func<Context, Promise<Response>> {
   return async (c) => {
-    const {feedUrl} = await c.req.json();
+    const jsonResult = await asyncTry(async () => c.req.json<{readonly feedUrl: string}>());
+    if (!jsonResult.success) return c.json(jsonResult.error, 400);
+
+    const {feedUrl} = jsonResult.value;
 
     logger.log('Unsubscribing from feed', {feedUrl});
 
-    if (!feedUrl) {
-      return c.text('Missing required parameters', 400);
-    }
+    if (!isValidUrl(feedUrl)) return c.text('Invalid feed URL', 400);
 
     feedManager.unsubscribe({feedUrl});
-    return c.text('OK', 200);
+
+    return c.json({success: true}, 200);
   };
 }
 
