@@ -508,6 +508,7 @@ __metadata:
   dependencies:
     "@hono/node-server": "npm:^1.8.2"
     "@rowanmanning/feed-parser": "npm:^1.0.0"
+    dotenv: "npm:^16.5.0"
     hono: "npm:^4.0.5"
   languageName: unknown
   linkType: soft

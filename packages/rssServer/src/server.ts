@@ -1,6 +1,8 @@
 import {serve} from '@hono/node-server';
+import dotenv from 'dotenv';
 import {Hono} from 'hono';
 import type {Context} from 'hono';
+import {logger as honoLogger} from 'hono/logger';
 
 import {logger} from '@shared/services/logger.shared';
 
@@ -11,8 +13,15 @@ import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import type {AsyncResult, Result} from '@shared/types/results.types';
 import type {RssFeed, RssFeedItem} from '@shared/types/rss.types';
 
-// TODO: Move this to a config file.
-const RSS_SERVER_PORT = 6556;
+dotenv.config();
+
+const RSS_SERVER_PORT = parseInt(process.env.LOCAL_RSS_FEED_PROVIDER_PORT ?? '', 10);
+if (isNaN(RSS_SERVER_PORT)) {
+  logger.error(new Error('LOCAL_RSS_FEED_PROVIDER_PORT must be set as a valid port in .env'), {
+    port: RSS_SERVER_PORT,
+  });
+  process.exit(1);
+}
 
 interface Subscription {
   readonly feedUrl: string;
@@ -30,28 +39,31 @@ export class RssServer {
     this.feeds = new Map();
     this.subscriptions = new Map();
     this.port = args.port;
+    this.app.use(honoLogger());
     this.setupRoutes();
   }
 
   private setupRoutes(): void {
     // Serve RSS feeds
-    this.app.get('/feed/:id', (c: Context) => {
-      const feedId = c.req.param('id');
+    this.app.get('/feed/:feedId', (c: Context) => {
+      const feedId = c.req.param('feedId');
       const feed = this.feeds.get(feedId);
+
+      logger.log('Fetching feed', {feedId});
 
       if (!feed) {
         return c.text('Feed not found', 404);
       }
 
       const rss = this.convertToRssXml(feed);
-      return c.text(rss, 200, {
-        'Content-Type': 'application/xml',
-      });
+      return c.text(rss, 200, {'Content-Type': 'application/xml'});
     });
 
     // Subscribe to a feed
     this.app.post('/subscribe', async (c: Context) => {
       const {feedUrl, callbackUrl} = await c.req.json();
+
+      logger.log('Subscribing to feed', {feedUrl, callbackUrl});
 
       if (!feedUrl || !callbackUrl) {
         return c.text('Missing required parameters', 400);
@@ -69,6 +81,8 @@ export class RssServer {
     // Unsubscribe from a feed
     this.app.post('/unsubscribe', async (c: Context) => {
       const {feedUrl} = await c.req.json();
+
+      logger.log('Unsubscribing from feed', {feedUrl});
 
       if (!feedUrl) {
         return c.text('Missing required parameters', 400);
