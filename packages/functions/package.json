@@ -9,11 +9,11 @@
   "main": "dist/index.js",
   "dependencies": {
     "@mendable/firecrawl-js": "^1.24.0",
-    "firebase-admin": "^13.3.0",
+    "firebase-admin": "^13.4.0",
     "firebase-functions": "^6.3.2"
   },
   "devDependencies": {
-    "esbuild": "^0.25.3"
+    "esbuild": "^0.25.4"
   },
   "scripts": {
     "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",
