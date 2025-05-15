@@ -284,6 +284,7 @@ export default tseslint.config(
   {
     files: ['packages/rssServer/**/*.ts'],
     languageOptions: SHARED_LANGUAGE_OPTIONS,
+    plugins: SHARED_PLUGINS,
     rules: makeSharedRules({
       disallowFirebaseClientImports: true,
       disallowSharedClientImports: true,
