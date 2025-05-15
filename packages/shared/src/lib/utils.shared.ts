@@ -210,3 +210,10 @@ export function noopTrue(): true {
 export function noopFalse(): false {
   return false;
 }
+
+/**
+ * Returns `true` if the provided value is a valid port number.
+ */
+export function isValidPort(port: number): boolean {
+  return port >= 0 && port <= 65535;
+}
