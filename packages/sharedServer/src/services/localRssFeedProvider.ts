@@ -1,4 +1,3 @@
-import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {requestPost} from '@shared/lib/requests.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
