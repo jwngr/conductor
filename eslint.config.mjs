@@ -1,6 +1,7 @@
 import eslint from '@eslint/js';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
+import unusedImports from 'eslint-plugin-unused-imports';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
@@ -12,6 +13,10 @@ const SHARED_LANGUAGE_OPTIONS = {
     project: ['./tsconfig.json', './packages/*/tsconfig.json'],
     tsconfigRootDir: '.',
   },
+};
+
+const SHARED_PLUGINS = {
+  'unused-imports': unusedImports,
 };
 
 const NO_RELATIVE_IMPORTS_PATTERN = {
@@ -101,6 +106,19 @@ function makeSharedRules({
         ].filter((p) => p !== null),
       },
     ],
+
+    // Handle unused imports + vars via plugin which support auto-fixing.
+    '@typescript-eslint/no-unused-vars': 'off',
+    'unused-imports/no-unused-imports': 'error',
+    'unused-imports/no-unused-vars': [
+      'error',
+      {
+        vars: 'all',
+        varsIgnorePattern: '^_',
+        args: 'after-used',
+        argsIgnorePattern: '^_',
+      },
+    ],
   };
 }
 
@@ -130,6 +148,7 @@ export default tseslint.config(
   {
     files: ['packages/shared/src/**/*.ts'],
     languageOptions: SHARED_LANGUAGE_OPTIONS,
+    plugins: SHARED_PLUGINS,
     rules: makeSharedRules({
       disallowFirebaseAdminImports: true,
       disallowFirebaseClientImports: true,
@@ -161,6 +180,7 @@ export default tseslint.config(
       globals: globals.browser,
     },
     plugins: {
+      ...SHARED_PLUGINS,
       react,
       'react-hooks': reactHooks,
     },
@@ -179,6 +199,7 @@ export default tseslint.config(
   {
     files: ['packages/sharedServer/**/*.ts'],
     languageOptions: SHARED_LANGUAGE_OPTIONS,
+    plugins: SHARED_PLUGINS,
     rules: makeSharedRules({
       disallowFirebaseClientImports: true,
       disallowSharedClientImports: true,
@@ -195,6 +216,7 @@ export default tseslint.config(
       globals: globals.browser,
     },
     plugins: {
+      ...SHARED_PLUGINS,
       'react-hooks': reactHooks,
     },
     rules: {
@@ -212,6 +234,7 @@ export default tseslint.config(
   {
     files: ['packages/scripts/**/*.ts'],
     languageOptions: SHARED_LANGUAGE_OPTIONS,
+    plugins: SHARED_PLUGINS,
     rules: {
       ...makeSharedRules({
         disallowFirebaseClientImports: true,
@@ -230,6 +253,7 @@ export default tseslint.config(
       globals: globals.browser,
     },
     plugins: {
+      ...SHARED_PLUGINS,
       'react-hooks': reactHooks,
     },
     rules: {
@@ -247,6 +271,7 @@ export default tseslint.config(
   {
     files: ['packages/functions/**/*.ts'],
     languageOptions: SHARED_LANGUAGE_OPTIONS,
+    plugins: SHARED_PLUGINS,
     rules: makeSharedRules({
       disallowFirebaseClientImports: true,
       disallowSharedClientImports: true,
