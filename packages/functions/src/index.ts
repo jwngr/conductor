@@ -13,7 +13,7 @@ import {
   FEED_SOURCES_DB_COLLECTION,
   USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
 } from '@shared/lib/constants.shared';
-import {prefixError} from '@shared/lib/errorUtils.shared';
+import {prefixError, prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
@@ -33,7 +33,7 @@ import {
 
 import {FeedItemImportStatus} from '@shared/types/feedItems.types';
 import type {Result} from '@shared/types/results.types';
-import {RssFeedProviderType, type RssFeedProvider} from '@shared/types/rss.types';
+import type {RssFeedProvider} from '@shared/types/rss.types';
 
 import {ServerAccountsService} from '@sharedServer/services/accounts.server';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
@@ -66,31 +66,34 @@ const SUPERFEEDR_API_KEY = defineString('SUPERFEEDR_API_KEY');
 
 // TODO: Make region an environment variable.
 const FIREBASE_FUNCTIONS_REGION = 'us-central1';
-const FUNCTIONS_BASE_URL = `https://${FIREBASE_FUNCTIONS_REGION}-${projectID.value()}.cloudfunctions.net`;
 
-let feedSourcesService: ServerFeedSourcesService;
-let userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
-let wipeoutService: WipeoutService;
-let rssFeedService: ServerRssFeedService;
-let feedItemsService: ServerFeedItemsService;
+function getFunctionsBaseUrl(): string {
+  return `https://${FIREBASE_FUNCTIONS_REGION}-${projectID.value()}.cloudfunctions.net`;
+}
 
 function getRssFeedProvider(): Result<RssFeedProvider> {
-  const parsedFeedProviderTypeResult = parseRssFeedProviderType(RSS_FEED_PROVIDER_TYPE.value());
-  if (!parsedFeedProviderTypeResult.success) return parsedFeedProviderTypeResult;
+  const rawRssFeedProviderType = RSS_FEED_PROVIDER_TYPE.value();
+  const parsedFeedProviderTypeResult = parseRssFeedProviderType(rawRssFeedProviderType);
+  if (!parsedFeedProviderTypeResult.success) {
+    return prefixErrorResult(
+      parsedFeedProviderTypeResult,
+      `Invalid RSS feed provider type: "${rawRssFeedProviderType}". Make sure RSS_FEED_PROVIDER_TYPE is set.`
+    );
+  }
 
   const feedProviderType = parsedFeedProviderTypeResult.value;
 
-  const callbackUrl = `${FUNCTIONS_BASE_URL}/handleSuperfeedrWebhook`;
+  const callbackUrl = `${getFunctionsBaseUrl()}/handleSuperfeedrWebhook`;
 
   let rssFeedProvider: RssFeedProvider;
   switch (feedProviderType) {
-    case RssFeedProviderType.Local:
+    case 'local':
       rssFeedProvider = new LocalRssFeedProvider({
         port: parseInt(LOCAL_RSS_FEED_PROVIDER_PORT.value(), 10),
         callbackUrl,
       });
       break;
-    case RssFeedProviderType.Superfeedr:
+    case 'superfeedr':
       rssFeedProvider = new SuperfeedrService({
         superfeedrUser: SUPERFEEDR_USER.value(),
         superfeedrApiKey: SUPERFEEDR_API_KEY.value(),
@@ -104,6 +107,12 @@ function getRssFeedProvider(): Result<RssFeedProvider> {
 
   return makeSuccessResult(rssFeedProvider);
 }
+
+let feedSourcesService: ServerFeedSourcesService;
+let userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
+let wipeoutService: WipeoutService;
+let rssFeedService: ServerRssFeedService;
+let feedItemsService: ServerFeedItemsService;
 
 // Initialize services on startup.
 onInit(() => {
@@ -168,14 +177,10 @@ onInit(() => {
 
   const rssFeedProviderResult = getRssFeedProvider();
   if (!rssFeedProviderResult.success) {
-    const betterError = prefixError(
-      rssFeedProviderResult.error,
-      'Failed to create RSS feed provider. Make sure RSS_FEED_PROVIDER_TYPE is set.'
-    );
-    logger.error(betterError, {rssFeedProviderResult});
+    logger.error(rssFeedProviderResult.error);
     // This is considered a fatal error, so allow this to throw.
     // eslint-disable-next-line no-restricted-syntax
-    throw betterError;
+    throw rssFeedProviderResult.error;
   }
 
   rssFeedService = new ServerRssFeedService({

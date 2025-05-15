@@ -4,7 +4,7 @@ import type {Context} from 'hono';
 
 import {logger} from '@shared/services/logger.shared';
 
-import {prefixError} from '@shared/lib/errorUtils.shared';
+import {prefixError, upgradeUnknownError} from '@shared/lib/errorUtils.shared';
 import {requestPost} from '@shared/lib/requests.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
@@ -86,7 +86,7 @@ export class RssServer {
     });
   }
 
-  public async start(): Promise<void> {
+  public async start(): AsyncResult<void> {
     return new Promise((resolve) => {
       serve(
         {
@@ -95,8 +95,8 @@ export class RssServer {
           port: this.port,
         },
         (info: {port: number}) => {
-          logger.log('RSS server started', {port: info.port});
-          resolve();
+          logger.log(`RSS server running on port ${info.port}`);
+          resolve(makeSuccessResult(undefined));
         }
       );
     });
@@ -177,12 +177,15 @@ export class RssServer {
   }
 }
 
-async function main(): Promise<void> {
+async function main(): AsyncResult<void> {
   const server = new RssServer({port: RSS_SERVER_PORT});
-  await server.start();
+  return await server.start();
 }
 
-main().catch((error) => {
-  logger.error(prefixError(error, 'Error starting RSS server'));
+// eslint-disable-next-line no-restricted-syntax
+try {
+  await main();
+} catch (error) {
+  logger.error(prefixError(upgradeUnknownError(error), 'Error starting RSS server'));
   process.exit(1);
-});
+}

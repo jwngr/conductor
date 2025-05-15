@@ -1,12 +1,9 @@
 import type {AsyncResult} from '@conductor/shared/src/types/results.types';
 import {z} from 'zod';
 
-export enum RssFeedProviderType {
-  Local = 'LOCAL',
-  Superfeedr = 'SUPERFEEDR',
-}
+export type RssFeedProviderType = 'local' | 'superfeedr';
 
-export const RssFeedProviderTypeSchema = z.nativeEnum(RssFeedProviderType);
+export const RssFeedProviderTypeSchema = z.union([z.literal('local'), z.literal('superfeedr')]);
 
 /** Provides a way to subscribe to RSS feeds and be notified of new items. */
 export interface RssFeedProvider {

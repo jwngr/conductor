@@ -63,9 +63,7 @@ export class ServerRssFeedService {
 
     // Subscribe to the feed source in the feed provider.
     const subscribeResult = await this.rssFeedProvider.subscribeToUrl(feedSource.url);
-    if (!subscribeResult.success) {
-      return prefixErrorResult(subscribeResult, 'Error subscribing to RSS feed');
-    }
+    if (!subscribeResult.success) return subscribeResult;
 
     // Create a user feed subscription in the database.
     const saveToDbResult = await this.userFeedSubscriptionsService.create({feedSource, accountId});

@@ -1,4 +1,6 @@
+import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {requestPost} from '@shared/lib/requests.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AsyncResult} from '@shared/types/results.types';
 import type {RssFeedProvider} from '@shared/types/rss.types';
@@ -24,10 +26,19 @@ export class LocalRssFeedProvider implements RssFeedProvider {
   }
 
   public async subscribeToUrl(feedUrl: string): AsyncResult<void> {
-    return await requestPost<undefined>(`${this.getApiBaseUrl()}/subscribe`, {
+    const result = await requestPost<undefined>(`${this.getApiBaseUrl()}/subscribe`, {
       feedUrl,
       callbackUrl: this.callbackUrl,
     });
+    if (!result.success) {
+      if (result.error.message.includes('fetch failed')) {
+        return makeErrorResult(
+          new Error('Could not connect to local RSS server. Make sure it is running.')
+        );
+      }
+      return result;
+    }
+    return makeSuccessResult(result.value);
   }
 
   public async unsubscribeFromUrl(feedUrl: string): AsyncResult<void> {
