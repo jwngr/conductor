@@ -27,6 +27,7 @@ export class SuperfeedrService implements RssFeedProvider {
   }
 
   private getSuperfeedrWebhookUrl(): string {
+    // This path needs to match the Firebase Function name.
     return `${this.callbackUrl}/handleSuperfeedrWebhook`;
   }
 
