@@ -83,6 +83,7 @@ function getRssFeedProvider(): Result<RssFeedProvider> {
 
   const feedProviderType = parsedFeedProviderTypeResult.value;
 
+  // TODO: Consider using a different callback URL for the local feed provider.
   const callbackUrl = `${getFunctionsBaseUrl()}/handleSuperfeedrWebhook`;
 
   const rssServerPort = parseInt(LOCAL_RSS_FEED_PROVIDER_PORT.value() ?? '', 10);
@@ -380,6 +381,6 @@ export const handleFeedUnsubscribeOnUpdate = onDocumentUpdated(
       return;
     }
 
-    logger.log('[UNSUBSCRIBE] Successfully unsubscribed account from Superfeedr feed', logDetails);
+    logger.log('[UNSUBSCRIBE] Successfully unsubscribed account from feed', logDetails);
   }
 );

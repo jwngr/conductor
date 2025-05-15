@@ -46,8 +46,8 @@ export class ServerRssFeedService {
     const parsedRssFeed = parsedRssFeedResult.value;
 
     // Check if the feed source already exists. A single feed source can have multiple accounts
-    // subscribed to it, but we only want to subscribe once to it in Superfeedr. Feed sources are
-    // deduped based on exact URL match, although we could probably be smarter in the future.
+    // subscribed to it, but we only want to subscribe once to it in the feed provider. Feed
+    // sources are deduped based on exact URL match, although we could be smarter in the future.
     const fetchFeedSourceResult = await this.feedSourcesService.fetchByUrlOrCreate(url, {
       // TODO: Consider just storing `null` for the title if it's not available.
       title: parsedRssFeed.title ?? DEFAULT_FEED_TITLE,
@@ -71,7 +71,7 @@ export class ServerRssFeedService {
   }
 
   /**
-   * Unsubscribes from a feed URL in Superfeedr.
+   * Unsubscribes from a feed URL in the feed provider.
    */
   async unsubscribeAccountFromUrl(args: {
     readonly feedSourceId: FeedSourceId;
@@ -86,20 +86,21 @@ export class ServerRssFeedService {
     if (!otherSubscriptionsResult.success) {
       return prefixErrorResult(
         otherSubscriptionsResult,
-        '[UNSUBSCRIBE] Error fetching other subscriptions while unsubscribing account from Superfeedr feed'
+        '[UNSUBSCRIBE] Error fetching other subscriptions while unsubscribing account from feed'
       );
     }
 
-    // If other active subscriptions exist, don't actually unsubscribe from Superfeedr.
+    // If other active subscriptions exist, don't actually unsubscribe from the feed provider.
     const activeSubscriptions = otherSubscriptionsResult.value.filter((sub) => sub.isActive);
     if (activeSubscriptions.length > 0) {
       return makeSuccessResult(undefined);
     }
 
-    logger.log(
-      '[UNSUBSCRIBE] No active subscriptions found, unsubscribing account from Superfeedr feed',
-      {feedSourceId, accountId, url}
-    );
+    logger.log('[UNSUBSCRIBE] No active subscriptions found, unsubscribing account from feed', {
+      feedSourceId,
+      accountId,
+      url,
+    });
 
     return await this.rssFeedProvider.unsubscribeFromUrl(url);
   }
