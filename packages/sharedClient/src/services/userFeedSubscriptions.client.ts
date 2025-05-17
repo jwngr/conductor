@@ -133,7 +133,18 @@ export class ClientUserFeedSubscriptionsService {
   }): AsyncResult<UserFeedSubscription> {
     const {feedSource, accountId} = args;
 
-    // TODO: Validate a feed subscription does not already exist.
+    // Check if a feed subscription already exists for this feed source.
+    const existingSubscriptionsResult =
+      await this.userFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
+        where('accountId', '==', accountId),
+        where('feedSourceId', '==', feedSource.feedSourceId),
+      ]);
+    if (!existingSubscriptionsResult.success) return existingSubscriptionsResult;
+
+    const existingSubscription = existingSubscriptionsResult.value;
+    if (existingSubscription) {
+      return makeErrorResult(new Error('Feed subscription already exists'));
+    }
 
     // Make a new user feed subscription object locally.
     const userFeedSubscriptionResult = makeUserFeedSubscription({feedSource, accountId});
