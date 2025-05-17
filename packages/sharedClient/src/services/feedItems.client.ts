@@ -5,7 +5,7 @@ import {useEffect, useMemo} from 'react';
 
 import {logger} from '@shared/services/logger.shared';
 
-import {makeErrorAsyncState, makeSuccessAsyncState} from '@shared/lib/asyncState.shared';
+import {makeSuccessAsyncState} from '@shared/lib/asyncState.shared';
 import {
   FEED_ITEM_FILE_NAME_LLM_CONTEXT,
   FEED_ITEM_FILE_NAME_TRANSCRIPT,
@@ -180,35 +180,23 @@ export function useFeedItemsRespectingDelivery(args: {
   const userFeedSubscriptionsState = useUserFeedSubscriptions();
 
   const filteredFeedItemsState: AsyncState<FeedItem[]> = useMemo(() => {
-    // In addition to the feed items themselves, we need to load user subscriptions in order to
-    // determine delivery schedules. Wait to display anything until the everything is loaded.
-    switch (feedItemsState.status) {
-      case AsyncStatus.Idle:
-      case AsyncStatus.Pending:
-      case AsyncStatus.Error:
-        return feedItemsState;
-      case AsyncStatus.Success: {
-        switch (userFeedSubscriptionsState.status) {
-          case AsyncStatus.Idle:
-          case AsyncStatus.Pending:
-          case AsyncStatus.Error:
-            return userFeedSubscriptionsState;
-          case AsyncStatus.Success: {
-            const filteredFeedItems = filterFeedItemsByDeliverySchedules({
-              feedItems: feedItemsState.value,
-              userFeedSubscriptions: userFeedSubscriptionsState.value,
-            });
-
-            return makeSuccessAsyncState(filteredFeedItems);
-          }
-          default:
-            assertNever(userFeedSubscriptionsState);
-        }
-        break;
-      }
-      default:
-        assertNever(feedItemsState);
+    // Do not consider loaded until both the feed items and the user feed subscriptions are loaded. filtering.
+    // Favor the feed items state over the user feed subscriptions state.
+    if (feedItemsState.status !== AsyncStatus.Success) {
+      return feedItemsState;
     }
+
+    if (userFeedSubscriptionsState.status !== AsyncStatus.Success) {
+      return userFeedSubscriptionsState;
+    }
+
+    // Filter the feed items based on delivery schedules.
+    const filteredFeedItems = filterFeedItemsByDeliverySchedules({
+      feedItems: feedItemsState.value,
+      userFeedSubscriptions: userFeedSubscriptionsState.value,
+    });
+
+    return makeSuccessAsyncState(filteredFeedItems);
   }, [feedItemsState, userFeedSubscriptionsState]);
 
   return filteredFeedItemsState;
