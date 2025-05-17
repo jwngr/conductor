@@ -1,4 +1,5 @@
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {expectErrorResult, expectSuccessResult} from '@shared/lib/testUtils.shared';
 import {
   assertNever,
   batchAsyncResults,
@@ -306,20 +307,14 @@ describe('batchSyncResults', () => {
     if (result.success) {
       expect(result.value.length).toBe(5);
       result.value.forEach((res: Result<number>, i: number) => {
-        expect(res.success).toBe(true);
-        if (res.success) {
-          expect(res.value).toBe(i + 1);
-        }
+        expectSuccessResult(res, i + 1);
       });
     }
   });
 
   test('should handle empty tasks array', () => {
     const result = batchSyncResults([], 2);
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.value).toEqual([]);
-    }
+    expectSuccessResult(result, []);
   });
 
   test('should handle errors in tasks', () => {
@@ -334,13 +329,9 @@ describe('batchSyncResults', () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.value.length).toBe(3);
-      expect(result.value[0].success).toBe(true);
-      expect(result.value[1].success).toBe(false);
-      expect(result.value[2].success).toBe(true);
-
-      if (!result.value[1].success) {
-        expect(result.value[1].error).toBe(error);
-      }
+      expectSuccessResult(result.value[0], 1);
+      expectErrorResult(result.value[1], error.message);
+      expectSuccessResult(result.value[2], 3);
     }
   });
 
@@ -380,10 +371,7 @@ describe('batchAsyncResults', () => {
 
   test('should handle empty tasks array', async () => {
     const result = await batchAsyncResults([], 2);
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.value).toEqual([]);
-    }
+    expectSuccessResult(result, []);
   });
 
   test('should handle errors in async tasks', async () => {
@@ -398,13 +386,9 @@ describe('batchAsyncResults', () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.value.length).toBe(3);
-      expect(result.value[0].success).toBe(true);
-      expect(result.value[1].success).toBe(false);
-      expect(result.value[2].success).toBe(true);
-
-      if (!result.value[1].success) {
-        expect(result.value[1].error).toBe(error);
-      }
+      expectSuccessResult(result.value[0], 1);
+      expectErrorResult(result.value[1], error.message);
+      expectSuccessResult(result.value[2], 3);
     }
   });
 
@@ -412,9 +396,9 @@ describe('batchAsyncResults', () => {
     const tasks = [async () => makeSuccessResult(1)];
 
     const result = await batchAsyncResults(tasks, 0);
-    expect(result.success).toBe(false);
+    expectErrorResult(result, 'Batch size must be');
 
     const result2 = await batchAsyncResults(tasks, -1);
-    expect(result2.success).toBe(false);
+    expectErrorResult(result2, 'Batch size must be');
   });
 });
