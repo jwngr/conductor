@@ -1,5 +1,5 @@
 import {expectResultValue, unwrapOrThrow} from '@shared/lib/testUtils.shared';
-import {getYouTubeChannelId, isYouTubeChannelUrl} from '@shared/lib/youTube.shared';
+import {getYouTubeChannelId, isYouTubeChannelUrl} from '@shared/lib/youtube.shared';
 
 import {parseYouTubeChannelId} from '@shared/parsers/youtube.parser';
 

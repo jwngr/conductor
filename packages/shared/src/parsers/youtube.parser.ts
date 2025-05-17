@@ -2,6 +2,7 @@ import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseZodResult} from '@shared/lib/parser.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
+import type {Result} from '@shared/types/results.types';
 import type {YouTubeChannelId} from '@shared/types/youtube.types';
 import {YouTubeChannelIdSchema} from '@shared/types/youtube.types';
 
