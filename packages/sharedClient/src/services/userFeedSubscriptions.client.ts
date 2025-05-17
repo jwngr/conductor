@@ -98,6 +98,10 @@ export class ClientUserFeedSubscriptionsService {
    */
   public async subscribeToYouTubeChannel(url: string): AsyncResult<UserFeedSubscription> {
     const channelIdResult = getYouTubeChannelId(url);
+
+    // TODO: Also support channel handles.
+    // const channelHandleResult = getYouTubeChannelHandle(url);
+
     if (!channelIdResult.success) {
       return prefixErrorResult(channelIdResult, 'Failed to parse YouTube channel URL');
     }
