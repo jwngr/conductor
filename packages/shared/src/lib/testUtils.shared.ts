@@ -1,12 +1,27 @@
 import type {Result} from '@shared/types/results.types';
 
 /**
- * A convenience function to quickly assert that a result is successful and has the expected value.
+ * A convenience function to quickly assert that a {@link Result} is successful and has the expected
+ * value.
  */
 export function expectResultValue<T>(result: Result<T>, expectedValue: T): void {
   expect(result.success).toBe(true);
   if (result.success) {
     expect(result.value).toBe(expectedValue);
+  }
+}
+
+/**
+ * A convenience function to quickly assert that a {@link Result} is not successful and has the
+ * expected error message.
+ */
+export function expectErrorResult<T>(
+  result: Result<T>,
+  expectedErrorMessage: string | RegExp
+): void {
+  expect(result.success).toBe(false);
+  if (!result.success) {
+    expect(result.error.message).toMatch(expectedErrorMessage);
   }
 }
 
