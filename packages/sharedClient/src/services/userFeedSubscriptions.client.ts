@@ -8,6 +8,7 @@ import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/erro
 import {makeYouTubeFeedSource} from '@shared/lib/feedSources.shared';
 import {withFirestoreTimestamps} from '@shared/lib/parser.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
+import {getYouTubeChannelId} from '@shared/lib/youtube.shared';
 
 import {
   parseUserFeedSubscription,
@@ -95,9 +96,17 @@ export class ClientUserFeedSubscriptionsService {
    * Subscribes the account to the YouTube channel. A new feed source is created if one does not
    * already exist.
    */
-  public async subscribeToYouTubeChannel(url: URL): AsyncResult<UserFeedSubscriptionId> {
+  public async subscribeToYouTubeChannel(url: URL): AsyncResult<UserFeedSubscription> {
+    const channelIdResult = getYouTubeChannelId(url.href);
+    if (!channelIdResult.success) {
+      return prefixErrorResult(channelIdResult, 'URL is not a valid YouTube channel URL');
+    }
+
+    const channelId = channelIdResult.value;
+
     const feedSource = makeYouTubeFeedSource({
-      url: url.href,
+      // TODO: Switch to `channelId`.
+      url: `https://www.youtube.com/channel/${channelId}`,
       title: 'YouTube Channel',
     });
 
