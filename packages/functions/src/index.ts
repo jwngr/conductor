@@ -1,62 +1,38 @@
-import FirecrawlApp from '@mendable/firecrawl-js';
-import {logger, setGlobalOptions} from 'firebase-functions';
-import {defineString, projectID} from 'firebase-functions/params';
+import {setGlobalOptions} from 'firebase-functions';
 import {auth} from 'firebase-functions/v1';
 import {onInit} from 'firebase-functions/v2/core';
 import {onDocumentCreated, onDocumentUpdated} from 'firebase-functions/v2/firestore';
 import {onCall, onRequest} from 'firebase-functions/v2/https';
 
+import {logger} from '@shared/services/logger.shared';
+
 import {
-  ACCOUNTS_DB_COLLECTION,
   FEED_ITEMS_DB_COLLECTION,
-  FEED_ITEMS_STORAGE_COLLECTION,
-  FEED_SOURCES_DB_COLLECTION,
   USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
 } from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 
-import {parseAccount, parseAccountId, toStorageAccount} from '@shared/parsers/accounts.parser';
-import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
-import {
-  parseFeedSource,
-  parseFeedSourceId,
-  toStorageFeedSource,
-} from '@shared/parsers/feedSources.parser';
-import {
-  parseUserFeedSubscription,
-  parseUserFeedSubscriptionId,
-  toStorageUserFeedSubscription,
-} from '@shared/parsers/userFeedSubscriptions.parser';
+import {parseFeedItem, parseFeedItemId} from '@shared/parsers/feedItems.parser';
 
-import {FeedItemImportStatus} from '@shared/types/feedItems.types';
+import type {ErrorResult} from '@shared/types/results.types';
 
-import {ServerAccountsService} from '@sharedServer/services/accounts.server';
-import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
-import {ServerFeedSourcesService} from '@sharedServer/services/feedSources.server';
-import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
-import {
-  makeFirestoreDataConverter,
-  ServerFirestoreCollectionService,
-} from '@sharedServer/services/firestore.server';
-import {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
-import {SuperfeedrService} from '@sharedServer/services/superfeedr.server';
-import {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
-import {WipeoutService} from '@sharedServer/services/wipeout.server';
+import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
+import type {ServerFeedSourcesService} from '@sharedServer/services/feedSources.server';
+import type {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
+import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
+import type {WipeoutService} from '@sharedServer/services/wipeout.server';
 
 import {wipeoutAccountHelper} from '@src/lib/accountWipeout';
-import {feedItemImportHelper} from '@src/lib/feedItemImport';
 import {handleFeedUnsubscribeHelper} from '@src/lib/feedUnsubscribe';
+import {initServices} from '@src/lib/initServices';
 import {validateUrlParam, verifyAuth} from '@src/lib/middleware';
 import {handleSuperfeedrWebhookHelper} from '@src/lib/superfeedrWebhook';
 
+import {handleFeedItemImport} from '@src/reqHandlers/handleFeedItemImport';
 import {handleSubscribeAccountToFeedOnCallRequest} from '@src/reqHandlers/handleSubscribeAccountToFeedOnCall';
 import type {SubscribeAccountToFeedOnCallResponse} from '@src/reqHandlers/handleSubscribeAccountToFeedOnCall';
 
-const FIRECRAWL_API_KEY = defineString('FIRECRAWL_API_KEY');
-const SUPERFEEDR_USER = defineString('SUPERFEEDR_USER');
-const SUPERFEEDR_API_KEY = defineString('SUPERFEEDR_API_KEY');
-
-// TODO: This should be an environment variable.
+// TODO: Make region an environment variable.
 const FIREBASE_FUNCTIONS_REGION = 'us-central1';
 
 let feedSourcesService: ServerFeedSourcesService;
@@ -65,78 +41,25 @@ let wipeoutService: WipeoutService;
 let rssFeedService: ServerRssFeedService;
 let feedItemsService: ServerFeedItemsService;
 
-// Initialize services on startup
+// Initialize services on startup.
 onInit(() => {
-  const superfeedrService = new SuperfeedrService({
-    superfeedrUser: SUPERFEEDR_USER.value(),
-    superfeedrApiKey: SUPERFEEDR_API_KEY.value(),
-    webhookBaseUrl: `https://${FIREBASE_FUNCTIONS_REGION}-${projectID.value()}.cloudfunctions.net`,
-  });
+  const initResult = initServices();
 
-  const feedSourceFirestoreConverter = makeFirestoreDataConverter(
-    toStorageFeedSource,
-    parseFeedSource
-  );
+  // Services failing to initialize is considered a fatal error, so log and throw.
+  if (!initResult.success) {
+    const fatalErr = prefixError(initResult.error, 'Fatal error while initializing services');
+    logger.error(fatalErr);
+    // eslint-disable-next-line no-restricted-syntax
+    throw fatalErr;
+  }
 
-  const feedSourcesCollectionService = new ServerFirestoreCollectionService({
-    collectionPath: FEED_SOURCES_DB_COLLECTION,
-    converter: feedSourceFirestoreConverter,
-    parseId: parseFeedSourceId,
-  });
+  const services = initResult.value;
 
-  feedSourcesService = new ServerFeedSourcesService({feedSourcesCollectionService});
-
-  const userFeedSubscriptionFirestoreConverter = makeFirestoreDataConverter(
-    toStorageUserFeedSubscription,
-    parseUserFeedSubscription
-  );
-
-  const userFeedSubscriptionsCollectionService = new ServerFirestoreCollectionService({
-    collectionPath: USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
-    converter: userFeedSubscriptionFirestoreConverter,
-    parseId: parseUserFeedSubscriptionId,
-  });
-
-  userFeedSubscriptionsService = new ServerUserFeedSubscriptionsService({
-    userFeedSubscriptionsCollectionService,
-  });
-
-  const feedItemFirestoreConverter = makeFirestoreDataConverter(toStorageFeedItem, parseFeedItem);
-
-  const feedItemsCollectionService = new ServerFirestoreCollectionService({
-    collectionPath: FEED_ITEMS_DB_COLLECTION,
-    converter: feedItemFirestoreConverter,
-    parseId: parseFeedItemId,
-  });
-
-  const firecrawlApp = new FirecrawlApp({apiKey: FIRECRAWL_API_KEY.value()});
-  const firecrawlService = new ServerFirecrawlService(firecrawlApp);
-
-  feedItemsService = new ServerFeedItemsService({
-    feedItemsCollectionService,
-    storageCollectionPath: FEED_ITEMS_STORAGE_COLLECTION,
-    firecrawlService,
-  });
-
-  const accountFirestoreConverter = makeFirestoreDataConverter(toStorageAccount, parseAccount);
-
-  const accountsCollectionService = new ServerFirestoreCollectionService({
-    collectionPath: ACCOUNTS_DB_COLLECTION,
-    converter: accountFirestoreConverter,
-    parseId: parseAccountId,
-  });
-
-  wipeoutService = new WipeoutService({
-    accountsService: new ServerAccountsService({accountsCollectionService}),
-    userFeedSubscriptionsService,
-    feedItemsService,
-  });
-
-  rssFeedService = new ServerRssFeedService({
-    superfeedrService,
-    feedSourcesService,
-    userFeedSubscriptionsService,
-  });
+  feedSourcesService = services.feedSourcesService;
+  userFeedSubscriptionsService = services.userFeedSubscriptionsService;
+  wipeoutService = services.wipeoutService;
+  rssFeedService = services.rssFeedService;
+  feedItemsService = services.feedItemsService;
 });
 
 setGlobalOptions({
@@ -200,98 +123,73 @@ export const subscribeAccountToFeedOnCall = onCall(
 );
 
 /**
- * Imports a feed item, importing content and doing some LLM processing.
+ * Imports a feed item when it is first created, importing content and doing some LLM processing.
  */
 export const importFeedItemOnCreate = onDocumentCreated(
   `${FEED_ITEMS_DB_COLLECTION}/{feedItemId}`,
   async (event) => {
-    const feedItemIdResult = parseFeedItemId(event.params.feedItemId);
-    if (!feedItemIdResult.success) {
-      logger.error(feedItemIdResult.error, {feedItemId: event.params.feedItemId});
-      return;
-    }
+    const rawFeedItemId = event.params.feedItemId;
+    logger.log(`[IMPORT] New feed item document created...`, {rawFeedItemId});
 
-    const feedItemId = feedItemIdResult.value;
-    const feedItemResult = parseFeedItem(event.data?.data());
-    if (!feedItemResult.success) {
-      logger.error(feedItemResult.error, {feedItemId});
-      return;
-    }
+    // Parse feed item ID from URL path.
+    const idResult = parseFeedItemId(rawFeedItemId);
+    if (!idResult.success) return logErrorAndReturn(idResult, {rawFeedItemId});
+    const feedItemId = idResult.value;
 
-    const feedItem = feedItemResult.value;
-    const logDetails = {feedItemId, accountId: feedItem.accountId} as const;
+    // Parse feed item data from Firestore.
+    const itemResult = parseFeedItem(event.data?.data());
+    if (!itemResult.success) return logErrorAndReturn(itemResult, {feedItemId});
+    const feedItem = itemResult.value;
+    const accountId = feedItem.accountId;
 
-    if (!event.data) {
-      logger.error(new Error('No event data found'), logDetails);
-      return;
-    }
+    logger.log(`[IMPORT] Importing feed item...`, {feedItemId, accountId});
 
-    if (
-      feedItem.importState.status !== FeedItemImportStatus.New ||
-      !feedItem.importState.shouldFetch
-    ) {
-      logger.warn(`[IMPORT] Feed item has unexpected import state. Skipping...`, logDetails);
-      return;
-    }
+    // Import feed item.
+    const importResult = await handleFeedItemImport({feedItem, feedItemsService});
+    if (!importResult.success) logErrorAndReturn(importResult, {feedItemId, accountId});
 
-    const importResult = await feedItemImportHelper({feedItem, feedItemsService});
-    if (!importResult.success) {
-      logger.error(importResult.error, logDetails);
-      return;
-    }
-
-    logger.log(`[IMPORT] Successfully processed import queue item`, logDetails);
+    logger.log(`[IMPORT] Successfully imported feed item`, {feedItemId, accountId});
   }
 );
 
 /**
- * Imports a feed item, importing content and doing some LLM processing.
+ * Every time a feed item is updated, checks to see if it should be re-imported. The UI allows users
+ * to manually re-import a feed item.
  */
 export const importFeedItemOnUpdate = onDocumentUpdated(
   `${FEED_ITEMS_DB_COLLECTION}/{feedItemId}`,
   async (event) => {
-    const feedItemIdResult = parseFeedItemId(event.params.feedItemId);
-    if (!feedItemIdResult.success) {
-      logger.error(feedItemIdResult.error, {feedItemId: event.params.feedItemId});
-      return;
-    }
+    const rawFeedItemId = event.params.feedItemId;
+    logger.log(`[IMPORT] Existing feed item document updated...`, {rawFeedItemId});
 
-    const feedItemId = feedItemIdResult.value;
-    const feedItemData = event.data?.after.data();
-    if (!feedItemData) {
-      logger.error(new Error('No feed item data found'), {feedItemId});
-      return;
-    }
+    // Parse feed item ID from URL path.
+    const idResult = parseFeedItemId(rawFeedItemId);
+    if (!idResult.success) return logErrorAndReturn(idResult, {rawFeedItemId});
+    const feedItemId = idResult.value;
 
-    const feedItemResult = parseFeedItem(feedItemData);
-    if (!feedItemResult.success) {
-      logger.error(feedItemResult.error, {feedItemId, feedItemData});
-      return;
-    }
+    // Parse feed item "before" data from Firestore.
+    const afterItemResult = parseFeedItem(event.data?.after.data());
+    if (!afterItemResult.success) return logErrorAndReturn(afterItemResult, {feedItemId});
+    const afterFeedItem = afterItemResult.value;
+    const accountId = afterFeedItem.accountId;
 
-    const feedItem = feedItemResult.value;
-    const logDetails = {feedItemId, accountId: feedItem.accountId} as const;
-
-    if (!event.data) {
-      logger.error(new Error('No event data found'), logDetails);
-      return;
-    }
-
-    const beforeData = event.data.before.data();
-    const afterData = event.data.after.data();
+    // Parse feed item "after" data from Firestore.
+    const beforeItemResult = parseFeedItem(event.data?.before.data());
+    if (!beforeItemResult.success) return logErrorAndReturn(beforeItemResult, {feedItemId});
+    const beforeFeedItem = beforeItemResult.value;
 
     // Only re-import if `shouldFetch` became true.
-    const isReImport = !beforeData.importState.shouldFetch && afterData.importState.shouldFetch;
+    const beforeShouldFetch = beforeFeedItem.importState.shouldFetch;
+    const afterShouldFetch = afterFeedItem.importState.shouldFetch;
+    const isReImport = !beforeShouldFetch && afterShouldFetch;
     if (!isReImport) return;
 
-    const importResult = await feedItemImportHelper({feedItem, feedItemsService});
+    // Re-import feed item.
+    logger.log(`[IMPORT] Re-importing feed item...`, {feedItemId, accountId});
+    const importResult = await handleFeedItemImport({feedItem: afterFeedItem, feedItemsService});
+    if (!importResult.success) return logErrorAndReturn(importResult, {feedItemId, accountId});
 
-    if (!importResult.success) {
-      logger.error(importResult.error, logDetails);
-      return;
-    }
-
-    logger.log(`[IMPORT] Successfully processed import queue item`, logDetails);
+    logger.log(`[IMPORT] Successfully re-imported feed item`, {feedItemId, accountId});
   }
 );
 
@@ -320,6 +218,11 @@ export const handleFeedUnsubscribeOnUpdate = onDocumentUpdated(
       return;
     }
 
-    logger.log('[UNSUBSCRIBE] Successfully unsubscribed account from Superfeedr feed', logDetails);
+    logger.log('[UNSUBSCRIBE] Successfully unsubscribed account from feed', logDetails);
   }
 );
+
+const logErrorAndReturn = (errorResult: ErrorResult, logDetails: Record<string, unknown>): void => {
+  logger.error(errorResult.error, logDetails);
+  return;
+};

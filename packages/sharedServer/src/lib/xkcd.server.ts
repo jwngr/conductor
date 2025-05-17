@@ -6,6 +6,7 @@ import {logger} from '@shared/services/logger.shared';
 import {prefixError, upgradeUnknownError} from '@shared/lib/errorUtils.shared';
 import {requestGet} from '@shared/lib/requests.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {parseUrl} from '@shared/lib/urls.shared';
 
 import type {AsyncResult, Result} from '@shared/types/results.types';
 
@@ -14,7 +15,9 @@ function makeAbsoluteXkcdUrl(relativeUrl: string, feedItemUrl: string): string {
   if (relativeUrl.startsWith('//')) {
     absoluteUrl = `https:${relativeUrl}`;
   } else if (relativeUrl.startsWith('/')) {
-    const {origin} = new URL(feedItemUrl);
+    const parsedUrl = parseUrl(feedItemUrl);
+    if (!parsedUrl) return relativeUrl;
+    const {origin} = parsedUrl;
     absoluteUrl = `${origin}${relativeUrl}`;
   }
 
@@ -31,7 +34,11 @@ export function makeExplainXkcdUrl(comicId: number): string {
 export function parseXkcdComicIdFromUrl(url: string): Result<number> {
   // eslint-disable-next-line no-restricted-syntax
   try {
-    const {hostname, pathname} = new URL(url);
+    const parsedUrl = parseUrl(url);
+    if (!parsedUrl) {
+      return makeErrorResult(new Error('Failed to parse XKCD URL'));
+    }
+    const {hostname, pathname} = parsedUrl;
     if (!/(^|\.)xkcd\.com$/.test(hostname)) {
       return makeErrorResult(new Error('URL host is not xkcd.com'));
     }

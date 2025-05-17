@@ -5,6 +5,14 @@ import {parseZodResult} from '@shared/lib/parser.shared';
 
 import type {Result} from '@shared/types/results.types';
 
+/**
+ * Internal type for the credentials needed to use the Superfeedr API.
+ */
+export interface SuperfeedrCredentials {
+  readonly user: string;
+  readonly apiKey: string;
+}
+
 const SuperfeedrActorSchema = z.object({
   displayName: z.string(),
   id: z.string(),

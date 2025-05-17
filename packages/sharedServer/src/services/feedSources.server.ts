@@ -1,6 +1,7 @@
 import type {WithFieldValue} from 'firebase-admin/firestore';
 
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {makeRssFeedSource} from '@shared/lib/feedSources.shared';
 import {withFirestoreTimestamps} from '@shared/lib/parser.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
@@ -9,7 +10,6 @@ import type {
   FeedSourceFromStorage,
   FeedSourceId,
 } from '@shared/types/feedSources.types';
-import {makeFeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import {serverTimestampSupplier} from '@sharedServer/services/firebase.server';
@@ -49,21 +49,20 @@ export class ServerFeedSourcesService {
    * Adds a new feed document to Firestore. To check if a feed source with the same URL already
    * exists, use {@link fetchByUrlOrCreate}.
    */
-  public async create(
-    feedDetails: Omit<FeedSource, 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
+  public async createRssFeedSource(
+    feedDetails: Omit<FeedSource, 'type' | 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
   ): AsyncResult<FeedSource> {
     // Create the new feed source in memory.
-    const makeFeedSourceResult = makeFeedSource({
+    const newFeedSource = makeRssFeedSource({
       url: feedDetails.url,
       title: feedDetails.title,
     });
-    if (!makeFeedSourceResult.success) return makeFeedSourceResult;
-    const newFeedSource = makeFeedSourceResult.value;
 
     // Create the new feed source in Firestore.
     const createResult = await this.feedSourcesCollectionService.setDoc(
       newFeedSource.feedSourceId,
-      withFirestoreTimestamps(newFeedSource, serverTimestampSupplier)
+      // TODO: Fix this unsafe type cast.
+      withFirestoreTimestamps(newFeedSource, serverTimestampSupplier) as WithFieldValue<FeedSource>
     );
     if (!createResult.success) {
       return prefixErrorResult(createResult, 'Error adding feed source to Firestore');
@@ -89,7 +88,7 @@ export class ServerFeedSourcesService {
     }
 
     // Otherwise create a new feed source.
-    return await this.create({
+    return await this.createRssFeedSource({
       url,
       title: feedSourceDetails.title ?? url,
     });

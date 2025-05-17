@@ -36,6 +36,7 @@ export function parseFeedSource(maybeFeedSource: unknown): Result<FeedSource> {
   if (!parsedIdResult.success) return parsedIdResult;
 
   return makeSuccessResult({
+    type: parsedFeedSourceResult.value.type,
     feedSourceId: parsedIdResult.value,
     url: parsedFeedSourceResult.value.url,
     title: parsedFeedSourceResult.value.title,
@@ -50,6 +51,7 @@ export function parseFeedSource(maybeFeedSource: unknown): Result<FeedSource> {
  */
 export function toStorageFeedSource(feedSource: FeedSource): FeedSourceFromStorage {
   return {
+    type: feedSource.type,
     feedSourceId: feedSource.feedSourceId,
     url: feedSource.url,
     title: feedSource.title,

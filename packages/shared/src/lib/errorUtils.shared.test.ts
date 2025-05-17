@@ -10,6 +10,7 @@ import {
   upgradeUnknownError,
 } from '@shared/lib/errorUtils.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {expectErrorResult} from '@shared/lib/testUtils.shared';
 
 import type {AsyncResult, Result} from '@shared/types/results.types';
 
@@ -48,10 +49,7 @@ describe('syncTry', () => {
       throw new Error(MOCK_ERROR_MESSAGE);
     });
 
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.message).toBe(MOCK_ERROR_MESSAGE);
-    }
+    expectErrorResult(result, MOCK_ERROR_MESSAGE);
   });
 
   it('should handle non-Error throws by converting them to Error objects', () => {
@@ -60,10 +58,7 @@ describe('syncTry', () => {
       throw MOCK_ERROR_MESSAGE;
     });
 
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.message).toBe(MOCK_ERROR_MESSAGE);
-    }
+    expectErrorResult(result, MOCK_ERROR_MESSAGE);
   });
 
   it('should handle throwing undefined', () => {
@@ -72,10 +67,7 @@ describe('syncTry', () => {
       throw undefined;
     });
 
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.message).toBe('Expected error, but caught `undefined` (undefined)');
-    }
+    expectErrorResult(result, 'Expected error, but caught `undefined` (undefined)');
   });
 });
 
@@ -97,10 +89,7 @@ describe('syncTryAll', () => {
 
     const combinedResult = syncTryAll(results);
 
-    expect(combinedResult.success).toBe(false);
-    if (!combinedResult.success) {
-      expect(combinedResult.error.message).toBe(MOCK_ERROR_MESSAGE);
-    }
+    expectErrorResult(combinedResult, MOCK_ERROR_MESSAGE);
   });
 
   it('should handle empty array input', () => {
@@ -138,12 +127,7 @@ describe('syncTryAll', () => {
     // Using 'unknown' as a type assertion first before asserting as Array to fix TS error
     const combinedResult = syncTryAll(errorArray as unknown as Array<Result<unknown>>);
 
-    // Verify it returned an error result
-    expect(combinedResult.success).toBe(false);
-    if (!combinedResult.success) {
-      // The actual error is about arr.reduce not being a function
-      expect(combinedResult.error.message).toBe('arr.reduce is not a function');
-    }
+    expectErrorResult(combinedResult, 'arr.reduce is not a function');
   });
 });
 
@@ -180,10 +164,7 @@ describe('asyncTry', () => {
       throw new Error(MOCK_ERROR_MESSAGE);
     });
 
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.message).toBe(MOCK_ERROR_MESSAGE);
-    }
+    expectErrorResult(result, MOCK_ERROR_MESSAGE);
   });
 
   it('should handle non-Error rejections by converting them to Error objects', async () => {
@@ -192,10 +173,7 @@ describe('asyncTry', () => {
       throw MOCK_ERROR_MESSAGE;
     });
 
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.message).toBe(MOCK_ERROR_MESSAGE);
-    }
+    expectErrorResult(result, MOCK_ERROR_MESSAGE);
   });
 
   it('should handle rejecting with undefined', async () => {
@@ -204,10 +182,7 @@ describe('asyncTry', () => {
       throw undefined;
     });
 
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.message).toBe('Expected error, but caught `undefined` (undefined)');
-    }
+    expectErrorResult(result, 'Expected error, but caught `undefined` (undefined)');
   });
 
   it('should handle rejected promises', async () => {
@@ -215,10 +190,7 @@ describe('asyncTry', () => {
       return Promise.reject(new Error(MOCK_ERROR_MESSAGE));
     });
 
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.message).toBe(MOCK_ERROR_MESSAGE);
-    }
+    expectErrorResult(result, MOCK_ERROR_MESSAGE);
   });
 });
 
@@ -302,10 +274,7 @@ describe('asyncTryAll', () => {
 
     const result = await asyncTryAll(asyncResults);
 
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.message).toContain('Expected error, but caught non-stringifiable object');
-    }
+    expectErrorResult(result, 'Expected error, but caught non-stringifiable object');
   });
 });
 
@@ -405,10 +374,7 @@ describe('asyncTryAllPromises', () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.value.success).toBe(false);
-      expect(result.value.results[0].success).toBe(false);
-      if (!result.value.results[0].success) {
-        expect(result.value.results[0].error.message).toBe('Promise.allSettled rejection');
-      }
+      expectErrorResult(result.value.results[0], 'Promise.allSettled rejection');
     }
   });
 
@@ -416,12 +382,7 @@ describe('asyncTryAllPromises', () => {
     const nonIterable = 42;
     const result = await asyncTryAllPromises(nonIterable as unknown as readonly [Promise<unknown>]);
 
-    // Verify we got an error result
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      // Use the actual error message we're getting
-      expect(result.error.message).toContain('number 42 is not iterable');
-    }
+    expectErrorResult(result, 'number 42 is not iterable');
   });
 });
 
@@ -519,8 +480,7 @@ describe('prefixErrorResult', () => {
 
     const prefixedResult = prefixErrorResult(errorResult, prefix);
 
-    expect(prefixedResult.success).toBe(false);
-    expect(prefixedResult.error.message).toBe(`${prefix}: ${MOCK_ERROR_MESSAGE}`);
+    expectErrorResult(prefixedResult, `${prefix}: ${MOCK_ERROR_MESSAGE}`);
   });
 });
 
@@ -540,9 +500,6 @@ describe('prefixResultIfError', () => {
 
     const result = prefixResultIfError(errorResult, prefix);
 
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.message).toBe(`${prefix}: ${MOCK_ERROR_MESSAGE}`);
-    }
+    expectErrorResult(result, `${prefix}: ${MOCK_ERROR_MESSAGE}`);
   });
 });

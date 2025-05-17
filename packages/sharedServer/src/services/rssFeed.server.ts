@@ -6,10 +6,10 @@ import {makeSuccessResult} from '@shared/lib/results.shared';
 import type {AccountId} from '@shared/types/accounts.types';
 import type {FeedSourceId} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/results.types';
+import type {RssFeedProvider} from '@shared/types/rss.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
 import type {ServerFeedSourcesService} from '@sharedServer/services/feedSources.server';
-import type {SuperfeedrService} from '@sharedServer/services/superfeedr.server';
 import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
 
 import {parseRssFeed} from '@sharedServer/lib/rss.server';
@@ -17,16 +17,16 @@ import {parseRssFeed} from '@sharedServer/lib/rss.server';
 const DEFAULT_FEED_TITLE = '(no title)';
 
 export class ServerRssFeedService {
-  private readonly superfeedrService: SuperfeedrService;
+  private readonly rssFeedProvider: RssFeedProvider;
   private readonly feedSourcesService: ServerFeedSourcesService;
   private readonly userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
 
   constructor(args: {
-    readonly superfeedrService: SuperfeedrService;
+    readonly rssFeedProvider: RssFeedProvider;
     readonly feedSourcesService: ServerFeedSourcesService;
     readonly userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
   }) {
-    this.superfeedrService = args.superfeedrService;
+    this.rssFeedProvider = args.rssFeedProvider;
     this.feedSourcesService = args.feedSourcesService;
     this.userFeedSubscriptionsService = args.userFeedSubscriptionsService;
   }
@@ -46,8 +46,8 @@ export class ServerRssFeedService {
     const parsedRssFeed = parsedRssFeedResult.value;
 
     // Check if the feed source already exists. A single feed source can have multiple accounts
-    // subscribed to it, but we only want to subscribe once to it in Superfeedr. Feed sources are
-    // deduped based on exact URL match, although we could probably be smarter in the future.
+    // subscribed to it, but we only want to subscribe once to it in the feed provider. Feed
+    // sources are deduped based on exact URL match, although we could be smarter in the future.
     const fetchFeedSourceResult = await this.feedSourcesService.fetchByUrlOrCreate(url, {
       // TODO: Consider just storing `null` for the title if it's not available.
       title: parsedRssFeed.title ?? DEFAULT_FEED_TITLE,
@@ -61,11 +61,9 @@ export class ServerRssFeedService {
 
     const feedSource = fetchFeedSourceResult.value;
 
-    // Subscribe to the feed source in Superfeedr.
-    const subscribeToSuperfeedrResult = await this.superfeedrService.subscribeToUrl(feedSource.url);
-    if (!subscribeToSuperfeedrResult.success) {
-      return prefixErrorResult(subscribeToSuperfeedrResult, 'Error subscribing to Superfeedr feed');
-    }
+    // Subscribe to the feed source in the feed provider.
+    const subscribeResult = await this.rssFeedProvider.subscribeToUrl(feedSource.url);
+    if (!subscribeResult.success) return subscribeResult;
 
     // Create a user feed subscription in the database.
     const saveToDbResult = await this.userFeedSubscriptionsService.create({feedSource, accountId});
@@ -73,7 +71,7 @@ export class ServerRssFeedService {
   }
 
   /**
-   * Unsubscribes from a feed URL in Superfeedr.
+   * Unsubscribes from a feed URL in the feed provider.
    */
   async unsubscribeAccountFromUrl(args: {
     readonly feedSourceId: FeedSourceId;
@@ -88,21 +86,22 @@ export class ServerRssFeedService {
     if (!otherSubscriptionsResult.success) {
       return prefixErrorResult(
         otherSubscriptionsResult,
-        '[UNSUBSCRIBE] Error fetching other subscriptions while unsubscribing account from Superfeedr feed'
+        '[UNSUBSCRIBE] Error fetching other subscriptions while unsubscribing account from feed'
       );
     }
 
-    // If other active subscriptions exist, don't actually unsubscribe from Superfeedr.
+    // If other active subscriptions exist, don't actually unsubscribe from the feed provider.
     const activeSubscriptions = otherSubscriptionsResult.value.filter((sub) => sub.isActive);
     if (activeSubscriptions.length > 0) {
       return makeSuccessResult(undefined);
     }
 
-    logger.log(
-      '[UNSUBSCRIBE] No active subscriptions found, unsubscribing account from Superfeedr feed',
-      {feedSourceId, accountId, url}
-    );
+    logger.log('[UNSUBSCRIBE] No active subscriptions found, unsubscribing account from feed', {
+      feedSourceId,
+      accountId,
+      url,
+    });
 
-    return await this.superfeedrService.unsubscribeFromFeed(url);
+    return await this.rssFeedProvider.unsubscribeFromUrl(url);
   }
 }

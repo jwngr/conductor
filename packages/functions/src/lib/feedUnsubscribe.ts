@@ -43,5 +43,5 @@ export async function handleFeedUnsubscribeHelper(args: {
     url: after.url,
     accountId: after.accountId,
   });
-  return prefixResultIfError(unsubscribeResult, 'Error unsubscribing account from Superfeedr feed');
+  return prefixResultIfError(unsubscribeResult, 'Error unsubscribing account from feed');
 }
