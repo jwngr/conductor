@@ -46,6 +46,12 @@ const NO_SHARED_SERVER_IMPORT_PATTERN = {
   message: 'Importing from the `@sharedServer` package is not allowed in this package.',
 };
 
+// There is a separate override below that allows test utils to be imported in test files.
+const NO_TEST_UTILS_IMPORT_PATTERN = {
+  group: ['@shared/lib/testUtils.shared'],
+  message: 'Test utils can only be imported in test files.',
+};
+
 function makeSharedRules({
   disallowFirebaseAdminImports,
   disallowFirebaseClientImports,
@@ -103,6 +109,7 @@ function makeSharedRules({
           disallowFirebaseClientImports ? NO_FIREBASE_CLIENT_IMPORT_PATTERN : null,
           disallowSharedClientImports ? NO_SHARED_CLIENT_IMPORT_PATTERN : null,
           disallowSharedServerImports ? NO_SHARED_SERVER_IMPORT_PATTERN : null,
+          NO_TEST_UTILS_IMPORT_PATTERN,
         ].filter((p) => p !== null),
       },
     ],
@@ -291,5 +298,13 @@ export default tseslint.config(
       disallowFirebaseAdminImports: false,
       disallowSharedServerImports: false,
     }),
+  },
+
+  // Clear the restriction on importing test utils in test files.
+  {
+    files: ['**/*.test.ts', '**/*.test.tsx'],
+    rules: {
+      'no-restricted-imports': ['error', {paths: []}],
+    },
   }
 );
