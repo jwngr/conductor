@@ -1,6 +1,7 @@
 import FirecrawlApp from '@mendable/firecrawl-js';
-import {logger} from 'firebase-functions';
 import {defineString} from 'firebase-functions/params';
+
+import {logger} from '@shared/services/logger.shared';
 
 import {
   ACCOUNTS_DB_COLLECTION,
@@ -9,7 +10,7 @@ import {
   FEED_SOURCES_DB_COLLECTION,
   USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
 } from '@shared/lib/constants.shared';
-import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
+import {prefixError, prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {assertNever, isValidPort} from '@shared/lib/utils.shared';
 
@@ -29,6 +30,7 @@ import {
 
 import type {Result} from '@shared/types/results.types';
 import type {RssFeedProvider} from '@shared/types/rss.types';
+import type {SuperfeedrCredentials} from '@shared/types/superfeedr.types';
 
 import {ServerAccountsService} from '@sharedServer/services/accounts.server';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
@@ -52,61 +54,105 @@ const RSS_FEED_PROVIDER_TYPE = defineString('RSS_FEED_PROVIDER_TYPE');
 const SUPERFEEDR_USER = defineString('SUPERFEEDR_USER');
 const SUPERFEEDR_API_KEY = defineString('SUPERFEEDR_API_KEY');
 
+/**
+ * Errors such as missing environment variables are considered fatal because they prevent a
+ * successful Functions startup. In those cases, the best we can do is log the error and rethrow it.
+ */
+function logAndThrowFatalError(error: Error): void {
+  logger.error(prefixError(error, 'Fatal error'));
+  // This is considered a fatal error, so allow this to throw.
+  // eslint-disable-next-line no-restricted-syntax
+  throw error;
+}
+
 function getRssFeedProvider(): Result<RssFeedProvider> {
   const rawRssFeedProviderType = RSS_FEED_PROVIDER_TYPE.value();
   const parsedFeedProviderTypeResult = parseRssFeedProviderType(rawRssFeedProviderType);
   if (!parsedFeedProviderTypeResult.success) {
     return prefixErrorResult(
       parsedFeedProviderTypeResult,
-      `Invalid RSS feed provider type: "${rawRssFeedProviderType}". Make sure RSS_FEED_PROVIDER_TYPE is set.`
+      `RSS_FEED_PROVIDER_TYPE environment variable has invalid value: "${rawRssFeedProviderType}"`
     );
   }
 
   const feedProviderType = parsedFeedProviderTypeResult.value;
 
-  // TODO: Consider using a different callback URL for the local feed provider.
-  const callbackUrl = `${getFunctionsBaseUrl()}/handleSuperfeedrWebhook`;
-
-  const rssServerPort = parseInt(LOCAL_RSS_FEED_PROVIDER_PORT.value() ?? '', 10);
-  if (isNaN(rssServerPort) || !isValidPort(rssServerPort)) {
-    const error = new Error(
-      'RSS feed provider port is not valid. Make sure LOCAL_RSS_FEED_PROVIDER_PORT is set in .env'
-    );
-    logger.error(error, {port: rssServerPort});
-    return makeErrorResult(error);
-  }
-
-  let rssFeedProvider: RssFeedProvider;
   switch (feedProviderType) {
     case 'local':
-      rssFeedProvider = new LocalRssFeedProvider({
-        port: rssServerPort,
-        callbackUrl,
-      });
-      break;
+      return getLocalRssFeedProvider();
     case 'superfeedr':
-      rssFeedProvider = new SuperfeedrService({
-        superfeedrUser: SUPERFEEDR_USER.value(),
-        superfeedrApiKey: SUPERFEEDR_API_KEY.value(),
-        callbackUrl,
-      });
-      break;
+      return getSuperfeedrRssFeedProvider();
     default: {
       assertNever(feedProviderType);
     }
   }
+}
+
+function getLocalRssFeedProvider(): Result<RssFeedProvider> {
+  // TODO: Consider using a different callback URL for the local feed provider.
+  const callbackUrl = `${getFunctionsBaseUrl()}/handleSuperfeedrWebhook`;
+
+  const port = parseInt(LOCAL_RSS_FEED_PROVIDER_PORT.value() ?? '', 10);
+  if (isNaN(port) || !isValidPort(port)) {
+    const error = new Error(
+      `LOCAL_RSS_FEED_PROVIDER_PORT environment variable has invalid value: "${port}"`
+    );
+    logAndThrowFatalError(error);
+    return makeErrorResult(error);
+  }
+
+  const rssFeedProvider = new LocalRssFeedProvider({port, callbackUrl});
 
   return makeSuccessResult(rssFeedProvider);
 }
 
-// Initialize services on startup.
-export function initServices(): {
+function getSuperfeedrRssFeedProvider(): Result<RssFeedProvider> {
+  const callbackUrl = `${getFunctionsBaseUrl()}/handleSuperfeedrWebhook`;
+
+  const credentialsResult = validateSuperfeedrCredentials();
+  if (!credentialsResult.success) {
+    logAndThrowFatalError(credentialsResult.error);
+    return credentialsResult;
+  }
+  const credentials = credentialsResult.value;
+  const rssFeedProvider = new SuperfeedrService({
+    superfeedrUser: credentials.user,
+    superfeedrApiKey: credentials.apiKey,
+    callbackUrl,
+  });
+
+  return makeSuccessResult(rssFeedProvider);
+}
+
+function validateSuperfeedrCredentials(): Result<SuperfeedrCredentials> {
+  const rawSuperfeedrUser = SUPERFEEDR_USER.value();
+  const rawSuperfeedrApiKey = SUPERFEEDR_API_KEY.value();
+
+  if (rawSuperfeedrUser.length === 0) {
+    const message = 'SUPERFEEDR_USER environment variable must be set when Superfeedr enabled';
+    return makeErrorResult(new Error(message));
+  }
+
+  if (rawSuperfeedrApiKey.length === 0) {
+    const message = 'SUPERFEEDR_API_KEY environment variable must be set when Superfeedr enabled';
+    return makeErrorResult(new Error(message));
+  }
+
+  return makeSuccessResult({
+    user: rawSuperfeedrUser,
+    apiKey: rawSuperfeedrApiKey,
+  });
+}
+
+interface InitializedServices {
   readonly feedSourcesService: ServerFeedSourcesService;
   readonly userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
   readonly wipeoutService: WipeoutService;
   readonly rssFeedService: ServerRssFeedService;
   readonly feedItemsService: ServerFeedItemsService;
-} {
+}
+
+export function initServices(): InitializedServices {
   const feedSourceFirestoreConverter = makeFirestoreDataConverter(
     toStorageFeedSource,
     parseFeedSource
@@ -168,8 +214,8 @@ export function initServices(): {
 
   const rssFeedProviderResult = getRssFeedProvider();
   if (!rssFeedProviderResult.success) {
-    logger.error(rssFeedProviderResult.error);
-    // This is considered a fatal error, so allow this to throw.
+    logAndThrowFatalError(rssFeedProviderResult.error);
+    // Types require this to be thrown.
     // eslint-disable-next-line no-restricted-syntax
     throw rssFeedProviderResult.error;
   }

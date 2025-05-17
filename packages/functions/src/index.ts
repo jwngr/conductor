@@ -1,8 +1,10 @@
-import {logger, setGlobalOptions} from 'firebase-functions';
+import {setGlobalOptions} from 'firebase-functions';
 import {auth} from 'firebase-functions/v1';
 import {onInit} from 'firebase-functions/v2/core';
 import {onDocumentCreated, onDocumentUpdated} from 'firebase-functions/v2/firestore';
 import {onCall, onRequest} from 'firebase-functions/v2/https';
+
+import {logger} from '@shared/services/logger.shared';
 
 import {
   FEED_ITEMS_DB_COLLECTION,
