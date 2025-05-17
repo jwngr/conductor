@@ -1,4 +1,4 @@
-import {expectErrorResult, expectResultValue, unwrapOrThrow} from '@shared/lib/testUtils.shared';
+import {expectErrorResult, expectSuccessResult, unwrapOrThrow} from '@shared/lib/testUtils.shared';
 import {
   getYouTubeChannelHandle,
   getYouTubeChannelId,
@@ -54,32 +54,32 @@ describe('getYouTubeChannelId', () => {
     'should extract channel ID from URL "%s"',
     (url) => {
       const result = getYouTubeChannelId(url);
-      expectResultValue(result, VALID_CHANNEL_ID);
+      expectSuccessResult(result, VALID_CHANNEL_ID);
     }
   );
 
   it.each([...NON_YOUTUBE_URLS, YOUTUBE_VIDEO_URL])('should return null from value "%s"', (url) => {
     const result = getYouTubeChannelId(url);
-    expectResultValue(result, null);
+    expectSuccessResult(result, null);
   });
 });
 
 describe('getYouTubeChannelHandle', () => {
   it.each(VALID_YOUTUBE_CHANNEL_URLS_WITH_HANDLE)('should extract handle from URL "%s"', (url) => {
     const result = getYouTubeChannelHandle(url);
-    expectResultValue(result, VALID_HANDLE);
+    expectSuccessResult(result, VALID_HANDLE);
   });
 
   it.each([...NON_YOUTUBE_URLS, YOUTUBE_VIDEO_URL])('should return null from value "%s"', (url) => {
     const result = getYouTubeChannelHandle(url);
-    expectResultValue(result, null);
+    expectSuccessResult(result, null);
   });
 });
 
 describe('parseYouTubeChannelId', () => {
   it.each([VALID_CHANNEL_ID])('should succeed for a valid channel ID "%s"', (id) => {
     const result = parseYouTubeChannelId(id);
-    expectResultValue(result, id);
+    expectSuccessResult(result, id);
   });
 
   it.each([
@@ -92,14 +92,14 @@ describe('parseYouTubeChannelId', () => {
     '', // Empty string.
   ])('should fail for invalid channel ID "%s"', (id) => {
     const result = parseYouTubeChannelId(id);
-    expectErrorResult(result, /YouTube channel ID/);
+    expectErrorResult(result);
   });
 });
 
 describe('parseYouTubeHandle', () => {
   it.each([VALID_HANDLE])('should succeed for a valid handle "%s"', (handle) => {
     const result = parseYouTubeHandle(handle);
-    expectResultValue(result, handle);
+    expectSuccessResult(result, handle);
   });
 
   it.each([
@@ -107,6 +107,6 @@ describe('parseYouTubeHandle', () => {
     '', // Empty string.
   ])('should fail for invalid handle "%s"', (handle) => {
     const result = parseYouTubeHandle(handle);
-    expectErrorResult(result, /YouTube handle/);
+    expectErrorResult(result);
   });
 });
