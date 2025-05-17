@@ -5,7 +5,7 @@ import {useEffect, useMemo} from 'react';
 
 import {logger} from '@shared/services/logger.shared';
 
-import {makeErrorAsyncState, makeSuccessAsyncState} from '@shared/lib/asyncState.shared';
+import {makeSuccessAsyncState} from '@shared/lib/asyncState.shared';
 import {
   FEED_ITEM_FILE_NAME_LLM_CONTEXT,
   FEED_ITEM_FILE_NAME_TRANSCRIPT,
@@ -179,39 +179,27 @@ export function useFeedItemsRespectingDelivery(args: {
   const feedItemsState = useFeedItemsInternal({viewType});
   const userFeedSubscriptionsState = useUserFeedSubscriptions();
 
-  const filteredFeedItems = useMemo(() => {
-    // Everything is loaded and ready to filter.
-    switch (feedItemsState.status) {
-      case AsyncStatus.Idle:
-      case AsyncStatus.Pending:
-        return [];
-      case AsyncStatus.Error:
-        // TODO: Show any previously fetched items even when an error happens.
-        return [];
-      case AsyncStatus.Success:
-        if (userFeedSubscriptionsState.status !== AsyncStatus.Success) {
-          return [];
-        }
-        return filterFeedItemsByDeliverySchedules({
-          feedItems: feedItemsState.value,
-          userFeedSubscriptions: userFeedSubscriptionsState.value,
-        });
-      default:
-        assertNever(feedItemsState);
+  const filteredFeedItemsState: AsyncState<FeedItem[]> = useMemo(() => {
+    // Do not consider loaded until both the feed items and the user feed subscriptions are loaded. filtering.
+    // Favor the feed items state over the user feed subscriptions state.
+    if (feedItemsState.status !== AsyncStatus.Success) {
+      return feedItemsState;
     }
+
+    if (userFeedSubscriptionsState.status !== AsyncStatus.Success) {
+      return userFeedSubscriptionsState;
+    }
+
+    // Filter the feed items based on delivery schedules.
+    const filteredFeedItems = filterFeedItemsByDeliverySchedules({
+      feedItems: feedItemsState.value,
+      userFeedSubscriptions: userFeedSubscriptionsState.value,
+    });
+
+    return makeSuccessAsyncState(filteredFeedItems);
   }, [feedItemsState, userFeedSubscriptionsState]);
 
-  switch (feedItemsState.status) {
-    case AsyncStatus.Idle:
-    case AsyncStatus.Pending:
-      return feedItemsState;
-    case AsyncStatus.Error:
-      return makeErrorAsyncState(feedItemsState.error);
-    case AsyncStatus.Success:
-      return makeSuccessAsyncState(filteredFeedItems);
-    default:
-      assertNever(feedItemsState);
-  }
+  return filteredFeedItemsState;
 }
 
 export function useFeedItemFile(args: {
