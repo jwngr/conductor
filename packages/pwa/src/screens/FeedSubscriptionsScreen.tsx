@@ -54,8 +54,8 @@ const FeedAdder: React.FC = () => {
     async (youtubeChannelUrl: string): Promise<void> => {
       setPending();
 
-      const url = new URL(youtubeChannelUrl);
-      const subscribeResult = await userFeedSubscriptionsService.subscribeToYouTubeChannel(url);
+      const subscribeResult =
+        await userFeedSubscriptionsService.subscribeToYouTubeChannel(youtubeChannelUrl);
       if (!subscribeResult.success) {
         setError(prefixError(subscribeResult.error, 'Failed to subscribe to YouTube channel'));
         return;

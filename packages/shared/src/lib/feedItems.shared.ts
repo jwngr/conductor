@@ -2,6 +2,7 @@ import {logger} from '@shared/services/logger.shared';
 
 import {prefixError, upgradeUnknownError} from '@shared/lib/errorUtils.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {parseUrl} from '@shared/lib/urls.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
@@ -167,8 +168,10 @@ export class SharedFeedItemHelpers {
   }
 
   public static validateUrl(url: string): Result<void> {
-    // Parse the URL to validate its structure.
-    const parsedUrl = new URL(url);
+    const parsedUrl = parseUrl(url);
+    if (!parsedUrl) {
+      return makeErrorResult(new Error('Invalid URL'));
+    }
 
     // Only allow HTTPS protocols.
     // TODO: Consider allowing other protocols like `http:` and `chrome:` as well.

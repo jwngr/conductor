@@ -96,8 +96,8 @@ export class ClientUserFeedSubscriptionsService {
    * Subscribes the account to the YouTube channel. A new feed source is created if one does not
    * already exist.
    */
-  public async subscribeToYouTubeChannel(url: URL): AsyncResult<UserFeedSubscription> {
-    const channelIdResult = getYouTubeChannelId(url.href);
+  public async subscribeToYouTubeChannel(url: string): AsyncResult<UserFeedSubscription> {
+    const channelIdResult = getYouTubeChannelId(url);
     if (!channelIdResult.success) {
       return prefixErrorResult(channelIdResult, 'Failed to parse YouTube channel URL');
     }
