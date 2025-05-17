@@ -8,6 +8,7 @@ import type {YouTubeChannelId} from '@shared/types/youtube.types';
 
 const YOUTUBE_CHANNEL_ID_PATH_REGEX = /^\/channel\/([a-zA-Z0-9_-]+)$/i;
 const YOUTUBE_CHANNEL_HANDLE_PATH_REGEX = /^\/@([a-zA-Z0-9_-]+)$/i;
+const YOUTUBE_CHANNEL_LEGACY_PATH_REGEX = /^\/c\/([a-zA-Z0-9_-]+)$/i;
 const YOUTUBE_HOSTNAMES = [
   'youtube.com',
   'www.youtube.com',
@@ -36,6 +37,7 @@ export function isYouTubeChannelUrl(url: string): boolean {
 
   if (YOUTUBE_CHANNEL_HANDLE_PATH_REGEX.test(parsedUrl.pathname)) return true;
   if (YOUTUBE_CHANNEL_ID_PATH_REGEX.test(parsedUrl.pathname)) return true;
+  if (YOUTUBE_CHANNEL_LEGACY_PATH_REGEX.test(parsedUrl.pathname)) return true;
 
   return false;
 }
@@ -60,6 +62,11 @@ export function getYouTubeChannelId(url: string): Result<YouTubeChannelId | null
   const idMatch = parsedUrl.pathname.match(YOUTUBE_CHANNEL_ID_PATH_REGEX);
   if (idMatch) {
     return parseYouTubeChannelId(idMatch[1]);
+  }
+
+  const legacyMatch = parsedUrl.pathname.match(YOUTUBE_CHANNEL_LEGACY_PATH_REGEX);
+  if (legacyMatch) {
+    return parseYouTubeChannelId(legacyMatch[1]);
   }
 
   return makeSuccessResult(null);

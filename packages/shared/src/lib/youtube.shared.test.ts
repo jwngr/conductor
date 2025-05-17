@@ -11,65 +11,34 @@ const VALID_CHANNEL_ID = unwrapOrThrow<YouTubeChannelId>(
 const VALID_HANDLE = unwrapOrThrow<YouTubeChannelId>(parseYouTubeChannelId('jacobwenger8649'));
 
 describe('getYouTubeChannelId', () => {
-  it.only('should extract channel ID from /channel/ URLs', () => {
-    const url = `https://www.youtube.com/channel/${VALID_CHANNEL_ID}`;
-    const result = getYouTubeChannelId(url);
-    expectResultValue(result, VALID_CHANNEL_ID);
-  });
-
-  it('should extract channel ID from /@handle URLs', () => {
-    const url = `https://www.youtube.com/@${VALID_HANDLE}`;
+  it.each([
+    `https://www.youtube.com/@${VALID_HANDLE}`, // Handle.
+    `https://youtube.com/@${VALID_HANDLE}`, // No prefix.
+    `https://www.youtube.com/c/${VALID_HANDLE}`, // Legacy /c/ URL.
+    `www.youtube.com/@${VALID_HANDLE}`, // No protocol.
+    `youtube.com/@${VALID_HANDLE}`, // No prefix or protocol.
+    `m.youtube.com/@${VALID_HANDLE}`, // Mobile no prefix or protocol.
+  ])('should extract handle from URL %s', (url) => {
     const result = getYouTubeChannelId(url);
     expectResultValue(result, VALID_HANDLE);
   });
 
-  it('should return null for /c/ URLs', () => {
-    const url = `https://www.youtube.com/c/${VALID_HANDLE}`;
-    const result = getYouTubeChannelId(url);
-    expectResultValue(result, null);
-  });
-
-  it('should return null for unrelated YouTube URLs', () => {
-    const url = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'; // Not a channel URL
-    const result = getYouTubeChannelId(url);
-    expectResultValue(result, null);
-  });
-
-  it('should return null for non-YouTube URLs', () => {
-    const url = `https://example.com/channel/${VALID_CHANNEL_ID}`; // Not a YouTube URL
-    const result = getYouTubeChannelId(url);
-    expectResultValue(result, null);
-  });
-
-  it('should handle mobile m.youtube.com URLs', () => {
-    const url = `https://m.youtube.com/channel/${VALID_CHANNEL_ID}`;
+  it.each([
+    `https://www.youtube.com/channel/${VALID_CHANNEL_ID}`, // Channel ID.
+    `https://m.youtube.com/channel/${VALID_CHANNEL_ID}`, // Mobile.
+  ])('should extract channel ID from URL %s', (url) => {
     const result = getYouTubeChannelId(url);
     expectResultValue(result, VALID_CHANNEL_ID);
   });
 
-  it('should return null for m.youtube.com handle URLs (mobile not supported)', () => {
-    const url = `https://m.youtube.com/@${VALID_HANDLE}`;
+  it.each([
+    'https://www.youtube.com/watch?v=dQw4w9WgXcQ', // YouTube video URL.
+    `https://example.com/channel/${VALID_CHANNEL_ID}`, // Non-YouTube URL.
+    'foo', // Invalid URL.
+    '', // Empty string.
+  ])('should return null from URL %s', (url) => {
     const result = getYouTubeChannelId(url);
     expectResultValue(result, null);
-  });
-
-  it('should return null for empty string', () => {
-    const result = getYouTubeChannelId('');
-    expectResultValue(result, null);
-  });
-
-  it('should handle various URL formats', () => {
-    const urlsToTest = [
-      `https://youtube.com/@${VALID_HANDLE}`, // No www.
-      `youtube.com/@${VALID_HANDLE}`, // No protocol. No www.
-      `www.youtube.com/@${VALID_HANDLE}`, // No protocol.
-      `m.youtube.com/@${VALID_HANDLE}`, // Mobile.
-    ];
-
-    for (const url of urlsToTest) {
-      const result = getYouTubeChannelId(url);
-      expectResultValue(result, VALID_HANDLE);
-    }
   });
 });
 

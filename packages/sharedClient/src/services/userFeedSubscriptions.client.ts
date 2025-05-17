@@ -7,7 +7,7 @@ import {USER_FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants.share
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {makeYouTubeFeedSource} from '@shared/lib/feedSources.shared';
 import {withFirestoreTimestamps} from '@shared/lib/parser.shared';
-import {makeSuccessResult} from '@shared/lib/results.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {getYouTubeChannelId} from '@shared/lib/youtube.shared';
 
 import {
@@ -99,14 +99,18 @@ export class ClientUserFeedSubscriptionsService {
   public async subscribeToYouTubeChannel(url: URL): AsyncResult<UserFeedSubscription> {
     const channelIdResult = getYouTubeChannelId(url.href);
     if (!channelIdResult.success) {
-      return prefixErrorResult(channelIdResult, 'URL is not a valid YouTube channel URL');
+      return prefixErrorResult(channelIdResult, 'Failed to parse YouTube channel URL');
     }
 
     const channelId = channelIdResult.value;
+    if (!channelId) {
+      return makeErrorResult(new Error('URL is not a valid YouTube channel URL'));
+    }
 
     const feedSource = makeYouTubeFeedSource({
       // TODO: Switch to `channelId`.
       url: `https://www.youtube.com/channel/${channelId}`,
+      // TODO: Address title.
       title: 'YouTube Channel',
     });
 
@@ -124,6 +128,8 @@ export class ClientUserFeedSubscriptionsService {
     accountId: AccountId;
   }): AsyncResult<UserFeedSubscription> {
     const {feedSource, accountId} = args;
+
+    // TODO: Validate a feed subscription does not already exist.
 
     // Make a new user feed subscription object locally.
     const userFeedSubscriptionResult = makeUserFeedSubscription({feedSource, accountId});
