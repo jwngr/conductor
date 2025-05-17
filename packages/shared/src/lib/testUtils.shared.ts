@@ -4,10 +4,10 @@ import type {Result} from '@shared/types/results.types';
  * A convenience function to quickly assert that a {@link Result} is successful and has the expected
  * value.
  */
-export function expectResultValue<T>(result: Result<T>, expectedValue: T): void {
+export function expectSuccessResult<T>(result: Result<T>, expectedValue: T): void {
   expect(result.success).toBe(true);
   if (result.success) {
-    expect(result.value).toBe(expectedValue);
+    expect(result.value).toStrictEqual(expectedValue);
   }
 }
 
