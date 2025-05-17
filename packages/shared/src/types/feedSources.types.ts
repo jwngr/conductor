@@ -16,6 +16,7 @@ export const FeedSourceIdSchema = z.string().uuid();
 export enum FeedSourceType {
   RSS = 'RSS',
   YouTube = 'YOUTUBE',
+  Dummy = 'DUMMY',
 }
 
 interface BaseFeedSource extends BaseStoreItem {
@@ -25,12 +26,18 @@ interface BaseFeedSource extends BaseStoreItem {
   readonly title: string;
 }
 
-interface RssFeedSource extends BaseFeedSource {
+export interface RssFeedSource extends BaseFeedSource {
   readonly type: FeedSourceType.RSS;
 }
 
-interface YouTubeFeedSource extends BaseFeedSource {
+export interface YouTubeFeedSource extends BaseFeedSource {
   readonly type: FeedSourceType.YouTube;
+}
+
+export interface DummyFeedSource extends BaseFeedSource {
+  readonly type: FeedSourceType.Dummy;
+  // The interval in seconds at which the dummy feed source will generate items.
+  readonly intervalSeconds: number;
 }
 
 /**
@@ -39,7 +46,7 @@ interface YouTubeFeedSource extends BaseFeedSource {
  * Use the {@link UserFeedSubscription} object to manage user subscriptions to a {@link FeedSource}.
  * A feed source is created the first time an account subscribes to a unique feed URL.
  */
-export type FeedSource = RssFeedSource | YouTubeFeedSource;
+export type FeedSource = RssFeedSource | YouTubeFeedSource | DummyFeedSource;
 
 const BaseFeedSourceSchema = z.object({
   type: z.nativeEnum(FeedSourceType),
@@ -50,20 +57,36 @@ const BaseFeedSourceSchema = z.object({
   lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
-const RssFeedSourceSchema = BaseFeedSourceSchema.extend({
+export const RssFeedSourceSchema = BaseFeedSourceSchema.extend({
   type: z.literal(FeedSourceType.RSS),
 });
 
-const YouTubeFeedSourceSchema = BaseFeedSourceSchema.extend({
+export const YouTubeFeedSourceSchema = BaseFeedSourceSchema.extend({
   type: z.literal(FeedSourceType.YouTube),
 });
+
+export const DummyFeedSourceSchema = BaseFeedSourceSchema.extend({
+  type: z.literal(FeedSourceType.Dummy),
+  intervalSeconds: z.number().min(1),
+});
+
+export type RssFeedSourceFromStorage = z.infer<typeof RssFeedSourceSchema>;
+export type YouTubeFeedSourceFromStorage = z.infer<typeof YouTubeFeedSourceSchema>;
+export type DummyFeedSourceFromStorage = z.infer<typeof DummyFeedSourceSchema>;
 
 /**
  * Zod schema for a {@link FeedSource} persisted to Firestore.
  */
-export const FeedSourceFromStorageSchema = z.union([RssFeedSourceSchema, YouTubeFeedSourceSchema]);
+export const FeedSourceFromStorageSchema = z.union([
+  RssFeedSourceSchema,
+  YouTubeFeedSourceSchema,
+  DummyFeedSourceSchema,
+]);
 
 /**
  * Type for a {@link FeedSource} persisted to Firestore.
  */
-export type FeedSourceFromStorage = z.infer<typeof FeedSourceFromStorageSchema>;
+export type FeedSourceFromStorage =
+  | RssFeedSourceFromStorage
+  | YouTubeFeedSourceFromStorage
+  | DummyFeedSourceFromStorage;
