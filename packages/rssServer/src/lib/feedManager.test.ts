@@ -1,3 +1,5 @@
+import {expectErrorResult, expectSuccessResult} from '@shared/lib/testUtils.shared';
+
 import type {RssFeed, RssFeedItem} from '@shared/types/rss.types';
 
 import {InMemoryRssFeedManager} from '@src/lib/feedManager';
@@ -41,7 +43,7 @@ describe('InMemoryRssFeedManager', () => {
   describe('addFeed', () => {
     it('should successfully add a feed', () => {
       const result = feedManager.addFeed({feed: MOCK_FEED});
-      expect(result.success).toBe(true);
+      expectSuccessResult(result, undefined);
       expect(feedManager.getFeed({feedId: MOCK_FEED.id})).toEqual(MOCK_FEED);
     });
   });
@@ -52,10 +54,7 @@ describe('InMemoryRssFeedManager', () => {
         feedId: 'non-existent',
         items: [MOCK_FEED_ITEM],
       });
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.message).toBe('Feed non-existent not found');
-      }
+      expectErrorResult(result, 'Feed non-existent not found');
     });
 
     it('should successfully update feed with new items', async () => {
@@ -64,7 +63,7 @@ describe('InMemoryRssFeedManager', () => {
         feedId: MOCK_FEED.id,
         items: [MOCK_FEED_ITEM],
       });
-      expect(result.success).toBe(true);
+      expectSuccessResult(result, undefined);
       const updatedFeed = feedManager.getFeed({feedId: MOCK_FEED.id});
       expect(updatedFeed?.items).toEqual([MOCK_FEED_ITEM]);
     });

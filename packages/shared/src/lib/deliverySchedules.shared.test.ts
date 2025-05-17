@@ -10,6 +10,7 @@ import {
   makeEveryNHoursDeliverySchedule,
   NEVER_DELIVERY_SCHEDULE,
 } from '@shared/lib/deliverySchedules.shared';
+import {expectErrorResult, expectSuccessResult, unwrapOrThrow} from '@shared/lib/testUtils.shared';
 
 import {DayOfWeek} from '@shared/types/datetime.types';
 import type {TimeOfDay} from '@shared/types/datetime.types';
@@ -29,14 +30,9 @@ const EVERY_DAY_OF_WEEK = [
   DayOfWeek.Sunday,
 ];
 
-/** Unsafe test helper for creating a {@link TimeOfDay} briefly. */
+/** Unsafe utility test helper for creating a {@link TimeOfDay}. */
 function timeOfDay(hour: number, minute: number): TimeOfDay {
-  const result = makeTimeOfDay({hour, minute});
-  if (!result.success) {
-    // eslint-disable-next-line no-restricted-syntax
-    throw new Error(result.error.message);
-  }
-  return result.value;
+  return unwrapOrThrow(makeTimeOfDay({hour, minute}));
 }
 
 // Constants for test dates
@@ -112,10 +108,7 @@ describe('deliverySchedules', () => {
           days: [DayOfWeek.Monday],
           times: [timeOfDay(9, 0)],
         });
-        expect(scheduleResult.success).toBe(true);
-        if (!scheduleResult.success) return;
-
-        expect(scheduleResult.value).toEqual({
+        expectSuccessResult(scheduleResult, {
           type: DeliveryScheduleType.DaysAndTimesOfWeek,
           days: [DayOfWeek.Monday],
           times: [timeOfDay(9, 0)],
@@ -127,10 +120,7 @@ describe('deliverySchedules', () => {
           days: [DayOfWeek.Monday, DayOfWeek.Wednesday],
           times: [timeOfDay(9, 0), timeOfDay(15, 0)],
         });
-        expect(scheduleResult.success).toBe(true);
-        if (!scheduleResult.success) return;
-
-        expect(scheduleResult.value).toEqual({
+        expectSuccessResult(scheduleResult, {
           type: DeliveryScheduleType.DaysAndTimesOfWeek,
           days: [DayOfWeek.Monday, DayOfWeek.Wednesday],
           times: [timeOfDay(9, 0), timeOfDay(15, 0)],
@@ -142,10 +132,7 @@ describe('deliverySchedules', () => {
           days: EVERY_DAY_OF_WEEK,
           times: [timeOfDay(9, 0)],
         });
-        expect(scheduleResult.success).toBe(true);
-        if (!scheduleResult.success) return;
-
-        expect(scheduleResult.value).toEqual({
+        expectSuccessResult(scheduleResult, {
           type: DeliveryScheduleType.DaysAndTimesOfWeek,
           days: EVERY_DAY_OF_WEEK,
           times: [timeOfDay(9, 0)],
@@ -157,7 +144,7 @@ describe('deliverySchedules', () => {
           days: [],
           times: [timeOfDay(9, 0)],
         });
-        expect(scheduleResult.success).toBe(false);
+        expectErrorResult(scheduleResult, 'Days must not be empty');
       });
 
       it('should reject empty times array', () => {
@@ -165,7 +152,7 @@ describe('deliverySchedules', () => {
           days: [DayOfWeek.Monday],
           times: [],
         });
-        expect(scheduleResult.success).toBe(false);
+        expectErrorResult(scheduleResult, 'Times must not be empty');
       });
 
       it('should reject invalid times array', () => {
@@ -173,7 +160,7 @@ describe('deliverySchedules', () => {
           days: [DayOfWeek.Monday],
           times: [{hour: 100, minute: 0}],
         });
-        expect(scheduleResult.success).toBe(false);
+        expectErrorResult(scheduleResult, 'Hour must be between 0 and 23');
       });
 
       it('should reject days array with duplicate days', () => {
@@ -181,7 +168,7 @@ describe('deliverySchedules', () => {
           days: [DayOfWeek.Monday, DayOfWeek.Monday],
           times: [timeOfDay(9, 0)],
         });
-        expect(scheduleResult.success).toBe(false);
+        expectErrorResult(scheduleResult, 'Days must not contain duplicates');
       });
     });
 
