@@ -71,10 +71,16 @@ export const RecentActivityFeed: React.FC = () => {
   switch (eventLogItemsState.status) {
     case AsyncStatus.Idle:
     case AsyncStatus.Pending:
-      return <Text light>Loading...</Text>;
-    case AsyncStatus.Error:
+      // TODO: Improve styling of loading state.
       return (
-        <Text className="text-error">
+        <Text light truncate>
+          Loading...
+        </Text>
+      );
+    case AsyncStatus.Error:
+      // TODO: Improve styling of error state.
+      return (
+        <Text truncate className="text-error">
           Error loading recent activity: {eventLogItemsState.error.message}
         </Text>
       );
