@@ -1,8 +1,6 @@
 import FirecrawlApp from '@mendable/firecrawl-js';
 import {defineString} from 'firebase-functions/params';
 
-import {logger} from '@shared/services/logger.shared';
-
 import {
   ACCOUNTS_DB_COLLECTION,
   FEED_ITEMS_DB_COLLECTION,
@@ -10,7 +8,7 @@ import {
   FEED_SOURCES_DB_COLLECTION,
   USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
 } from '@shared/lib/constants.shared';
-import {prefixError, prefixErrorResult} from '@shared/lib/errorUtils.shared';
+import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {assertNever, isValidPort} from '@shared/lib/utils.shared';
 
@@ -54,25 +52,12 @@ const RSS_FEED_PROVIDER_TYPE = defineString('RSS_FEED_PROVIDER_TYPE');
 const SUPERFEEDR_USER = defineString('SUPERFEEDR_USER');
 const SUPERFEEDR_API_KEY = defineString('SUPERFEEDR_API_KEY');
 
-/**
- * Errors such as missing environment variables are considered fatal because they prevent a
- * successful Functions startup. In those cases, the best we can do is log the error and rethrow it.
- */
-function logAndThrowFatalError(error: Error): void {
-  logger.error(prefixError(error, 'Fatal error'));
-  // This is considered a fatal error, so allow this to throw.
-  // eslint-disable-next-line no-restricted-syntax
-  throw error;
-}
-
 function getRssFeedProvider(): Result<RssFeedProvider> {
   const rawRssFeedProviderType = RSS_FEED_PROVIDER_TYPE.value();
   const parsedFeedProviderTypeResult = parseRssFeedProviderType(rawRssFeedProviderType);
   if (!parsedFeedProviderTypeResult.success) {
-    return prefixErrorResult(
-      parsedFeedProviderTypeResult,
-      `RSS_FEED_PROVIDER_TYPE environment variable has invalid value: "${rawRssFeedProviderType}"`
-    );
+    const message = `RSS_FEED_PROVIDER_TYPE environment variable has invalid value: "${rawRssFeedProviderType}"`;
+    return prefixErrorResult(parsedFeedProviderTypeResult, message);
   }
 
   const feedProviderType = parsedFeedProviderTypeResult.value;
@@ -94,11 +79,8 @@ function getLocalRssFeedProvider(): Result<RssFeedProvider> {
 
   const port = parseInt(LOCAL_RSS_FEED_PROVIDER_PORT.value() ?? '', 10);
   if (isNaN(port) || !isValidPort(port)) {
-    const error = new Error(
-      `LOCAL_RSS_FEED_PROVIDER_PORT environment variable has invalid value: "${port}"`
-    );
-    logAndThrowFatalError(error);
-    return makeErrorResult(error);
+    const message = `LOCAL_RSS_FEED_PROVIDER_PORT environment variable has invalid value: "${port}"`;
+    return makeErrorResult(new Error(message));
   }
 
   const rssFeedProvider = new LocalRssFeedProvider({port, callbackUrl});
@@ -111,9 +93,10 @@ function getSuperfeedrRssFeedProvider(): Result<RssFeedProvider> {
 
   const credentialsResult = validateSuperfeedrCredentials();
   if (!credentialsResult.success) {
-    logAndThrowFatalError(credentialsResult.error);
-    return credentialsResult;
+    const message = 'Failed to initialize Superfeedr RSS feed provider';
+    return prefixErrorResult(credentialsResult, message);
   }
+
   const credentials = credentialsResult.value;
   const rssFeedProvider = new SuperfeedrService({
     superfeedrUser: credentials.user,
