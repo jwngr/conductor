@@ -10,6 +10,7 @@ import {
   upgradeUnknownError,
 } from '@shared/lib/errorUtils.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {expectErrorResult} from '@shared/lib/testUtils.shared';
 
 import type {AsyncResult, Result} from '@shared/types/results.types';
 
@@ -540,9 +541,6 @@ describe('prefixResultIfError', () => {
 
     const result = prefixResultIfError(errorResult, prefix);
 
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.message).toBe(`${prefix}: ${MOCK_ERROR_MESSAGE}`);
-    }
+    expectErrorResult(result, `${prefix}: ${MOCK_ERROR_MESSAGE}`);
   });
 });

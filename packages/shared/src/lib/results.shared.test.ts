@@ -1,30 +1,27 @@
 import {makeErrorResult, makeSuccessResult, partitionResults} from '@shared/lib/results.shared';
+import {expectErrorResult, expectSuccessResult} from '@shared/lib/testUtils.shared';
 
 import type {Result} from '@shared/types/results.types';
 
 describe('makeSuccessResult', () => {
   it('returns a success result with a string', () => {
     const result = makeSuccessResult('test');
-    expect(result.success).toBe(true);
-    expect(result.value).toBe('test');
+    expectSuccessResult(result, 'test');
   });
 
   it('returns a success result with undefined value', () => {
     const result = makeSuccessResult(undefined);
-    expect(result.success).toBe(true);
-    expect(result.value).toBe(undefined);
+    expectSuccessResult(result, undefined);
   });
 
   it('returns a success result with null value', () => {
     const result = makeSuccessResult(null);
-    expect(result.success).toBe(true);
-    expect(result.value).toBe(null);
+    expectSuccessResult(result, null);
   });
 
   it('returns a success result with a complex value', () => {
     const result = makeSuccessResult({a: 1, b: 2});
-    expect(result.success).toBe(true);
-    expect(result.value).toEqual({a: 1, b: 2});
+    expectSuccessResult(result, {a: 1, b: 2});
   });
 });
 
@@ -37,9 +34,7 @@ describe('makeErrorResult', () => {
 
   it('returns an error result with a custom error', () => {
     const result = makeErrorResult(new Error('test'));
-    expect(result.success).toBe(false);
-    expect(result.error).toBeInstanceOf(Error);
-    expect(result.error.message).toBe('test');
+    expectErrorResult(result, 'test');
   });
 });
 
