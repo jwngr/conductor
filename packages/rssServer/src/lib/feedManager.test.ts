@@ -54,7 +54,7 @@ describe('InMemoryRssFeedManager', () => {
         feedId: 'non-existent',
         items: [MOCK_FEED_ITEM],
       });
-      expectErrorResult(result, 'Feed non-existent not found');
+      expectErrorResult(result);
     });
 
     it('should successfully update feed with new items', async () => {

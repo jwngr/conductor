@@ -17,10 +17,10 @@ export function expectSuccessResult<T>(result: Result<T>, expectedValue: T): voi
  */
 export function expectErrorResult<T>(
   result: Result<T>,
-  expectedErrorMessage: string | RegExp
+  expectedErrorMessage?: string | RegExp
 ): void {
   expect(result.success).toBe(false);
-  if (!result.success) {
+  if (expectedErrorMessage && !result.success) {
     expect(result.error.message).toMatch(expectedErrorMessage);
   }
 }

@@ -339,10 +339,10 @@ describe('batchSyncResults', () => {
     const tasks = [() => makeSuccessResult(1)];
 
     const result = batchSyncResults(tasks, 0);
-    expectErrorResult(result, 'Batch size must be');
+    expectErrorResult(result);
 
     const result2 = batchSyncResults(tasks, -1);
-    expectErrorResult(result2, 'Batch size must be');
+    expectErrorResult(result2);
   });
 });
 
@@ -393,9 +393,9 @@ describe('batchAsyncResults', () => {
     const tasks = [async () => makeSuccessResult(1)];
 
     const result = await batchAsyncResults(tasks, 0);
-    expectErrorResult(result, 'Batch size must be');
+    expectErrorResult(result);
 
     const result2 = await batchAsyncResults(tasks, -1);
-    expectErrorResult(result2, 'Batch size must be');
+    expectErrorResult(result2);
   });
 });

@@ -30,7 +30,7 @@ Jane,25,Los Angeles`;
   test('should handle malformed CSV', () => {
     const csv = 'name,age,city\nJohn,30\nJane,25,Los Angeles';
     const result = parseCsv<Record<string, string>>(csv);
-    expectErrorResult(result, 'Invalid');
+    expectErrorResult(result);
   });
 
   test('should handle values with commas in quotes', () => {

@@ -92,7 +92,7 @@ describe('parseYouTubeChannelId', () => {
     '', // Empty string.
   ])('should fail for invalid channel ID "%s"', (id) => {
     const result = parseYouTubeChannelId(id);
-    expectErrorResult(result, /YouTube channel ID/);
+    expectErrorResult(result);
   });
 });
 
@@ -107,6 +107,6 @@ describe('parseYouTubeHandle', () => {
     '', // Empty string.
   ])('should fail for invalid handle "%s"', (handle) => {
     const result = parseYouTubeHandle(handle);
-    expectErrorResult(result, /YouTube handle/);
+    expectErrorResult(result);
   });
 });

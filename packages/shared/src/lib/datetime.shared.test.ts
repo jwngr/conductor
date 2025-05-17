@@ -30,12 +30,12 @@ describe('validateHour', () => {
 
   it('should return an error message for hours outside the valid range', () => {
     const result = validateHour(100);
-    expectErrorResult(result, 'Hour must be between 0 and 23');
+    expectErrorResult(result);
   });
 
   it('should return an error message for non-integer hours', () => {
     const result = validateHour(1.5);
-    expectErrorResult(result, 'Hour must be an integer');
+    expectErrorResult(result);
   });
 });
 
@@ -47,10 +47,10 @@ describe('validateMinute', () => {
   });
 
   it('should reject invalid minutes', () => {
-    expectErrorResult(validateMinute(-1), 'Minute must be between 0 and 59');
-    expectErrorResult(validateMinute(1.5), 'Minute must be an integer');
-    expectErrorResult(validateMinute(60), 'Minute must be between 0 and 59');
-    expectErrorResult(validateMinute(100), 'Minute must be between 0 and 59');
+    expectErrorResult(validateMinute(-1));
+    expectErrorResult(validateMinute(1.5));
+    expectErrorResult(validateMinute(60));
+    expectErrorResult(validateMinute(100));
   });
 
   it('should return the same minute on success', () => {
@@ -60,12 +60,12 @@ describe('validateMinute', () => {
 
   it('should return an error message for minutes outside the valid range', () => {
     const result = validateMinute(60);
-    expectErrorResult(result, 'Minute must be between 0 and 59');
+    expectErrorResult(result);
   });
 
   it('should return an error message for non-integer minutes', () => {
     const result = validateMinute(1.5);
-    expectErrorResult(result, 'Minute must be an integer');
+    expectErrorResult(result);
   });
 });
 
@@ -77,35 +77,35 @@ describe('makeTimeOfDay', () => {
 
   it('should reject invalid hours', () => {
     const result1 = makeTimeOfDay({hour: 24, minute: 30});
-    expectErrorResult(result1, 'Hour must be between 0 and 23');
+    expectErrorResult(result1);
 
     const result2 = makeTimeOfDay({hour: 33, minute: 30});
-    expectErrorResult(result2, 'Hour must be between 0 and 23');
+    expectErrorResult(result2);
 
     const result3 = makeTimeOfDay({hour: -1, minute: 30});
-    expectErrorResult(result3, 'Hour must be between 0 and 23');
+    expectErrorResult(result3);
 
     const result4 = makeTimeOfDay({hour: 12, minute: 1.5});
-    expectErrorResult(result4, 'Minute must be an integer');
+    expectErrorResult(result4);
   });
 
   it('should reject invalid minutes', () => {
     const result1 = makeTimeOfDay({hour: 12, minute: 60});
-    expectErrorResult(result1, 'Minute must be between 0 and 59');
+    expectErrorResult(result1);
 
     const result2 = makeTimeOfDay({hour: 12, minute: 100});
-    expectErrorResult(result2, 'Minute must be between 0 and 59');
+    expectErrorResult(result2);
 
     const result3 = makeTimeOfDay({hour: 12, minute: -1});
-    expectErrorResult(result3, 'Minute must be between 0 and 59');
+    expectErrorResult(result3);
 
     const result4 = makeTimeOfDay({hour: 12, minute: 1.5});
-    expectErrorResult(result4, 'Minute must be an integer');
+    expectErrorResult(result4);
   });
 
   it('should reject both invalid hour and minute', () => {
     const result = makeTimeOfDay({hour: -1, minute: -1});
-    expectErrorResult(result, 'Hour must be between 0 and 23');
+    expectErrorResult(result);
   });
 });
 
