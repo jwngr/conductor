@@ -43,7 +43,16 @@ let feedItemsService: ServerFeedItemsService;
 
 // Initialize services on startup.
 onInit(() => {
-  const services = initServices();
+  const initServicesResult = initServices();
+
+  if (!initServicesResult.success) {
+    logger.error(initServicesResult.error);
+    // This is considered a fatal error, so allow this to throw.
+    // eslint-disable-next-line no-restricted-syntax
+    throw initServicesResult.error;
+  }
+
+  const services = initServicesResult.value;
 
   feedSourcesService = services.feedSourcesService;
   userFeedSubscriptionsService = services.userFeedSubscriptionsService;

@@ -152,7 +152,7 @@ interface InitializedServices {
   readonly feedItemsService: ServerFeedItemsService;
 }
 
-export function initServices(): InitializedServices {
+export function initServices(): Result<InitializedServices> {
   const feedSourceFirestoreConverter = makeFirestoreDataConverter(
     toStorageFeedSource,
     parseFeedSource
@@ -214,10 +214,7 @@ export function initServices(): InitializedServices {
 
   const rssFeedProviderResult = getRssFeedProvider();
   if (!rssFeedProviderResult.success) {
-    logAndThrowFatalError(rssFeedProviderResult.error);
-    // Types require this to be thrown.
-    // eslint-disable-next-line no-restricted-syntax
-    throw rssFeedProviderResult.error;
+    return prefixErrorResult(rssFeedProviderResult, 'Failed to initialize RSS feed provider');
   }
 
   const rssFeedService = new ServerRssFeedService({
@@ -226,11 +223,11 @@ export function initServices(): InitializedServices {
     userFeedSubscriptionsService,
   });
 
-  return {
+  return makeSuccessResult({
     feedSourcesService,
     userFeedSubscriptionsService,
     wipeoutService,
     rssFeedService,
     feedItemsService,
-  };
+  });
 }

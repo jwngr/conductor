@@ -77,8 +77,8 @@ export function prefixResultIfError<T>(result: Result<T>, errorPrefix: string): 
 }
 
 /**
- * Executes the given synchronous function and returns its result. Errors should never be thrown.
- * Instead, a `ErrorResult` is returned.
+ * Executes the given synchronous function and returns its result. A thrown error is converted into
+ * an `ErrorResult`.
  *
  * For asynchronous functions, see {@link asyncTry}.
  */
