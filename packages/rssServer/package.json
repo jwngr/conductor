@@ -9,14 +9,14 @@
     "hono": "^4.7.9"
   },
   "scripts": {
-    "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",
+    "validate": "bun run validate:lint && bun run validate:types && bun run validate:format",
     "validate:lint": "eslint src",
     "validate:lint:fix": "eslint src --fix",
     "validate:types": "tsc --build",
     "validate:format": "prettier --check 'src/**/*.{js,ts,json}'",
     "format": "prettier --write 'src/**/*.{js,ts,json}'",
     "dev": "tsx watch src/server.ts",
-    "build": "yarn run clean && tsc --build",
+    "build": "bun run clean && tsc --build",
     "clean": "rm -rf dist/",
     "test": "jest"
   }

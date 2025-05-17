@@ -1,5 +1,5 @@
 name: Shared GitHub action setup
-description: Sets up Node.js with Yarn v4 and optionally installs Firebase CLI and project dependencies
+description: Sets up Node.js with Bun and optionally installs Firebase CLI and project dependencies
 inputs:
   install-deps:
     required: false
