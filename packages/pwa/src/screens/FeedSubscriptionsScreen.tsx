@@ -126,7 +126,7 @@ const FeedAdder: React.FC = () => {
               )
             }
           >
-            Lorem RSS feed w/ 30s updates
+            Personal YouTube channel
           </Button>
           <Button variant="default" onClick={async () => void handleSubscribeToDummyFeed()}>
             Dummy feed
