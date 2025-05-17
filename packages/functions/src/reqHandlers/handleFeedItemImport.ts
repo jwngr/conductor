@@ -1,5 +1,3 @@
-import {logger} from '@shared/services/logger.shared';
-
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
@@ -9,22 +7,25 @@ import type {AsyncResult, ErrorResult} from '@shared/types/results.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 
-export async function feedItemImportHelper(args: {
+/**
+ * Imports a feed item, importing content and doing some LLM processing.
+ */
+export async function handleFeedItemImport(args: {
   readonly feedItem: FeedItem;
   readonly feedItemsService: ServerFeedItemsService;
 }): AsyncResult<void> {
   const {feedItem, feedItemsService} = args;
   const feedItemId = feedItem.feedItemId;
-  const logDetails = {feedItemId, accountId: feedItem.accountId} as const;
 
   const handleError = async (
     errorResult: ErrorResult<Error>,
     errorPrefix: string
   ): Promise<ErrorResult<Error>> => {
+    const betterErrorResult = prefixErrorResult(errorResult, errorPrefix);
     await feedItemsService.updateFeedItem(feedItemId, {
       importState: {
         status: FeedItemImportStatus.Failed,
-        errorMessage: errorResult.error.message,
+        errorMessage: betterErrorResult.error.message,
         importFailedTime: new Date(),
         lastImportRequestedTime: feedItem.importState.lastImportRequestedTime,
         lastSuccessfulImportTime: feedItem.importState.lastSuccessfulImportTime,
@@ -32,12 +33,11 @@ export async function feedItemImportHelper(args: {
         shouldFetch: false,
       },
     });
-    return prefixErrorResult(errorResult, errorPrefix);
+    return betterErrorResult;
   };
 
   // Claim the item so that no other function picks it up.
   // TODO: Consider using a lock to prevent multiple functions from processing the same item.
-  logger.log(`[IMPORT] Claiming feed item to import...`, logDetails);
   const claimItemResult = await feedItemsService.updateFeedItem(feedItemId, {
     importState: {
       status: FeedItemImportStatus.Processing,
@@ -53,14 +53,12 @@ export async function feedItemImportHelper(args: {
   }
 
   // Actually import the feed item.
-  logger.log(`[IMPORT] Importing feed item...`, logDetails);
   const importItemResult = await feedItemsService.importFeedItem(feedItem);
   if (!importItemResult.success) {
     return handleError(importItemResult, 'Failed to import feed item');
   }
 
   // Mark the feed item as completed once everything else has processed successfully.
-  logger.log(`[IMPORT] Marking feed item as completed...`, logDetails);
   const markCompletedResult = await feedItemsService.updateFeedItem(feedItemId, {
     importState: {
       status: FeedItemImportStatus.Completed,
