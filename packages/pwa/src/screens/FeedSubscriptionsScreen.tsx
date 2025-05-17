@@ -50,6 +50,23 @@ const FeedAdder: React.FC = () => {
     [setError, setPending, setSuccess, userFeedSubscriptionsService]
   );
 
+  const handleSubscribeToYouTubeChannel = useCallback(
+    async (youtubeChannelUrl: string): Promise<void> => {
+      setPending();
+
+      const subscribeResult =
+        await userFeedSubscriptionsService.subscribeToYouTubeChannel(youtubeChannelUrl);
+      if (!subscribeResult.success) {
+        setError(prefixError(subscribeResult.error, 'Failed to subscribe to YouTube channel'));
+        return;
+      }
+
+      setSuccess(undefined);
+      setUrlInputValue('');
+    },
+    [setError, setPending, setSuccess, userFeedSubscriptionsService]
+  );
+
   const handleSubscribeToDummyFeed = useCallback(async (): Promise<void> => {
     setPending();
     setError(new Error('TODO: Not implemented'));
@@ -100,6 +117,16 @@ const FeedAdder: React.FC = () => {
             }
           >
             Lorem RSS feed w/ 30s updates
+          </Button>
+          <Button
+            variant="default"
+            onClick={async () =>
+              void handleSubscribeToYouTubeChannel(
+                'https://www.youtube.com/channel/UCndkjnoQawp7Tjy1uNj53yQ'
+              )
+            }
+          >
+            Personal YouTube channel
           </Button>
           <Button variant="default" onClick={async () => void handleSubscribeToDummyFeed()}>
             Dummy feed
