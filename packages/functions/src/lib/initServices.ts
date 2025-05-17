@@ -9,8 +9,7 @@ import {
   USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
 } from '@shared/lib/constants.shared';
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
-import {assertNever, isValidPort} from '@shared/lib/utils.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import {parseAccount, parseAccountId, toStorageAccount} from '@shared/parsers/accounts.parser';
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
@@ -19,7 +18,6 @@ import {
   parseFeedSourceId,
   toStorageFeedSource,
 } from '@shared/parsers/feedSources.parser';
-import {parseRssFeedProviderType} from '@shared/parsers/rss.parser';
 import {
   parseUserFeedSubscription,
   parseUserFeedSubscriptionId,
@@ -27,8 +25,6 @@ import {
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
 import type {Result} from '@shared/types/results.types';
-import type {RssFeedProvider} from '@shared/types/rss.types';
-import type {SuperfeedrCredentials} from '@shared/types/superfeedr.types';
 
 import {ServerAccountsService} from '@sharedServer/services/accounts.server';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
@@ -38,94 +34,13 @@ import {
   makeFirestoreDataConverter,
   ServerFirestoreCollectionService,
 } from '@sharedServer/services/firestore.server';
-import {LocalRssFeedProvider} from '@sharedServer/services/localRssFeedProvider';
 import {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
-import {SuperfeedrService} from '@sharedServer/services/superfeedr.server';
 import {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
 import {WipeoutService} from '@sharedServer/services/wipeout.server';
 
-import {getFunctionsBaseUrl} from '@src/lib/env';
+import {getRssFeedProvider} from '@src/lib/rssFeedProvider.func';
 
 const FIRECRAWL_API_KEY = defineString('FIRECRAWL_API_KEY');
-const LOCAL_RSS_FEED_PROVIDER_PORT = defineString('LOCAL_RSS_FEED_PROVIDER_PORT');
-const RSS_FEED_PROVIDER_TYPE = defineString('RSS_FEED_PROVIDER_TYPE');
-const SUPERFEEDR_USER = defineString('SUPERFEEDR_USER');
-const SUPERFEEDR_API_KEY = defineString('SUPERFEEDR_API_KEY');
-
-function getRssFeedProvider(): Result<RssFeedProvider> {
-  const rawRssFeedProviderType = RSS_FEED_PROVIDER_TYPE.value();
-  const parsedFeedProviderTypeResult = parseRssFeedProviderType(rawRssFeedProviderType);
-  if (!parsedFeedProviderTypeResult.success) {
-    const message = `RSS_FEED_PROVIDER_TYPE environment variable has invalid value: "${rawRssFeedProviderType}"`;
-    return prefixErrorResult(parsedFeedProviderTypeResult, message);
-  }
-
-  const feedProviderType = parsedFeedProviderTypeResult.value;
-
-  switch (feedProviderType) {
-    case 'local':
-      return getLocalRssFeedProvider();
-    case 'superfeedr':
-      return getSuperfeedrRssFeedProvider();
-    default: {
-      assertNever(feedProviderType);
-    }
-  }
-}
-
-function getLocalRssFeedProvider(): Result<RssFeedProvider> {
-  // TODO: Consider using a different callback URL for the local feed provider.
-  const callbackUrl = `${getFunctionsBaseUrl()}/handleSuperfeedrWebhook`;
-
-  const port = parseInt(LOCAL_RSS_FEED_PROVIDER_PORT.value() ?? '', 10);
-  if (isNaN(port) || !isValidPort(port)) {
-    const message = `LOCAL_RSS_FEED_PROVIDER_PORT environment variable has invalid value: "${port}"`;
-    return makeErrorResult(new Error(message));
-  }
-
-  const rssFeedProvider = new LocalRssFeedProvider({port, callbackUrl});
-
-  return makeSuccessResult(rssFeedProvider);
-}
-
-function getSuperfeedrRssFeedProvider(): Result<RssFeedProvider> {
-  const callbackUrl = `${getFunctionsBaseUrl()}/handleSuperfeedrWebhook`;
-
-  const credentialsResult = validateSuperfeedrCredentials();
-  if (!credentialsResult.success) {
-    const message = 'Failed to initialize Superfeedr RSS feed provider';
-    return prefixErrorResult(credentialsResult, message);
-  }
-
-  const credentials = credentialsResult.value;
-  const rssFeedProvider = new SuperfeedrService({
-    superfeedrUser: credentials.user,
-    superfeedrApiKey: credentials.apiKey,
-    callbackUrl,
-  });
-
-  return makeSuccessResult(rssFeedProvider);
-}
-
-function validateSuperfeedrCredentials(): Result<SuperfeedrCredentials> {
-  const rawSuperfeedrUser = SUPERFEEDR_USER.value();
-  const rawSuperfeedrApiKey = SUPERFEEDR_API_KEY.value();
-
-  if (rawSuperfeedrUser.length === 0) {
-    const message = 'SUPERFEEDR_USER environment variable must be set when Superfeedr enabled';
-    return makeErrorResult(new Error(message));
-  }
-
-  if (rawSuperfeedrApiKey.length === 0) {
-    const message = 'SUPERFEEDR_API_KEY environment variable must be set when Superfeedr enabled';
-    return makeErrorResult(new Error(message));
-  }
-
-  return makeSuccessResult({
-    user: rawSuperfeedrUser,
-    apiKey: rawSuperfeedrApiKey,
-  });
-}
 
 interface InitializedServices {
   readonly feedSourcesService: ServerFeedSourcesService;

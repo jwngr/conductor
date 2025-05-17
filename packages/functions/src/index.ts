@@ -45,9 +45,9 @@ let feedItemsService: ServerFeedItemsService;
 onInit(() => {
   const initServicesResult = initServices();
 
+  // Services failing to initialize is considered a fatal error, so log and throw.
   if (!initServicesResult.success) {
-    logger.error(initServicesResult.error);
-    // This is considered a fatal error, so allow this to throw.
+    logger.error(prefixError(initServicesResult.error, 'Fatal error while initializing services'));
     // eslint-disable-next-line no-restricted-syntax
     throw initServicesResult.error;
   }
