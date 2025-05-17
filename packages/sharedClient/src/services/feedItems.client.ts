@@ -179,39 +179,39 @@ export function useFeedItemsRespectingDelivery(args: {
   const feedItemsState = useFeedItemsInternal({viewType});
   const userFeedSubscriptionsState = useUserFeedSubscriptions();
 
-  const filteredFeedItems = useMemo(() => {
-    // Everything is loaded and ready to filter.
+  const filteredFeedItemsState: AsyncState<FeedItem[]> = useMemo(() => {
+    // In addition to the feed items themselves, we need to load user subscriptions in order to
+    // determine delivery schedules. Wait to display anything until the everything is loaded.
     switch (feedItemsState.status) {
       case AsyncStatus.Idle:
       case AsyncStatus.Pending:
-        return [];
       case AsyncStatus.Error:
-        // TODO: Show any previously fetched items even when an error happens.
-        return [];
-      case AsyncStatus.Success:
-        if (userFeedSubscriptionsState.status !== AsyncStatus.Success) {
-          return [];
+        return feedItemsState;
+      case AsyncStatus.Success: {
+        switch (userFeedSubscriptionsState.status) {
+          case AsyncStatus.Idle:
+          case AsyncStatus.Pending:
+          case AsyncStatus.Error:
+            return userFeedSubscriptionsState;
+          case AsyncStatus.Success: {
+            const filteredFeedItems = filterFeedItemsByDeliverySchedules({
+              feedItems: feedItemsState.value,
+              userFeedSubscriptions: userFeedSubscriptionsState.value,
+            });
+
+            return makeSuccessAsyncState(filteredFeedItems);
+          }
+          default:
+            assertNever(userFeedSubscriptionsState);
         }
-        return filterFeedItemsByDeliverySchedules({
-          feedItems: feedItemsState.value,
-          userFeedSubscriptions: userFeedSubscriptionsState.value,
-        });
+        break;
+      }
       default:
         assertNever(feedItemsState);
     }
   }, [feedItemsState, userFeedSubscriptionsState]);
 
-  switch (feedItemsState.status) {
-    case AsyncStatus.Idle:
-    case AsyncStatus.Pending:
-      return feedItemsState;
-    case AsyncStatus.Error:
-      return makeErrorAsyncState(feedItemsState.error);
-    case AsyncStatus.Success:
-      return makeSuccessAsyncState(filteredFeedItems);
-    default:
-      assertNever(feedItemsState);
-  }
+  return filteredFeedItemsState;
 }
 
 export function useFeedItemFile(args: {
