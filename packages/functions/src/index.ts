@@ -43,16 +43,17 @@ let feedItemsService: ServerFeedItemsService;
 
 // Initialize services on startup.
 onInit(() => {
-  const initServicesResult = initServices();
+  const initResult = initServices();
 
   // Services failing to initialize is considered a fatal error, so log and throw.
-  if (!initServicesResult.success) {
-    logger.error(prefixError(initServicesResult.error, 'Fatal error while initializing services'));
+  if (!initResult.success) {
+    const fatalErr = prefixError(initResult.error, 'Fatal error while initializing services');
+    logger.error(fatalErr);
     // eslint-disable-next-line no-restricted-syntax
-    throw initServicesResult.error;
+    throw fatalErr;
   }
 
-  const services = initServicesResult.value;
+  const services = initResult.value;
 
   feedSourcesService = services.feedSourcesService;
   userFeedSubscriptionsService = services.userFeedSubscriptionsService;
