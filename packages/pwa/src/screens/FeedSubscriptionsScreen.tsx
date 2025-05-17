@@ -50,6 +50,14 @@ const FeedAdder: React.FC = () => {
     [setError, setPending, setSuccess, userFeedSubscriptionsService]
   );
 
+  const handleSubscribeToYouTubeChannel = useCallback(
+    async (youtubeChannelUrl: string): Promise<void> => {
+      setPending();
+      setError(new Error('TODO: Not implemented'));
+    },
+    [setError, setPending]
+  );
+
   const handleSubscribeToDummyFeed = useCallback(async (): Promise<void> => {
     setPending();
     setError(new Error('TODO: Not implemented'));
@@ -95,6 +103,16 @@ const FeedAdder: React.FC = () => {
             variant="default"
             onClick={async () =>
               void handleSubscribeToRssFeedByUrl(
+                'https://lorem-rss.herokuapp.com/feed?unit=second&interval=30'
+              )
+            }
+          >
+            Lorem RSS feed w/ 30s updates
+          </Button>
+          <Button
+            variant="default"
+            onClick={async () =>
+              void handleSubscribeToYouTubeChannel(
                 'https://lorem-rss.herokuapp.com/feed?unit=second&interval=30'
               )
             }

@@ -1,10 +1,6 @@
 import {z} from 'zod';
 
-import {makeSuccessResult} from '@shared/lib/results.shared';
-import {makeUuid} from '@shared/lib/utils.shared';
-
 import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
-import type {Result} from '@shared/types/results.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 
 /**
@@ -17,11 +13,24 @@ export type FeedSourceId = string & {readonly __brand: 'FeedSourceIdBrand'};
  */
 export const FeedSourceIdSchema = z.string().uuid();
 
-/**
- * Creates a new random {@link FeedSourceId}.
- */
-export function makeFeedSourceId(): FeedSourceId {
-  return makeUuid<FeedSourceId>();
+export enum FeedSourceType {
+  RSS = 'RSS',
+  YouTube = 'YOUTUBE',
+}
+
+interface BaseFeedSource extends BaseStoreItem {
+  readonly type: FeedSourceType;
+  readonly feedSourceId: FeedSourceId;
+  readonly url: string;
+  readonly title: string;
+}
+
+interface RssFeedSource extends BaseFeedSource {
+  readonly type: FeedSourceType.RSS;
+}
+
+interface YouTubeFeedSource extends BaseFeedSource {
+  readonly type: FeedSourceType.YouTube;
 }
 
 /**
@@ -30,16 +39,10 @@ export function makeFeedSourceId(): FeedSourceId {
  * Use the {@link UserFeedSubscription} object to manage user subscriptions to a {@link FeedSource}.
  * A feed source is created the first time an account subscribes to a unique feed URL.
  */
-export interface FeedSource extends BaseStoreItem {
-  readonly feedSourceId: FeedSourceId;
-  readonly url: string;
-  readonly title: string;
-}
+export type FeedSource = RssFeedSource | YouTubeFeedSource;
 
-/**
- * Zod schema for a {@link FeedSource} persisted to Firestore.
- */
-export const FeedSourceFromStorageSchema = z.object({
+const BaseFeedSourceSchema = z.object({
+  type: z.nativeEnum(FeedSourceType),
   feedSourceId: FeedSourceIdSchema,
   url: z.string().url(),
   title: z.string(),
@@ -47,23 +50,20 @@ export const FeedSourceFromStorageSchema = z.object({
   lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
+const RssFeedSourceSchema = BaseFeedSourceSchema.extend({
+  type: z.literal(FeedSourceType.RSS),
+});
+
+const YouTubeFeedSourceSchema = BaseFeedSourceSchema.extend({
+  type: z.literal(FeedSourceType.YouTube),
+});
+
+/**
+ * Zod schema for a {@link FeedSource} persisted to Firestore.
+ */
+export const FeedSourceFromStorageSchema = z.union([RssFeedSourceSchema, YouTubeFeedSourceSchema]);
+
 /**
  * Type for a {@link FeedSource} persisted to Firestore.
  */
 export type FeedSourceFromStorage = z.infer<typeof FeedSourceFromStorageSchema>;
-
-/**
- * Creates a new {@link FeedSource} object.
- */
-export function makeFeedSource(
-  newItemArgs: Omit<FeedSource, 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
-): Result<FeedSource> {
-  return makeSuccessResult({
-    feedSourceId: makeFeedSourceId(),
-    url: newItemArgs.url,
-    title: newItemArgs.title,
-    // TODO(timestamps): Use server timestamps instead.
-    createdTime: new Date(),
-    lastUpdatedTime: new Date(),
-  });
-}
