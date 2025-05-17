@@ -125,7 +125,6 @@ export class ClientUserFeedSubscriptionsService {
 
   public async subscribeToIntervalFeed(args: {
     intervalSeconds: number;
-    accountId: AccountId;
   }): AsyncResult<UserFeedSubscription> {
     const {intervalSeconds} = args;
 

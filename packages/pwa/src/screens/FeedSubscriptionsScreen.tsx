@@ -69,8 +69,18 @@ const FeedAdder: React.FC = () => {
 
   const handleSubscribeToIntervalFeed = useCallback(async (): Promise<void> => {
     setPending();
-    setError(new Error('TODO: Not implemented'));
-  }, [setError, setPending]);
+
+    const subscribeResult = await userFeedSubscriptionsService.subscribeToIntervalFeed({
+      intervalSeconds: 10,
+    });
+    if (!subscribeResult.success) {
+      setError(prefixError(subscribeResult.error, 'Failed to subscribe to interval feed'));
+      return;
+    }
+
+    setSuccess(undefined);
+    setUrlInputValue('');
+  }, [setError, setPending, setSuccess, userFeedSubscriptionsService]);
 
   return (
     <FlexColumn flex={1} gap={3}>
