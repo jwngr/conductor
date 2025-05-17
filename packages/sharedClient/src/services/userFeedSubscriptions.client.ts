@@ -5,7 +5,7 @@ import {useEffect, useMemo} from 'react';
 
 import {USER_FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {makeYouTubeFeedSource} from '@shared/lib/feedSources.shared';
+import {makeIntervalFeedSource, makeYouTubeFeedSource} from '@shared/lib/feedSources.shared';
 import {withFirestoreTimestamps} from '@shared/lib/parser.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {getYouTubeChannelId} from '@shared/lib/youtube.shared';
@@ -96,11 +96,13 @@ export class ClientUserFeedSubscriptionsService {
    * Subscribes the account to the YouTube channel. A new feed source is created if one does not
    * already exist.
    */
-  public async subscribeToYouTubeChannel(url: string): AsyncResult<UserFeedSubscription> {
-    const channelIdResult = getYouTubeChannelId(url);
+  public async subscribeToYouTubeChannel(
+    maybeYouTubeUrl: string
+  ): AsyncResult<UserFeedSubscription> {
+    const channelIdResult = getYouTubeChannelId(maybeYouTubeUrl);
 
     // TODO: Also support channel handles.
-    // const channelHandleResult = getYouTubeChannelHandle(url);
+    // const channelHandleResult = getYouTubeChannelHandle(maybeYouTubeUrl);
 
     if (!channelIdResult.success) {
       return prefixErrorResult(channelIdResult, 'Failed to parse YouTube channel URL');
@@ -118,10 +120,23 @@ export class ClientUserFeedSubscriptionsService {
       title: 'YouTube Channel',
     });
 
-    return await this.createSubscription({
-      feedSource,
-      accountId: this.accountId,
+    return await this.createSubscription({feedSource});
+  }
+
+  public async subscribeToIntervalFeed(args: {
+    intervalSeconds: number;
+    accountId: AccountId;
+  }): AsyncResult<UserFeedSubscription> {
+    const {intervalSeconds} = args;
+
+    const feedSource = makeIntervalFeedSource({
+      intervalSeconds,
+      // TODO: Update these URL values.
+      url: 'https://example.com',
+      title: 'Interval Feed',
     });
+
+    return await this.createSubscription({feedSource});
   }
 
   /**
@@ -129,14 +144,13 @@ export class ClientUserFeedSubscriptionsService {
    */
   public async createSubscription(args: {
     feedSource: FeedSource;
-    accountId: AccountId;
   }): AsyncResult<UserFeedSubscription> {
-    const {feedSource, accountId} = args;
+    const {feedSource} = args;
 
     // Check if a feed subscription already exists for this feed source.
     const existingSubscriptionsResult =
       await this.userFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
-        where('accountId', '==', accountId),
+        where('accountId', '==', this.accountId),
         where('feedSourceId', '==', feedSource.feedSourceId),
       ]);
     if (!existingSubscriptionsResult.success) return existingSubscriptionsResult;
@@ -147,7 +161,10 @@ export class ClientUserFeedSubscriptionsService {
     }
 
     // Make a new user feed subscription object locally.
-    const userFeedSubscriptionResult = makeUserFeedSubscription({feedSource, accountId});
+    const userFeedSubscriptionResult = makeUserFeedSubscription({
+      feedSource,
+      accountId: this.accountId,
+    });
     if (!userFeedSubscriptionResult.success) return userFeedSubscriptionResult;
     const newUserFeedSubscription = userFeedSubscriptionResult.value;
 

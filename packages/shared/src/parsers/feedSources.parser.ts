@@ -3,23 +3,23 @@ import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {
-  DummyFeedSource,
-  DummyFeedSourceFromStorage,
   FeedSource,
   FeedSourceFromStorage,
   FeedSourceId,
+  IntervalFeedSource,
+  IntervalFeedSourceFromStorage,
   RssFeedSource,
   RssFeedSourceFromStorage,
-  YouTubeFeedSource,
-  YouTubeFeedSourceFromStorage,
+  YouTubeChannelFeedSource,
+  YouTubeChannelFeedSourceFromStorage,
 } from '@shared/types/feedSources.types';
 import {
-  DummyFeedSourceSchema,
   FeedSourceFromStorageSchema,
   FeedSourceIdSchema,
   FeedSourceType,
+  IntervalFeedSourceSchema,
   RssFeedSourceSchema,
-  YouTubeFeedSourceSchema,
+  YouTubeChannelFeedSourceSchema,
 } from '@shared/types/feedSources.types';
 import type {Result} from '@shared/types/results.types';
 
@@ -46,12 +46,12 @@ export function parseFeedSource(maybeFeedSource: unknown): Result<FeedSource> {
   }
 
   switch (parsedFeedSourceResult.value.type) {
-    case FeedSourceType.Dummy:
-      return parseDummyFeedSource(parsedFeedSourceResult.value);
+    case FeedSourceType.Interval:
+      return parseIntervalFeedSource(parsedFeedSourceResult.value);
     case FeedSourceType.RSS:
       return parseRssFeedSource(parsedFeedSourceResult.value);
-    case FeedSourceType.YouTube:
-      return parseYouTubeFeedSource(parsedFeedSourceResult.value);
+    case FeedSourceType.YouTubeChannel:
+      return parseYouTubeChannelFeedSource(parsedFeedSourceResult.value);
     default:
       return makeErrorResult(new Error('Invalid feed source type'));
   }
@@ -76,8 +76,8 @@ function parseRssFeedSource(maybeFeedSource: unknown): Result<RssFeedSource> {
   });
 }
 
-function parseYouTubeFeedSource(maybeFeedSource: unknown): Result<YouTubeFeedSource> {
-  const parsedFeedSourceResult = parseZodResult(YouTubeFeedSourceSchema, maybeFeedSource);
+function parseYouTubeChannelFeedSource(maybeFeedSource: unknown): Result<YouTubeChannelFeedSource> {
+  const parsedFeedSourceResult = parseZodResult(YouTubeChannelFeedSourceSchema, maybeFeedSource);
   if (!parsedFeedSourceResult.success) {
     return prefixErrorResult(parsedFeedSourceResult, 'Invalid feed source');
   }
@@ -86,7 +86,7 @@ function parseYouTubeFeedSource(maybeFeedSource: unknown): Result<YouTubeFeedSou
   if (!parsedIdResult.success) return parsedIdResult;
 
   return makeSuccessResult({
-    type: FeedSourceType.YouTube,
+    type: FeedSourceType.YouTubeChannel,
     feedSourceId: parsedIdResult.value,
     url: parsedFeedSourceResult.value.url,
     title: parsedFeedSourceResult.value.title,
@@ -95,8 +95,8 @@ function parseYouTubeFeedSource(maybeFeedSource: unknown): Result<YouTubeFeedSou
   });
 }
 
-function parseDummyFeedSource(maybeFeedSource: unknown): Result<DummyFeedSource> {
-  const parsedFeedSourceResult = parseZodResult(DummyFeedSourceSchema, maybeFeedSource);
+function parseIntervalFeedSource(maybeFeedSource: unknown): Result<IntervalFeedSource> {
+  const parsedFeedSourceResult = parseZodResult(IntervalFeedSourceSchema, maybeFeedSource);
   if (!parsedFeedSourceResult.success) {
     return prefixErrorResult(parsedFeedSourceResult, 'Invalid feed source');
   }
@@ -105,7 +105,7 @@ function parseDummyFeedSource(maybeFeedSource: unknown): Result<DummyFeedSource>
   if (!parsedIdResult.success) return parsedIdResult;
 
   return makeSuccessResult({
-    type: FeedSourceType.Dummy,
+    type: FeedSourceType.Interval,
     feedSourceId: parsedIdResult.value,
     url: parsedFeedSourceResult.value.url,
     title: parsedFeedSourceResult.value.title,
@@ -121,19 +121,19 @@ function parseDummyFeedSource(maybeFeedSource: unknown): Result<DummyFeedSource>
  */
 export function toStorageFeedSource(feedSource: FeedSource): FeedSourceFromStorage {
   switch (feedSource.type) {
-    case FeedSourceType.Dummy:
-      return toStorageDummyFeedSource(feedSource);
+    case FeedSourceType.Interval:
+      return toStorageIntervalFeedSource(feedSource);
     case FeedSourceType.RSS:
-      return toRssStorageFeedSource(feedSource);
-    case FeedSourceType.YouTube:
-      return toYouTubeStorageFeedSource(feedSource);
+      return toStorageRssFeedSource(feedSource);
+    case FeedSourceType.YouTubeChannel:
+      return toStorageYouTubeChannelFeedSource(feedSource);
     default:
       // Fall back to the raw feed source value.
       return feedSource;
   }
 }
 
-function toRssStorageFeedSource(feedSource: RssFeedSource): RssFeedSourceFromStorage {
+function toStorageRssFeedSource(feedSource: RssFeedSource): RssFeedSourceFromStorage {
   return {
     type: FeedSourceType.RSS,
     feedSourceId: feedSource.feedSourceId,
@@ -144,9 +144,11 @@ function toRssStorageFeedSource(feedSource: RssFeedSource): RssFeedSourceFromSto
   };
 }
 
-function toYouTubeStorageFeedSource(feedSource: YouTubeFeedSource): YouTubeFeedSourceFromStorage {
+function toStorageYouTubeChannelFeedSource(
+  feedSource: YouTubeChannelFeedSource
+): YouTubeChannelFeedSourceFromStorage {
   return {
-    type: FeedSourceType.YouTube,
+    type: FeedSourceType.YouTubeChannel,
     feedSourceId: feedSource.feedSourceId,
     url: feedSource.url,
     title: feedSource.title,
@@ -155,9 +157,11 @@ function toYouTubeStorageFeedSource(feedSource: YouTubeFeedSource): YouTubeFeedS
   };
 }
 
-function toStorageDummyFeedSource(feedSource: DummyFeedSource): DummyFeedSourceFromStorage {
+function toStorageIntervalFeedSource(
+  feedSource: IntervalFeedSource
+): IntervalFeedSourceFromStorage {
   return {
-    type: FeedSourceType.Dummy,
+    type: FeedSourceType.Interval,
     feedSourceId: feedSource.feedSourceId,
     url: feedSource.url,
     title: feedSource.title,

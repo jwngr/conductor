@@ -67,7 +67,7 @@ const FeedAdder: React.FC = () => {
     [setError, setPending, setSuccess, userFeedSubscriptionsService]
   );
 
-  const handleSubscribeToDummyFeed = useCallback(async (): Promise<void> => {
+  const handleSubscribeToIntervalFeed = useCallback(async (): Promise<void> => {
     setPending();
     setError(new Error('TODO: Not implemented'));
   }, [setError, setPending]);
@@ -128,8 +128,8 @@ const FeedAdder: React.FC = () => {
           >
             Personal YouTube channel
           </Button>
-          <Button variant="default" onClick={async () => void handleSubscribeToDummyFeed()}>
-            Dummy feed
+          <Button variant="default" onClick={async () => void handleSubscribeToIntervalFeed()}>
+            Interval feed
           </Button>
         </FlexRow>
       </FlexColumn>

@@ -1,11 +1,11 @@
 import {makeUuid} from '@shared/lib/utils.shared';
 
 import type {
-  DummyFeedSource,
   FeedSource,
   FeedSourceId,
+  IntervalFeedSource,
   RssFeedSource,
-  YouTubeFeedSource,
+  YouTubeChannelFeedSource,
 } from '@shared/types/feedSources.types';
 import {FeedSourceType} from '@shared/types/feedSources.types';
 
@@ -28,10 +28,13 @@ export function makeRssFeedSource(
 }
 
 export function makeYouTubeFeedSource(
-  newItemArgs: Omit<YouTubeFeedSource, 'type' | 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
+  newItemArgs: Omit<
+    YouTubeChannelFeedSource,
+    'type' | 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'
+  >
 ): FeedSource {
   return {
-    type: FeedSourceType.YouTube,
+    type: FeedSourceType.YouTubeChannel,
     feedSourceId: makeFeedSourceId(),
     url: newItemArgs.url,
     title: newItemArgs.title,
@@ -41,11 +44,11 @@ export function makeYouTubeFeedSource(
   };
 }
 
-export function makeDummyFeedSource(
-  newItemArgs: Omit<DummyFeedSource, 'type' | 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
+export function makeIntervalFeedSource(
+  newItemArgs: Omit<IntervalFeedSource, 'type' | 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
 ): FeedSource {
   return {
-    type: FeedSourceType.Dummy,
+    type: FeedSourceType.Interval,
     feedSourceId: makeFeedSourceId(),
     url: newItemArgs.url,
     title: newItemArgs.title,
