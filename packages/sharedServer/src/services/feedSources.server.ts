@@ -61,6 +61,7 @@ export class ServerFeedSourcesService {
     // Create the new feed source in Firestore.
     const createResult = await this.feedSourcesCollectionService.setDoc(
       newFeedSource.feedSourceId,
+      // TODO: Fix this unsafe type cast.
       withFirestoreTimestamps(newFeedSource, serverTimestampSupplier) as WithFieldValue<FeedSource>
     );
     if (!createResult.success) {

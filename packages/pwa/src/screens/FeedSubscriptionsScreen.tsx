@@ -53,9 +53,18 @@ const FeedAdder: React.FC = () => {
   const handleSubscribeToYouTubeChannel = useCallback(
     async (youtubeChannelUrl: string): Promise<void> => {
       setPending();
-      setError(new Error('TODO: Not implemented'));
+
+      const url = new URL(youtubeChannelUrl);
+      const subscribeResult = await userFeedSubscriptionsService.subscribeToYouTubeChannel(url);
+      if (!subscribeResult.success) {
+        setError(prefixError(subscribeResult.error, 'Failed to subscribe to YouTube channel'));
+        return;
+      }
+
+      setSuccess(undefined);
+      setUrlInputValue('');
     },
-    [setError, setPending]
+    [setError, setPending, setSuccess, userFeedSubscriptionsService]
   );
 
   const handleSubscribeToDummyFeed = useCallback(async (): Promise<void> => {
@@ -113,7 +122,7 @@ const FeedAdder: React.FC = () => {
             variant="default"
             onClick={async () =>
               void handleSubscribeToYouTubeChannel(
-                'https://lorem-rss.herokuapp.com/feed?unit=second&interval=30'
+                'https://www.youtube.com/channel/UCndkjnoQawp7Tjy1uNj53yQ'
               )
             }
           >
