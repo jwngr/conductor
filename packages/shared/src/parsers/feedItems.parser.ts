@@ -239,8 +239,8 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
   const parsedIdResult = parseFeedItemId(parsedBaseFeedItemResult.value.feedItemId);
   if (!parsedIdResult.success) return parsedIdResult;
 
-  const parsedAccountIdReult = parseAccountId(parsedBaseFeedItemResult.value.accountId);
-  if (!parsedAccountIdReult.success) return parsedAccountIdReult;
+  const parsedAccountIdResult = parseAccountId(parsedBaseFeedItemResult.value.accountId);
+  if (!parsedAccountIdResult.success) return parsedAccountIdResult;
 
   const parsedSourceResult = parseFeedItemSource(parsedBaseFeedItemResult.value.feedItemSource);
   if (!parsedSourceResult.success) return parsedSourceResult;
@@ -260,7 +260,7 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
         type: parsedBaseFeedItemResult.value.type,
         storageBaseFeedItem: parsedBaseFeedItemResult.value,
         feedItemId: parsedIdResult.value,
-        accountId: parsedAccountIdReult.value,
+        accountId: parsedAccountIdResult.value,
         feedItemSource: parsedSourceResult.value,
         importState: parsedImportStateResult.value,
       });
@@ -268,7 +268,7 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
       return parseXkcdFeedItem({
         maybeFeedItem,
         feedItemId: parsedIdResult.value,
-        accountId: parsedAccountIdReult.value,
+        accountId: parsedAccountIdResult.value,
         feedItemSource: parsedSourceResult.value,
         importState: parsedImportStateResult.value,
       });
