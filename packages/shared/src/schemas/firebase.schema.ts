@@ -6,17 +6,12 @@ import {z} from 'zod';
  * - JavaScript Date objects
  * - Server timestamps (FieldValue with _methodName)
  */
-export const FirestoreTimestampSchema = z.any().refine(
-  (val) => {
-    // Allow Date objects
-    if (val instanceof Date) return true;
-    // Allow Firestore Timestamps (which have toDate())
-    if (val && typeof val === 'object' && 'toDate' in val) return true;
-    // Allow server timestamps
-    if (val && typeof val === 'object' && '_methodName' in val) return true;
-    return false;
-  },
-  {message: 'Invalid timestamp value'}
-);
+export const FirestoreTimestampSchema = z.union([
+  z.instanceof(Date),
+  // Allow Firestore Timestamps (which have toDate())
+  z.object({toDate: z.function()}).passthrough(),
+  // Allow server timestamps.
+  z.object({_methodName: z.string()}).passthrough(),
+]);
 
 export type FirestoreTimestamp = z.infer<typeof FirestoreTimestampSchema>;

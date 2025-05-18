@@ -45,7 +45,7 @@ export const IntervalUserFeedSubscriptionFromStorageSchema =
     intervalSeconds: z.number().positive().int().min(60),
   });
 
-export const UserFeedSubscriptionFromStorageSchema = z.union([
+export const UserFeedSubscriptionFromStorageSchema = z.discriminatedUnion('feedSourceType', [
   RssUserFeedSubscriptionFromStorageSchema,
   YouTubeChannelUserFeedSubscriptionFromStorageSchema,
   IntervalUserFeedSubscriptionFromStorageSchema,
