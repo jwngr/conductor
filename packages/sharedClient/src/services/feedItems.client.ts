@@ -335,6 +335,7 @@ export class ClientFeedItemsService {
       return makeErrorResult(new Error(`Invalid URL provided for feed item: "${url}"`));
     }
 
+    // Create a new feed item object locally.
     const feedItemResult = SharedFeedItemHelpers.makeFeedItem(miniFeedSubscription, {
       url: trimmedUrl,
       accountId: this.accountId,
@@ -344,14 +345,14 @@ export class ClientFeedItemsService {
     if (!feedItemResult.success) return feedItemResult;
     const feedItem = feedItemResult.value;
 
+    // Save the feed item to Firestore.
     const addFeedItemResult = await this.feedItemsCollectionService.setDoc(
       feedItem.feedItemId,
       feedItem
     );
-    if (!addFeedItemResult.success) {
-      return makeErrorResult(addFeedItemResult.error);
-    }
+    if (!addFeedItemResult.success) return makeErrorResult(addFeedItemResult.error);
 
+    // Return the feed item.
     return makeSuccessResult(feedItem);
   }
 

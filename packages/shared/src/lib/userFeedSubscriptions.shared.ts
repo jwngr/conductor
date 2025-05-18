@@ -1,5 +1,5 @@
 import {IMMEDIATE_DELIVERY_SCHEDULE} from '@shared/lib/deliverySchedules.shared';
-import {assertNever, makeUuid} from '@shared/lib/utils.shared';
+import {makeUuid} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {
@@ -7,22 +7,14 @@ import type {
   RssMiniFeedSource,
   YouTubeChannelMiniFeedSource,
 } from '@shared/types/feedSources.types';
-import {FeedSourceType} from '@shared/types/feedSources.types';
 import type {
   IntervalMiniUserFeedSubscription,
   IntervalUserFeedSubscription,
-  MiniUserFeedSubscription,
   RssMiniUserFeedSubscription,
   RssUserFeedSubscription,
-  UserFeedSubscription,
   UserFeedSubscriptionId,
   YouTubeChannelMiniUserFeedSubscription,
   YouTubeChannelUserFeedSubscription,
-} from '@shared/types/userFeedSubscriptions.types';
-import {
-  EXTENSION_MINI_USER_FEED_SUBSCRIPTION,
-  POCKET_EXPORT_MINI_USER_FEED_SUBSCRIPTION,
-  PWA_MINI_USER_FEED_SUBSCRIPTION,
 } from '@shared/types/userFeedSubscriptions.types';
 
 /**
