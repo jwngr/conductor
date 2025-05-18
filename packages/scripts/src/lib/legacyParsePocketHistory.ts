@@ -11,12 +11,12 @@ import {
   FEED_ITEMS_STORAGE_COLLECTION,
 } from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
+import {POCKET_EXPORT_FEED_SOURCE} from '@shared/lib/feedSources.shared';
 import {pluralizeWithCount} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 
-import {POCKET_EXPORT_FEED_SOURCE} from '@shared/types/feedItems.types';
 import type {PocketImportItem} from '@shared/types/pocket.types';
 
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';

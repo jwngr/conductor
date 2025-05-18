@@ -45,29 +45,17 @@ export interface IntervalFeedSource extends BaseFeedSource {
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
 }
 
-interface PwaFeedSource extends BaseFeedSource {
+export interface PwaFeedSource extends BaseFeedSource {
   readonly feedSourceType: FeedSourceType.PWA;
 }
 
-export const PWA_FEED_SOURCE: PwaFeedSource = {
-  feedSourceType: FeedSourceType.PWA,
-};
-
-interface ExtensionFeedSource extends BaseFeedSource {
+export interface ExtensionFeedSource extends BaseFeedSource {
   readonly feedSourceType: FeedSourceType.Extension;
 }
 
-export const EXTENSION_FEED_SOURCE: ExtensionFeedSource = {
-  feedSourceType: FeedSourceType.Extension,
-};
-
-interface PocketExportFeedSource extends BaseFeedSource {
+export interface PocketExportFeedSource extends BaseFeedSource {
   readonly feedSourceType: FeedSourceType.PocketExport;
 }
-
-export const POCKET_EXPORT_FEED_SOURCE: PocketExportFeedSource = {
-  feedSourceType: FeedSourceType.PocketExport,
-};
 
 export type FeedSource =
   | RssFeedSource

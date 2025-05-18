@@ -1,6 +1,9 @@
 import {FeedSourceType} from '@shared/types/feedSources.types';
 import type {
+  ExtensionFeedSource,
   IntervalFeedSource,
+  PocketExportFeedSource,
+  PwaFeedSource,
   RssFeedSource,
   YouTubeChannelFeedSource,
 } from '@shared/types/feedSources.types';
@@ -9,6 +12,18 @@ import type {
   RssUserFeedSubscription,
   YouTubeChannelUserFeedSubscription,
 } from '@shared/types/userFeedSubscriptions.types';
+
+export const PWA_FEED_SOURCE: PwaFeedSource = {
+  feedSourceType: FeedSourceType.PWA,
+};
+
+export const EXTENSION_FEED_SOURCE: ExtensionFeedSource = {
+  feedSourceType: FeedSourceType.Extension,
+};
+
+export const POCKET_EXPORT_FEED_SOURCE: PocketExportFeedSource = {
+  feedSourceType: FeedSourceType.PocketExport,
+};
 
 export function makeRssFeedSource(args: {
   readonly userFeedSubscription: RssUserFeedSubscription;

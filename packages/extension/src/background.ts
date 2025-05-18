@@ -7,11 +7,10 @@ import {
   FEED_ITEMS_STORAGE_COLLECTION,
 } from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
+import {EXTENSION_FEED_SOURCE} from '@shared/lib/feedSources.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
-
-import {EXTENSION_FEED_SOURCE} from '@shared/types/feedItems.types';
 
 import {ClientFeedItemsService} from '@sharedClient/services/feedItems.client';
 import {firebaseService} from '@sharedClient/services/firebase.client';

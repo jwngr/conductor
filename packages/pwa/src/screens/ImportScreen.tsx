@@ -2,9 +2,9 @@ import type React from 'react';
 import {useState} from 'react';
 
 import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
+import {POCKET_EXPORT_FEED_SOURCE} from '@shared/lib/feedSources.shared';
 import {pluralizeWithCount} from '@shared/lib/utils.shared';
 
-import {POCKET_EXPORT_FEED_SOURCE} from '@shared/types/feedItems.types';
 import {
   ExternalMigrationItemStatus,
   NOT_STARTED_EXTERNAL_MIGRATION_ITEM_STATE,

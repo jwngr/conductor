@@ -1,4 +1,9 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
+import {
+  EXTENSION_FEED_SOURCE,
+  POCKET_EXPORT_FEED_SOURCE,
+  PWA_FEED_SOURCE,
+} from '@shared/lib/feedSources.shared';
 import {parseZodResult} from '@shared/lib/parser.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
@@ -7,12 +12,9 @@ import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions
 import {parseYouTubeChannelId} from '@shared/parsers/youtube.parser';
 
 import {
-  EXTENSION_FEED_SOURCE,
   FeedSourceSchema,
   FeedSourceType,
   IntervalFeedSourceSchema,
-  POCKET_EXPORT_FEED_SOURCE,
-  PWA_FEED_SOURCE,
   RssFeedSourceSchema,
   YouTubeChannelFeedSourceSchema,
 } from '@shared/types/feedSources.types';

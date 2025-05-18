@@ -1,8 +1,8 @@
 import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
+import {EXTENSION_FEED_SOURCE} from '@shared/lib/feedSources.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
-import {EXTENSION_FEED_SOURCE} from '@shared/types/feedItems.types';
 import type {FeedItem} from '@shared/types/feedItems.types';
 
 import {useFeedItemsService} from '@sharedClient/services/feedItems.client';

@@ -4,6 +4,7 @@ import {makeUuid} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import {AccountIdSchema} from '@shared/types/accounts.types';
+import {FeedSourceSchema} from '@shared/types/feedSources.types';
 import type {FeedSource} from '@shared/types/feedSources.types';
 import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {IconName} from '@shared/types/icons.types';
