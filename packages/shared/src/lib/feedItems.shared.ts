@@ -16,7 +16,6 @@ import {
 import type {FeedItem, FeedItemAction} from '@shared/types/feedItems.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/results.types';
-import {RssFeedItem} from '@shared/types/rss.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
 import type {TagId} from '@shared/types/tags.types';
@@ -77,7 +76,11 @@ export class SharedFeedItemHelpers {
           accountId,
           feedItemId,
           feedSource,
-          miniFeedSubscription: null,
+          miniFeedSubscription: {
+            userFeedSubscriptionId: 'TODO',
+            feedSource: feedSource,
+            isActive: true,
+          },
           importState,
           title,
           description,

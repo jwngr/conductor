@@ -29,8 +29,8 @@ import {validateUrlParam, verifyAuth} from '@src/lib/middleware';
 import {handleSuperfeedrWebhookHelper} from '@src/lib/superfeedrWebhook';
 
 import {handleFeedItemImport} from '@src/reqHandlers/handleFeedItemImport';
-import {handleSubscribeAccountToRSSFeed} from '@src/reqHandlers/handleSubscribeAccountToRSSFeed';
-import type {SubscribeAccountToRSSFeedOnCallResponse} from '@src/reqHandlers/handleSubscribeAccountToRSSFeed';
+import {handleSubscribeAccountToRssFeed} from '@src/reqHandlers/handleSubscribeAccountToRssFeed';
+import type {SubscribeAccountToRSSFeedOnCallResponse} from '@src/reqHandlers/handleSubscribeAccountToRssFeed';
 
 // TODO: Make region an environment variable.
 const FIREBASE_FUNCTIONS_REGION = 'us-central1';
@@ -114,7 +114,7 @@ export const subscribeAccountToRssFeedOnCall = onCall(
     const accountId = verifyAuth(request);
     const parsedUrl = validateUrlParam(request);
 
-    return await handleSubscribeAccountToRSSFeed({
+    return await handleSubscribeAccountToRssFeed({
       accountId,
       parsedUrl,
       rssFeedService,

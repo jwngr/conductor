@@ -1,14 +1,14 @@
-import type {WithFieldValue} from 'firebase-admin/firestore';
-
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {makeRssFeedSource} from '@shared/lib/feedSources.shared';
 import {withFirestoreTimestamps} from '@shared/lib/parser.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
-import type {
-  FeedSourceFromStorage,
-  FeedSourceId,
-  PersistedFeedSource,
+import {
+  FeedSourceType,
+  type FeedSourceFromStorage,
+  type FeedSourceId,
+  type PersistedFeedSource,
+  type RssFeedSource,
 } from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
@@ -39,40 +39,37 @@ export class ServerFeedSourcesService {
   /**
    * Fetches an existing feed source document from Firestore by its URL.
    */
-  public async fetchByUrl(feedUrl: string): AsyncResult<PersistedFeedSource | null> {
-    const query = this.feedSourcesCollectionService.getCollectionRef().where('url', '==', feedUrl);
-    const maybeFeedSource = await this.feedSourcesCollectionService.fetchFirstQueryDoc(query);
-    return prefixResultIfError(maybeFeedSource, 'Error fetching feed source by URL in Firestore');
+  public async fetchRSSFeedSourceByUrl(feedUrl: string): AsyncResult<RssFeedSource | null> {
+    const query = this.feedSourcesCollectionService
+      .getCollectionRef()
+      .where('type', '==', FeedSourceType.RSS)
+      .where('url', '==', feedUrl);
+    const maybeFeedSourceResult = await this.feedSourcesCollectionService.fetchFirstQueryDoc(query);
+    if (!maybeFeedSourceResult.success) return maybeFeedSourceResult;
+    const maybeFeedSource = maybeFeedSourceResult.value;
+    if (maybeFeedSource === null) return makeSuccessResult(null);
+    return makeSuccessResult(maybeFeedSource as RssFeedSource);
   }
 
   /**
    * Adds a new feed document to Firestore. To check if a feed source with the same URL already
-   * exists, use {@link fetchByUrlOrCreate}.
+   * exists, use {@link fetchOrCreateRssFeedSource}.
    */
   public async createRssFeedSource(
-    feedDetails: Omit<
-      PersistedFeedSource,
-      'type' | 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'
-    >
-  ): AsyncResult<PersistedFeedSource> {
-    // Create the new feed source in memory.
-    const newFeedSource = makeRssFeedSource({
-      url: feedDetails.url,
-      title: feedDetails.title,
-    });
+    args: Omit<RssFeedSource, 'type' | 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
+  ): AsyncResult<RssFeedSource> {
+    const {url, title} = args;
 
-    // Create the new feed source in Firestore.
-    const createResult = await this.feedSourcesCollectionService.setDoc(
-      newFeedSource.feedSourceId,
-      // TODO: Fix this unsafe type cast.
-      withFirestoreTimestamps(
-        newFeedSource,
-        serverTimestampSupplier
-      ) as WithFieldValue<PersistedFeedSource>
-    );
-    if (!createResult.success) {
-      return prefixErrorResult(createResult, 'Error adding feed source to Firestore');
-    }
+    // Create the new feed source in memory.
+    const newFeedSource = makeRssFeedSource({url, title});
+
+    // Save the new feed source to Firestore.
+    const docId = newFeedSource.feedSourceId;
+    const docData = withFirestoreTimestamps(newFeedSource, serverTimestampSupplier);
+    const saveResult = await this.feedSourcesCollectionService.setDoc(docId, docData);
+    if (!saveResult.success) return prefixErrorResult(saveResult, 'Failed persisting feed source');
+
+    // Return the new feed source.
     return makeSuccessResult(newFeedSource);
   }
 
@@ -80,35 +77,21 @@ export class ServerFeedSourcesService {
    * Gets an existing feed source by URL or creates a new one if it doesn't exist. If creating a
    * new feed source and no title is provided, the URL will be used as the title.
    */
-  public async fetchByUrlOrCreate(
+  public async fetchOrCreateRssFeedSource(
     url: string,
-    feedSourceDetails: Partial<Pick<PersistedFeedSource, 'title'>>
-  ): AsyncResult<PersistedFeedSource> {
-    // First try to fetch the existing feed source.
-    const existingFeedSourceResult = await this.fetchByUrl(url);
+    feedSourceDetails: Partial<Pick<RssFeedSource, 'title'>>
+  ): AsyncResult<RssFeedSource> {
+    // Try to fetch the existing feed source.
+    const existingFeedSourceResult = await this.fetchRSSFeedSourceByUrl(url);
     if (!existingFeedSourceResult.success) return existingFeedSourceResult;
 
-    // If we found an existing feed source, return it.
-    if (existingFeedSourceResult.value !== null) {
-      return makeSuccessResult(existingFeedSourceResult.value);
-    }
+    // If an existing feed source is found, return it.
+    const existingFeedSource = existingFeedSourceResult.value;
+    if (existingFeedSource !== null) return makeSuccessResult(existingFeedSource);
 
-    // Otherwise create a new feed source.
-    return await this.createRssFeedSource({
-      url,
-      title: feedSourceDetails.title ?? url,
-    });
-  }
-
-  /**
-   * Updates a feed source document in Firestore.
-   */
-  public async update(
-    feedSourceId: FeedSourceId,
-    update: Partial<WithFieldValue<Pick<PersistedFeedSource, 'title'>>>
-  ): AsyncResult<void> {
-    const updateResult = await this.feedSourcesCollectionService.updateDoc(feedSourceId, update);
-    return prefixResultIfError(updateResult, 'Error updating feed source in Firestore');
+    // Otherwise, create a new feed source.
+    const title = feedSourceDetails.title ?? url;
+    return await this.createRssFeedSource({url, title});
   }
 
   /**

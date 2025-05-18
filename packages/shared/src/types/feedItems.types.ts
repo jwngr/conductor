@@ -10,11 +10,7 @@ import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {IconName} from '@shared/types/icons.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import type {TagId} from '@shared/types/tags.types';
-import {
-  MiniUserFeedSubscription,
-  UserFeedSubscriptionId,
-  UserFeedSubscriptionIdSchema,
-} from '@shared/types/userFeedSubscriptions.types';
+import type {MiniUserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 
 /**

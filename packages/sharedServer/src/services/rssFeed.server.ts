@@ -31,7 +31,7 @@ export class ServerRssFeedService {
     this.userFeedSubscriptionsService = args.userFeedSubscriptionsService;
   }
 
-  async subscribeAccountToUrl(args: {
+  async subscribeAccountToRssFeedByUrl(args: {
     readonly url: string;
     readonly accountId: AccountId;
   }): AsyncResult<UserFeedSubscription> {
@@ -48,10 +48,11 @@ export class ServerRssFeedService {
     // Check if the feed source already exists. A single feed source can have multiple accounts
     // subscribed to it, but we only want to subscribe once to it in the feed provider. Feed
     // sources are deduped based on exact URL match, although we could be smarter in the future.
-    const fetchFeedSourceResult = await this.feedSourcesService.fetchByUrlOrCreate(url, {
+    const fetchFeedSourceResult = await this.feedSourcesService.fetchOrCreateRssFeedSource(
+      url,
       // TODO: Consider just storing `null` for the title if it's not available.
-      title: parsedRssFeed.title ?? DEFAULT_FEED_TITLE,
-    });
+      {title: parsedRssFeed.title ?? DEFAULT_FEED_TITLE}
+    );
     if (!fetchFeedSourceResult.success) {
       return prefixErrorResult(
         fetchFeedSourceResult,

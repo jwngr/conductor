@@ -15,7 +15,7 @@ export interface SubscribeAccountToRSSFeedOnCallResponse {
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
 }
 
-export async function handleSubscribeAccountToRSSFeed(args: {
+export async function handleSubscribeAccountToRssFeed(args: {
   readonly accountId: AccountId;
   readonly parsedUrl: URL;
   readonly rssFeedService: ServerRssFeedService;
@@ -33,7 +33,10 @@ export async function handleSubscribeAccountToRSSFeed(args: {
 
   innerLog('Subscribing account to RSS feed source...');
 
-  const subscribeToUrlResult = await rssFeedService.subscribeAccountToUrl({url, accountId});
+  const subscribeToUrlResult = await rssFeedService.subscribeAccountToRssFeedByUrl({
+    url,
+    accountId,
+  });
   if (!subscribeToUrlResult.success) {
     innerLogError(subscribeToUrlResult.error, 'Error subscribing account to RSS feed source');
     // eslint-disable-next-line no-restricted-syntax

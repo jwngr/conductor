@@ -15,7 +15,7 @@ export interface SubscribeAccountToRSSFeedOnCallResponse {
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
 }
 
-export async function handleSubscribeAccountToRSSFeed(args: {
+export async function handleSubscribeAccountToRssFeed(args: {
   readonly accountId: AccountId;
   readonly parsedUrl: URL;
   readonly rssFeedService: ServerRssFeedService;

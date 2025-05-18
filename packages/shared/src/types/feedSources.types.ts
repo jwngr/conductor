@@ -101,7 +101,7 @@ export type FeedSource =
  * feed sources, a persisted feed source has a unique ID and helpers for parsing and storage.
  */
 export type PersistedFeedSource = Exclude<
-  PersistedFeedSource,
+  FeedSource,
   // These feed sources are constants which do not need to be persisted to Firestore beyond an ID.
   PWAFeedSource | ExtensionFeedSource | PocketExportFeedSource
 >;

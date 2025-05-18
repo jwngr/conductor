@@ -60,7 +60,7 @@ export async function handleSuperfeedrWebhookHelper(args: {
 
   // Fetch the feed source from the URL.
   const feedUrl = body.status.feed;
-  const fetchFeedSourceResult = await feedSourcesService.fetchByUrl(feedUrl);
+  const fetchFeedSourceResult = await feedSourcesService.fetchRSSFeedSourceByUrl(feedUrl);
   if (!fetchFeedSourceResult.success) {
     respondWithError(fetchFeedSourceResult.error, 'Error fetching webhook feed source by URL', {
       feedUrl,
