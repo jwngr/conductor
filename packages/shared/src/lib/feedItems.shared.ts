@@ -14,9 +14,9 @@ import {
   TriageStatus,
 } from '@shared/types/feedItems.types';
 import type {FeedItem, FeedItemAction} from '@shared/types/feedItems.types';
-import {FeedSourceType} from '@shared/types/feedSources.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/results.types';
+import {RssFeedItem} from '@shared/types/rss.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
 import type {TagId} from '@shared/types/tags.types';
@@ -77,8 +77,7 @@ export class SharedFeedItemHelpers {
           accountId,
           feedItemId,
           feedSource,
-          userFeedSubscriptionId:
-            feedSource.type === FeedSourceType.RSS ? feedSource.feedSourceId : null,
+          miniFeedSubscription: null,
           importState,
           title,
           description,
@@ -98,6 +97,7 @@ export class SharedFeedItemHelpers {
           accountId,
           feedItemId,
           feedSource,
+          miniFeedSubscription: null,
           importState,
           title,
           description,

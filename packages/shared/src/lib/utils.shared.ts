@@ -217,3 +217,17 @@ export function noopFalse(): false {
 export function isValidPort(port: number): boolean {
   return port >= 0 && port <= 65535;
 }
+
+/**
+ * Returns `true` if the provided value is an integer.
+ */
+export function isInteger(value: number): boolean {
+  return Number.isInteger(value);
+}
+
+/**
+ * Returns `true` if the provided value is a positive integer.
+ */
+export function isPositiveInteger(value: number): boolean {
+  return isInteger(value) && value > 0;
+}

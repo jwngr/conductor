@@ -9,6 +9,7 @@ import {makeIntervalFeedSource, makeYouTubeFeedSource} from '@shared/lib/feedSou
 import {withFirestoreTimestamps} from '@shared/lib/parser.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {makeUserFeedSubscription} from '@shared/lib/userFeedSubscriptions.shared';
+import {isPositiveInteger} from '@shared/lib/utils.shared';
 import {getYouTubeChannelId} from '@shared/lib/youtube.shared';
 
 import {
@@ -19,7 +20,8 @@ import {
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {AsyncState} from '@shared/types/asyncState.types';
-import type {FeedSource as PersistedFeedSource} from '@shared/types/feedSources.types';
+import {FeedSourceType} from '@shared/types/feedSources.types';
+import type {PersistedFeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {
   UserFeedSubscription,
@@ -75,7 +77,7 @@ export class ClientUserFeedSubscriptionsService {
   public async subscribeToRssFeed(url: URL): AsyncResult<UserFeedSubscriptionId> {
     const callSubscribeAccountToFeed: CallSubscribeUserToFeedFn = httpsCallable(
       this.functions,
-      'subscribeAccountToFeedOnCall'
+      'subscribeAccountToRssFeedOnCall'
     );
 
     // Hit Firebase Functions endpoint to subscribe account to feed source.
@@ -99,36 +101,28 @@ export class ClientUserFeedSubscriptionsService {
   public async subscribeToYouTubeChannel(
     maybeYouTubeUrl: string
   ): AsyncResult<UserFeedSubscription> {
-    const channelIdResult = getYouTubeChannelId(maybeYouTubeUrl);
-
+    // Parse the channel ID from the URL.
     // TODO: Also support channel handles.
-    // const channelHandleResult = getYouTubeChannelHandle(maybeYouTubeUrl);
-
-    if (!channelIdResult.success) {
-      return prefixErrorResult(channelIdResult, 'Failed to parse YouTube channel URL');
-    }
-
+    const channelIdResult = getYouTubeChannelId(maybeYouTubeUrl);
+    if (!channelIdResult.success) return channelIdResult;
     const channelId = channelIdResult.value;
-    if (!channelId) {
-      return makeErrorResult(new Error('URL is not a valid YouTube channel URL'));
-    }
+    if (channelId === null) return makeErrorResult(new Error('Channel ID not found in URL'));
 
-    // Check if a feed subscription already exists for this feed source.
-    const existingSubscriptionsResult =
-      await this.userFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
-        where('accountId', '==', this.accountId),
-        // TODO: Does this work?
-        where('feedSource.channelId', '==', channelId),
-      ]);
-    if (!existingSubscriptionsResult.success) return existingSubscriptionsResult;
+    // Check if the user is already subscribed to this YouTube channel.
+    const existingSubResult = await this.userFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
+      where('accountId', '==', this.accountId),
+      // TODO: Confirm this works. May need an index.
+      where('feedSource.type', '==', FeedSourceType.YouTubeChannel),
+      where('feedSource.channelId', '==', channelId),
+    ]);
+    if (!existingSubResult.success) return existingSubResult;
 
-    const existingSubscription = existingSubscriptionsResult.value;
-    if (existingSubscription) {
-      return makeErrorResult(new Error('Feed subscription already exists'));
-    }
+    // TODO: Handle this error more gracefully. Do not consider it full failure.
+    const existingSubscription = existingSubResult.value;
+    if (existingSubscription) return makeErrorResult(new Error('Feed subscription already exists'));
 
+    // Create a new feed subscription from the feed source.
     const feedSource = makeYouTubeFeedSource({channelId});
-
     return await this.createSubForPersistedFeedSource({feedSource});
   }
 
@@ -137,14 +131,11 @@ export class ClientUserFeedSubscriptionsService {
   }): AsyncResult<UserFeedSubscription> {
     const {intervalSeconds} = args;
 
-    if (intervalSeconds <= 0) {
-      return makeErrorResult(new Error('Interval must be greater than 0'));
-    } else if (!Number.isFinite(intervalSeconds)) {
-      return makeErrorResult(new Error('Interval must be an integer'));
+    if (!isPositiveInteger(intervalSeconds)) {
+      return makeErrorResult(new Error('Interval must be a positive integer'));
     }
 
     const feedSource = makeIntervalFeedSource({intervalSeconds});
-
     return await this.createSubForPersistedFeedSource({feedSource});
   }
 

@@ -88,7 +88,7 @@ export interface IntervalFeedSource extends BasePersistedFeedSource {
  * Use the {@link UserFeedSubscription} object to manage user subscriptions to a {@link PersistedFeedSource}.
  * A feed source is created the first time an account subscribes to a unique feed URL.
  */
-export type PersistedFeedSource =
+export type FeedSource =
   | PWAFeedSource
   | ExtensionFeedSource
   | PocketExportFeedSource
