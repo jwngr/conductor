@@ -30,7 +30,7 @@ import {validateUrlParam, verifyAuth} from '@src/lib/middleware';
 import {handleSuperfeedrWebhookHelper} from '@src/lib/superfeedrWebhook';
 
 import {handleFeedItemImport} from '@src/reqHandlers/handleFeedItemImport';
-import {handleSubscribeAccountToRssFeed} from '@src/reqHandlers/handleSubscribeAccountToRSSFeed';
+import {handleSubscribeAccountToRssFeed} from '@src/reqHandlers/handleSubscribeAccountToRssFeed';
 
 // TODO: Make region an environment variable.
 const FIREBASE_FUNCTIONS_REGION = 'us-central1';

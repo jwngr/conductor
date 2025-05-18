@@ -103,7 +103,7 @@ function filterFeedItemsByDeliverySchedules(args: {
   const {feedItems, userFeedSubscriptions} = args;
 
   return feedItems.filter((feedItem) => {
-    switch (feedItem.miniFeedSubscription.feedSource.type) {
+    switch (feedItem.miniFeedSubscription.type) {
       case FeedSourceType.PWA:
       case FeedSourceType.Extension:
       case FeedSourceType.PocketExport:
@@ -124,7 +124,7 @@ function filterFeedItemsByDeliverySchedules(args: {
         });
       }
       default:
-        assertNever(feedItem.miniFeedSubscription.feedSource);
+        assertNever(feedItem.miniFeedSubscription);
     }
   });
 }

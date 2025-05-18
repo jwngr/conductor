@@ -3,7 +3,7 @@ import {makeIntervalFeedSource, makeYouTubeChannelFeedSource} from '@shared/lib/
 import {makeUuid} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import type {RssMiniFeedSource} from '@shared/types/feedSources.types';
+import {FeedSourceType, type RssMiniFeedSource} from '@shared/types/feedSources.types';
 import type {
   IntervalMiniUserFeedSubscription,
   IntervalUserFeedSubscription,
@@ -81,6 +81,7 @@ export function makeRssMiniUserFeedSubscription(args: {
 }): RssMiniUserFeedSubscription {
   const {userFeedSubscription} = args;
   return {
+    type: FeedSourceType.RSS,
     miniFeedSource: userFeedSubscription.miniFeedSource,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     isActive: true,
@@ -92,6 +93,7 @@ export function makeYouTubeChannelMiniUserFeedSubscription(args: {
 }): YouTubeChannelMiniUserFeedSubscription {
   const {userFeedSubscription} = args;
   return {
+    type: FeedSourceType.YouTubeChannel,
     miniFeedSource: userFeedSubscription.miniFeedSource,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     isActive: true,
@@ -103,6 +105,7 @@ export function makeIntervalMiniUserFeedSubscription(args: {
 }): IntervalMiniUserFeedSubscription {
   const {userFeedSubscription} = args;
   return {
+    type: FeedSourceType.Interval,
     miniFeedSource: userFeedSubscription.miniFeedSource,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     isActive: true,

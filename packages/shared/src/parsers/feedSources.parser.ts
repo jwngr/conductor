@@ -292,7 +292,6 @@ export function parseIntervalMiniFeedSource(
   return makeSuccessResult({
     type: FeedSourceType.Interval,
     feedSourceId: parsedFeedSourceIdResult.value,
-    intervalSeconds: parsedMiniFeedSourceResult.value.intervalSeconds,
   });
 }
 

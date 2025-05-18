@@ -38,7 +38,7 @@ service cloud.firestore {
       request.resource.data.feedItemId is string &&
       request.resource.data.feedItemId == feedItemId &&
       request.resource.data.type in ['ARTICLE', 'VIDEO', 'WEBSITE', 'TWEET', 'XKCD', 'YOUTUBE'] &&
-      request.resource.data.miniFeedSubscription.data.keys().hasAll(['feedSource']) &&
+      request.resource.data.miniFeedSubscription.data.keys().hasAll(['type', 'feedSource']) &&
       request.resource.data.miniFeedSubscription.feedSource.data.keys().hasAll(['type']) &&
       request.resource.data.url is string &&
       request.resource.data.title is string &&

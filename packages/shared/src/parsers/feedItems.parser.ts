@@ -6,7 +6,7 @@ import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
-import {parseFeedSource, parseMiniFeedSource} from '@shared/parsers/feedSources.parser';
+import {parseMiniUserFeedSubscription} from '@shared/parsers/userFeedSubscriptions.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {
@@ -155,18 +155,18 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
   const parsedAccountIdResult = parseAccountId(parsedBaseFeedItemResult.value.accountId);
   if (!parsedAccountIdResult.success) return parsedAccountIdResult;
 
-  const parsedSourceResult = parseFeedSource(
-    parsedBaseFeedItemResult.value.miniFeedSubscription.miniFeedSource
-  );
-  if (!parsedSourceResult.success) return parsedSourceResult;
+  // const parsedSourceResult = parseFeedSource(
+  //   parsedBaseFeedItemResult.value.miniFeedSubscription.miniFeedSource
+  // );
+  // if (!parsedSourceResult.success) return parsedSourceResult;
 
   const parsedImportStateResult = parseFeedItemImportState(
     parsedBaseFeedItemResult.value.importState
   );
   if (!parsedImportStateResult.success) return parsedImportStateResult;
 
-  const parsedMiniFeedSourceResult = parseMiniFeedSource(parsedSourceResult.value);
-  if (!parsedMiniFeedSourceResult.success) return parsedMiniFeedSourceResult;
+  // const parsedMiniFeedSourceResult = parseMiniFeedSource(parsedSourceResult.value);
+  // if (!parsedMiniFeedSourceResult.success) return parsedMiniFeedSourceResult;
 
   switch (parsedBaseFeedItemResult.value.type) {
     case FeedItemType.YouTube:
@@ -204,13 +204,18 @@ export function parseBaseFeedItem(args: {
 }): Result<FeedItem> {
   const {type, storageBaseFeedItem, feedItemId, accountId, importState} = args;
 
+  const parsedMiniFeedSubscriptionResult = parseMiniUserFeedSubscription(
+    storageBaseFeedItem.miniFeedSubscription
+  );
+  if (!parsedMiniFeedSubscriptionResult.success) return parsedMiniFeedSubscriptionResult;
+
   return makeSuccessResult(
     omitUndefined({
       type,
       accountId,
       importState,
       feedItemId,
-      miniFeedSubscription: storageBaseFeedItem.miniFeedSubscription,
+      miniFeedSubscription: parsedMiniFeedSubscriptionResult.value,
       url: storageBaseFeedItem.url,
       title: storageBaseFeedItem.title,
       description: storageBaseFeedItem.description,
@@ -234,21 +239,21 @@ export function parseXkcdFeedItem(args: {
 
   const parsedXkcdFeedItemResult = parseZodResult(XkcdFeedItemFromStorageSchema, maybeFeedItem);
   if (!parsedXkcdFeedItemResult.success) {
-    return prefixErrorResult(parsedXkcdFeedItemResult, 'Invalid feed item');
+    return prefixErrorResult(parsedXkcdFeedItemResult, 'Invalid XKCD feed item');
   }
   const storageXkcdFeedItem = parsedXkcdFeedItemResult.value;
 
-  const parsedMiniFeedSourceResult = parseMiniFeedSource(
-    parsedXkcdFeedItemResult.value.miniFeedSubscription.miniFeedSource
+  const parsedMiniFeedSubscriptionResult = parseMiniUserFeedSubscription(
+    storageXkcdFeedItem.miniFeedSubscription
   );
-  if (!parsedMiniFeedSourceResult.success) return parsedMiniFeedSourceResult;
+  if (!parsedMiniFeedSubscriptionResult.success) return parsedMiniFeedSubscriptionResult;
 
   return makeSuccessResult(
     omitUndefined({
       type: FeedItemType.Xkcd,
       xkcd: parsedXkcdFeedItemResult.value.xkcd,
       accountId,
-      miniFeedSubscription: parsedMiniFeedSourceResult.value,
+      miniFeedSubscription: parsedMiniFeedSubscriptionResult.value,
       importState,
       feedItemId,
       url: storageXkcdFeedItem.url,
@@ -318,7 +323,7 @@ export function toStorageXkcdFeedItem(feedItem: XkcdFeedItem): XkcdFeedItemFromS
     feedItemId: feedItem.feedItemId,
     accountId: feedItem.accountId,
     type: feedItem.type,
-    feedItemSource: feedItem.feedItemSource,
+    miniFeedSubscription: feedItem.miniFeedSubscription,
     importState: feedItem.importState,
     url: feedItem.url,
     title: feedItem.title,

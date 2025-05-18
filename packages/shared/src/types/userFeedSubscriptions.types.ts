@@ -4,18 +4,10 @@ import type {AccountId} from '@shared/types/accounts.types';
 import {AccountIdSchema} from '@shared/types/accounts.types';
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
 import {DeliveryScheduleFromStorageSchema} from '@shared/types/deliverySchedules.types';
-import type {
-  ExtensionFeedSource,
-  IntervalMiniFeedSource,
-  MiniFeedSource,
-  PocketExportFeedSource,
-  PWAFeedSource,
-  RssMiniFeedSource,
-  YouTubeChannelMiniFeedSource,
-} from '@shared/types/feedSources.types';
 import {
   EXTENSION_FEED_SOURCE,
   ExtensionMiniFeedSourceSchema,
+  FeedSourceType,
   IntervalMiniFeedSourceSchema,
   MiniFeedSourceFromStorageSchema,
   POCKET_EXPORT_FEED_SOURCE,
@@ -24,6 +16,15 @@ import {
   PWAMiniFeedSourceSchema,
   RssMiniFeedSourceSchema,
   YouTubeChannelMiniFeedSourceSchema,
+} from '@shared/types/feedSources.types';
+import type {
+  ExtensionFeedSource,
+  IntervalMiniFeedSource,
+  MiniFeedSource,
+  PocketExportFeedSource,
+  PWAFeedSource,
+  RssMiniFeedSource,
+  YouTubeChannelMiniFeedSource,
 } from '@shared/types/feedSources.types';
 import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
@@ -127,26 +128,32 @@ export type UserFeedSubscriptionFromStorage = z.infer<typeof UserFeedSubscriptio
 //  MiniUserFeedSubscription  //
 ////////////////////////////////
 export interface PWAMiniUserFeedSubscription {
+  readonly type: FeedSourceType.PWA;
   readonly miniFeedSource: PWAFeedSource;
 }
 
 export const PWA_MINI_USER_FEED_SUBSCRIPTION: PWAMiniUserFeedSubscription = {
+  type: FeedSourceType.PWA,
   miniFeedSource: PWA_FEED_SOURCE,
 };
 
 export interface ExtensionMiniUserFeedSubscription {
+  readonly type: FeedSourceType.Extension;
   readonly miniFeedSource: ExtensionFeedSource;
 }
 
 export const EXTENSION_MINI_USER_FEED_SUBSCRIPTION: ExtensionMiniUserFeedSubscription = {
+  type: FeedSourceType.Extension,
   miniFeedSource: EXTENSION_FEED_SOURCE,
 };
 
 export interface PocketExportMiniUserFeedSubscription {
+  readonly type: FeedSourceType.PocketExport;
   readonly miniFeedSource: PocketExportFeedSource;
 }
 
 export const POCKET_EXPORT_MINI_USER_FEED_SUBSCRIPTION: PocketExportMiniUserFeedSubscription = {
+  type: FeedSourceType.PocketExport,
   miniFeedSource: POCKET_EXPORT_FEED_SOURCE,
 };
 
@@ -156,15 +163,18 @@ type BasePersistedMiniUserFeedSubscription = Pick<
 >;
 
 export interface RssMiniUserFeedSubscription extends BasePersistedMiniUserFeedSubscription {
+  readonly type: FeedSourceType.RSS;
   readonly miniFeedSource: RssMiniFeedSource;
 }
 
 export interface YouTubeChannelMiniUserFeedSubscription
   extends BasePersistedMiniUserFeedSubscription {
+  readonly type: FeedSourceType.YouTubeChannel;
   readonly miniFeedSource: YouTubeChannelMiniFeedSource;
 }
 
 export interface IntervalMiniUserFeedSubscription extends BasePersistedMiniUserFeedSubscription {
+  readonly type: FeedSourceType.Interval;
   readonly miniFeedSource: IntervalMiniFeedSource;
 }
 
@@ -176,39 +186,53 @@ export type MiniUserFeedSubscription =
   | YouTubeChannelMiniUserFeedSubscription
   | IntervalMiniUserFeedSubscription;
 
-export const PWAMiniUserFeedSubscriptionSchema = z.object({
+const PWAMiniUserFeedSubscriptionSchema = z.object({
+  type: z.literal(FeedSourceType.PWA),
   miniFeedSource: PWAMiniFeedSourceSchema,
 });
 
-export const ExtensionMiniUserFeedSubscriptionSchema = z.object({
+const ExtensionMiniUserFeedSubscriptionSchema = z.object({
+  type: z.literal(FeedSourceType.Extension),
   miniFeedSource: ExtensionMiniFeedSourceSchema,
 });
 
-export const PocketExportMiniUserFeedSubscriptionSchema = z.object({
+const PocketExportMiniUserFeedSubscriptionSchema = z.object({
+  type: z.literal(FeedSourceType.PocketExport),
   miniFeedSource: PocketExportMiniFeedSourceSchema,
 });
 
 const BasePersistedMiniUserFeedSubscriptionSchema = z.object({
+  type: z.union([
+    z.literal(FeedSourceType.RSS),
+    z.literal(FeedSourceType.YouTubeChannel),
+    z.literal(FeedSourceType.Interval),
+  ]),
   miniFeedSource: z.union([
     RssMiniFeedSourceSchema,
     YouTubeChannelMiniFeedSourceSchema,
     IntervalMiniFeedSourceSchema,
+    PWAMiniFeedSourceSchema,
   ]),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
   isActive: z.boolean(),
 });
 
 export const RssMiniUserFeedSubscriptionSchema = BasePersistedMiniUserFeedSubscriptionSchema.extend(
-  {miniFeedSource: RssMiniFeedSourceSchema}
+  {
+    type: z.literal(FeedSourceType.RSS),
+    miniFeedSource: RssMiniFeedSourceSchema,
+  }
 );
 
 export const YouTubeChannelMiniUserFeedSubscriptionSchema =
   BasePersistedMiniUserFeedSubscriptionSchema.extend({
+    type: z.literal(FeedSourceType.YouTubeChannel),
     miniFeedSource: YouTubeChannelMiniFeedSourceSchema,
   });
 
 export const IntervalMiniUserFeedSubscriptionSchema =
   BasePersistedMiniUserFeedSubscriptionSchema.extend({
+    type: z.literal(FeedSourceType.Interval),
     miniFeedSource: IntervalMiniFeedSourceSchema,
   });
 
