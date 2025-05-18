@@ -4,7 +4,7 @@ import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.sha
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import {FeedSourceType} from '@shared/types/feedItems.types';
+import {FeedSourceType} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {
   RssUserFeedSubscription,

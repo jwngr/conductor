@@ -26,7 +26,7 @@ import {
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {AsyncState} from '@shared/types/asyncState.types';
-import {FeedSourceType} from '@shared/types/feedItems.types';
+import {FeedSourceType} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {
   IntervalUserFeedSubscription,

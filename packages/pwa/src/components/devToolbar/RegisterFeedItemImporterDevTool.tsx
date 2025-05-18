@@ -5,7 +5,7 @@ import {assertNever} from '@shared/lib/utils.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
 import {DevToolbarSectionType} from '@shared/types/devToolbar.types';
-import {PWA_MINI_USER_FEED_SUBSCRIPTION} from '@shared/types/userFeedSubscriptions.types';
+import {PWA_FEED_SOURCE} from '@shared/types/feedItems.types';
 
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
@@ -44,10 +44,10 @@ const FeedItemImporter: React.FC = () => {
 
       setPending();
 
-      const addFeedItemResult = await feedItemsService.createFeedItem(
-        PWA_MINI_USER_FEED_SUBSCRIPTION,
-        {url: trimmedUrl, title: trimmedUrl}
-      );
+      const addFeedItemResult = await feedItemsService.createFeedItem(PWA_FEED_SOURCE, {
+        url: trimmedUrl,
+        title: trimmedUrl,
+      });
 
       if (!addFeedItemResult.success) {
         setError(addFeedItemResult.error);

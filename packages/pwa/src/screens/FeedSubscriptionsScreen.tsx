@@ -5,7 +5,7 @@ import {parseUrl} from '@shared/lib/urls.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
-import {FeedSourceType} from '@shared/types/feedItems.types';
+import {FeedSourceType} from '@shared/types/feedSources.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
 import {

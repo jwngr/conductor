@@ -1,9 +1,9 @@
-import {FeedSourceType} from '@shared/types/feedItems.types';
+import {FeedSourceType} from '@shared/types/feedSources.types';
 import type {
   IntervalFeedSource,
   RssFeedSource,
   YouTubeChannelFeedSource,
-} from '@shared/types/feedItems.types';
+} from '@shared/types/feedSources.types';
 import type {
   IntervalUserFeedSubscription,
   RssUserFeedSubscription,

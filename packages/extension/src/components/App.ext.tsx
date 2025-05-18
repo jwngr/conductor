@@ -2,8 +2,8 @@ import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
+import {EXTENSION_FEED_SOURCE} from '@shared/types/feedItems.types';
 import type {FeedItem} from '@shared/types/feedItems.types';
-import {EXTENSION_MINI_USER_FEED_SUBSCRIPTION} from '@shared/types/userFeedSubscriptions.types';
 
 import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
 
@@ -37,10 +37,10 @@ const SaveCurrentUrlButton: React.FC = () => {
     }
 
     const title = tab.title ?? 'TODO: Add title support';
-    const addFeedItemResult = await feedItemsService.createFeedItem(
-      EXTENSION_MINI_USER_FEED_SUBSCRIPTION,
-      {url: tabUrl, title}
-    );
+    const addFeedItemResult = await feedItemsService.createFeedItem(EXTENSION_FEED_SOURCE, {
+      url: tabUrl,
+      title,
+    });
 
     if (!addFeedItemResult.success) {
       setError(prefixError(addFeedItemResult.error, 'Error creating feed item'));

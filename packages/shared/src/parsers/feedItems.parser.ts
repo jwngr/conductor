@@ -18,7 +18,6 @@ import type {
   FeedItemId,
   FeedItemImportState,
   FeedItemImportStateFromStorage,
-  FeedSource,
   ProcessingFeedItemImportState,
   XkcdFeedItem,
   XkcdFeedItemFromStorage,
@@ -34,6 +33,7 @@ import {
   ProcessingFeedItemImportStateSchema,
   XkcdFeedItemFromStorageSchema,
 } from '@shared/types/feedItems.types';
+import type {FeedSource} from '@shared/types/feedSources.types';
 import type {Result} from '@shared/types/results.types';
 
 /**

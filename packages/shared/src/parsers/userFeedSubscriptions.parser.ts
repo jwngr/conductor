@@ -10,7 +10,7 @@ import {
 } from '@shared/parsers/deliverySchedules.parser';
 import {parseYouTubeChannelId} from '@shared/parsers/youtube.parser';
 
-import {FeedSourceType} from '@shared/types/feedItems.types';
+import {FeedSourceType} from '@shared/types/feedSources.types';
 import type {Result} from '@shared/types/results.types';
 import {
   IntervalUserFeedSubscriptionFromStorageSchema,

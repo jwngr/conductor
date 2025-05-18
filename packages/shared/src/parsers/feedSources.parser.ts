@@ -6,12 +6,6 @@ import {omitUndefined} from '@shared/lib/utils.shared';
 import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions.parser';
 import {parseYouTubeChannelId} from '@shared/parsers/youtube.parser';
 
-import type {
-  FeedSource,
-  IntervalFeedSource,
-  RssFeedSource,
-  YouTubeChannelFeedSource,
-} from '@shared/types/feedItems.types';
 import {
   EXTENSION_FEED_SOURCE,
   FeedSourceSchema,
@@ -21,7 +15,13 @@ import {
   PWA_FEED_SOURCE,
   RssFeedSourceSchema,
   YouTubeChannelFeedSourceSchema,
-} from '@shared/types/feedItems.types';
+} from '@shared/types/feedSources.types';
+import type {
+  FeedSource,
+  IntervalFeedSource,
+  RssFeedSource,
+  YouTubeChannelFeedSource,
+} from '@shared/types/feedSources.types';
 import type {Result} from '@shared/types/results.types';
 
 /**
