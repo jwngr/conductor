@@ -66,7 +66,10 @@ export class ServerRssFeedService {
     if (!subscribeResult.success) return subscribeResult;
 
     // Create a user feed subscription in the database.
-    const saveToDbResult = await this.userFeedSubscriptionsService.create({feedSource, accountId});
+    const saveToDbResult = await this.userFeedSubscriptionsService.createFeedSubscription({
+      feedSource,
+      accountId,
+    });
     return prefixResultIfError(saveToDbResult, 'Error creating user feed subscription');
   }
 

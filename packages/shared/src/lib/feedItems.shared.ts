@@ -14,6 +14,7 @@ import {
   TriageStatus,
 } from '@shared/types/feedItems.types';
 import type {FeedItem, FeedItemAction} from '@shared/types/feedItems.types';
+import {FeedSourceType} from '@shared/types/feedSources.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/results.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
@@ -48,9 +49,9 @@ export class SharedFeedItemHelpers {
   }
 
   public static makeFeedItem(
-    args: Pick<FeedItem, 'accountId' | 'url' | 'feedItemSource' | 'title' | 'description'>
+    args: Pick<FeedItem, 'accountId' | 'url' | 'feedSource' | 'title' | 'description'>
   ): Result<FeedItem> {
-    const {accountId, url, feedItemSource, title, description} = args;
+    const {accountId, url, feedSource, title, description} = args;
 
     // Common fields across all feed item types.
     const feedItemId = makeFeedItemId();
@@ -75,7 +76,9 @@ export class SharedFeedItemHelpers {
           url,
           accountId,
           feedItemId,
-          feedItemSource,
+          feedSource,
+          userFeedSubscriptionId:
+            feedSource.type === FeedSourceType.RSS ? feedSource.feedSourceId : null,
           importState,
           title,
           description,
@@ -94,7 +97,7 @@ export class SharedFeedItemHelpers {
           url,
           accountId,
           feedItemId,
-          feedItemSource,
+          feedSource,
           importState,
           title,
           description,

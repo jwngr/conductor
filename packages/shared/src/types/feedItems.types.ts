@@ -4,12 +4,17 @@ import {makeUuid} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import {AccountIdSchema} from '@shared/types/accounts.types';
+import type {MiniFeedSource} from '@shared/types/feedSources.types';
+import {FeedSourceFromStorageSchema} from '@shared/types/feedSources.types';
 import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {IconName} from '@shared/types/icons.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import type {TagId} from '@shared/types/tags.types';
-import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
-import {UserFeedSubscriptionIdSchema} from '@shared/types/userFeedSubscriptions.types';
+import {
+  MiniUserFeedSubscription,
+  UserFeedSubscriptionId,
+  UserFeedSubscriptionIdSchema,
+} from '@shared/types/userFeedSubscriptions.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 
 /**
@@ -38,98 +43,12 @@ export enum FeedItemType {
   YouTube = 'YOUTUBE',
 }
 
-export enum FeedItemSourceType {
-  /** Feed item was manually added from the app. */
-  App = 'APP',
-  /** Feed item was manually added from the web extension. */
-  Extension = 'EXTENSION',
-  /** Feed item was added from an RSS feed subscription. */
-  RSS = 'RSS',
-  /** Feed item was imported from a Pocket export. */
-  PocketExport = 'POCKET_EXPORT',
-}
-
 export enum TriageStatus {
   Untriaged = 'UNTRIAGED',
   Saved = 'SAVED',
   Done = 'DONE',
   Trashed = 'TRASHED',
 }
-
-export const AppFeedItemSourceSchema = z.object({
-  type: z.literal(FeedItemSourceType.App),
-});
-
-export const ExtensionFeedItemSourceSchema = z.object({
-  type: z.literal(FeedItemSourceType.Extension),
-});
-
-export const RssFeedItemSourceSchema = z.object({
-  type: z.literal(FeedItemSourceType.RSS),
-  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
-});
-
-export const PocketExportFeedItemSourceSchema = z.object({
-  type: z.literal(FeedItemSourceType.PocketExport),
-});
-
-export const FeedItemSourceFromStorageSchema = z.discriminatedUnion('type', [
-  AppFeedItemSourceSchema,
-  ExtensionFeedItemSourceSchema,
-  RssFeedItemSourceSchema,
-  PocketExportFeedItemSourceSchema,
-]);
-
-export type FeedItemSourceFromStorage = z.infer<typeof FeedItemSourceFromStorageSchema>;
-
-interface BaseFeedItemSource {
-  // TODO: Consider renaming this to `sourceType`.
-  readonly type: FeedItemSourceType;
-}
-
-export interface FeedItemAppSource extends BaseFeedItemSource {
-  readonly type: FeedItemSourceType.App;
-}
-
-export const FEED_ITEM_EXTENSION_SOURCE: FeedItemExtensionSource = {
-  type: FeedItemSourceType.Extension,
-};
-
-export interface FeedItemExtensionSource extends BaseFeedItemSource {
-  readonly type: FeedItemSourceType.Extension;
-}
-
-export const FEED_ITEM_APP_SOURCE: FeedItemAppSource = {
-  type: FeedItemSourceType.App,
-};
-
-export interface FeedItemRSSSource extends BaseFeedItemSource {
-  readonly type: FeedItemSourceType.RSS;
-  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-}
-
-export function makeFeedItemRSSSource(
-  userFeedSubscriptionId: UserFeedSubscriptionId
-): FeedItemRSSSource {
-  return {
-    type: FeedItemSourceType.RSS,
-    userFeedSubscriptionId: userFeedSubscriptionId,
-  };
-}
-
-export interface FeedItemPocketExportSource extends BaseFeedItemSource {
-  readonly type: FeedItemSourceType.PocketExport;
-}
-
-export const FEED_ITEM_POCKET_EXPORT_SOURCE: FeedItemPocketExportSource = {
-  type: FeedItemSourceType.PocketExport,
-};
-
-export type FeedItemSource =
-  | FeedItemAppSource
-  | FeedItemExtensionSource
-  | FeedItemRSSSource
-  | FeedItemPocketExportSource;
 
 export enum FeedItemImportStatus {
   /** Created but not yet processed. */
@@ -197,7 +116,8 @@ interface BaseFeedItem extends BaseStoreItem {
   /** ID of the account that owns the feed item. */
   readonly accountId: AccountId;
   /** Source of the feed item. */
-  readonly feedItemSource: FeedItemSource;
+  readonly feedSource: MiniFeedSource;
+  readonly miniFeedSubscription: MiniUserFeedSubscription;
   /** State of the feed item's import process. */
   readonly importState: FeedItemImportState;
   /** URL of the content. */
@@ -275,7 +195,8 @@ export const BaseFeedItemFromStorageSchema = z.object({
   type: z.nativeEnum(FeedItemType),
   feedItemId: FeedItemIdSchema,
   accountId: AccountIdSchema,
-  feedItemSource: FeedItemSourceFromStorageSchema,
+  feedSource: FeedSourceFromStorageSchema,
+  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
   importState: FeedItemImportStateFromStorageSchema,
   triageStatus: z.nativeEnum(TriageStatus),
   url: z.string().url(),

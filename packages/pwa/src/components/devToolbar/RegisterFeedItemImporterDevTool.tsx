@@ -5,7 +5,7 @@ import {assertNever} from '@shared/lib/utils.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
 import {DevToolbarSectionType} from '@shared/types/devToolbar.types';
-import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems.types';
+import {PWA_FEED_SOURCE} from '@shared/types/feedSources.types';
 
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
@@ -46,7 +46,7 @@ const FeedItemImporter: React.FC = () => {
 
       const addFeedItemResult = await feedItemsService.createFeedItem({
         url: trimmedUrl,
-        feedItemSource: FEED_ITEM_APP_SOURCE,
+        feedSource: PWA_FEED_SOURCE,
         title: trimmedUrl,
       });
 

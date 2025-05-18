@@ -6,12 +6,8 @@ import {assertNever, omitUndefined} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import {FeedItemType} from '@shared/types/feedItems.types';
-import type {
-  FeedItem,
-  FeedItemFromStorage,
-  FeedItemId,
-  FeedItemSource,
-} from '@shared/types/feedItems.types';
+import type {FeedItem, FeedItemFromStorage, FeedItemId} from '@shared/types/feedItems.types';
+import type {FeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult, Result} from '@shared/types/results.types';
 
 import {eventLogService} from '@sharedServer/services/eventLog.server';
@@ -46,12 +42,12 @@ export class ServerFeedItemsService {
 
   public async createFeedItem(args: {
     readonly url: string;
-    readonly feedItemSource: FeedItemSource;
+    readonly feedSource: FeedSource;
     readonly accountId: AccountId;
     readonly title: string;
     readonly description: string | null;
   }): AsyncResult<FeedItemId | null> {
-    const {url, accountId, feedItemSource, title, description} = args;
+    const {url, accountId, feedSource, title, description} = args;
 
     const trimmedUrl = url.trim();
     if (!isValidUrl(trimmedUrl)) {
@@ -60,7 +56,7 @@ export class ServerFeedItemsService {
 
     const feedItemResult = SharedFeedItemHelpers.makeFeedItem({
       url: trimmedUrl,
-      feedItemSource,
+      feedSource,
       accountId,
       title,
       description,

@@ -25,7 +25,7 @@ service cloud.firestore {
       return request.resource.data.keys().hasAll([
         'feedItemId',
         'type',
-        'feedItemSource',
+        'feedSource',
         'importState',
         'url',
         'title',
@@ -38,7 +38,11 @@ service cloud.firestore {
       request.resource.data.feedItemId is string &&
       request.resource.data.feedItemId == feedItemId &&
       request.resource.data.type in ['ARTICLE', 'VIDEO', 'WEBSITE', 'TWEET', 'XKCD', 'YOUTUBE'] &&
-      request.resource.data.feedItemSource.type in ['APP', 'EXTENSION', 'RSS', 'POCKET_EXPORT'] &&
+      request.resource.data.feedSource.data.keys().hasAll(['type', 'feedSourceId', 'url', 'title']) &&
+      request.resource.data.feedSource.url is string &&
+      request.resource.data.feedSource.title is string &&
+      request.resource.data.feedSource.feedSourceId is string &&
+      request.resource.data.feedSource.type in ['RSS', 'YOUTUBE_CHANNEL', 'INTERVAL'] &&
       request.resource.data.url is string &&
       request.resource.data.title is string &&
       request.resource.data.outgoingLinks is list &&

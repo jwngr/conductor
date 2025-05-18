@@ -16,7 +16,7 @@ import {pluralizeWithCount} from '@shared/lib/utils.shared';
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 
-import {FEED_ITEM_POCKET_EXPORT_SOURCE} from '@shared/types/feedItems.types';
+import {POCKET_EXPORT_FEED_SOURCE} from '@shared/types/feedSources.types';
 import type {PocketImportItem} from '@shared/types/pocket.types';
 
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
@@ -105,7 +105,7 @@ async function main(): Promise<void> {
     const createFeedItemResult = await feedItemsService.createFeedItem({
       accountId,
       url: pocketItem.url,
-      feedItemSource: FEED_ITEM_POCKET_EXPORT_SOURCE,
+      feedSource: POCKET_EXPORT_FEED_SOURCE,
       title: pocketItem.title,
       description: null,
     });

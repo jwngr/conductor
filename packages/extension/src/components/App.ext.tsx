@@ -2,8 +2,8 @@ import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
-import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems.types';
 import type {FeedItem} from '@shared/types/feedItems.types';
+import {PWA_FEED_SOURCE} from '@shared/types/feedSources.types';
 
 import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
 
@@ -38,7 +38,7 @@ const SaveCurrentUrlButton: React.FC = () => {
 
     const addFeedItemResult = await feedItemsService.createFeedItem({
       url: tabUrl,
-      feedItemSource: FEED_ITEM_APP_SOURCE,
+      feedSource: PWA_FEED_SOURCE,
       title: tab.title ?? 'TODO: Add title support',
     });
 

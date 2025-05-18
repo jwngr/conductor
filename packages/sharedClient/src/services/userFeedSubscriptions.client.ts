@@ -8,6 +8,7 @@ import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/erro
 import {makeIntervalFeedSource, makeYouTubeFeedSource} from '@shared/lib/feedSources.shared';
 import {withFirestoreTimestamps} from '@shared/lib/parser.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {makeUserFeedSubscription} from '@shared/lib/userFeedSubscriptions.shared';
 import {getYouTubeChannelId} from '@shared/lib/youtube.shared';
 
 import {
@@ -20,10 +21,9 @@ import type {AccountId} from '@shared/types/accounts.types';
 import type {AsyncState} from '@shared/types/asyncState.types';
 import type {FeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/results.types';
-import {
-  makeUserFeedSubscription,
-  type UserFeedSubscription,
-  type UserFeedSubscriptionId,
+import type {
+  UserFeedSubscription,
+  UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
@@ -113,12 +113,7 @@ export class ClientUserFeedSubscriptionsService {
       return makeErrorResult(new Error('URL is not a valid YouTube channel URL'));
     }
 
-    const feedSource = makeYouTubeFeedSource({
-      // TODO: Switch to `channelId`.
-      url: `https://www.youtube.com/channel/${channelId}`,
-      // TODO: Address title.
-      title: 'YouTube Channel',
-    });
+    const feedSource = makeYouTubeFeedSource({channelId});
 
     return await this.createSubscription({feedSource});
   }
@@ -128,12 +123,7 @@ export class ClientUserFeedSubscriptionsService {
   }): AsyncResult<UserFeedSubscription> {
     const {intervalSeconds} = args;
 
-    const feedSource = makeIntervalFeedSource({
-      intervalSeconds,
-      // TODO: Update these URL values.
-      url: 'https://example.com',
-      title: 'Interval Feed',
-    });
+    const feedSource = makeIntervalFeedSource({intervalSeconds});
 
     return await this.createSubscription({feedSource});
   }

@@ -2,6 +2,8 @@ import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
+import {parseYouTubeChannelId} from '@shared/parsers/youtube.parser';
+
 import type {
   FeedSource,
   FeedSourceFromStorage,
@@ -14,10 +16,13 @@ import type {
   YouTubeChannelFeedSourceFromStorage,
 } from '@shared/types/feedSources.types';
 import {
+  EXTENSION_FEED_SOURCE,
   FeedSourceFromStorageSchema,
   FeedSourceIdSchema,
   FeedSourceType,
   IntervalFeedSourceSchema,
+  POCKET_EXPORT_FEED_SOURCE,
+  PWA_FEED_SOURCE,
   RssFeedSourceSchema,
   YouTubeChannelFeedSourceSchema,
 } from '@shared/types/feedSources.types';
@@ -46,6 +51,12 @@ export function parseFeedSource(maybeFeedSource: unknown): Result<FeedSource> {
   }
 
   switch (parsedFeedSourceResult.value.type) {
+    case FeedSourceType.PWA:
+      return makeSuccessResult(PWA_FEED_SOURCE);
+    case FeedSourceType.Extension:
+      return makeSuccessResult(EXTENSION_FEED_SOURCE);
+    case FeedSourceType.PocketExport:
+      return makeSuccessResult(POCKET_EXPORT_FEED_SOURCE);
     case FeedSourceType.Interval:
       return parseIntervalFeedSource(parsedFeedSourceResult.value);
     case FeedSourceType.RSS:
@@ -85,11 +96,13 @@ function parseYouTubeChannelFeedSource(maybeFeedSource: unknown): Result<YouTube
   const parsedIdResult = parseFeedSourceId(parsedFeedSourceResult.value.feedSourceId);
   if (!parsedIdResult.success) return parsedIdResult;
 
+  const parsedChannelIdResult = parseYouTubeChannelId(parsedFeedSourceResult.value.channelId);
+  if (!parsedChannelIdResult.success) return parsedChannelIdResult;
+
   return makeSuccessResult({
     type: FeedSourceType.YouTubeChannel,
     feedSourceId: parsedIdResult.value,
-    url: parsedFeedSourceResult.value.url,
-    title: parsedFeedSourceResult.value.title,
+    channelId: parsedChannelIdResult.value,
     createdTime: parseStorageTimestamp(parsedFeedSourceResult.value.createdTime),
     lastUpdatedTime: parseStorageTimestamp(parsedFeedSourceResult.value.lastUpdatedTime),
   });
@@ -107,11 +120,9 @@ function parseIntervalFeedSource(maybeFeedSource: unknown): Result<IntervalFeedS
   return makeSuccessResult({
     type: FeedSourceType.Interval,
     feedSourceId: parsedIdResult.value,
-    url: parsedFeedSourceResult.value.url,
-    title: parsedFeedSourceResult.value.title,
+    intervalSeconds: parsedFeedSourceResult.value.intervalSeconds,
     createdTime: parseStorageTimestamp(parsedFeedSourceResult.value.createdTime),
     lastUpdatedTime: parseStorageTimestamp(parsedFeedSourceResult.value.lastUpdatedTime),
-    intervalSeconds: parsedFeedSourceResult.value.intervalSeconds,
   });
 }
 
@@ -127,9 +138,15 @@ export function toStorageFeedSource(feedSource: FeedSource): FeedSourceFromStora
       return toStorageRssFeedSource(feedSource);
     case FeedSourceType.YouTubeChannel:
       return toStorageYouTubeChannelFeedSource(feedSource);
+    case FeedSourceType.PWA:
+      return PWA_FEED_SOURCE;
+    case FeedSourceType.Extension:
+      return EXTENSION_FEED_SOURCE;
+    case FeedSourceType.PocketExport:
+      return POCKET_EXPORT_FEED_SOURCE;
     default:
-      // Fall back to the raw feed source value.
-      return feedSource;
+      // Fall back to the PWA as a feed source.
+      return PWA_FEED_SOURCE;
   }
 }
 
@@ -150,8 +167,7 @@ function toStorageYouTubeChannelFeedSource(
   return {
     type: FeedSourceType.YouTubeChannel,
     feedSourceId: feedSource.feedSourceId,
-    url: feedSource.url,
-    title: feedSource.title,
+    channelId: feedSource.channelId,
     createdTime: feedSource.createdTime,
     lastUpdatedTime: feedSource.lastUpdatedTime,
   };
@@ -163,10 +179,8 @@ function toStorageIntervalFeedSource(
   return {
     type: FeedSourceType.Interval,
     feedSourceId: feedSource.feedSourceId,
-    url: feedSource.url,
-    title: feedSource.title,
+    intervalSeconds: feedSource.intervalSeconds,
     createdTime: feedSource.createdTime,
     lastUpdatedTime: feedSource.lastUpdatedTime,
-    intervalSeconds: feedSource.intervalSeconds,
   };
 }

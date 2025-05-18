@@ -40,7 +40,7 @@ export async function handleSubscribeAccountToFeedOnCallRequest(args: {
     throw new HttpsError('internal', subscribeToUrlResult.error.message);
   }
 
-  const {feedSourceId, userFeedSubscriptionId} = subscribeToUrlResult.value;
+  const {feedSource: feedSourceId, userFeedSubscriptionId} = subscribeToUrlResult.value;
 
   innerLog('Successfully subscribed account to feed source', {
     feedSourceId,

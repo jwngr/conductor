@@ -29,13 +29,9 @@ import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers
 import type {AccountId, AuthStateChangedUnsubscribe} from '@shared/types/accounts.types';
 import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {AsyncState} from '@shared/types/asyncState.types';
-import type {
-  FeedItem,
-  FeedItemId,
-  FeedItemSource,
-  XkcdFeedItem,
-} from '@shared/types/feedItems.types';
-import {FeedItemSourceType} from '@shared/types/feedItems.types';
+import type {FeedItem, FeedItemId, XkcdFeedItem} from '@shared/types/feedItems.types';
+import type {FeedSource} from '@shared/types/feedSources.types';
+import {FeedSourceType} from '@shared/types/feedSources.types';
 import {fromQueryFilterOp} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
@@ -105,16 +101,18 @@ function filterFeedItemsByDeliverySchedules(args: {
   const {feedItems, userFeedSubscriptions} = args;
 
   return feedItems.filter((feedItem) => {
-    switch (feedItem.feedItemSource.type) {
-      case FeedItemSourceType.App:
-      case FeedItemSourceType.Extension:
-      case FeedItemSourceType.PocketExport:
+    switch (feedItem.feedSource.type) {
+      case FeedSourceType.PWA:
+      case FeedSourceType.Extension:
+      case FeedSourceType.PocketExport:
         // These sources are always shown.
         return true;
-      case FeedItemSourceType.RSS: {
+      case FeedSourceType.YouTubeChannel:
+      case FeedSourceType.Interval:
+      case FeedSourceType.RSS: {
         // Some sources have delivery schedules which determine when they are shown.
         const matchingDeliverySchedule = findDeliveryScheduleForFeedSubscription({
-          userFeedSubscriptionId: feedItem.feedItemSource.userFeedSubscriptionId,
+          userFeedSubscriptionId: feedItem.userFeedSubscriptionId,
           userFeedSubscriptions,
         });
 
@@ -124,7 +122,7 @@ function filterFeedItemsByDeliverySchedules(args: {
         });
       }
       default:
-        assertNever(feedItem.feedItemSource);
+        assertNever(feedItem.feedSource);
     }
   });
 }
@@ -326,10 +324,10 @@ export class ClientFeedItemsService {
 
   public async createFeedItem(args: {
     readonly url: string;
-    readonly feedItemSource: FeedItemSource;
+    readonly feedSource: FeedSource;
     readonly title: string;
   }): AsyncResult<FeedItem> {
-    const {url, feedItemSource, title} = args;
+    const {url, feedSource, title} = args;
 
     const trimmedUrl = url.trim();
     if (!isValidUrl(trimmedUrl)) {
@@ -338,7 +336,7 @@ export class ClientFeedItemsService {
 
     const feedItemResult = SharedFeedItemHelpers.makeFeedItem({
       url: trimmedUrl,
-      feedItemSource,
+      feedSource,
       accountId: this.accountId,
       title,
       description: null,

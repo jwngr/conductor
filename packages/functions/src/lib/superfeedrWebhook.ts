@@ -4,9 +4,9 @@ import type {Request, Response} from 'express';
 import {logger} from '@shared/services/logger.shared';
 
 import {prefixError} from '@shared/lib/errorUtils.shared';
+import {makeRssFeedSource} from '@shared/lib/feedSources.shared';
 import {batchAsyncResults, partition} from '@shared/lib/utils.shared';
 
-import {makeFeedItemRSSSource} from '@shared/types/feedItems.types';
 import type {FeedItemId} from '@shared/types/feedItems.types';
 import type {AsyncResult, ErrorResult, SuccessResult} from '@shared/types/results.types';
 import {parseSuperfeedrWebhookRequestBody} from '@shared/types/superfeedr.types';
@@ -77,9 +77,8 @@ export async function handleSuperfeedrWebhookHelper(args: {
   }
 
   // Fetch all users subscribed to this feed source.
-  const fetchSubscriptionsResult = await userFeedSubscriptionsService.fetchForFeedSource(
-    feedSource.feedSourceId
-  );
+  const fetchSubscriptionsResult =
+    await userFeedSubscriptionsService.fetchForFeedSource(feedSource);
   if (!fetchSubscriptionsResult.success) {
     respondWithError(fetchSubscriptionsResult.error, 'Error fetching subscribed accounts', {
       feedSourceId: feedSource.feedSourceId,
@@ -99,7 +98,11 @@ export async function handleSuperfeedrWebhookHelper(args: {
         await feedItemsService.createFeedItem({
           url: item.permalinkUrl,
           accountId: userFeedSubscription.accountId,
-          feedItemSource: makeFeedItemRSSSource(userFeedSubscription.userFeedSubscriptionId),
+          // TODO!!!
+          feedSource: makeRssFeedSource({
+            url: feedUrl,
+            title: feedSource.title,
+          }),
           title: item.title,
           description: item.summary,
         });

@@ -217,9 +217,9 @@ const FeedSubscriptionSettingsPopoverContent: React.FC<{
       <FlexColumn gap={4} padding={4}>
         <FeedSubscriptionDeliveryScheduleSetting userFeedSubscription={userFeedSubscription} />
         <FeedSubscriptionUnsubscribeButton userFeedSubscription={userFeedSubscription} />
-        {/* {userFeedSubscription. === FeedSourceType.Interval ? (
+        {userFeedSubscription.feedSource.type === FeedSourceType.Interval ? (
           <FeedSubscriptionIntervalSetting userFeedSubscription={userFeedSubscription} />
-        ) : null} */}
+        ) : null}
       </FlexColumn>
     </PopoverContent>
   );

@@ -1,17 +1,11 @@
 import {z} from 'zod';
 
-import {IMMEDIATE_DELIVERY_SCHEDULE} from '@shared/lib/deliverySchedules.shared';
-import {makeSuccessResult} from '@shared/lib/results.shared';
-import {makeUuid} from '@shared/lib/utils.shared';
-
 import type {AccountId} from '@shared/types/accounts.types';
 import {AccountIdSchema} from '@shared/types/accounts.types';
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
 import {DeliveryScheduleFromStorageSchema} from '@shared/types/deliverySchedules.types';
-import type {FeedSource, FeedSourceId} from '@shared/types/feedSources.types';
-import {FeedSourceIdSchema} from '@shared/types/feedSources.types';
+import type {MiniFeedSource} from '@shared/types/feedSources.types';
 import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
-import type {Result} from '@shared/types/results.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 
 /**
@@ -26,13 +20,6 @@ export type UserFeedSubscriptionId = string & {readonly __brand: 'UserFeedSubscr
 export const UserFeedSubscriptionIdSchema = z.string().uuid();
 
 /**
- * Creates a new random {@link UserFeedSubscriptionId}.
- */
-export function makeUserFeedSubscriptionId(): UserFeedSubscriptionId {
-  return makeUuid<UserFeedSubscriptionId>();
-}
-
-/**
  * An individual account's subscription to a feed source.
  *
  * A single {@link FeedSource} can have multiple {@link UserFeedSubscription}s, one for each
@@ -43,21 +30,24 @@ export function makeUserFeedSubscriptionId(): UserFeedSubscriptionId {
  */
 export interface UserFeedSubscription extends BaseStoreItem {
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-  readonly feedSourceId: FeedSourceId;
+  readonly feedSource: MiniFeedSource;
   readonly accountId: AccountId;
-  readonly url: string;
-  readonly title: string;
   readonly isActive: boolean;
   readonly deliverySchedule: DeliverySchedule;
   readonly unsubscribedTime?: Date | undefined;
 }
+
+export type MiniUserFeedSubscription = Pick<
+  UserFeedSubscription,
+  'userFeedSubscriptionId' | 'feedSource' | 'isActive'
+>;
 
 /**
  * Zod schema for a {@link UserFeedSubscription} persisted to Firestore.
  */
 export const UserFeedSubscriptionFromStorageSchema = z.object({
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
-  feedSourceId: FeedSourceIdSchema,
+  feedSource: MiniFeedSourceSchema,
   accountId: AccountIdSchema,
   url: z.string().url(),
   title: z.string(),
@@ -72,30 +62,3 @@ export const UserFeedSubscriptionFromStorageSchema = z.object({
  * Type for a {@link UserFeedSubscription} persisted to Firestore.
  */
 export type UserFeedSubscriptionFromStorage = z.infer<typeof UserFeedSubscriptionFromStorageSchema>;
-
-/**
- * Creates a new {@link UserFeedSubscription} object.
- */
-export function makeUserFeedSubscription(newItemArgs: {
-  readonly feedSource: FeedSource;
-  readonly accountId: AccountId;
-}): Result<UserFeedSubscription> {
-  const {feedSource, accountId} = newItemArgs;
-
-  const userFeedSubscriptionId = makeUserFeedSubscriptionId();
-
-  const userFeedSubscription: UserFeedSubscription = {
-    userFeedSubscriptionId,
-    accountId,
-    feedSourceId: feedSource.feedSourceId,
-    url: feedSource.url,
-    title: feedSource.title,
-    isActive: true,
-    deliverySchedule: IMMEDIATE_DELIVERY_SCHEDULE,
-    // TODO(timestamps): Use server timestamps instead.
-    createdTime: new Date(),
-    lastUpdatedTime: new Date(),
-  };
-
-  return makeSuccessResult(userFeedSubscription);
-}

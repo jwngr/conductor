@@ -1,9 +1,11 @@
 import {makeUuid} from '@shared/lib/utils.shared';
+import {isXkcdComicUrl} from '@shared/lib/xkcd.shared';
+import {isYouTubeChannelUrl} from '@shared/lib/youtube.shared';
 
 import type {
-  FeedSource,
   FeedSourceId,
   IntervalFeedSource,
+  PersistedFeedSource,
   RssFeedSource,
   YouTubeChannelFeedSource,
 } from '@shared/types/feedSources.types';
@@ -14,13 +16,15 @@ export function makeFeedSourceId(): FeedSourceId {
 }
 
 export function makeRssFeedSource(
-  newItemArgs: Omit<RssFeedSource, 'type' | 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
-): FeedSource {
+  args: Omit<RssFeedSource, 'type' | 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
+): RssFeedSource {
+  const {url, title} = args;
+
   return {
     type: FeedSourceType.RSS,
     feedSourceId: makeFeedSourceId(),
-    url: newItemArgs.url,
-    title: newItemArgs.title,
+    url,
+    title,
     // TODO(timestamps): Use server timestamps instead.
     createdTime: new Date(),
     lastUpdatedTime: new Date(),
@@ -28,16 +32,14 @@ export function makeRssFeedSource(
 }
 
 export function makeYouTubeFeedSource(
-  newItemArgs: Omit<
-    YouTubeChannelFeedSource,
-    'type' | 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'
-  >
-): FeedSource {
+  args: Omit<YouTubeChannelFeedSource, 'type' | 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
+): YouTubeChannelFeedSource {
+  const {channelId} = args;
+
   return {
     type: FeedSourceType.YouTubeChannel,
     feedSourceId: makeFeedSourceId(),
-    url: newItemArgs.url,
-    title: newItemArgs.title,
+    channelId,
     // TODO(timestamps): Use server timestamps instead.
     createdTime: new Date(),
     lastUpdatedTime: new Date(),
@@ -45,16 +47,36 @@ export function makeYouTubeFeedSource(
 }
 
 export function makeIntervalFeedSource(
-  newItemArgs: Omit<IntervalFeedSource, 'type' | 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
-): FeedSource {
+  args: Omit<IntervalFeedSource, 'type' | 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
+): IntervalFeedSource {
+  const {intervalSeconds} = args;
+
   return {
     type: FeedSourceType.Interval,
     feedSourceId: makeFeedSourceId(),
-    url: newItemArgs.url,
-    title: newItemArgs.title,
+    intervalSeconds,
     // TODO(timestamps): Use server timestamps instead.
     createdTime: new Date(),
     lastUpdatedTime: new Date(),
-    intervalSeconds: newItemArgs.intervalSeconds,
   };
+}
+
+/**
+ * This is used to determine which {@link FeedSourceType} to use when creating a new feed source.
+ *
+ * Note: The return type is limited - this method assumes the feed source is persisted and ignores
+ * in-memory feed sources.
+ */
+export function getPersistedFeedSourceTypeFromUrl(
+  url: string
+): FeedSourceType.YouTubeChannel | FeedSourceType.RSS {
+  if (isYouTubeChannelUrl(url)) {
+    return FeedSourceType.YouTubeChannel;
+  } else if (isXkcdComicUrl(url)) {
+    // TODO: Consider adding explicit XKCD feed source type.
+    return FeedSourceType.RSS;
+  }
+
+  // Default to RSS.
+  return FeedSourceType.RSS;
 }

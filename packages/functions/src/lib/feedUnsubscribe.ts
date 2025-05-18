@@ -39,7 +39,7 @@ export async function handleFeedUnsubscribeHelper(args: {
 
   // Unsubscribe the account from the feed.
   const unsubscribeResult = await rssFeedService.unsubscribeAccountFromUrl({
-    feedSourceId: after.feedSourceId,
+    feedSourceId: after.feedSource,
     url: after.url,
     accountId: after.accountId,
   });

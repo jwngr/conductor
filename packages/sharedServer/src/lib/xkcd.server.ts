@@ -3,75 +3,12 @@ import TurndownService from 'turndown';
 
 import {logger} from '@shared/services/logger.shared';
 
-import {prefixError, upgradeUnknownError} from '@shared/lib/errorUtils.shared';
 import {requestGet} from '@shared/lib/requests.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
-import {parseUrl} from '@shared/lib/urls.shared';
+import {makeAbsoluteXkcdUrl, makeExplainXkcdUrl} from '@shared/lib/xkcd.shared';
 
-import type {AsyncResult, Result} from '@shared/types/results.types';
-
-function makeAbsoluteXkcdUrl(relativeUrl: string, feedItemUrl: string): string {
-  let absoluteUrl = relativeUrl;
-  if (relativeUrl.startsWith('//')) {
-    absoluteUrl = `https:${relativeUrl}`;
-  } else if (relativeUrl.startsWith('/')) {
-    const parsedUrl = parseUrl(feedItemUrl);
-    if (!parsedUrl) return relativeUrl;
-    const {origin} = parsedUrl;
-    absoluteUrl = `${origin}${relativeUrl}`;
-  }
-
-  return absoluteUrl;
-}
-
-export function makeExplainXkcdUrl(comicId: number): string {
-  return `https://www.explainxkcd.com/wiki/index.php/${comicId}`;
-}
-
-/**
- * Extracts the comic ID from an XKCD URL. XKCD URLs look like https://xkcd.com/1234/.
- */
-export function parseXkcdComicIdFromUrl(url: string): Result<number> {
-  // eslint-disable-next-line no-restricted-syntax
-  try {
-    const parsedUrl = parseUrl(url);
-    if (!parsedUrl) {
-      return makeErrorResult(new Error('Failed to parse XKCD URL'));
-    }
-    const {hostname, pathname} = parsedUrl;
-    if (!/(^|\.)xkcd\.com$/.test(hostname)) {
-      return makeErrorResult(new Error('URL host is not xkcd.com'));
-    }
-    const match = pathname.match(/^\/(\d+)\/?$/);
-    if (!match) {
-      return makeErrorResult(new Error('Path does not contain a comic id'));
-    }
-    const comicId = Number(match[1]);
-    if (isNaN(comicId)) {
-      return makeErrorResult(new Error('XKCD comic ID is not a number'));
-    }
-    return makeSuccessResult(comicId);
-  } catch (error) {
-    const betterError = prefixError(
-      upgradeUnknownError(error),
-      'Error parsing XKCD comic ID from URL'
-    );
-    logger.error(betterError, {url});
-    return makeErrorResult(betterError);
-  }
-}
-
-interface XkcdComic {
-  readonly title: string;
-  readonly altText: string;
-  readonly imageUrlSmall: string;
-  readonly imageUrlLarge: string;
-}
-
-interface ExplainXkcdContent {
-  readonly explanationMarkdown: string;
-  readonly transcriptMarkdown: string | null;
-}
+import type {AsyncResult} from '@shared/types/results.types';
+import type {ExplainXkcdContent, XkcdComic} from '@shared/types/xkcd.types';
 
 export async function fetchXkcdComic(comicId: number): AsyncResult<XkcdComic> {
   const url = `https://xkcd.com/${comicId}`;
