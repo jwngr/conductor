@@ -3,10 +3,11 @@ import {parseZodResult} from '@shared/lib/parser.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {Account, AccountFromStorage, AccountId} from '@shared/types/accounts.types';
-import {AccountFromStorageSchema, AccountIdSchema} from '@shared/types/accounts.types';
 import type {Result} from '@shared/types/results.types';
 import type {EmailAddress} from '@shared/types/utils.types';
 import {EmailAddressSchema} from '@shared/types/utils.types';
+
+import {AccountIdSchema, AccountSchema} from '@shared/schemas/accounts.schema';
 
 /**
  * Parses a {@link AccountId} from a plain string. Returns an `ErrorResult` if the string is not valid.
@@ -24,7 +25,7 @@ export function parseAccountId(maybeAccountId: string): Result<AccountId> {
  * is not valid.
  */
 export function parseAccount(maybeAccount: unknown): Result<Account> {
-  const parsedResult = parseZodResult(AccountFromStorageSchema, maybeAccount);
+  const parsedResult = parseZodResult(AccountSchema, maybeAccount);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid account');
   }
