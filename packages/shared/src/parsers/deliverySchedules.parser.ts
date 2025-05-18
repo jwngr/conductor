@@ -10,16 +10,15 @@ import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseZodResult} from '@shared/lib/parser.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
-import type {
-  DeliverySchedule,
-  DeliveryScheduleFromStorage,
-} from '@shared/types/deliverySchedules.types';
+import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
+import {DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
+import type {Result} from '@shared/types/results.types';
+
 import {
   DeliveryScheduleFromStorageSchema,
-  DeliveryScheduleType,
   DeliveryScheduleTypeFromStorageSchema,
-} from '@shared/types/deliverySchedules.types';
-import type {Result} from '@shared/types/results.types';
+} from '@shared/schemas/deliverySchedules.schema';
+import type {DeliveryScheduleFromStorage} from '@shared/schemas/deliverySchedules.schema';
 
 /**
  * Parses a {@link DeliverySchedule} from an unknown value. Returns an `ErrorResult` if the

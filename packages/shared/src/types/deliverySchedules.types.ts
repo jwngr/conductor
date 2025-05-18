@@ -1,7 +1,4 @@
-import {z} from 'zod';
-
-import {DayOfWeek, TimeOfDaySchema} from '@shared/types/datetime.types';
-import type {TimeOfDay} from '@shared/types/datetime.types';
+import type {DayOfWeek, TimeOfDay} from '@shared/types/datetime.types';
 
 export enum DeliveryScheduleType {
   Immediate = 'IMMEDIATE',
@@ -38,52 +35,3 @@ export type DeliverySchedule =
   | ImmediateDeliverySchedule
   | DaysAndTimesOfWeekDeliverySchedule
   | EveryNHoursDeliverySchedule;
-
-const BaseDeliveryScheduleFromStorageSchema = z.object({
-  scheduleType: z.nativeEnum(DeliveryScheduleType),
-});
-
-const ImmediateDeliveryScheduleFromStorageSchema = BaseDeliveryScheduleFromStorageSchema.extend({
-  scheduleType: z.literal(DeliveryScheduleType.Immediate),
-});
-
-const NeverDeliveryScheduleFromStorageSchema = BaseDeliveryScheduleFromStorageSchema.extend({
-  scheduleType: z.literal(DeliveryScheduleType.Never),
-});
-
-const DaysAndTimesOfWeekDeliveryScheduleFromStorageSchema =
-  BaseDeliveryScheduleFromStorageSchema.extend({
-    scheduleType: z.literal(DeliveryScheduleType.DaysAndTimesOfWeek),
-    days: z.array(z.nativeEnum(DayOfWeek)),
-    times: z.array(TimeOfDaySchema),
-  });
-
-const EveryNHoursDeliveryScheduleFromStorageSchema = BaseDeliveryScheduleFromStorageSchema.extend({
-  scheduleType: z.literal(DeliveryScheduleType.EveryNHours),
-  hours: z.number().int().min(1).max(24),
-});
-
-/**
- * Zod schema for a {@link DeliverySchedule} persisted to Firestore.
- */
-export const DeliveryScheduleFromStorageSchema = z.discriminatedUnion('scheduleType', [
-  NeverDeliveryScheduleFromStorageSchema,
-  ImmediateDeliveryScheduleFromStorageSchema,
-  DaysAndTimesOfWeekDeliveryScheduleFromStorageSchema,
-  EveryNHoursDeliveryScheduleFromStorageSchema,
-]);
-
-/**
- * Type for a {@link DeliverySchedule} persisted to Firestore.
- */
-export type DeliveryScheduleFromStorage = z.infer<typeof DeliveryScheduleFromStorageSchema>;
-
-/**
- * Zod schema for a {@link DeliveryScheduleType} persisted to Firestore.
- */
-export const DeliveryScheduleTypeFromStorageSchema = z.nativeEnum(DeliveryScheduleType);
-
-/**
- * Type for a {@link DeliveryScheduleType} persisted to Firestore.
- */
-export type DeliveryScheduleTypeFromStorage = z.infer<typeof DeliveryScheduleTypeFromStorageSchema>;
