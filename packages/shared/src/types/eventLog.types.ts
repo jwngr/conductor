@@ -1,5 +1,3 @@
-import {z} from 'zod';
-
 import {makeUuid} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
@@ -12,12 +10,6 @@ import type {BaseStoreItem} from '@shared/types/utils.types';
  * Strongly-typed type for an event's unique identifier. Prefer this over plain strings.
  */
 export type EventId = string & {readonly __brand: 'EventIdBrand'};
-
-/**
- * Zod schema for an {@link EventId}.
- */
-// TODO: Consider adding `brand()` and defining `EventId` based on this schema.
-export const EventIdSchema = z.string().uuid();
 
 /**
  * Creates a new random {@link EventId}.

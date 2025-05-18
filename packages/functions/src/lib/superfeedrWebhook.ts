@@ -7,9 +7,10 @@ import {prefixError} from '@shared/lib/errorUtils.shared';
 import {makeRssFeedSource} from '@shared/lib/feedSources.shared';
 import {batchAsyncResults, partition} from '@shared/lib/utils.shared';
 
+import {parseSuperfeedrWebhookRequestBody} from '@shared/parsers/superfeedr.parser';
+
 import type {FeedItemId} from '@shared/types/feedItems.types';
 import type {AsyncResult, ErrorResult, SuccessResult} from '@shared/types/results.types';
-import {parseSuperfeedrWebhookRequestBody} from '@shared/types/superfeedr.types';
 import type {Supplier} from '@shared/types/utils.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';

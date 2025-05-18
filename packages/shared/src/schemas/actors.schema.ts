@@ -13,4 +13,4 @@ export const SystemActorSchema = z.object({
   actorType: z.literal(ActorType.System),
 });
 
-export const ActorSchema = z.union([UserActorSchema, SystemActorSchema]);
+export const ActorSchema = z.discriminatedUnion('actorType', [UserActorSchema, SystemActorSchema]);

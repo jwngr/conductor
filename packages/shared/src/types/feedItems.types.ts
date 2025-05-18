@@ -10,6 +10,10 @@ import type {BaseStoreItem} from '@shared/types/utils.types';
  */
 export type FeedItemId = string & {readonly __brand: 'FeedItemIdBrand'};
 
+/**
+ * The type of content in a feed item. Some types persist additional data (e.g. XKCD stores the
+ * comic number, YouTube stores the video ID).
+ */
 export enum FeedItemType {
   Article = 'ARTICLE',
   Video = 'VIDEO',
@@ -19,77 +23,12 @@ export enum FeedItemType {
   YouTube = 'YOUTUBE',
 }
 
-export enum TriageStatus {
-  Untriaged = 'UNTRIAGED',
-  Saved = 'SAVED',
-  Done = 'DONE',
-  Trashed = 'TRASHED',
-}
-
-export enum FeedItemImportStatus {
-  /** Created but not yet processed. */
-  New = 'NEW',
-  /** Currently being processed. */
-  Processing = 'PROCESSING',
-  /** Errored while processing. May have partially imported data. */
-  Failed = 'FAILED',
-  /** Successfully imported all data. */
-  Completed = 'COMPLETED',
-}
-
-interface BaseFeedItemImportState {
-  readonly status: FeedItemImportStatus;
-  readonly shouldFetch: boolean;
-  readonly lastImportRequestedTime: Date;
-  readonly lastSuccessfulImportTime: Date | null;
-}
-
-export interface NewFeedItemImportState extends BaseFeedItemImportState {
-  readonly status: FeedItemImportStatus.New;
-  readonly shouldFetch: true;
-  readonly lastSuccessfulImportTime: null;
-}
-
-export function makeNewFeedItemImportState(): NewFeedItemImportState {
-  return {
-    status: FeedItemImportStatus.New,
-    shouldFetch: true,
-    lastImportRequestedTime: new Date(),
-    lastSuccessfulImportTime: null,
-  };
-}
-
-export interface ProcessingFeedItemImportState extends BaseFeedItemImportState {
-  readonly status: FeedItemImportStatus.Processing;
-  readonly shouldFetch: false;
-  readonly importStartedTime: Date;
-  readonly lastSuccessfulImportTime: Date | null;
-}
-
-export interface FailedFeedItemImportState extends BaseFeedItemImportState {
-  readonly status: FeedItemImportStatus.Failed;
-  readonly shouldFetch: boolean;
-  readonly errorMessage: string;
-  readonly importFailedTime: Date;
-  readonly lastSuccessfulImportTime: Date | null;
-}
-
-export interface CompletedFeedItemImportState extends BaseFeedItemImportState {
-  readonly status: FeedItemImportStatus.Completed;
-  readonly shouldFetch: boolean;
-  readonly lastSuccessfulImportTime: Date;
-}
-
-export type FeedItemImportState =
-  | NewFeedItemImportState
-  | ProcessingFeedItemImportState
-  | FailedFeedItemImportState
-  | CompletedFeedItemImportState;
-
 interface BaseFeedItem extends BaseStoreItem {
+  /** Unique ID for this feed item. */
   readonly feedItemId: FeedItemId;
+  /** Type of feed item (e.g. article, video, website). */
   readonly feedItemType: FeedItemType;
-  /** TODO: Better name + comment: Source of the feed item. */
+  /** Source of the feed item (e.g. RSS feed, YouTube channel, extension, ). */
   readonly feedSource: FeedSource;
   /** ID of the account that owns the feed item. */
   readonly accountId: AccountId;
@@ -163,6 +102,73 @@ export type FeedItem =
   | TweetFeedItem
   | XkcdFeedItem
   | YouTubeFeedItem;
+
+export enum TriageStatus {
+  Untriaged = 'UNTRIAGED',
+  Saved = 'SAVED',
+  Done = 'DONE',
+  Trashed = 'TRASHED',
+}
+
+export enum FeedItemImportStatus {
+  /** Created but not yet processed. */
+  New = 'NEW',
+  /** Currently being processed. */
+  Processing = 'PROCESSING',
+  /** Errored while processing. May have partially imported data. */
+  Failed = 'FAILED',
+  /** Successfully imported all data. */
+  Completed = 'COMPLETED',
+}
+
+interface BaseFeedItemImportState {
+  readonly status: FeedItemImportStatus;
+  readonly shouldFetch: boolean;
+  readonly lastImportRequestedTime: Date;
+  readonly lastSuccessfulImportTime: Date | null;
+}
+
+export interface NewFeedItemImportState extends BaseFeedItemImportState {
+  readonly status: FeedItemImportStatus.New;
+  readonly shouldFetch: true;
+  readonly lastSuccessfulImportTime: null;
+}
+
+export function makeNewFeedItemImportState(): NewFeedItemImportState {
+  return {
+    status: FeedItemImportStatus.New,
+    shouldFetch: true,
+    lastImportRequestedTime: new Date(),
+    lastSuccessfulImportTime: null,
+  };
+}
+
+export interface ProcessingFeedItemImportState extends BaseFeedItemImportState {
+  readonly status: FeedItemImportStatus.Processing;
+  readonly shouldFetch: false;
+  readonly importStartedTime: Date;
+  readonly lastSuccessfulImportTime: Date | null;
+}
+
+export interface FailedFeedItemImportState extends BaseFeedItemImportState {
+  readonly status: FeedItemImportStatus.Failed;
+  readonly shouldFetch: boolean;
+  readonly errorMessage: string;
+  readonly importFailedTime: Date;
+  readonly lastSuccessfulImportTime: Date | null;
+}
+
+export interface CompletedFeedItemImportState extends BaseFeedItemImportState {
+  readonly status: FeedItemImportStatus.Completed;
+  readonly shouldFetch: boolean;
+  readonly lastSuccessfulImportTime: Date;
+}
+
+export type FeedItemImportState =
+  | NewFeedItemImportState
+  | ProcessingFeedItemImportState
+  | FailedFeedItemImportState
+  | CompletedFeedItemImportState;
 
 export enum FeedItemActionType {
   Cancel = 'CANCEL',

@@ -21,9 +21,10 @@ import {
 import type {Result} from '@shared/types/results.types';
 import type {
   UserFeedSubscription,
-  UserFeedSubscriptionFromStorage,
   UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
+
+import type {UserFeedSubscriptionFromStorage} from '@shared/schemas/userFeedSubscriptions.schema';
 
 import {ServerAccountsService} from '@sharedServer/services/accounts.server';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';

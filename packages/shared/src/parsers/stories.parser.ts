@@ -4,7 +4,8 @@ import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {Result} from '@shared/types/results.types';
 import type {StoriesSidebarItemId} from '@shared/types/stories.types';
-import {StoriesSidebarItemIdSchema} from '@shared/types/stories.types';
+
+import {StoriesSidebarItemIdSchema} from '@shared/schemas/stories.schema';
 
 /**
  * Parses a {@link StoriesSidebarItemId} from a plain string. Returns an `ErrorResult` if the string is not

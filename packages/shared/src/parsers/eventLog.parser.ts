@@ -7,7 +7,7 @@ import {parseActor} from '@shared/parsers/actors.parser';
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
 import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions.parser';
 
-import {EventIdSchema, EventType} from '@shared/types/eventLog.types';
+import {EventType} from '@shared/types/eventLog.types';
 import type {
   EventId,
   EventLogItem,
@@ -21,6 +21,7 @@ import type {
 import type {Result} from '@shared/types/results.types';
 
 import {
+  EventIdSchema,
   EventLogItemFromStorageSchema,
   FeedItemActionEventLogItemDataSchema,
   FeedItemImportedEventLogItemDataSchema,

@@ -9,9 +9,10 @@ import type {AsyncResult} from '@shared/types/results.types';
 import type {
   RssUserFeedSubscription,
   UserFeedSubscription,
-  UserFeedSubscriptionFromStorage,
   UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
+
+import type {UserFeedSubscriptionFromStorage} from '@shared/schemas/userFeedSubscriptions.schema';
 
 import type {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 

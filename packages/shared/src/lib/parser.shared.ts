@@ -3,9 +3,10 @@ import type {ZodSchema} from 'zod';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {isDate, omitUndefined} from '@shared/lib/utils.shared';
 
-import type {FirestoreTimestamp} from '@shared/types/firebase.types';
 import type {Result} from '@shared/types/results.types';
 import type {BaseStoreItem, Supplier} from '@shared/types/utils.types';
+
+import type {FirestoreTimestamp} from '@shared/schemas/firebase.schema';
 
 /**
  * Parses a value using a Zod schema and returns a `SuccessResult` with the parsed value if
