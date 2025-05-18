@@ -7,18 +7,10 @@ import {parseActor} from '@shared/parsers/actors.parser';
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
 import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions.parser';
 
-import {
-  EventIdSchema,
-  EventLogItemFromStorageSchema,
-  EventType,
-  FeedItemActionEventLogItemDataSchema,
-  FeedItemImportedEventLogItemDataSchema,
-  UserFeedSubscriptionEventLogItemDataSchema,
-} from '@shared/types/eventLog.types';
+import {EventIdSchema, EventType} from '@shared/types/eventLog.types';
 import type {
   EventId,
   EventLogItem,
-  EventLogItemFromStorage,
   FeedItemActionEventLogItem,
   FeedItemActionEventLogItemData,
   FeedItemImportedEventLogItem,
@@ -27,6 +19,14 @@ import type {
   UserFeedSubscriptionEventLogItemData,
 } from '@shared/types/eventLog.types';
 import type {Result} from '@shared/types/results.types';
+
+import {
+  EventLogItemFromStorageSchema,
+  FeedItemActionEventLogItemDataSchema,
+  FeedItemImportedEventLogItemDataSchema,
+  UserFeedSubscriptionEventLogItemDataSchema,
+} from '@shared/schemas/eventLog.schema';
+import type {EventLogItemFromStorage} from '@shared/schemas/eventLog.schema';
 
 /**
  * Parses a {@link EventId} from a plain string. Returns an `ErrorResult` if the string is not
@@ -72,9 +72,7 @@ function parseUserFeedSubscriptionEventLogItem(
   maybeEventLogItem: unknown
 ): Result<UserFeedSubscriptionEventLogItem> {
   const parsedResult = parseZodResult(EventLogItemFromStorageSchema, maybeEventLogItem);
-  if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid event log item');
-  }
+  if (!parsedResult.success) return prefixErrorResult(parsedResult, 'Invalid event log item');
 
   const parsedAccountIdResult = parseAccountId(parsedResult.value.accountId);
   if (!parsedAccountIdResult.success) return parsedAccountIdResult;

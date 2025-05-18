@@ -11,12 +11,6 @@ import {omitUndefined} from '@shared/lib/utils.shared';
 import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions.parser';
 import {parseYouTubeChannelId} from '@shared/parsers/youtube.parser';
 
-import {
-  FeedSourceSchema,
-  IntervalFeedSourceSchema,
-  RssFeedSourceSchema,
-  YouTubeChannelFeedSourceSchema,
-} from '@shared/types/feedSources.types';
 import type {
   FeedSource,
   IntervalFeedSource,
@@ -25,6 +19,13 @@ import type {
 } from '@shared/types/feedSources.types';
 import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import type {Result} from '@shared/types/results.types';
+
+import {
+  FeedSourceSchema,
+  IntervalFeedSourceSchema,
+  RssFeedSourceSchema,
+  YouTubeChannelFeedSourceSchema,
+} from '@shared/schemas/feedSources.schema';
 
 /**
  * Parses a {@link UserFeedSubscription} from an unknown value. Returns an `ErrorResult` if the

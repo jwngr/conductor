@@ -3,7 +3,7 @@ import {logger} from '@shared/services/logger.shared';
 import {prefixError, upgradeUnknownError} from '@shared/lib/errorUtils.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {parseUrl} from '@shared/lib/urls.shared';
-import {assertNever} from '@shared/lib/utils.shared';
+import {assertNever, makeUuid} from '@shared/lib/utils.shared';
 import {isXkcdComicUrl} from '@shared/lib/xkcd.shared';
 import {isYouTubeVideoUrl} from '@shared/lib/youtube.shared';
 
@@ -11,11 +11,10 @@ import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
 import {
   FeedItemActionType,
   FeedItemType,
-  makeFeedItemId,
   makeNewFeedItemImportState,
   TriageStatus,
 } from '@shared/types/feedItems.types';
-import type {FeedItem, FeedItemAction} from '@shared/types/feedItems.types';
+import type {FeedItem, FeedItemAction, FeedItemId} from '@shared/types/feedItems.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/results.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
@@ -27,6 +26,13 @@ import type {
 } from '@shared/types/userFeedSubscriptions.types';
 
 type MaybeFeedItem = FeedItem | undefined | null;
+
+/**
+ * Creates a new random {@link FeedItemId}.
+ */
+export function makeFeedItemId(): FeedItemId {
+  return makeUuid<FeedItemId>();
+}
 
 export class SharedFeedItemHelpers {
   public static isMarkedDone(feedItem: MaybeFeedItem): boolean {

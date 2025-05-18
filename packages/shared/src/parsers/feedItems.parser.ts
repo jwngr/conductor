@@ -10,31 +10,36 @@ import {parseFeedSource} from '@shared/parsers/feedSources.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {
-  BaseFeedItemFromStorage,
   CompletedFeedItemImportState,
   FailedFeedItemImportState,
   FeedItem,
-  FeedItemFromStorage,
   FeedItemId,
   FeedItemImportState,
-  FeedItemImportStateFromStorage,
   ProcessingFeedItemImportState,
   XkcdFeedItem,
-  XkcdFeedItemFromStorage,
 } from '@shared/types/feedItems.types';
+import {
+  FeedItemImportStatus,
+  FeedItemType,
+  makeNewFeedItemImportState,
+} from '@shared/types/feedItems.types';
+import type {FeedSource} from '@shared/types/feedSources.types';
+import type {Result} from '@shared/types/results.types';
+
+import type {
+  BaseFeedItemFromStorage,
+  FeedItemFromStorage,
+  FeedItemImportStateFromStorage,
+  XkcdFeedItemFromStorage,
+} from '@shared/schemas/feedItems.schema';
 import {
   BaseFeedItemFromStorageSchema,
   CompletedFeedItemImportStateSchema,
   FailedFeedItemImportStateSchema,
   FeedItemIdSchema,
-  FeedItemImportStatus,
-  FeedItemType,
-  makeNewFeedItemImportState,
   ProcessingFeedItemImportStateSchema,
   XkcdFeedItemFromStorageSchema,
-} from '@shared/types/feedItems.types';
-import type {FeedSource} from '@shared/types/feedSources.types';
-import type {Result} from '@shared/types/results.types';
+} from '@shared/schemas/feedItems.schema';
 
 /**
  * Parses a {@link FeedItemId} from a plain string. Returns an `ErrorResult` if the string is not

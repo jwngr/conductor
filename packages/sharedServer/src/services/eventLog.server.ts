@@ -2,6 +2,7 @@ import type {WithFieldValue} from 'firebase-admin/firestore';
 
 import {logger} from '@shared/services/logger.shared';
 
+import {SYSTEM_ACTOR} from '@shared/lib/actors.shared';
 import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
@@ -9,11 +10,12 @@ import {makeSuccessResult} from '@shared/lib/results.shared';
 import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import {SYSTEM_ACTOR} from '@shared/types/actors.types';
 import {Environment, EventType, makeEventId} from '@shared/types/eventLog.types';
-import type {EventId, EventLogItem, EventLogItemFromStorage} from '@shared/types/eventLog.types';
+import type {EventId, EventLogItem} from '@shared/types/eventLog.types';
 import type {FeedItemId} from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/results.types';
+
+import type {EventLogItemFromStorage} from '@shared/schemas/eventLog.schema';
 
 import {
   makeFirestoreDataConverter,
