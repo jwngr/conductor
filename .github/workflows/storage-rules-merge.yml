@@ -16,12 +16,11 @@ jobs:
     environment: production
     steps:
       - uses: actions/checkout@v4
-      - name: CI setup action for Firebase deploy
+      - name: Common CI setup
         uses: ./.github/actions/setup-workflow
         with:
           install-firebase: 'true'
       - name: Deploy Cloud Storage rules
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-        # Yarn v4 requires installing deps before using `yarn run`, so use `firebase deploy` directly.
-        run: firebase deploy --only storage --project=prod
+        run: bun run deploy:rules --project=prod

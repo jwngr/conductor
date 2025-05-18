@@ -10,13 +10,13 @@
     "dotenv": "^16.5.0"
   },
   "scripts": {
-    "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",
+    "validate": "bun run validate:lint && bun run validate:types && bun run validate:format",
     "validate:lint": "eslint src --report-unused-disable-directives --max-warnings 0",
     "validate:lint:fix": "eslint src --fix",
     "validate:types": "tsc --build",
     "validate:format": "prettier --check 'src/**/*.{js,ts,json}'",
     "format": "prettier --write 'src/**/*.{js,ts,json}'",
-    "ci": "rm -rf node_modules/ && yarn install",
+    "ci": "rm -rf node_modules/ && bun install",
     "build": "exit 0",
     "clean": "rm -rf dist/ distIgnore/",
     "test": "echo 'No tests implemented'"

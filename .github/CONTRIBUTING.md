@@ -3,7 +3,7 @@
 ## Packages
 
 The repo is organized into TypeScript packages which share code and are managed via
-[Yarn workspaces](https://classic.yarnpkg.com/lang/en/docs/workspaces/).
+[Bun workspaces](https://bun.sh/docs/install/workspaces).
 
 The packages are:
 
@@ -25,15 +25,11 @@ The packages are:
     $ cd conductor
     ```
 
-1.  Install [Yarn v4](https://yarnpkg.com/getting-started/install). Yarn workspaces are used to
-    share code across several packages (e.g `pwa`, `extension`, and `functions`):
+1.  Install [Bun](https://bun.sh/docs/installation). [Bun workspaces](https://bun.sh/docs/install/workspaces)
+    are used to share code across packages:
 
     ```bash
-    $ corepack enable
-    # If above fails: run `npm install -g corepack` then try again
-    $ corepack prepare yarn@4 --activate
-    $ yarn --version
-    # Confirm above outputted 4.x.x
+    $ curl -fsSL https://bun.sh/install | bash
     ```
 
 1.  Install the [Firebase CLI] as a global dependency, which will be used for running the local
@@ -41,13 +37,13 @@ The packages are:
 
     ```bash
     # Note this is `firebase-tools`, not `firebase`!
-    $ yarn global add firebase-tools
+    $ bun add --global firebase-tools
     ```
 
 1.  Install dependencies across all packages:
 
     ```bash
-    $ yarn install
+    $ bun install
     ```
 
 1.  Create a new [Firebase project](https://firebase.google.com/) for local development. Enable the
@@ -81,9 +77,9 @@ The packages are:
 
 To run the PWA locally, you need to run 3 things.
 
-1. React frontend: `yarn run dev:pwa` (runs local web server)
-1. Server functions: `yarn run dev:functions` (see [Server functions local development](#server-functions-local-development) for options)
-1. RSS server: `yarn run dev:rss` (see [RSS feed provider local development](#rss-feed-provider-local-development) for options)
+1. React frontend: `bun run dev:pwa` (runs local web server)
+1. Server functions: `bun run dev:functions` (see [Server functions local development](#server-functions-local-development) for options)
+1. RSS server: `bun run dev:rss` (see [RSS feed provider local development](#rss-feed-provider-local-development) for options)
 
 By default, the PWA runs against a local emulator (server functions) and in-memory feed provider
 (RSS server). You can run against live services by following the instructions below:
@@ -102,8 +98,8 @@ you can also develop against a live Firebase project.
 
 1. _(first time only)_ Install Java (does not need to be OpenJDK): `brew install openjdk`
 1. Set `VITE_FIREBASE_USE_EMULATOR=true` in `.env` file at the root of the repo
-1. Build the `functions` package: `yarn run build:functions`
-1. Start the local Firebase emulator suite: `yarn run dev:functions`
+1. Build the `functions` package: `bun run build:functions`
+1. Start the local Firebase emulator suite: `bun run dev:functions`
 1. Visit the Firebase emulator admin UI at http://localhost:4000
 1. Enter any valid email address and click the login button. No email will actually be sent.
 1. Copy the fully authenticated sign-in URL from the same shell running the emulator suite
@@ -113,8 +109,8 @@ you can also develop against a live Firebase project.
 **To run against a live Firebase project:**
 
 1. Set `VITE_FIREBASE_USE_EMULATOR=false` in `.env` file at the root of the repo
-1. Build the `functions` package: `yarn run build:functions`
-1. Deploy the server functions to Firebase: `yarn run deploy:functions`
+1. Build the `functions` package: `bun run build:functions`
+1. Deploy the server functions to Firebase: `bun run deploy:functions`
 
 ## RSS feed provider local development
 
@@ -131,7 +127,7 @@ instructions below.
 **To develop against a local in-memory feed provider (default):**
 
 1. Set `RSS_FEED_PROVIDER_TYPE='local'` in `packages/functions/.env.<FIREBASE_PROJECT_ID>`
-1. Run the RSS server: `yarn run dev:rss`
+1. Run the RSS server: `bun run dev:rss`
 
 The RSS server will be accessible at http://localhost:6556.
 
@@ -140,7 +136,7 @@ The RSS server will be accessible at http://localhost:6556.
 1. Create a [Superfeedr](https://superfeedr.com/) account and generate an API key with full permissions
 1. Set `RSS_FEED_PROVIDER_TYPE='superfeedr'` in `packages/functions/.env.<FIREBASE_PROJECT_ID>`
 1. Set `SUPERFEEDR_USER` and `SUPERFEEDR_API_KEY` in `packages/functions/.env.<FIREBASE_PROJECT_ID>`
-1. Run the RSS server: `yarn run dev:rss`
+1. Run the RSS server: `bun run dev:rss`
 
 View the [Superfeedr dashboard](https://superfeedr.com/) for your feeds.
 
@@ -149,7 +145,7 @@ View the [Superfeedr dashboard](https://superfeedr.com/) for your feeds.
 1. Build the extension:
 
    ```bash
-   $ yarn run build:extension
+   $ bun run build:extension
    ```
 
 1. Go to [`chrome://extensions`](chrome://extensions).

@@ -11,7 +11,7 @@ on:
       - 'firebase.json'
       - 'package.json'
       - 'tsconfig.json'
-      - 'yarn.lock'
+      - 'bun.lock'
       - '.github/actions/setup-workflow/**'
       - '.github/workflows/firebase-functions-pull-request.yml'
 permissions:
@@ -23,15 +23,15 @@ jobs:
     environment: staging
     steps:
       - uses: actions/checkout@v4
-      - name: CI setup action for Firebase deploy
+      - name: Common CI setup
         uses: ./.github/actions/setup-workflow
         with:
           install-deps: 'true'
           install-firebase: 'true'
       - name: Validate functions
-        run: yarn run validate:functions
+        run: bun run validate:functions
       - name: Build functions
-        run: yarn run build:functions
+        run: bun run build:functions
       - name: Create .env file
         working-directory: packages/functions
         env:
@@ -75,4 +75,4 @@ jobs:
       - name: Deploy Firebase Functions
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-        run: yarn run deploy:functions --project=stag
+        run: bun run deploy:functions --project=stag

@@ -11,7 +11,7 @@ Conductor is a modern web + AI application that combines RSS feed aggregation wi
 ## Architecture Overview
 
 ### Package Structure
-The project is organized into several TypeScript packages managed via Yarn workspaces:
+The project is organized into several TypeScript packages managed via Bun workspaces:
 
 - `/shared` - Core types, schemas, and utilities shared across all packages
 - `/sharedClient` - Client-side shared code and React hooks
@@ -25,7 +25,7 @@ The project is organized into several TypeScript packages managed via Yarn works
 ### Key Technologies
 - **Frontend**: React 19, TypeScript, Tailwind v4, Radix UI, Zod
 - **Backend**: Firebase (Firestore, Functions, Storage, Auth)
-- **Build Tools**: Vite, Yarn 4
+- **Build Tools**: Vite, Bun
 - **External Services**: 
   - Firecrawl (for web scraping)
   - Superfeedr (for RSS feed management)

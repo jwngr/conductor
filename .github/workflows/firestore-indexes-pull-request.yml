@@ -14,13 +14,12 @@ jobs:
     environment: staging
     steps:
       - uses: actions/checkout@v4
-      - name: CI setup action for Firebase deploy
+      - name: Common CI setup
         uses: ./.github/actions/setup-workflow
         with:
-          install-deps: 'true' # TODO: This is not really needed, but CI fails without it.
+          install-deps: 'true'
           install-firebase: 'true'
       - name: Deploy Firestore indexes
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-        # Yarn v4 requires installing deps before using `yarn run`, so use `firebase deploy` directly.
-        run: firebase deploy --only firestore:indexes --project=stag
+        run: bun run deploy:indexes --project=stag
