@@ -13,7 +13,6 @@ import type {
   IntervalMiniFeedSource,
   IntervalMiniFeedSourceFromStorage,
   MiniFeedSource,
-  MiniFeedSourceFromStorage,
   RssFeedSource,
   RssFeedSourceFromStorage,
   RssMiniFeedSource,
@@ -297,31 +296,9 @@ export function parseIntervalMiniFeedSource(
   });
 }
 
-/**
- * Converts a {@link FeedSource} to a {@link FeedSourceFromStorage} object that can be persisted to
- * Firestore.
- */
-export function toStorageMiniFeedSource(feedSource: MiniFeedSource): MiniFeedSourceFromStorage {
-  switch (feedSource.type) {
-    case FeedSourceType.Interval:
-      return toStorageIntervalMiniFeedSource(feedSource);
-    case FeedSourceType.RSS:
-      return toStorageRssMiniFeedSource(feedSource);
-    case FeedSourceType.YouTubeChannel:
-      return toStorageYouTubeChannelMiniFeedSource(feedSource);
-    case FeedSourceType.PWA:
-      return PWA_FEED_SOURCE;
-    case FeedSourceType.Extension:
-      return EXTENSION_FEED_SOURCE;
-    case FeedSourceType.PocketExport:
-      return POCKET_EXPORT_FEED_SOURCE;
-    default:
-      // Fall back to the PWA as a feed source.
-      return PWA_FEED_SOURCE;
-  }
-}
-
-function toStorageRssMiniFeedSource(feedSource: RssMiniFeedSource): RssMiniFeedSourceFromStorage {
+export function toStorageRssMiniFeedSource(
+  feedSource: RssMiniFeedSource
+): RssMiniFeedSourceFromStorage {
   return {
     type: FeedSourceType.RSS,
     feedSourceId: feedSource.feedSourceId,
@@ -330,7 +307,7 @@ function toStorageRssMiniFeedSource(feedSource: RssMiniFeedSource): RssMiniFeedS
   };
 }
 
-function toStorageYouTubeChannelMiniFeedSource(
+export function toStorageYouTubeChannelMiniFeedSource(
   feedSource: YouTubeChannelMiniFeedSource
 ): YouTubeChannelMiniFeedSourceFromStorage {
   return {
@@ -340,7 +317,7 @@ function toStorageYouTubeChannelMiniFeedSource(
   };
 }
 
-function toStorageIntervalMiniFeedSource(
+export function toStorageIntervalMiniFeedSource(
   feedSource: IntervalMiniFeedSource
 ): IntervalMiniFeedSourceFromStorage {
   return {

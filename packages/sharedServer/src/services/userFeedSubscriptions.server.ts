@@ -5,7 +5,7 @@ import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import {FeedSourceType} from '@shared/types/feedSources.types';
-import type {RssMiniFeedSource} from '@shared/types/feedSources.types';
+import type {FeedSourceId} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {
   RssUserFeedSubscription,
@@ -46,12 +46,12 @@ export class ServerUserFeedSubscriptionsService {
    * Fetches all user feed subscription documents for an individual feed source from Firestore.
    */
   public async fetchForRssFeedSource(
-    feedSource: RssMiniFeedSource
+    feedSourceId: FeedSourceId
   ): AsyncResult<RssUserFeedSubscription[]> {
     const query = this.userFeedSubscriptionsCollectionService
       .getCollectionRef()
       .where('miniFeedSource.type', '==', FeedSourceType.RSS)
-      .where('feedSourceId', '==', feedSource.feedSourceId);
+      .where('miniFeedSource.feedSourceId', '==', feedSourceId);
 
     const queryResult = await this.userFeedSubscriptionsCollectionService.fetchQueryDocs(query);
     if (!queryResult.success) {

@@ -223,3 +223,10 @@ export const MiniUserFeedSubscriptionFromStorageSchema = z.union([
   YouTubeChannelMiniUserFeedSubscriptionSchema,
   IntervalMiniUserFeedSubscriptionSchema,
 ]);
+
+/**
+ * Type for a {@link MiniUserFeedSubscription} persisted to Firestore.
+ */
+export type MiniUserFeedSubscriptionFromStorage = z.infer<
+  typeof MiniUserFeedSubscriptionFromStorageSchema
+>;

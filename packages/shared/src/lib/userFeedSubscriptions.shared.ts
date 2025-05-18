@@ -1,12 +1,9 @@
 import {IMMEDIATE_DELIVERY_SCHEDULE} from '@shared/lib/deliverySchedules.shared';
+import {makeIntervalFeedSource, makeYouTubeChannelFeedSource} from '@shared/lib/feedSources.shared';
 import {makeUuid} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import type {
-  IntervalMiniFeedSource,
-  RssMiniFeedSource,
-  YouTubeChannelMiniFeedSource,
-} from '@shared/types/feedSources.types';
+import type {RssMiniFeedSource} from '@shared/types/feedSources.types';
 import type {
   IntervalMiniUserFeedSubscription,
   IntervalUserFeedSubscription,
@@ -16,6 +13,7 @@ import type {
   YouTubeChannelMiniUserFeedSubscription,
   YouTubeChannelUserFeedSubscription,
 } from '@shared/types/userFeedSubscriptions.types';
+import type {YouTubeChannelId} from '@shared/types/youtube.types';
 
 /**
  * Creates a new random {@link UserFeedSubscriptionId}.
@@ -44,14 +42,14 @@ export function makeRssUserFeedSubscription(args: {
 
 export function makeYouTubeChannelUserFeedSubscription(args: {
   readonly accountId: AccountId;
-  readonly miniFeedSource: YouTubeChannelMiniFeedSource;
+  readonly channelId: YouTubeChannelId;
 }): YouTubeChannelUserFeedSubscription {
-  const {miniFeedSource, accountId} = args;
+  const {accountId, channelId} = args;
 
   return {
     userFeedSubscriptionId: makeUserFeedSubscriptionId(),
     accountId,
-    miniFeedSource,
+    miniFeedSource: makeYouTubeChannelFeedSource({channelId}),
     isActive: true,
     deliverySchedule: IMMEDIATE_DELIVERY_SCHEDULE,
     // TODO(timestamps): Use server timestamps instead.
@@ -62,14 +60,14 @@ export function makeYouTubeChannelUserFeedSubscription(args: {
 
 export function makeIntervalUserFeedSubscription(args: {
   readonly accountId: AccountId;
-  readonly miniFeedSource: IntervalMiniFeedSource;
+  readonly intervalSeconds: number;
 }): IntervalUserFeedSubscription {
-  const {miniFeedSource, accountId} = args;
+  const {accountId, intervalSeconds} = args;
 
   return {
     userFeedSubscriptionId: makeUserFeedSubscriptionId(),
     accountId,
-    miniFeedSource,
+    miniFeedSource: makeIntervalFeedSource({intervalSeconds}),
     isActive: true,
     deliverySchedule: IMMEDIATE_DELIVERY_SCHEDULE,
     // TODO(timestamps): Use server timestamps instead.

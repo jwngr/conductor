@@ -5,12 +5,6 @@ import {useEffect, useMemo} from 'react';
 
 import {USER_FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {
-  makeIntervalFeedSource,
-  makeRssFeedSource,
-  makeYouTubeChannelMiniFeedSource,
-  makeYouTubeFeedSource,
-} from '@shared/lib/feedSources.shared';
 import {withFirestoreTimestamps} from '@shared/lib/parser.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {
@@ -28,7 +22,7 @@ import {
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import {SubscribeAccountToRSSFeedOnCallResponse} from '@shared/types/api.types';
+import type {SubscribeAccountToRSSFeedOnCallResponse} from '@shared/types/api.types';
 import type {AsyncState} from '@shared/types/asyncState.types';
 import {FeedSourceType} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/results.types';
@@ -129,8 +123,8 @@ export class ClientUserFeedSubscriptionsService {
     const existingSubResult = await this.userFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
       where('accountId', '==', this.accountId),
       // TODO: Confirm this works. May need an index.
-      where('feedSource.type', '==', FeedSourceType.YouTubeChannel),
-      where('feedSource.channelId', '==', channelId),
+      where('miniFeedSource.type', '==', FeedSourceType.YouTubeChannel),
+      where('miniFeedSource.channelId', '==', channelId),
     ]);
     if (!existingSubResult.success) return existingSubResult;
 
@@ -142,7 +136,7 @@ export class ClientUserFeedSubscriptionsService {
 
     // Create a new user feed subscription object locally.
     const userFeedSubscription = makeYouTubeChannelUserFeedSubscription({
-      miniFeedSource: makeYouTubeChannelMiniFeedSource({channelId}),
+      channelId,
       accountId: this.accountId,
     });
 
@@ -165,9 +159,8 @@ export class ClientUserFeedSubscriptionsService {
     }
 
     // Create a new user feed subscription object locally.
-    const feedSource = makeIntervalFeedSource({intervalSeconds});
     const userFeedSubscription = makeIntervalUserFeedSubscription({
-      feedSource,
+      intervalSeconds,
       accountId: this.accountId,
     });
 

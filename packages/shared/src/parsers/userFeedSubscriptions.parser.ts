@@ -12,22 +12,22 @@ import {
   parseIntervalMiniFeedSource,
   parseRssMiniFeedSource,
   parseYouTubeChannelMiniFeedSource,
+  toStorageIntervalMiniFeedSource,
+  toStorageRssMiniFeedSource,
+  toStorageYouTubeChannelMiniFeedSource,
 } from '@shared/parsers/feedSources.parser';
 
 import {FeedSourceType} from '@shared/types/feedSources.types';
 import type {Result} from '@shared/types/results.types';
 import {
-  MiniUserFeedSubscriptionFromStorageSchema,
-  RssMiniUserFeedSubscriptionSchema,
+  IntervalUserFeedSubscriptionFromStorageSchema,
   RssUserFeedSubscriptionFromStorageSchema,
   UserFeedSubscriptionFromStorageSchema,
   UserFeedSubscriptionIdSchema,
   YouTubeChannelUserFeedSubscriptionFromStorageSchema,
 } from '@shared/types/userFeedSubscriptions.types';
-import type {MiniUserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 import type {
   IntervalUserFeedSubscription,
-  RssMiniUserFeedSubscription,
   RssUserFeedSubscription,
   UserFeedSubscription,
   UserFeedSubscriptionFromStorage,
@@ -162,7 +162,7 @@ function parseIntervalUserFeedSubscription(
   maybeUserFeedSubscription: unknown
 ): Result<IntervalUserFeedSubscription> {
   const parsedResult = parseZodResult(
-    YouTubeChannelUserFeedSubscriptionFromStorageSchema,
+    IntervalUserFeedSubscriptionFromStorageSchema,
     maybeUserFeedSubscription
   );
   if (!parsedResult.success) {
@@ -269,204 +269,160 @@ function toStorageIntervalUserFeedSubscription(
 //  MiniUserFeedSubscription parsers  //
 ////////////////////////////////////////
 
-/**
- * Parses a {@link UserFeedSubscription} from an unknown value. Returns an `ErrorResult` if the
- * value is not valid.
- */
-export function parseMiniUserFeedSubscription(
-  maybeMiniUserFeedSubscription: unknown
-): Result<MiniUserFeedSubscription> {
-  const parsedResult = parseZodResult(
-    MiniUserFeedSubscriptionFromStorageSchema,
-    maybeMiniUserFeedSubscription
-  );
-  if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid mini user feed subscription');
-  }
+// /**
+//  * Parses a {@link UserFeedSubscription} from an unknown value. Returns an `ErrorResult` if the
+//  * value is not valid.
+//  */
+// function parseMiniUserFeedSubscription(
+//   maybeMiniUserFeedSubscription: unknown
+// ): Result<MiniUserFeedSubscription> {
+//   const parsedResult = parseZodResult(
+//     MiniUserFeedSubscriptionFromStorageSchema,
+//     maybeMiniUserFeedSubscription
+//   );
+//   if (!parsedResult.success) {
+//     return prefixErrorResult(parsedResult, 'Invalid mini user feed subscription');
+//   }
 
-  switch (parsedResult.value.feedSource.type) {
-    case FeedSourceType.RSS:
-      return parseRssMiniUserFeedSubscription(parsedResult.value);
-    case FeedSourceType.YouTubeChannel:
-      return parseYouTubeChannelMiniUserFeedSubscription(parsedResult.value);
-    case FeedSourceType.Interval:
-      return parseIntervalMiniUserFeedSubscription(parsedResult.value);
-    default:
-      return makeErrorResult(new Error('Unexpected feed source type'));
-  }
-}
+//   switch (parsedResult.value.miniFeedSource.type) {
+//     case FeedSourceType.RSS:
+//       return parseRssMiniUserFeedSubscription(parsedResult.value);
+//     case FeedSourceType.YouTubeChannel:
+//       return parseYouTubeChannelMiniUserFeedSubscription(parsedResult.value);
+//     case FeedSourceType.Interval:
+//       return parseIntervalMiniUserFeedSubscription(parsedResult.value);
+//     default:
+//       return makeErrorResult(new Error('Unexpected feed source type'));
+//   }
+// }
 
-function parseRssMiniUserFeedSubscription(
-  maybeMiniUserFeedSubscription: unknown
-): Result<RssMiniUserFeedSubscription> {
-  const parsedResult = parseZodResult(
-    RssMiniUserFeedSubscriptionSchema,
-    maybeMiniUserFeedSubscription
-  );
-  if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid mini user feed subscription');
-  }
+// function parseRssMiniUserFeedSubscription(
+//   maybeMiniUserFeedSubscription: unknown
+// ): Result<RssMiniUserFeedSubscription> {
+//   const parsedResult = parseZodResult(
+//     RssMiniUserFeedSubscriptionSchema,
+//     maybeMiniUserFeedSubscription
+//   );
+//   if (!parsedResult.success) {
+//     return prefixErrorResult(parsedResult, 'Invalid mini RSS user feed subscription');
+//   }
 
-  const parsedFeedSubIdResult = parseUserFeedSubscriptionId(
-    parsedResult.value.userFeedSubscriptionId
-  );
-  if (!parsedFeedSubIdResult.success) return parsedFeedSubIdResult;
+//   const parsedFeedSubIdResult = parseUserFeedSubscriptionId(
+//     parsedResult.value.userFeedSubscriptionId
+//   );
+//   if (!parsedFeedSubIdResult.success) return parsedFeedSubIdResult;
 
-  const parsedMiniFeedSourceResult = parseRssMiniFeedSource(parsedResult.value.miniFeedSource);
-  if (!parsedMiniFeedSourceResult.success) return parsedMiniFeedSourceResult;
+//   const parsedMiniFeedSourceResult = parseRssMiniFeedSource(parsedResult.value.miniFeedSource);
+//   if (!parsedMiniFeedSourceResult.success) return parsedMiniFeedSourceResult;
 
-  return makeSuccessResult(
-    omitUndefined({
-      userFeedSubscriptionId: parsedFeedSubIdResult.value,
-      miniFeedSource: parsedMiniFeedSourceResult.value,
-      isActive: parsedResult.value.isActive,
-    })
-  );
-}
+//   return makeSuccessResult(
+//     omitUndefined({
+//       userFeedSubscriptionId: parsedFeedSubIdResult.value,
+//       miniFeedSource: parsedMiniFeedSourceResult.value,
+//       isActive: parsedResult.value.isActive,
+//     })
+//   );
+// }
 
-function parseYouTubeChannelUserFeedSubscription(
-  maybeUserFeedSubscription: unknown
-): Result<YouTubeChannelUserFeedSubscription> {
-  const parsedResult = parseZodResult(
-    YouTubeChannelUserFeedSubscriptionFromStorageSchema,
-    maybeUserFeedSubscription
-  );
-  if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid user feed subscription');
-  }
+// function parseYouTubeChannelMiniUserFeedSubscription(
+//   maybeMiniUserFeedSubscription: unknown
+// ): Result<YouTubeChannelMiniUserFeedSubscription> {
+//   const parsedResult = parseZodResult(
+//     YouTubeChannelMiniUserFeedSubscriptionSchema,
+//     maybeMiniUserFeedSubscription
+//   );
+//   if (!parsedResult.success) {
+//     return prefixErrorResult(parsedResult, 'Invalid mini YouTube user feed subscription');
+//   }
 
-  const parsedAccountIdResult = parseAccountId(parsedResult.value.accountId);
-  if (!parsedAccountIdResult.success) return parsedAccountIdResult;
+//   const parsedFeedSubIdResult = parseUserFeedSubscriptionId(
+//     parsedResult.value.userFeedSubscriptionId
+//   );
+//   if (!parsedFeedSubIdResult.success) return parsedFeedSubIdResult;
 
-  const parsedUserFeedSubscriptionIdResult = parseUserFeedSubscriptionId(
-    parsedResult.value.userFeedSubscriptionId
-  );
-  if (!parsedUserFeedSubscriptionIdResult.success) return parsedUserFeedSubscriptionIdResult;
+//   const parsedMiniFeedSourceResult = parseYouTubeChannelMiniFeedSource(
+//     parsedResult.value.miniFeedSource
+//   );
+//   if (!parsedMiniFeedSourceResult.success) return parsedMiniFeedSourceResult;
 
-  const parsedDeliveryScheduleResult = parseDeliverySchedule(parsedResult.value.deliverySchedule);
-  if (!parsedDeliveryScheduleResult.success) return parsedDeliveryScheduleResult;
+//   return makeSuccessResult(
+//     omitUndefined({
+//       userFeedSubscriptionId: parsedFeedSubIdResult.value,
+//       miniFeedSource: parsedMiniFeedSourceResult.value,
+//       isActive: parsedResult.value.isActive,
+//     })
+//   );
+// }
 
-  const parsedMiniFeedSourceResult = parseYouTubeChannelMiniFeedSource(
-    parsedResult.value.miniFeedSource
-  );
-  if (!parsedMiniFeedSourceResult.success) return parsedMiniFeedSourceResult;
+// function parseIntervalMiniUserFeedSubscription(
+//   maybeMiniUserFeedSubscription: unknown
+// ): Result<IntervalMiniUserFeedSubscription> {
+//   const parsedResult = parseZodResult(
+//     IntervalMiniUserFeedSubscriptionSchema,
+//     maybeMiniUserFeedSubscription
+//   );
+//   if (!parsedResult.success) {
+//     return prefixErrorResult(parsedResult, 'Invalid user feed subscription');
+//   }
 
-  return makeSuccessResult(
-    omitUndefined({
-      userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
-      accountId: parsedAccountIdResult.value,
-      miniFeedSource: parsedMiniFeedSourceResult.value,
-      isActive: parsedResult.value.isActive,
-      deliverySchedule: parsedDeliveryScheduleResult.value,
-      createdTime: parseStorageTimestamp(parsedResult.value.createdTime),
-      lastUpdatedTime: parseStorageTimestamp(parsedResult.value.lastUpdatedTime),
-    })
-  );
-}
+//   const parsedFeedSubIdResult = parseUserFeedSubscriptionId(
+//     parsedResult.value.userFeedSubscriptionId
+//   );
+//   if (!parsedFeedSubIdResult.success) return parsedFeedSubIdResult;
 
-function parseIntervalUserFeedSubscription(
-  maybeUserFeedSubscription: unknown
-): Result<IntervalUserFeedSubscription> {
-  const parsedResult = parseZodResult(
-    YouTubeChannelUserFeedSubscriptionFromStorageSchema,
-    maybeUserFeedSubscription
-  );
-  if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid user feed subscription');
-  }
+//   const parsedMiniFeedSourceResult = parseIntervalMiniFeedSource(parsedResult.value.miniFeedSource);
+//   if (!parsedMiniFeedSourceResult.success) return parsedMiniFeedSourceResult;
 
-  const parsedAccountIdResult = parseAccountId(parsedResult.value.accountId);
-  if (!parsedAccountIdResult.success) return parsedAccountIdResult;
+//   return makeSuccessResult(
+//     omitUndefined({
+//       userFeedSubscriptionId: parsedFeedSubIdResult.value,
+//       miniFeedSource: parsedMiniFeedSourceResult.value,
+//       isActive: parsedResult.value.isActive,
+//     })
+//   );
+// }
 
-  const parsedUserFeedSubscriptionIdResult = parseUserFeedSubscriptionId(
-    parsedResult.value.userFeedSubscriptionId
-  );
-  if (!parsedUserFeedSubscriptionIdResult.success) return parsedUserFeedSubscriptionIdResult;
+// function toStorageRssMiniUserFeedSubscription(
+//   userFeedSubscription: RssUserFeedSubscription
+// ): UserFeedSubscriptionFromStorage {
+//   return omitUndefined({
+//     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
+//     miniFeedSource: toStorageRssMiniFeedSource(userFeedSubscription.miniFeedSource),
+//     accountId: userFeedSubscription.accountId,
+//     isActive: userFeedSubscription.isActive,
+//     unsubscribedTime: userFeedSubscription.unsubscribedTime,
+//     createdTime: userFeedSubscription.createdTime,
+//     lastUpdatedTime: userFeedSubscription.lastUpdatedTime,
+//     deliverySchedule: toStorageDeliverySchedule(userFeedSubscription.deliverySchedule),
+//   });
+// }
 
-  const parsedDeliveryScheduleResult = parseDeliverySchedule(parsedResult.value.deliverySchedule);
-  if (!parsedDeliveryScheduleResult.success) return parsedDeliveryScheduleResult;
+// function toStorageYouTubeChannelMiniUserFeedSubscription(
+//   userFeedSubscription: YouTubeChannelUserFeedSubscription
+// ): UserFeedSubscriptionFromStorage {
+//   return omitUndefined({
+//     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
+//     miniFeedSource: toStorageYouTubeChannelMiniFeedSource(userFeedSubscription.miniFeedSource),
+//     accountId: userFeedSubscription.accountId,
+//     isActive: userFeedSubscription.isActive,
+//     unsubscribedTime: userFeedSubscription.unsubscribedTime,
+//     createdTime: userFeedSubscription.createdTime,
+//     lastUpdatedTime: userFeedSubscription.lastUpdatedTime,
+//     deliverySchedule: toStorageDeliverySchedule(userFeedSubscription.deliverySchedule),
+//   });
+// }
 
-  const parsedMiniFeedSourceResult = parseIntervalMiniFeedSource(parsedResult.value.miniFeedSource);
-  if (!parsedMiniFeedSourceResult.success) return parsedMiniFeedSourceResult;
-
-  return makeSuccessResult(
-    omitUndefined({
-      userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
-      accountId: parsedAccountIdResult.value,
-      miniFeedSource: parsedMiniFeedSourceResult.value,
-      isActive: parsedResult.value.isActive,
-      deliverySchedule: parsedDeliveryScheduleResult.value,
-      createdTime: parseStorageTimestamp(parsedResult.value.createdTime),
-      lastUpdatedTime: parseStorageTimestamp(parsedResult.value.lastUpdatedTime),
-    })
-  );
-}
-
-/**
- * Converts a {@link UserFeedSubscription} to a {@link UserFeedSubscriptionFromStorage} object that
- * can be persisted to Firestore.
- */
-export function toStorageUserFeedSubscription(
-  userFeedSubscription: UserFeedSubscription
-): UserFeedSubscriptionFromStorage {
-  switch (userFeedSubscription.miniFeedSource.type) {
-    case FeedSourceType.RSS:
-      return toStorageRssUserFeedSubscription(userFeedSubscription as RssUserFeedSubscription);
-    case FeedSourceType.YouTubeChannel:
-      return toStorageYouTubeChannelUserFeedSubscription(
-        userFeedSubscription as YouTubeChannelUserFeedSubscription
-      );
-    case FeedSourceType.Interval:
-      return toStorageIntervalUserFeedSubscription(
-        userFeedSubscription as IntervalUserFeedSubscription
-      );
-    default:
-      // TODO: More safely handle malformed user feed subscriptions.
-      return userFeedSubscription as UserFeedSubscriptionFromStorage;
-  }
-}
-
-function toStorageRssUserFeedSubscription(
-  userFeedSubscription: RssUserFeedSubscription
-): UserFeedSubscriptionFromStorage {
-  return omitUndefined({
-    userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
-    miniFeedSource: toStorageRssMiniFeedSource(userFeedSubscription.miniFeedSource),
-    accountId: userFeedSubscription.accountId,
-    isActive: userFeedSubscription.isActive,
-    unsubscribedTime: userFeedSubscription.unsubscribedTime,
-    createdTime: userFeedSubscription.createdTime,
-    lastUpdatedTime: userFeedSubscription.lastUpdatedTime,
-    deliverySchedule: toStorageDeliverySchedule(userFeedSubscription.deliverySchedule),
-  });
-}
-
-function toStorageYouTubeChannelUserFeedSubscription(
-  userFeedSubscription: YouTubeChannelUserFeedSubscription
-): UserFeedSubscriptionFromStorage {
-  return omitUndefined({
-    userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
-    miniFeedSource: toStorageYouTubeChannelMiniFeedSource(userFeedSubscription.miniFeedSource),
-    accountId: userFeedSubscription.accountId,
-    isActive: userFeedSubscription.isActive,
-    unsubscribedTime: userFeedSubscription.unsubscribedTime,
-    createdTime: userFeedSubscription.createdTime,
-    lastUpdatedTime: userFeedSubscription.lastUpdatedTime,
-    deliverySchedule: toStorageDeliverySchedule(userFeedSubscription.deliverySchedule),
-  });
-}
-
-function toStorageIntervalUserFeedSubscription(
-  userFeedSubscription: IntervalUserFeedSubscription
-): UserFeedSubscriptionFromStorage {
-  return omitUndefined({
-    userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
-    miniFeedSource: toStorageIntervalMiniFeedSource(userFeedSubscription.miniFeedSource),
-    accountId: userFeedSubscription.accountId,
-    isActive: userFeedSubscription.isActive,
-    unsubscribedTime: userFeedSubscription.unsubscribedTime,
-    createdTime: userFeedSubscription.createdTime,
-    lastUpdatedTime: userFeedSubscription.lastUpdatedTime,
-    deliverySchedule: toStorageDeliverySchedule(userFeedSubscription.deliverySchedule),
-  });
-}
+// function toStorageIntervalMiniUserFeedSubscription(
+//   userFeedSubscription: IntervalUserFeedSubscription
+// ): UserFeedSubscriptionFromStorage {
+//   return omitUndefined({
+//     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
+//     miniFeedSource: toStorageIntervalMiniFeedSource(userFeedSubscription.miniFeedSource),
+//     accountId: userFeedSubscription.accountId,
+//     isActive: userFeedSubscription.isActive,
+//     unsubscribedTime: userFeedSubscription.unsubscribedTime,
+//     createdTime: userFeedSubscription.createdTime,
+//     lastUpdatedTime: userFeedSubscription.lastUpdatedTime,
+//     deliverySchedule: toStorageDeliverySchedule(userFeedSubscription.deliverySchedule),
+//   });
+// }

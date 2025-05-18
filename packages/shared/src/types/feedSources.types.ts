@@ -42,17 +42,13 @@ export interface PWAFeedSource extends BaseInMemoryFeedSource {
   readonly type: FeedSourceType.PWA;
 }
 
-export const PWA_FEED_SOURCE: PWAFeedSource = {
-  type: FeedSourceType.PWA,
-};
+export const PWA_FEED_SOURCE: PWAFeedSource = {type: FeedSourceType.PWA};
 
 export interface ExtensionFeedSource extends BaseInMemoryFeedSource {
   readonly type: FeedSourceType.Extension;
 }
 
-export const EXTENSION_FEED_SOURCE: ExtensionFeedSource = {
-  type: FeedSourceType.Extension,
-};
+export const EXTENSION_FEED_SOURCE: ExtensionFeedSource = {type: FeedSourceType.Extension};
 
 export interface PocketExportFeedSource extends BaseInMemoryFeedSource {
   readonly type: FeedSourceType.PocketExport;
@@ -204,8 +200,6 @@ const BaseInMemoryMiniFeedSourceSchema = z.object({
 const BasePersistedMiniFeedSourceSchema = z.object({
   type: z.nativeEnum(FeedSourceType),
   feedSourceId: FeedSourceIdSchema,
-  createdTime: FirestoreTimestampSchema.or(z.date()),
-  lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
 export const RssMiniFeedSourceSchema = BasePersistedMiniFeedSourceSchema.extend({
@@ -221,7 +215,6 @@ export const YouTubeChannelMiniFeedSourceSchema = BasePersistedMiniFeedSourceSch
 
 export const IntervalMiniFeedSourceSchema = BasePersistedMiniFeedSourceSchema.extend({
   type: z.literal(FeedSourceType.Interval),
-  intervalSeconds: z.number().min(1),
 });
 
 export const PWAMiniFeedSourceSchema = BaseInMemoryMiniFeedSourceSchema.extend({

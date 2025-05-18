@@ -30,7 +30,7 @@ export function makeRssFeedSource(
   };
 }
 
-export function makeYouTubeFeedSource(
+export function makeYouTubeChannelFeedSource(
   args: Omit<YouTubeChannelFeedSource, 'type' | 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
 ): YouTubeChannelFeedSource {
   const {channelId} = args;
