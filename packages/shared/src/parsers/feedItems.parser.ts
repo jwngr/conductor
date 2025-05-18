@@ -6,7 +6,7 @@ import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
-import {parseMiniUserFeedSubscription} from '@shared/parsers/userFeedSubscriptions.parser';
+import {parseFeedSource} from '@shared/parsers/feedSources.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {
@@ -18,6 +18,7 @@ import type {
   FeedItemId,
   FeedItemImportState,
   FeedItemImportStateFromStorage,
+  FeedSource,
   ProcessingFeedItemImportState,
   XkcdFeedItem,
   XkcdFeedItemFromStorage,
@@ -34,7 +35,6 @@ import {
   XkcdFeedItemFromStorageSchema,
 } from '@shared/types/feedItems.types';
 import type {Result} from '@shared/types/results.types';
-import type {MiniUserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
 /**
  * Parses a {@link FeedItemId} from a plain string. Returns an `ErrorResult` if the string is not
@@ -161,11 +161,9 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
   );
   if (!parsedImportStateResult.success) return parsedImportStateResult;
 
-  const parsedMiniFeedSubscriptionResult = parseMiniUserFeedSubscription(
-    parsedBaseFeedItemResult.value.miniFeedSubscription
-  );
-  if (!parsedMiniFeedSubscriptionResult.success) return parsedMiniFeedSubscriptionResult;
-  const parseMiniFeedSubscription = parsedMiniFeedSubscriptionResult.value;
+  const parseFeedSourceResult = parseFeedSource(parsedBaseFeedItemResult.value.feedSource);
+  if (!parseFeedSourceResult.success) return parseFeedSourceResult;
+  const parsedFeedSource = parseFeedSourceResult.value;
 
   switch (parsedBaseFeedItemResult.value.feedItemType) {
     case FeedItemType.YouTube:
@@ -179,7 +177,7 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
         feedItemId: parsedIdResult.value,
         accountId: parsedAccountIdResult.value,
         importState: parsedImportStateResult.value,
-        miniFeedSubscription: parseMiniFeedSubscription,
+        feedSource: parsedFeedSource,
       });
     case FeedItemType.Xkcd:
       return parseXkcdFeedItem({
@@ -187,7 +185,7 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
         feedItemId: parsedIdResult.value,
         accountId: parsedAccountIdResult.value,
         importState: parsedImportStateResult.value,
-        miniFeedSubscription: parseMiniFeedSubscription,
+        feedSource: parsedFeedSource,
       });
     default:
       return makeErrorResult(
@@ -202,19 +200,17 @@ export function parseBaseFeedItem(args: {
   readonly feedItemId: FeedItemId;
   readonly accountId: AccountId;
   readonly importState: FeedItemImportState;
-  readonly miniFeedSubscription: MiniUserFeedSubscription;
+  readonly feedSource: FeedSource;
 }): Result<FeedItem> {
-  const {feedItemType, storageBaseFeedItem, feedItemId, accountId} = args;
-  const {importState, miniFeedSubscription} = args;
+  const {feedItemType, storageBaseFeedItem, feedItemId, feedSource, accountId, importState} = args;
 
   return makeSuccessResult(
     omitUndefined({
       feedItemType,
-      feedSourceType: storageBaseFeedItem.feedSourceType,
+      feedSource,
       accountId,
       importState,
       feedItemId,
-      miniFeedSubscription,
       url: storageBaseFeedItem.url,
       title: storageBaseFeedItem.title,
       description: storageBaseFeedItem.description,
@@ -233,9 +229,9 @@ export function parseXkcdFeedItem(args: {
   readonly feedItemId: FeedItemId;
   readonly accountId: AccountId;
   readonly importState: FeedItemImportState;
-  readonly miniFeedSubscription: MiniUserFeedSubscription;
+  readonly feedSource: FeedSource;
 }): Result<FeedItem> {
-  const {maybeFeedItem, feedItemId, accountId, importState, miniFeedSubscription} = args;
+  const {maybeFeedItem, feedItemId, accountId, importState, feedSource} = args;
 
   const parsedXkcdFeedItemResult = parseZodResult(XkcdFeedItemFromStorageSchema, maybeFeedItem);
   if (!parsedXkcdFeedItemResult.success) {
@@ -246,10 +242,9 @@ export function parseXkcdFeedItem(args: {
   return makeSuccessResult(
     omitUndefined({
       feedItemType: FeedItemType.Xkcd,
-      feedSourceType: storageXkcdFeedItem.feedSourceType,
       xkcd: parsedXkcdFeedItemResult.value.xkcd,
+      feedSource,
       accountId,
-      miniFeedSubscription,
       importState,
       feedItemId,
       url: storageXkcdFeedItem.url,
@@ -295,9 +290,8 @@ export function toStorageBaseFeedItem(
   return omitUndefined({
     feedItemId: feedItem.feedItemId,
     feedItemType: feedItem.feedItemType,
-    feedSourceType: feedItem.feedSourceType,
+    feedSource: feedItem.feedSource,
     accountId: feedItem.accountId,
-    miniFeedSubscription: feedItem.miniFeedSubscription,
     importState: feedItem.importState,
     url: feedItem.url,
     title: feedItem.title,
@@ -319,9 +313,8 @@ export function toStorageXkcdFeedItem(feedItem: XkcdFeedItem): XkcdFeedItemFromS
   return omitUndefined({
     feedItemId: feedItem.feedItemId,
     feedItemType: feedItem.feedItemType,
-    feedSourceType: feedItem.feedSourceType,
+    feedSource: feedItem.feedSource,
     accountId: feedItem.accountId,
-    miniFeedSubscription: feedItem.miniFeedSubscription,
     importState: feedItem.importState,
     url: feedItem.url,
     title: feedItem.title,

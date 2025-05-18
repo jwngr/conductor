@@ -147,7 +147,7 @@ function useGroupedFeedItems(
 
       case 'feedSourceType':
         for (const item of feedItems) {
-          const groupKey = item.feedSourceType;
+          const groupKey = item.feedSource.feedSourceType;
           if (!groupedItems[groupKey]) {
             groupedItems[groupKey] = [];
           }

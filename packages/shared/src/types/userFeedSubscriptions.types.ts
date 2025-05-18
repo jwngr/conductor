@@ -4,7 +4,7 @@ import type {AccountId} from '@shared/types/accounts.types';
 import {AccountIdSchema} from '@shared/types/accounts.types';
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
 import {DeliveryScheduleFromStorageSchema} from '@shared/types/deliverySchedules.types';
-import {FeedSourceType} from '@shared/types/feedSources.types';
+import {FeedSourceType} from '@shared/types/feedItems.types';
 import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 import {YouTubeChannelIdSchema, type YouTubeChannelId} from '@shared/types/youtube.types';

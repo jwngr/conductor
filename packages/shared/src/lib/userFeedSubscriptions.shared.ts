@@ -2,14 +2,11 @@ import {IMMEDIATE_DELIVERY_SCHEDULE} from '@shared/lib/deliverySchedules.shared'
 import {makeUuid} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import {FeedSourceType} from '@shared/types/feedSources.types';
+import {FeedSourceType} from '@shared/types/feedItems.types';
 import type {
-  IntervalMiniUserFeedSubscription,
   IntervalUserFeedSubscription,
-  RssMiniUserFeedSubscription,
   RssUserFeedSubscription,
   UserFeedSubscriptionId,
-  YouTubeChannelMiniUserFeedSubscription,
   YouTubeChannelUserFeedSubscription,
 } from '@shared/types/userFeedSubscriptions.types';
 import type {YouTubeChannelId} from '@shared/types/youtube.types';
@@ -77,38 +74,5 @@ export function makeIntervalUserFeedSubscription(args: {
     // TODO(timestamps): Use server timestamps instead.
     createdTime: new Date(),
     lastUpdatedTime: new Date(),
-  };
-}
-
-export function makeRssMiniUserFeedSubscription(args: {
-  readonly userFeedSubscription: RssUserFeedSubscription;
-}): RssMiniUserFeedSubscription {
-  const {userFeedSubscription} = args;
-  return {
-    feedSourceType: FeedSourceType.RSS,
-    url: userFeedSubscription.url,
-    title: userFeedSubscription.title,
-    userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
-  };
-}
-
-export function makeYouTubeChannelMiniUserFeedSubscription(args: {
-  readonly userFeedSubscription: YouTubeChannelUserFeedSubscription;
-}): YouTubeChannelMiniUserFeedSubscription {
-  const {userFeedSubscription} = args;
-  return {
-    feedSourceType: FeedSourceType.YouTubeChannel,
-    channelId: userFeedSubscription.channelId,
-    userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
-  };
-}
-
-export function makeIntervalMiniUserFeedSubscription(args: {
-  readonly userFeedSubscription: IntervalUserFeedSubscription;
-}): IntervalMiniUserFeedSubscription {
-  const {userFeedSubscription} = args;
-  return {
-    feedSourceType: FeedSourceType.Interval,
-    userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
   };
 }

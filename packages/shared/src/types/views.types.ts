@@ -1,4 +1,4 @@
-import type {FeedItem} from '@shared/types/feedItems.types';
+import type {FeedItem, FeedSourceType} from '@shared/types/feedItems.types';
 import type {QueryFilterOp, SortDirection} from '@shared/types/query.types';
 
 export enum ViewType {
@@ -27,10 +27,9 @@ interface ViewFilter<T> {
   readonly value: unknown;
 }
 
-export type ViewGroupByField = keyof Pick<
-  FeedItem,
-  'feedItemType' | 'feedSourceType' | 'importState' | 'createdTime' | 'lastUpdatedTime'
->;
+export type ViewGroupByField =
+  | 'feedSourceType'
+  | keyof Pick<FeedItem, 'feedItemType' | 'importState' | 'createdTime' | 'lastUpdatedTime'>;
 
 export interface ViewGroupByOption {
   readonly field: ViewGroupByField;

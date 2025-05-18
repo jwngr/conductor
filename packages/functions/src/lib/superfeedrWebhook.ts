@@ -4,7 +4,7 @@ import type {Request, Response} from 'express';
 import {logger} from '@shared/services/logger.shared';
 
 import {prefixError} from '@shared/lib/errorUtils.shared';
-import {makeRssMiniUserFeedSubscription} from '@shared/lib/userFeedSubscriptions.shared';
+import {makeRssFeedSource} from '@shared/lib/feedSources.shared';
 import {batchAsyncResults, partition} from '@shared/lib/utils.shared';
 
 import type {FeedItemId} from '@shared/types/feedItems.types';
@@ -73,15 +73,12 @@ export async function handleSuperfeedrWebhookHelper(args: {
 
     userFeedSubscriptions.forEach((userFeedSubscription) => {
       const newFeedItemResult = async (): AsyncResult<FeedItemId | null> => {
-        return await feedItemsService.createFeedItem(
-          makeRssMiniUserFeedSubscription({userFeedSubscription}),
-          {
-            url: item.permalinkUrl,
-            accountId: userFeedSubscription.accountId,
-            title: item.title,
-            description: item.summary,
-          }
-        );
+        return await feedItemsService.createFeedItem(makeRssFeedSource({userFeedSubscription}), {
+          url: item.permalinkUrl,
+          accountId: userFeedSubscription.accountId,
+          title: item.title,
+          description: item.summary,
+        });
       };
       createFeedItemResults.push(newFeedItemResult);
     });

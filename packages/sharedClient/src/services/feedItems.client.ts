@@ -29,14 +29,11 @@ import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers
 import type {AccountId, AuthStateChangedUnsubscribe} from '@shared/types/accounts.types';
 import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {AsyncState} from '@shared/types/asyncState.types';
-import type {FeedItem, FeedItemId, XkcdFeedItem} from '@shared/types/feedItems.types';
-import {FeedSourceType} from '@shared/types/feedSources.types';
+import type {FeedItem, FeedItemId, FeedSource, XkcdFeedItem} from '@shared/types/feedItems.types';
+import {FeedSourceType} from '@shared/types/feedItems.types';
 import {fromQueryFilterOp} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/results.types';
-import type {
-  MiniUserFeedSubscription,
-  UserFeedSubscription,
-} from '@shared/types/userFeedSubscriptions.types';
+import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 import type {Consumer} from '@shared/types/utils.types';
 import type {ViewType} from '@shared/types/views.types';
 
@@ -103,7 +100,7 @@ function filterFeedItemsByDeliverySchedules(args: {
   const {feedItems, userFeedSubscriptions} = args;
 
   return feedItems.filter((feedItem) => {
-    switch (feedItem.miniFeedSubscription.feedSourceType) {
+    switch (feedItem.feedSource.feedSourceType) {
       case FeedSourceType.PWA:
       case FeedSourceType.Extension:
       case FeedSourceType.PocketExport:
@@ -114,7 +111,7 @@ function filterFeedItemsByDeliverySchedules(args: {
       case FeedSourceType.RSS: {
         // Some sources have delivery schedules which determine when they are shown.
         const matchingDeliverySchedule = findDeliveryScheduleForFeedSubscription({
-          userFeedSubscriptionId: feedItem.miniFeedSubscription.userFeedSubscriptionId,
+          userFeedSubscriptionId: feedItem.feedSource.userFeedSubscriptionId,
           userFeedSubscriptions,
         });
 
@@ -124,7 +121,7 @@ function filterFeedItemsByDeliverySchedules(args: {
         });
       }
       default:
-        assertNever(feedItem.miniFeedSubscription);
+        assertNever(feedItem.feedSource);
     }
   });
 }
@@ -325,7 +322,7 @@ export class ClientFeedItemsService {
   }
 
   public async createFeedItem(
-    miniFeedSubscription: MiniUserFeedSubscription,
+    feedSource: FeedSource,
     args: Pick<FeedItem, 'url' | 'title'>
   ): AsyncResult<FeedItem> {
     const {url, title} = args;
@@ -336,7 +333,7 @@ export class ClientFeedItemsService {
     }
 
     // Create a new feed item object locally.
-    const feedItemResult = SharedFeedItemHelpers.makeFeedItem(miniFeedSubscription, {
+    const feedItemResult = SharedFeedItemHelpers.makeFeedItem(feedSource, {
       url: trimmedUrl,
       accountId: this.accountId,
       title,

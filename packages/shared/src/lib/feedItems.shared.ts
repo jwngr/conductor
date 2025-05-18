@@ -15,7 +15,7 @@ import {
   makeNewFeedItemImportState,
   TriageStatus,
 } from '@shared/types/feedItems.types';
-import type {FeedItem, FeedItemAction} from '@shared/types/feedItems.types';
+import type {FeedItem, FeedItemAction, FeedSource} from '@shared/types/feedItems.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/results.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
@@ -51,7 +51,7 @@ export class SharedFeedItemHelpers {
   }
 
   public static makeFeedItem(
-    miniFeedSubscription: MiniUserFeedSubscription,
+    feedSource: FeedSource,
     args: Pick<FeedItem, 'accountId' | 'url' | 'title' | 'description'>
   ): Result<FeedItem> {
     const {accountId, url, title, description} = args;
@@ -59,7 +59,6 @@ export class SharedFeedItemHelpers {
     // Common fields across all feed item types.
     const feedItemId = makeFeedItemId();
     const feedItemType = getFeedItemTypeFromUrl(url);
-    const feedSourceType = miniFeedSubscription.feedSourceType;
     const triageStatus = TriageStatus.Untriaged;
     const importState = makeNewFeedItemImportState();
     const tagIds: Partial<Record<TagId, true>> = {
@@ -77,11 +76,10 @@ export class SharedFeedItemHelpers {
       case FeedItemType.YouTube:
         return makeSuccessResult<FeedItem>({
           feedItemType,
-          feedSourceType,
+          feedSource,
           url,
           accountId,
           feedItemId,
-          miniFeedSubscription,
           importState,
           title,
           description,
@@ -96,12 +94,11 @@ export class SharedFeedItemHelpers {
       case FeedItemType.Xkcd:
         return makeSuccessResult<FeedItem>({
           feedItemType,
-          feedSourceType,
+          feedSource,
           xkcd: null,
           url,
           accountId,
           feedItemId,
-          miniFeedSubscription,
           importState,
           title,
           description,
