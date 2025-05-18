@@ -149,12 +149,10 @@ type BasePersistedMiniUserFeedSubscription = Pick<
   'userFeedSubscriptionId' | 'isActive'
 >;
 
-export interface RssMiniUserFeedSubscription {
+export interface RssMiniUserFeedSubscription extends BasePersistedMiniUserFeedSubscription {
   readonly feedSourceType: FeedSourceType.RSS;
   readonly url: string;
   readonly title: string;
-  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-  readonly isActive: boolean;
 }
 
 export interface YouTubeChannelMiniUserFeedSubscription
@@ -165,7 +163,6 @@ export interface YouTubeChannelMiniUserFeedSubscription
 
 export interface IntervalMiniUserFeedSubscription extends BasePersistedMiniUserFeedSubscription {
   readonly feedSourceType: FeedSourceType.Interval;
-  readonly intervalSeconds: number;
 }
 
 export type MiniUserFeedSubscription =

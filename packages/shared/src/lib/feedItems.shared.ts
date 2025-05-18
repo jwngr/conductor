@@ -4,6 +4,8 @@ import {prefixError, upgradeUnknownError} from '@shared/lib/errorUtils.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {parseUrl} from '@shared/lib/urls.shared';
 import {assertNever} from '@shared/lib/utils.shared';
+import {isXkcdComicUrl} from '@shared/lib/xkcd.shared';
+import {isYouTubeChannelUrl} from '@shared/lib/youtube.shared';
 
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
 import {
@@ -244,4 +246,20 @@ export function findDeliveryScheduleForFeedSubscription(args: {
     (subscription) => subscription.userFeedSubscriptionId === userFeedSubscriptionId
   );
   return matchingUserFeedSubscription?.deliverySchedule ?? null;
+}
+
+/**
+ * Uses heuristics to determine what {@link FeedItemType} a URL is likely to be. This is used to
+ * determine which renderer to use when rendering a feed item.
+ */
+export function getFeedItemTypeFromUrl(url: string): FeedItemType {
+  if (isYouTubeChannelUrl(url)) {
+    return FeedItemType.YouTube;
+  } else if (isXkcdComicUrl(url)) {
+    return FeedItemType.Xkcd;
+  }
+  // TODO: Make this more robust.
+
+  // Default to article.
+  return FeedItemType.Article;
 }

@@ -111,7 +111,6 @@ export function makeIntervalMiniUserFeedSubscription(args: {
   const {userFeedSubscription} = args;
   return {
     feedSourceType: FeedSourceType.Interval,
-    intervalSeconds: userFeedSubscription.intervalSeconds,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     isActive: true,
   };
