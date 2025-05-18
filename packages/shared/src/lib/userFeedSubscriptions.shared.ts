@@ -3,7 +3,7 @@ import {makeSuccessResult} from '@shared/lib/results.shared';
 import {makeUuid} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import type {FeedSource} from '@shared/types/feedSources.types';
+import type {PersistedFeedSource} from '@shared/types/feedSources.types';
 import type {Result} from '@shared/types/results.types';
 import type {
   UserFeedSubscription,
@@ -22,7 +22,7 @@ export function makeUserFeedSubscriptionId(): UserFeedSubscriptionId {
  */
 export function makeUserFeedSubscription(newItemArgs: {
   readonly accountId: AccountId;
-  readonly feedSource: FeedSource;
+  readonly feedSource: PersistedFeedSource;
 }): Result<UserFeedSubscription> {
   const {feedSource, accountId} = newItemArgs;
 

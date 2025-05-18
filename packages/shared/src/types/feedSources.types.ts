@@ -6,7 +6,7 @@ import type {YouTubeChannelId} from '@shared/types/youtube.types';
 import {YouTubeChannelIdSchema} from '@shared/types/youtube.types';
 
 /**
- * Strongly-typed type for a {@link FeedSource}'s unique identifier. Prefer this over plain strings.
+ * Strongly-typed type for a {@link PersistedFeedSource}'s unique identifier. Prefer this over plain strings.
  */
 export type FeedSourceId = string & {readonly __brand: 'FeedSourceIdBrand'};
 
@@ -85,10 +85,10 @@ export interface IntervalFeedSource extends BasePersistedFeedSource {
 /**
  * A generator of {@link FeedItem}s over time.
  *
- * Use the {@link UserFeedSubscription} object to manage user subscriptions to a {@link FeedSource}.
+ * Use the {@link UserFeedSubscription} object to manage user subscriptions to a {@link PersistedFeedSource}.
  * A feed source is created the first time an account subscribes to a unique feed URL.
  */
-export type FeedSource =
+export type PersistedFeedSource =
   | PWAFeedSource
   | ExtensionFeedSource
   | PocketExportFeedSource
@@ -97,11 +97,11 @@ export type FeedSource =
   | IntervalFeedSource;
 
 /**
- * A subset of {@link FeedSource} with state which must be persisted to Firestore. Unlike in-memory
+ * A subset of {@link PersistedFeedSource} with state which must be persisted to Firestore. Unlike in-memory
  * feed sources, a persisted feed source has a unique ID and helpers for parsing and storage.
  */
 export type PersistedFeedSource = Exclude<
-  FeedSource,
+  PersistedFeedSource,
   // These feed sources are constants which do not need to be persisted to Firestore beyond an ID.
   PWAFeedSource | ExtensionFeedSource | PocketExportFeedSource
 >;
@@ -168,7 +168,7 @@ export type ExtensionFeedSourceFromStorage = z.infer<typeof ExtensionFeedSourceS
 export type PocketExportFeedSourceFromStorage = z.infer<typeof PocketExportFeedSourceSchema>;
 
 /**
- * Zod schema for a {@link FeedSource} persisted to Firestore.
+ * Zod schema for a {@link PersistedFeedSource} persisted to Firestore.
  */
 export const FeedSourceFromStorageSchema = z.union([
   RssFeedSourceSchema,
@@ -180,7 +180,7 @@ export const FeedSourceFromStorageSchema = z.union([
 ]);
 
 /**
- * Type for a {@link FeedSource} persisted to Firestore.
+ * Type for a {@link PersistedFeedSource} persisted to Firestore.
  */
 export type FeedSourceFromStorage =
   | RssFeedSourceFromStorage

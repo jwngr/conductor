@@ -6,9 +6,9 @@ import {withFirestoreTimestamps} from '@shared/lib/parser.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {
-  FeedSource,
   FeedSourceFromStorage,
   FeedSourceId,
+  PersistedFeedSource,
 } from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
@@ -17,7 +17,7 @@ import type {ServerFirestoreCollectionService} from '@sharedServer/services/fire
 
 type FeedSourceCollectionService = ServerFirestoreCollectionService<
   FeedSourceId,
-  FeedSource,
+  PersistedFeedSource,
   FeedSourceFromStorage
 >;
 
@@ -31,7 +31,7 @@ export class ServerFeedSourcesService {
   /**
    * Fetches an existing feed by its ID.
    */
-  public async fetchById(feedSourceId: FeedSourceId): AsyncResult<FeedSource | null> {
+  public async fetchById(feedSourceId: FeedSourceId): AsyncResult<PersistedFeedSource | null> {
     const maybeFeedSource = await this.feedSourcesCollectionService.fetchById(feedSourceId);
     return prefixResultIfError(maybeFeedSource, 'Error fetching feed source by ID in Firestore');
   }
@@ -39,7 +39,7 @@ export class ServerFeedSourcesService {
   /**
    * Fetches an existing feed source document from Firestore by its URL.
    */
-  public async fetchByUrl(feedUrl: string): AsyncResult<FeedSource | null> {
+  public async fetchByUrl(feedUrl: string): AsyncResult<PersistedFeedSource | null> {
     const query = this.feedSourcesCollectionService.getCollectionRef().where('url', '==', feedUrl);
     const maybeFeedSource = await this.feedSourcesCollectionService.fetchFirstQueryDoc(query);
     return prefixResultIfError(maybeFeedSource, 'Error fetching feed source by URL in Firestore');
@@ -50,8 +50,11 @@ export class ServerFeedSourcesService {
    * exists, use {@link fetchByUrlOrCreate}.
    */
   public async createRssFeedSource(
-    feedDetails: Omit<FeedSource, 'type' | 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
-  ): AsyncResult<FeedSource> {
+    feedDetails: Omit<
+      PersistedFeedSource,
+      'type' | 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'
+    >
+  ): AsyncResult<PersistedFeedSource> {
     // Create the new feed source in memory.
     const newFeedSource = makeRssFeedSource({
       url: feedDetails.url,
@@ -62,7 +65,10 @@ export class ServerFeedSourcesService {
     const createResult = await this.feedSourcesCollectionService.setDoc(
       newFeedSource.feedSourceId,
       // TODO: Fix this unsafe type cast.
-      withFirestoreTimestamps(newFeedSource, serverTimestampSupplier) as WithFieldValue<FeedSource>
+      withFirestoreTimestamps(
+        newFeedSource,
+        serverTimestampSupplier
+      ) as WithFieldValue<PersistedFeedSource>
     );
     if (!createResult.success) {
       return prefixErrorResult(createResult, 'Error adding feed source to Firestore');
@@ -76,8 +82,8 @@ export class ServerFeedSourcesService {
    */
   public async fetchByUrlOrCreate(
     url: string,
-    feedSourceDetails: Partial<Pick<FeedSource, 'title'>>
-  ): AsyncResult<FeedSource> {
+    feedSourceDetails: Partial<Pick<PersistedFeedSource, 'title'>>
+  ): AsyncResult<PersistedFeedSource> {
     // First try to fetch the existing feed source.
     const existingFeedSourceResult = await this.fetchByUrl(url);
     if (!existingFeedSourceResult.success) return existingFeedSourceResult;
@@ -99,7 +105,7 @@ export class ServerFeedSourcesService {
    */
   public async update(
     feedSourceId: FeedSourceId,
-    update: Partial<WithFieldValue<Pick<FeedSource, 'title'>>>
+    update: Partial<WithFieldValue<Pick<PersistedFeedSource, 'title'>>>
   ): AsyncResult<void> {
     const updateResult = await this.feedSourcesCollectionService.updateDoc(feedSourceId, update);
     return prefixResultIfError(updateResult, 'Error updating feed source in Firestore');

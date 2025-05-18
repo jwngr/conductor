@@ -6,7 +6,7 @@ import {makeSuccessResult} from '@shared/lib/results.shared';
 import {makeUserFeedSubscription} from '@shared/lib/userFeedSubscriptions.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import type {FeedSource, FeedSourceId} from '@shared/types/feedSources.types';
+import type {FeedSourceId, PersistedFeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {
   UserFeedSubscription,
@@ -61,7 +61,7 @@ export class ServerUserFeedSubscriptionsService {
    * Adds a new user feed subscription document to Firestore.
    */
   public async createFeedSubscription(args: {
-    feedSource: FeedSource;
+    feedSource: PersistedFeedSource;
     accountId: AccountId;
   }): AsyncResult<UserFeedSubscription> {
     const {feedSource, accountId} = args;
