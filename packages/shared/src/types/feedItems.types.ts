@@ -1,34 +1,14 @@
-import {z} from 'zod';
-
-import {makeUuid} from '@shared/lib/utils.shared';
-
 import type {AccountId} from '@shared/types/accounts.types';
-import {FeedSourceSchema} from '@shared/types/feedSources.types';
 import type {FeedSource} from '@shared/types/feedSources.types';
-import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {IconName} from '@shared/types/icons.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import type {TagId} from '@shared/types/tags.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 
-import {AccountIdSchema} from '@shared/schemas/accounts.schema';
-
 /**
  * Strongly-typed type for a {@link FeedItem}'s unique identifier. Prefer this over plain strings.
  */
 export type FeedItemId = string & {readonly __brand: 'FeedItemIdBrand'};
-
-/**
- * Zod schema for a {@link FeedItemId}.
- */
-export const FeedItemIdSchema = z.string().uuid();
-
-/**
- * Creates a new random {@link FeedItemId}.
- */
-export function makeFeedItemId(): FeedItemId {
-  return makeUuid<FeedItemId>();
-}
 
 export enum FeedItemType {
   Article = 'ARTICLE',
@@ -142,92 +122,6 @@ interface BaseFeedItem extends BaseStoreItem {
    */
   readonly tagIds: Partial<Record<TagId, true>>;
 }
-
-export const NewFeedItemImportStateSchema = z.object({
-  status: z.literal(FeedItemImportStatus.New),
-  shouldFetch: z.literal(true),
-  lastSuccessfulImportTime: z.null(),
-  lastImportRequestedTime: FirestoreTimestampSchema.or(z.date()),
-});
-
-export const ProcessingFeedItemImportStateSchema = z.object({
-  status: z.literal(FeedItemImportStatus.Processing),
-  shouldFetch: z.literal(false),
-  importStartedTime: FirestoreTimestampSchema.or(z.date()),
-  lastSuccessfulImportTime: FirestoreTimestampSchema.or(z.date()).or(z.null()),
-  lastImportRequestedTime: FirestoreTimestampSchema.or(z.date()),
-});
-
-export const FailedFeedItemImportStateSchema = z.object({
-  status: z.literal(FeedItemImportStatus.Failed),
-  shouldFetch: z.boolean(),
-  errorMessage: z.string(),
-  importFailedTime: FirestoreTimestampSchema.or(z.date()),
-  lastSuccessfulImportTime: FirestoreTimestampSchema.or(z.date()).or(z.null()),
-  lastImportRequestedTime: FirestoreTimestampSchema.or(z.date()),
-});
-
-export const CompletedFeedItemImportStateSchema = z.object({
-  status: z.literal(FeedItemImportStatus.Completed),
-  shouldFetch: z.boolean(),
-  lastSuccessfulImportTime: FirestoreTimestampSchema.or(z.date()),
-  lastImportRequestedTime: FirestoreTimestampSchema.or(z.date()),
-});
-
-const FeedItemImportStateFromStorageSchema = z.discriminatedUnion('status', [
-  NewFeedItemImportStateSchema,
-  ProcessingFeedItemImportStateSchema,
-  FailedFeedItemImportStateSchema,
-  CompletedFeedItemImportStateSchema,
-]);
-
-export type FeedItemImportStateFromStorage = z.infer<typeof FeedItemImportStateFromStorageSchema>;
-
-/**
- * Zod schema for a {@link FeedItem} persisted to Firestore.
- */
-export const BaseFeedItemFromStorageSchema = z.object({
-  feedItemType: z.nativeEnum(FeedItemType),
-  feedSource: FeedSourceSchema,
-  feedItemId: FeedItemIdSchema,
-  accountId: AccountIdSchema,
-  importState: FeedItemImportStateFromStorageSchema,
-  triageStatus: z.nativeEnum(TriageStatus),
-  url: z.string().url(),
-  title: z.string(),
-  description: z.string().nullable(),
-  summary: z.string().nullable(),
-  outgoingLinks: z.array(z.string().url()),
-  tagIds: z.record(z.string(), z.literal(true).optional()),
-  createdTime: FirestoreTimestampSchema.or(z.date()),
-  lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
-});
-
-/**
- * Type for a {@link FeedItem} persisted to Firestore.
- */
-export type BaseFeedItemFromStorage = z.infer<typeof BaseFeedItemFromStorageSchema>;
-
-/**
- * Zod schema for an {@link XkcdFeedItem} persisted to Firestore.
- */
-export const XkcdFeedItemFromStorageSchema = BaseFeedItemFromStorageSchema.extend({
-  feedItemType: z.literal(FeedItemType.Xkcd),
-  xkcd: z
-    .object({
-      altText: z.string(),
-      imageUrlSmall: z.string().url(),
-      imageUrlLarge: z.string().url(),
-    })
-    .nullable(),
-});
-
-/**
- * Type for an {@link XkcdFeedItem} persisted to Firestore.
- */
-export type XkcdFeedItemFromStorage = z.infer<typeof XkcdFeedItemFromStorageSchema>;
-
-export type FeedItemFromStorage = BaseFeedItemFromStorage | XkcdFeedItemFromStorage;
 
 export interface ArticleFeedItem extends BaseFeedItem {
   readonly feedItemType: FeedItemType.Article;

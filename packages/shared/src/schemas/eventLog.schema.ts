@@ -1,12 +1,13 @@
 import {z} from 'zod';
 
 import {Environment, EventType} from '@shared/types/eventLog.types';
-import {FeedItemActionType, FeedItemIdSchema} from '@shared/types/feedItems.types';
+import {FeedItemActionType} from '@shared/types/feedItems.types';
 import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import {UserFeedSubscriptionIdSchema} from '@shared/types/userFeedSubscriptions.types';
 
 import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 import {ActorSchema} from '@shared/schemas/actors.schema';
+import {FeedItemIdSchema} from '@shared/schemas/feedItem.schema';
 
 /** Zod schema for an {@link EventId}. */
 // TODO: Consider adding `brand()` and defining `EventId` based on this schema.
