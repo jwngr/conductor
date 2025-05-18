@@ -41,17 +41,17 @@ export class ServerFeedItemsService {
   }
 
   public async createFeedItem(
-    feedSource: FeedSource,
-    args: Pick<FeedItem, 'url' | 'accountId' | 'title' | 'description'>
+    args: Pick<FeedItem, 'feedSource' | 'url' | 'accountId' | 'title' | 'description'>
   ): AsyncResult<FeedItemId | null> {
-    const {url, accountId, title, description} = args;
+    const {feedSource, url, accountId, title, description} = args;
 
     const trimmedUrl = url.trim();
     if (!isValidUrl(trimmedUrl)) {
       return makeErrorResult(new Error(`Invalid URL provided for feed item: "${url}"`));
     }
 
-    const feedItemResult = SharedFeedItemHelpers.makeFeedItem(feedSource, {
+    const feedItemResult = SharedFeedItemHelpers.makeFeedItem({
+      feedSource,
       url: trimmedUrl,
       accountId,
       title,

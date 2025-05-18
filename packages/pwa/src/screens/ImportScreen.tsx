@@ -100,7 +100,8 @@ export const ImportScreen: React.FC = () => {
   const handleImportItem = async (item: PocketImportItem, key: string): Promise<void> => {
     setImportStatus(key, PROCESSING_EXTERNAL_MIGRATION_ITEM_STATE);
 
-    const createResult = await feedItemsService.createFeedItem(POCKET_EXPORT_FEED_SOURCE, {
+    const createResult = await feedItemsService.createFeedItem({
+      feedSource: POCKET_EXPORT_FEED_SOURCE,
       url: item.url,
       title: item.title,
     });

@@ -102,7 +102,8 @@ async function main(): Promise<void> {
       continue;
     }
 
-    const createFeedItemResult = await feedItemsService.createFeedItem(POCKET_EXPORT_FEED_SOURCE, {
+    const createFeedItemResult = await feedItemsService.createFeedItem({
+      feedSource: POCKET_EXPORT_FEED_SOURCE,
       accountId,
       url: pocketItem.url,
       title: pocketItem.title,

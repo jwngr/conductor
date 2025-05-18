@@ -323,10 +323,9 @@ export class ClientFeedItemsService {
   }
 
   public async createFeedItem(
-    feedSource: FeedSource,
-    args: Pick<FeedItem, 'url' | 'title'>
+    args: Pick<FeedItem, 'feedSource' | 'url' | 'title'>
   ): AsyncResult<FeedItem> {
-    const {url, title} = args;
+    const {feedSource, url, title} = args;
 
     const trimmedUrl = url.trim();
     if (!isValidUrl(trimmedUrl)) {
@@ -334,7 +333,8 @@ export class ClientFeedItemsService {
     }
 
     // Create a new feed item object locally.
-    const feedItemResult = SharedFeedItemHelpers.makeFeedItem(feedSource, {
+    const feedItemResult = SharedFeedItemHelpers.makeFeedItem({
+      feedSource,
       url: trimmedUrl,
       accountId: this.accountId,
       title,

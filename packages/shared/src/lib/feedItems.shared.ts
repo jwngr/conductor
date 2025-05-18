@@ -51,10 +51,9 @@ export class SharedFeedItemHelpers {
   }
 
   public static makeFeedItem(
-    feedSource: FeedSource,
-    args: Pick<FeedItem, 'accountId' | 'url' | 'title' | 'description'>
+    args: Pick<FeedItem, 'feedSource' | 'accountId' | 'url' | 'title' | 'description'>
   ): Result<FeedItem> {
-    const {accountId, url, title, description} = args;
+    const {feedSource, accountId, url, title, description} = args;
 
     // Common fields across all feed item types.
     const feedItemId = makeFeedItemId();
