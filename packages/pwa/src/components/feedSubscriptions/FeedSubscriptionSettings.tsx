@@ -15,7 +15,6 @@ import {AsyncStatus} from '@shared/types/asyncState.types';
 import {DayOfWeek} from '@shared/types/datetime.types';
 import {DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
-import {FeedSourceType} from '@shared/types/feedSources.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/results.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
@@ -228,7 +227,6 @@ const FeedSubscriptionSettingsPopoverContent: React.FC<{
 export const FeedSubscriptionSettingsButton: React.FC<{
   readonly userFeedSubscription: UserFeedSubscription;
 }> = ({userFeedSubscription}) => {
-  console.log('userFeedSubscription', userFeedSubscription);
   return (
     <Popover modal>
       <PopoverTrigger asChild>

@@ -19,7 +19,7 @@ import {
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {AsyncState} from '@shared/types/asyncState.types';
-import type {FeedSource} from '@shared/types/feedSources.types';
+import type {FeedSource as PersistedFeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {
   UserFeedSubscription,
@@ -113,34 +113,12 @@ export class ClientUserFeedSubscriptionsService {
       return makeErrorResult(new Error('URL is not a valid YouTube channel URL'));
     }
 
-    const feedSource = makeYouTubeFeedSource({channelId});
-
-    return await this.createSubscription({feedSource});
-  }
-
-  public async subscribeToIntervalFeed(args: {
-    intervalSeconds: number;
-  }): AsyncResult<UserFeedSubscription> {
-    const {intervalSeconds} = args;
-
-    const feedSource = makeIntervalFeedSource({intervalSeconds});
-
-    return await this.createSubscription({feedSource});
-  }
-
-  /**
-   * Adds a new user feed subscription document to Firestore.
-   */
-  public async createSubscription(args: {
-    feedSource: FeedSource;
-  }): AsyncResult<UserFeedSubscription> {
-    const {feedSource} = args;
-
     // Check if a feed subscription already exists for this feed source.
     const existingSubscriptionsResult =
       await this.userFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
         where('accountId', '==', this.accountId),
-        where('feedSourceId', '==', feedSource.feedSourceId),
+        // TODO: Does this work?
+        where('feedSource.channelId', '==', channelId),
       ]);
     if (!existingSubscriptionsResult.success) return existingSubscriptionsResult;
 
@@ -148,6 +126,35 @@ export class ClientUserFeedSubscriptionsService {
     if (existingSubscription) {
       return makeErrorResult(new Error('Feed subscription already exists'));
     }
+
+    const feedSource = makeYouTubeFeedSource({channelId});
+
+    return await this.createSubForPersistedFeedSource({feedSource});
+  }
+
+  public async subscribeToIntervalFeed(args: {
+    intervalSeconds: number;
+  }): AsyncResult<UserFeedSubscription> {
+    const {intervalSeconds} = args;
+
+    if (intervalSeconds <= 0) {
+      return makeErrorResult(new Error('Interval must be greater than 0'));
+    } else if (!Number.isFinite(intervalSeconds)) {
+      return makeErrorResult(new Error('Interval must be an integer'));
+    }
+
+    const feedSource = makeIntervalFeedSource({intervalSeconds});
+
+    return await this.createSubForPersistedFeedSource({feedSource});
+  }
+
+  /**
+   * Adds a new user feed subscription document to Firestore.
+   */
+  public async createSubForPersistedFeedSource(args: {
+    feedSource: PersistedFeedSource;
+  }): AsyncResult<UserFeedSubscription> {
+    const {feedSource} = args;
 
     // Make a new user feed subscription object locally.
     const userFeedSubscriptionResult = makeUserFeedSubscription({
@@ -157,15 +164,13 @@ export class ClientUserFeedSubscriptionsService {
     if (!userFeedSubscriptionResult.success) return userFeedSubscriptionResult;
     const newUserFeedSubscription = userFeedSubscriptionResult.value;
 
-    // Add the new user feed subscription to Firestore.
-    const userFeedSubscriptionId = newUserFeedSubscription.userFeedSubscriptionId;
-    const createResult = await this.userFeedSubscriptionsCollectionService.setDoc(
-      userFeedSubscriptionId,
-      withFirestoreTimestamps(newUserFeedSubscription, clientTimestampSupplier)
-    );
-    if (!createResult.success) {
-      return prefixErrorResult(createResult, 'Error creating user feed subscription in Firestore');
-    }
+    // Save the new user feed subscription to Firestore.
+    const docId = newUserFeedSubscription.userFeedSubscriptionId;
+    const docData = withFirestoreTimestamps(newUserFeedSubscription, clientTimestampSupplier);
+    const saveResult = await this.userFeedSubscriptionsCollectionService.setDoc(docId, docData);
+    if (!saveResult.success) return prefixErrorResult(saveResult, 'Error saving feed subscription');
+
+    // Return the new user feed subscription.
     return makeSuccessResult(newUserFeedSubscription);
   }
 
