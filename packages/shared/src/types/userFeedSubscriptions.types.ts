@@ -6,10 +6,12 @@ import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
 import {DeliveryScheduleFromStorageSchema} from '@shared/types/deliverySchedules.types';
 import type {
   ExtensionFeedSource,
+  IntervalMiniFeedSource,
   MiniFeedSource,
-  PersistedFeedSource,
   PocketExportFeedSource,
   PWAFeedSource,
+  RssMiniFeedSource,
+  YouTubeChannelMiniFeedSource,
 } from '@shared/types/feedSources.types';
 import {
   EXTENSION_FEED_SOURCE,
@@ -40,13 +42,16 @@ export const UserFeedSubscriptionIdSchema = z.string().uuid();
 /**
  * An individual account's subscription to a feed source.
  *
- * A single {@link PersistedFeedSource} can have multiple {@link UserFeedSubscription}s, one for
- * each {@link Account} subscribed to it.
+ * A single {@link FeedSource} can have multiple {@link UserFeedSubscription}s, one for each
+ * {@link Account} subscribed to it.
  *
- * These are not deleted when an account unsubscribes from a feed. Instead, they are marked as
- * inactive. They are only deleted when an account is wiped out.
+ * Only {@link PersistedFeedSource}s can have {@link UserFeedSubscription}s. In-memory feed sources
+ * do not have one.
+ *
+ * User feed subscriptions are not deleted when an account unsubscribes from a feed. Instead, they
+ * are marked as inactive. They are only deleted when an account is wiped out.
  */
-export interface UserFeedSubscription extends BaseStoreItem {
+interface BaseUserFeedSubscription extends BaseStoreItem {
   /** The unique identifier for this subscription. */
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
   /** A subset of the {@link FeedSource} that this subscription corresponds to. */
@@ -60,6 +65,38 @@ export interface UserFeedSubscription extends BaseStoreItem {
   /** The time this subscription was unsubscribed from the feed source. */
   readonly unsubscribedTime?: Date | undefined;
 }
+
+export interface PWAUserFeedSubscription extends BaseUserFeedSubscription {
+  readonly miniFeedSource: PWAFeedSource;
+}
+
+export interface ExtensionUserFeedSubscription extends BaseUserFeedSubscription {
+  readonly miniFeedSource: ExtensionFeedSource;
+}
+
+export interface PocketExportUserFeedSubscription extends BaseUserFeedSubscription {
+  readonly miniFeedSource: PocketExportFeedSource;
+}
+
+export interface RssUserFeedSubscription extends BaseUserFeedSubscription {
+  readonly miniFeedSource: RssMiniFeedSource;
+}
+
+export interface YouTubeChannelUserFeedSubscription extends BaseUserFeedSubscription {
+  readonly miniFeedSource: YouTubeChannelMiniFeedSource;
+}
+
+export interface IntervalUserFeedSubscription extends BaseUserFeedSubscription {
+  readonly miniFeedSource: IntervalMiniFeedSource;
+}
+
+export type UserFeedSubscription =
+  | IntervalUserFeedSubscription
+  | PocketExportUserFeedSubscription
+  | PWAUserFeedSubscription
+  | ExtensionUserFeedSubscription
+  | RssUserFeedSubscription
+  | YouTubeChannelUserFeedSubscription;
 
 /**
  * Zod schema for a {@link UserFeedSubscription} persisted to Firestore.
@@ -85,7 +122,7 @@ export type UserFeedSubscriptionFromStorage = z.infer<typeof UserFeedSubscriptio
 ////////////////////////////////
 //  MiniUserFeedSubscription  //
 ////////////////////////////////
-interface PWAMiniUserFeedSubscription {
+export interface PWAMiniUserFeedSubscription {
   readonly feedSource: PWAFeedSource;
 }
 
@@ -93,7 +130,7 @@ export const PWA_MINI_USER_FEED_SUBSCRIPTION: PWAMiniUserFeedSubscription = {
   feedSource: PWA_FEED_SOURCE,
 };
 
-interface ExtensionMiniUserFeedSubscription {
+export interface ExtensionMiniUserFeedSubscription {
   readonly feedSource: ExtensionFeedSource;
 }
 
@@ -101,7 +138,7 @@ export const EXTENSION_MINI_USER_FEED_SUBSCRIPTION: ExtensionMiniUserFeedSubscri
   feedSource: EXTENSION_FEED_SOURCE,
 };
 
-interface PocketExportMiniUserFeedSubscription {
+export interface PocketExportMiniUserFeedSubscription {
   readonly feedSource: PocketExportFeedSource;
 }
 
@@ -109,16 +146,31 @@ export const POCKET_EXPORT_MINI_USER_FEED_SUBSCRIPTION: PocketExportMiniUserFeed
   feedSource: POCKET_EXPORT_FEED_SOURCE,
 };
 
-interface PersistedMiniUserFeedSubscription
-  extends Pick<UserFeedSubscription, 'userFeedSubscriptionId' | 'isActive'> {
-  readonly feedSource: PersistedFeedSource;
+type BasePersistedMiniUserFeedSubscription = Pick<
+  UserFeedSubscription,
+  'userFeedSubscriptionId' | 'isActive'
+>;
+
+export interface RssMiniUserFeedSubscription extends BasePersistedMiniUserFeedSubscription {
+  readonly feedSource: RssMiniFeedSource;
+}
+
+export interface YouTubeChannelMiniUserFeedSubscription
+  extends BasePersistedMiniUserFeedSubscription {
+  readonly feedSource: YouTubeChannelMiniFeedSource;
+}
+
+export interface IntervalMiniUserFeedSubscription extends BasePersistedMiniUserFeedSubscription {
+  readonly feedSource: IntervalMiniFeedSource;
 }
 
 export type MiniUserFeedSubscription =
   | PWAMiniUserFeedSubscription
   | ExtensionMiniUserFeedSubscription
   | PocketExportMiniUserFeedSubscription
-  | PersistedMiniUserFeedSubscription;
+  | RssMiniUserFeedSubscription
+  | YouTubeChannelMiniUserFeedSubscription
+  | IntervalMiniUserFeedSubscription;
 
 const PWAMiniUserFeedSubscriptionSchema = z.object({
   feedSource: PWAMiniFeedSourceSchema,

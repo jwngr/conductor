@@ -337,7 +337,6 @@ export class ClientFeedItemsService {
 
     const feedItemResult = SharedFeedItemHelpers.makeFeedItem(miniFeedSubscription, {
       url: trimmedUrl,
-      feedSource: miniFeedSubscription.feedSource,
       accountId: this.accountId,
       title,
       description: null,

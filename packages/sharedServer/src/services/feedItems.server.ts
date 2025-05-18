@@ -53,7 +53,6 @@ export class ServerFeedItemsService {
 
     const feedItemResult = SharedFeedItemHelpers.makeFeedItem(miniFeedSubscription, {
       url: trimmedUrl,
-      feedSource: miniFeedSubscription.feedSource,
       accountId,
       title,
       description,

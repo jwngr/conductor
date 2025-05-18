@@ -4,7 +4,6 @@ import {makeUuid} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import {AccountIdSchema} from '@shared/types/accounts.types';
-import {FeedSourceFromStorageSchema} from '@shared/types/feedSources.types';
 import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {IconName} from '@shared/types/icons.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
@@ -190,7 +189,6 @@ export const BaseFeedItemFromStorageSchema = z.object({
   type: z.nativeEnum(FeedItemType),
   feedItemId: FeedItemIdSchema,
   accountId: AccountIdSchema,
-  feedSource: FeedSourceFromStorageSchema,
   miniFeedSubscription: MiniUserFeedSubscriptionFromStorageSchema,
   importState: FeedItemImportStateFromStorageSchema,
   triageStatus: z.nativeEnum(TriageStatus),

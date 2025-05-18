@@ -4,7 +4,7 @@ import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.sha
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import type {FeedSourceId, RssMiniFeedSource} from '@shared/types/feedSources.types';
+import type {FeedSourceId, RssFeedSource, RssMiniFeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {RssFeedProvider} from '@shared/types/rss.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
@@ -31,19 +31,11 @@ export class ServerRssFeedService {
     this.userFeedSubscriptionsService = args.userFeedSubscriptionsService;
   }
 
-  async subscribeAccountToRssFeedByUrl(args: {
-    readonly url: string;
-    readonly accountId: AccountId;
-  }): AsyncResult<UserFeedSubscription> {
-    const {url, accountId} = args;
-
+  async subscribeToRssFeedByUrl(url: string): AsyncResult<RssFeedSource> {
     // Fetch and parse the RSS feed.
-    const parsedRssFeedResult = await parseRssFeed(url);
-    if (!parsedRssFeedResult.success) {
-      return prefixErrorResult(parsedRssFeedResult, 'Error parsing RSS feed');
-    }
-
-    const parsedRssFeed = parsedRssFeedResult.value;
+    const rssFeedResult = await parseRssFeed(url);
+    if (!rssFeedResult.success) return prefixErrorResult(rssFeedResult, 'Error parsing RSS feed');
+    const parsedRssFeed = rssFeedResult.value;
 
     // Check if the feed source already exists. A single feed source can have multiple accounts
     // subscribed to it, but we only want to subscribe once to it in the feed provider. Feed
@@ -54,10 +46,8 @@ export class ServerRssFeedService {
       {title: parsedRssFeed.title ?? DEFAULT_FEED_TITLE}
     );
     if (!fetchFeedSourceResult.success) {
-      return prefixErrorResult(
-        fetchFeedSourceResult,
-        'Error fetching or creating feed source by URL'
-      );
+      const message = 'Error fetching or creating feed source by URL';
+      return prefixErrorResult(fetchFeedSourceResult, message);
     }
 
     const feedSource = fetchFeedSourceResult.value;
@@ -65,32 +55,24 @@ export class ServerRssFeedService {
     // Subscribe to the feed source in the feed provider.
     const subscribeResult = await this.rssFeedProvider.subscribeToUrl(feedSource.url);
     if (!subscribeResult.success) return subscribeResult;
-
-    // Create a user feed subscription in the database.
-    const saveToDbResult = await this.userFeedSubscriptionsService.createFeedSubscription({
-      feedSource,
-      accountId,
-    });
-    return prefixResultIfError(saveToDbResult, 'Error creating user feed subscription');
+    return makeSuccessResult(feedSource);
   }
 
   /**
    * Unsubscribes from an RSS feed by URL in the feed provider.
    */
   async unsubscribeFromRssFeed(feedSource: RssMiniFeedSource): AsyncResult<void> {
-    const otherSubscriptionsResult = await this.userFeedSubscriptionsService.fetchForFeedSource(
-      feedSource.feedSourceId
-    );
+    const fetchSubsResult =
+      await this.userFeedSubscriptionsService.fetchForRssFeedSource(feedSource);
 
-    if (!otherSubscriptionsResult.success) {
-      return prefixErrorResult(
-        otherSubscriptionsResult,
-        '[UNSUBSCRIBE] Error fetching other subscriptions while unsubscribing account from feed'
-      );
+    if (!fetchSubsResult.success) {
+      const message =
+        '[UNSUBSCRIBE] Error fetching other subscriptions while unsubscribing account from feed';
+      return prefixErrorResult(fetchSubsResult, message);
     }
 
     // If other active subscriptions exist, don't actually unsubscribe from the feed provider.
-    const activeSubscriptions = otherSubscriptionsResult.value.filter((sub) => sub.isActive);
+    const activeSubscriptions = fetchSubsResult.value.filter((sub) => sub.isActive);
     if (activeSubscriptions.length > 0) {
       return makeSuccessResult(undefined);
     }

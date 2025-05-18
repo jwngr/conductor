@@ -6,7 +6,7 @@ import type {YouTubeChannelId} from '@shared/types/youtube.types';
 import {YouTubeChannelIdSchema} from '@shared/types/youtube.types';
 
 /**
- * Strongly-typed type for a {@link PersistedFeedSource}'s unique identifier. Prefer this over plain strings.
+ * Strongly-typed type for a {@link FeedSource}'s unique identifier. Prefer this over plain strings.
  */
 export type FeedSourceId = string & {readonly __brand: 'FeedSourceIdBrand'};
 

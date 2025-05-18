@@ -4,7 +4,7 @@ import type {Request, Response} from 'express';
 import {logger} from '@shared/services/logger.shared';
 
 import {prefixError} from '@shared/lib/errorUtils.shared';
-import {makeRssFeedSource} from '@shared/lib/feedSources.shared';
+import {makeRssMiniUserFeedSubscription} from '@shared/lib/userFeedSubscriptions.shared';
 import {batchAsyncResults, partition} from '@shared/lib/utils.shared';
 
 import type {FeedItemId} from '@shared/types/feedItems.types';
@@ -76,17 +76,15 @@ export async function handleSuperfeedrWebhookHelper(args: {
     return;
   }
 
-  // Fetch all users subscribed to this feed source.
-  const fetchSubscriptionsResult =
-    await userFeedSubscriptionsService.fetchForFeedSourceById(feedSource);
-  if (!fetchSubscriptionsResult.success) {
-    respondWithError(fetchSubscriptionsResult.error, 'Error fetching subscribed accounts', {
-      feedSourceId: feedSource.feedSourceId,
-    });
+  // Fetch all users subscribed to this RSS feed source.
+  const fetchSubsResult = await userFeedSubscriptionsService.fetchForRssFeedSource(feedSource);
+  if (!fetchSubsResult.success) {
+    const message = 'Error fetching subscribed accounts for RSS feed source';
+    respondWithError(fetchSubsResult.error, message, {feedSourceId: feedSource.feedSourceId});
     return;
   }
 
-  const userFeedSubscriptions = fetchSubscriptionsResult.value;
+  const userFeedSubscriptions = fetchSubsResult.value;
 
   // Make a list of supplier methods that create feed items.
   const createFeedItemResults: Array<Supplier<AsyncResult<FeedItemId | null>>> = [];
@@ -94,18 +92,17 @@ export async function handleSuperfeedrWebhookHelper(args: {
     logger.log(`[SUPERFEEDR] Processing item ${item.id}`, {item});
 
     userFeedSubscriptions.forEach((userFeedSubscription) => {
-      const newFeedItemResult = async (): AsyncResult<FeedItemId | null> =>
-        await feedItemsService.createFeedItem(userFeedSubscription, {
-          url: item.permalinkUrl,
-          accountId: userFeedSubscription.accountId,
-          // TODO!!!
-          feedSource: makeRssFeedSource({
-            url: feedUrl,
-            title: feedSource.title,
-          }),
-          title: item.title,
-          description: item.summary,
-        });
+      const newFeedItemResult = async (): AsyncResult<FeedItemId | null> => {
+        return await feedItemsService.createFeedItem(
+          makeRssMiniUserFeedSubscription({userFeedSubscription}),
+          {
+            url: item.permalinkUrl,
+            accountId: userFeedSubscription.accountId,
+            title: item.title,
+            description: item.summary,
+          }
+        );
+      };
       createFeedItemResults.push(newFeedItemResult);
     });
   });

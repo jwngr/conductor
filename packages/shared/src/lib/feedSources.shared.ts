@@ -6,6 +6,7 @@ import type {
   FeedSourceId,
   IntervalFeedSource,
   RssFeedSource,
+  RssMiniFeedSource,
   YouTubeChannelFeedSource,
 } from '@shared/types/feedSources.types';
 import {FeedSourceType} from '@shared/types/feedSources.types';

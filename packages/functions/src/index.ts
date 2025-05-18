@@ -14,6 +14,7 @@ import {prefixError} from '@shared/lib/errorUtils.shared';
 
 import {parseFeedItem, parseFeedItemId} from '@shared/parsers/feedItems.parser';
 
+import type {SubscribeAccountToRSSFeedOnCallResponse} from '@shared/types/api.types';
 import type {ErrorResult} from '@shared/types/results.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
@@ -29,8 +30,7 @@ import {validateUrlParam, verifyAuth} from '@src/lib/middleware';
 import {handleSuperfeedrWebhookHelper} from '@src/lib/superfeedrWebhook';
 
 import {handleFeedItemImport} from '@src/reqHandlers/handleFeedItemImport';
-import {handleSubscribeAccountToRssFeed} from '@src/reqHandlers/handleSubscribeAccountToRssFeed';
-import type {SubscribeAccountToRSSFeedOnCallResponse} from '@src/reqHandlers/handleSubscribeAccountToRssFeed';
+import {handleSubscribeAccountToRssFeed} from '@src/reqHandlers/handleSubscribeAccountToRSSFeed';
 
 // TODO: Make region an environment variable.
 const FIREBASE_FUNCTIONS_REGION = 'us-central1';

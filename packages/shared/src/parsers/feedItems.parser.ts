@@ -6,7 +6,7 @@ import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
-import {parseFeedSource} from '@shared/parsers/feedSources.parser';
+import {parseFeedSource, parseMiniFeedSource} from '@shared/parsers/feedSources.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {
@@ -163,6 +163,9 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
   );
   if (!parsedImportStateResult.success) return parsedImportStateResult;
 
+  const parsedMiniFeedSourceResult = parseMiniFeedSource(parsedSourceResult.value);
+  if (!parsedMiniFeedSourceResult.success) return parsedMiniFeedSourceResult;
+
   switch (parsedBaseFeedItemResult.value.type) {
     case FeedItemType.YouTube:
     case FeedItemType.Article:
@@ -174,15 +177,14 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
         storageBaseFeedItem: parsedBaseFeedItemResult.value,
         feedItemId: parsedIdResult.value,
         accountId: parsedAccountIdResult.value,
-        miniFeedSource: parsedSourceResult.value,
         importState: parsedImportStateResult.value,
       });
     case FeedItemType.Xkcd:
       return parseXkcdFeedItem({
         maybeFeedItem,
+        feedItemSource: parsedMiniFeedSourceResult.value,
         feedItemId: parsedIdResult.value,
         accountId: parsedAccountIdResult.value,
-        feedSource: parsedSourceResult.value,
         importState: parsedImportStateResult.value,
       });
     default:
@@ -197,18 +199,17 @@ export function parseBaseFeedItem(args: {
   readonly storageBaseFeedItem: BaseFeedItemFromStorage;
   readonly feedItemId: FeedItemId;
   readonly accountId: AccountId;
-  readonly feedItemSource: FeedItemSource;
   readonly importState: FeedItemImportState;
 }): Result<FeedItem> {
-  const {type, storageBaseFeedItem, feedItemId, accountId, feedItemSource, importState} = args;
+  const {type, storageBaseFeedItem, feedItemId, accountId, importState} = args;
 
   return makeSuccessResult(
     omitUndefined({
       type,
       accountId,
-      feedItemSource,
       importState,
       feedItemId,
+      miniFeedSubscription: storageBaseFeedItem.miniFeedSubscription,
       url: storageBaseFeedItem.url,
       title: storageBaseFeedItem.title,
       description: storageBaseFeedItem.description,
