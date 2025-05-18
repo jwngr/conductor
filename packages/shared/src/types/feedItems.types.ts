@@ -3,7 +3,6 @@ import {z} from 'zod';
 import {makeUuid} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import {AccountIdSchema} from '@shared/types/accounts.types';
 import {FeedSourceSchema} from '@shared/types/feedSources.types';
 import type {FeedSource} from '@shared/types/feedSources.types';
 import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
@@ -11,6 +10,8 @@ import type {IconName} from '@shared/types/icons.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import type {TagId} from '@shared/types/tags.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
+
+import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 
 /**
  * Strongly-typed type for a {@link FeedItem}'s unique identifier. Prefer this over plain strings.

@@ -1,7 +1,6 @@
 import {z} from 'zod';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import {AccountIdSchema} from '@shared/types/accounts.types';
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
 import {DeliveryScheduleFromStorageSchema} from '@shared/types/deliverySchedules.types';
 import type {PersistedFeedSourceType} from '@shared/types/feedSourceTypes.types';
@@ -9,6 +8,8 @@ import {FeedSourceType, PERSISTED_FEED_SOURCE_TYPES} from '@shared/types/feedSou
 import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 import {YouTubeChannelIdSchema, type YouTubeChannelId} from '@shared/types/youtube.types';
+
+import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 
 /**
  * Strongly-typed type for a {@link UserFeedSubscription}'s unique identifier. Prefer this over

@@ -2,9 +2,7 @@ import {z} from 'zod';
 
 import {makeUuid} from '@shared/lib/utils.shared';
 
-import {AccountIdSchema} from '@shared/types/accounts.types';
 import type {AccountId} from '@shared/types/accounts.types';
-import {ActorSchema} from '@shared/types/actors.types';
 import type {Actor} from '@shared/types/actors.types';
 import {FeedItemActionType, FeedItemIdSchema} from '@shared/types/feedItems.types';
 import type {FeedItemId} from '@shared/types/feedItems.types';
@@ -12,6 +10,9 @@ import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import {UserFeedSubscriptionIdSchema} from '@shared/types/userFeedSubscriptions.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
+
+import {AccountIdSchema} from '@shared/schemas/accounts.schema';
+import {ActorSchema} from '@shared/schemas/actors.schema';
 
 /**
  * Strongly-typed type for an event's unique identifier. Prefer this over plain strings.

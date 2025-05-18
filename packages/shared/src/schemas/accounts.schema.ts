@@ -1,6 +1,6 @@
 import {z} from 'zod';
 
-import {EmailAddressSchema} from '@shared/types/utils.types';
+import {EmailAddressSchema} from '@shared/schemas/emails.schema';
 
 /** A Zod schema for a {@link AccountId}. */
 export const AccountIdSchema = z.string().min(1).max(128);

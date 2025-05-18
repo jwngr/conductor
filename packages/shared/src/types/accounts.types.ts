@@ -1,4 +1,5 @@
-import type {Consumer, EmailAddress, Task} from '@shared/types/utils.types';
+import type {EmailAddress} from '@shared/types/emails.types';
+import type {Consumer, Task} from '@shared/types/utils.types';
 
 /**
  * Strongly-typed type for an {@link Account}'s unique identifier. Prefer this over plain strings.

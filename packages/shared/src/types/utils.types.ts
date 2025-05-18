@@ -1,5 +1,3 @@
-import {z} from 'zod';
-
 export type Task = () => void;
 export type Func<T, R> = (arg: T) => R;
 export type Supplier<T> = () => T;
@@ -21,9 +19,3 @@ export interface StyleAttributes {
 
 /** Strongly-typed type for a UUID. Prefer this over plain strings. */
 export type UUID = string & {readonly __brand: 'UUIDBrand'};
-
-/** Strongly-typed type for an {@link EmailAddress}. Prefer this over plain strings. */
-export type EmailAddress = string & {readonly __brand: 'EmailAddressBrand'};
-
-/** Zod schema for an {@link EmailAddress}. */
-export const EmailAddressSchema = z.string().email();

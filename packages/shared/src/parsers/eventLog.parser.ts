@@ -72,9 +72,7 @@ function parseUserFeedSubscriptionEventLogItem(
   maybeEventLogItem: unknown
 ): Result<UserFeedSubscriptionEventLogItem> {
   const parsedResult = parseZodResult(EventLogItemFromStorageSchema, maybeEventLogItem);
-  if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid event log item');
-  }
+  if (!parsedResult.success) return prefixErrorResult(parsedResult, 'Invalid event log item');
 
   const parsedAccountIdResult = parseAccountId(parsedResult.value.accountId);
   if (!parsedAccountIdResult.success) return parsedAccountIdResult;

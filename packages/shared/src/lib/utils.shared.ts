@@ -4,8 +4,9 @@ import {logger} from '@shared/services/logger.shared';
 
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
+import type {EmailAddress} from '@shared/types/emails.types';
 import type {AsyncResult, Result} from '@shared/types/results.types';
-import type {EmailAddress, Func, Supplier, UUID} from '@shared/types/utils.types';
+import type {Func, Supplier, UUID} from '@shared/types/utils.types';
 
 /**
  * Formats a number with commas.
