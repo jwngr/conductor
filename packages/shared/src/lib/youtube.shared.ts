@@ -6,7 +6,6 @@ import {parseYouTubeChannelId, parseYouTubeHandle} from '@shared/parsers/youtube
 import type {Result} from '@shared/types/results.types';
 import type {YouTubeChannelId, YouTubeHandle} from '@shared/types/youtube.types';
 
-const YOUTUBE_VIDEO_ID_PATH_REGEX = /^\/watch\?v=([a-zA-Z0-9_-]+)$/i;
 const YOUTUBE_CHANNEL_ID_PATH_REGEX = /^\/channel\/([a-zA-Z0-9_-]+)$/i;
 const YOUTUBE_CHANNEL_AT_HANDLE_PATH_REGEX = /^\/@([a-zA-Z0-9_-]+)$/i;
 const YOUTUBE_CHANNEL_C_HANDLE_PATH_REGEX = /^\/c\/([a-zA-Z0-9_-]+)$/i;
@@ -54,7 +53,7 @@ export function isYouTubeVideoUrl(url: string): boolean {
   const normalizedHostname = normalizeYouTubeHostname(parsedUrl.hostname);
   if (!YOUTUBE_HOSTNAMES.includes(normalizedHostname)) return false;
 
-  if (YOUTUBE_VIDEO_ID_PATH_REGEX.test(parsedUrl.pathname)) return true;
+  if (parsedUrl.pathname === '/watch' && parsedUrl.searchParams.has('v')) return true;
 
   return false;
 }
