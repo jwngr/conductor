@@ -4,13 +4,14 @@ import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {Result} from '@shared/types/results.types';
 import type {SystemTag, SystemTagId, UserTag, UserTagId} from '@shared/types/tags.types';
+import {TagType} from '@shared/types/tags.types';
+
 import {
   SystemTagIdSchema,
   SystemTagSchema,
-  TagType,
   UserTagIdSchema,
   UserTagSchema,
-} from '@shared/types/tags.types';
+} from '@shared/schemas/tags.schema';
 
 /**
  * Parses a {@link UserTagId} from a plain string. Returns an `ErrorResult` if the string is not
