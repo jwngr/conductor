@@ -28,7 +28,7 @@ import {validateUrlParam, verifyAuth} from '@src/lib/middleware';
 import {handleSuperfeedrWebhookHelper} from '@src/lib/superfeedrWebhook';
 
 import {handleFeedItemImport} from '@src/reqHandlers/handleFeedItemImport';
-import {handleSubscribeAccountToRssFeed} from '@src/reqHandlers/handleSubscribeAccountToRssFeed';
+import {handleSubscribeToRssFeed} from '@src/reqHandlers/handleSubscribeToRssFeed';
 
 // TODO: Make region an environment variable.
 const FIREBASE_FUNCTIONS_REGION = 'us-central1';
@@ -100,20 +100,15 @@ export const wipeoutAccountOnAuthDelete = auth.user().onDelete(async (firebaseUs
 });
 
 /**
- * Subscribes an account to a feed source, creating it if necessary.
+ * Subscribes to a URL via the RSS feed service.
  */
-export const subscribeAccountToRssFeedOnCall = onCall(
+export const subscribeToRssFeedOnCall = onCall(
   // TODO: Lock down CORS to only allow requests from my domains.
   {cors: true},
   async (request): Promise<void> => {
-    const accountId = verifyAuth(request);
+    verifyAuth(request);
     const parsedUrl = validateUrlParam(request);
-
-    return await handleSubscribeAccountToRssFeed({
-      accountId,
-      parsedUrl,
-      rssFeedService,
-    });
+    return await handleSubscribeToRssFeed({parsedUrl, rssFeedService});
   }
 );
 

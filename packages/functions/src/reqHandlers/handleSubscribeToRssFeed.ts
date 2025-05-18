@@ -4,36 +4,33 @@ import {logger} from '@shared/services/logger.shared';
 
 import {prefixError} from '@shared/lib/errorUtils.shared';
 
-import type {AccountId} from '@shared/types/accounts.types';
-
 import type {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
 
-export async function handleSubscribeAccountToRssFeed(args: {
-  readonly accountId: AccountId;
+export async function handleSubscribeToRssFeed(args: {
   readonly parsedUrl: URL;
   readonly rssFeedService: ServerRssFeedService;
 }): Promise<void> {
-  const {accountId, parsedUrl, rssFeedService} = args;
+  const {parsedUrl, rssFeedService} = args;
   const url = parsedUrl.href;
 
   const innerLog = (message: string, details: Record<string, unknown> = {}): void => {
-    logger.log(`[SUBSCRIBE] ${message}`, {url, accountId, ...details});
+    logger.log(`[SUBSCRIBE] ${message}`, {url, ...details});
   };
 
   const innerLogError = (error: Error, prefix: string): void => {
-    logger.error(prefixError(error, prefix), {url, accountId});
+    logger.error(prefixError(error, `[SUBSCRIBE] ${prefix}`), {url});
   };
 
-  innerLog('Subscribing account to RSS feed source...');
+  innerLog('Subscribing to URL via RSS feed service...');
 
   const subscribeToUrlResult = await rssFeedService.subscribeToUrl(url);
   if (!subscribeToUrlResult.success) {
-    innerLogError(subscribeToUrlResult.error, 'Error subscribing account to RSS feed URL');
+    innerLogError(subscribeToUrlResult.error, 'Error subscribing to URL via RSS feed service');
     // eslint-disable-next-line no-restricted-syntax
     throw new HttpsError('internal', subscribeToUrlResult.error.message);
   }
 
-  innerLog('Successfully subscribed account to feed source');
+  innerLog('Successfully subscribed to URL via RSS feed service');
 
   return;
 }

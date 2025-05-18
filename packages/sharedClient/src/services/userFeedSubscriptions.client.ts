@@ -44,11 +44,11 @@ import {
 import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
-interface SubscribeToFeedRequest {
+interface SubscribeToRssFeedRequest {
   readonly url: string;
 }
 
-type CallSubscribeUserToFeedFn = HttpsCallable<SubscribeToFeedRequest, void>;
+type CallSubscribeToRssFeedFn = HttpsCallable<SubscribeToRssFeedRequest, void>;
 
 type UserFeedSubscriptionsCollectionService = ClientFirestoreCollectionService<
   UserFeedSubscriptionId,
@@ -89,14 +89,14 @@ export class ClientUserFeedSubscriptionsService {
     const existingSubscription = existingSubResult.value;
     if (existingSubscription) return makeErrorResult(new Error('Already subscribed to RSS feed'));
 
-    const callSubscribeAccountToFeed: CallSubscribeUserToFeedFn = httpsCallable(
+    const callSubscribeToRssFeed: CallSubscribeToRssFeedFn = httpsCallable(
       this.functions,
-      'subscribeAccountToRssFeedOnCall'
+      'subscribeToRssFeedOnCall'
     );
 
-    // Hit Firebase Functions endpoint to subscribe account to feed source.
+    // Hit Firebase Functions endpoint to subscribe to RSS feed.
     const subscribeResponseResult = await asyncTry(async () =>
-      callSubscribeAccountToFeed({url: url.href})
+      callSubscribeToRssFeed({url: url.href})
     );
     if (!subscribeResponseResult.success) return subscribeResponseResult;
 
