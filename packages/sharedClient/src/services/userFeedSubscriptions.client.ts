@@ -128,6 +128,12 @@ export class ClientUserFeedSubscriptionsService {
   }): AsyncResult<UserFeedSubscription> {
     const {intervalSeconds} = args;
 
+    if (intervalSeconds <= 0) {
+      return makeErrorResult(new Error('Interval must be greater than 0'));
+    } else if (!Number.isFinite(intervalSeconds)) {
+      return makeErrorResult(new Error('Interval must be an integer'));
+    }
+
     const feedSource = makeIntervalFeedSource({
       intervalSeconds,
       // TODO: Update these URL values.
