@@ -7,18 +7,10 @@ import {parseActor} from '@shared/parsers/actors.parser';
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
 import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions.parser';
 
-import {
-  EventIdSchema,
-  EventLogItemFromStorageSchema,
-  EventType,
-  FeedItemActionEventLogItemDataSchema,
-  FeedItemImportedEventLogItemDataSchema,
-  UserFeedSubscriptionEventLogItemDataSchema,
-} from '@shared/types/eventLog.types';
+import {EventIdSchema, EventType} from '@shared/types/eventLog.types';
 import type {
   EventId,
   EventLogItem,
-  EventLogItemFromStorage,
   FeedItemActionEventLogItem,
   FeedItemActionEventLogItemData,
   FeedItemImportedEventLogItem,
@@ -27,6 +19,14 @@ import type {
   UserFeedSubscriptionEventLogItemData,
 } from '@shared/types/eventLog.types';
 import type {Result} from '@shared/types/results.types';
+
+import {
+  EventLogItemFromStorageSchema,
+  FeedItemActionEventLogItemDataSchema,
+  FeedItemImportedEventLogItemDataSchema,
+  UserFeedSubscriptionEventLogItemDataSchema,
+} from '@shared/schemas/eventLog.schema';
+import type {EventLogItemFromStorage} from '@shared/schemas/eventLog.schema';
 
 /**
  * Parses a {@link EventId} from a plain string. Returns an `ErrorResult` if the string is not
