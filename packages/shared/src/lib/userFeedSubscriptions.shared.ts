@@ -1,9 +1,8 @@
 import {IMMEDIATE_DELIVERY_SCHEDULE} from '@shared/lib/deliverySchedules.shared';
-import {makeIntervalFeedSource, makeYouTubeChannelFeedSource} from '@shared/lib/feedSources.shared';
 import {makeUuid} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import {FeedSourceType, type RssMiniFeedSource} from '@shared/types/feedSources.types';
+import {FeedSourceType} from '@shared/types/feedSources.types';
 import type {
   IntervalMiniUserFeedSubscription,
   IntervalUserFeedSubscription,
@@ -24,14 +23,17 @@ export function makeUserFeedSubscriptionId(): UserFeedSubscriptionId {
 
 export function makeRssUserFeedSubscription(args: {
   readonly accountId: AccountId;
-  readonly miniFeedSource: RssMiniFeedSource;
+  readonly url: string;
+  readonly title: string;
 }): RssUserFeedSubscription {
-  const {miniFeedSource, accountId} = args;
+  const {accountId, url, title} = args;
 
   return {
+    type: FeedSourceType.RSS,
+    url,
+    title,
     userFeedSubscriptionId: makeUserFeedSubscriptionId(),
     accountId,
-    miniFeedSource,
     isActive: true,
     deliverySchedule: IMMEDIATE_DELIVERY_SCHEDULE,
     // TODO(timestamps): Use server timestamps instead.
@@ -47,9 +49,10 @@ export function makeYouTubeChannelUserFeedSubscription(args: {
   const {accountId, channelId} = args;
 
   return {
+    type: FeedSourceType.YouTubeChannel,
+    channelId,
     userFeedSubscriptionId: makeUserFeedSubscriptionId(),
     accountId,
-    miniFeedSource: makeYouTubeChannelFeedSource({channelId}),
     isActive: true,
     deliverySchedule: IMMEDIATE_DELIVERY_SCHEDULE,
     // TODO(timestamps): Use server timestamps instead.
@@ -65,9 +68,10 @@ export function makeIntervalUserFeedSubscription(args: {
   const {accountId, intervalSeconds} = args;
 
   return {
+    type: FeedSourceType.Interval,
+    intervalSeconds,
     userFeedSubscriptionId: makeUserFeedSubscriptionId(),
     accountId,
-    miniFeedSource: makeIntervalFeedSource({intervalSeconds}),
     isActive: true,
     deliverySchedule: IMMEDIATE_DELIVERY_SCHEDULE,
     // TODO(timestamps): Use server timestamps instead.
@@ -82,7 +86,8 @@ export function makeRssMiniUserFeedSubscription(args: {
   const {userFeedSubscription} = args;
   return {
     type: FeedSourceType.RSS,
-    miniFeedSource: userFeedSubscription.miniFeedSource,
+    url: userFeedSubscription.url,
+    title: userFeedSubscription.title,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     isActive: true,
   };
@@ -94,7 +99,7 @@ export function makeYouTubeChannelMiniUserFeedSubscription(args: {
   const {userFeedSubscription} = args;
   return {
     type: FeedSourceType.YouTubeChannel,
-    miniFeedSource: userFeedSubscription.miniFeedSource,
+    channelId: userFeedSubscription.channelId,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     isActive: true,
   };
@@ -106,7 +111,7 @@ export function makeIntervalMiniUserFeedSubscription(args: {
   const {userFeedSubscription} = args;
   return {
     type: FeedSourceType.Interval,
-    miniFeedSource: userFeedSubscription.miniFeedSource,
+    intervalSeconds: userFeedSubscription.intervalSeconds,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     isActive: true,
   };

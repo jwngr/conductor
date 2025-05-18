@@ -13,7 +13,6 @@ import {parseSuperfeedrWebhookRequestBody} from '@shared/types/superfeedr.types'
 import type {Supplier} from '@shared/types/utils.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
-import type {ServerFeedSourcesService} from '@sharedServer/services/feedSources.server';
 import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
 
 /**
@@ -22,13 +21,11 @@ import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/us
 export async function handleSuperfeedrWebhookHelper(args: {
   readonly request: Request;
   readonly response: Response;
-  readonly feedSourcesService: ServerFeedSourcesService;
   readonly userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
   readonly feedItemsService: ServerFeedItemsService;
   // TODO: Use AsyncResult here.
 }): Promise<void> {
-  const {request, response, feedSourcesService, userFeedSubscriptionsService, feedItemsService} =
-    args;
+  const {request, response, userFeedSubscriptionsService, feedItemsService} = args;
 
   const respondWithError = (
     error: Error,
@@ -58,30 +55,12 @@ export async function handleSuperfeedrWebhookHelper(args: {
     return;
   }
 
-  // Fetch the feed source from the URL.
+  // Fetch all users subscribed to this RSS feed URL.
   const feedUrl = body.status.feed;
-  const fetchFeedSourceResult = await feedSourcesService.fetchRSSFeedSourceByUrl(feedUrl);
-  if (!fetchFeedSourceResult.success) {
-    respondWithError(fetchFeedSourceResult.error, 'Error fetching webhook feed source by URL', {
-      feedUrl,
-    });
-    return;
-  }
-
-  const feedSource = fetchFeedSourceResult.value;
-  if (!feedSource) {
-    const message = 'No feed source found for URL. Skipping...';
-    respondWithError(new Error(message), undefined, {feedUrl});
-    return;
-  }
-
-  // Fetch all users subscribed to this RSS feed source.
-  const fetchSubsResult = await userFeedSubscriptionsService.fetchForRssFeedSource(
-    feedSource.feedSourceId
-  );
+  const fetchSubsResult = await userFeedSubscriptionsService.fetchForRssFeedSourceByUrl(feedUrl);
   if (!fetchSubsResult.success) {
     const message = 'Error fetching subscribed accounts for RSS feed source';
-    respondWithError(fetchSubsResult.error, message, {feedSourceId: feedSource.feedSourceId});
+    respondWithError(fetchSubsResult.error, message, {feedUrl});
     return;
   }
 

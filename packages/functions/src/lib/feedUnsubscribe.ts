@@ -37,15 +37,14 @@ export async function handleFeedUnsubscribeHelper(args: {
   if (!becameInactive) return makeSuccessResult(undefined);
 
   // Run unsubscribing behavior for the feed source.
-  const afterMiniFeedSource = after.miniFeedSource;
-  switch (afterMiniFeedSource.type) {
+  switch (after.type) {
     case FeedSourceType.RSS:
-      return await rssFeedService.unsubscribeFromRssFeed(afterMiniFeedSource);
+      return await rssFeedService.unsubscribeFromUrl(after.url);
     case FeedSourceType.YouTubeChannel:
     case FeedSourceType.Interval:
       // TODO: Disable the server-side behavior for these once implemented.
       return makeSuccessResult(undefined);
     default:
-      assertNever(afterMiniFeedSource);
+      assertNever(after);
   }
 }

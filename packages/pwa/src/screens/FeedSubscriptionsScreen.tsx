@@ -154,25 +154,21 @@ const FeedSubscriptionItem: React.FC<{
   let primaryRowContent: React.ReactNode;
   let secondaryRowContent: React.ReactNode | null;
 
-  switch (subscription.miniFeedSource.type) {
+  switch (subscription.type) {
     case FeedSourceType.RSS:
-      primaryRowContent = (
-        <Text>RSS ({subscription.miniFeedSource.title ?? subscription.miniFeedSource.url})</Text>
-      );
-      secondaryRowContent = subscription.miniFeedSource.title ? (
-        <Text>{subscription.miniFeedSource.title}</Text>
-      ) : null;
+      primaryRowContent = <Text>RSS ({subscription.title ?? subscription.url})</Text>;
+      secondaryRowContent = subscription.title ? <Text>{subscription.title}</Text> : null;
       break;
     case FeedSourceType.YouTubeChannel:
       primaryRowContent = <Text>YouTube</Text>;
-      secondaryRowContent = <Text>{subscription.miniFeedSource.channelId}</Text>;
+      secondaryRowContent = <Text>{subscription.channelId}</Text>;
       break;
     case FeedSourceType.Interval:
       primaryRowContent = <Text>Interval</Text>;
       secondaryRowContent = null;
       break;
     default:
-      assertNever(subscription.miniFeedSource);
+      assertNever(subscription);
   }
 
   return (

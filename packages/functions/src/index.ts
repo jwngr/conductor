@@ -14,11 +14,9 @@ import {prefixError} from '@shared/lib/errorUtils.shared';
 
 import {parseFeedItem, parseFeedItemId} from '@shared/parsers/feedItems.parser';
 
-import type {SubscribeAccountToRSSFeedOnCallResponse} from '@shared/types/api.types';
 import type {ErrorResult} from '@shared/types/results.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
-import type {ServerFeedSourcesService} from '@sharedServer/services/feedSources.server';
 import type {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
 import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
 import type {WipeoutService} from '@sharedServer/services/wipeout.server';
@@ -35,7 +33,6 @@ import {handleSubscribeAccountToRssFeed} from '@src/reqHandlers/handleSubscribeA
 // TODO: Make region an environment variable.
 const FIREBASE_FUNCTIONS_REGION = 'us-central1';
 
-let feedSourcesService: ServerFeedSourcesService;
 let userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
 let wipeoutService: WipeoutService;
 let rssFeedService: ServerRssFeedService;
@@ -55,7 +52,6 @@ onInit(() => {
 
   const services = initResult.value;
 
-  feedSourcesService = services.feedSourcesService;
   userFeedSubscriptionsService = services.userFeedSubscriptionsService;
   wipeoutService = services.wipeoutService;
   rssFeedService = services.rssFeedService;
@@ -77,7 +73,6 @@ export const handleSuperfeedrWebhook = onRequest(
     await handleSuperfeedrWebhookHelper({
       request,
       response,
-      feedSourcesService,
       userFeedSubscriptionsService,
       feedItemsService,
     });
@@ -110,7 +105,7 @@ export const wipeoutAccountOnAuthDelete = auth.user().onDelete(async (firebaseUs
 export const subscribeAccountToRssFeedOnCall = onCall(
   // TODO: Lock down CORS to only allow requests from my domains.
   {cors: true},
-  async (request): Promise<SubscribeAccountToRSSFeedOnCallResponse> => {
+  async (request): Promise<void> => {
     const accountId = verifyAuth(request);
     const parsedUrl = validateUrlParam(request);
 

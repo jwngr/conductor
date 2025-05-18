@@ -1,7 +1,5 @@
 import {useCallback} from 'react';
 
-import {logger} from '@shared/services/logger.shared';
-
 import {
   IMMEDIATE_DELIVERY_SCHEDULE,
   makeDaysAndTimesOfWeekDeliverySchedule,
@@ -20,7 +18,10 @@ import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
 import {FeedSourceType} from '@shared/types/feedSources.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/results.types';
-import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
+import type {
+  IntervalUserFeedSubscription,
+  UserFeedSubscription,
+} from '@shared/types/userFeedSubscriptions.types';
 
 import {useUserFeedSubscriptionsService} from '@sharedClient/services/userFeedSubscriptions.client';
 
@@ -206,10 +207,10 @@ const FeedSubscriptionUnsubscribeButton: React.FC<{
 };
 
 const FeedSubscriptionIntervalSetting: React.FC<{
-  readonly userFeedSubscription: UserFeedSubscription;
+  readonly userFeedSubscription: IntervalUserFeedSubscription;
 }> = ({userFeedSubscription}) => {
-  logger.error(new Error('TODO: Not yet implemented'), {userFeedSubscription});
-  return <div>Interval setting</div>;
+  // TODO: Make this configurable.
+  return <div>Interval setting: {userFeedSubscription.intervalSeconds} seconds</div>;
 };
 
 const FeedSubscriptionSettingsPopoverContent: React.FC<{
@@ -220,7 +221,7 @@ const FeedSubscriptionSettingsPopoverContent: React.FC<{
       <FlexColumn gap={4} padding={4}>
         <FeedSubscriptionDeliveryScheduleSetting userFeedSubscription={userFeedSubscription} />
         <FeedSubscriptionUnsubscribeButton userFeedSubscription={userFeedSubscription} />
-        {userFeedSubscription.miniFeedSource.type === FeedSourceType.Interval ? (
+        {userFeedSubscription.type === FeedSourceType.Interval ? (
           <FeedSubscriptionIntervalSetting userFeedSubscription={userFeedSubscription} />
         ) : null}
       </FlexColumn>

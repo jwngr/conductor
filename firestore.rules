@@ -38,8 +38,7 @@ service cloud.firestore {
       request.resource.data.feedItemId is string &&
       request.resource.data.feedItemId == feedItemId &&
       request.resource.data.type in ['ARTICLE', 'VIDEO', 'WEBSITE', 'TWEET', 'XKCD', 'YOUTUBE'] &&
-      request.resource.data.miniFeedSubscription.data.keys().hasAll(['type', 'feedSource']) &&
-      request.resource.data.miniFeedSubscription.feedSource.data.keys().hasAll(['type']) &&
+      request.resource.data.miniFeedSubscription.data.keys().hasAll(['type']) &&
       request.resource.data.url is string &&
       request.resource.data.title is string &&
       request.resource.data.outgoingLinks is list &&
@@ -99,14 +98,6 @@ service cloud.firestore {
 
       // Only allow deletes via the admin SDK.
       allow delete: if false;
-    }
-
-    match /feedSources/{feedSourceId} {
-      // Feed sources are publicly readable.
-      allow read: if true;
-
-      // Feed sources are only writable via the admin SDK.
-      allow create, update, delete: if false;
     }
 
     match /feedItems/{feedItemId} {

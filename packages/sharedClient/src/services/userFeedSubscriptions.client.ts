@@ -3,7 +3,10 @@ import type {Functions, HttpsCallable} from 'firebase/functions';
 import {httpsCallable} from 'firebase/functions';
 import {useEffect, useMemo} from 'react';
 
-import {USER_FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants.shared';
+import {
+  DEFAULT_FEED_TITLE,
+  USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
+} from '@shared/lib/constants.shared';
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {withFirestoreTimestamps} from '@shared/lib/parser.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
@@ -22,7 +25,6 @@ import {
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import type {SubscribeAccountToRSSFeedOnCallResponse} from '@shared/types/api.types';
 import type {AsyncState} from '@shared/types/asyncState.types';
 import {FeedSourceType} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/results.types';
@@ -46,10 +48,7 @@ interface SubscribeToFeedRequest {
   readonly url: string;
 }
 
-type CallSubscribeUserToFeedFn = HttpsCallable<
-  SubscribeToFeedRequest,
-  SubscribeAccountToRSSFeedOnCallResponse
->;
+type CallSubscribeUserToFeedFn = HttpsCallable<SubscribeToFeedRequest, void>;
 
 type UserFeedSubscriptionsCollectionService = ClientFirestoreCollectionService<
   UserFeedSubscriptionId,
@@ -88,11 +87,12 @@ export class ClientUserFeedSubscriptionsService {
       callSubscribeAccountToFeed({url: url.href})
     );
     if (!subscribeResponseResult.success) return subscribeResponseResult;
-    const {miniFeedSource} = subscribeResponseResult.value.data;
 
     // Create a new user feed subscription object locally.
     const userFeedSubscription = makeRssUserFeedSubscription({
-      miniFeedSource,
+      url: url.href,
+      // TODO: Add better titles.
+      title: DEFAULT_FEED_TITLE,
       accountId: this.accountId,
     });
 
@@ -123,8 +123,8 @@ export class ClientUserFeedSubscriptionsService {
     const existingSubResult = await this.userFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
       where('accountId', '==', this.accountId),
       // TODO: Confirm this works. May need an index.
-      where('miniFeedSource.type', '==', FeedSourceType.YouTubeChannel),
-      where('miniFeedSource.channelId', '==', channelId),
+      where('type', '==', FeedSourceType.YouTubeChannel),
+      where('channelId', '==', channelId),
     ]);
     if (!existingSubResult.success) return existingSubResult;
 

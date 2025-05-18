@@ -3,70 +3,46 @@ import {logger} from '@shared/services/logger.shared';
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
-import type {RssFeedSource, RssMiniFeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {RssFeedProvider} from '@shared/types/rss.types';
 
-import type {ServerFeedSourcesService} from '@sharedServer/services/feedSources.server';
 import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
 
 import {parseRssFeed} from '@sharedServer/lib/rss.server';
 
-const DEFAULT_FEED_TITLE = '(no title)';
-
 export class ServerRssFeedService {
   private readonly rssFeedProvider: RssFeedProvider;
-  private readonly feedSourcesService: ServerFeedSourcesService;
   private readonly userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
 
   constructor(args: {
     readonly rssFeedProvider: RssFeedProvider;
-    readonly feedSourcesService: ServerFeedSourcesService;
     readonly userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
   }) {
     this.rssFeedProvider = args.rssFeedProvider;
-    this.feedSourcesService = args.feedSourcesService;
     this.userFeedSubscriptionsService = args.userFeedSubscriptionsService;
   }
 
-  async subscribeToRssFeedByUrl(url: string): AsyncResult<RssFeedSource> {
+  async subscribeToUrl(url: string): AsyncResult<void> {
     // Fetch and parse the RSS feed.
     const rssFeedResult = await parseRssFeed(url);
     if (!rssFeedResult.success) return prefixErrorResult(rssFeedResult, 'Error parsing RSS feed');
-    const parsedRssFeed = rssFeedResult.value;
-
-    // Check if the feed source already exists. A single feed source can have multiple accounts
-    // subscribed to it, but we only want to subscribe once to it in the feed provider. Feed
-    // sources are deduped based on exact URL match, although we could be smarter in the future.
-    const fetchFeedSourceResult = await this.feedSourcesService.fetchOrCreateRssFeedSource(
-      url,
-      // TODO: Consider just storing `null` for the title if it's not available.
-      {title: parsedRssFeed.title ?? DEFAULT_FEED_TITLE}
-    );
-    if (!fetchFeedSourceResult.success) {
-      const message = 'Error fetching or creating feed source by URL';
-      return prefixErrorResult(fetchFeedSourceResult, message);
-    }
-
-    const rssFeedSource = fetchFeedSourceResult.value;
 
     // Subscribe to the feed source in the feed provider.
-    const subscribeResult = await this.rssFeedProvider.subscribeToUrl(rssFeedSource.url);
+    const subscribeResult = await this.rssFeedProvider.subscribeToUrl(url);
     if (!subscribeResult.success) return subscribeResult;
-    return makeSuccessResult(rssFeedSource);
+
+    return makeSuccessResult(subscribeResult.value);
   }
 
   /**
    * Unsubscribes from an RSS feed by URL in the feed provider.
    */
-  async unsubscribeFromRssFeed(miniFeedSource: RssMiniFeedSource): AsyncResult<void> {
+  async unsubscribeFromUrl(url: string): AsyncResult<void> {
     // Fetch all active subscriptions for the feed source.
-    const fetchSubsResult = await this.userFeedSubscriptionsService.fetchForRssFeedSource(
-      miniFeedSource.feedSourceId
-    );
+    const fetchSubsResult = await this.userFeedSubscriptionsService.fetchForRssFeedSourceByUrl(url);
     if (!fetchSubsResult.success) {
       const message =
-        '[UNSUBSCRIBE] Error fetching other subscriptions while unsubscribing account from feed';
+        '[UNSUBSCRIBE] Error fetching other subscriptions while unsubscribing from feed';
       return prefixErrorResult(fetchSubsResult, message);
     }
 
@@ -74,11 +50,11 @@ export class ServerRssFeedService {
     const activeSubscriptions = fetchSubsResult.value.filter((sub) => sub.isActive);
     if (activeSubscriptions.length > 0) return makeSuccessResult(undefined);
 
-    logger.log('[UNSUBSCRIBE] No active subscriptions found, unsubscribing account from feed', {
-      miniFeedSource,
+    logger.log('[UNSUBSCRIBE] No active subscriptions found, unsubscribing from feed', {
+      url,
     });
 
     // Unsubscribe from the feed provider.
-    return await this.rssFeedProvider.unsubscribeFromUrl(miniFeedSource.url);
+    return await this.rssFeedProvider.unsubscribeFromUrl(url);
   }
 }
