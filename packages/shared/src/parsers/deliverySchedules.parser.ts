@@ -33,7 +33,7 @@ export function parseDeliverySchedule(maybeDeliverySchedule: unknown): Result<De
 
   const parsedDeliverySchedule = parsedResult.value;
 
-  switch (parsedDeliverySchedule.type) {
+  switch (parsedDeliverySchedule.scheduleType) {
     case DeliveryScheduleType.Immediate:
       return makeSuccessResult(IMMEDIATE_DELIVERY_SCHEDULE);
     case DeliveryScheduleType.Never:
@@ -66,31 +66,31 @@ export function parseDeliveryScheduleType(
 export function toStorageDeliverySchedule(
   deliverySchedule: DeliverySchedule
 ): DeliveryScheduleFromStorage {
-  switch (deliverySchedule.type) {
+  switch (deliverySchedule.scheduleType) {
     case DeliveryScheduleType.Immediate:
       return {
-        type: DeliveryScheduleType.Immediate,
+        scheduleType: DeliveryScheduleType.Immediate,
       };
     case DeliveryScheduleType.Never:
       return {
-        type: DeliveryScheduleType.Never,
+        scheduleType: DeliveryScheduleType.Never,
       };
     case DeliveryScheduleType.DaysAndTimesOfWeek:
       return {
-        type: DeliveryScheduleType.DaysAndTimesOfWeek,
+        scheduleType: DeliveryScheduleType.DaysAndTimesOfWeek,
         days: deliverySchedule.days,
         times: deliverySchedule.times,
       };
     case DeliveryScheduleType.EveryNHours:
       return {
-        type: DeliveryScheduleType.EveryNHours,
+        scheduleType: DeliveryScheduleType.EveryNHours,
         hours: deliverySchedule.hours,
       };
     default:
       logger.error(new Error('Unknown delivery schedule type'), {deliverySchedule});
       // Fallback to an immediate delivery schedule to avoid missing items.
       return {
-        type: DeliveryScheduleType.Immediate,
+        scheduleType: DeliveryScheduleType.Immediate,
       };
   }
 }

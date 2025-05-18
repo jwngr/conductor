@@ -29,7 +29,7 @@ export function makeRssUserFeedSubscription(args: {
   const {accountId, url, title} = args;
 
   return {
-    type: FeedSourceType.RSS,
+    feedSourceType: FeedSourceType.RSS,
     url,
     title,
     userFeedSubscriptionId: makeUserFeedSubscriptionId(),
@@ -49,7 +49,7 @@ export function makeYouTubeChannelUserFeedSubscription(args: {
   const {accountId, channelId} = args;
 
   return {
-    type: FeedSourceType.YouTubeChannel,
+    feedSourceType: FeedSourceType.YouTubeChannel,
     channelId,
     userFeedSubscriptionId: makeUserFeedSubscriptionId(),
     accountId,
@@ -68,7 +68,7 @@ export function makeIntervalUserFeedSubscription(args: {
   const {accountId, intervalSeconds} = args;
 
   return {
-    type: FeedSourceType.Interval,
+    feedSourceType: FeedSourceType.Interval,
     intervalSeconds,
     userFeedSubscriptionId: makeUserFeedSubscriptionId(),
     accountId,
@@ -85,7 +85,7 @@ export function makeRssMiniUserFeedSubscription(args: {
 }): RssMiniUserFeedSubscription {
   const {userFeedSubscription} = args;
   return {
-    type: FeedSourceType.RSS,
+    feedSourceType: FeedSourceType.RSS,
     url: userFeedSubscription.url,
     title: userFeedSubscription.title,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
@@ -98,7 +98,7 @@ export function makeYouTubeChannelMiniUserFeedSubscription(args: {
 }): YouTubeChannelMiniUserFeedSubscription {
   const {userFeedSubscription} = args;
   return {
-    type: FeedSourceType.YouTubeChannel,
+    feedSourceType: FeedSourceType.YouTubeChannel,
     channelId: userFeedSubscription.channelId,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     isActive: true,
@@ -110,7 +110,7 @@ export function makeIntervalMiniUserFeedSubscription(args: {
 }): IntervalMiniUserFeedSubscription {
   const {userFeedSubscription} = args;
   return {
-    type: FeedSourceType.Interval,
+    feedSourceType: FeedSourceType.Interval,
     intervalSeconds: userFeedSubscription.intervalSeconds,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     isActive: true,

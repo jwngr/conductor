@@ -121,7 +121,7 @@ const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
       <Label htmlFor="deliverySchedule">Delivery schedule</Label>
       <select
         id="deliverySchedule"
-        value={userFeedSubscription.deliverySchedule.type}
+        value={userFeedSubscription.deliverySchedule.scheduleType}
         onChange={handleDeliveryScheduleChange}
         className="border-neutral-3 rounded border p-1 text-sm"
       >
@@ -221,7 +221,7 @@ const FeedSubscriptionSettingsPopoverContent: React.FC<{
       <FlexColumn gap={4} padding={4}>
         <FeedSubscriptionDeliveryScheduleSetting userFeedSubscription={userFeedSubscription} />
         <FeedSubscriptionUnsubscribeButton userFeedSubscription={userFeedSubscription} />
-        {userFeedSubscription.type === FeedSourceType.Interval ? (
+        {userFeedSubscription.feedSourceType === FeedSourceType.Interval ? (
           <FeedSubscriptionIntervalSetting userFeedSubscription={userFeedSubscription} />
         ) : null}
       </FlexColumn>

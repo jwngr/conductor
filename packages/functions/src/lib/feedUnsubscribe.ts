@@ -37,7 +37,7 @@ export async function handleFeedUnsubscribeHelper(args: {
   if (!becameInactive) return makeSuccessResult(undefined);
 
   // Run unsubscribing behavior for the feed source.
-  switch (after.type) {
+  switch (after.feedSourceType) {
     case FeedSourceType.RSS:
       return await rssFeedService.unsubscribeFromUrl(after.url);
     case FeedSourceType.YouTubeChannel:

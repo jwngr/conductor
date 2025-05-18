@@ -8,34 +8,34 @@ export enum ActorType {
 }
 
 interface SystemActor {
-  readonly type: ActorType.System;
+  readonly actorType: ActorType.System;
 }
 
 interface UserActor {
-  readonly type: ActorType.User;
+  readonly actorType: ActorType.User;
   readonly accountId: AccountId;
 }
 
 export type Actor = UserActor | SystemActor;
 
 export const SYSTEM_ACTOR: SystemActor = {
-  type: ActorType.System,
+  actorType: ActorType.System,
 };
 
 export function makeUserActor(accountId: AccountId): UserActor {
   return {
-    type: ActorType.User,
+    actorType: ActorType.User,
     accountId,
   };
 }
 
 export const ActorSchema = z
   .object({
-    type: z.literal(ActorType.User),
+    actorType: z.literal(ActorType.User),
     accountId: AccountIdSchema,
   })
   .or(
     z.object({
-      type: z.literal(ActorType.System),
+      actorType: z.literal(ActorType.System),
     })
   );

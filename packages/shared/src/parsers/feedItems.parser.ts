@@ -167,14 +167,14 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
   if (!parsedMiniFeedSubscriptionResult.success) return parsedMiniFeedSubscriptionResult;
   const parseMiniFeedSubscription = parsedMiniFeedSubscriptionResult.value;
 
-  switch (parsedBaseFeedItemResult.value.type) {
+  switch (parsedBaseFeedItemResult.value.feedItemType) {
     case FeedItemType.YouTube:
     case FeedItemType.Article:
     case FeedItemType.Video:
     case FeedItemType.Website:
     case FeedItemType.Tweet:
       return parseBaseFeedItem({
-        type: parsedBaseFeedItemResult.value.type,
+        feedItemType: parsedBaseFeedItemResult.value.feedItemType,
         storageBaseFeedItem: parsedBaseFeedItemResult.value,
         feedItemId: parsedIdResult.value,
         accountId: parsedAccountIdResult.value,
@@ -191,25 +191,25 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
       });
     default:
       return makeErrorResult(
-        new Error(`Unknown feed item type: ${parsedBaseFeedItemResult.value.type}`)
+        new Error(`Unknown feed item type: ${parsedBaseFeedItemResult.value.feedItemType}`)
       );
   }
 }
 
 export function parseBaseFeedItem(args: {
-  readonly type: Exclude<FeedItemType, FeedItemType.Xkcd>;
+  readonly feedItemType: Exclude<FeedItemType, FeedItemType.Xkcd>;
   readonly storageBaseFeedItem: BaseFeedItemFromStorage;
   readonly feedItemId: FeedItemId;
   readonly accountId: AccountId;
   readonly importState: FeedItemImportState;
   readonly miniFeedSubscription: MiniUserFeedSubscription;
 }): Result<FeedItem> {
-  const {type, storageBaseFeedItem, feedItemId, accountId, importState, miniFeedSubscription} =
-    args;
+  const {feedItemType, storageBaseFeedItem, feedItemId, accountId} = args;
+  const {importState, miniFeedSubscription} = args;
 
   return makeSuccessResult(
     omitUndefined({
-      type,
+      feedItemType,
       accountId,
       importState,
       feedItemId,
@@ -244,7 +244,8 @@ export function parseXkcdFeedItem(args: {
 
   return makeSuccessResult(
     omitUndefined({
-      type: FeedItemType.Xkcd,
+      feedItemType: FeedItemType.Xkcd,
+      feedSourceType: miniFeedSubscription.feedSourceType,
       xkcd: parsedXkcdFeedItemResult.value.xkcd,
       accountId,
       miniFeedSubscription,
@@ -268,7 +269,7 @@ export function parseXkcdFeedItem(args: {
  * Firestore.
  */
 export function toStorageFeedItem(feedItem: FeedItem): FeedItemFromStorage {
-  switch (feedItem.type) {
+  switch (feedItem.feedItemType) {
     case FeedItemType.Xkcd:
       return toStorageXkcdFeedItem(feedItem);
     case FeedItemType.YouTube:
@@ -292,8 +293,9 @@ export function toStorageBaseFeedItem(
 ): BaseFeedItemFromStorage {
   return omitUndefined({
     feedItemId: feedItem.feedItemId,
+    feedItemType: feedItem.feedItemType,
+    feedSourceType: feedItem.feedSourceType,
     accountId: feedItem.accountId,
-    type: feedItem.type,
     miniFeedSubscription: feedItem.miniFeedSubscription,
     importState: feedItem.importState,
     url: feedItem.url,
@@ -315,8 +317,9 @@ export function toStorageBaseFeedItem(
 export function toStorageXkcdFeedItem(feedItem: XkcdFeedItem): XkcdFeedItemFromStorage {
   return omitUndefined({
     feedItemId: feedItem.feedItemId,
+    feedItemType: feedItem.feedItemType,
+    feedSourceType: feedItem.feedSourceType,
     accountId: feedItem.accountId,
-    type: feedItem.type,
     miniFeedSubscription: feedItem.miniFeedSubscription,
     importState: feedItem.importState,
     url: feedItem.url,

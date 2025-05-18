@@ -151,7 +151,7 @@ export class ServerFeedItemsService {
     }
 
     let importResult: Result<void, Error>;
-    switch (feedItem.type) {
+    switch (feedItem.feedItemType) {
       case FeedItemType.YouTube: {
         const importer = new YouTubeFeedItemImporter({feedItemService: this});
         importResult = await importer.import(feedItem);

@@ -24,7 +24,8 @@ service cloud.firestore {
     function isValidFeedItemDoc(feedItemId) {
       return request.resource.data.keys().hasAll([
         'feedItemId',
-        'type',
+        'feedItemType',
+        'feedSourceType',
         'miniFeedSubscription',
         'importState',
         'url',
@@ -37,8 +38,8 @@ service cloud.firestore {
       ]) &&
       request.resource.data.feedItemId is string &&
       request.resource.data.feedItemId == feedItemId &&
-      request.resource.data.type in ['ARTICLE', 'VIDEO', 'WEBSITE', 'TWEET', 'XKCD', 'YOUTUBE'] &&
-      request.resource.data.miniFeedSubscription.data.keys().hasAll(['type']) &&
+      request.resource.data.feedItemType in ['ARTICLE', 'VIDEO', 'WEBSITE', 'TWEET', 'XKCD', 'YOUTUBE'] &&
+      request.resource.data.feedSourceType in ['RSS', 'YOUTUBE_CHANNEL', 'INTERVAL', 'PWA', 'EXTENSION', 'POCKET_EXPORT'] &&
       request.resource.data.url is string &&
       request.resource.data.title is string &&
       request.resource.data.outgoingLinks is list &&

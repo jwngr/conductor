@@ -28,35 +28,35 @@ const GROUP_BY_LAST_UPDATED_DATE_OPTION: ViewGroupByOption = {
 const ALL_VIEW_CONFIGS: Record<ViewType, View<FeedItem>> = {
   [ViewType.Untriaged]: {
     name: 'Untriaged',
-    type: ViewType.Untriaged,
+    viewType: ViewType.Untriaged,
     filters: [{field: 'triageStatus', op: QueryFilterOp.Equals, value: TriageStatus.Untriaged}],
     sortBy: [SORT_BY_CREATED_TIME_DESC_OPTION],
     groupBy: [GROUP_BY_CREATED_DATE_OPTION],
   },
   [ViewType.Saved]: {
     name: 'Saved',
-    type: ViewType.Saved,
+    viewType: ViewType.Saved,
     filters: [{field: 'triageStatus', op: QueryFilterOp.Equals, value: TriageStatus.Saved}],
     sortBy: [SORT_BY_LAST_UPDATED_TIME_DESC_OPTION],
     groupBy: [GROUP_BY_LAST_UPDATED_DATE_OPTION],
   },
   [ViewType.Done]: {
     name: 'Done',
-    type: ViewType.Done,
+    viewType: ViewType.Done,
     filters: [{field: 'triageStatus', op: QueryFilterOp.Equals, value: TriageStatus.Done}],
     sortBy: [SORT_BY_LAST_UPDATED_TIME_DESC_OPTION],
     groupBy: [GROUP_BY_LAST_UPDATED_DATE_OPTION],
   },
   [ViewType.Trashed]: {
     name: 'Trashed',
-    type: ViewType.Trashed,
+    viewType: ViewType.Trashed,
     filters: [{field: 'triageStatus', op: QueryFilterOp.Equals, value: TriageStatus.Trashed}],
     sortBy: [SORT_BY_LAST_UPDATED_TIME_DESC_OPTION],
     groupBy: [GROUP_BY_LAST_UPDATED_DATE_OPTION],
   },
   [ViewType.Unread]: {
     name: 'Unread',
-    type: ViewType.Unread,
+    viewType: ViewType.Unread,
     filters: [
       // TODO: Fix the typecasting here.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -67,7 +67,7 @@ const ALL_VIEW_CONFIGS: Record<ViewType, View<FeedItem>> = {
   },
   [ViewType.Starred]: {
     name: 'Starred',
-    type: ViewType.Starred,
+    viewType: ViewType.Starred,
     filters: [
       // TODO: Fix the typecasting here.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -78,14 +78,14 @@ const ALL_VIEW_CONFIGS: Record<ViewType, View<FeedItem>> = {
   },
   [ViewType.All]: {
     name: 'All',
-    type: ViewType.All,
+    viewType: ViewType.All,
     filters: [],
     sortBy: [SORT_BY_CREATED_TIME_DESC_OPTION],
     groupBy: [GROUP_BY_CREATED_DATE_OPTION],
   },
   [ViewType.Today]: {
     name: 'Today',
-    type: ViewType.Today,
+    viewType: ViewType.Today,
     filters: [
       {
         field: 'createdTime',

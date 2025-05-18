@@ -137,7 +137,7 @@ function useGroupedFeedItems(
     switch (groupByField) {
       case 'type':
         for (const item of feedItems) {
-          const groupKey = item.type;
+          const groupKey = item.feedItemType;
           if (!groupedItems[groupKey]) {
             groupedItems[groupKey] = [];
           }

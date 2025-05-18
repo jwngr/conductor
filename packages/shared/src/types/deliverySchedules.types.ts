@@ -11,25 +11,25 @@ export enum DeliveryScheduleType {
 }
 
 interface BaseDeliverySchedule {
-  readonly type: DeliveryScheduleType;
+  readonly scheduleType: DeliveryScheduleType;
 }
 
 export interface NeverDeliverySchedule extends BaseDeliverySchedule {
-  readonly type: DeliveryScheduleType.Never;
+  readonly scheduleType: DeliveryScheduleType.Never;
 }
 
 export interface ImmediateDeliverySchedule extends BaseDeliverySchedule {
-  readonly type: DeliveryScheduleType.Immediate;
+  readonly scheduleType: DeliveryScheduleType.Immediate;
 }
 
 export interface DaysAndTimesOfWeekDeliverySchedule extends BaseDeliverySchedule {
-  readonly type: DeliveryScheduleType.DaysAndTimesOfWeek;
+  readonly scheduleType: DeliveryScheduleType.DaysAndTimesOfWeek;
   readonly days: DayOfWeek[];
   readonly times: TimeOfDay[];
 }
 
 export interface EveryNHoursDeliverySchedule extends BaseDeliverySchedule {
-  readonly type: DeliveryScheduleType.EveryNHours;
+  readonly scheduleType: DeliveryScheduleType.EveryNHours;
   readonly hours: number;
 }
 
@@ -40,33 +40,33 @@ export type DeliverySchedule =
   | EveryNHoursDeliverySchedule;
 
 const BaseDeliveryScheduleFromStorageSchema = z.object({
-  type: z.nativeEnum(DeliveryScheduleType),
+  scheduleType: z.nativeEnum(DeliveryScheduleType),
 });
 
 const ImmediateDeliveryScheduleFromStorageSchema = BaseDeliveryScheduleFromStorageSchema.extend({
-  type: z.literal(DeliveryScheduleType.Immediate),
+  scheduleType: z.literal(DeliveryScheduleType.Immediate),
 });
 
 const NeverDeliveryScheduleFromStorageSchema = BaseDeliveryScheduleFromStorageSchema.extend({
-  type: z.literal(DeliveryScheduleType.Never),
+  scheduleType: z.literal(DeliveryScheduleType.Never),
 });
 
 const DaysAndTimesOfWeekDeliveryScheduleFromStorageSchema =
   BaseDeliveryScheduleFromStorageSchema.extend({
-    type: z.literal(DeliveryScheduleType.DaysAndTimesOfWeek),
+    scheduleType: z.literal(DeliveryScheduleType.DaysAndTimesOfWeek),
     days: z.array(z.nativeEnum(DayOfWeek)),
     times: z.array(TimeOfDaySchema),
   });
 
 const EveryNHoursDeliveryScheduleFromStorageSchema = BaseDeliveryScheduleFromStorageSchema.extend({
-  type: z.literal(DeliveryScheduleType.EveryNHours),
+  scheduleType: z.literal(DeliveryScheduleType.EveryNHours),
   hours: z.number().int().min(1).max(24),
 });
 
 /**
  * Zod schema for a {@link DeliverySchedule} persisted to Firestore.
  */
-export const DeliveryScheduleFromStorageSchema = z.discriminatedUnion('type', [
+export const DeliveryScheduleFromStorageSchema = z.discriminatedUnion('scheduleType', [
   NeverDeliveryScheduleFromStorageSchema,
   ImmediateDeliveryScheduleFromStorageSchema,
   DaysAndTimesOfWeekDeliveryScheduleFromStorageSchema,

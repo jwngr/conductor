@@ -13,7 +13,7 @@ export enum ViewType {
 
 export interface View<T> {
   readonly name: string;
-  readonly type: ViewType;
+  readonly viewType: ViewType;
   readonly sortBy: readonly ViewSortByOption[];
   readonly groupBy: readonly ViewGroupByOption[];
   // TODO: Consider moving to a separate abstraction since this is about data fetching.

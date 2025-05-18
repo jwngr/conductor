@@ -103,7 +103,7 @@ function filterFeedItemsByDeliverySchedules(args: {
   const {feedItems, userFeedSubscriptions} = args;
 
   return feedItems.filter((feedItem) => {
-    switch (feedItem.miniFeedSubscription.type) {
+    switch (feedItem.miniFeedSubscription.feedSourceType) {
       case FeedSourceType.PWA:
       case FeedSourceType.Extension:
       case FeedSourceType.PocketExport:

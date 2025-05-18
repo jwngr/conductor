@@ -72,7 +72,7 @@ export function parseUserFeedSubscription(
     return prefixErrorResult(parsedResult, 'Invalid user feed subscription');
   }
 
-  switch (parsedResult.value.type) {
+  switch (parsedResult.value.feedSourceType) {
     case FeedSourceType.RSS:
       return parseRssUserFeedSubscription(parsedResult.value);
     case FeedSourceType.YouTubeChannel:
@@ -108,7 +108,7 @@ function parseRssUserFeedSubscription(
 
   return makeSuccessResult(
     omitUndefined({
-      type: FeedSourceType.RSS,
+      feedSourceType: FeedSourceType.RSS,
       url: parsedResult.value.url,
       title: parsedResult.value.title,
       userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
@@ -148,7 +148,7 @@ function parseYouTubeChannelUserFeedSubscription(
 
   return makeSuccessResult(
     omitUndefined({
-      type: FeedSourceType.YouTubeChannel,
+      feedSourceType: FeedSourceType.YouTubeChannel,
       channelId: parsedChannelIdResult.value,
       userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
       accountId: parsedAccountIdResult.value,
@@ -184,7 +184,7 @@ function parseIntervalUserFeedSubscription(
 
   return makeSuccessResult(
     omitUndefined({
-      type: FeedSourceType.Interval,
+      feedSourceType: FeedSourceType.Interval,
       intervalSeconds: parsedResult.value.intervalSeconds,
       userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
       accountId: parsedAccountIdResult.value,
@@ -203,7 +203,7 @@ function parseIntervalUserFeedSubscription(
 export function toStorageUserFeedSubscription(
   userFeedSubscription: UserFeedSubscription
 ): UserFeedSubscriptionFromStorage {
-  switch (userFeedSubscription.type) {
+  switch (userFeedSubscription.feedSourceType) {
     case FeedSourceType.RSS:
       return toStorageRssUserFeedSubscription(userFeedSubscription);
     case FeedSourceType.YouTubeChannel:
@@ -220,7 +220,7 @@ function toStorageRssUserFeedSubscription(
   userFeedSubscription: RssUserFeedSubscription
 ): UserFeedSubscriptionFromStorage {
   return omitUndefined({
-    type: FeedSourceType.RSS,
+    feedSourceType: FeedSourceType.RSS,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     url: userFeedSubscription.url,
     title: userFeedSubscription.title,
@@ -237,7 +237,7 @@ function toStorageYouTubeChannelUserFeedSubscription(
   userFeedSubscription: YouTubeChannelUserFeedSubscription
 ): UserFeedSubscriptionFromStorage {
   return omitUndefined({
-    type: FeedSourceType.YouTubeChannel,
+    feedSourceType: FeedSourceType.YouTubeChannel,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     channelId: userFeedSubscription.channelId,
     accountId: userFeedSubscription.accountId,
@@ -253,7 +253,7 @@ function toStorageIntervalUserFeedSubscription(
   userFeedSubscription: IntervalUserFeedSubscription
 ): UserFeedSubscriptionFromStorage {
   return omitUndefined({
-    type: FeedSourceType.Interval,
+    feedSourceType: FeedSourceType.Interval,
     intervalSeconds: userFeedSubscription.intervalSeconds,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     accountId: userFeedSubscription.accountId,
@@ -284,7 +284,7 @@ export function parseMiniUserFeedSubscription(
     return prefixErrorResult(parsedResult, 'Invalid mini user feed subscription');
   }
 
-  switch (parsedResult.value.type) {
+  switch (parsedResult.value.feedSourceType) {
     case FeedSourceType.RSS:
       return parseRssMiniUserFeedSubscription(parsedResult.value);
     case FeedSourceType.YouTubeChannel:
@@ -321,7 +321,7 @@ function parseRssMiniUserFeedSubscription(
 
   return makeSuccessResult(
     omitUndefined({
-      type: FeedSourceType.RSS,
+      feedSourceType: FeedSourceType.RSS,
       userFeedSubscriptionId: parsedFeedSubIdResult.value,
       url: parsedMiniFeedSub.url,
       title: parsedMiniFeedSub.title,
@@ -351,7 +351,7 @@ function parseYouTubeChannelMiniUserFeedSubscription(
 
   return makeSuccessResult(
     omitUndefined({
-      type: FeedSourceType.YouTubeChannel,
+      feedSourceType: FeedSourceType.YouTubeChannel,
       channelId: parsedChannelIdResult.value,
       userFeedSubscriptionId: parsedFeedSubIdResult.value,
       isActive: parsedResult.value.isActive,
@@ -377,7 +377,7 @@ function parseIntervalMiniUserFeedSubscription(
 
   return makeSuccessResult(
     omitUndefined({
-      type: FeedSourceType.Interval,
+      feedSourceType: FeedSourceType.Interval,
       intervalSeconds: parsedResult.value.intervalSeconds,
       userFeedSubscriptionId: parsedFeedSubIdResult.value,
       isActive: parsedResult.value.isActive,

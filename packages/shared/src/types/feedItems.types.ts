@@ -4,6 +4,7 @@ import {makeUuid} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import {AccountIdSchema} from '@shared/types/accounts.types';
+import {FeedSourceType} from '@shared/types/feedSources.types';
 import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {IconName} from '@shared/types/icons.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
@@ -107,7 +108,8 @@ export type FeedItemImportState =
 
 interface BaseFeedItem extends BaseStoreItem {
   readonly feedItemId: FeedItemId;
-  readonly type: FeedItemType;
+  readonly feedItemType: FeedItemType;
+  readonly feedSourceType: FeedSourceType;
   /** ID of the account that owns the feed item. */
   readonly accountId: AccountId;
   /** TODO: Better name + comment: Source of the feed item. */
@@ -186,7 +188,8 @@ export type FeedItemImportStateFromStorage = z.infer<typeof FeedItemImportStateF
  * Zod schema for a {@link FeedItem} persisted to Firestore.
  */
 export const BaseFeedItemFromStorageSchema = z.object({
-  type: z.nativeEnum(FeedItemType),
+  feedItemType: z.nativeEnum(FeedItemType),
+  feedSourceType: z.nativeEnum(FeedSourceType),
   feedItemId: FeedItemIdSchema,
   accountId: AccountIdSchema,
   miniFeedSubscription: MiniUserFeedSubscriptionFromStorageSchema,
@@ -211,7 +214,7 @@ export type BaseFeedItemFromStorage = z.infer<typeof BaseFeedItemFromStorageSche
  * Zod schema for an {@link XkcdFeedItem} persisted to Firestore.
  */
 export const XkcdFeedItemFromStorageSchema = BaseFeedItemFromStorageSchema.extend({
-  type: z.literal(FeedItemType.Xkcd),
+  feedItemType: z.literal(FeedItemType.Xkcd),
   xkcd: z
     .object({
       altText: z.string(),
@@ -229,23 +232,23 @@ export type XkcdFeedItemFromStorage = z.infer<typeof XkcdFeedItemFromStorageSche
 export type FeedItemFromStorage = BaseFeedItemFromStorage | XkcdFeedItemFromStorage;
 
 export interface ArticleFeedItem extends BaseFeedItem {
-  readonly type: FeedItemType.Article;
+  readonly feedItemType: FeedItemType.Article;
 }
 
 export interface VideoFeedItem extends BaseFeedItem {
-  readonly type: FeedItemType.Video;
+  readonly feedItemType: FeedItemType.Video;
 }
 
 export interface WebsiteFeedItem extends BaseFeedItem {
-  readonly type: FeedItemType.Website;
+  readonly feedItemType: FeedItemType.Website;
 }
 
 export interface TweetFeedItem extends BaseFeedItem {
-  readonly type: FeedItemType.Tweet;
+  readonly feedItemType: FeedItemType.Tweet;
 }
 
 export interface XkcdFeedItem extends BaseFeedItem {
-  readonly type: FeedItemType.Xkcd;
+  readonly feedItemType: FeedItemType.Xkcd;
   readonly xkcd: {
     readonly altText: string;
     readonly imageUrlSmall: string;
@@ -254,7 +257,7 @@ export interface XkcdFeedItem extends BaseFeedItem {
 }
 
 export interface YouTubeFeedItem extends BaseFeedItem {
-  readonly type: FeedItemType.YouTube;
+  readonly feedItemType: FeedItemType.YouTube;
 }
 
 /**
@@ -280,7 +283,7 @@ export enum FeedItemActionType {
 }
 
 export interface FeedItemAction {
-  readonly type: FeedItemActionType;
+  readonly actionType: FeedItemActionType;
   // TODO: Should this have `feedId` on it? Should it be optional?
   readonly text: string;
   readonly icon: IconName;

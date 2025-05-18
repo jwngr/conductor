@@ -73,7 +73,8 @@ export class SharedFeedItemHelpers {
       case FeedItemType.Website:
       case FeedItemType.YouTube:
         return makeSuccessResult<FeedItem>({
-          type: feedItemType,
+          feedItemType: feedItemType,
+          feedSourceType: miniFeedSubscription.feedSourceType,
           url,
           accountId,
           feedItemId,
@@ -91,7 +92,8 @@ export class SharedFeedItemHelpers {
         });
       case FeedItemType.Xkcd:
         return makeSuccessResult<FeedItem>({
-          type: FeedItemType.Xkcd,
+          feedItemType: FeedItemType.Xkcd,
+          feedSourceType: miniFeedSubscription.feedSourceType,
           xkcd: null,
           url,
           accountId,
@@ -116,7 +118,7 @@ export class SharedFeedItemHelpers {
   public static getMarkDoneFeedItemActionInfo(feedItem: FeedItem): FeedItemAction {
     const isAlreadyDone = SharedFeedItemHelpers.isMarkedDone(feedItem);
     return {
-      type: FeedItemActionType.MarkDone,
+      actionType: FeedItemActionType.MarkDone,
       text: isAlreadyDone ? 'Mark undone' : 'Mark done',
       icon: IconName.MarkDone, // TODO: Make icon dynamic.
       shortcutId: KeyboardShortcutId.ToggleDone,
@@ -126,7 +128,7 @@ export class SharedFeedItemHelpers {
   public static getSaveFeedItemActionInfo(feedItem: FeedItem): FeedItemAction {
     const isAlreadySaved = SharedFeedItemHelpers.isSaved(feedItem);
     return {
-      type: FeedItemActionType.Save,
+      actionType: FeedItemActionType.Save,
       text: isAlreadySaved ? 'Unsave' : 'Save',
       icon: IconName.Save,
       shortcutId: KeyboardShortcutId.ToggleSaved,
@@ -136,7 +138,7 @@ export class SharedFeedItemHelpers {
   public static getMarkUnreadFeedItemActionInfo(feedItem: FeedItem): FeedItemAction {
     const isAlreadyUnread = SharedFeedItemHelpers.isUnread(feedItem);
     return {
-      type: FeedItemActionType.MarkUnread,
+      actionType: FeedItemActionType.MarkUnread,
       text: isAlreadyUnread ? 'Mark read' : 'Mark unread',
       icon: IconName.MarkUnread,
       shortcutId: KeyboardShortcutId.ToggleUnread,
@@ -146,7 +148,7 @@ export class SharedFeedItemHelpers {
   public static getStarFeedItemActionInfo(feedItem: FeedItem): FeedItemAction {
     const isAlreadyStarred = SharedFeedItemHelpers.isStarred(feedItem);
     return {
-      type: FeedItemActionType.Star,
+      actionType: FeedItemActionType.Star,
       text: isAlreadyStarred ? 'Unstar' : 'Star',
       icon: IconName.Star,
       shortcutId: KeyboardShortcutId.ToggleStarred,
@@ -155,7 +157,7 @@ export class SharedFeedItemHelpers {
 
   public static getRetryImportFeedItemActionInfo(): FeedItemAction {
     return {
-      type: FeedItemActionType.RetryImport,
+      actionType: FeedItemActionType.RetryImport,
       text: 'Retry import',
       icon: IconName.RetryImport,
     };
@@ -163,7 +165,7 @@ export class SharedFeedItemHelpers {
 
   public static getCancelFeedItemActionInfo(): FeedItemAction {
     return {
-      type: FeedItemActionType.Cancel,
+      actionType: FeedItemActionType.Cancel,
       text: 'Cancel',
       icon: IconName.Cancel,
     };
