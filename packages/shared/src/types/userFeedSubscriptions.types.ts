@@ -144,10 +144,7 @@ export const POCKET_EXPORT_MINI_USER_FEED_SUBSCRIPTION: PocketExportMiniUserFeed
   feedSourceType: FeedSourceType.PocketExport,
 };
 
-type BasePersistedMiniUserFeedSubscription = Pick<
-  UserFeedSubscription,
-  'userFeedSubscriptionId' | 'isActive'
->;
+type BasePersistedMiniUserFeedSubscription = Pick<UserFeedSubscription, 'userFeedSubscriptionId'>;
 
 export interface RssMiniUserFeedSubscription extends BasePersistedMiniUserFeedSubscription {
   readonly feedSourceType: FeedSourceType.RSS;
@@ -192,7 +189,6 @@ const BasePersistedMiniUserFeedSubscriptionSchema = z.object({
     z.literal(FeedSourceType.Interval),
   ]),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
-  isActive: z.boolean(),
 });
 
 export const RssMiniUserFeedSubscriptionSchema = BasePersistedMiniUserFeedSubscriptionSchema.extend(
@@ -212,7 +208,6 @@ export const YouTubeChannelMiniUserFeedSubscriptionSchema =
 export const IntervalMiniUserFeedSubscriptionSchema =
   BasePersistedMiniUserFeedSubscriptionSchema.extend({
     feedSourceType: z.literal(FeedSourceType.Interval),
-    intervalSeconds: z.number(),
   });
 
 /**

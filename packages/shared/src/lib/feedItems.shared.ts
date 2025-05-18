@@ -5,7 +5,7 @@ import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {parseUrl} from '@shared/lib/urls.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 import {isXkcdComicUrl} from '@shared/lib/xkcd.shared';
-import {isYouTubeChannelUrl} from '@shared/lib/youtube.shared';
+import {isYouTubeVideoUrl} from '@shared/lib/youtube.shared';
 
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
 import {
@@ -58,7 +58,8 @@ export class SharedFeedItemHelpers {
 
     // Common fields across all feed item types.
     const feedItemId = makeFeedItemId();
-    const feedItemType = SharedFeedItemHelpers.getFeedItemTypeFromUrl(url);
+    const feedItemType = getFeedItemTypeFromUrl(url);
+    const feedSourceType = miniFeedSubscription.feedSourceType;
     const triageStatus = TriageStatus.Untriaged;
     const importState = makeNewFeedItemImportState();
     const tagIds: Partial<Record<TagId, true>> = {
@@ -75,8 +76,8 @@ export class SharedFeedItemHelpers {
       case FeedItemType.Website:
       case FeedItemType.YouTube:
         return makeSuccessResult<FeedItem>({
-          feedItemType: feedItemType,
-          feedSourceType: miniFeedSubscription.feedSourceType,
+          feedItemType,
+          feedSourceType,
           url,
           accountId,
           feedItemId,
@@ -94,8 +95,8 @@ export class SharedFeedItemHelpers {
         });
       case FeedItemType.Xkcd:
         return makeSuccessResult<FeedItem>({
-          feedItemType: FeedItemType.Xkcd,
-          feedSourceType: miniFeedSubscription.feedSourceType,
+          feedItemType,
+          feedSourceType,
           xkcd: null,
           url,
           accountId,
@@ -203,35 +204,6 @@ export class SharedFeedItemHelpers {
     return makeSuccessResult(undefined);
   }
 
-  public static getFeedItemTypeFromUrl(url: string): FeedItemType {
-    // Parsing the URL may throw. If it does, ignore the error and just use a default value.
-    let parsedUrl: URL;
-    // eslint-disable-next-line no-restricted-syntax
-    try {
-      parsedUrl = new URL(url);
-    } catch (error) {
-      const betterError = upgradeUnknownError(error);
-      logger.error(prefixError(betterError, 'Error parsing feed item type from URL'), {error, url});
-      return FeedItemType.Website;
-    }
-
-    const hostname = parsedUrl.hostname.toLowerCase();
-
-    // Check for exact matches against allowed hostnames.
-    const youtubeHosts = ['youtube.com', 'www.youtube.com', 'youtu.be', 'www.youtu.be'];
-    const xkcdHosts = ['xkcd.com', 'www.xkcd.com'];
-    const twitterHosts = ['twitter.com', 'www.twitter.com', 'x.com', 'www.x.com'];
-    if (youtubeHosts.includes(hostname)) {
-      return FeedItemType.YouTube;
-    } else if (xkcdHosts.includes(hostname)) {
-      return FeedItemType.Xkcd;
-    } else if (twitterHosts.includes(hostname)) {
-      return FeedItemType.Tweet;
-    }
-
-    return FeedItemType.Website;
-  }
-
   public static hasEverBeenImported(feedItem: FeedItem): boolean {
     return feedItem.importState.lastSuccessfulImportTime !== null;
   }
@@ -253,12 +225,28 @@ export function findDeliveryScheduleForFeedSubscription(args: {
  * determine which renderer to use when rendering a feed item.
  */
 export function getFeedItemTypeFromUrl(url: string): FeedItemType {
-  if (isYouTubeChannelUrl(url)) {
-    return FeedItemType.YouTube;
-  } else if (isXkcdComicUrl(url)) {
-    return FeedItemType.Xkcd;
+  // Parsing the URL may throw. If it does, ignore the error and just use a default value.
+  let parsedUrl: URL;
+  // eslint-disable-next-line no-restricted-syntax
+  try {
+    parsedUrl = new URL(url);
+  } catch (error) {
+    const betterError = upgradeUnknownError(error);
+    logger.error(prefixError(betterError, 'Error parsing feed item type from URL'), {error, url});
+    return FeedItemType.Website;
   }
-  // TODO: Make this more robust.
+
+  const hostname = parsedUrl.hostname.toLowerCase();
+
+  // Check for exact matches against allowed hostnames.
+  const twitterHosts = ['twitter.com', 'www.twitter.com', 'x.com', 'www.x.com'];
+  if (isYouTubeVideoUrl(parsedUrl.href)) {
+    return FeedItemType.YouTube;
+  } else if (isXkcdComicUrl(parsedUrl.href)) {
+    return FeedItemType.Xkcd;
+  } else if (twitterHosts.includes(hostname)) {
+    return FeedItemType.Tweet;
+  }
 
   // Default to article.
   return FeedItemType.Article;

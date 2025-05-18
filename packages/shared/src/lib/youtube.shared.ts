@@ -6,6 +6,7 @@ import {parseYouTubeChannelId, parseYouTubeHandle} from '@shared/parsers/youtube
 import type {Result} from '@shared/types/results.types';
 import type {YouTubeChannelId, YouTubeHandle} from '@shared/types/youtube.types';
 
+const YOUTUBE_VIDEO_ID_PATH_REGEX = /^\/watch\?v=([a-zA-Z0-9_-]+)$/i;
 const YOUTUBE_CHANNEL_ID_PATH_REGEX = /^\/channel\/([a-zA-Z0-9_-]+)$/i;
 const YOUTUBE_CHANNEL_AT_HANDLE_PATH_REGEX = /^\/@([a-zA-Z0-9_-]+)$/i;
 const YOUTUBE_CHANNEL_C_HANDLE_PATH_REGEX = /^\/c\/([a-zA-Z0-9_-]+)$/i;
@@ -25,7 +26,7 @@ function normalizeYouTubeHostname(hostname: string): string {
 }
 
 /**
- * Returns `true` if the provided URL is a YouTube channel URL.  Handles many variations of YouTube
+ * Returns `true` if the provided URL is a YouTube channel URL. Handles many variations of YouTube
  * URLs.
  */
 export function isYouTubeChannelUrl(url: string): boolean {
@@ -38,6 +39,22 @@ export function isYouTubeChannelUrl(url: string): boolean {
   if (YOUTUBE_CHANNEL_ID_PATH_REGEX.test(parsedUrl.pathname)) return true;
   if (YOUTUBE_CHANNEL_AT_HANDLE_PATH_REGEX.test(parsedUrl.pathname)) return true;
   if (YOUTUBE_CHANNEL_C_HANDLE_PATH_REGEX.test(parsedUrl.pathname)) return true;
+
+  return false;
+}
+
+/**
+ * Returns `true` if the provided URL is a YouTube video URL. Handles many variations of YouTube
+ * URLs.
+ */
+export function isYouTubeVideoUrl(url: string): boolean {
+  const parsedUrl = parseUrl(url);
+  if (!parsedUrl) return false;
+
+  const normalizedHostname = normalizeYouTubeHostname(parsedUrl.hostname);
+  if (!YOUTUBE_HOSTNAMES.includes(normalizedHostname)) return false;
+
+  if (YOUTUBE_VIDEO_ID_PATH_REGEX.test(parsedUrl.pathname)) return true;
 
   return false;
 }

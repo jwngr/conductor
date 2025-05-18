@@ -135,9 +135,19 @@ function useGroupedFeedItems(
 
     const groupedItems: Record<string, FeedItem[]> = {};
     switch (groupByField) {
-      case 'type':
+      case 'feedItemType':
         for (const item of feedItems) {
           const groupKey = item.feedItemType;
+          if (!groupedItems[groupKey]) {
+            groupedItems[groupKey] = [];
+          }
+          groupedItems[groupKey].push(item);
+        }
+        return groupedItems;
+
+      case 'feedSourceType':
+        for (const item of feedItems) {
+          const groupKey = item.feedSourceType;
           if (!groupedItems[groupKey]) {
             groupedItems[groupKey] = [];
           }
@@ -155,7 +165,7 @@ function useGroupedFeedItems(
         }
         return groupedItems;
 
-      case 'createdDate':
+      case 'createdTime':
         // TODO: Handle timezones.
         for (const item of feedItems) {
           const groupKey = getDateGroupKey(item.createdTime);
@@ -166,7 +176,7 @@ function useGroupedFeedItems(
         }
         return groupedItems;
 
-      case 'lastUpdatedDate':
+      case 'lastUpdatedTime':
         // TODO: Handle timezones.
         for (const item of feedItems) {
           const groupKey = getDateGroupKey(item.lastUpdatedTime);

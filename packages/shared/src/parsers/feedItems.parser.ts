@@ -210,6 +210,7 @@ export function parseBaseFeedItem(args: {
   return makeSuccessResult(
     omitUndefined({
       feedItemType,
+      feedSourceType: storageBaseFeedItem.feedSourceType,
       accountId,
       importState,
       feedItemId,
@@ -245,7 +246,7 @@ export function parseXkcdFeedItem(args: {
   return makeSuccessResult(
     omitUndefined({
       feedItemType: FeedItemType.Xkcd,
-      feedSourceType: miniFeedSubscription.feedSourceType,
+      feedSourceType: storageXkcdFeedItem.feedSourceType,
       xkcd: parsedXkcdFeedItemResult.value.xkcd,
       accountId,
       miniFeedSubscription,

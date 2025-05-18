@@ -18,11 +18,11 @@ import {
 } from '@shared/types/views.types';
 
 const GROUP_BY_CREATED_DATE_OPTION: ViewGroupByOption = {
-  field: 'createdDate',
+  field: 'createdTime',
 };
 
 const GROUP_BY_LAST_UPDATED_DATE_OPTION: ViewGroupByOption = {
-  field: 'lastUpdatedDate',
+  field: 'lastUpdatedTime',
 };
 
 const ALL_VIEW_CONFIGS: Record<ViewType, View<FeedItem>> = {
@@ -186,13 +186,15 @@ export class Views {
 
 export function toViewGroupByOptionText(viewGroupByField: ViewGroupByField): string {
   switch (viewGroupByField) {
-    case 'type':
+    case 'feedItemType':
       return 'Type';
+    case 'feedSourceType':
+      return 'Source';
     case 'importState':
       return 'Import state';
-    case 'createdDate':
+    case 'createdTime':
       return 'Created date';
-    case 'lastUpdatedDate':
+    case 'lastUpdatedTime':
       return 'Last updated date';
     default:
       assertNever(viewGroupByField);

@@ -5,9 +5,15 @@ import {
   isYouTubeChannelUrl,
 } from '@shared/lib/youtube.shared';
 
-import {parseYouTubeChannelId, parseYouTubeHandle} from '@shared/parsers/youtube.parser';
+import {
+  parseYouTubeChannelId,
+  parseYouTubeHandle,
+  parseYouTubeVideoId,
+} from '@shared/parsers/youtube.parser';
 
-import type {YouTubeChannelId, YouTubeHandle} from '@shared/types/youtube.types';
+import type {YouTubeChannelId, YouTubeHandle, YouTubeVideoId} from '@shared/types/youtube.types';
+
+const VALID_YOUTUBE_VIDEO_ID = unwrapOrThrow<YouTubeVideoId>(parseYouTubeVideoId('_cjTOlTxyQ8'));
 
 const VALID_CHANNEL_ID = unwrapOrThrow<YouTubeChannelId>(
   parseYouTubeChannelId('UCndkjnoQawp7Tjy1uNj53yQ')
@@ -107,6 +113,27 @@ describe('parseYouTubeHandle', () => {
     '', // Empty string.
   ])('should fail for invalid handle "%s"', (handle) => {
     const result = parseYouTubeHandle(handle);
+    expectErrorResult(result);
+  });
+});
+
+describe('parseYouTubeVideoId', () => {
+  it.each([VALID_YOUTUBE_VIDEO_ID, 'a'.repeat(11), '_'.repeat(11)])(
+    'should succeed for a valid video ID "%s"',
+    (videoId) => {
+      const result = parseYouTubeVideoId(videoId);
+      expectSuccessResult(result, videoId);
+    }
+  );
+
+  it.each([
+    'dQw4w9WgXc', // Too short
+    'dQw4w9WgXcQQ', // Too long
+    'dQw4w9WgXc!', // Invalid character
+    'dQw4w9WgXc$', // Invalid character
+    '', // Empty string
+  ])('should fail for invalid video ID "%s"', (videoId) => {
+    const result = parseYouTubeVideoId(videoId);
     expectErrorResult(result);
   });
 });

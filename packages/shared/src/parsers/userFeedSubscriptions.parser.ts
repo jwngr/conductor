@@ -325,7 +325,6 @@ function parseRssMiniUserFeedSubscription(
       userFeedSubscriptionId: parsedFeedSubIdResult.value,
       url: parsedMiniFeedSub.url,
       title: parsedMiniFeedSub.title,
-      isActive: parsedMiniFeedSub.isActive,
     })
   );
 }
@@ -352,9 +351,8 @@ function parseYouTubeChannelMiniUserFeedSubscription(
   return makeSuccessResult(
     omitUndefined({
       feedSourceType: FeedSourceType.YouTubeChannel,
-      channelId: parsedChannelIdResult.value,
       userFeedSubscriptionId: parsedFeedSubIdResult.value,
-      isActive: parsedResult.value.isActive,
+      channelId: parsedChannelIdResult.value,
     })
   );
 }
@@ -378,9 +376,7 @@ function parseIntervalMiniUserFeedSubscription(
   return makeSuccessResult(
     omitUndefined({
       feedSourceType: FeedSourceType.Interval,
-      intervalSeconds: parsedResult.value.intervalSeconds,
       userFeedSubscriptionId: parsedFeedSubIdResult.value,
-      isActive: parsedResult.value.isActive,
     })
   );
 }

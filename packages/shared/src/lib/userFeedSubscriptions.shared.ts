@@ -89,7 +89,6 @@ export function makeRssMiniUserFeedSubscription(args: {
     url: userFeedSubscription.url,
     title: userFeedSubscription.title,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
-    isActive: true,
   };
 }
 
@@ -101,7 +100,6 @@ export function makeYouTubeChannelMiniUserFeedSubscription(args: {
     feedSourceType: FeedSourceType.YouTubeChannel,
     channelId: userFeedSubscription.channelId,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
-    isActive: true,
   };
 }
 
@@ -112,6 +110,5 @@ export function makeIntervalMiniUserFeedSubscription(args: {
   return {
     feedSourceType: FeedSourceType.Interval,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
-    isActive: true,
   };
 }
