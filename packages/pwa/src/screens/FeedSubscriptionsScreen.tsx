@@ -5,6 +5,7 @@ import {parseUrl} from '@shared/lib/urls.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
+import {FeedSourceType} from '@shared/types/feedSources.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
 import {
@@ -147,6 +148,50 @@ const FeedAdder: React.FC = () => {
   );
 };
 
+const FeedSubscriptionItem: React.FC<{
+  subscription: UserFeedSubscription;
+}> = ({subscription}) => {
+  let primaryRowContent: React.ReactNode;
+  let secondaryRowContent: React.ReactNode | null;
+
+  switch (subscription.miniFeedSource.type) {
+    case FeedSourceType.RSS:
+      primaryRowContent = (
+        <Text>RSS ({subscription.miniFeedSource.title ?? subscription.miniFeedSource.url})</Text>
+      );
+      secondaryRowContent = subscription.miniFeedSource.title ? (
+        <Text>{subscription.miniFeedSource.title}</Text>
+      ) : null;
+      break;
+    case FeedSourceType.YouTubeChannel:
+      primaryRowContent = <Text>YouTube</Text>;
+      secondaryRowContent = <Text>{subscription.miniFeedSource.channelId}</Text>;
+      break;
+    case FeedSourceType.Interval:
+      primaryRowContent = <Text>Interval</Text>;
+      secondaryRowContent = null;
+      break;
+    default:
+      assertNever(subscription.miniFeedSource);
+  }
+
+  return (
+    <FlexRow gap={3} padding={3} className="rounded-lg border border-gray-200">
+      <FlexColumn flex={1} gap={1}>
+        <Text bold className={subscription.isActive ? undefined : 'text-error'}>
+          {primaryRowContent}
+        </Text>
+        {secondaryRowContent ? (
+          <Text as="p" light>
+            {secondaryRowContent}
+          </Text>
+        ) : null}
+      </FlexColumn>
+      <FeedSubscriptionSettingsButton userFeedSubscription={subscription} />
+    </FlexRow>
+  );
+};
+
 const LoadedFeedSubscriptionsListMainContent: React.FC<{
   subscriptions: UserFeedSubscription[];
 }> = ({subscriptions}) => {
@@ -162,21 +207,8 @@ const LoadedFeedSubscriptionsListMainContent: React.FC<{
   return (
     <FlexColumn flex={1}>
       {subscriptions.map((subscription) => (
-        <FlexRow
-          key={subscription.userFeedSubscriptionId}
-          gap={3}
-          padding={3}
-          className="rounded-lg border border-gray-200"
-        >
-          <FlexColumn flex={1} gap={1}>
-            <Text bold className={subscription.isActive ? undefined : 'text-error'}>
-              {subscription.title}
-            </Text>
-            <Text as="p" light>
-              {subscription.url}
-            </Text>
-          </FlexColumn>
-          <FeedSubscriptionSettingsButton userFeedSubscription={subscription} />
+        <FlexRow key={subscription.userFeedSubscriptionId}>
+          <FeedSubscriptionItem subscription={subscription} />
         </FlexRow>
       ))}
     </FlexColumn>

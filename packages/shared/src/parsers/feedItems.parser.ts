@@ -155,7 +155,9 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
   const parsedAccountIdResult = parseAccountId(parsedBaseFeedItemResult.value.accountId);
   if (!parsedAccountIdResult.success) return parsedAccountIdResult;
 
-  const parsedSourceResult = parseFeedSource(parsedBaseFeedItemResult.value.feedSource);
+  const parsedSourceResult = parseFeedSource(
+    parsedBaseFeedItemResult.value.miniFeedSubscription.miniFeedSource
+  );
   if (!parsedSourceResult.success) return parsedSourceResult;
 
   const parsedImportStateResult = parseFeedItemImportState(
@@ -182,7 +184,6 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
     case FeedItemType.Xkcd:
       return parseXkcdFeedItem({
         maybeFeedItem,
-        feedItemSource: parsedMiniFeedSourceResult.value,
         feedItemId: parsedIdResult.value,
         accountId: parsedAccountIdResult.value,
         importState: parsedImportStateResult.value,
@@ -227,10 +228,9 @@ export function parseXkcdFeedItem(args: {
   readonly maybeFeedItem: unknown;
   readonly feedItemId: FeedItemId;
   readonly accountId: AccountId;
-  readonly feedItemSource: FeedItemSource;
   readonly importState: FeedItemImportState;
 }): Result<FeedItem> {
-  const {maybeFeedItem, feedItemId, accountId, feedItemSource, importState} = args;
+  const {maybeFeedItem, feedItemId, accountId, importState} = args;
 
   const parsedXkcdFeedItemResult = parseZodResult(XkcdFeedItemFromStorageSchema, maybeFeedItem);
   if (!parsedXkcdFeedItemResult.success) {
@@ -238,7 +238,9 @@ export function parseXkcdFeedItem(args: {
   }
   const storageXkcdFeedItem = parsedXkcdFeedItemResult.value;
 
-  const parsedMiniFeedSourceResult = parseMiniFeedSource(parsedXkcdFeedItemResult.value.feedSource);
+  const parsedMiniFeedSourceResult = parseMiniFeedSource(
+    parsedXkcdFeedItemResult.value.miniFeedSubscription.miniFeedSource
+  );
   if (!parsedMiniFeedSourceResult.success) return parsedMiniFeedSourceResult;
 
   return makeSuccessResult(
@@ -246,7 +248,7 @@ export function parseXkcdFeedItem(args: {
       type: FeedItemType.Xkcd,
       xkcd: parsedXkcdFeedItemResult.value.xkcd,
       accountId,
-      miniFeedSubscription: parsedSourceResult.value,
+      miniFeedSubscription: parsedMiniFeedSourceResult.value,
       importState,
       feedItemId,
       url: storageXkcdFeedItem.url,
@@ -293,7 +295,7 @@ export function toStorageBaseFeedItem(
     feedItemId: feedItem.feedItemId,
     accountId: feedItem.accountId,
     type: feedItem.type,
-    feedItemSource: feedItem.feedItemSource,
+    miniFeedSubscription: feedItem.miniFeedSubscription,
     importState: feedItem.importState,
     url: feedItem.url,
     title: feedItem.title,

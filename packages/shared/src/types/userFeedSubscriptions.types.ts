@@ -66,18 +66,6 @@ interface BaseUserFeedSubscription extends BaseStoreItem {
   readonly unsubscribedTime?: Date | undefined;
 }
 
-export interface PWAUserFeedSubscription extends BaseUserFeedSubscription {
-  readonly miniFeedSource: PWAFeedSource;
-}
-
-export interface ExtensionUserFeedSubscription extends BaseUserFeedSubscription {
-  readonly miniFeedSource: ExtensionFeedSource;
-}
-
-export interface PocketExportUserFeedSubscription extends BaseUserFeedSubscription {
-  readonly miniFeedSource: PocketExportFeedSource;
-}
-
 export interface RssUserFeedSubscription extends BaseUserFeedSubscription {
   readonly miniFeedSource: RssMiniFeedSource;
 }
@@ -92,27 +80,43 @@ export interface IntervalUserFeedSubscription extends BaseUserFeedSubscription {
 
 export type UserFeedSubscription =
   | IntervalUserFeedSubscription
-  | PocketExportUserFeedSubscription
-  | PWAUserFeedSubscription
-  | ExtensionUserFeedSubscription
   | RssUserFeedSubscription
   | YouTubeChannelUserFeedSubscription;
 
 /**
  * Zod schema for a {@link UserFeedSubscription} persisted to Firestore.
  */
-export const UserFeedSubscriptionFromStorageSchema = z.object({
+const BaseUserFeedSubscriptionFromStorageSchema = z.object({
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
-  feedSource: MiniFeedSourceFromStorageSchema,
+  miniFeedSource: MiniFeedSourceFromStorageSchema,
   accountId: AccountIdSchema,
-  url: z.string().url(),
-  title: z.string(),
   isActive: z.boolean(),
+  deliverySchedule: DeliveryScheduleFromStorageSchema,
   unsubscribedTime: FirestoreTimestampSchema.or(z.date()).optional(),
   createdTime: FirestoreTimestampSchema.or(z.date()),
   lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
-  deliverySchedule: DeliveryScheduleFromStorageSchema,
 });
+
+export const RssUserFeedSubscriptionFromStorageSchema =
+  BaseUserFeedSubscriptionFromStorageSchema.extend({
+    miniFeedSource: RssMiniFeedSourceSchema,
+  });
+
+export const YouTubeChannelUserFeedSubscriptionFromStorageSchema =
+  BaseUserFeedSubscriptionFromStorageSchema.extend({
+    miniFeedSource: YouTubeChannelMiniFeedSourceSchema,
+  });
+
+export const IntervalUserFeedSubscriptionFromStorageSchema =
+  BaseUserFeedSubscriptionFromStorageSchema.extend({
+    miniFeedSource: IntervalMiniFeedSourceSchema,
+  });
+
+export const UserFeedSubscriptionFromStorageSchema = z.union([
+  RssUserFeedSubscriptionFromStorageSchema,
+  YouTubeChannelUserFeedSubscriptionFromStorageSchema,
+  IntervalUserFeedSubscriptionFromStorageSchema,
+]);
 
 /**
  * Type for a {@link UserFeedSubscription} persisted to Firestore.
@@ -123,27 +127,27 @@ export type UserFeedSubscriptionFromStorage = z.infer<typeof UserFeedSubscriptio
 //  MiniUserFeedSubscription  //
 ////////////////////////////////
 export interface PWAMiniUserFeedSubscription {
-  readonly feedSource: PWAFeedSource;
+  readonly miniFeedSource: PWAFeedSource;
 }
 
 export const PWA_MINI_USER_FEED_SUBSCRIPTION: PWAMiniUserFeedSubscription = {
-  feedSource: PWA_FEED_SOURCE,
+  miniFeedSource: PWA_FEED_SOURCE,
 };
 
 export interface ExtensionMiniUserFeedSubscription {
-  readonly feedSource: ExtensionFeedSource;
+  readonly miniFeedSource: ExtensionFeedSource;
 }
 
 export const EXTENSION_MINI_USER_FEED_SUBSCRIPTION: ExtensionMiniUserFeedSubscription = {
-  feedSource: EXTENSION_FEED_SOURCE,
+  miniFeedSource: EXTENSION_FEED_SOURCE,
 };
 
 export interface PocketExportMiniUserFeedSubscription {
-  readonly feedSource: PocketExportFeedSource;
+  readonly miniFeedSource: PocketExportFeedSource;
 }
 
 export const POCKET_EXPORT_MINI_USER_FEED_SUBSCRIPTION: PocketExportMiniUserFeedSubscription = {
-  feedSource: POCKET_EXPORT_FEED_SOURCE,
+  miniFeedSource: POCKET_EXPORT_FEED_SOURCE,
 };
 
 type BasePersistedMiniUserFeedSubscription = Pick<
@@ -152,16 +156,16 @@ type BasePersistedMiniUserFeedSubscription = Pick<
 >;
 
 export interface RssMiniUserFeedSubscription extends BasePersistedMiniUserFeedSubscription {
-  readonly feedSource: RssMiniFeedSource;
+  readonly miniFeedSource: RssMiniFeedSource;
 }
 
 export interface YouTubeChannelMiniUserFeedSubscription
   extends BasePersistedMiniUserFeedSubscription {
-  readonly feedSource: YouTubeChannelMiniFeedSource;
+  readonly miniFeedSource: YouTubeChannelMiniFeedSource;
 }
 
 export interface IntervalMiniUserFeedSubscription extends BasePersistedMiniUserFeedSubscription {
-  readonly feedSource: IntervalMiniFeedSource;
+  readonly miniFeedSource: IntervalMiniFeedSource;
 }
 
 export type MiniUserFeedSubscription =
@@ -172,20 +176,20 @@ export type MiniUserFeedSubscription =
   | YouTubeChannelMiniUserFeedSubscription
   | IntervalMiniUserFeedSubscription;
 
-const PWAMiniUserFeedSubscriptionSchema = z.object({
-  feedSource: PWAMiniFeedSourceSchema,
+export const PWAMiniUserFeedSubscriptionSchema = z.object({
+  miniFeedSource: PWAMiniFeedSourceSchema,
 });
 
-const ExtensionMiniUserFeedSubscriptionSchema = z.object({
-  feedSource: ExtensionMiniFeedSourceSchema,
+export const ExtensionMiniUserFeedSubscriptionSchema = z.object({
+  miniFeedSource: ExtensionMiniFeedSourceSchema,
 });
 
-const PocketExportMiniUserFeedSubscriptionSchema = z.object({
-  feedSource: PocketExportMiniFeedSourceSchema,
+export const PocketExportMiniUserFeedSubscriptionSchema = z.object({
+  miniFeedSource: PocketExportMiniFeedSourceSchema,
 });
 
-const PersistedMiniUserFeedSubscriptionSchema = z.object({
-  feedSource: z.union([
+const BasePersistedMiniUserFeedSubscriptionSchema = z.object({
+  miniFeedSource: z.union([
     RssMiniFeedSourceSchema,
     YouTubeChannelMiniFeedSourceSchema,
     IntervalMiniFeedSourceSchema,
@@ -194,12 +198,28 @@ const PersistedMiniUserFeedSubscriptionSchema = z.object({
   isActive: z.boolean(),
 });
 
+export const RssMiniUserFeedSubscriptionSchema = BasePersistedMiniUserFeedSubscriptionSchema.extend(
+  {miniFeedSource: RssMiniFeedSourceSchema}
+);
+
+export const YouTubeChannelMiniUserFeedSubscriptionSchema =
+  BasePersistedMiniUserFeedSubscriptionSchema.extend({
+    miniFeedSource: YouTubeChannelMiniFeedSourceSchema,
+  });
+
+export const IntervalMiniUserFeedSubscriptionSchema =
+  BasePersistedMiniUserFeedSubscriptionSchema.extend({
+    miniFeedSource: IntervalMiniFeedSourceSchema,
+  });
+
 /**
- * Zod schema for a {@link UserFeedSubscription} persisted to Firestore.
+ * Zod schema for a {@link MiniUserFeedSubscription} persisted to Firestore.
  */
 export const MiniUserFeedSubscriptionFromStorageSchema = z.union([
   PWAMiniUserFeedSubscriptionSchema,
   ExtensionMiniUserFeedSubscriptionSchema,
   PocketExportMiniUserFeedSubscriptionSchema,
-  PersistedMiniUserFeedSubscriptionSchema,
+  RssMiniUserFeedSubscriptionSchema,
+  YouTubeChannelMiniUserFeedSubscriptionSchema,
+  IntervalMiniUserFeedSubscriptionSchema,
 ]);

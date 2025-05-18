@@ -8,6 +8,7 @@ import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/erro
 import {
   makeIntervalFeedSource,
   makeRssFeedSource,
+  makeYouTubeChannelMiniFeedSource,
   makeYouTubeFeedSource,
 } from '@shared/lib/feedSources.shared';
 import {withFirestoreTimestamps} from '@shared/lib/parser.shared';
@@ -93,18 +94,11 @@ export class ClientUserFeedSubscriptionsService {
       callSubscribeAccountToFeed({url: url.href})
     );
     if (!subscribeResponseResult.success) return subscribeResponseResult;
-    // const subscribeResponse = subscribeResponseResult.value;
-
-    // // TODO: Parse and validate the response from the function.
-
-    // // Parse the response to get the new user feed subscription ID.
-    // const idResult = parseUserFeedSubscriptionId(subscribeResponse.data.userFeedSubscriptionId);
-    // // return prefixResultIfError(idResult, 'New user feed subscription ID did not parse correctly');
+    const {miniFeedSource} = subscribeResponseResult.value.data;
 
     // Create a new user feed subscription object locally.
-    const feedSource = makeRssFeedSource({url: url.href, title: url.href});
     const userFeedSubscription = makeRssUserFeedSubscription({
-      feedSource,
+      miniFeedSource,
       accountId: this.accountId,
     });
 
@@ -144,10 +138,11 @@ export class ClientUserFeedSubscriptionsService {
     const existingSubscription = existingSubResult.value;
     if (existingSubscription) return makeErrorResult(new Error('Feed subscription already exists'));
 
+    // TODO: Fetch current feed source and use it below.
+
     // Create a new user feed subscription object locally.
-    const feedSource = makeYouTubeFeedSource({channelId});
     const userFeedSubscription = makeYouTubeChannelUserFeedSubscription({
-      feedSource,
+      miniFeedSource: makeYouTubeChannelMiniFeedSource({channelId}),
       accountId: this.accountId,
     });
 

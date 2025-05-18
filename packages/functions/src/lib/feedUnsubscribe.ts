@@ -43,10 +43,7 @@ export async function handleFeedUnsubscribeHelper(args: {
       return await rssFeedService.unsubscribeFromRssFeed(afterFeedSource);
     case FeedSourceType.YouTubeChannel:
     case FeedSourceType.Interval:
-    case FeedSourceType.PWA:
-    case FeedSourceType.Extension:
-    case FeedSourceType.PocketExport:
-      // No server-side unsubscribe behavior - setting `isActive` to `false` is enough.
+      // TODO: Disable the server-side behavior for these once implemented.
       return makeSuccessResult(undefined);
     default:
       assertNever(afterFeedSource);

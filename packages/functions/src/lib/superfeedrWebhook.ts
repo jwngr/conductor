@@ -70,9 +70,8 @@ export async function handleSuperfeedrWebhookHelper(args: {
 
   const feedSource = fetchFeedSourceResult.value;
   if (!feedSource) {
-    respondWithError(new Error('No feed source found for URL. Skipping...'), undefined, {
-      feedUrl,
-    });
+    const message = 'No feed source found for URL. Skipping...';
+    respondWithError(new Error(message), undefined, {feedUrl});
     return;
   }
 

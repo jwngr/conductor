@@ -1,7 +1,7 @@
-import type {MiniFeedSource} from '@shared/types/feedSources.types';
+import type {RssMiniFeedSource} from '@shared/types/feedSources.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 
 export interface SubscribeAccountToRSSFeedOnCallResponse {
-  readonly miniFeedSource: MiniFeedSource;
+  readonly miniFeedSource: RssMiniFeedSource;
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
 }

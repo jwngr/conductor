@@ -232,7 +232,7 @@ export function parseMiniFeedSource(maybeMiniFeedSource: unknown): Result<MiniFe
   }
 }
 
-function parseRssMiniFeedSource(maybeRssMiniFeedSource: unknown): Result<RssMiniFeedSource> {
+export function parseRssMiniFeedSource(maybeRssMiniFeedSource: unknown): Result<RssMiniFeedSource> {
   const parsedMiniFeedSourceResult = parseZodResult(
     RssMiniFeedSourceSchema,
     maybeRssMiniFeedSource
@@ -252,7 +252,7 @@ function parseRssMiniFeedSource(maybeRssMiniFeedSource: unknown): Result<RssMini
   });
 }
 
-function parseYouTubeChannelMiniFeedSource(
+export function parseYouTubeChannelMiniFeedSource(
   maybeYouTubeChannelMiniFeedSource: unknown
 ): Result<YouTubeChannelMiniFeedSource> {
   const parsedMiniFeedSourceResult = parseZodResult(
@@ -276,7 +276,7 @@ function parseYouTubeChannelMiniFeedSource(
   });
 }
 
-function parseIntervalMiniFeedSource(
+export function parseIntervalMiniFeedSource(
   maybeIntervalMiniFeedSource: unknown
 ): Result<IntervalMiniFeedSource> {
   const parsedMiniFeedSourceResult = parseZodResult(

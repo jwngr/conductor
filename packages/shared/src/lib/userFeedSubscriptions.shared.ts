@@ -83,7 +83,7 @@ export function makeRssMiniUserFeedSubscription(args: {
 }): RssMiniUserFeedSubscription {
   const {userFeedSubscription} = args;
   return {
-    feedSource: userFeedSubscription.miniFeedSource,
+    miniFeedSource: userFeedSubscription.miniFeedSource,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     isActive: true,
   };
@@ -94,7 +94,7 @@ export function makeYouTubeChannelMiniUserFeedSubscription(args: {
 }): YouTubeChannelMiniUserFeedSubscription {
   const {userFeedSubscription} = args;
   return {
-    feedSource: userFeedSubscription.miniFeedSource,
+    miniFeedSource: userFeedSubscription.miniFeedSource,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     isActive: true,
   };
@@ -105,7 +105,7 @@ export function makeIntervalMiniUserFeedSubscription(args: {
 }): IntervalMiniUserFeedSubscription {
   const {userFeedSubscription} = args;
   return {
-    feedSource: userFeedSubscription.miniFeedSource,
+    miniFeedSource: userFeedSubscription.miniFeedSource,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     isActive: true,
   };
