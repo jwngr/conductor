@@ -109,7 +109,7 @@ export class Tags {
     name: 'Trashed',
   };
 
-  static makeUserTag(tagInfo: Omit<UserTag, 'tagId' | 'type'>): UserTag {
+  static makeUserTag(tagInfo: Omit<UserTag, 'tagId' | 'tagType'>): UserTag {
     return {
       tagId: makeUserTagId(),
       tagType: TagType.User,

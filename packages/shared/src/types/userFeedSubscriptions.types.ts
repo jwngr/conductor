@@ -4,7 +4,8 @@ import type {AccountId} from '@shared/types/accounts.types';
 import {AccountIdSchema} from '@shared/types/accounts.types';
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
 import {DeliveryScheduleFromStorageSchema} from '@shared/types/deliverySchedules.types';
-import {FeedSourceType} from '@shared/types/feedSources.types';
+import type {PersistedFeedSourceType} from '@shared/types/feedSources.types';
+import {FeedSourceType, PERSISTED_FEED_SOURCE_TYPES} from '@shared/types/feedSources.types';
 import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 import {YouTubeChannelIdSchema, type YouTubeChannelId} from '@shared/types/youtube.types';
@@ -31,11 +32,7 @@ export const UserFeedSubscriptionIdSchema = z.string().uuid();
  */
 interface BaseUserFeedSubscription extends BaseStoreItem {
   /** The type of feed source this subscription is for. */
-  readonly feedSourceType: Exclude<
-    FeedSourceType,
-    // In-memory feed sources do not have a `UserFeedSubscription`.
-    FeedSourceType.PWA | FeedSourceType.Extension | FeedSourceType.PocketExport
-  >;
+  readonly feedSourceType: PersistedFeedSourceType;
   /** The unique identifier for this subscription. */
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
   /** The account that owns this subscription. */
@@ -73,11 +70,7 @@ export type UserFeedSubscription =
  * Zod schema for a {@link UserFeedSubscription} persisted to Firestore.
  */
 const BaseUserFeedSubscriptionFromStorageSchema = z.object({
-  feedSourceType: z.union([
-    z.literal(FeedSourceType.RSS),
-    z.literal(FeedSourceType.YouTubeChannel),
-    z.literal(FeedSourceType.Interval),
-  ]),
+  feedSourceType: z.enum(PERSISTED_FEED_SOURCE_TYPES),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
   accountId: AccountIdSchema,
   isActive: z.boolean(),
@@ -90,7 +83,7 @@ const BaseUserFeedSubscriptionFromStorageSchema = z.object({
 export const RssUserFeedSubscriptionFromStorageSchema =
   BaseUserFeedSubscriptionFromStorageSchema.extend({
     feedSourceType: z.literal(FeedSourceType.RSS),
-    url: z.string(),
+    url: z.string().url(),
     title: z.string(),
   });
 
@@ -103,7 +96,7 @@ export const YouTubeChannelUserFeedSubscriptionFromStorageSchema =
 export const IntervalUserFeedSubscriptionFromStorageSchema =
   BaseUserFeedSubscriptionFromStorageSchema.extend({
     feedSourceType: z.literal(FeedSourceType.Interval),
-    intervalSeconds: z.number(),
+    intervalSeconds: z.number().positive().int().min(60),
   });
 
 export const UserFeedSubscriptionFromStorageSchema = z.union([

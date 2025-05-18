@@ -102,6 +102,9 @@ function parseRssUserFeedSubscription(
       deliverySchedule: parsedDeliveryScheduleResult.value,
       createdTime: parseStorageTimestamp(parsedResult.value.createdTime),
       lastUpdatedTime: parseStorageTimestamp(parsedResult.value.lastUpdatedTime),
+      unsubscribedTime: parsedResult.value.unsubscribedTime
+        ? parseStorageTimestamp(parsedResult.value.unsubscribedTime)
+        : undefined,
     })
   );
 }
@@ -131,18 +134,19 @@ function parseYouTubeChannelUserFeedSubscription(
   const parsedChannelIdResult = parseYouTubeChannelId(parsedResult.value.channelId);
   if (!parsedChannelIdResult.success) return parsedChannelIdResult;
 
-  return makeSuccessResult(
-    omitUndefined({
-      feedSourceType: FeedSourceType.YouTubeChannel,
-      channelId: parsedChannelIdResult.value,
-      userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
-      accountId: parsedAccountIdResult.value,
-      isActive: parsedResult.value.isActive,
-      deliverySchedule: parsedDeliveryScheduleResult.value,
-      createdTime: parseStorageTimestamp(parsedResult.value.createdTime),
-      lastUpdatedTime: parseStorageTimestamp(parsedResult.value.lastUpdatedTime),
-    })
-  );
+  return makeSuccessResult({
+    feedSourceType: FeedSourceType.YouTubeChannel,
+    channelId: parsedChannelIdResult.value,
+    userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
+    accountId: parsedAccountIdResult.value,
+    isActive: parsedResult.value.isActive,
+    deliverySchedule: parsedDeliveryScheduleResult.value,
+    createdTime: parseStorageTimestamp(parsedResult.value.createdTime),
+    lastUpdatedTime: parseStorageTimestamp(parsedResult.value.lastUpdatedTime),
+    unsubscribedTime: parsedResult.value.unsubscribedTime
+      ? parseStorageTimestamp(parsedResult.value.unsubscribedTime)
+      : undefined,
+  });
 }
 
 function parseIntervalUserFeedSubscription(
@@ -177,6 +181,9 @@ function parseIntervalUserFeedSubscription(
       deliverySchedule: parsedDeliveryScheduleResult.value,
       createdTime: parseStorageTimestamp(parsedResult.value.createdTime),
       lastUpdatedTime: parseStorageTimestamp(parsedResult.value.lastUpdatedTime),
+      unsubscribedTime: parsedResult.value.unsubscribedTime
+        ? parseStorageTimestamp(parsedResult.value.unsubscribedTime)
+        : undefined,
     })
   );
 }

@@ -77,6 +77,18 @@ export class ClientUserFeedSubscriptionsService {
    * provider (e.g. Superfeedr), which is responsible for managing RSS feed subscriptions.
    */
   public async subscribeToRssFeed(url: URL): AsyncResult<UserFeedSubscription> {
+    // Check if the user is already subscribed to this RSS feed.
+    const existingSubResult = await this.userFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
+      where('accountId', '==', this.accountId),
+      where('feedSourceType', '==', FeedSourceType.RSS),
+      where('url', '==', url.href),
+    ]);
+    if (!existingSubResult.success) return existingSubResult;
+
+    // TODO: Handle this error more gracefully. Do not consider it full failure.
+    const existingSubscription = existingSubResult.value;
+    if (existingSubscription) return makeErrorResult(new Error('Already subscribed to RSS feed'));
+
     const callSubscribeAccountToFeed: CallSubscribeUserToFeedFn = httpsCallable(
       this.functions,
       'subscribeAccountToRssFeedOnCall'
@@ -122,15 +134,14 @@ export class ClientUserFeedSubscriptionsService {
     // Check if the user is already subscribed to this YouTube channel.
     const existingSubResult = await this.userFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
       where('accountId', '==', this.accountId),
-      // TODO: Confirm this works. May need an index.
-      where('type', '==', FeedSourceType.YouTubeChannel),
+      where('feedSourceType', '==', FeedSourceType.YouTubeChannel),
       where('channelId', '==', channelId),
     ]);
     if (!existingSubResult.success) return existingSubResult;
 
     // TODO: Handle this error more gracefully. Do not consider it full failure.
     const existingSubscription = existingSubResult.value;
-    if (existingSubscription) return makeErrorResult(new Error('Feed subscription already exists'));
+    if (existingSubscription) return makeErrorResult(new Error('Already subscribed to channel'));
 
     // TODO: Fetch current feed source and use it below.
 

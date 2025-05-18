@@ -16,7 +16,6 @@ import {
   TriageStatus,
 } from '@shared/types/feedItems.types';
 import type {FeedItem, FeedItemAction} from '@shared/types/feedItems.types';
-import type {FeedSource} from '@shared/types/feedSources.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/results.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';

@@ -31,7 +31,6 @@ import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {AsyncState} from '@shared/types/asyncState.types';
 import type {FeedItem, FeedItemId, XkcdFeedItem} from '@shared/types/feedItems.types';
 import {FeedSourceType} from '@shared/types/feedSources.types';
-import type {FeedSource} from '@shared/types/feedSources.types';
 import {fromQueryFilterOp} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';

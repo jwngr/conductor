@@ -23,6 +23,20 @@ export enum FeedSourceType {
   PocketExport = 'POCKET_EXPORT',
 }
 
+/**
+ * List of {@link FeedSourceType} that have additional state persisted along with the type.
+ */
+export const PERSISTED_FEED_SOURCE_TYPES = [
+  FeedSourceType.RSS,
+  FeedSourceType.YouTubeChannel,
+  FeedSourceType.Interval,
+] as const;
+
+/**
+ * Subset of {@link FeedSourceType} that have additional state persisted along with the type.
+ */
+export type PersistedFeedSourceType = (typeof PERSISTED_FEED_SOURCE_TYPES)[number];
+
 interface BaseFeedSource {
   readonly feedSourceType: FeedSourceType;
 }

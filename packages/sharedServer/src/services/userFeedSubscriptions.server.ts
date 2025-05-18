@@ -44,7 +44,7 @@ export class ServerUserFeedSubscriptionsService {
   public async fetchForRssFeedSourceByUrl(url: string): AsyncResult<RssUserFeedSubscription[]> {
     const query = this.userFeedSubscriptionsCollectionService
       .getCollectionRef()
-      .where('type', '==', FeedSourceType.RSS)
+      .where('feedSourceType', '==', FeedSourceType.RSS)
       .where('url', '==', url);
 
     const queryResult = await this.userFeedSubscriptionsCollectionService.fetchQueryDocs(query);
