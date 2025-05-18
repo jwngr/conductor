@@ -20,6 +20,7 @@ import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
 import type {TagId} from '@shared/types/tags.types';
 import type {
+  MiniUserFeedSubscription,
   UserFeedSubscription,
   UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
@@ -48,6 +49,7 @@ export class SharedFeedItemHelpers {
   }
 
   public static makeFeedItem(
+    miniFeedSubscription: MiniUserFeedSubscription,
     args: Pick<FeedItem, 'accountId' | 'url' | 'feedSource' | 'title' | 'description'>
   ): Result<FeedItem> {
     const {accountId, url, feedSource, title, description} = args;
@@ -76,11 +78,7 @@ export class SharedFeedItemHelpers {
           accountId,
           feedItemId,
           feedSource,
-          miniFeedSubscription: {
-            userFeedSubscriptionId: 'TODO',
-            feedSource: feedSource,
-            isActive: true,
-          },
+          miniFeedSubscription,
           importState,
           title,
           description,
@@ -100,7 +98,7 @@ export class SharedFeedItemHelpers {
           accountId,
           feedItemId,
           feedSource,
-          miniFeedSubscription: null,
+          miniFeedSubscription,
           importState,
           title,
           description,

@@ -7,8 +7,8 @@ import {assertNever, omitUndefined} from '@shared/lib/utils.shared';
 import type {AccountId} from '@shared/types/accounts.types';
 import {FeedItemType} from '@shared/types/feedItems.types';
 import type {FeedItem, FeedItemFromStorage, FeedItemId} from '@shared/types/feedItems.types';
-import type {FeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult, Result} from '@shared/types/results.types';
+import type {MiniUserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
 import {eventLogService} from '@sharedServer/services/eventLog.server';
 import {storage} from '@sharedServer/services/firebase.server';
@@ -40,23 +40,20 @@ export class ServerFeedItemsService {
     this.feedItemsCollectionService = args.feedItemsCollectionService;
   }
 
-  public async createFeedItem(args: {
-    readonly url: string;
-    readonly feedSource: FeedSource;
-    readonly accountId: AccountId;
-    readonly title: string;
-    readonly description: string | null;
-  }): AsyncResult<FeedItemId | null> {
-    const {url, accountId, feedSource, title, description} = args;
+  public async createFeedItem(
+    miniFeedSubscription: MiniUserFeedSubscription,
+    args: Pick<FeedItem, 'url' | 'accountId' | 'title' | 'description'>
+  ): AsyncResult<FeedItemId | null> {
+    const {url, accountId, title, description} = args;
 
     const trimmedUrl = url.trim();
     if (!isValidUrl(trimmedUrl)) {
       return makeErrorResult(new Error(`Invalid URL provided for feed item: "${url}"`));
     }
 
-    const feedItemResult = SharedFeedItemHelpers.makeFeedItem({
+    const feedItemResult = SharedFeedItemHelpers.makeFeedItem(miniFeedSubscription, {
       url: trimmedUrl,
-      feedSource,
+      feedSource: miniFeedSubscription.feedSource,
       accountId,
       title,
       description,

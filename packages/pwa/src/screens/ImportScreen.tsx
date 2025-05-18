@@ -4,7 +4,6 @@ import {useState} from 'react';
 import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
 import {pluralizeWithCount} from '@shared/lib/utils.shared';
 
-import {POCKET_EXPORT_FEED_SOURCE} from '@shared/types/feedSources.types';
 import {
   ExternalMigrationItemStatus,
   NOT_STARTED_EXTERNAL_MIGRATION_ITEM_STATE,
@@ -12,6 +11,7 @@ import {
 } from '@shared/types/migration.types';
 import type {ExternalMigrationItemState} from '@shared/types/migration.types';
 import type {PocketImportItem} from '@shared/types/pocket.types';
+import {POCKET_EXPORT_MINI_USER_FEED_SUBSCRIPTION} from '@shared/types/userFeedSubscriptions.types';
 import type {Task} from '@shared/types/utils.types';
 
 import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
@@ -100,11 +100,10 @@ export const ImportScreen: React.FC = () => {
   const handleImportItem = async (item: PocketImportItem, key: string): Promise<void> => {
     setImportStatus(key, PROCESSING_EXTERNAL_MIGRATION_ITEM_STATE);
 
-    const createResult = await feedItemsService.createFeedItem({
-      url: item.url,
-      feedSource: POCKET_EXPORT_FEED_SOURCE,
-      title: item.title,
-    });
+    const createResult = await feedItemsService.createFeedItem(
+      POCKET_EXPORT_MINI_USER_FEED_SUBSCRIPTION,
+      {url: item.url, title: item.title}
+    );
 
     if (!createResult.success) {
       setImportStatus(key, {

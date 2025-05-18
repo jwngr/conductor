@@ -34,7 +34,10 @@ import type {FeedSource} from '@shared/types/feedSources.types';
 import {FeedSourceType} from '@shared/types/feedSources.types';
 import {fromQueryFilterOp} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/results.types';
-import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
+import type {
+  MiniUserFeedSubscription,
+  UserFeedSubscription,
+} from '@shared/types/userFeedSubscriptions.types';
 import type {Consumer} from '@shared/types/utils.types';
 import type {ViewType} from '@shared/types/views.types';
 
@@ -322,21 +325,20 @@ export class ClientFeedItemsService {
     return () => unsubscribe();
   }
 
-  public async createFeedItem(args: {
-    readonly url: string;
-    readonly feedSource: FeedSource;
-    readonly title: string;
-  }): AsyncResult<FeedItem> {
-    const {url, feedSource, title} = args;
+  public async createFeedItem(
+    miniFeedSubscription: MiniUserFeedSubscription,
+    args: Pick<FeedItem, 'url' | 'title'>
+  ): AsyncResult<FeedItem> {
+    const {url, title} = args;
 
     const trimmedUrl = url.trim();
     if (!isValidUrl(trimmedUrl)) {
       return makeErrorResult(new Error(`Invalid URL provided for feed item: "${url}"`));
     }
 
-    const feedItemResult = SharedFeedItemHelpers.makeFeedItem({
+    const feedItemResult = SharedFeedItemHelpers.makeFeedItem(miniFeedSubscription, {
       url: trimmedUrl,
-      feedSource,
+      feedSource: miniFeedSubscription.feedSource,
       accountId: this.accountId,
       title,
       description: null,

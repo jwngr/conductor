@@ -4,7 +4,18 @@ import type {AccountId} from '@shared/types/accounts.types';
 import {AccountIdSchema} from '@shared/types/accounts.types';
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
 import {DeliveryScheduleFromStorageSchema} from '@shared/types/deliverySchedules.types';
-import type {MiniFeedSource} from '@shared/types/feedSources.types';
+import type {
+  ExtensionFeedSource,
+  MiniFeedSource,
+  PersistedFeedSource,
+  PocketExportFeedSource,
+  PWAFeedSource,
+} from '@shared/types/feedSources.types';
+import {
+  EXTENSION_FEED_SOURCE,
+  POCKET_EXPORT_FEED_SOURCE,
+  PWA_FEED_SOURCE,
+} from '@shared/types/feedSources.types';
 import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 
@@ -37,10 +48,43 @@ export interface UserFeedSubscription extends BaseStoreItem {
   readonly unsubscribedTime?: Date | undefined;
 }
 
-export type MiniUserFeedSubscription = Pick<
-  UserFeedSubscription,
-  'userFeedSubscriptionId' | 'feedSource' | 'isActive'
->;
+type BaseMiniUserFeedSubscription = Pick<UserFeedSubscription, 'feedSource'>;
+
+interface PWAMiniUserFeedSubscription extends BaseMiniUserFeedSubscription {
+  readonly feedSource: PWAFeedSource;
+}
+
+export const PWA_MINI_USER_FEED_SUBSCRIPTION: PWAMiniUserFeedSubscription = {
+  feedSource: PWA_FEED_SOURCE,
+};
+
+interface ExtensionMiniUserFeedSubscription extends BaseMiniUserFeedSubscription {
+  readonly feedSource: ExtensionFeedSource;
+}
+
+export const EXTENSION_MINI_USER_FEED_SUBSCRIPTION: ExtensionMiniUserFeedSubscription = {
+  feedSource: EXTENSION_FEED_SOURCE,
+};
+
+interface PocketExportMiniUserFeedSubscription extends BaseMiniUserFeedSubscription {
+  readonly feedSource: PocketExportFeedSource;
+}
+
+export const POCKET_EXPORT_MINI_USER_FEED_SUBSCRIPTION: PocketExportMiniUserFeedSubscription = {
+  feedSource: POCKET_EXPORT_FEED_SOURCE,
+};
+
+interface PersistedMiniUserFeedSubscription
+  extends BaseMiniUserFeedSubscription,
+    Pick<UserFeedSubscription, 'userFeedSubscriptionId' | 'isActive'> {
+  feedSource: PersistedFeedSource;
+}
+
+export type MiniUserFeedSubscription =
+  | PWAMiniUserFeedSubscription
+  | ExtensionMiniUserFeedSubscription
+  | PocketExportMiniUserFeedSubscription
+  | PersistedMiniUserFeedSubscription;
 
 /**
  * Zod schema for a {@link UserFeedSubscription} persisted to Firestore.

@@ -11,7 +11,7 @@ import {prefixError} from '@shared/lib/errorUtils.shared';
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 
-import {EXTENSION_FEED_SOURCE} from '@shared/types/feedSources.types';
+import {EXTENSION_MINI_USER_FEED_SUBSCRIPTION} from '@shared/types/userFeedSubscriptions.types';
 
 import {ClientFeedItemsService} from '@sharedClient/services/feedItems.client';
 import {firebaseService} from '@sharedClient/services/firebase.client';
@@ -54,11 +54,10 @@ chrome.action.onClicked.addListener(async (tab) => {
     accountId,
   });
 
-  const addFeedItemResult = await feedItemsService.createFeedItem({
-    url: tabUrl,
-    feedSource: EXTENSION_FEED_SOURCE,
-    title: 'TODO: Add title support',
-  });
+  const addFeedItemResult = await feedItemsService.createFeedItem(
+    EXTENSION_MINI_USER_FEED_SUBSCRIPTION,
+    {url: tabUrl, title: 'TODO: Add title support'}
+  );
 
   if (!addFeedItemResult.success) {
     logger.error(prefixError(addFeedItemResult.error, 'Error saving URL'));

@@ -16,8 +16,8 @@ import {pluralizeWithCount} from '@shared/lib/utils.shared';
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 
-import {POCKET_EXPORT_FEED_SOURCE} from '@shared/types/feedSources.types';
 import type {PocketImportItem} from '@shared/types/pocket.types';
+import {POCKET_EXPORT_MINI_USER_FEED_SUBSCRIPTION} from '@shared/types/userFeedSubscriptions.types';
 
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
@@ -102,13 +102,15 @@ async function main(): Promise<void> {
       continue;
     }
 
-    const createFeedItemResult = await feedItemsService.createFeedItem({
-      accountId,
-      url: pocketItem.url,
-      feedSource: POCKET_EXPORT_FEED_SOURCE,
-      title: pocketItem.title,
-      description: null,
-    });
+    const createFeedItemResult = await feedItemsService.createFeedItem(
+      POCKET_EXPORT_MINI_USER_FEED_SUBSCRIPTION,
+      {
+        accountId,
+        url: pocketItem.url,
+        title: pocketItem.title,
+        description: null,
+      }
+    );
 
     if (!createFeedItemResult.success) {
       // Treat individual errors as non-fatal.

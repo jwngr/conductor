@@ -95,7 +95,7 @@ export async function handleSuperfeedrWebhookHelper(args: {
 
     userFeedSubscriptions.forEach((userFeedSubscription) => {
       const newFeedItemResult = async (): AsyncResult<FeedItemId | null> =>
-        await feedItemsService.createFeedItem({
+        await feedItemsService.createFeedItem(userFeedSubscription, {
           url: item.permalinkUrl,
           accountId: userFeedSubscription.accountId,
           // TODO!!!
