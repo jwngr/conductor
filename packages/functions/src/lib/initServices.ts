@@ -24,7 +24,17 @@ import {
   toStorageUserFeedSubscription,
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
+import type {
+  FeedSource,
+  FeedSourceFromStorage,
+  FeedSourceId,
+} from '@shared/types/feedSources.types';
 import type {Result} from '@shared/types/results.types';
+import type {
+  UserFeedSubscription,
+  UserFeedSubscriptionFromStorage,
+  UserFeedSubscriptionId,
+} from '@shared/types/userFeedSubscriptions.types';
 
 import {ServerAccountsService} from '@sharedServer/services/accounts.server';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
@@ -52,11 +62,17 @@ interface InitializedServices {
 
 export function initServices(): Result<InitializedServices> {
   const feedSourceFirestoreConverter = makeFirestoreDataConverter(
+    // Only allow persisted feed sources (not PWA, Extension, PocketExport)
+    // Use the same toStorageFeedSource and parseFeedSource, but cast types to restrict to persisted
     toStorageFeedSource,
     parseFeedSource
   );
 
-  const feedSourcesCollectionService = new ServerFirestoreCollectionService({
+  const feedSourcesCollectionService = new ServerFirestoreCollectionService<
+    FeedSourceId,
+    FeedSource,
+    FeedSourceFromStorage
+  >({
     collectionPath: FEED_SOURCES_DB_COLLECTION,
     converter: feedSourceFirestoreConverter,
     parseId: parseFeedSourceId,
@@ -69,7 +85,11 @@ export function initServices(): Result<InitializedServices> {
     parseUserFeedSubscription
   );
 
-  const userFeedSubscriptionsCollectionService = new ServerFirestoreCollectionService({
+  const userFeedSubscriptionsCollectionService = new ServerFirestoreCollectionService<
+    UserFeedSubscriptionId,
+    UserFeedSubscription,
+    UserFeedSubscriptionFromStorage
+  >({
     collectionPath: USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
     converter: userFeedSubscriptionFirestoreConverter,
     parseId: parseUserFeedSubscriptionId,

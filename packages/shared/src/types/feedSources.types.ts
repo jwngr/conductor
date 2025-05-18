@@ -92,17 +92,6 @@ export type FeedSource =
   | YouTubeChannelFeedSource
   | IntervalFeedSource;
 
-/**
- * A subset of {@link FeedSource} which must be persisted to Firestore. Unlike in-memory feed
- * sources, a persisted feed source has persisted state, including a unique ID. It also requires
- * helpers for parsing and storage.
- */
-export type PersistedFeedSource = Exclude<
-  FeedSource,
-  // These feed sources are constants which do not need to be persisted to Firestore beyond an ID.
-  PWAFeedSource | ExtensionFeedSource | PocketExportFeedSource
->;
-
 const BaseInMemoryFeedSourceSchema = z.object({
   type: z.nativeEnum(FeedSourceType),
 });

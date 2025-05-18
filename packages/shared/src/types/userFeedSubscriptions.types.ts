@@ -46,8 +46,7 @@ export const UserFeedSubscriptionIdSchema = z.string().uuid();
  * A single {@link FeedSource} can have multiple {@link UserFeedSubscription}s, one for each
  * {@link Account} subscribed to it.
  *
- * Only {@link PersistedFeedSource}s can have {@link UserFeedSubscription}s. In-memory feed sources
- * do not have one.
+ * In-memory feed sources do not have a {@link UserFeedSubscription}.
  *
  * User feed subscriptions are not deleted when an account unsubscribes from a feed. Instead, they
  * are marked as inactive. They are only deleted when an account is wiped out.

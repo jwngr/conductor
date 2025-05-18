@@ -3,13 +3,14 @@ import {makeRssFeedSource} from '@shared/lib/feedSources.shared';
 import {withFirestoreTimestamps} from '@shared/lib/parser.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
-import {
-  FeedSourceType,
-  type FeedSourceFromStorage,
-  type FeedSourceId,
-  type PersistedFeedSource,
-  type RssFeedSource,
+import type {
+  FeedSource,
+  FeedSourceFromStorage,
+  FeedSourceId,
+  PersistedFeedSource,
+  RssFeedSource,
 } from '@shared/types/feedSources.types';
+import {FeedSourceType} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import {serverTimestampSupplier} from '@sharedServer/services/firebase.server';
@@ -17,7 +18,7 @@ import type {ServerFirestoreCollectionService} from '@sharedServer/services/fire
 
 type FeedSourceCollectionService = ServerFirestoreCollectionService<
   FeedSourceId,
-  PersistedFeedSource,
+  FeedSource,
   FeedSourceFromStorage
 >;
 
@@ -31,7 +32,7 @@ export class ServerFeedSourcesService {
   /**
    * Fetches an existing feed by its ID.
    */
-  public async fetchById(feedSourceId: FeedSourceId): AsyncResult<PersistedFeedSource | null> {
+  public async fetchById(feedSourceId: FeedSourceId): AsyncResult<FeedSource | null> {
     const maybeFeedSource = await this.feedSourcesCollectionService.fetchById(feedSourceId);
     return prefixResultIfError(maybeFeedSource, 'Error fetching feed source by ID in Firestore');
   }

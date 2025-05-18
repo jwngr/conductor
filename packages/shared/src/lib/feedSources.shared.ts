@@ -66,7 +66,7 @@ export function makeIntervalFeedSource(
  * Note: The return type is limited - this method assumes the feed source is persisted and ignores
  * in-memory feed sources.
  */
-export function getPersistedFeedSourceTypeFromUrl(
+export function getFeedSourceTypeFromUrl(
   url: string
 ): FeedSourceType.YouTubeChannel | FeedSourceType.RSS {
   if (isYouTubeChannelUrl(url)) {
