@@ -10,6 +10,7 @@ import {
 } from '@shared/parsers/deliverySchedules.parser';
 import {
   parseIntervalMiniFeedSource,
+  parseMiniFeedSource,
   parseRssMiniFeedSource,
   parseYouTubeChannelMiniFeedSource,
   toStorageIntervalMiniFeedSource,
@@ -24,6 +25,7 @@ import {
   IntervalMiniUserFeedSubscriptionSchema,
   IntervalUserFeedSubscriptionFromStorageSchema,
   MiniUserFeedSubscriptionFromStorageSchema,
+  PersistedMiniUserFeedSubscriptionFromStorageSchema,
   POCKET_EXPORT_MINI_USER_FEED_SUBSCRIPTION,
   PWA_MINI_USER_FEED_SUBSCRIPTION,
   RssMiniUserFeedSubscriptionSchema,
@@ -34,9 +36,12 @@ import {
   YouTubeChannelUserFeedSubscriptionFromStorageSchema,
 } from '@shared/types/userFeedSubscriptions.types';
 import type {
+  ExtensionMiniUserFeedSubscription,
   IntervalMiniUserFeedSubscription,
   IntervalUserFeedSubscription,
   MiniUserFeedSubscription,
+  PocketExportMiniUserFeedSubscription,
+  PWAMiniUserFeedSubscription,
   RssMiniUserFeedSubscription,
   RssUserFeedSubscription,
   UserFeedSubscription,
@@ -313,6 +318,44 @@ export function parseMiniUserFeedSubscription(
   }
 }
 
+function parsePersistedMiniUserFeedSubscription(
+  maybeMiniUserFeedSubscription: unknown
+): Result<
+  Exclude<
+    MiniUserFeedSubscription,
+    | ExtensionMiniUserFeedSubscription
+    | PocketExportMiniUserFeedSubscription
+    | PWAMiniUserFeedSubscription
+  >
+> {
+  const persistedParseResult = parseZodResult(
+    PersistedMiniUserFeedSubscriptionFromStorageSchema,
+    maybeMiniUserFeedSubscription
+  );
+  if (!persistedParseResult.success) {
+    return prefixErrorResult(persistedParseResult, 'Invalid mini RSS user feed subscription');
+  }
+
+  const parsedMiniFeedSub = persistedParseResult.value;
+
+  const parsedMiniFeedSourceResult = parseMiniFeedSource(parsedMiniFeedSub.miniFeedSource);
+  if (!parsedMiniFeedSourceResult.success) return parsedMiniFeedSourceResult;
+
+  const parsedFeedSubIdResult = parseUserFeedSubscriptionId(
+    parsedMiniFeedSub.userFeedSubscriptionId
+  );
+  if (!parsedFeedSubIdResult.success) return parsedFeedSubIdResult;
+
+  return makeSuccessResult(
+    omitUndefined({
+      type: parsedMiniFeedSub.type,
+      userFeedSubscriptionId: parsedFeedSubIdResult.value,
+      miniFeedSource: parsedMiniFeedSourceResult.value,
+      isActive: persistedParseResult.value.isActive,
+    })
+  );
+}
+
 function parseRssMiniUserFeedSubscription(
   maybeMiniUserFeedSubscription: unknown
 ): Result<RssMiniUserFeedSubscription> {
@@ -323,13 +366,14 @@ function parseRssMiniUserFeedSubscription(
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid mini RSS user feed subscription');
   }
+  const parsedMiniFeedSub = parsedResult.value;
 
   const parsedFeedSubIdResult = parseUserFeedSubscriptionId(
-    parsedResult.value.userFeedSubscriptionId
+    parsedMiniFeedSub.userFeedSubscriptionId
   );
   if (!parsedFeedSubIdResult.success) return parsedFeedSubIdResult;
 
-  const parsedMiniFeedSourceResult = parseRssMiniFeedSource(parsedResult.value.miniFeedSource);
+  const parsedMiniFeedSourceResult = parseRssMiniFeedSource(parsedMiniFeedSub.miniFeedSource);
   if (!parsedMiniFeedSourceResult.success) return parsedMiniFeedSourceResult;
 
   return makeSuccessResult(
@@ -337,7 +381,7 @@ function parseRssMiniUserFeedSubscription(
       type: FeedSourceType.RSS,
       userFeedSubscriptionId: parsedFeedSubIdResult.value,
       miniFeedSource: parsedMiniFeedSourceResult.value,
-      isActive: parsedResult.value.isActive,
+      isActive: parsedMiniFeedSub.isActive,
     })
   );
 }
