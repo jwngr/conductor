@@ -16,11 +16,11 @@ import {DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
 import type {Result} from '@shared/types/results.types';
 
 export const IMMEDIATE_DELIVERY_SCHEDULE: ImmediateDeliverySchedule = {
-  type: DeliveryScheduleType.Immediate,
+  scheduleType: DeliveryScheduleType.Immediate,
 };
 
 export const NEVER_DELIVERY_SCHEDULE: NeverDeliverySchedule = {
-  type: DeliveryScheduleType.Never,
+  scheduleType: DeliveryScheduleType.Never,
 };
 
 export function makeDaysAndTimesOfWeekDeliverySchedule(args: {
@@ -47,7 +47,7 @@ export function makeDaysAndTimesOfWeekDeliverySchedule(args: {
   }
 
   return makeSuccessResult({
-    type: DeliveryScheduleType.DaysAndTimesOfWeek,
+    scheduleType: DeliveryScheduleType.DaysAndTimesOfWeek,
     days,
     times,
   });
@@ -68,7 +68,7 @@ export function makeEveryNHoursDeliverySchedule(args: {
   }
 
   return makeSuccessResult({
-    type: DeliveryScheduleType.EveryNHours,
+    scheduleType: DeliveryScheduleType.EveryNHours,
     hours,
   });
 }
@@ -82,7 +82,7 @@ export function isDeliveredAccordingToSchedule(args: {
   // Default to showing feed items without a delivery schedule to avoid hiding things by default.
   if (!deliverySchedule) return true;
 
-  switch (deliverySchedule.type) {
+  switch (deliverySchedule.scheduleType) {
     case DeliveryScheduleType.Immediate:
       // Immediate delivery schedules are always delivered.
       return true;

@@ -79,7 +79,8 @@ export const ViewOptionsDialog: React.FC<{
               className="rounded border border-stone-300 p-1 text-sm"
             >
               <option value="none">None</option>
-              <option value="type">{toViewGroupByOptionText('type')}</option>
+              <option value="feedItemType">{toViewGroupByOptionText('feedItemType')}</option>
+              <option value="feedSourceType">{toViewGroupByOptionText('feedSourceType')}</option>
               <option value="importState">{toViewGroupByOptionText('importState')}</option>
             </select>
           </FlexRow>

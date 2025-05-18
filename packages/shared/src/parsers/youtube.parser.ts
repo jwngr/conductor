@@ -3,8 +3,12 @@ import {parseZodResult} from '@shared/lib/parser.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {Result} from '@shared/types/results.types';
-import type {YouTubeChannelId, YouTubeHandle} from '@shared/types/youtube.types';
-import {YouTubeChannelIdSchema, YouTubeHandleSchema} from '@shared/types/youtube.types';
+import type {YouTubeChannelId, YouTubeHandle, YouTubeVideoId} from '@shared/types/youtube.types';
+import {
+  YouTubeChannelIdSchema,
+  YouTubeHandleSchema,
+  YouTubeVideoIdSchema,
+} from '@shared/types/youtube.types';
 
 /**
  * Parses a {@link YouTubeChannelId} from a plain string. Returns an `ErrorResult` if the string is
@@ -28,4 +32,16 @@ export function parseYouTubeHandle(maybeYouTubeHandle: string): Result<YouTubeHa
     return prefixErrorResult(parsedResult, 'Invalid YouTube handle');
   }
   return makeSuccessResult(parsedResult.value as YouTubeHandle);
+}
+
+/**
+ * Parses a {@link YouTubeVideoId} from a plain string. Returns an `ErrorResult` if the string is
+ * not valid.
+ */
+export function parseYouTubeVideoId(maybeYouTubeVideoId: string): Result<YouTubeVideoId> {
+  const parsedResult = parseZodResult(YouTubeVideoIdSchema, maybeYouTubeVideoId);
+  if (!parsedResult.success) {
+    return prefixErrorResult(parsedResult, 'Invalid YouTube video ID');
+  }
+  return makeSuccessResult(parsedResult.value as YouTubeVideoId);
 }

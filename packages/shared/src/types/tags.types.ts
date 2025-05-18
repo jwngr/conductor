@@ -54,7 +54,7 @@ export type TagId = UserTagId | SystemTagId;
  */
 export interface Tag {
   readonly tagId: TagId;
-  readonly type: TagType;
+  readonly tagType: TagType;
   readonly name: string;
   // TODO: Add color.
 }
@@ -63,7 +63,7 @@ export interface Tag {
  * A tag whose lifecycle is managed by the user.
  */
 export interface UserTag extends Tag, BaseStoreItem {
-  readonly type: TagType.User;
+  readonly tagType: TagType.User;
   readonly tagId: UserTagId;
 }
 
@@ -81,7 +81,7 @@ export const UserTagSchema = z.object({
  * A tag whose lifecycle is managed by the system.
  */
 export interface SystemTag extends Tag {
-  readonly type: TagType.System;
+  readonly tagType: TagType.System;
   readonly tagId: SystemTagId;
 }
 
@@ -93,26 +93,26 @@ export const SystemTagSchema = z.object({
 export class Tags {
   static readonly UNREAD_TAG: Tag = {
     tagId: SystemTagId.Unread,
-    type: TagType.System,
+    tagType: TagType.System,
     name: 'Unread',
   };
 
   static readonly STARRED_TAG: Tag = {
     tagId: SystemTagId.Starred,
-    type: TagType.System,
+    tagType: TagType.System,
     name: 'Starred',
   };
 
   static readonly TRASHED_TAG: Tag = {
     tagId: SystemTagId.Trashed,
-    type: TagType.System,
+    tagType: TagType.System,
     name: 'Trashed',
   };
 
-  static makeUserTag(tagInfo: Omit<UserTag, 'tagId' | 'type'>): UserTag {
+  static makeUserTag(tagInfo: Omit<UserTag, 'tagId' | 'tagType'>): UserTag {
     return {
       tagId: makeUserTagId(),
-      type: TagType.User,
+      tagType: TagType.User,
       name: tagInfo.name,
       createdTime: tagInfo.createdTime,
       lastUpdatedTime: tagInfo.lastUpdatedTime,

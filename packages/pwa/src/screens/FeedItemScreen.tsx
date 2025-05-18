@@ -87,7 +87,7 @@ const LoadedFeedItemScreenMainContent: React.FC<{
   useMarkFeedItemRead({feedItem, feedItemId: feedItem.feedItemId});
 
   let feedItemContent: React.ReactNode;
-  switch (feedItem.type) {
+  switch (feedItem.feedItemType) {
     case FeedItemType.Article:
       feedItemContent = <ArticleFeedItemRenderer feedItem={feedItem} />;
       break;

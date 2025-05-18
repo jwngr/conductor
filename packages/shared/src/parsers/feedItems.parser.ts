@@ -1,12 +1,12 @@
 import {logger} from '@shared/services/logger.shared';
 
-import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
-import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions.parser';
+import {parseFeedSource} from '@shared/parsers/feedSources.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {
@@ -14,36 +14,26 @@ import type {
   CompletedFeedItemImportState,
   FailedFeedItemImportState,
   FeedItem,
-  FeedItemAppSource,
-  FeedItemExtensionSource,
   FeedItemFromStorage,
   FeedItemId,
   FeedItemImportState,
   FeedItemImportStateFromStorage,
-  FeedItemPocketExportSource,
-  FeedItemRSSSource,
-  FeedItemSource,
-  FeedItemSourceFromStorage,
   ProcessingFeedItemImportState,
   XkcdFeedItem,
   XkcdFeedItemFromStorage,
 } from '@shared/types/feedItems.types';
 import {
-  AppFeedItemSourceSchema,
   BaseFeedItemFromStorageSchema,
   CompletedFeedItemImportStateSchema,
-  ExtensionFeedItemSourceSchema,
   FailedFeedItemImportStateSchema,
   FeedItemIdSchema,
   FeedItemImportStatus,
-  FeedItemSourceType,
   FeedItemType,
   makeNewFeedItemImportState,
-  PocketExportFeedItemSourceSchema,
   ProcessingFeedItemImportStateSchema,
-  RssFeedItemSourceSchema,
   XkcdFeedItemFromStorageSchema,
 } from '@shared/types/feedItems.types';
+import type {FeedSource} from '@shared/types/feedSources.types';
 import type {Result} from '@shared/types/results.types';
 
 /**
@@ -59,88 +49,12 @@ export function parseFeedItemId(maybeFeedItemId: string): Result<FeedItemId> {
 }
 
 /**
- * Parses a {@link FeedItemSource} from an unknown value. Returns an `ErrorResult` if the value is
- * not valid.
- */
-// TODO: I'm not sure if this is the best way to do this. All other parsers take in an `unknown`
-// value instead of a discriminated union.
-function parseFeedItemSource(feedItemSource: FeedItemSourceFromStorage): Result<FeedItemSource> {
-  const sourceType = feedItemSource.type;
-  switch (sourceType) {
-    case FeedItemSourceType.App:
-      return parseAppFeedItemSource(feedItemSource);
-    case FeedItemSourceType.Extension:
-      return parseExtensionFeedItemSource(feedItemSource);
-    case FeedItemSourceType.RSS:
-      return parseRssFeedItemSource(feedItemSource);
-    case FeedItemSourceType.PocketExport:
-      return parsePocketExportFeedItemSource(feedItemSource);
-    default:
-      return makeErrorResult(new Error(`Unknown feed item source type: ${sourceType}`));
-  }
-}
-
-/**
- * Parses a {@link FeedItemAppSource} from an unknown value. Returns an `ErrorResult` if the value
+ * Parses a {@link FeedItemImportState} from an unknown value. Returns an `ErrorResult` if the value
  * is not valid.
+ *
+ * TODO: I'm not sure if this is the best way to do this. All other parsers take in an `unknown`
+ * value instead of a discriminated union.
  */
-function parseAppFeedItemSource(feedItemSource: unknown): Result<FeedItemAppSource> {
-  const parsedResult = parseZodResult(AppFeedItemSourceSchema, feedItemSource);
-  if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid app feed item source');
-  }
-  return makeSuccessResult(parsedResult.value);
-}
-
-/**
- * Parses a {@link FeedItemExtensionSource} from an unknown value. Returns an `ErrorResult` if the
- * value is not valid.
- */
-function parseExtensionFeedItemSource(feedItemSource: unknown): Result<FeedItemExtensionSource> {
-  const parsedResult = parseZodResult(ExtensionFeedItemSourceSchema, feedItemSource);
-  if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid extension feed item source');
-  }
-  return makeSuccessResult(parsedResult.value);
-}
-
-/**
- * Parses a {@link FeedItemRSSSource} from an unknown value. Returns an `ErrorResult` if the value
- * is not valid.
- */
-function parseRssFeedItemSource(feedItemSource: unknown): Result<FeedItemRSSSource> {
-  const parsedResult = parseZodResult(RssFeedItemSourceSchema, feedItemSource);
-  if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid RSS feed item source');
-  }
-  const parsedUserFeedSubscriptionIdResult = parseUserFeedSubscriptionId(
-    parsedResult.value.userFeedSubscriptionId
-  );
-  if (!parsedUserFeedSubscriptionIdResult.success) return parsedUserFeedSubscriptionIdResult;
-
-  return makeSuccessResult({
-    type: FeedItemSourceType.RSS,
-    userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
-  });
-}
-
-/**
- * Parses a {@link FeedItemPocketExportSource} from an unknown value. Returns an `ErrorResult` if
- * the value is not valid.
- */
-function parsePocketExportFeedItemSource(
-  feedItemSource: unknown
-): Result<FeedItemPocketExportSource> {
-  const parsedResult = parseZodResult(PocketExportFeedItemSourceSchema, feedItemSource);
-  return prefixResultIfError(parsedResult, 'Invalid pocket export feed item source');
-}
-
-/**
- * Parses a {@link FeedItemSource} from an unknown value. Returns an `ErrorResult` if the value is
- * not valid.
- */
-// TODO: I'm not sure if this is the best way to do this. All other parsers take in an `unknown`
-// value instead of a discriminated union.
 function parseFeedItemImportState(
   feedItemImportState: FeedItemImportStateFromStorage
 ): Result<FeedItemImportState> {
@@ -242,58 +156,59 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
   const parsedAccountIdResult = parseAccountId(parsedBaseFeedItemResult.value.accountId);
   if (!parsedAccountIdResult.success) return parsedAccountIdResult;
 
-  const parsedSourceResult = parseFeedItemSource(parsedBaseFeedItemResult.value.feedItemSource);
-  if (!parsedSourceResult.success) return parsedSourceResult;
-
   const parsedImportStateResult = parseFeedItemImportState(
     parsedBaseFeedItemResult.value.importState
   );
   if (!parsedImportStateResult.success) return parsedImportStateResult;
 
-  switch (parsedBaseFeedItemResult.value.type) {
+  const parseFeedSourceResult = parseFeedSource(parsedBaseFeedItemResult.value.feedSource);
+  if (!parseFeedSourceResult.success) return parseFeedSourceResult;
+  const parsedFeedSource = parseFeedSourceResult.value;
+
+  switch (parsedBaseFeedItemResult.value.feedItemType) {
     case FeedItemType.YouTube:
     case FeedItemType.Article:
     case FeedItemType.Video:
     case FeedItemType.Website:
     case FeedItemType.Tweet:
       return parseBaseFeedItem({
-        type: parsedBaseFeedItemResult.value.type,
+        feedItemType: parsedBaseFeedItemResult.value.feedItemType,
         storageBaseFeedItem: parsedBaseFeedItemResult.value,
         feedItemId: parsedIdResult.value,
         accountId: parsedAccountIdResult.value,
-        feedItemSource: parsedSourceResult.value,
         importState: parsedImportStateResult.value,
+        feedSource: parsedFeedSource,
       });
     case FeedItemType.Xkcd:
       return parseXkcdFeedItem({
         maybeFeedItem,
         feedItemId: parsedIdResult.value,
         accountId: parsedAccountIdResult.value,
-        feedItemSource: parsedSourceResult.value,
         importState: parsedImportStateResult.value,
+        feedSource: parsedFeedSource,
       });
     default:
       return makeErrorResult(
-        new Error(`Unknown feed item type: ${parsedBaseFeedItemResult.value.type}`)
+        new Error(`Unknown feed item type: ${parsedBaseFeedItemResult.value.feedItemType}`)
       );
   }
 }
 
 export function parseBaseFeedItem(args: {
-  readonly type: Exclude<FeedItemType, FeedItemType.Xkcd>;
+  readonly feedItemType: Exclude<FeedItemType, FeedItemType.Xkcd>;
   readonly storageBaseFeedItem: BaseFeedItemFromStorage;
   readonly feedItemId: FeedItemId;
   readonly accountId: AccountId;
-  readonly feedItemSource: FeedItemSource;
   readonly importState: FeedItemImportState;
+  readonly feedSource: FeedSource;
 }): Result<FeedItem> {
-  const {type, storageBaseFeedItem, feedItemId, accountId, feedItemSource, importState} = args;
+  const {feedItemType, storageBaseFeedItem, feedItemId, feedSource, accountId, importState} = args;
 
   return makeSuccessResult(
     omitUndefined({
-      type,
+      feedItemType,
+      feedSource,
       accountId,
-      feedItemSource,
       importState,
       feedItemId,
       url: storageBaseFeedItem.url,
@@ -313,24 +228,23 @@ export function parseXkcdFeedItem(args: {
   readonly maybeFeedItem: unknown;
   readonly feedItemId: FeedItemId;
   readonly accountId: AccountId;
-  readonly feedItemSource: FeedItemSource;
   readonly importState: FeedItemImportState;
+  readonly feedSource: FeedSource;
 }): Result<FeedItem> {
-  const {maybeFeedItem, feedItemId, accountId, feedItemSource, importState} = args;
+  const {maybeFeedItem, feedItemId, accountId, importState, feedSource} = args;
 
   const parsedXkcdFeedItemResult = parseZodResult(XkcdFeedItemFromStorageSchema, maybeFeedItem);
   if (!parsedXkcdFeedItemResult.success) {
-    return prefixErrorResult(parsedXkcdFeedItemResult, 'Invalid feed item');
+    return prefixErrorResult(parsedXkcdFeedItemResult, 'Invalid XKCD feed item');
   }
-
   const storageXkcdFeedItem = parsedXkcdFeedItemResult.value;
 
   return makeSuccessResult(
     omitUndefined({
-      type: FeedItemType.Xkcd,
+      feedItemType: FeedItemType.Xkcd,
       xkcd: parsedXkcdFeedItemResult.value.xkcd,
+      feedSource,
       accountId,
-      feedItemSource,
       importState,
       feedItemId,
       url: storageXkcdFeedItem.url,
@@ -351,7 +265,7 @@ export function parseXkcdFeedItem(args: {
  * Firestore.
  */
 export function toStorageFeedItem(feedItem: FeedItem): FeedItemFromStorage {
-  switch (feedItem.type) {
+  switch (feedItem.feedItemType) {
     case FeedItemType.Xkcd:
       return toStorageXkcdFeedItem(feedItem);
     case FeedItemType.YouTube:
@@ -375,9 +289,9 @@ export function toStorageBaseFeedItem(
 ): BaseFeedItemFromStorage {
   return omitUndefined({
     feedItemId: feedItem.feedItemId,
+    feedItemType: feedItem.feedItemType,
+    feedSource: feedItem.feedSource,
     accountId: feedItem.accountId,
-    type: feedItem.type,
-    feedItemSource: feedItem.feedItemSource,
     importState: feedItem.importState,
     url: feedItem.url,
     title: feedItem.title,
@@ -398,9 +312,9 @@ export function toStorageBaseFeedItem(
 export function toStorageXkcdFeedItem(feedItem: XkcdFeedItem): XkcdFeedItemFromStorage {
   return omitUndefined({
     feedItemId: feedItem.feedItemId,
+    feedItemType: feedItem.feedItemType,
+    feedSource: feedItem.feedSource,
     accountId: feedItem.accountId,
-    type: feedItem.type,
-    feedItemSource: feedItem.feedItemSource,
     importState: feedItem.importState,
     url: feedItem.url,
     title: feedItem.title,

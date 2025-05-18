@@ -14,7 +14,7 @@ export function parseActor(actor: unknown): Result<Actor> {
   if (!result.success) {
     return makeErrorResult(new Error('Failed to parse actor'));
   }
-  switch (result.data.type) {
+  switch (result.data.actorType) {
     case ActorType.User: {
       const accountIdResult = parseAccountId(result.data.accountId);
       if (!accountIdResult.success) {

@@ -2,9 +2,9 @@ import type React from 'react';
 import {useState} from 'react';
 
 import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
+import {POCKET_EXPORT_FEED_SOURCE} from '@shared/lib/feedSources.shared';
 import {pluralizeWithCount} from '@shared/lib/utils.shared';
 
-import {FEED_ITEM_POCKET_EXPORT_SOURCE} from '@shared/types/feedItems.types';
 import {
   ExternalMigrationItemStatus,
   NOT_STARTED_EXTERNAL_MIGRATION_ITEM_STATE,
@@ -101,8 +101,8 @@ export const ImportScreen: React.FC = () => {
     setImportStatus(key, PROCESSING_EXTERNAL_MIGRATION_ITEM_STATE);
 
     const createResult = await feedItemsService.createFeedItem({
+      feedSource: POCKET_EXPORT_FEED_SOURCE,
       url: item.url,
-      feedItemSource: FEED_ITEM_POCKET_EXPORT_SOURCE,
       title: item.title,
     });
 

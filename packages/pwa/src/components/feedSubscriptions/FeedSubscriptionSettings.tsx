@@ -15,9 +15,13 @@ import {AsyncStatus} from '@shared/types/asyncState.types';
 import {DayOfWeek} from '@shared/types/datetime.types';
 import {DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
+import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/results.types';
-import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
+import type {
+  IntervalUserFeedSubscription,
+  UserFeedSubscription,
+} from '@shared/types/userFeedSubscriptions.types';
 
 import {useUserFeedSubscriptionsService} from '@sharedClient/services/userFeedSubscriptions.client';
 
@@ -117,7 +121,7 @@ const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
       <Label htmlFor="deliverySchedule">Delivery schedule</Label>
       <select
         id="deliverySchedule"
-        value={userFeedSubscription.deliverySchedule.type}
+        value={userFeedSubscription.deliverySchedule.scheduleType}
         onChange={handleDeliveryScheduleChange}
         className="border-neutral-3 rounded border p-1 text-sm"
       >
@@ -202,6 +206,13 @@ const FeedSubscriptionUnsubscribeButton: React.FC<{
   );
 };
 
+const FeedSubscriptionIntervalSetting: React.FC<{
+  readonly userFeedSubscription: IntervalUserFeedSubscription;
+}> = ({userFeedSubscription}) => {
+  // TODO: Make this configurable.
+  return <div>Interval setting: {userFeedSubscription.intervalSeconds} seconds</div>;
+};
+
 const FeedSubscriptionSettingsPopoverContent: React.FC<{
   readonly userFeedSubscription: UserFeedSubscription;
 }> = ({userFeedSubscription}) => {
@@ -210,6 +221,9 @@ const FeedSubscriptionSettingsPopoverContent: React.FC<{
       <FlexColumn gap={4} padding={4}>
         <FeedSubscriptionDeliveryScheduleSetting userFeedSubscription={userFeedSubscription} />
         <FeedSubscriptionUnsubscribeButton userFeedSubscription={userFeedSubscription} />
+        {userFeedSubscription.feedSourceType === FeedSourceType.Interval ? (
+          <FeedSubscriptionIntervalSetting userFeedSubscription={userFeedSubscription} />
+        ) : null}
       </FlexColumn>
     </PopoverContent>
   );

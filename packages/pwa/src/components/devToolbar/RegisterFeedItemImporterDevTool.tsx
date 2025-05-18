@@ -1,11 +1,11 @@
 import {useCallback, useEffect, useState} from 'react';
 
+import {PWA_FEED_SOURCE} from '@shared/lib/feedSources.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
 import {DevToolbarSectionType} from '@shared/types/devToolbar.types';
-import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems.types';
 
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
@@ -45,8 +45,8 @@ const FeedItemImporter: React.FC = () => {
       setPending();
 
       const addFeedItemResult = await feedItemsService.createFeedItem({
+        feedSource: PWA_FEED_SOURCE,
         url: trimmedUrl,
-        feedItemSource: FEED_ITEM_APP_SOURCE,
         title: trimmedUrl,
       });
 

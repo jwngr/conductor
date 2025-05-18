@@ -6,12 +6,7 @@ import {assertNever, omitUndefined} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import {FeedItemType} from '@shared/types/feedItems.types';
-import type {
-  FeedItem,
-  FeedItemFromStorage,
-  FeedItemId,
-  FeedItemSource,
-} from '@shared/types/feedItems.types';
+import type {FeedItem, FeedItemFromStorage, FeedItemId} from '@shared/types/feedItems.types';
 import type {AsyncResult, Result} from '@shared/types/results.types';
 
 import {eventLogService} from '@sharedServer/services/eventLog.server';
@@ -44,14 +39,10 @@ export class ServerFeedItemsService {
     this.feedItemsCollectionService = args.feedItemsCollectionService;
   }
 
-  public async createFeedItem(args: {
-    readonly url: string;
-    readonly feedItemSource: FeedItemSource;
-    readonly accountId: AccountId;
-    readonly title: string;
-    readonly description: string | null;
-  }): AsyncResult<FeedItemId | null> {
-    const {url, accountId, feedItemSource, title, description} = args;
+  public async createFeedItem(
+    args: Pick<FeedItem, 'feedSource' | 'url' | 'accountId' | 'title' | 'description'>
+  ): AsyncResult<FeedItemId> {
+    const {feedSource, url, accountId, title, description} = args;
 
     const trimmedUrl = url.trim();
     if (!isValidUrl(trimmedUrl)) {
@@ -59,8 +50,8 @@ export class ServerFeedItemsService {
     }
 
     const feedItemResult = SharedFeedItemHelpers.makeFeedItem({
+      feedSource,
       url: trimmedUrl,
-      feedItemSource,
       accountId,
       title,
       description,
@@ -159,7 +150,7 @@ export class ServerFeedItemsService {
     }
 
     let importResult: Result<void, Error>;
-    switch (feedItem.type) {
+    switch (feedItem.feedItemType) {
       case FeedItemType.YouTube: {
         const importer = new YouTubeFeedItemImporter({feedItemService: this});
         importResult = await importer.import(feedItem);

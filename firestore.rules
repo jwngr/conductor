@@ -24,8 +24,8 @@ service cloud.firestore {
     function isValidFeedItemDoc(feedItemId) {
       return request.resource.data.keys().hasAll([
         'feedItemId',
-        'type',
-        'feedItemSource',
+        'feedItemType',
+        'feedSource',
         'importState',
         'url',
         'title',
@@ -37,8 +37,9 @@ service cloud.firestore {
       ]) &&
       request.resource.data.feedItemId is string &&
       request.resource.data.feedItemId == feedItemId &&
-      request.resource.data.type in ['ARTICLE', 'VIDEO', 'WEBSITE', 'TWEET', 'XKCD', 'YOUTUBE'] &&
-      request.resource.data.feedItemSource.type in ['APP', 'EXTENSION', 'RSS', 'POCKET_EXPORT'] &&
+      request.resource.data.feedItemType in ['ARTICLE', 'VIDEO', 'WEBSITE', 'TWEET', 'XKCD', 'YOUTUBE'] &&
+      request.resource.data.feedSource.keys().hasAll(['feedSourceType']) &&
+      request.resource.data.feedSource.feedSourceType in ['RSS', 'YOUTUBE_CHANNEL', 'INTERVAL', 'PWA', 'EXTENSION', 'POCKET_EXPORT'] &&
       request.resource.data.url is string &&
       request.resource.data.title is string &&
       request.resource.data.outgoingLinks is list &&
@@ -98,14 +99,6 @@ service cloud.firestore {
 
       // Only allow deletes via the admin SDK.
       allow delete: if false;
-    }
-
-    match /feedSources/{feedSourceId} {
-      // Feed sources are publicly readable.
-      allow read: if true;
-
-      // Feed sources are only writable via the admin SDK.
-      allow create, update, delete: if false;
     }
 
     match /feedItems/{feedItemId} {

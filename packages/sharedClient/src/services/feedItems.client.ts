@@ -29,13 +29,8 @@ import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers
 import type {AccountId, AuthStateChangedUnsubscribe} from '@shared/types/accounts.types';
 import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {AsyncState} from '@shared/types/asyncState.types';
-import type {
-  FeedItem,
-  FeedItemId,
-  FeedItemSource,
-  XkcdFeedItem,
-} from '@shared/types/feedItems.types';
-import {FeedItemSourceType} from '@shared/types/feedItems.types';
+import type {FeedItem, FeedItemId, XkcdFeedItem} from '@shared/types/feedItems.types';
+import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import {fromQueryFilterOp} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
@@ -105,16 +100,18 @@ function filterFeedItemsByDeliverySchedules(args: {
   const {feedItems, userFeedSubscriptions} = args;
 
   return feedItems.filter((feedItem) => {
-    switch (feedItem.feedItemSource.type) {
-      case FeedItemSourceType.App:
-      case FeedItemSourceType.Extension:
-      case FeedItemSourceType.PocketExport:
+    switch (feedItem.feedSource.feedSourceType) {
+      case FeedSourceType.PWA:
+      case FeedSourceType.Extension:
+      case FeedSourceType.PocketExport:
         // These sources are always shown.
         return true;
-      case FeedItemSourceType.RSS: {
+      case FeedSourceType.YouTubeChannel:
+      case FeedSourceType.Interval:
+      case FeedSourceType.RSS: {
         // Some sources have delivery schedules which determine when they are shown.
         const matchingDeliverySchedule = findDeliveryScheduleForFeedSubscription({
-          userFeedSubscriptionId: feedItem.feedItemSource.userFeedSubscriptionId,
+          userFeedSubscriptionId: feedItem.feedSource.userFeedSubscriptionId,
           userFeedSubscriptions,
         });
 
@@ -124,7 +121,7 @@ function filterFeedItemsByDeliverySchedules(args: {
         });
       }
       default:
-        assertNever(feedItem.feedItemSource);
+        assertNever(feedItem.feedSource);
     }
   });
 }
@@ -324,21 +321,20 @@ export class ClientFeedItemsService {
     return () => unsubscribe();
   }
 
-  public async createFeedItem(args: {
-    readonly url: string;
-    readonly feedItemSource: FeedItemSource;
-    readonly title: string;
-  }): AsyncResult<FeedItem> {
-    const {url, feedItemSource, title} = args;
+  public async createFeedItem(
+    args: Pick<FeedItem, 'feedSource' | 'url' | 'title'>
+  ): AsyncResult<FeedItem> {
+    const {feedSource, url, title} = args;
 
     const trimmedUrl = url.trim();
     if (!isValidUrl(trimmedUrl)) {
       return makeErrorResult(new Error(`Invalid URL provided for feed item: "${url}"`));
     }
 
+    // Create a new feed item object locally.
     const feedItemResult = SharedFeedItemHelpers.makeFeedItem({
+      feedSource,
       url: trimmedUrl,
-      feedItemSource,
       accountId: this.accountId,
       title,
       description: null,
@@ -346,14 +342,14 @@ export class ClientFeedItemsService {
     if (!feedItemResult.success) return feedItemResult;
     const feedItem = feedItemResult.value;
 
+    // Save the feed item to Firestore.
     const addFeedItemResult = await this.feedItemsCollectionService.setDoc(
       feedItem.feedItemId,
       feedItem
     );
-    if (!addFeedItemResult.success) {
-      return makeErrorResult(addFeedItemResult.error);
-    }
+    if (!addFeedItemResult.success) return makeErrorResult(addFeedItemResult.error);
 
+    // Return the feed item.
     return makeSuccessResult(feedItem);
   }
 

@@ -1,3 +1,4 @@
+import type {FeedItem} from '@shared/types/feedItems.types';
 import type {QueryFilterOp, SortDirection} from '@shared/types/query.types';
 
 export enum ViewType {
@@ -13,7 +14,7 @@ export enum ViewType {
 
 export interface View<T> {
   readonly name: string;
-  readonly type: ViewType;
+  readonly viewType: ViewType;
   readonly sortBy: readonly ViewSortByOption[];
   readonly groupBy: readonly ViewGroupByOption[];
   // TODO: Consider moving to a separate abstraction since this is about data fetching.
@@ -26,7 +27,9 @@ interface ViewFilter<T> {
   readonly value: unknown;
 }
 
-export type ViewGroupByField = 'type' | 'importState' | 'createdDate' | 'lastUpdatedDate';
+export type ViewGroupByField =
+  | 'feedSourceType'
+  | keyof Pick<FeedItem, 'feedItemType' | 'importState' | 'createdTime' | 'lastUpdatedTime'>;
 
 export interface ViewGroupByOption {
   readonly field: ViewGroupByField;

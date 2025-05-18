@@ -4,16 +4,15 @@ import type {Request, Response} from 'express';
 import {logger} from '@shared/services/logger.shared';
 
 import {prefixError} from '@shared/lib/errorUtils.shared';
+import {makeRssFeedSource} from '@shared/lib/feedSources.shared';
 import {batchAsyncResults, partition} from '@shared/lib/utils.shared';
 
-import {makeFeedItemRSSSource} from '@shared/types/feedItems.types';
 import type {FeedItemId} from '@shared/types/feedItems.types';
 import type {AsyncResult, ErrorResult, SuccessResult} from '@shared/types/results.types';
 import {parseSuperfeedrWebhookRequestBody} from '@shared/types/superfeedr.types';
 import type {Supplier} from '@shared/types/utils.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
-import type {ServerFeedSourcesService} from '@sharedServer/services/feedSources.server';
 import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
 
 /**
@@ -22,13 +21,11 @@ import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/us
 export async function handleSuperfeedrWebhookHelper(args: {
   readonly request: Request;
   readonly response: Response;
-  readonly feedSourcesService: ServerFeedSourcesService;
   readonly userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
   readonly feedItemsService: ServerFeedItemsService;
   // TODO: Use AsyncResult here.
 }): Promise<void> {
-  const {request, response, feedSourcesService, userFeedSubscriptionsService, feedItemsService} =
-    args;
+  const {request, response, userFeedSubscriptionsService, feedItemsService} = args;
 
   const respondWithError = (
     error: Error,
@@ -58,36 +55,16 @@ export async function handleSuperfeedrWebhookHelper(args: {
     return;
   }
 
-  // Fetch the feed source from the URL.
+  // Fetch all users subscribed to this RSS feed URL.
   const feedUrl = body.status.feed;
-  const fetchFeedSourceResult = await feedSourcesService.fetchByUrl(feedUrl);
-  if (!fetchFeedSourceResult.success) {
-    respondWithError(fetchFeedSourceResult.error, 'Error fetching webhook feed source by URL', {
-      feedUrl,
-    });
+  const fetchSubsResult = await userFeedSubscriptionsService.fetchForRssFeedSourceByUrl(feedUrl);
+  if (!fetchSubsResult.success) {
+    const message = 'Error fetching subscribed accounts for RSS feed source';
+    respondWithError(fetchSubsResult.error, message, {feedUrl});
     return;
   }
 
-  const feedSource = fetchFeedSourceResult.value;
-  if (!feedSource) {
-    respondWithError(new Error('No feed source found for URL. Skipping...'), undefined, {
-      feedUrl,
-    });
-    return;
-  }
-
-  // Fetch all users subscribed to this feed source.
-  const fetchSubscriptionsResult = await userFeedSubscriptionsService.fetchForFeedSource(
-    feedSource.feedSourceId
-  );
-  if (!fetchSubscriptionsResult.success) {
-    respondWithError(fetchSubscriptionsResult.error, 'Error fetching subscribed accounts', {
-      feedSourceId: feedSource.feedSourceId,
-    });
-    return;
-  }
-
-  const userFeedSubscriptions = fetchSubscriptionsResult.value;
+  const userFeedSubscriptions = fetchSubsResult.value;
 
   // Make a list of supplier methods that create feed items.
   const createFeedItemResults: Array<Supplier<AsyncResult<FeedItemId | null>>> = [];
@@ -95,14 +72,15 @@ export async function handleSuperfeedrWebhookHelper(args: {
     logger.log(`[SUPERFEEDR] Processing item ${item.id}`, {item});
 
     userFeedSubscriptions.forEach((userFeedSubscription) => {
-      const newFeedItemResult = async (): AsyncResult<FeedItemId | null> =>
-        await feedItemsService.createFeedItem({
+      const newFeedItemResult = async (): AsyncResult<FeedItemId | null> => {
+        return await feedItemsService.createFeedItem({
+          feedSource: makeRssFeedSource({userFeedSubscription}),
           url: item.permalinkUrl,
           accountId: userFeedSubscription.accountId,
-          feedItemSource: makeFeedItemRSSSource(userFeedSubscription.userFeedSubscriptionId),
           title: item.title,
           description: item.summary,
         });
+      };
       createFeedItemResults.push(newFeedItemResult);
     });
   });

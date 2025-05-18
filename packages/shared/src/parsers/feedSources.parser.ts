@@ -1,172 +1,127 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
-import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
-
-import type {
-  FeedSource,
-  FeedSourceFromStorage,
-  FeedSourceId,
-  IntervalFeedSource,
-  IntervalFeedSourceFromStorage,
-  RssFeedSource,
-  RssFeedSourceFromStorage,
-  YouTubeChannelFeedSource,
-  YouTubeChannelFeedSourceFromStorage,
-} from '@shared/types/feedSources.types';
 import {
-  FeedSourceFromStorageSchema,
-  FeedSourceIdSchema,
-  FeedSourceType,
+  EXTENSION_FEED_SOURCE,
+  POCKET_EXPORT_FEED_SOURCE,
+  PWA_FEED_SOURCE,
+} from '@shared/lib/feedSources.shared';
+import {parseZodResult} from '@shared/lib/parser.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {omitUndefined} from '@shared/lib/utils.shared';
+
+import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions.parser';
+import {parseYouTubeChannelId} from '@shared/parsers/youtube.parser';
+
+import {
+  FeedSourceSchema,
   IntervalFeedSourceSchema,
   RssFeedSourceSchema,
   YouTubeChannelFeedSourceSchema,
 } from '@shared/types/feedSources.types';
+import type {
+  FeedSource,
+  IntervalFeedSource,
+  RssFeedSource,
+  YouTubeChannelFeedSource,
+} from '@shared/types/feedSources.types';
+import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import type {Result} from '@shared/types/results.types';
 
 /**
- * Parses a {@link FeedSourceId} from a plain string. Returns an `ErrorResult` if the string is not
- * valid.
- */
-export function parseFeedSourceId(maybeFeedSourceId: string): Result<FeedSourceId> {
-  const parsedResult = parseZodResult(FeedSourceIdSchema, maybeFeedSourceId);
-  if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid feed source ID');
-  }
-  return makeSuccessResult(parsedResult.value as FeedSourceId);
-}
-
-/**
- * Parses a {@link FeedSource} from an unknown value. Returns an `ErrorResult` if the value is not
- * valid.
+ * Parses a {@link UserFeedSubscription} from an unknown value. Returns an `ErrorResult` if the
+ * value is not valid.
  */
 export function parseFeedSource(maybeFeedSource: unknown): Result<FeedSource> {
-  const parsedFeedSourceResult = parseZodResult(FeedSourceFromStorageSchema, maybeFeedSource);
+  const parsedFeedSourceResult = parseZodResult(FeedSourceSchema, maybeFeedSource);
   if (!parsedFeedSourceResult.success) {
     return prefixErrorResult(parsedFeedSourceResult, 'Invalid feed source');
   }
+  const parsedFeedSource = parsedFeedSourceResult.value;
 
-  switch (parsedFeedSourceResult.value.type) {
-    case FeedSourceType.Interval:
-      return parseIntervalFeedSource(parsedFeedSourceResult.value);
+  switch (parsedFeedSource.feedSourceType) {
     case FeedSourceType.RSS:
-      return parseRssFeedSource(parsedFeedSourceResult.value);
+      return parseRssFeedSource(parsedFeedSource);
     case FeedSourceType.YouTubeChannel:
-      return parseYouTubeChannelFeedSource(parsedFeedSourceResult.value);
-    default:
-      return makeErrorResult(new Error('Invalid feed source type'));
-  }
-}
-
-function parseRssFeedSource(maybeFeedSource: unknown): Result<RssFeedSource> {
-  const parsedFeedSourceResult = parseZodResult(RssFeedSourceSchema, maybeFeedSource);
-  if (!parsedFeedSourceResult.success) {
-    return prefixErrorResult(parsedFeedSourceResult, 'Invalid feed source');
-  }
-
-  const parsedIdResult = parseFeedSourceId(parsedFeedSourceResult.value.feedSourceId);
-  if (!parsedIdResult.success) return parsedIdResult;
-
-  return makeSuccessResult({
-    type: FeedSourceType.RSS,
-    feedSourceId: parsedIdResult.value,
-    url: parsedFeedSourceResult.value.url,
-    title: parsedFeedSourceResult.value.title,
-    createdTime: parseStorageTimestamp(parsedFeedSourceResult.value.createdTime),
-    lastUpdatedTime: parseStorageTimestamp(parsedFeedSourceResult.value.lastUpdatedTime),
-  });
-}
-
-function parseYouTubeChannelFeedSource(maybeFeedSource: unknown): Result<YouTubeChannelFeedSource> {
-  const parsedFeedSourceResult = parseZodResult(YouTubeChannelFeedSourceSchema, maybeFeedSource);
-  if (!parsedFeedSourceResult.success) {
-    return prefixErrorResult(parsedFeedSourceResult, 'Invalid feed source');
-  }
-
-  const parsedIdResult = parseFeedSourceId(parsedFeedSourceResult.value.feedSourceId);
-  if (!parsedIdResult.success) return parsedIdResult;
-
-  return makeSuccessResult({
-    type: FeedSourceType.YouTubeChannel,
-    feedSourceId: parsedIdResult.value,
-    url: parsedFeedSourceResult.value.url,
-    title: parsedFeedSourceResult.value.title,
-    createdTime: parseStorageTimestamp(parsedFeedSourceResult.value.createdTime),
-    lastUpdatedTime: parseStorageTimestamp(parsedFeedSourceResult.value.lastUpdatedTime),
-  });
-}
-
-function parseIntervalFeedSource(maybeFeedSource: unknown): Result<IntervalFeedSource> {
-  const parsedFeedSourceResult = parseZodResult(IntervalFeedSourceSchema, maybeFeedSource);
-  if (!parsedFeedSourceResult.success) {
-    return prefixErrorResult(parsedFeedSourceResult, 'Invalid feed source');
-  }
-
-  const parsedIdResult = parseFeedSourceId(parsedFeedSourceResult.value.feedSourceId);
-  if (!parsedIdResult.success) return parsedIdResult;
-
-  return makeSuccessResult({
-    type: FeedSourceType.Interval,
-    feedSourceId: parsedIdResult.value,
-    url: parsedFeedSourceResult.value.url,
-    title: parsedFeedSourceResult.value.title,
-    createdTime: parseStorageTimestamp(parsedFeedSourceResult.value.createdTime),
-    lastUpdatedTime: parseStorageTimestamp(parsedFeedSourceResult.value.lastUpdatedTime),
-    intervalSeconds: parsedFeedSourceResult.value.intervalSeconds,
-  });
-}
-
-/**
- * Converts a {@link FeedSource} to a {@link FeedSourceFromStorage} object that can be persisted to
- * Firestore.
- */
-export function toStorageFeedSource(feedSource: FeedSource): FeedSourceFromStorage {
-  switch (feedSource.type) {
+      return parseYouTubeChannelFeedSource(parsedFeedSource);
     case FeedSourceType.Interval:
-      return toStorageIntervalFeedSource(feedSource);
-    case FeedSourceType.RSS:
-      return toStorageRssFeedSource(feedSource);
-    case FeedSourceType.YouTubeChannel:
-      return toStorageYouTubeChannelFeedSource(feedSource);
+      return parseIntervalFeedSource(parsedFeedSource);
+    case FeedSourceType.Extension:
+      return makeSuccessResult(EXTENSION_FEED_SOURCE);
+    case FeedSourceType.PocketExport:
+      return makeSuccessResult(POCKET_EXPORT_FEED_SOURCE);
+    case FeedSourceType.PWA:
+      return makeSuccessResult(PWA_FEED_SOURCE);
     default:
-      // Fall back to the raw feed source value.
-      return feedSource;
+      return makeErrorResult(new Error('Unexpected feed source type'));
   }
 }
 
-function toStorageRssFeedSource(feedSource: RssFeedSource): RssFeedSourceFromStorage {
-  return {
-    type: FeedSourceType.RSS,
-    feedSourceId: feedSource.feedSourceId,
-    url: feedSource.url,
-    title: feedSource.title,
-    createdTime: feedSource.createdTime,
-    lastUpdatedTime: feedSource.lastUpdatedTime,
-  };
+function parseRssFeedSource(maybeRssFeedSource: unknown): Result<RssFeedSource> {
+  const parsedResult = parseZodResult(RssFeedSourceSchema, maybeRssFeedSource);
+  if (!parsedResult.success) {
+    return prefixErrorResult(parsedResult, 'Invalid RSS feed source');
+  }
+  const parsedRssFeedSource = parsedResult.value;
+
+  const parsedFeedSubIdResult = parseUserFeedSubscriptionId(
+    parsedRssFeedSource.userFeedSubscriptionId
+  );
+  if (!parsedFeedSubIdResult.success) return parsedFeedSubIdResult;
+
+  return makeSuccessResult(
+    omitUndefined({
+      feedSourceType: FeedSourceType.RSS,
+      userFeedSubscriptionId: parsedFeedSubIdResult.value,
+      url: parsedRssFeedSource.url,
+      title: parsedRssFeedSource.title,
+    })
+  );
 }
 
-function toStorageYouTubeChannelFeedSource(
-  feedSource: YouTubeChannelFeedSource
-): YouTubeChannelFeedSourceFromStorage {
-  return {
-    type: FeedSourceType.YouTubeChannel,
-    feedSourceId: feedSource.feedSourceId,
-    url: feedSource.url,
-    title: feedSource.title,
-    createdTime: feedSource.createdTime,
-    lastUpdatedTime: feedSource.lastUpdatedTime,
-  };
+function parseYouTubeChannelFeedSource(
+  maybeYouTubeChannelFeedSource: unknown
+): Result<YouTubeChannelFeedSource> {
+  const parsedResult = parseZodResult(
+    YouTubeChannelFeedSourceSchema,
+    maybeYouTubeChannelFeedSource
+  );
+  if (!parsedResult.success) {
+    return prefixErrorResult(parsedResult, 'Invalid YouTube channel feed source');
+  }
+  const parsedYouTubeChannelFeedSource = parsedResult.value;
+
+  const parsedFeedSubIdResult = parseUserFeedSubscriptionId(
+    parsedYouTubeChannelFeedSource.userFeedSubscriptionId
+  );
+  if (!parsedFeedSubIdResult.success) return parsedFeedSubIdResult;
+
+  const parsedChannelIdResult = parseYouTubeChannelId(parsedYouTubeChannelFeedSource.channelId);
+  if (!parsedChannelIdResult.success) return parsedChannelIdResult;
+
+  return makeSuccessResult(
+    omitUndefined({
+      feedSourceType: FeedSourceType.YouTubeChannel,
+      userFeedSubscriptionId: parsedFeedSubIdResult.value,
+      channelId: parsedChannelIdResult.value,
+    })
+  );
 }
 
-function toStorageIntervalFeedSource(
-  feedSource: IntervalFeedSource
-): IntervalFeedSourceFromStorage {
-  return {
-    type: FeedSourceType.Interval,
-    feedSourceId: feedSource.feedSourceId,
-    url: feedSource.url,
-    title: feedSource.title,
-    createdTime: feedSource.createdTime,
-    lastUpdatedTime: feedSource.lastUpdatedTime,
-    intervalSeconds: feedSource.intervalSeconds,
-  };
+function parseIntervalFeedSource(maybeIntervalFeedSource: unknown): Result<IntervalFeedSource> {
+  const parsedResult = parseZodResult(IntervalFeedSourceSchema, maybeIntervalFeedSource);
+  if (!parsedResult.success) {
+    return prefixErrorResult(parsedResult, 'Invalid interval feed source');
+  }
+  const parsedIntervalFeedSource = parsedResult.value;
+
+  const parsedFeedSubIdResult = parseUserFeedSubscriptionId(
+    parsedIntervalFeedSource.userFeedSubscriptionId
+  );
+  if (!parsedFeedSubIdResult.success) return parsedFeedSubIdResult;
+
+  return makeSuccessResult(
+    omitUndefined({
+      feedSourceType: FeedSourceType.Interval,
+      userFeedSubscriptionId: parsedFeedSubIdResult.value,
+    })
+  );
 }

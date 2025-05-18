@@ -1,18 +1,14 @@
 import {z} from 'zod';
 
-import {IMMEDIATE_DELIVERY_SCHEDULE} from '@shared/lib/deliverySchedules.shared';
-import {makeSuccessResult} from '@shared/lib/results.shared';
-import {makeUuid} from '@shared/lib/utils.shared';
-
 import type {AccountId} from '@shared/types/accounts.types';
 import {AccountIdSchema} from '@shared/types/accounts.types';
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
 import {DeliveryScheduleFromStorageSchema} from '@shared/types/deliverySchedules.types';
-import type {FeedSource, FeedSourceId} from '@shared/types/feedSources.types';
-import {FeedSourceIdSchema} from '@shared/types/feedSources.types';
+import type {PersistedFeedSourceType} from '@shared/types/feedSourceTypes.types';
+import {FeedSourceType, PERSISTED_FEED_SOURCE_TYPES} from '@shared/types/feedSourceTypes.types';
 import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
-import type {Result} from '@shared/types/results.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
+import {YouTubeChannelIdSchema, type YouTubeChannelId} from '@shared/types/youtube.types';
 
 /**
  * Strongly-typed type for a {@link UserFeedSubscription}'s unique identifier. Prefer this over
@@ -26,76 +22,90 @@ export type UserFeedSubscriptionId = string & {readonly __brand: 'UserFeedSubscr
 export const UserFeedSubscriptionIdSchema = z.string().uuid();
 
 /**
- * Creates a new random {@link UserFeedSubscriptionId}.
- */
-export function makeUserFeedSubscriptionId(): UserFeedSubscriptionId {
-  return makeUuid<UserFeedSubscriptionId>();
-}
-
-/**
  * An individual account's subscription to a feed source.
  *
- * A single {@link FeedSource} can have multiple {@link UserFeedSubscription}s, one for each
- * {@link Account} subscribed to it.
+ * A single URL can have multiple {@link UserFeedSubscription}s, one for each {@link Account}
+ * subscribed to it.
  *
- * These are not deleted when an account unsubscribes from a feed. Instead, they are marked as
- * inactive. They are only deleted when an account is wiped out.
+ * User feed subscriptions are not deleted when an account unsubscribes from a feed. Instead, they
+ * are marked as inactive. They are only deleted when an account is wiped out.
  */
-export interface UserFeedSubscription extends BaseStoreItem {
+interface BaseUserFeedSubscription extends BaseStoreItem {
+  /** The type of feed source this subscription is for. */
+  readonly feedSourceType: PersistedFeedSourceType;
+  /** The unique identifier for this subscription. */
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-  readonly feedSourceId: FeedSourceId;
+  /** The account that owns this subscription. */
   readonly accountId: AccountId;
-  readonly url: string;
-  readonly title: string;
+  /** Whether this subscription is active. Inactive subscriptions do not generate new feed items. */
   readonly isActive: boolean;
+  /** The delivery schedule for this subscription. */
   readonly deliverySchedule: DeliverySchedule;
+  /** The time this subscription was unsubscribed from the feed source. */
   readonly unsubscribedTime?: Date | undefined;
 }
+
+export interface RssUserFeedSubscription extends BaseUserFeedSubscription {
+  readonly feedSourceType: FeedSourceType.RSS;
+  readonly url: string;
+  readonly title: string;
+}
+
+export interface YouTubeChannelUserFeedSubscription extends BaseUserFeedSubscription {
+  readonly feedSourceType: FeedSourceType.YouTubeChannel;
+  readonly channelId: YouTubeChannelId;
+}
+
+export interface IntervalUserFeedSubscription extends BaseUserFeedSubscription {
+  readonly feedSourceType: FeedSourceType.Interval;
+  readonly intervalSeconds: number;
+}
+
+export type UserFeedSubscription =
+  | RssUserFeedSubscription
+  | YouTubeChannelUserFeedSubscription
+  | IntervalUserFeedSubscription;
 
 /**
  * Zod schema for a {@link UserFeedSubscription} persisted to Firestore.
  */
-export const UserFeedSubscriptionFromStorageSchema = z.object({
+const BaseUserFeedSubscriptionFromStorageSchema = z.object({
+  feedSourceType: z.enum(PERSISTED_FEED_SOURCE_TYPES),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
-  feedSourceId: FeedSourceIdSchema,
   accountId: AccountIdSchema,
-  url: z.string().url(),
-  title: z.string(),
   isActive: z.boolean(),
+  deliverySchedule: DeliveryScheduleFromStorageSchema,
   unsubscribedTime: FirestoreTimestampSchema.or(z.date()).optional(),
   createdTime: FirestoreTimestampSchema.or(z.date()),
   lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
-  deliverySchedule: DeliveryScheduleFromStorageSchema,
 });
+
+export const RssUserFeedSubscriptionFromStorageSchema =
+  BaseUserFeedSubscriptionFromStorageSchema.extend({
+    feedSourceType: z.literal(FeedSourceType.RSS),
+    url: z.string().url(),
+    title: z.string(),
+  });
+
+export const YouTubeChannelUserFeedSubscriptionFromStorageSchema =
+  BaseUserFeedSubscriptionFromStorageSchema.extend({
+    feedSourceType: z.literal(FeedSourceType.YouTubeChannel),
+    channelId: YouTubeChannelIdSchema,
+  });
+
+export const IntervalUserFeedSubscriptionFromStorageSchema =
+  BaseUserFeedSubscriptionFromStorageSchema.extend({
+    feedSourceType: z.literal(FeedSourceType.Interval),
+    intervalSeconds: z.number().positive().int().min(60),
+  });
+
+export const UserFeedSubscriptionFromStorageSchema = z.union([
+  RssUserFeedSubscriptionFromStorageSchema,
+  YouTubeChannelUserFeedSubscriptionFromStorageSchema,
+  IntervalUserFeedSubscriptionFromStorageSchema,
+]);
 
 /**
  * Type for a {@link UserFeedSubscription} persisted to Firestore.
  */
 export type UserFeedSubscriptionFromStorage = z.infer<typeof UserFeedSubscriptionFromStorageSchema>;
-
-/**
- * Creates a new {@link UserFeedSubscription} object.
- */
-export function makeUserFeedSubscription(newItemArgs: {
-  readonly feedSource: FeedSource;
-  readonly accountId: AccountId;
-}): Result<UserFeedSubscription> {
-  const {feedSource, accountId} = newItemArgs;
-
-  const userFeedSubscriptionId = makeUserFeedSubscriptionId();
-
-  const userFeedSubscription: UserFeedSubscription = {
-    userFeedSubscriptionId,
-    accountId,
-    feedSourceId: feedSource.feedSourceId,
-    url: feedSource.url,
-    title: feedSource.title,
-    isActive: true,
-    deliverySchedule: IMMEDIATE_DELIVERY_SCHEDULE,
-    // TODO(timestamps): Use server timestamps instead.
-    createdTime: new Date(),
-    lastUpdatedTime: new Date(),
-  };
-
-  return makeSuccessResult(userFeedSubscription);
-}

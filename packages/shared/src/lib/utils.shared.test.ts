@@ -8,7 +8,10 @@ import {
   filterUndefined,
   formatWithCommas,
   isDate,
+  isInteger,
+  isPositiveInteger,
   isValidEmail,
+  isValidPort,
   makeUuid,
   noopTrue,
   omitUndefined,
@@ -397,5 +400,62 @@ describe('batchAsyncResults', () => {
 
     const result2 = await batchAsyncResults(tasks, -1);
     expectErrorResult(result2);
+  });
+});
+
+describe('isValidPort', () => {
+  test('should return true for valid port numbers', () => {
+    expect(isValidPort(1)).toBe(true);
+    expect(isValidPort(9)).toBe(true);
+    expect(isValidPort(65535)).toBe(true);
+  });
+
+  test('should return false for invalid port numbers', () => {
+    expect(isValidPort(-1)).toBe(false);
+    expect(isValidPort(65536)).toBe(false);
+  });
+});
+
+describe('isInteger', () => {
+  test('should return true for positive integers', () => {
+    expect(isInteger(1)).toBe(true);
+    expect(isInteger(9)).toBe(true);
+  });
+
+  test('should return true for negative integers', () => {
+    expect(isInteger(-1)).toBe(true);
+    expect(isInteger(-9)).toBe(true);
+  });
+
+  test('should return true for zero', () => {
+    expect(isInteger(0)).toBe(true);
+  });
+
+  test('should return false for non-integers', () => {
+    expect(isInteger(1.5)).toBe(false);
+    expect(isInteger(0.1)).toBe(false);
+    expect(isInteger(-1.5)).toBe(false);
+  });
+});
+
+describe('isPositiveInteger', () => {
+  test('should return true for positive integers', () => {
+    expect(isPositiveInteger(1)).toBe(true);
+    expect(isPositiveInteger(9)).toBe(true);
+  });
+
+  test('should return false for negative integers', () => {
+    expect(isPositiveInteger(-1)).toBe(false);
+    expect(isPositiveInteger(-9)).toBe(false);
+  });
+
+  test('should return false for zero', () => {
+    expect(isPositiveInteger(0)).toBe(false);
+  });
+
+  test('should return false for non-integers', () => {
+    expect(isPositiveInteger(1.5)).toBe(false);
+    expect(isPositiveInteger(0.1)).toBe(false);
+    expect(isPositiveInteger(-1.5)).toBe(false);
   });
 });

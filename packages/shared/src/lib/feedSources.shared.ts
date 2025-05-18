@@ -1,60 +1,59 @@
-import {makeUuid} from '@shared/lib/utils.shared';
-
 import type {
-  FeedSource,
-  FeedSourceId,
+  ExtensionFeedSource,
   IntervalFeedSource,
+  PocketExportFeedSource,
+  PwaFeedSource,
   RssFeedSource,
   YouTubeChannelFeedSource,
 } from '@shared/types/feedSources.types';
-import {FeedSourceType} from '@shared/types/feedSources.types';
+import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import type {
+  IntervalUserFeedSubscription,
+  RssUserFeedSubscription,
+  YouTubeChannelUserFeedSubscription,
+} from '@shared/types/userFeedSubscriptions.types';
 
-export function makeFeedSourceId(): FeedSourceId {
-  return makeUuid<FeedSourceId>();
-}
+export const PWA_FEED_SOURCE: PwaFeedSource = {
+  feedSourceType: FeedSourceType.PWA,
+};
 
-export function makeRssFeedSource(
-  newItemArgs: Omit<RssFeedSource, 'type' | 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
-): FeedSource {
+export const EXTENSION_FEED_SOURCE: ExtensionFeedSource = {
+  feedSourceType: FeedSourceType.Extension,
+};
+
+export const POCKET_EXPORT_FEED_SOURCE: PocketExportFeedSource = {
+  feedSourceType: FeedSourceType.PocketExport,
+};
+
+export function makeRssFeedSource(args: {
+  readonly userFeedSubscription: RssUserFeedSubscription;
+}): RssFeedSource {
+  const {userFeedSubscription} = args;
   return {
-    type: FeedSourceType.RSS,
-    feedSourceId: makeFeedSourceId(),
-    url: newItemArgs.url,
-    title: newItemArgs.title,
-    // TODO(timestamps): Use server timestamps instead.
-    createdTime: new Date(),
-    lastUpdatedTime: new Date(),
+    feedSourceType: FeedSourceType.RSS,
+    url: userFeedSubscription.url,
+    title: userFeedSubscription.title,
+    userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
   };
 }
 
-export function makeYouTubeFeedSource(
-  newItemArgs: Omit<
-    YouTubeChannelFeedSource,
-    'type' | 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'
-  >
-): FeedSource {
+export function makeYouTubeChannelFeedSource(args: {
+  readonly userFeedSubscription: YouTubeChannelUserFeedSubscription;
+}): YouTubeChannelFeedSource {
+  const {userFeedSubscription} = args;
   return {
-    type: FeedSourceType.YouTubeChannel,
-    feedSourceId: makeFeedSourceId(),
-    url: newItemArgs.url,
-    title: newItemArgs.title,
-    // TODO(timestamps): Use server timestamps instead.
-    createdTime: new Date(),
-    lastUpdatedTime: new Date(),
+    feedSourceType: FeedSourceType.YouTubeChannel,
+    channelId: userFeedSubscription.channelId,
+    userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
   };
 }
 
-export function makeIntervalFeedSource(
-  newItemArgs: Omit<IntervalFeedSource, 'type' | 'feedSourceId' | 'createdTime' | 'lastUpdatedTime'>
-): FeedSource {
+export function makeIntervalFeedSource(args: {
+  readonly userFeedSubscription: IntervalUserFeedSubscription;
+}): IntervalFeedSource {
+  const {userFeedSubscription} = args;
   return {
-    type: FeedSourceType.Interval,
-    feedSourceId: makeFeedSourceId(),
-    url: newItemArgs.url,
-    title: newItemArgs.title,
-    // TODO(timestamps): Use server timestamps instead.
-    createdTime: new Date(),
-    lastUpdatedTime: new Date(),
-    intervalSeconds: newItemArgs.intervalSeconds,
+    feedSourceType: FeedSourceType.Interval,
+    userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
   };
 }

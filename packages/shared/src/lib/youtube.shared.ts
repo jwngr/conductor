@@ -25,7 +25,7 @@ function normalizeYouTubeHostname(hostname: string): string {
 }
 
 /**
- * Returns `true` if the provided URL is a YouTube channel URL.  Handles many variations of YouTube
+ * Returns `true` if the provided URL is a YouTube channel URL. Handles many variations of YouTube
  * URLs.
  */
 export function isYouTubeChannelUrl(url: string): boolean {
@@ -38,6 +38,22 @@ export function isYouTubeChannelUrl(url: string): boolean {
   if (YOUTUBE_CHANNEL_ID_PATH_REGEX.test(parsedUrl.pathname)) return true;
   if (YOUTUBE_CHANNEL_AT_HANDLE_PATH_REGEX.test(parsedUrl.pathname)) return true;
   if (YOUTUBE_CHANNEL_C_HANDLE_PATH_REGEX.test(parsedUrl.pathname)) return true;
+
+  return false;
+}
+
+/**
+ * Returns `true` if the provided URL is a YouTube video URL. Handles many variations of YouTube
+ * URLs.
+ */
+export function isYouTubeVideoUrl(url: string): boolean {
+  const parsedUrl = parseUrl(url);
+  if (!parsedUrl) return false;
+
+  const normalizedHostname = normalizeYouTubeHostname(parsedUrl.hostname);
+  if (!YOUTUBE_HOSTNAMES.includes(normalizedHostname)) return false;
+
+  if (parsedUrl.pathname === '/watch' && parsedUrl.searchParams.has('v')) return true;
 
   return false;
 }

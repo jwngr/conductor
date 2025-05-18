@@ -3,11 +3,19 @@ import type {Functions, HttpsCallable} from 'firebase/functions';
 import {httpsCallable} from 'firebase/functions';
 import {useEffect, useMemo} from 'react';
 
-import {USER_FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants.shared';
+import {
+  DEFAULT_FEED_TITLE,
+  USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
+} from '@shared/lib/constants.shared';
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {makeIntervalFeedSource, makeYouTubeFeedSource} from '@shared/lib/feedSources.shared';
 import {withFirestoreTimestamps} from '@shared/lib/parser.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {
+  makeIntervalUserFeedSubscription,
+  makeRssUserFeedSubscription,
+  makeYouTubeChannelUserFeedSubscription,
+} from '@shared/lib/userFeedSubscriptions.shared';
+import {isPositiveInteger} from '@shared/lib/utils.shared';
 import {getYouTubeChannelId} from '@shared/lib/youtube.shared';
 
 import {
@@ -18,12 +26,12 @@ import {
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {AsyncState} from '@shared/types/asyncState.types';
-import type {FeedSource} from '@shared/types/feedSources.types';
+import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import type {AsyncResult} from '@shared/types/results.types';
-import {
-  makeUserFeedSubscription,
-  type UserFeedSubscription,
-  type UserFeedSubscriptionId,
+import type {
+  IntervalUserFeedSubscription,
+  UserFeedSubscription,
+  UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
@@ -36,15 +44,11 @@ import {
 import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
-interface SubscribeToFeedRequest {
+interface SubscribeToRssFeedRequest {
   readonly url: string;
 }
 
-interface SubscribeToFeedResponse {
-  readonly userFeedSubscriptionId: string;
-}
-
-type CallSubscribeUserToFeedFn = HttpsCallable<SubscribeToFeedRequest, SubscribeToFeedResponse>;
+type CallSubscribeToRssFeedFn = HttpsCallable<SubscribeToRssFeedRequest, void>;
 
 type UserFeedSubscriptionsCollectionService = ClientFirestoreCollectionService<
   UserFeedSubscriptionId,
@@ -72,24 +76,45 @@ export class ClientUserFeedSubscriptionsService {
    * This is done via Firebase Functions since a privileged server is needed to contact the RSS feed
    * provider (e.g. Superfeedr), which is responsible for managing RSS feed subscriptions.
    */
-  public async subscribeToRssFeed(url: URL): AsyncResult<UserFeedSubscriptionId> {
-    const callSubscribeAccountToFeed: CallSubscribeUserToFeedFn = httpsCallable(
+  public async subscribeToRssFeed(url: URL): AsyncResult<UserFeedSubscription> {
+    // Check if the user is already subscribed to this RSS feed.
+    const existingSubResult = await this.userFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
+      where('accountId', '==', this.accountId),
+      where('feedSourceType', '==', FeedSourceType.RSS),
+      where('url', '==', url.href),
+    ]);
+    if (!existingSubResult.success) return existingSubResult;
+
+    // TODO: Handle this error more gracefully. Do not consider it full failure.
+    const existingSubscription = existingSubResult.value;
+    if (existingSubscription) return makeErrorResult(new Error('Already subscribed to RSS feed'));
+
+    const callSubscribeToRssFeed: CallSubscribeToRssFeedFn = httpsCallable(
       this.functions,
-      'subscribeAccountToFeedOnCall'
+      'subscribeToRssFeedOnCall'
     );
 
-    // Hit Firebase Functions endpoint to subscribe account to feed source.
+    // Hit Firebase Functions endpoint to subscribe to RSS feed.
     const subscribeResponseResult = await asyncTry(async () =>
-      callSubscribeAccountToFeed({url: url.href})
+      callSubscribeToRssFeed({url: url.href})
     );
     if (!subscribeResponseResult.success) return subscribeResponseResult;
-    const subscribeResponse = subscribeResponseResult.value;
 
-    // TODO: Parse and validate the response from the function.
+    // Create a new user feed subscription object locally.
+    const userFeedSubscription = makeRssUserFeedSubscription({
+      url: url.href,
+      // TODO: Add better titles.
+      title: DEFAULT_FEED_TITLE,
+      accountId: this.accountId,
+    });
 
-    // Parse the response to get the new user feed subscription ID.
-    const idResult = parseUserFeedSubscriptionId(subscribeResponse.data.userFeedSubscriptionId);
-    return prefixResultIfError(idResult, 'New user feed subscription ID did not parse correctly');
+    // Save the new user feed subscription to Firestore.
+    const docId = userFeedSubscription.userFeedSubscriptionId;
+    const docData = withFirestoreTimestamps(userFeedSubscription, clientTimestampSupplier);
+    const saveResult = await this.userFeedSubscriptionsCollectionService.setDoc(docId, docData);
+    if (!saveResult.success) return prefixErrorResult(saveResult, 'Error saving feed subscription');
+
+    return makeSuccessResult(userFeedSubscription);
   }
 
   /**
@@ -99,90 +124,64 @@ export class ClientUserFeedSubscriptionsService {
   public async subscribeToYouTubeChannel(
     maybeYouTubeUrl: string
   ): AsyncResult<UserFeedSubscription> {
-    const channelIdResult = getYouTubeChannelId(maybeYouTubeUrl);
-
+    // Parse the channel ID from the URL.
     // TODO: Also support channel handles.
-    // const channelHandleResult = getYouTubeChannelHandle(maybeYouTubeUrl);
-
-    if (!channelIdResult.success) {
-      return prefixErrorResult(channelIdResult, 'Failed to parse YouTube channel URL');
-    }
-
+    const channelIdResult = getYouTubeChannelId(maybeYouTubeUrl);
+    if (!channelIdResult.success) return channelIdResult;
     const channelId = channelIdResult.value;
-    if (!channelId) {
-      return makeErrorResult(new Error('URL is not a valid YouTube channel URL'));
-    }
+    if (channelId === null) return makeErrorResult(new Error('Channel ID not found in URL'));
 
-    const feedSource = makeYouTubeFeedSource({
-      // TODO: Switch to `channelId`.
-      url: `https://www.youtube.com/channel/${channelId}`,
-      // TODO: Address title.
-      title: 'YouTube Channel',
+    // Check if the user is already subscribed to this YouTube channel.
+    const existingSubResult = await this.userFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
+      where('accountId', '==', this.accountId),
+      where('feedSourceType', '==', FeedSourceType.YouTubeChannel),
+      where('channelId', '==', channelId),
+    ]);
+    if (!existingSubResult.success) return existingSubResult;
+
+    // TODO: Handle this error more gracefully. Do not consider it full failure.
+    const existingSubscription = existingSubResult.value;
+    if (existingSubscription) return makeErrorResult(new Error('Already subscribed to channel'));
+
+    // TODO: Fetch current feed source and use it below.
+
+    // Create a new user feed subscription object locally.
+    const userFeedSubscription = makeYouTubeChannelUserFeedSubscription({
+      channelId,
+      accountId: this.accountId,
     });
 
-    return await this.createSubscription({feedSource});
+    // Save the new user feed subscription to Firestore.
+    const docId = userFeedSubscription.userFeedSubscriptionId;
+    const docData = withFirestoreTimestamps(userFeedSubscription, clientTimestampSupplier);
+    const saveResult = await this.userFeedSubscriptionsCollectionService.setDoc(docId, docData);
+    if (!saveResult.success) return prefixErrorResult(saveResult, 'Error saving feed subscription');
+
+    return makeSuccessResult(userFeedSubscription);
   }
 
   public async subscribeToIntervalFeed(args: {
     intervalSeconds: number;
-  }): AsyncResult<UserFeedSubscription> {
+  }): AsyncResult<IntervalUserFeedSubscription> {
     const {intervalSeconds} = args;
 
-    if (intervalSeconds <= 0) {
-      return makeErrorResult(new Error('Interval must be greater than 0'));
-    } else if (!Number.isFinite(intervalSeconds)) {
-      return makeErrorResult(new Error('Interval must be an integer'));
+    if (!isPositiveInteger(intervalSeconds)) {
+      return makeErrorResult(new Error('Interval must be a positive integer'));
     }
 
-    const feedSource = makeIntervalFeedSource({
+    // Create a new user feed subscription object locally.
+    const userFeedSubscription = makeIntervalUserFeedSubscription({
       intervalSeconds,
-      // TODO: Update these URL values.
-      url: 'https://example.com',
-      title: 'Interval Feed',
-    });
-
-    return await this.createSubscription({feedSource});
-  }
-
-  /**
-   * Adds a new user feed subscription document to Firestore.
-   */
-  public async createSubscription(args: {
-    feedSource: FeedSource;
-  }): AsyncResult<UserFeedSubscription> {
-    const {feedSource} = args;
-
-    // Check if a feed subscription already exists for this feed source.
-    const existingSubscriptionsResult =
-      await this.userFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
-        where('accountId', '==', this.accountId),
-        where('feedSourceId', '==', feedSource.feedSourceId),
-      ]);
-    if (!existingSubscriptionsResult.success) return existingSubscriptionsResult;
-
-    const existingSubscription = existingSubscriptionsResult.value;
-    if (existingSubscription) {
-      return makeErrorResult(new Error('Feed subscription already exists'));
-    }
-
-    // Make a new user feed subscription object locally.
-    const userFeedSubscriptionResult = makeUserFeedSubscription({
-      feedSource,
       accountId: this.accountId,
     });
-    if (!userFeedSubscriptionResult.success) return userFeedSubscriptionResult;
-    const newUserFeedSubscription = userFeedSubscriptionResult.value;
 
-    // Add the new user feed subscription to Firestore.
-    const userFeedSubscriptionId = newUserFeedSubscription.userFeedSubscriptionId;
-    const createResult = await this.userFeedSubscriptionsCollectionService.setDoc(
-      userFeedSubscriptionId,
-      withFirestoreTimestamps(newUserFeedSubscription, clientTimestampSupplier)
-    );
-    if (!createResult.success) {
-      return prefixErrorResult(createResult, 'Error creating user feed subscription in Firestore');
-    }
-    return makeSuccessResult(newUserFeedSubscription);
+    // Save the new user feed subscription to Firestore.
+    const docId = userFeedSubscription.userFeedSubscriptionId;
+    const docData = withFirestoreTimestamps(userFeedSubscription, clientTimestampSupplier);
+    const saveResult = await this.userFeedSubscriptionsCollectionService.setDoc(docId, docData);
+    if (!saveResult.success) return prefixErrorResult(saveResult, 'Error saving feed subscription');
+
+    return makeSuccessResult(userFeedSubscription);
   }
 
   /**

@@ -109,7 +109,7 @@ describe('deliverySchedules', () => {
           times: [timeOfDay(9, 0)],
         });
         expectSuccessResult(scheduleResult, {
-          type: DeliveryScheduleType.DaysAndTimesOfWeek,
+          scheduleType: DeliveryScheduleType.DaysAndTimesOfWeek,
           days: [DayOfWeek.Monday],
           times: [timeOfDay(9, 0)],
         });
@@ -121,7 +121,7 @@ describe('deliverySchedules', () => {
           times: [timeOfDay(9, 0), timeOfDay(15, 0)],
         });
         expectSuccessResult(scheduleResult, {
-          type: DeliveryScheduleType.DaysAndTimesOfWeek,
+          scheduleType: DeliveryScheduleType.DaysAndTimesOfWeek,
           days: [DayOfWeek.Monday, DayOfWeek.Wednesday],
           times: [timeOfDay(9, 0), timeOfDay(15, 0)],
         });
@@ -133,7 +133,7 @@ describe('deliverySchedules', () => {
           times: [timeOfDay(9, 0)],
         });
         expectSuccessResult(scheduleResult, {
-          type: DeliveryScheduleType.DaysAndTimesOfWeek,
+          scheduleType: DeliveryScheduleType.DaysAndTimesOfWeek,
           days: EVERY_DAY_OF_WEEK,
           times: [timeOfDay(9, 0)],
         });
@@ -209,7 +209,7 @@ describe('deliverySchedules', () => {
         jest.setSystemTime(setHours(MONDAY_JAN_1_2024, 8)); // Mon 8:00 AM
         const date = findMostRecentDeliveryDateForDaysAndTimesOfWeekSchedule({
           deliverySchedule: {
-            type: DeliveryScheduleType.DaysAndTimesOfWeek,
+            scheduleType: DeliveryScheduleType.DaysAndTimesOfWeek,
             days: [],
             times: [],
           },

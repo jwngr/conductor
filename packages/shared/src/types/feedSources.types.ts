@@ -1,95 +1,92 @@
 import {z} from 'zod';
 
-import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
-import type {BaseStoreItem} from '@shared/types/utils.types';
+import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
+import {UserFeedSubscriptionIdSchema} from '@shared/types/userFeedSubscriptions.types';
+import {YouTubeChannelIdSchema} from '@shared/types/youtube.types';
+import type {YouTubeChannelId} from '@shared/types/youtube.types';
 
-/**
- * Strongly-typed type for a {@link FeedSource}'s unique identifier. Prefer this over plain strings.
- */
-export type FeedSourceId = string & {readonly __brand: 'FeedSourceIdBrand'};
-
-/**
- * Zod schema for a {@link FeedSourceId}.
- */
-export const FeedSourceIdSchema = z.string().uuid();
-
-export enum FeedSourceType {
-  /** RSS feeds. */
-  RSS = 'RSS',
-  /** YouTube channels. */
-  YouTubeChannel = 'YOUTUBE_CHANNEL',
-  /** Dummy feeds that automatically generate items at a fixed interval. */
-  Interval = 'INTERVAL',
+interface BaseFeedSource {
+  readonly feedSourceType: FeedSourceType;
 }
 
-interface BaseFeedSource extends BaseStoreItem {
-  readonly type: FeedSourceType;
-  readonly feedSourceId: FeedSourceId;
+export interface RssFeedSource extends BaseFeedSource {
+  readonly feedSourceType: FeedSourceType.RSS;
+  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
   readonly url: string;
   readonly title: string;
 }
 
-export interface RssFeedSource extends BaseFeedSource {
-  readonly type: FeedSourceType.RSS;
-}
-
 export interface YouTubeChannelFeedSource extends BaseFeedSource {
-  readonly type: FeedSourceType.YouTubeChannel;
+  readonly feedSourceType: FeedSourceType.YouTubeChannel;
+  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+  readonly channelId: YouTubeChannelId;
 }
 
 export interface IntervalFeedSource extends BaseFeedSource {
-  readonly type: FeedSourceType.Interval;
-  // The interval in seconds at which the dummy feed source will generate items.
-  readonly intervalSeconds: number;
+  readonly feedSourceType: FeedSourceType.Interval;
+  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
 }
 
-/**
- * A generator of {@link FeedItem}s over time.
- *
- * Use the {@link UserFeedSubscription} object to manage user subscriptions to a {@link FeedSource}.
- * A feed source is created the first time an account subscribes to a unique feed URL.
- */
-export type FeedSource = RssFeedSource | YouTubeChannelFeedSource | IntervalFeedSource;
+export interface PwaFeedSource extends BaseFeedSource {
+  readonly feedSourceType: FeedSourceType.PWA;
+}
+
+export interface ExtensionFeedSource extends BaseFeedSource {
+  readonly feedSourceType: FeedSourceType.Extension;
+}
+
+export interface PocketExportFeedSource extends BaseFeedSource {
+  readonly feedSourceType: FeedSourceType.PocketExport;
+}
+
+export type FeedSource =
+  | RssFeedSource
+  | YouTubeChannelFeedSource
+  | IntervalFeedSource
+  | PwaFeedSource
+  | ExtensionFeedSource
+  | PocketExportFeedSource;
 
 const BaseFeedSourceSchema = z.object({
-  type: z.nativeEnum(FeedSourceType),
-  feedSourceId: FeedSourceIdSchema,
-  url: z.string().url(),
-  title: z.string(),
-  createdTime: FirestoreTimestampSchema.or(z.date()),
-  lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
+  feedSourceType: z.nativeEnum(FeedSourceType),
 });
 
 export const RssFeedSourceSchema = BaseFeedSourceSchema.extend({
-  type: z.literal(FeedSourceType.RSS),
+  feedSourceType: z.literal(FeedSourceType.RSS),
+  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
+  url: z.string().url(),
+  title: z.string(),
 });
 
 export const YouTubeChannelFeedSourceSchema = BaseFeedSourceSchema.extend({
-  type: z.literal(FeedSourceType.YouTubeChannel),
+  feedSourceType: z.literal(FeedSourceType.YouTubeChannel),
+  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
+  channelId: YouTubeChannelIdSchema,
 });
 
 export const IntervalFeedSourceSchema = BaseFeedSourceSchema.extend({
-  type: z.literal(FeedSourceType.Interval),
-  intervalSeconds: z.number().min(1),
+  feedSourceType: z.literal(FeedSourceType.Interval),
+  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
 });
 
-export type RssFeedSourceFromStorage = z.infer<typeof RssFeedSourceSchema>;
-export type YouTubeChannelFeedSourceFromStorage = z.infer<typeof YouTubeChannelFeedSourceSchema>;
-export type IntervalFeedSourceFromStorage = z.infer<typeof IntervalFeedSourceSchema>;
+const PwaFeedSourceSchema = BaseFeedSourceSchema.extend({
+  feedSourceType: z.literal(FeedSourceType.PWA),
+});
 
-/**
- * Zod schema for a {@link FeedSource} persisted to Firestore.
- */
-export const FeedSourceFromStorageSchema = z.union([
+const ExtensionFeedSourceSchema = BaseFeedSourceSchema.extend({
+  feedSourceType: z.literal(FeedSourceType.Extension),
+});
+
+const PocketExportFeedSourceSchema = BaseFeedSourceSchema.extend({
+  feedSourceType: z.literal(FeedSourceType.PocketExport),
+});
+
+export const FeedSourceSchema = z.discriminatedUnion('feedSourceType', [
   RssFeedSourceSchema,
   YouTubeChannelFeedSourceSchema,
   IntervalFeedSourceSchema,
+  PwaFeedSourceSchema,
+  ExtensionFeedSourceSchema,
+  PocketExportFeedSourceSchema,
 ]);
-
-/**
- * Type for a {@link FeedSource} persisted to Firestore.
- */
-export type FeedSourceFromStorage =
-  | RssFeedSourceFromStorage
-  | YouTubeChannelFeedSourceFromStorage
-  | IntervalFeedSourceFromStorage;
