@@ -107,21 +107,6 @@ export type PersistedFeedSource = Exclude<
   PWAFeedSource | ExtensionFeedSource | PocketExportFeedSource
 >;
 
-type MiniRssFeedSource = Pick<RssFeedSource, 'type' | 'feedSourceId' | 'url' | 'title'>;
-type MiniYouTubeChannelFeedSource = Pick<
-  YouTubeChannelFeedSource,
-  'type' | 'feedSourceId' | 'channelId'
->;
-type MiniIntervalFeedSource = Pick<IntervalFeedSource, 'type' | 'feedSourceId'>;
-
-export type MiniFeedSource =
-  | PWAFeedSource
-  | ExtensionFeedSource
-  | PocketExportFeedSource
-  | MiniRssFeedSource
-  | MiniYouTubeChannelFeedSource
-  | MiniIntervalFeedSource;
-
 const BaseInMemoryFeedSourceSchema = z.object({
   type: z.nativeEnum(FeedSourceType),
 });
@@ -190,3 +175,104 @@ export type FeedSourceFromStorage =
   | PWAFeedSourceFromStorage
   | ExtensionFeedSourceFromStorage
   | PocketExportFeedSourceFromStorage;
+
+//////////////////////
+//  MiniFeedSource  //
+//////////////////////
+export type MiniRssFeedSource = Pick<RssFeedSource, 'type' | 'feedSourceId' | 'url' | 'title'>;
+type MiniYouTubeChannelFeedSource = Pick<
+  YouTubeChannelFeedSource,
+  'type' | 'feedSourceId' | 'channelId'
+>;
+type MiniIntervalFeedSource = Pick<IntervalFeedSource, 'type' | 'feedSourceId'>;
+
+/**
+ * TODO: Add good description of this abstraction and why it is required.
+ */
+export type MiniFeedSource =
+  | PWAFeedSource
+  | ExtensionFeedSource
+  | PocketExportFeedSource
+  | MiniRssFeedSource
+  | MiniYouTubeChannelFeedSource
+  | MiniIntervalFeedSource;
+
+/**
+ * A subset of {@link MiniFeedSource} which must be persisted to Firestore. Unlike in-memory feed
+ * sources, a persisted feed source has persisted state, including a unique ID. It also requires
+ * helpers for parsing and storage.
+ */
+export type PersistedMiniFeedSource = Exclude<
+  MiniFeedSource,
+  // These feed sources are constants which do not need to be persisted to Firestore beyond an ID.
+  PWAFeedSource | ExtensionFeedSource | PocketExportFeedSource
+>;
+
+const BaseInMemoryMiniFeedSourceSchema = z.object({
+  type: z.nativeEnum(FeedSourceType),
+});
+
+const BasePersistedMiniFeedSourceSchema = z.object({
+  type: z.nativeEnum(FeedSourceType),
+  feedSourceId: FeedSourceIdSchema,
+  createdTime: FirestoreTimestampSchema.or(z.date()),
+  lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
+});
+
+export const RssMiniFeedSourceSchema = BasePersistedMiniFeedSourceSchema.extend({
+  type: z.literal(FeedSourceType.RSS),
+  url: z.string().url(),
+  title: z.string(),
+});
+
+export const YouTubeChannelMiniFeedSourceSchema = BasePersistedMiniFeedSourceSchema.extend({
+  type: z.literal(FeedSourceType.YouTubeChannel),
+  channelId: YouTubeChannelIdSchema,
+});
+
+export const IntervalMiniFeedSourceSchema = BasePersistedMiniFeedSourceSchema.extend({
+  type: z.literal(FeedSourceType.Interval),
+  intervalSeconds: z.number().min(1),
+});
+
+export const PWAMiniFeedSourceSchema = BaseInMemoryMiniFeedSourceSchema.extend({
+  type: z.literal(FeedSourceType.PWA),
+});
+
+export const ExtensionMiniFeedSourceSchema = BaseInMemoryMiniFeedSourceSchema.extend({
+  type: z.literal(FeedSourceType.Extension),
+});
+
+export const PocketExportMiniFeedSourceSchema = BaseInMemoryMiniFeedSourceSchema.extend({
+  type: z.literal(FeedSourceType.PocketExport),
+});
+
+export type RssMiniFeedSourceFromStorage = z.infer<typeof RssMiniFeedSourceSchema>;
+export type YouTubeChannelMiniFeedSourceFromStorage = z.infer<
+  typeof YouTubeChannelMiniFeedSourceSchema
+>;
+export type IntervalMiniFeedSourceFromStorage = z.infer<typeof IntervalMiniFeedSourceSchema>;
+export type PWAMiniFeedSourceFromStorage = z.infer<typeof PWAMiniFeedSourceSchema>;
+export type ExtensionMiniFeedSourceFromStorage = z.infer<typeof ExtensionMiniFeedSourceSchema>;
+export type PocketExportMiniFeedSourceFromStorage = z.infer<
+  typeof PocketExportMiniFeedSourceSchema
+>;
+
+/** Zod schema for a {@link MiniFeedSource} persisted to Firestore. */
+export const MiniFeedSourceFromStorageSchema = z.union([
+  RssMiniFeedSourceSchema,
+  YouTubeChannelMiniFeedSourceSchema,
+  IntervalMiniFeedSourceSchema,
+  PWAMiniFeedSourceSchema,
+  ExtensionMiniFeedSourceSchema,
+  PocketExportMiniFeedSourceSchema,
+]);
+
+/** Type for a {@link MiniFeedSource} persisted to Firestore. */
+export type MiniFeedSourceFromStorage =
+  | RssMiniFeedSourceFromStorage
+  | YouTubeChannelMiniFeedSourceFromStorage
+  | IntervalMiniFeedSourceFromStorage
+  | PWAMiniFeedSourceFromStorage
+  | ExtensionMiniFeedSourceFromStorage
+  | PocketExportMiniFeedSourceFromStorage;

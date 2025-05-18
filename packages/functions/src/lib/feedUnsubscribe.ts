@@ -1,8 +1,9 @@
-import {prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 
 import {parseUserFeedSubscription} from '@shared/parsers/userFeedSubscriptions.parser';
 
+import {FeedSourceType} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
@@ -31,17 +32,23 @@ export async function handleFeedUnsubscribeHelper(args: {
   const before = beforeResult.value;
   const after = afterResult.value;
 
-  // If the subscription was not marked as inactive, do nothing.
+  // Only do anything if the subscription was just marked as inactive.
   const becameInactive = before.isActive && !after.isActive;
-  if (!becameInactive) {
-    return makeSuccessResult(undefined);
-  }
+  if (!becameInactive) return makeSuccessResult(undefined);
 
-  // Unsubscribe the account from the feed.
-  const unsubscribeResult = await rssFeedService.unsubscribeAccountFromUrl({
-    feedSourceId: after.feedSource,
-    url: after.url,
-    accountId: after.accountId,
-  });
-  return prefixResultIfError(unsubscribeResult, 'Error unsubscribing account from feed');
+  // Run unsubscribing behavior for the feed source.
+  const afterFeedSource = after.miniFeedSource;
+  switch (afterFeedSource.type) {
+    case FeedSourceType.RSS:
+      return await rssFeedService.unsubscribeFromRssFeed(afterFeedSource);
+    case FeedSourceType.YouTubeChannel:
+    case FeedSourceType.Interval:
+    case FeedSourceType.PWA:
+    case FeedSourceType.Extension:
+    case FeedSourceType.PocketExport:
+      // No server-side unsubscribe behavior - setting `isActive` to `false` is enough.
+      return makeSuccessResult(undefined);
+    default:
+      assertNever(afterFeedSource);
+  }
 }

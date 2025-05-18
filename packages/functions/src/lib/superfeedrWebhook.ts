@@ -78,7 +78,7 @@ export async function handleSuperfeedrWebhookHelper(args: {
 
   // Fetch all users subscribed to this feed source.
   const fetchSubscriptionsResult =
-    await userFeedSubscriptionsService.fetchForFeedSource(feedSource);
+    await userFeedSubscriptionsService.fetchForFeedSourceById(feedSource);
   if (!fetchSubscriptionsResult.success) {
     respondWithError(fetchSubscriptionsResult.error, 'Error fetching subscribed accounts', {
       feedSourceId: feedSource.feedSourceId,

@@ -43,7 +43,7 @@ export async function handleSubscribeAccountToRssFeed(args: {
     throw new HttpsError('internal', subscribeToUrlResult.error.message);
   }
 
-  const {feedSource: feedSourceId, userFeedSubscriptionId} = subscribeToUrlResult.value;
+  const {miniFeedSource: feedSourceId, userFeedSubscriptionId} = subscribeToUrlResult.value;
 
   innerLog('Successfully subscribed account to feed source', {
     feedSourceId,

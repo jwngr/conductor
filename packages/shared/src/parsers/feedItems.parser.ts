@@ -174,7 +174,7 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
         storageBaseFeedItem: parsedBaseFeedItemResult.value,
         feedItemId: parsedIdResult.value,
         accountId: parsedAccountIdResult.value,
-        feedSource: parsedSourceResult.value,
+        miniFeedSource: parsedSourceResult.value,
         importState: parsedImportStateResult.value,
       });
     case FeedItemType.Xkcd:

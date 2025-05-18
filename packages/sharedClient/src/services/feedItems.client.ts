@@ -30,7 +30,6 @@ import type {AccountId, AuthStateChangedUnsubscribe} from '@shared/types/account
 import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {AsyncState} from '@shared/types/asyncState.types';
 import type {FeedItem, FeedItemId, XkcdFeedItem} from '@shared/types/feedItems.types';
-import type {FeedSource} from '@shared/types/feedSources.types';
 import {FeedSourceType} from '@shared/types/feedSources.types';
 import {fromQueryFilterOp} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/results.types';
@@ -104,7 +103,7 @@ function filterFeedItemsByDeliverySchedules(args: {
   const {feedItems, userFeedSubscriptions} = args;
 
   return feedItems.filter((feedItem) => {
-    switch (feedItem.feedSource.type) {
+    switch (feedItem.miniFeedSubscription.feedSource.type) {
       case FeedSourceType.PWA:
       case FeedSourceType.Extension:
       case FeedSourceType.PocketExport:
@@ -115,7 +114,7 @@ function filterFeedItemsByDeliverySchedules(args: {
       case FeedSourceType.RSS: {
         // Some sources have delivery schedules which determine when they are shown.
         const matchingDeliverySchedule = findDeliveryScheduleForFeedSubscription({
-          userFeedSubscriptionId: feedItem.userFeedSubscriptionId,
+          userFeedSubscriptionId: feedItem.miniFeedSubscription.userFeedSubscriptionId,
           userFeedSubscriptions,
         });
 
@@ -125,7 +124,7 @@ function filterFeedItemsByDeliverySchedules(args: {
         });
       }
       default:
-        assertNever(feedItem.feedSource);
+        assertNever(feedItem.miniFeedSubscription.feedSource);
     }
   });
 }

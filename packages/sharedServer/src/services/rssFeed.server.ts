@@ -4,7 +4,7 @@ import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.sha
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import type {FeedSourceId} from '@shared/types/feedSources.types';
+import type {FeedSourceId, MiniRssFeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {RssFeedProvider} from '@shared/types/rss.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
@@ -75,17 +75,12 @@ export class ServerRssFeedService {
   }
 
   /**
-   * Unsubscribes from a feed URL in the feed provider.
+   * Unsubscribes from an RSS feed by URL in the feed provider.
    */
-  async unsubscribeAccountFromUrl(args: {
-    readonly feedSourceId: FeedSourceId;
-    readonly url: string;
-    readonly accountId: AccountId;
-  }): AsyncResult<void> {
-    const {url, accountId, feedSourceId} = args;
-
-    const otherSubscriptionsResult =
-      await this.userFeedSubscriptionsService.fetchForFeedSource(feedSourceId);
+  async unsubscribeFromRssFeed(feedSource: MiniRssFeedSource): AsyncResult<void> {
+    const otherSubscriptionsResult = await this.userFeedSubscriptionsService.fetchForFeedSource(
+      feedSource.feedSourceId
+    );
 
     if (!otherSubscriptionsResult.success) {
       return prefixErrorResult(
@@ -101,11 +96,10 @@ export class ServerRssFeedService {
     }
 
     logger.log('[UNSUBSCRIBE] No active subscriptions found, unsubscribing account from feed', {
-      feedSourceId,
-      accountId,
-      url,
+      feedSourceId: feedSource.feedSourceId,
+      url: feedSource.url,
     });
 
-    return await this.rssFeedProvider.unsubscribeFromUrl(url);
+    return await this.rssFeedProvider.unsubscribeFromUrl(feedSource.url);
   }
 }

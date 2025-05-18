@@ -31,7 +31,7 @@ export function makeUserFeedSubscription(newItemArgs: {
   const userFeedSubscription: UserFeedSubscription = {
     userFeedSubscriptionId,
     accountId,
-    feedSource,
+    miniFeedSource: feedSource,
     isActive: true,
     deliverySchedule: IMMEDIATE_DELIVERY_SCHEDULE,
     // TODO(timestamps): Use server timestamps instead.

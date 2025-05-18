@@ -4,13 +4,13 @@ import {makeUuid} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import {AccountIdSchema} from '@shared/types/accounts.types';
-import type {MiniFeedSource} from '@shared/types/feedSources.types';
 import {FeedSourceFromStorageSchema} from '@shared/types/feedSources.types';
 import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import type {IconName} from '@shared/types/icons.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import type {TagId} from '@shared/types/tags.types';
 import type {MiniUserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
+import {MiniUserFeedSubscriptionFromStorageSchema} from '@shared/types/userFeedSubscriptions.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 
 /**
@@ -111,8 +111,7 @@ interface BaseFeedItem extends BaseStoreItem {
   readonly type: FeedItemType;
   /** ID of the account that owns the feed item. */
   readonly accountId: AccountId;
-  /** Source of the feed item. */
-  readonly feedSource: MiniFeedSource;
+  /** TODO: Better name + comment: Source of the feed item. */
   readonly miniFeedSubscription: MiniUserFeedSubscription;
   /** State of the feed item's import process. */
   readonly importState: FeedItemImportState;
@@ -192,7 +191,7 @@ export const BaseFeedItemFromStorageSchema = z.object({
   feedItemId: FeedItemIdSchema,
   accountId: AccountIdSchema,
   feedSource: FeedSourceFromStorageSchema,
-  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
+  miniFeedSubscription: MiniUserFeedSubscriptionFromStorageSchema,
   importState: FeedItemImportStateFromStorageSchema,
   triageStatus: z.nativeEnum(TriageStatus),
   url: z.string().url(),

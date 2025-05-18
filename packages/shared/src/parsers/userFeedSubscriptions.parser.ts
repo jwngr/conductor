@@ -91,7 +91,7 @@ export function toStorageUserFeedSubscription(
 ): UserFeedSubscriptionFromStorage {
   return omitUndefined({
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
-    feedSourceId: userFeedSubscription.feedSource,
+    feedSourceId: userFeedSubscription.miniFeedSource,
     accountId: userFeedSubscription.accountId,
     url: userFeedSubscription.url,
     title: userFeedSubscription.title,

@@ -50,9 +50,9 @@ export class SharedFeedItemHelpers {
 
   public static makeFeedItem(
     miniFeedSubscription: MiniUserFeedSubscription,
-    args: Pick<FeedItem, 'accountId' | 'url' | 'feedSource' | 'title' | 'description'>
+    args: Pick<FeedItem, 'accountId' | 'url' | 'title' | 'description'>
   ): Result<FeedItem> {
-    const {accountId, url, feedSource, title, description} = args;
+    const {accountId, url, title, description} = args;
 
     // Common fields across all feed item types.
     const feedItemId = makeFeedItemId();
@@ -77,7 +77,6 @@ export class SharedFeedItemHelpers {
           url,
           accountId,
           feedItemId,
-          feedSource,
           miniFeedSubscription,
           importState,
           title,
@@ -97,7 +96,6 @@ export class SharedFeedItemHelpers {
           url,
           accountId,
           feedItemId,
-          feedSource,
           miniFeedSubscription,
           importState,
           title,
