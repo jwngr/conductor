@@ -4,11 +4,12 @@ import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {Result} from '@shared/types/results.types';
 import type {YouTubeChannelId, YouTubeHandle, YouTubeVideoId} from '@shared/types/youtube.types';
+
 import {
   YouTubeChannelIdSchema,
   YouTubeHandleSchema,
   YouTubeVideoIdSchema,
-} from '@shared/types/youtube.types';
+} from '@shared/schemas/youtube.schema';
 
 /**
  * Parses a {@link YouTubeChannelId} from a plain string. Returns an `ErrorResult` if the string is

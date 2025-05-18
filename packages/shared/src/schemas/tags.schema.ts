@@ -1,7 +1,8 @@
 import {z} from 'zod';
 
-import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 import {SystemTagId} from '@shared/types/tags.types';
+
+import {FirestoreTimestampSchema} from '@shared/schemas/firebase.schema';
 
 /** Zod schema for a {@link UserTagId}. */
 export const UserTagIdSchema = z.string().uuid();

@@ -1,11 +1,11 @@
 import {z} from 'zod';
 
 import {FeedSourceType, PERSISTED_FEED_SOURCE_TYPES} from '@shared/types/feedSourceTypes.types';
-import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
-import {YouTubeChannelIdSchema} from '@shared/types/youtube.types';
 
 import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 import {DeliveryScheduleFromStorageSchema} from '@shared/schemas/deliverySchedules.schema';
+import {FirestoreTimestampSchema} from '@shared/schemas/firebase.schema';
+import {YouTubeChannelIdSchema} from '@shared/schemas/youtube.schema';
 
 /**
  * Zod schema for a {@link UserFeedSubscriptionId}.
