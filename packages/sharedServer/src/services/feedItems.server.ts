@@ -7,7 +7,7 @@ import {assertNever, omitUndefined} from '@shared/lib/utils.shared';
 import type {AccountId} from '@shared/types/accounts.types';
 import {FeedItemType} from '@shared/types/feedItems.types';
 import type {FeedItem, FeedItemFromStorage, FeedItemId} from '@shared/types/feedItems.types';
-import type {FeedSource, PersistedFeedSource} from '@shared/types/feedSources.types';
+import type {FeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult, Result} from '@shared/types/results.types';
 
 import {eventLogService} from '@sharedServer/services/eventLog.server';

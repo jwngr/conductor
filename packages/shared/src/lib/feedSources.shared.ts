@@ -5,7 +5,6 @@ import {isYouTubeChannelUrl} from '@shared/lib/youtube.shared';
 import type {
   FeedSourceId,
   IntervalFeedSource,
-  PersistedFeedSource,
   RssFeedSource,
   YouTubeChannelFeedSource,
 } from '@shared/types/feedSources.types';

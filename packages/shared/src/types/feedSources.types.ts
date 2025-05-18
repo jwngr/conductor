@@ -85,7 +85,7 @@ export interface IntervalFeedSource extends BasePersistedFeedSource {
 /**
  * A generator of {@link FeedItem}s over time.
  *
- * Use the {@link UserFeedSubscription} object to manage user subscriptions to a {@link PersistedFeedSource}.
+ * Use the {@link UserFeedSubscription} object to manage user subscriptions to a {@link FeedSource}.
  * A feed source is created the first time an account subscribes to a unique feed URL.
  */
 export type FeedSource =
@@ -97,8 +97,9 @@ export type FeedSource =
   | IntervalFeedSource;
 
 /**
- * A subset of {@link PersistedFeedSource} with state which must be persisted to Firestore. Unlike in-memory
- * feed sources, a persisted feed source has a unique ID and helpers for parsing and storage.
+ * A subset of {@link FeedSource} which must be persisted to Firestore. Unlike in-memory feed
+ * sources, a persisted feed source has persisted state, including a unique ID. It also requires
+ * helpers for parsing and storage.
  */
 export type PersistedFeedSource = Exclude<
   FeedSource,
@@ -168,7 +169,7 @@ export type ExtensionFeedSourceFromStorage = z.infer<typeof ExtensionFeedSourceS
 export type PocketExportFeedSourceFromStorage = z.infer<typeof PocketExportFeedSourceSchema>;
 
 /**
- * Zod schema for a {@link PersistedFeedSource} persisted to Firestore.
+ * Zod schema for a {@link FeedSource} persisted to Firestore.
  */
 export const FeedSourceFromStorageSchema = z.union([
   RssFeedSourceSchema,
@@ -180,7 +181,7 @@ export const FeedSourceFromStorageSchema = z.union([
 ]);
 
 /**
- * Type for a {@link PersistedFeedSource} persisted to Firestore.
+ * Type for a {@link FeedSource} persisted to Firestore.
  */
 export type FeedSourceFromStorage =
   | RssFeedSourceFromStorage

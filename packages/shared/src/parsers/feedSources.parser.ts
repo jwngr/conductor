@@ -5,11 +5,11 @@ import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {parseYouTubeChannelId} from '@shared/parsers/youtube.parser';
 
 import type {
+  FeedSource,
   FeedSourceFromStorage,
   FeedSourceId,
   IntervalFeedSource,
   IntervalFeedSourceFromStorage,
-  PersistedFeedSource,
   RssFeedSource,
   RssFeedSourceFromStorage,
   YouTubeChannelFeedSource,
@@ -41,10 +41,10 @@ export function parseFeedSourceId(maybeFeedSourceId: string): Result<FeedSourceI
 }
 
 /**
- * Parses a {@link PersistedFeedSource} from an unknown value. Returns an `ErrorResult` if the value is not
+ * Parses a {@link FeedSource} from an unknown value. Returns an `ErrorResult` if the value is not
  * valid.
  */
-export function parseFeedSource(maybeFeedSource: unknown): Result<PersistedFeedSource> {
+export function parseFeedSource(maybeFeedSource: unknown): Result<FeedSource> {
   const parsedFeedSourceResult = parseZodResult(FeedSourceFromStorageSchema, maybeFeedSource);
   if (!parsedFeedSourceResult.success) {
     return prefixErrorResult(parsedFeedSourceResult, 'Invalid feed source');
@@ -127,10 +127,10 @@ function parseIntervalFeedSource(maybeFeedSource: unknown): Result<IntervalFeedS
 }
 
 /**
- * Converts a {@link PersistedFeedSource} to a {@link FeedSourceFromStorage} object that can be persisted to
+ * Converts a {@link FeedSource} to a {@link FeedSourceFromStorage} object that can be persisted to
  * Firestore.
  */
-export function toStorageFeedSource(feedSource: PersistedFeedSource): FeedSourceFromStorage {
+export function toStorageFeedSource(feedSource: FeedSource): FeedSourceFromStorage {
   switch (feedSource.type) {
     case FeedSourceType.Interval:
       return toStorageIntervalFeedSource(feedSource);
