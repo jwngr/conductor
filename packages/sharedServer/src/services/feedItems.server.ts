@@ -1,3 +1,5 @@
+import type {FeedItemFromStorage} from '@conductor/shared/src/schemas/feedItems.schema';
+
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
@@ -8,8 +10,6 @@ import type {AccountId} from '@shared/types/accounts.types';
 import {FeedItemType} from '@shared/types/feedItems.types';
 import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
 import type {AsyncResult, Result} from '@shared/types/results.types';
-
-import type {FeedItemFromStorage} from '@shared/schemas/feedItem.schema';
 
 import {eventLogService} from '@sharedServer/services/eventLog.server';
 import {storage} from '@sharedServer/services/firebase.server';

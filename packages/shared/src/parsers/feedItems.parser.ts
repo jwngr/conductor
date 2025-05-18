@@ -31,7 +31,7 @@ import type {
   FeedItemFromStorage,
   FeedItemImportStateFromStorage,
   XkcdFeedItemFromStorage,
-} from '@shared/schemas/feedItem.schema';
+} from '@shared/schemas/feedItems.schema';
 import {
   BaseFeedItemFromStorageSchema,
   CompletedFeedItemImportStateSchema,
@@ -39,7 +39,7 @@ import {
   FeedItemIdSchema,
   ProcessingFeedItemImportStateSchema,
   XkcdFeedItemFromStorageSchema,
-} from '@shared/schemas/feedItem.schema';
+} from '@shared/schemas/feedItems.schema';
 
 /**
  * Parses a {@link FeedItemId} from a plain string. Returns an `ErrorResult` if the string is not

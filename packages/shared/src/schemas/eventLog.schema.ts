@@ -7,7 +7,7 @@ import {UserFeedSubscriptionIdSchema} from '@shared/types/userFeedSubscriptions.
 
 import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 import {ActorSchema} from '@shared/schemas/actors.schema';
-import {FeedItemIdSchema} from '@shared/schemas/feedItem.schema';
+import {FeedItemIdSchema} from '@shared/schemas/feedItems.schema';
 
 /** Zod schema for an {@link EventId}. */
 // TODO: Consider adding `brand()` and defining `EventId` based on this schema.

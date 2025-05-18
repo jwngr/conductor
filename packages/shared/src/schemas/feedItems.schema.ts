@@ -1,10 +1,10 @@
 import {z} from 'zod';
 
 import {FeedItemImportStatus, FeedItemType, TriageStatus} from '@shared/types/feedItems.types';
-import {FeedSourceSchema} from '@shared/types/feedSources.types';
 import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
 
 import {AccountIdSchema} from '@shared/schemas/accounts.schema';
+import {FeedSourceSchema} from '@shared/schemas/feedSources.schema';
 
 /**
  * Zod schema for a {@link FeedItemId}.
