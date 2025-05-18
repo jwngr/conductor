@@ -1,4 +1,4 @@
-import {FeedItem} from '@shared/types/feedItems.types';
+import type {FeedItem} from '@shared/types/feedItems.types';
 import type {QueryFilterOp, SortDirection} from '@shared/types/query.types';
 
 export enum ViewType {
