@@ -1,6 +1,4 @@
-import {z} from 'zod';
-
-import {RendererType} from '@shared/types/renderers.types';
+import type {RendererType} from '@shared/types/renderers.types';
 
 export enum StoriesSidebarSectionId {
   AtomicComponents = 'ATOMIC_COMPONENTS',
@@ -56,12 +54,3 @@ export type StoriesSidebarItem =
   | AtomicComponentSidebarItem
   | DesignSystemSidebarItem
   | RendererSidebarItem;
-
-/**
- * Zod schema for a {@link StoriesSidebarItemId}.
- */
-export const StoriesSidebarItemIdSchema = z.union([
-  z.nativeEnum(AtomicComponentType),
-  z.nativeEnum(DesignSystemComponentType),
-  z.nativeEnum(RendererType),
-]);
