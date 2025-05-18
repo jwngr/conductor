@@ -1,8 +1,9 @@
 import {z} from 'zod';
 
 import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
-import {UserFeedSubscriptionIdSchema} from '@shared/types/userFeedSubscriptions.types';
 import {YouTubeChannelIdSchema} from '@shared/types/youtube.types';
+
+import {UserFeedSubscriptionIdSchema} from '@shared/schemas/userFeedSubscriptions.schema';
 
 const BaseFeedSourceSchema = z.object({
   feedSourceType: z.nativeEnum(FeedSourceType),

@@ -12,21 +12,22 @@ import {parseYouTubeChannelId} from '@shared/parsers/youtube.parser';
 
 import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import type {Result} from '@shared/types/results.types';
+import type {
+  IntervalUserFeedSubscription,
+  RssUserFeedSubscription,
+  UserFeedSubscription,
+  UserFeedSubscriptionId,
+  YouTubeChannelUserFeedSubscription,
+} from '@shared/types/userFeedSubscriptions.types';
+
 import {
   IntervalUserFeedSubscriptionFromStorageSchema,
   RssUserFeedSubscriptionFromStorageSchema,
   UserFeedSubscriptionFromStorageSchema,
   UserFeedSubscriptionIdSchema,
   YouTubeChannelUserFeedSubscriptionFromStorageSchema,
-} from '@shared/types/userFeedSubscriptions.types';
-import type {
-  IntervalUserFeedSubscription,
-  RssUserFeedSubscription,
-  UserFeedSubscription,
-  UserFeedSubscriptionFromStorage,
-  UserFeedSubscriptionId,
-  YouTubeChannelUserFeedSubscription,
-} from '@shared/types/userFeedSubscriptions.types';
+} from '@shared/schemas/userFeedSubscriptions.schema';
+import type {UserFeedSubscriptionFromStorage} from '@shared/schemas/userFeedSubscriptions.schema';
 
 /**
  * Parses a {@link UserFeedSubscriptionId} from a plain string. Returns an `ErrorResult` if the
