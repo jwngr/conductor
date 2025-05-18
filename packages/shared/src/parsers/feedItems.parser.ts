@@ -235,15 +235,17 @@ export function parseXkcdFeedItem(args: {
   if (!parsedXkcdFeedItemResult.success) {
     return prefixErrorResult(parsedXkcdFeedItemResult, 'Invalid feed item');
   }
-
   const storageXkcdFeedItem = parsedXkcdFeedItemResult.value;
+
+  const parsedMiniFeedSourceResult = parseMiniFeedSource(parsedXkcdFeedItemResult.value.feedSource);
+  if (!parsedMiniFeedSourceResult.success) return parsedMiniFeedSourceResult;
 
   return makeSuccessResult(
     omitUndefined({
       type: FeedItemType.Xkcd,
       xkcd: parsedXkcdFeedItemResult.value.xkcd,
       accountId,
-      feedItemSource,
+      miniFeedSubscription: parsedSourceResult.value,
       importState,
       feedItemId,
       url: storageXkcdFeedItem.url,

@@ -179,12 +179,12 @@ export type FeedSourceFromStorage =
 //////////////////////
 //  MiniFeedSource  //
 //////////////////////
-export type MiniRssFeedSource = Pick<RssFeedSource, 'type' | 'feedSourceId' | 'url' | 'title'>;
-type MiniYouTubeChannelFeedSource = Pick<
+export type RssMiniFeedSource = Pick<RssFeedSource, 'type' | 'feedSourceId' | 'url' | 'title'>;
+export type YouTubeChannelMiniFeedSource = Pick<
   YouTubeChannelFeedSource,
   'type' | 'feedSourceId' | 'channelId'
 >;
-type MiniIntervalFeedSource = Pick<IntervalFeedSource, 'type' | 'feedSourceId'>;
+export type IntervalMiniFeedSource = Pick<IntervalFeedSource, 'type' | 'feedSourceId'>;
 
 /**
  * TODO: Add good description of this abstraction and why it is required.
@@ -193,20 +193,9 @@ export type MiniFeedSource =
   | PWAFeedSource
   | ExtensionFeedSource
   | PocketExportFeedSource
-  | MiniRssFeedSource
-  | MiniYouTubeChannelFeedSource
-  | MiniIntervalFeedSource;
-
-/**
- * A subset of {@link MiniFeedSource} which must be persisted to Firestore. Unlike in-memory feed
- * sources, a persisted feed source has persisted state, including a unique ID. It also requires
- * helpers for parsing and storage.
- */
-export type PersistedMiniFeedSource = Exclude<
-  MiniFeedSource,
-  // These feed sources are constants which do not need to be persisted to Firestore beyond an ID.
-  PWAFeedSource | ExtensionFeedSource | PocketExportFeedSource
->;
+  | RssMiniFeedSource
+  | YouTubeChannelMiniFeedSource
+  | IntervalMiniFeedSource;
 
 const BaseInMemoryMiniFeedSourceSchema = z.object({
   type: z.nativeEnum(FeedSourceType),

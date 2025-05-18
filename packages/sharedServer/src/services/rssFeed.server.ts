@@ -4,7 +4,7 @@ import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.sha
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import type {FeedSourceId, MiniRssFeedSource} from '@shared/types/feedSources.types';
+import type {FeedSourceId, RssMiniFeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {RssFeedProvider} from '@shared/types/rss.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
@@ -77,7 +77,7 @@ export class ServerRssFeedService {
   /**
    * Unsubscribes from an RSS feed by URL in the feed provider.
    */
-  async unsubscribeFromRssFeed(feedSource: MiniRssFeedSource): AsyncResult<void> {
+  async unsubscribeFromRssFeed(feedSource: RssMiniFeedSource): AsyncResult<void> {
     const otherSubscriptionsResult = await this.userFeedSubscriptionsService.fetchForFeedSource(
       feedSource.feedSourceId
     );
