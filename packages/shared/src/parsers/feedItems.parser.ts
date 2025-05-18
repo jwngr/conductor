@@ -34,6 +34,7 @@ import {
   XkcdFeedItemFromStorageSchema,
 } from '@shared/types/feedItems.types';
 import type {Result} from '@shared/types/results.types';
+import type {MiniUserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
 /**
  * Parses a {@link FeedItemId} from a plain string. Returns an `ErrorResult` if the string is not
@@ -155,18 +156,16 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
   const parsedAccountIdResult = parseAccountId(parsedBaseFeedItemResult.value.accountId);
   if (!parsedAccountIdResult.success) return parsedAccountIdResult;
 
-  // const parsedSourceResult = parseFeedSource(
-  //   parsedBaseFeedItemResult.value.miniFeedSubscription.miniFeedSource
-  // );
-  // if (!parsedSourceResult.success) return parsedSourceResult;
-
   const parsedImportStateResult = parseFeedItemImportState(
     parsedBaseFeedItemResult.value.importState
   );
   if (!parsedImportStateResult.success) return parsedImportStateResult;
 
-  // const parsedMiniFeedSourceResult = parseMiniFeedSource(parsedSourceResult.value);
-  // if (!parsedMiniFeedSourceResult.success) return parsedMiniFeedSourceResult;
+  const parsedMiniFeedSubscriptionResult = parseMiniUserFeedSubscription(
+    parsedBaseFeedItemResult.value.miniFeedSubscription
+  );
+  if (!parsedMiniFeedSubscriptionResult.success) return parsedMiniFeedSubscriptionResult;
+  const parseMiniFeedSubscription = parsedMiniFeedSubscriptionResult.value;
 
   switch (parsedBaseFeedItemResult.value.type) {
     case FeedItemType.YouTube:
@@ -180,6 +179,7 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
         feedItemId: parsedIdResult.value,
         accountId: parsedAccountIdResult.value,
         importState: parsedImportStateResult.value,
+        miniFeedSubscription: parseMiniFeedSubscription,
       });
     case FeedItemType.Xkcd:
       return parseXkcdFeedItem({
@@ -187,6 +187,7 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
         feedItemId: parsedIdResult.value,
         accountId: parsedAccountIdResult.value,
         importState: parsedImportStateResult.value,
+        miniFeedSubscription: parseMiniFeedSubscription,
       });
     default:
       return makeErrorResult(
@@ -201,13 +202,10 @@ export function parseBaseFeedItem(args: {
   readonly feedItemId: FeedItemId;
   readonly accountId: AccountId;
   readonly importState: FeedItemImportState;
+  readonly miniFeedSubscription: MiniUserFeedSubscription;
 }): Result<FeedItem> {
-  const {type, storageBaseFeedItem, feedItemId, accountId, importState} = args;
-
-  const parsedMiniFeedSubscriptionResult = parseMiniUserFeedSubscription(
-    storageBaseFeedItem.miniFeedSubscription
-  );
-  if (!parsedMiniFeedSubscriptionResult.success) return parsedMiniFeedSubscriptionResult;
+  const {type, storageBaseFeedItem, feedItemId, accountId, importState, miniFeedSubscription} =
+    args;
 
   return makeSuccessResult(
     omitUndefined({
@@ -215,7 +213,7 @@ export function parseBaseFeedItem(args: {
       accountId,
       importState,
       feedItemId,
-      miniFeedSubscription: parsedMiniFeedSubscriptionResult.value,
+      miniFeedSubscription,
       url: storageBaseFeedItem.url,
       title: storageBaseFeedItem.title,
       description: storageBaseFeedItem.description,
@@ -234,8 +232,9 @@ export function parseXkcdFeedItem(args: {
   readonly feedItemId: FeedItemId;
   readonly accountId: AccountId;
   readonly importState: FeedItemImportState;
+  readonly miniFeedSubscription: MiniUserFeedSubscription;
 }): Result<FeedItem> {
-  const {maybeFeedItem, feedItemId, accountId, importState} = args;
+  const {maybeFeedItem, feedItemId, accountId, importState, miniFeedSubscription} = args;
 
   const parsedXkcdFeedItemResult = parseZodResult(XkcdFeedItemFromStorageSchema, maybeFeedItem);
   if (!parsedXkcdFeedItemResult.success) {
@@ -243,17 +242,12 @@ export function parseXkcdFeedItem(args: {
   }
   const storageXkcdFeedItem = parsedXkcdFeedItemResult.value;
 
-  const parsedMiniFeedSubscriptionResult = parseMiniUserFeedSubscription(
-    storageXkcdFeedItem.miniFeedSubscription
-  );
-  if (!parsedMiniFeedSubscriptionResult.success) return parsedMiniFeedSubscriptionResult;
-
   return makeSuccessResult(
     omitUndefined({
       type: FeedItemType.Xkcd,
       xkcd: parsedXkcdFeedItemResult.value.xkcd,
       accountId,
-      miniFeedSubscription: parsedMiniFeedSubscriptionResult.value,
+      miniFeedSubscription,
       importState,
       feedItemId,
       url: storageXkcdFeedItem.url,
