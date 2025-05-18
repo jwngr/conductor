@@ -20,9 +20,12 @@ import {
 import {FeedSourceType} from '@shared/types/feedSources.types';
 import type {Result} from '@shared/types/results.types';
 import {
+  EXTENSION_MINI_USER_FEED_SUBSCRIPTION,
   IntervalMiniUserFeedSubscriptionSchema,
   IntervalUserFeedSubscriptionFromStorageSchema,
   MiniUserFeedSubscriptionFromStorageSchema,
+  POCKET_EXPORT_MINI_USER_FEED_SUBSCRIPTION,
+  PWA_MINI_USER_FEED_SUBSCRIPTION,
   RssMiniUserFeedSubscriptionSchema,
   RssUserFeedSubscriptionFromStorageSchema,
   UserFeedSubscriptionFromStorageSchema,
@@ -299,6 +302,12 @@ export function parseMiniUserFeedSubscription(
       return parseYouTubeChannelMiniUserFeedSubscription(parsedResult.value);
     case FeedSourceType.Interval:
       return parseIntervalMiniUserFeedSubscription(parsedResult.value);
+    case FeedSourceType.Extension:
+      return makeSuccessResult(EXTENSION_MINI_USER_FEED_SUBSCRIPTION);
+    case FeedSourceType.PocketExport:
+      return makeSuccessResult(POCKET_EXPORT_MINI_USER_FEED_SUBSCRIPTION);
+    case FeedSourceType.PWA:
+      return makeSuccessResult(PWA_MINI_USER_FEED_SUBSCRIPTION);
     default:
       return makeErrorResult(new Error('Unexpected feed source type'));
   }
