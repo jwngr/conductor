@@ -13,7 +13,6 @@ import {parseYouTubeChannelId} from '@shared/parsers/youtube.parser';
 
 import {
   FeedSourceSchema,
-  FeedSourceType,
   IntervalFeedSourceSchema,
   RssFeedSourceSchema,
   YouTubeChannelFeedSourceSchema,
@@ -24,6 +23,7 @@ import type {
   RssFeedSource,
   YouTubeChannelFeedSource,
 } from '@shared/types/feedSources.types';
+import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import type {Result} from '@shared/types/results.types';
 
 /**
