@@ -7,7 +7,6 @@ import type {
   FeedSource,
   FeedSourceFromStorage,
   FeedSourceId,
-  PersistedFeedSource,
   RssFeedSource,
 } from '@shared/types/feedSources.types';
 import {FeedSourceType} from '@shared/types/feedSources.types';
