@@ -110,6 +110,10 @@ const FeedItemImporter: React.FC = () => {
         url: 'https://xkcd.com/927/',
         title: 'XKCD comic',
       })}
+      {renderImportFeedItemButton({
+        url: 'https://publicdomainreview.org/collection/chinese-fishes/',
+        title: 'Fish images',
+      })}
 
       <Input
         type="text"

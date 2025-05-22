@@ -13,6 +13,7 @@ export enum AtomicComponentType {
   Checkbox = 'CHECKBOX',
   Dialog = 'DIALOG',
   Divider = 'DIVIDER',
+  DropdownMenu = 'DROPDOWN_MENU',
   Flex = 'FLEX',
   Input = 'INPUT',
   Link = 'LINK',
