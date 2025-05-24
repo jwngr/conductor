@@ -220,7 +220,7 @@ const logErrorAndReturn = (errorResult: ErrorResult, logDetails: Record<string, 
 };
 
 // Recurring scheduled task which emits interval feed items.
-export const emitIntervalFeeds = onSchedule('*/1 * * * *', async () => {
+export const emitIntervalFeeds = onSchedule('*/5 * * * *', async () => {
   logger.log('[INTERVAL FEEDS] Checking for interval feed emissions...');
 
   const result = await handleEmitIntervalFeeds({feedItemsService, userFeedSubscriptionsService});
