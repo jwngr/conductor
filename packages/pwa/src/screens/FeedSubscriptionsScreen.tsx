@@ -226,7 +226,7 @@ const FeedSubscriptionsList: React.FC = () => {
       case AsyncStatus.Error:
         return (
           <Text as="p" className="text-error">
-            Error loading feed subscriptions
+            Error loading feed subscriptions: {userFeedSubscriptionsState.error.message}
           </Text>
         );
       case AsyncStatus.Success:
