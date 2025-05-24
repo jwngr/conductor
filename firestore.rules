@@ -21,6 +21,14 @@ service cloud.firestore {
       return isOwner(request.resource.data.accountId);
     }
 
+    function isValidFeedSourceType(maybeFeedSourceType) {
+      return maybeFeedSourceType in ['RSS', 'YOUTUBE_CHANNEL', 'INTERVAL', 'PWA', 'EXTENSION', 'POCKET_EXPORT'];
+    }
+
+    function isValidDeliveryScheduleType(maybeDeliveryScheduleType) {
+      return maybeDeliveryScheduleType in ['IMMEDIATE', 'NEVER', 'DAYS_AND_TIMES_OF_WEEK', 'EVERY_N_HOURS'];
+    }
+
     function isValidFeedItemDoc(feedItemId) {
       return request.resource.data.keys().hasAll([
         'feedItemId',
@@ -39,7 +47,7 @@ service cloud.firestore {
       request.resource.data.feedItemId == feedItemId &&
       request.resource.data.feedItemType in ['ARTICLE', 'VIDEO', 'WEBSITE', 'TWEET', 'XKCD', 'YOUTUBE'] &&
       request.resource.data.feedSource.keys().hasAll(['feedSourceType']) &&
-      request.resource.data.feedSource.feedSourceType in ['RSS', 'YOUTUBE_CHANNEL', 'INTERVAL', 'PWA', 'EXTENSION', 'POCKET_EXPORT'] &&
+      isValidFeedSourceType(request.resource.data.feedSource.feedSourceType) &&
       request.resource.data.url is string &&
       request.resource.data.title is string &&
       request.resource.data.outgoingLinks is list &&
@@ -52,16 +60,20 @@ service cloud.firestore {
     function isValidUserFeedSubscriptionDoc(userFeedSubscriptionId) {
       return request.resource.data.keys().hasAll([
         'userFeedSubscriptionId',
+        'feedSourceType',
         'accountId',
-        'url',
-        'title',
         'isActive',
+        'deliverySchedule',
         'createdTime',
         'lastUpdatedTime'
       ]) &&
       request.resource.data.userFeedSubscriptionId is string &&
       request.resource.data.userFeedSubscriptionId == userFeedSubscriptionId &&
-      request.resource.data.url is string &&
+      isValidFeedSourceType(request.resource.data.feedSourceType) &&
+      request.resource.data.accountId is string &&
+      request.resource.data.isActive is bool &&
+      request.resource.data.deliverySchedule.keys().hasAll(['scheduleType']) &&
+      isValidDeliveryScheduleType(request.resource.data.deliverySchedule.scheduleType) &&
       request.resource.data.createdTime is timestamp &&
       request.resource.data.lastUpdatedTime is timestamp;
     }
