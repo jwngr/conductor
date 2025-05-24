@@ -28,7 +28,10 @@ import {initServices} from '@src/lib/initServices';
 import {validateUrlParam, verifyAuth} from '@src/lib/middleware';
 import {handleSuperfeedrWebhookHelper} from '@src/lib/superfeedrWebhook';
 
-import {handleEmitIntervalFeeds} from '@src/reqHandlers/handleEmitIntervalFeeds';
+import {
+  handleEmitIntervalFeeds,
+  INTERVAL_FEED_EMISSION_INTERVAL_MINUTES,
+} from '@src/reqHandlers/handleEmitIntervalFeeds';
 import {handleFeedItemImport} from '@src/reqHandlers/handleFeedItemImport';
 import {handleSubscribeToRssFeed} from '@src/reqHandlers/handleSubscribeToRssFeed';
 
@@ -220,15 +223,18 @@ const logErrorAndReturn = (errorResult: ErrorResult, logDetails: Record<string, 
 };
 
 // Recurring scheduled task which emits interval feed items.
-export const emitIntervalFeeds = onSchedule('*/5 * * * *', async () => {
-  logger.log('[INTERVAL FEEDS] Checking for interval feed emissions...');
+export const emitIntervalFeeds = onSchedule(
+  `*/${INTERVAL_FEED_EMISSION_INTERVAL_MINUTES} * * * *`,
+  async () => {
+    logger.log('[INTERVAL FEEDS] Checking for interval feed emissions...');
 
-  const result = await handleEmitIntervalFeeds({feedItemsService, userFeedSubscriptionsService});
+    const result = await handleEmitIntervalFeeds({feedItemsService, userFeedSubscriptionsService});
 
-  if (!result.success) {
-    logger.error(prefixError(result.error, `[INTERVAL FEEDS] Error emitting interval feeds`));
-    return;
+    if (!result.success) {
+      logger.error(prefixError(result.error, `[INTERVAL FEEDS] Error emitting interval feeds`));
+      return;
+    }
+
+    logger.log('[INTERVAL FEEDS] Successfully emitted interval feeds');
   }
-
-  logger.log('[INTERVAL FEEDS] Successfully emitted interval feeds');
-});
+);

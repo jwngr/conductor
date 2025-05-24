@@ -1,14 +1,17 @@
 import {logger} from '@shared/services/logger.shared';
 
-import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
+import {prefixError, prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {makeIntervalFeedSource} from '@shared/lib/feedSources.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {pluralizeWithCount} from '@shared/lib/utils.shared';
 
-import type {AsyncResult} from '@shared/types/results.types';
+import type {FeedItemId} from '@shared/types/feedItems.types';
+import type {AsyncResult, ErrorResult} from '@shared/types/results.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
+
+export const INTERVAL_FEED_EMISSION_INTERVAL_MINUTES = 5;
 
 export async function handleEmitIntervalFeeds(args: {
   feedItemsService: ServerFeedItemsService;
@@ -18,6 +21,10 @@ export async function handleEmitIntervalFeeds(args: {
 
   const innerLog = (message: string, details: Record<string, unknown> = {}): void => {
     logger.log(`[INTERVAL FEEDS] ${message}`, details);
+  };
+
+  const innerLogError = (error: Error, prefix: string): void => {
+    logger.error(prefixError(error, `[INTERVAL FEEDS] ${prefix}`));
   };
 
   // Fetch all interval feed subscriptions.
@@ -36,15 +43,16 @@ export async function handleEmitIntervalFeeds(args: {
   // TODO: Use a time relative to the user's timezone.
   const now = new Date();
   const minutesSinceMidnight = now.getUTCHours() * 60 + now.getUTCMinutes();
-  const roundedMinutesSinceMidnight = Math.round(minutesSinceMidnight / 5) * 5;
 
   // Loop through each interval subscription and emit a new feed item if the time has come.
-  // TODO: Do these in parallel batches, not sequentially.
+  const feedItemEmitAsyncResults: Array<AsyncResult<FeedItemId>> = [];
   for (const currentIntervalSub of intervalSubscriptions) {
     const {intervalSeconds, accountId, userFeedSubscriptionId} = currentIntervalSub;
 
+    // Emit if the emit time is within the last time the interval was checked.
     const intervalMinutes = intervalSeconds / 60;
-    const shouldEmit = roundedMinutesSinceMidnight % intervalMinutes === 0;
+    const shouldEmit =
+      minutesSinceMidnight % intervalMinutes <= INTERVAL_FEED_EMISSION_INTERVAL_MINUTES;
 
     if (!shouldEmit) {
       innerLog('Skipping emission of interval feed item', {accountId, userFeedSubscriptionId});
@@ -53,25 +61,35 @@ export async function handleEmitIntervalFeeds(args: {
 
     innerLog('Creating interval feed item', {accountId, userFeedSubscriptionId, intervalSeconds});
 
-    const feedItemResult = await feedItemsService.createFeedItem({
-      accountId,
-      feedSource: makeIntervalFeedSource({
-        userFeedSubscription: currentIntervalSub,
-      }),
-      // TODO: Consider making `url` optional.
-      url: 'https://conductor.now/',
-      title: `Interval feed item for ${now.toISOString()}`,
-      description: '',
-    });
-
-    if (!feedItemResult.success) {
-      // TODO: Don't let one failure stop other interval feed items from being emitted.
-      return prefixErrorResult(feedItemResult, 'Error creating interval feed item');
-    }
-
-    const feedItemId = feedItemResult.value;
-    innerLog('Interval feed item emitted', {accountId, userFeedSubscriptionId, feedItemId});
+    feedItemEmitAsyncResults.push(
+      feedItemsService.createFeedItem({
+        accountId,
+        feedSource: makeIntervalFeedSource({
+          userFeedSubscription: currentIntervalSub,
+        }),
+        // TODO: Consider making `url` optional.
+        url: 'https://conductor.now/',
+        title: `Interval feed item for ${now.toISOString()}`,
+        description: '',
+      })
+    );
   }
+
+  const feedItemEmitResults = await Promise.all(feedItemEmitAsyncResults);
+
+  // Consider it a failure if any of the interval feed items fail to emit. Log all errors but only
+  // return the first error.
+  let firstErrorResult: ErrorResult | undefined;
+  for (const feedItemEmitResult of feedItemEmitResults) {
+    if (!feedItemEmitResult.success) {
+      innerLogError(feedItemEmitResult.error, 'Error creating interval feed item');
+      if (!firstErrorResult) {
+        firstErrorResult = feedItemEmitResult;
+      }
+    }
+  }
+
+  if (firstErrorResult) return firstErrorResult;
 
   return makeSuccessResult(undefined);
 }
