@@ -151,21 +151,21 @@ const FeedAdder: React.FC = () => {
 const FeedSubscriptionItem: React.FC<{
   subscription: UserFeedSubscription;
 }> = ({subscription}) => {
-  let primaryRowContent: React.ReactNode;
-  let secondaryRowContent: React.ReactNode | null;
+  let primaryRowText: string;
+  let secondaryRowText: string | null;
 
   switch (subscription.feedSourceType) {
     case FeedSourceType.RSS:
-      primaryRowContent = <Text>RSS ({subscription.title ?? subscription.url})</Text>;
-      secondaryRowContent = subscription.title ? <Text>{subscription.title}</Text> : null;
+      primaryRowText = `RSS (${subscription.title ?? subscription.url})`;
+      secondaryRowText = subscription.title ?? null;
       break;
     case FeedSourceType.YouTubeChannel:
-      primaryRowContent = <Text>YouTube</Text>;
-      secondaryRowContent = <Text>{subscription.channelId}</Text>;
+      primaryRowText = 'YouTube';
+      secondaryRowText = subscription.channelId;
       break;
     case FeedSourceType.Interval:
-      primaryRowContent = <Text>Interval</Text>;
-      secondaryRowContent = null;
+      primaryRowText = 'Interval';
+      secondaryRowText = null;
       break;
     default:
       assertNever(subscription);
@@ -175,11 +175,11 @@ const FeedSubscriptionItem: React.FC<{
     <FlexRow gap={3} padding={3} className="rounded-lg border border-gray-200">
       <FlexColumn flex={1} gap={1}>
         <Text bold className={subscription.isActive ? undefined : 'text-error'}>
-          {primaryRowContent}
+          {primaryRowText}
         </Text>
-        {secondaryRowContent ? (
+        {secondaryRowText ? (
           <Text as="p" light>
-            {secondaryRowContent}
+            {secondaryRowText}
           </Text>
         ) : null}
       </FlexColumn>
@@ -201,7 +201,7 @@ const LoadedFeedSubscriptionsListMainContent: React.FC<{
   }
 
   return (
-    <FlexColumn flex={1}>
+    <FlexColumn flex={1} align="stretch">
       {subscriptions.map((subscription) => (
         <FlexRow key={subscription.userFeedSubscriptionId}>
           <FeedSubscriptionItem subscription={subscription} />
