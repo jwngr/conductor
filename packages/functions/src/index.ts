@@ -28,6 +28,7 @@ import {initServices} from '@src/lib/initServices';
 import {validateUrlParam, verifyAuth} from '@src/lib/middleware';
 import {handleSuperfeedrWebhookHelper} from '@src/lib/superfeedrWebhook';
 
+import {handleEmitIntervalFeeds} from '@src/reqHandlers/handleEmitIntervalFeeds';
 import {handleFeedItemImport} from '@src/reqHandlers/handleFeedItemImport';
 import {handleSubscribeToRssFeed} from '@src/reqHandlers/handleSubscribeToRssFeed';
 
@@ -220,52 +221,14 @@ const logErrorAndReturn = (errorResult: ErrorResult, logDetails: Record<string, 
 
 // Recurring scheduled task which emits interval feed items.
 export const emitIntervalFeeds = onSchedule('*/1 * * * *', async () => {
-  // Fetch all interval feed subscriptions.
-  const intervalSubsResult = await userFeedSubscriptionsService.fetchAllIntervalSubscriptions();
-  if (!intervalSubsResult.success) {
-    const message = 'Error fetching interval feed subscriptions';
-    const betterError = prefixError(intervalSubsResult.error, message);
-    logger.error(betterError);
+  logger.log('[INTERVAL FEEDS] Checking for interval feed emissions...');
+
+  const result = await handleEmitIntervalFeeds({feedItemsService, userFeedSubscriptionsService});
+
+  if (!result.success) {
+    logger.error(prefixError(result.error, `[INTERVAL FEEDS] Error emitting interval feeds`));
     return;
   }
 
-  const intervalSubscriptions = intervalSubsResult.value;
-
-  logger.log('Interval feed subscriptions fetched', {intervalSubscriptions});
-
-  // TODO: Use a time relative to the user's timezone.
-  const now = new Date();
-  const minutesSinceMidnight = now.getUTCHours() * 60 + now.getUTCMinutes();
-  const roundedMinutesSinceMidnight = Math.round(minutesSinceMidnight / 5) * 5;
-
-  // Loop through each interval subscription and emit a new feed item if the time has come.
-  for (const currentIntervalSub of intervalSubscriptions) {
-    const {intervalSeconds, accountId} = currentIntervalSub;
-
-    const intervalMinutes = intervalSeconds / 60;
-    const shouldEmit = roundedMinutesSinceMidnight % intervalMinutes === 0;
-
-    if (shouldEmit) {
-      const feedItemResult = await feedItemsService.createFeedItem({
-        accountId,
-        feedSource: currentIntervalSub,
-        url: 'TODO: Update the type to make this optional?',
-        title: `Interval feed item for ${now.toISOString()}`,
-        description: '',
-      });
-
-      if (!feedItemResult.success) {
-        const betterError = prefixError(feedItemResult.error, 'Error creating interval feed item');
-        logger.error(betterError);
-        return;
-      }
-
-      const feedItemId = feedItemResult.value;
-      logger.log('Interval feed item emitted', {feedItemId});
-    } else {
-      logger.log('Skipping emission of interval feed item', {currentIntervalSub});
-    }
-  }
-
-  logger.log('Interval feed check completed');
+  logger.log('[INTERVAL FEEDS] Successfully emitted interval feeds');
 });

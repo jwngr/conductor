@@ -42,7 +42,7 @@ export function parseStorageTimestamp(firestoreDate: FirestoreTimestamp | Date):
   // Firestore timestamp created locally are initialized to null. Consider them to be now.
   if (firestoreDate === null) return new Date();
 
-  if (firestoreDate instanceof Date) return firestoreDate;
+  if (isDate(firestoreDate)) return firestoreDate;
 
   return firestoreDate.toDate();
 }
