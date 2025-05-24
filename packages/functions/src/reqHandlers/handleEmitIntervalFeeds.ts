@@ -47,16 +47,19 @@ export async function handleEmitIntervalFeeds(args: {
   // TODO: Use a time relative to the user's timezone.
   const now = new Date();
   const minutesSinceMidnight = now.getUTCHours() * 60 + now.getUTCMinutes();
+  const roundedMinutesSinceMidnight =
+    Math.floor(minutesSinceMidnight / INTERVAL_FEED_EMISSION_INTERVAL_MINUTES) *
+    INTERVAL_FEED_EMISSION_INTERVAL_MINUTES;
 
   // Loop through each interval subscription and emit a new feed item if the time has come.
   const feedItemEmitAsyncResults: Array<AsyncResult<FeedItemId>> = [];
   for (const currentIntervalSub of intervalSubscriptions) {
     const {intervalSeconds, accountId, userFeedSubscriptionId} = currentIntervalSub;
 
-    // Emit if the emit time is within the last time the interval was checked.
+    // Emit if the emit time is within the last time the interval was checked. Ensure we do not
+    // emit more than once per interval.
     const intervalMinutes = intervalSeconds / 60;
-    const shouldEmit =
-      minutesSinceMidnight % intervalMinutes <= INTERVAL_FEED_EMISSION_INTERVAL_MINUTES;
+    const shouldEmit = roundedMinutesSinceMidnight % intervalMinutes === 0;
 
     if (!shouldEmit) {
       innerLog('Skipping emission of interval feed item', {accountId, userFeedSubscriptionId});
