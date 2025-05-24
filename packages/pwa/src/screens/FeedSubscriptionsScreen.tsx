@@ -72,7 +72,7 @@ const FeedAdder: React.FC = () => {
     setPending();
 
     const subscribeResult = await userFeedSubscriptionsService.subscribeToIntervalFeed({
-      intervalSeconds: 10,
+      intervalSeconds: 60,
     });
     if (!subscribeResult.success) {
       setError(prefixError(subscribeResult.error, 'Failed to subscribe to interval feed'));
@@ -201,11 +201,12 @@ const LoadedFeedSubscriptionsListMainContent: React.FC<{
   }
 
   return (
-    <FlexColumn flex={1} align="stretch">
+    <FlexColumn flex={1}>
       {subscriptions.map((subscription) => (
-        <FlexRow key={subscription.userFeedSubscriptionId}>
-          <FeedSubscriptionItem subscription={subscription} />
-        </FlexRow>
+        <FeedSubscriptionItem
+          key={subscription.userFeedSubscriptionId}
+          subscription={subscription}
+        />
       ))}
     </FlexColumn>
   );
@@ -226,7 +227,7 @@ const FeedSubscriptionsList: React.FC = () => {
       case AsyncStatus.Error:
         return (
           <Text as="p" className="text-error">
-            Error loading feed subscriptions
+            Error loading feed subscriptions: {userFeedSubscriptionsState.error.message}
           </Text>
         );
       case AsyncStatus.Success:

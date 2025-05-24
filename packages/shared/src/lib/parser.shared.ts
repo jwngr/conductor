@@ -39,7 +39,12 @@ export function parseZodResult<T>(zodSchema: ZodSchema<T>, value: unknown): Resu
  * Converts a Firestore `Timestamp` to a normal `Date`.
  */
 export function parseStorageTimestamp(firestoreDate: FirestoreTimestamp | Date): Date {
-  return isDate(firestoreDate) ? firestoreDate : firestoreDate.toDate();
+  // Firestore timestamp created locally are initialized to null. Consider them to be now.
+  if (firestoreDate === null) return new Date();
+
+  if (isDate(firestoreDate)) return firestoreDate;
+
+  return firestoreDate.toDate();
 }
 
 /**

@@ -3,6 +3,7 @@ import {auth} from 'firebase-functions/v1';
 import {onInit} from 'firebase-functions/v2/core';
 import {onDocumentCreated, onDocumentUpdated} from 'firebase-functions/v2/firestore';
 import {onCall, onRequest} from 'firebase-functions/v2/https';
+import {onSchedule} from 'firebase-functions/v2/scheduler';
 
 import {logger} from '@shared/services/logger.shared';
 
@@ -27,6 +28,10 @@ import {initServices} from '@src/lib/initServices';
 import {validateUrlParam, verifyAuth} from '@src/lib/middleware';
 import {handleSuperfeedrWebhookHelper} from '@src/lib/superfeedrWebhook';
 
+import {
+  handleEmitIntervalFeeds,
+  INTERVAL_FEED_EMISSION_INTERVAL_MINUTES,
+} from '@src/reqHandlers/handleEmitIntervalFeeds';
 import {handleFeedItemImport} from '@src/reqHandlers/handleFeedItemImport';
 import {handleSubscribeToRssFeed} from '@src/reqHandlers/handleSubscribeToRssFeed';
 
@@ -216,3 +221,26 @@ const logErrorAndReturn = (errorResult: ErrorResult, logDetails: Record<string, 
   logger.error(errorResult.error, logDetails);
   return;
 };
+
+// Recurring scheduled task which emits interval feed items.
+export const emitIntervalFeeds = onSchedule(
+  `*/${INTERVAL_FEED_EMISSION_INTERVAL_MINUTES} * * * *`,
+  async () => {
+    logger.log('[INTERVAL FEEDS] Checking for interval feed emissions...');
+
+    const result = await handleEmitIntervalFeeds({feedItemsService, userFeedSubscriptionsService});
+
+    if (!result.success) {
+      logger.error(prefixError(result.error, `[INTERVAL FEEDS] Error emitting interval feeds`));
+      return;
+    }
+
+    const {totalCount, successCount, failureCount} = result.value;
+
+    logger.log('[INTERVAL FEEDS] Successfully emitted interval feeds', {
+      totalCount,
+      successCount,
+      failureCount,
+    });
+  }
+);
