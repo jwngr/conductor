@@ -46,10 +46,11 @@ export class ServerUserFeedSubscriptionsService {
   /**
    * Fetches all user feed subscription documents for an individual account from Firestore.
    */
-  public async fetchAllIntervalSubscriptions(): AsyncResult<IntervalUserFeedSubscription[]> {
+  public async fetchActiveIntervalSubscriptions(): AsyncResult<IntervalUserFeedSubscription[]> {
     const query = this.userFeedSubscriptionsCollectionService
       .getCollectionRef()
-      .where('feedSourceType', '==', FeedSourceType.Interval);
+      .where('feedSourceType', '==', FeedSourceType.Interval)
+      .where('isActive', '==', true);
     const queryResult = await this.userFeedSubscriptionsCollectionService.fetchQueryDocs(query);
     if (!queryResult.success) return queryResult;
     return makeSuccessResult(queryResult.value as IntervalUserFeedSubscription[]);

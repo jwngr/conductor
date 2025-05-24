@@ -21,7 +21,7 @@ export async function handleEmitIntervalFeeds(args: {
   };
 
   // Fetch all interval feed subscriptions.
-  const intervalSubsResult = await userFeedSubscriptionsService.fetchAllIntervalSubscriptions();
+  const intervalSubsResult = await userFeedSubscriptionsService.fetchActiveIntervalSubscriptions();
   if (!intervalSubsResult.success) {
     return prefixErrorResult(intervalSubsResult, 'Error fetching interval feed subscriptions');
   }
@@ -58,7 +58,8 @@ export async function handleEmitIntervalFeeds(args: {
       feedSource: makeIntervalFeedSource({
         userFeedSubscription: currentIntervalSub,
       }),
-      url: 'TODO: Update the type to make this optional?',
+      // TODO: Consider making `url` optional.
+      url: 'https://conductor.now/',
       title: `Interval feed item for ${now.toISOString()}`,
       description: '',
     });
