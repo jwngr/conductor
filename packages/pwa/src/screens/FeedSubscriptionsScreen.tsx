@@ -201,11 +201,12 @@ const LoadedFeedSubscriptionsListMainContent: React.FC<{
   }
 
   return (
-    <FlexColumn flex={1} align="stretch">
+    <FlexColumn flex={1}>
       {subscriptions.map((subscription) => (
-        <FlexRow key={subscription.userFeedSubscriptionId}>
-          <FeedSubscriptionItem subscription={subscription} />
-        </FlexRow>
+        <FeedSubscriptionItem
+          key={subscription.userFeedSubscriptionId}
+          subscription={subscription}
+        />
       ))}
     </FlexColumn>
   );
