@@ -8,11 +8,13 @@ import {z} from 'zod';
  */
 export const FirestoreTimestampSchema = z.any().refine(
   (val) => {
-    // Allow Date objects
+    // Timestamps created locally are initialized to null.
+    if (val === null) return true;
+    // Allow Date objects.
     if (val instanceof Date) return true;
-    // Allow Firestore Timestamps (which have toDate())
+    // Allow Firestore timestamps (which have toDate()).
     if (val && typeof val === 'object' && 'toDate' in val) return true;
-    // Allow server timestamps
+    // Allow server timestamps.
     if (val && typeof val === 'object' && '_methodName' in val) return true;
     return false;
   },

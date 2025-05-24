@@ -22,8 +22,9 @@ const BaseUserFeedSubscriptionFromStorageSchema = z.object({
   isActive: z.boolean(),
   deliverySchedule: DeliveryScheduleFromStorageSchema,
   unsubscribedTime: FirestoreTimestampSchema.or(z.date()).optional(),
-  createdTime: FirestoreTimestampSchema.or(z.date()),
-  lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
+  // TODO: These should not need to be nullable.
+  createdTime: FirestoreTimestampSchema.or(z.date()).or(z.null()),
+  lastUpdatedTime: FirestoreTimestampSchema.or(z.date()).or(z.null()),
 });
 
 export const RssUserFeedSubscriptionFromStorageSchema =
@@ -42,7 +43,7 @@ export const YouTubeChannelUserFeedSubscriptionFromStorageSchema =
 export const IntervalUserFeedSubscriptionFromStorageSchema =
   BaseUserFeedSubscriptionFromStorageSchema.extend({
     feedSourceType: z.literal(FeedSourceType.Interval),
-    intervalSeconds: z.number().positive().int().min(60),
+    intervalSeconds: z.number().positive().int(),
   });
 
 export const UserFeedSubscriptionFromStorageSchema = z.discriminatedUnion('feedSourceType', [
