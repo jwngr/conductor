@@ -72,7 +72,7 @@ const FeedAdder: React.FC = () => {
     setPending();
 
     const subscribeResult = await userFeedSubscriptionsService.subscribeToIntervalFeed({
-      intervalSeconds: 10,
+      intervalSeconds: 60,
     });
     if (!subscribeResult.success) {
       setError(prefixError(subscribeResult.error, 'Failed to subscribe to interval feed'));
