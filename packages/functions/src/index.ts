@@ -235,6 +235,12 @@ export const emitIntervalFeeds = onSchedule(
       return;
     }
 
-    logger.log('[INTERVAL FEEDS] Successfully emitted interval feeds');
+    const {totalCount, successCount, failureCount} = result.value;
+
+    logger.log('[INTERVAL FEEDS] Successfully emitted interval feeds', {
+      totalCount,
+      successCount,
+      failureCount,
+    });
   }
 );

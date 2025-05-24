@@ -6,7 +6,7 @@ import {makeSuccessResult} from '@shared/lib/results.shared';
 import {pluralizeWithCount} from '@shared/lib/utils.shared';
 
 import type {FeedItemId} from '@shared/types/feedItems.types';
-import type {AsyncResult, ErrorResult} from '@shared/types/results.types';
+import type {AsyncResult} from '@shared/types/results.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
@@ -16,7 +16,11 @@ export const INTERVAL_FEED_EMISSION_INTERVAL_MINUTES = 5;
 export async function handleEmitIntervalFeeds(args: {
   feedItemsService: ServerFeedItemsService;
   userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
-}): AsyncResult<void> {
+}): AsyncResult<{
+  readonly totalCount: number;
+  readonly successCount: number;
+  readonly failureCount: number;
+}> {
   const {feedItemsService, userFeedSubscriptionsService} = args;
 
   const innerLog = (message: string, details: Record<string, unknown> = {}): void => {
@@ -79,17 +83,17 @@ export async function handleEmitIntervalFeeds(args: {
 
   // Consider it a failure if any of the interval feed items fail to emit. Log all errors but only
   // return the first error.
-  let firstErrorResult: ErrorResult | undefined;
+  let failureCount = 0;
   for (const feedItemEmitResult of feedItemEmitResults) {
     if (!feedItemEmitResult.success) {
       innerLogError(feedItemEmitResult.error, 'Error creating interval feed item');
-      if (!firstErrorResult) {
-        firstErrorResult = feedItemEmitResult;
-      }
+      failureCount++;
     }
   }
 
-  if (firstErrorResult) return firstErrorResult;
-
-  return makeSuccessResult(undefined);
+  return makeSuccessResult({
+    totalCount: feedItemEmitResults.length,
+    successCount: feedItemEmitResults.length - failureCount,
+    failureCount,
+  });
 }
