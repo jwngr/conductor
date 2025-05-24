@@ -7,6 +7,7 @@ import type {AccountId} from '@shared/types/accounts.types';
 import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {
+  IntervalUserFeedSubscription,
   RssUserFeedSubscription,
   UserFeedSubscription,
   UserFeedSubscriptionId,
@@ -39,7 +40,19 @@ export class ServerUserFeedSubscriptionsService {
       .getCollectionRef()
       .where('accountId', '==', accountId);
     const queryResult = await this.userFeedSubscriptionsCollectionService.fetchQueryDocs(query);
-    return prefixResultIfError(queryResult, 'Error fetching user feed subscriptions for account');
+    return prefixResultIfError(queryResult, 'Error fetching feed subscriptions for account');
+  }
+
+  /**
+   * Fetches all user feed subscription documents for an individual account from Firestore.
+   */
+  public async fetchAllIntervalSubscriptions(): AsyncResult<IntervalUserFeedSubscription[]> {
+    const query = this.userFeedSubscriptionsCollectionService
+      .getCollectionRef()
+      .where('feedSourceType', '==', FeedSourceType.Interval);
+    const queryResult = await this.userFeedSubscriptionsCollectionService.fetchQueryDocs(query);
+    if (!queryResult.success) return queryResult;
+    return makeSuccessResult(queryResult.value as IntervalUserFeedSubscription[]);
   }
 
   public async fetchForRssFeedSourceByUrl(url: string): AsyncResult<RssUserFeedSubscription[]> {

@@ -20,10 +20,10 @@ export type UserFeedSubscriptionId = string & {readonly __brand: 'UserFeedSubscr
  * are marked as inactive. They are only deleted when an account is wiped out.
  */
 interface BaseUserFeedSubscription extends BaseStoreItem {
-  /** The type of feed source this subscription is for. */
-  readonly feedSourceType: PersistedFeedSourceType;
   /** The unique identifier for this subscription. */
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+  /** The type of feed source this subscription is for. */
+  readonly feedSourceType: PersistedFeedSourceType;
   /** The account that owns this subscription. */
   readonly accountId: AccountId;
   /** Whether this subscription is active. Inactive subscriptions do not generate new feed items. */
