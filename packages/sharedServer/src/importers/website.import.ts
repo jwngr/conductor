@@ -23,6 +23,7 @@ import type {AsyncResult} from '@shared/types/results.types';
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import type {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
 
+import {sanitizeHtml} from '@sharedServer/lib/html.server';
 import {generateHierarchicalSummary} from '@sharedServer/lib/summarization.server';
 
 export class WebsiteFeedItemImporter {
@@ -61,6 +62,12 @@ export class WebsiteFeedItemImporter {
 
     const rawHtml = fetchDataResult.value;
 
+    const sanitizedHtmlResult = sanitizeHtml(rawHtml);
+    if (!sanitizedHtmlResult.success) {
+      return prefixErrorResult(sanitizedHtmlResult, 'Error sanitizing feed item HTML');
+    }
+    const sanitizedHtml = sanitizedHtmlResult.value;
+
     const storagePath = this.feedItemService.getStoragePath({
       feedItemId,
       accountId,
@@ -68,7 +75,7 @@ export class WebsiteFeedItemImporter {
     });
     const saveHtmlResult = await this.feedItemService.writeFileToStorage({
       storagePath,
-      content: rawHtml,
+      content: sanitizedHtml,
       contentType: 'text/html',
     });
 

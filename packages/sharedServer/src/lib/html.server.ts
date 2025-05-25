@@ -3,7 +3,7 @@ import {JSDOM} from 'jsdom';
 
 import {syncTry} from '@shared/lib/errorUtils.shared';
 
-import type {Result} from '@shared/types/result.types';
+import type {Result} from '@shared/types/results.types';
 
 const jsdomWindow = new JSDOM('').window;
 const domPurify = createDOMPurify(jsdomWindow);
