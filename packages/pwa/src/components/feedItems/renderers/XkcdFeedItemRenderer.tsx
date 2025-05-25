@@ -6,7 +6,7 @@ import {assertNever} from '@shared/lib/utils.shared';
 import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {XkcdFeedItem} from '@shared/types/feedItems.types';
 
-import {useExplainXkcdMarkdown} from '@sharedClient/services/feedItems.client';
+import {useExplainXkcdMarkdown} from '@sharedClient/hooks/feedItems.hooks';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';

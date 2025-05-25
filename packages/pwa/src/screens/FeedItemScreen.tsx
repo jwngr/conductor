@@ -13,7 +13,7 @@ import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
 import {FeedItemType} from '@shared/types/feedItems.types';
 import {SystemTagId} from '@shared/types/tags.types';
 
-import {useFeedItem, useFeedItemsService} from '@sharedClient/services/feedItems.client';
+import {useFeedItem, useFeedItemsService} from '@sharedClient/hooks/feedItems.hooks';
 
 import {RegisterIndividualFeedItemDevToolbarSection} from '@src/components/devToolbar/RegisterIndividualFeedItemSection';
 import {FeedItemScreenKeyboardHandler} from '@src/components/feedItems/FeedItemScreenEscapeHandler';

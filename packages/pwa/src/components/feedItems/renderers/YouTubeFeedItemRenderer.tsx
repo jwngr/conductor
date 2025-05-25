@@ -6,7 +6,7 @@ import {assertNever} from '@shared/lib/utils.shared';
 import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {YouTubeFeedItem} from '@shared/types/feedItems.types';
 
-import {useYouTubeFeedItemTranscript} from '@sharedClient/services/feedItems.client';
+import {useYouTubeFeedItemTranscript} from '@sharedClient/hooks/feedItems.hooks';
 
 import {Text} from '@src/components/atoms/Text';
 import {FeedItemHeader, FeedItemWrapper} from '@src/components/feedItems/FeedItem';
