@@ -4,7 +4,6 @@ import type {IncomingHttpHeaders} from 'node:http2';
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {requestPost} from '@shared/lib/requests.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
-import {makeUuid} from '@shared/lib/utils.shared';
 
 import type {AsyncResult, Result} from '@shared/types/results.types';
 import type {RssFeedProvider} from '@shared/types/rss.types';

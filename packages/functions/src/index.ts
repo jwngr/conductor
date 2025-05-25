@@ -16,7 +16,7 @@ import {prefixError} from '@shared/lib/errorUtils.shared';
 import {parseFeedItem, parseFeedItemId} from '@shared/parsers/feedItems.parser';
 
 import type {ErrorResult} from '@shared/types/results.types';
-import {RssFeedProvider} from '@shared/types/rss.types';
+import type {RssFeedProvider} from '@shared/types/rss.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import type {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';

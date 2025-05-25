@@ -19,6 +19,7 @@ import {
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
 import type {Result} from '@shared/types/results.types';
+import type {RssFeedProvider} from '@shared/types/rss.types';
 import type {
   UserFeedSubscription,
   UserFeedSubscriptionId,
