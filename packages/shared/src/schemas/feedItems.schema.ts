@@ -3,7 +3,7 @@ import {z} from 'zod';
 import {FeedItemImportStatus, FeedItemType, TriageStatus} from '@shared/types/feedItems.types';
 
 import {AccountIdSchema} from '@shared/schemas/accounts.schema';
-import {FeedSourceSchema} from '@shared/schemas/feedSources.schema';
+import {FeedSourceSchema, FeedSourceWithUrlSchema} from '@shared/schemas/feedSources.schema';
 import {FirestoreTimestampSchema} from '@shared/schemas/firebase.schema';
 
 /**
@@ -61,25 +61,25 @@ export const BaseFeedItemFromStorageSchema = z.object({
   accountId: AccountIdSchema,
   importState: FeedItemImportStateFromStorageSchema,
   triageStatus: z.nativeEnum(TriageStatus),
-  url: z.string().url(),
   title: z.string(),
-  description: z.string().nullable(),
-  summary: z.string().nullable(),
-  outgoingLinks: z.array(z.string().url()),
   tagIds: z.record(z.string(), z.literal(true).optional()),
   createdTime: FirestoreTimestampSchema.or(z.date()),
   lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
-/**
- * Type for a {@link FeedItem} persisted to Firestore.
- */
 export type BaseFeedItemFromStorage = z.infer<typeof BaseFeedItemFromStorageSchema>;
 
-/**
- * Zod schema for an {@link XkcdFeedItem} persisted to Firestore.
- */
-export const XkcdFeedItemFromStorageSchema = BaseFeedItemFromStorageSchema.extend({
+export const BaseFeedItemWithUrlFromStorageSchema = BaseFeedItemFromStorageSchema.extend({
+  url: z.string().url(),
+  description: z.string().nullable(),
+  summary: z.string().nullable(),
+  outgoingLinks: z.array(z.string().url()),
+  feedSource: FeedSourceWithUrlSchema,
+});
+
+export type BaseFeedItemWithUrlFromStorage = z.infer<typeof BaseFeedItemWithUrlFromStorageSchema>;
+
+export const XkcdFeedItemFromStorageSchema = BaseFeedItemWithUrlFromStorageSchema.extend({
   feedItemType: z.literal(FeedItemType.Xkcd),
   xkcd: z
     .object({
@@ -90,9 +90,15 @@ export const XkcdFeedItemFromStorageSchema = BaseFeedItemFromStorageSchema.exten
     .nullable(),
 });
 
-/**
- * Type for an {@link XkcdFeedItem} persisted to Firestore.
- */
 export type XkcdFeedItemFromStorage = z.infer<typeof XkcdFeedItemFromStorageSchema>;
 
-export type FeedItemFromStorage = BaseFeedItemFromStorage | XkcdFeedItemFromStorage;
+export const IntervalFeedItemFromStorageSchema = BaseFeedItemFromStorageSchema.extend({
+  feedItemType: z.literal(FeedItemType.Interval),
+});
+
+export type IntervalFeedItemFromStorage = z.infer<typeof IntervalFeedItemFromStorageSchema>;
+
+export type FeedItemFromStorage =
+  | BaseFeedItemWithUrlFromStorage
+  | XkcdFeedItemFromStorage
+  | IntervalFeedItemFromStorage;

@@ -43,3 +43,5 @@ export type FeedSource =
   | PwaFeedSource
   | ExtensionFeedSource
   | PocketExportFeedSource;
+
+export type FeedSourceWithUrl = Exclude<FeedSource, IntervalFeedSource>;

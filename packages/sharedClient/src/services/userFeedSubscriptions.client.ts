@@ -272,6 +272,28 @@ export function useUserFeedSubscriptionsService(): ClientUserFeedSubscriptionsSe
   return userFeedSubscriptionsService;
 }
 
+export const useUserFeedSubscription = (
+  userFeedSubscriptionId: UserFeedSubscriptionId
+): AsyncState<UserFeedSubscription | null> => {
+  const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
+
+  const {asyncState, setPending, setError, setSuccess} =
+    useAsyncState<UserFeedSubscription | null>();
+
+  useEffect(() => {
+    setPending();
+    const unsubscribe = userFeedSubscriptionsService.watchSubscription({
+      userFeedSubscriptionId,
+      successCallback: setSuccess,
+      errorCallback: setError,
+    });
+
+    return () => unsubscribe();
+  }, [userFeedSubscriptionsService, setPending, setError, setSuccess, userFeedSubscriptionId]);
+
+  return asyncState;
+};
+
 export const useUserFeedSubscriptions = (): AsyncState<UserFeedSubscription[]> => {
   const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
 

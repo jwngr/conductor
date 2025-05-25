@@ -13,8 +13,8 @@ import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {
-  FeedItem,
   FeedItemId,
+  FeedItemWithUrl,
   XkcdFeedItem,
   YouTubeFeedItem,
 } from '@shared/types/feedItems.types';
@@ -144,7 +144,7 @@ export class WebsiteFeedItemImporter {
   }
 
   public async import(
-    feedItem: Exclude<FeedItem, YouTubeFeedItem | XkcdFeedItem>
+    feedItem: Exclude<FeedItemWithUrl, YouTubeFeedItem | XkcdFeedItem>
   ): AsyncResult<void> {
     const importAllDataResult = await asyncTryAll([
       this.fetchAndSaveRawHtml({

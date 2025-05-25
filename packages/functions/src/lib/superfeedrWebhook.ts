@@ -9,7 +9,7 @@ import {batchAsyncResults, partition} from '@shared/lib/utils.shared';
 
 import {parseSuperfeedrWebhookRequestBody} from '@shared/parsers/superfeedr.parser';
 
-import type {FeedItemId} from '@shared/types/feedItems.types';
+import type {FeedItemWithUrl} from '@shared/types/feedItems.types';
 import type {AsyncResult, ErrorResult, SuccessResult} from '@shared/types/results.types';
 import type {Supplier} from '@shared/types/utils.types';
 
@@ -68,13 +68,13 @@ export async function handleSuperfeedrWebhookHelper(args: {
   const userFeedSubscriptions = fetchSubsResult.value;
 
   // Make a list of supplier methods that create feed items.
-  const createFeedItemResults: Array<Supplier<AsyncResult<FeedItemId | null>>> = [];
+  const createFeedItemResults: Array<Supplier<AsyncResult<FeedItemWithUrl>>> = [];
   body.items.forEach((item) => {
     logger.log(`[SUPERFEEDR] Processing item ${item.id}`, {item});
 
     userFeedSubscriptions.forEach((userFeedSubscription) => {
-      const newFeedItemResult = async (): AsyncResult<FeedItemId | null> => {
-        return await feedItemsService.createFeedItem({
+      const newFeedItemResult = async (): AsyncResult<FeedItemWithUrl> => {
+        return await feedItemsService.createFeedItemFromUrl({
           feedSource: makeRssFeedSource({userFeedSubscription}),
           url: item.permalinkUrl,
           accountId: userFeedSubscription.accountId,
@@ -96,9 +96,9 @@ export async function handleSuperfeedrWebhookHelper(args: {
   // Log successes and errors.
   const newFeedItemResults = batchResult.value;
   const [newFeedItemSuccesses, newFeedItemErrors] = partition<
-    SuccessResult<FeedItemId | null>,
+    SuccessResult<FeedItemWithUrl>,
     ErrorResult
-  >(newFeedItemResults, (result): result is SuccessResult<FeedItemId | null> => result.success);
+  >(newFeedItemResults, (result): result is SuccessResult<FeedItemWithUrl> => result.success);
   logger.log(
     `[SUPERFEEDR] Successfully created ${newFeedItemSuccesses.length} feed items, encountered ${newFeedItemErrors.length} errors`,
     {

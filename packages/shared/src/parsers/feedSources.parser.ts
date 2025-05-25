@@ -31,7 +31,9 @@ import {
  * Parses a {@link UserFeedSubscription} from an unknown value. Returns an `ErrorResult` if the
  * value is not valid.
  */
-export function parseFeedSource(maybeFeedSource: unknown): Result<FeedSource> {
+export function parseFeedSource(
+  maybeFeedSource: unknown
+): Result<Exclude<FeedSource, IntervalFeedSource>> {
   const parsedFeedSourceResult = parseZodResult(FeedSourceSchema, maybeFeedSource);
   if (!parsedFeedSourceResult.success) {
     return prefixErrorResult(parsedFeedSourceResult, 'Invalid feed source');
@@ -43,8 +45,6 @@ export function parseFeedSource(maybeFeedSource: unknown): Result<FeedSource> {
       return parseRssFeedSource(parsedFeedSource);
     case FeedSourceType.YouTubeChannel:
       return parseYouTubeChannelFeedSource(parsedFeedSource);
-    case FeedSourceType.Interval:
-      return parseIntervalFeedSource(parsedFeedSource);
     case FeedSourceType.Extension:
       return makeSuccessResult(EXTENSION_FEED_SOURCE);
     case FeedSourceType.PocketExport:
@@ -107,7 +107,9 @@ function parseYouTubeChannelFeedSource(
   );
 }
 
-function parseIntervalFeedSource(maybeIntervalFeedSource: unknown): Result<IntervalFeedSource> {
+export function parseIntervalFeedSource(
+  maybeIntervalFeedSource: unknown
+): Result<IntervalFeedSource> {
   const parsedResult = parseZodResult(IntervalFeedSourceSchema, maybeIntervalFeedSource);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid interval feed source');

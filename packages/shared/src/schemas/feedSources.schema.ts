@@ -47,3 +47,11 @@ export const FeedSourceSchema = z.discriminatedUnion('feedSourceType', [
   ExtensionFeedSourceSchema,
   PocketExportFeedSourceSchema,
 ]);
+
+export const FeedSourceWithUrlSchema = z.discriminatedUnion('feedSourceType', [
+  RssFeedSourceSchema,
+  YouTubeChannelFeedSourceSchema,
+  PwaFeedSourceSchema,
+  ExtensionFeedSourceSchema,
+  PocketExportFeedSourceSchema,
+]);

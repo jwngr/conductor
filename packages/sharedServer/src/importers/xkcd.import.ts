@@ -3,7 +3,7 @@ import {asyncTryAll, prefixError, prefixResultIfError} from '@shared/lib/errorUt
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {parseXkcdComicIdFromUrl} from '@shared/lib/xkcd.shared';
 
-import type {FeedItem, XkcdFeedItem} from '@shared/types/feedItems.types';
+import type {XkcdFeedItem} from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
@@ -19,7 +19,7 @@ export class XkcdFeedItemImporter {
 
   public async fetchAndSaveXkcdComic(args: {
     readonly comicId: number;
-    readonly feedItem: FeedItem;
+    readonly feedItem: XkcdFeedItem;
   }): AsyncResult<void> {
     const {comicId, feedItem} = args;
 
@@ -37,7 +37,7 @@ export class XkcdFeedItemImporter {
 
   public async fetchAndSaveExplainXkcdContent(args: {
     readonly comicId: number;
-    readonly feedItem: FeedItem;
+    readonly feedItem: XkcdFeedItem;
   }): AsyncResult<void> {
     const {comicId, feedItem} = args;
 

@@ -8,7 +8,7 @@ import {assertNever} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
-import type {FeedItem} from '@shared/types/feedItems.types';
+import {FeedItemType, type FeedItem} from '@shared/types/feedItems.types';
 import {ViewType} from '@shared/types/views.types';
 import type {
   ViewGroupByField,
@@ -235,7 +235,7 @@ const ViewListItem: React.FC<{
             <FeedItemImportStatusBadge importState={feedItem.importState} />
           </FlexRow>
           <Text as="p" light>
-            {feedItem.url}
+            {feedItem.feedItemType === FeedItemType.Interval ? 'Interval' : feedItem.url}
           </Text>
         </div>
         {shouldShowActions ? (

@@ -14,7 +14,13 @@ import {
   makeNewFeedItemImportState,
   TriageStatus,
 } from '@shared/types/feedItems.types';
-import type {FeedItem, FeedItemAction, FeedItemId} from '@shared/types/feedItems.types';
+import type {
+  FeedItem,
+  FeedItemAction,
+  FeedItemId,
+  IntervalFeedItem,
+  XkcdFeedItem,
+} from '@shared/types/feedItems.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/results.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
@@ -55,9 +61,12 @@ export class SharedFeedItemHelpers {
     return feedItem?.tagIds[SystemTagId.Unread] === true;
   }
 
-  public static makeFeedItem(
-    args: Pick<FeedItem, 'feedSource' | 'accountId' | 'url' | 'title' | 'description'>
-  ): Result<FeedItem> {
+  public static makeFeedItemFromUrl(
+    args: Pick<
+      Exclude<FeedItem, IntervalFeedItem>,
+      'feedSource' | 'accountId' | 'url' | 'title' | 'description'
+    >
+  ): Result<Exclude<FeedItem, IntervalFeedItem>> {
     const {feedSource, accountId, url, title, description} = args;
 
     // Common fields across all feed item types.
@@ -78,7 +87,7 @@ export class SharedFeedItemHelpers {
       case FeedItemType.Tweet:
       case FeedItemType.Website:
       case FeedItemType.YouTube:
-        return makeSuccessResult<FeedItem>({
+        return makeSuccessResult({
           feedItemType,
           feedSource,
           url,
@@ -96,27 +105,61 @@ export class SharedFeedItemHelpers {
           lastUpdatedTime: new Date(),
         });
       case FeedItemType.Xkcd:
-        return makeSuccessResult<FeedItem>({
-          feedItemType,
+        return SharedFeedItemHelpers.makeXkcdFeedItem({
           feedSource,
-          xkcd: null,
-          url,
           accountId,
-          feedItemId,
-          importState,
+          url,
           title,
           description,
-          summary,
-          outgoingLinks,
-          triageStatus,
-          tagIds,
-          // TODO(timestamps): Use server timestamps instead.
-          createdTime: new Date(),
-          lastUpdatedTime: new Date(),
         });
       default:
         assertNever(feedItemType);
     }
+  }
+
+  public static makeXkcdFeedItem(
+    args: Pick<XkcdFeedItem, 'feedSource' | 'accountId' | 'url' | 'title' | 'description'>
+  ): Result<XkcdFeedItem> {
+    const {feedSource, accountId, url, title, description} = args;
+
+    return makeSuccessResult<XkcdFeedItem>({
+      feedItemType: FeedItemType.Xkcd,
+      xkcd: null,
+      feedItemId: makeFeedItemId(),
+      importState: makeNewFeedItemImportState(),
+      triageStatus: TriageStatus.Untriaged,
+      tagIds: {[SystemTagId.Unread]: true},
+      summary: null,
+      outgoingLinks: [],
+      feedSource,
+      url,
+      accountId,
+      title: title,
+      description,
+      // TODO(timestamps): Use server timestamps instead.
+      createdTime: new Date(),
+      lastUpdatedTime: new Date(),
+    });
+  }
+
+  public static makeIntervalFeedItem(
+    args: Pick<IntervalFeedItem, 'feedSource' | 'accountId' | 'title'>
+  ): Result<IntervalFeedItem> {
+    const {feedSource, accountId, title} = args;
+
+    return makeSuccessResult<IntervalFeedItem>({
+      feedItemType: FeedItemType.Interval,
+      feedItemId: makeFeedItemId(),
+      triageStatus: TriageStatus.Untriaged,
+      importState: makeNewFeedItemImportState(),
+      tagIds: {[SystemTagId.Unread]: true},
+      feedSource,
+      accountId,
+      title,
+      // TODO(timestamps): Use server timestamps instead.
+      createdTime: new Date(),
+      lastUpdatedTime: new Date(),
+    });
   }
 
   public static getMarkDoneFeedItemActionInfo(feedItem: FeedItem): FeedItemAction {
@@ -225,7 +268,7 @@ export function findDeliveryScheduleForFeedSubscription(args: {
  * Uses heuristics to determine what {@link FeedItemType} a URL is likely to be. This is used to
  * determine which renderer to use when rendering a feed item.
  */
-export function getFeedItemTypeFromUrl(url: string): FeedItemType {
+export function getFeedItemTypeFromUrl(url: string): Exclude<FeedItemType, FeedItemType.Interval> {
   // Parsing the URL may throw. If it does, ignore the error and just use a default value.
   let parsedUrl: URL;
   // eslint-disable-next-line no-restricted-syntax
