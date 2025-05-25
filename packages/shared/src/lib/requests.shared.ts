@@ -9,8 +9,6 @@ import {
   makeSuccessResponseResult,
 } from '@shared/types/requests.types';
 
-const DEFAULT_CONTENT_TYPE = 'application/json';
-
 function isJsonResponse(response: Response): boolean {
   const responseContentTypeHeader = response.headers.get('Content-Type');
   if (!responseContentTypeHeader) return false;
@@ -33,7 +31,8 @@ async function request<T>(
     fetch(url + queryString, {
       method,
       headers: {
-        'Content-Type': headers['Content-Type'] ?? DEFAULT_CONTENT_TYPE,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
         ...headers,
       },
       body: body ? JSON.stringify(body) : undefined,

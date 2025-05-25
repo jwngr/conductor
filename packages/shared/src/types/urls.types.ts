@@ -1,12 +1,4 @@
-import type {Params} from 'react-router-dom';
-
 import type {CustomIcon} from '@shared/lib/customIcons.shared';
-
-import type {FeedItemId} from '@shared/types/feedItems.types';
-
-export interface FeedItemScreenParams extends Params {
-  readonly feedItemId: FeedItemId;
-}
 
 export enum NavItemId {
   Untriaged = 'UNTRIAGED',
@@ -18,11 +10,11 @@ export enum NavItemId {
   Today = 'TODAY',
   Trashed = 'TRASHED',
   Feeds = 'FEEDS',
+  Import = 'IMPORT',
 }
 
 export interface NavItem {
   readonly id: NavItemId;
-  readonly url: string;
   readonly icon: CustomIcon;
   readonly title: string;
 }

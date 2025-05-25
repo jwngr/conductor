@@ -1,30 +1,49 @@
-import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {logger} from '@shared/services/logger.shared';
+
+import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
-import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions.parser';
+import {parseFeedSource, parseIntervalFeedSource} from '@shared/parsers/feedSources.parser';
 
+import type {AccountId} from '@shared/types/accounts.types';
 import type {
+  CompletedFeedItemImportState,
+  FailedFeedItemImportState,
   FeedItem,
-  FeedItemAppSource,
-  FeedItemExtensionSource,
-  FeedItemFromStorage,
   FeedItemId,
-  FeedItemRSSSource,
-  FeedItemSource,
-  FeedItemSourceFromStorage,
+  FeedItemImportState,
+  IntervalFeedItem,
+  ProcessingFeedItemImportState,
+  XkcdFeedItem,
 } from '@shared/types/feedItems.types';
 import {
-  AppFeedItemSourceSchema,
-  ExtensionFeedItemSourceSchema,
-  FeedItemFromStorageSchema,
-  FeedItemIdSchema,
-  FeedItemSourceType,
-  RssFeedItemSourceSchema,
+  FeedItemImportStatus,
+  FeedItemType,
+  makeNewFeedItemImportState,
 } from '@shared/types/feedItems.types';
-import type {Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {Result} from '@shared/types/results.types';
+
+import type {
+  BaseFeedItemFromStorage,
+  BaseFeedItemWithUrlFromStorage,
+  FeedItemFromStorage,
+  FeedItemImportStateFromStorage,
+  IntervalFeedItemFromStorage,
+  XkcdFeedItemFromStorage,
+} from '@shared/schemas/feedItems.schema';
+import {
+  BaseFeedItemFromStorageSchema,
+  BaseFeedItemWithUrlFromStorageSchema,
+  CompletedFeedItemImportStateSchema,
+  FailedFeedItemImportStateSchema,
+  FeedItemIdSchema,
+  IntervalFeedItemFromStorageSchema,
+  ProcessingFeedItemImportStateSchema,
+  XkcdFeedItemFromStorageSchema,
+} from '@shared/schemas/feedItems.schema';
 
 /**
  * Parses a {@link FeedItemId} from a plain string. Returns an `ErrorResult` if the string is not
@@ -39,66 +58,91 @@ export function parseFeedItemId(maybeFeedItemId: string): Result<FeedItemId> {
 }
 
 /**
- * Parses a {@link FeedItemSource} from an unknown value. Returns an `ErrorResult` if the value is
- * not valid.
- */
-// TODO: I'm not sure if this is the best way to do this. All other parsers take in an `unknown`
-// value instead of a discriminated union.
-function parseFeedItemSource(feedItemSource: FeedItemSourceFromStorage): Result<FeedItemSource> {
-  const sourceType = feedItemSource.type;
-  switch (sourceType) {
-    case FeedItemSourceType.App:
-      return parseAppFeedItemSource(feedItemSource);
-    case FeedItemSourceType.Extension:
-      return parseExtensionFeedItemSource(feedItemSource);
-    case FeedItemSourceType.RSS:
-      return parseRssFeedItemSource(feedItemSource);
-    default:
-      return makeErrorResult(new Error(`Unknown feed item source type: ${sourceType}`));
-  }
-}
-
-/**
- * Parses a {@link FeedItemAppSource} from an unknown value. Returns an `ErrorResult` if the value
+ * Parses a {@link FeedItemImportState} from an unknown value. Returns an `ErrorResult` if the value
  * is not valid.
+ *
+ * TODO: I'm not sure if this is the best way to do this. All other parsers take in an `unknown`
+ * value instead of a discriminated union.
  */
-function parseAppFeedItemSource(feedItemSource: unknown): Result<FeedItemAppSource> {
-  const parsedResult = parseZodResult(AppFeedItemSourceSchema, feedItemSource);
-  if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid app feed item source');
+function parseFeedItemImportState(
+  feedItemImportState: FeedItemImportStateFromStorage
+): Result<FeedItemImportState> {
+  const status = feedItemImportState.status;
+  switch (status) {
+    case FeedItemImportStatus.New:
+      return makeSuccessResult(makeNewFeedItemImportState());
+    case FeedItemImportStatus.Processing:
+      return parseProcessingFeedItemImportState(feedItemImportState);
+    case FeedItemImportStatus.Failed:
+      return parseFailedFeedItemImportState(feedItemImportState);
+    case FeedItemImportStatus.Completed:
+      return parseCompletedFeedItemImportState(feedItemImportState);
+    default:
+      return makeErrorResult(new Error(`Unknown feed item import status: ${status}`));
   }
-  return makeSuccessResult(parsedResult.value);
 }
 
 /**
  * Parses a {@link FeedItemExtensionSource} from an unknown value. Returns an `ErrorResult` if the
  * value is not valid.
  */
-function parseExtensionFeedItemSource(feedItemSource: unknown): Result<FeedItemExtensionSource> {
-  const parsedResult = parseZodResult(ExtensionFeedItemSourceSchema, feedItemSource);
+function parseProcessingFeedItemImportState(
+  feedItemImportState: unknown
+): Result<ProcessingFeedItemImportState> {
+  const parsedResult = parseZodResult(ProcessingFeedItemImportStateSchema, feedItemImportState);
   if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid extension feed item source');
+    return prefixErrorResult(parsedResult, 'Invalid processing feed item import state');
   }
-  return makeSuccessResult(parsedResult.value);
+  return makeSuccessResult({
+    status: FeedItemImportStatus.Processing,
+    shouldFetch: false,
+    importStartedTime: parseStorageTimestamp(parsedResult.value.importStartedTime),
+    lastImportRequestedTime: parseStorageTimestamp(parsedResult.value.lastImportRequestedTime),
+    lastSuccessfulImportTime: parsedResult.value.lastSuccessfulImportTime
+      ? parseStorageTimestamp(parsedResult.value.lastSuccessfulImportTime)
+      : null,
+  });
 }
 
 /**
- * Parses a {@link FeedItemRSSSource} from an unknown value. Returns an `ErrorResult` if the value
- * is not valid.
+ * Parses a {@link FailedFeedItemImportState} from an unknown value. Returns an `ErrorResult` if
+ * the value is not valid.
  */
-function parseRssFeedItemSource(feedItemSource: unknown): Result<FeedItemRSSSource> {
-  const parsedResult = parseZodResult(RssFeedItemSourceSchema, feedItemSource);
+function parseFailedFeedItemImportState(
+  feedItemImportState: unknown
+): Result<FailedFeedItemImportState> {
+  const parsedResult = parseZodResult(FailedFeedItemImportStateSchema, feedItemImportState);
   if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid RSS feed item source');
+    return prefixErrorResult(parsedResult, 'Invalid failed feed item import state');
   }
-  const parsedUserFeedSubscriptionIdResult = parseUserFeedSubscriptionId(
-    parsedResult.value.userFeedSubscriptionId
-  );
-  if (!parsedUserFeedSubscriptionIdResult.success) return parsedUserFeedSubscriptionIdResult;
-
   return makeSuccessResult({
-    type: FeedItemSourceType.RSS,
-    userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
+    status: FeedItemImportStatus.Failed,
+    shouldFetch: parsedResult.value.shouldFetch,
+    errorMessage: parsedResult.value.errorMessage,
+    importFailedTime: parseStorageTimestamp(parsedResult.value.importFailedTime),
+    lastImportRequestedTime: parseStorageTimestamp(parsedResult.value.lastImportRequestedTime),
+    lastSuccessfulImportTime: parsedResult.value.lastSuccessfulImportTime
+      ? parseStorageTimestamp(parsedResult.value.lastSuccessfulImportTime)
+      : null,
+  });
+}
+
+/**
+ * Parses a {@link CompletedFeedItemImportState} from an unknown value. Returns an `ErrorResult` if
+ * the value is not valid.
+ */
+function parseCompletedFeedItemImportState(
+  feedItemImportState: unknown
+): Result<CompletedFeedItemImportState> {
+  const parsedResult = parseZodResult(CompletedFeedItemImportStateSchema, feedItemImportState);
+  if (!parsedResult.success) {
+    return prefixErrorResult(parsedResult, 'Invalid completed feed item import state');
+  }
+  return makeSuccessResult({
+    status: FeedItemImportStatus.Completed,
+    shouldFetch: parsedResult.value.shouldFetch,
+    lastImportRequestedTime: parseStorageTimestamp(parsedResult.value.lastImportRequestedTime),
+    lastSuccessfulImportTime: parseStorageTimestamp(parsedResult.value.lastSuccessfulImportTime),
   });
 }
 
@@ -107,38 +151,170 @@ function parseRssFeedItemSource(feedItemSource: unknown): Result<FeedItemRSSSour
  * valid.
  */
 export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
-  const parsedFeedItemResult = parseZodResult(FeedItemFromStorageSchema, maybeFeedItem);
-  if (!parsedFeedItemResult.success) {
-    return prefixResultIfError(parsedFeedItemResult, 'Invalid feed item');
+  const parsedBaseFeedItemResult = parseZodResult<BaseFeedItemFromStorage>(
+    BaseFeedItemFromStorageSchema,
+    maybeFeedItem
+  );
+  if (!parsedBaseFeedItemResult.success) {
+    return prefixErrorResult(parsedBaseFeedItemResult, 'Invalid feed item');
   }
 
-  const parsedIdResult = parseFeedItemId(parsedFeedItemResult.value.feedItemId);
+  const parsedIdResult = parseFeedItemId(parsedBaseFeedItemResult.value.feedItemId);
   if (!parsedIdResult.success) return parsedIdResult;
 
-  const parsedAccountIdReult = parseAccountId(parsedFeedItemResult.value.accountId);
-  if (!parsedAccountIdReult.success) return parsedAccountIdReult;
+  const parsedAccountIdResult = parseAccountId(parsedBaseFeedItemResult.value.accountId);
+  if (!parsedAccountIdResult.success) return parsedAccountIdResult;
 
-  const parsedSourceResult = parseFeedItemSource(parsedFeedItemResult.value.feedItemSource);
-  if (!parsedSourceResult.success) return parsedSourceResult;
+  const parsedImportStateResult = parseFeedItemImportState(
+    parsedBaseFeedItemResult.value.importState
+  );
+  if (!parsedImportStateResult.success) return parsedImportStateResult;
+
+  switch (parsedBaseFeedItemResult.value.feedItemType) {
+    case FeedItemType.YouTube:
+    case FeedItemType.Article:
+    case FeedItemType.Video:
+    case FeedItemType.Website:
+    case FeedItemType.Tweet:
+      return parseFeedItemWithUrl({
+        maybeFeedItem,
+        feedItemType: parsedBaseFeedItemResult.value.feedItemType,
+        feedItemId: parsedIdResult.value,
+        accountId: parsedAccountIdResult.value,
+        importState: parsedImportStateResult.value,
+      });
+    case FeedItemType.Xkcd:
+      return parseXkcdFeedItem({
+        maybeFeedItem,
+        feedItemId: parsedIdResult.value,
+        accountId: parsedAccountIdResult.value,
+        importState: parsedImportStateResult.value,
+      });
+    case FeedItemType.Interval:
+      return parseIntervalFeedItem({
+        maybeFeedItem,
+        feedItemId: parsedIdResult.value,
+        accountId: parsedAccountIdResult.value,
+        importState: parsedImportStateResult.value,
+      });
+    default:
+      return makeErrorResult(
+        new Error(`Unknown feed item type: ${parsedBaseFeedItemResult.value.feedItemType}`)
+      );
+  }
+}
+
+export function parseFeedItemWithUrl(args: {
+  readonly maybeFeedItem: unknown;
+  readonly feedItemType: Exclude<FeedItemType, FeedItemType.Xkcd | FeedItemType.Interval>;
+  readonly feedItemId: FeedItemId;
+  readonly accountId: AccountId;
+  readonly importState: FeedItemImportState;
+}): Result<FeedItem> {
+  const {maybeFeedItem, feedItemType, feedItemId, accountId, importState} = args;
+
+  const parsedFeedItemResult = parseZodResult(BaseFeedItemWithUrlFromStorageSchema, maybeFeedItem);
+  if (!parsedFeedItemResult.success) {
+    return prefixErrorResult(parsedFeedItemResult, 'Invalid feed item with URL');
+  }
+  const storageBaseFeedItem = parsedFeedItemResult.value;
+
+  const parseFeedSourceResult = parseFeedSource(storageBaseFeedItem.feedSource);
+  if (!parseFeedSourceResult.success) return parseFeedSourceResult;
+  const parsedFeedSource = parseFeedSourceResult.value;
 
   return makeSuccessResult(
     omitUndefined({
-      type: parsedFeedItemResult.value.type,
-      accountId: parsedAccountIdReult.value,
-      feedItemSource: parsedSourceResult.value,
-      feedItemId: parsedIdResult.value,
-      url: parsedFeedItemResult.value.url,
-      title: parsedFeedItemResult.value.title,
-      description: parsedFeedItemResult.value.description,
-      outgoingLinks: parsedFeedItemResult.value.outgoingLinks,
-      summary: parsedFeedItemResult.value.summary,
-      triageStatus: parsedFeedItemResult.value.triageStatus,
-      tagIds: parsedFeedItemResult.value.tagIds,
-      lastImportedTime: parsedFeedItemResult.value.lastImportedTime
-        ? parseStorageTimestamp(parsedFeedItemResult.value.lastImportedTime)
-        : undefined,
-      createdTime: parseStorageTimestamp(parsedFeedItemResult.value.createdTime),
-      lastUpdatedTime: parseStorageTimestamp(parsedFeedItemResult.value.lastUpdatedTime),
+      feedItemType,
+      feedSource: parsedFeedSource,
+      accountId,
+      importState,
+      feedItemId,
+      url: storageBaseFeedItem.url,
+      title: storageBaseFeedItem.title,
+      description: storageBaseFeedItem.description,
+      outgoingLinks: storageBaseFeedItem.outgoingLinks,
+      summary: storageBaseFeedItem.summary,
+      triageStatus: storageBaseFeedItem.triageStatus,
+      tagIds: storageBaseFeedItem.tagIds,
+      createdTime: parseStorageTimestamp(storageBaseFeedItem.createdTime),
+      lastUpdatedTime: parseStorageTimestamp(storageBaseFeedItem.lastUpdatedTime),
+    })
+  );
+}
+
+export function parseXkcdFeedItem(args: {
+  readonly maybeFeedItem: unknown;
+  readonly feedItemId: FeedItemId;
+  readonly accountId: AccountId;
+  readonly importState: FeedItemImportState;
+}): Result<XkcdFeedItem> {
+  const {maybeFeedItem, feedItemId, accountId, importState} = args;
+
+  const parsedXkcdFeedItemResult = parseZodResult(XkcdFeedItemFromStorageSchema, maybeFeedItem);
+  if (!parsedXkcdFeedItemResult.success) {
+    return prefixErrorResult(parsedXkcdFeedItemResult, 'Invalid XKCD feed item');
+  }
+  const storageXkcdFeedItem = parsedXkcdFeedItemResult.value;
+
+  const parsedFeedSourceResult = parseFeedSource(storageXkcdFeedItem.feedSource);
+  if (!parsedFeedSourceResult.success) return parsedFeedSourceResult;
+  const parsedFeedSource = parsedFeedSourceResult.value;
+
+  return makeSuccessResult(
+    omitUndefined({
+      feedItemType: FeedItemType.Xkcd,
+      xkcd: parsedXkcdFeedItemResult.value.xkcd,
+      feedSource: parsedFeedSource,
+      accountId,
+      importState,
+      feedItemId,
+      url: storageXkcdFeedItem.url,
+      title: storageXkcdFeedItem.title,
+      description: storageXkcdFeedItem.description,
+      outgoingLinks: storageXkcdFeedItem.outgoingLinks,
+      summary: storageXkcdFeedItem.summary,
+      triageStatus: storageXkcdFeedItem.triageStatus,
+      tagIds: storageXkcdFeedItem.tagIds,
+      createdTime: parseStorageTimestamp(storageXkcdFeedItem.createdTime),
+      lastUpdatedTime: parseStorageTimestamp(storageXkcdFeedItem.lastUpdatedTime),
+    })
+  );
+}
+
+export function parseIntervalFeedItem(args: {
+  readonly maybeFeedItem: unknown;
+  readonly feedItemId: FeedItemId;
+  readonly accountId: AccountId;
+  readonly importState: FeedItemImportState;
+}): Result<IntervalFeedItem> {
+  const {maybeFeedItem, feedItemId, accountId, importState} = args;
+
+  const parsedIntervalFeedItemResult = parseZodResult(
+    IntervalFeedItemFromStorageSchema,
+    maybeFeedItem
+  );
+  if (!parsedIntervalFeedItemResult.success) {
+    return prefixErrorResult(parsedIntervalFeedItemResult, 'Invalid interval feed item');
+  }
+  const storageIntervalFeedItem = parsedIntervalFeedItemResult.value;
+
+  const parsedFeedSourceResult = parseIntervalFeedSource(storageIntervalFeedItem.feedSource);
+  if (!parsedFeedSourceResult.success) return parsedFeedSourceResult;
+  const parsedFeedSource = parsedFeedSourceResult.value;
+
+  return makeSuccessResult(
+    omitUndefined({
+      feedItemType: FeedItemType.Interval,
+      feedSource: parsedFeedSource,
+      accountId,
+      importState,
+      feedItemId,
+      title: storageIntervalFeedItem.title,
+      triageStatus: storageIntervalFeedItem.triageStatus,
+      tagIds: storageIntervalFeedItem.tagIds,
+      createdTime: parseStorageTimestamp(storageIntervalFeedItem.createdTime),
+      lastUpdatedTime: parseStorageTimestamp(storageIntervalFeedItem.lastUpdatedTime),
     })
   );
 }
@@ -148,11 +324,36 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
  * Firestore.
  */
 export function toStorageFeedItem(feedItem: FeedItem): FeedItemFromStorage {
+  switch (feedItem.feedItemType) {
+    case FeedItemType.Xkcd:
+      return toStorageXkcdFeedItem(feedItem);
+    case FeedItemType.YouTube:
+    case FeedItemType.Article:
+    case FeedItemType.Video:
+    case FeedItemType.Website:
+    case FeedItemType.Tweet:
+      return toStorageBaseFeedItem(feedItem);
+    case FeedItemType.Interval:
+      return toStorageIntervalFeedItem(feedItem);
+    default:
+      logger.error(new Error('Unknown feed item type'), {feedItem});
+      return toStorageBaseFeedItem(feedItem);
+  }
+}
+
+/**
+ * Converts an {@link BaseFeedItem} to a {@link BaseFeedItemFromStorage} object that can be
+ * persisted to Firestore.
+ */
+function toStorageBaseFeedItem(
+  feedItem: Exclude<FeedItem, XkcdFeedItem | IntervalFeedItem>
+): BaseFeedItemWithUrlFromStorage {
   return omitUndefined({
     feedItemId: feedItem.feedItemId,
+    feedItemType: feedItem.feedItemType,
+    feedSource: feedItem.feedSource,
     accountId: feedItem.accountId,
-    type: feedItem.type,
-    feedItemSource: feedItem.feedItemSource,
+    importState: feedItem.importState,
     url: feedItem.url,
     title: feedItem.title,
     description: feedItem.description,
@@ -160,7 +361,49 @@ export function toStorageFeedItem(feedItem: FeedItem): FeedItemFromStorage {
     summary: feedItem.summary,
     triageStatus: feedItem.triageStatus,
     tagIds: feedItem.tagIds,
-    lastImportedTime: feedItem.lastImportedTime,
+    createdTime: feedItem.createdTime,
+    lastUpdatedTime: feedItem.lastUpdatedTime,
+  });
+}
+
+/**
+ * Converts an {@link XkcdFeedItem} to a {@link XkcdFeedItemFromStorage} object that can be
+ * persisted to Firestore.
+ */
+function toStorageXkcdFeedItem(feedItem: XkcdFeedItem): XkcdFeedItemFromStorage {
+  return omitUndefined({
+    feedItemId: feedItem.feedItemId,
+    feedItemType: feedItem.feedItemType,
+    feedSource: feedItem.feedSource,
+    accountId: feedItem.accountId,
+    importState: feedItem.importState,
+    url: feedItem.url,
+    title: feedItem.title,
+    description: feedItem.description,
+    outgoingLinks: feedItem.outgoingLinks,
+    summary: feedItem.summary,
+    triageStatus: feedItem.triageStatus,
+    tagIds: feedItem.tagIds,
+    createdTime: feedItem.createdTime,
+    lastUpdatedTime: feedItem.lastUpdatedTime,
+    xkcd: feedItem.xkcd,
+  });
+}
+
+/**
+ * Converts an {@link IntervalFeedItem} to a {@link IntervalFeedItemFromStorage} object that can be
+ * persisted to Firestore.
+ */
+function toStorageIntervalFeedItem(feedItem: IntervalFeedItem): IntervalFeedItemFromStorage {
+  return omitUndefined({
+    feedItemId: feedItem.feedItemId,
+    feedItemType: feedItem.feedItemType,
+    feedSource: feedItem.feedSource,
+    accountId: feedItem.accountId,
+    importState: feedItem.importState,
+    title: feedItem.title,
+    triageStatus: feedItem.triageStatus,
+    tagIds: feedItem.tagIds,
     createdTime: feedItem.createdTime,
     lastUpdatedTime: feedItem.lastUpdatedTime,
   });

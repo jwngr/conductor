@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "uuid": "^11.0.5"
+    "date-fns": "^4.1.0",
+    "uuid": "^11.1.0",
+    "zod": "^3.24.4"
   },
   "scripts": {
     "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",
@@ -17,6 +19,8 @@
     "ci": "rm -rf node_modules/ && yarn install",
     "build": "yarn run clean && tsc --build",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:coverage:open": "jest --coverage && open coverage/index.html"
   }
 }

@@ -1,11 +1,12 @@
 import type {ZodSchema} from 'zod';
 
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {isDate, omitUndefined} from '@shared/lib/utils.shared';
 
-import type {FirestoreTimestamp} from '@shared/types/firebase.types';
-import type {Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {Result} from '@shared/types/results.types';
 import type {BaseStoreItem, Supplier} from '@shared/types/utils.types';
+
+import type {FirestoreTimestamp} from '@shared/schemas/firebase.schema';
 
 /**
  * Parses a value using a Zod schema and returns a `SuccessResult` with the parsed value if
@@ -38,7 +39,12 @@ export function parseZodResult<T>(zodSchema: ZodSchema<T>, value: unknown): Resu
  * Converts a Firestore `Timestamp` to a normal `Date`.
  */
 export function parseStorageTimestamp(firestoreDate: FirestoreTimestamp | Date): Date {
-  return isDate(firestoreDate) ? firestoreDate : firestoreDate.toDate();
+  // Firestore timestamp created locally are initialized to null. Consider them to be now.
+  if (firestoreDate === null) return new Date();
+
+  if (isDate(firestoreDate)) return firestoreDate;
+
+  return firestoreDate.toDate();
 }
 
 /**

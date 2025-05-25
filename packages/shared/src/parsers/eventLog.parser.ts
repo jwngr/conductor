@@ -1,23 +1,16 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseActor} from '@shared/parsers/actors.parser';
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
 import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions.parser';
 
-import {
-  EventIdSchema,
-  EventLogItemFromStorageSchema,
-  EventType,
-  FeedItemActionEventLogItemDataSchema,
-  FeedItemImportedEventLogItemDataSchema,
-  UserFeedSubscriptionEventLogItemDataSchema,
-} from '@shared/types/eventLog.types';
+import {EventType} from '@shared/types/eventLog.types';
 import type {
   EventId,
   EventLogItem,
-  EventLogItemFromStorage,
   FeedItemActionEventLogItem,
   FeedItemActionEventLogItemData,
   FeedItemImportedEventLogItem,
@@ -25,8 +18,16 @@ import type {
   UserFeedSubscriptionEventLogItem,
   UserFeedSubscriptionEventLogItemData,
 } from '@shared/types/eventLog.types';
-import type {Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {Result} from '@shared/types/results.types';
+
+import {
+  EventIdSchema,
+  EventLogItemFromStorageSchema,
+  FeedItemActionEventLogItemDataSchema,
+  FeedItemImportedEventLogItemDataSchema,
+  UserFeedSubscriptionEventLogItemDataSchema,
+} from '@shared/schemas/eventLog.schema';
+import type {EventLogItemFromStorage} from '@shared/schemas/eventLog.schema';
 
 /**
  * Parses a {@link EventId} from a plain string. Returns an `ErrorResult` if the string is not
@@ -72,9 +73,7 @@ function parseUserFeedSubscriptionEventLogItem(
   maybeEventLogItem: unknown
 ): Result<UserFeedSubscriptionEventLogItem> {
   const parsedResult = parseZodResult(EventLogItemFromStorageSchema, maybeEventLogItem);
-  if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid event log item');
-  }
+  if (!parsedResult.success) return prefixErrorResult(parsedResult, 'Invalid event log item');
 
   const parsedAccountIdResult = parseAccountId(parsedResult.value.accountId);
   if (!parsedAccountIdResult.success) return parsedAccountIdResult;

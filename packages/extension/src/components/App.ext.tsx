@@ -1,20 +1,22 @@
-import {useState} from 'react';
+import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
+import {EXTENSION_FEED_SOURCE} from '@shared/lib/feedSources.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 
-import {asyncTry} from '@shared/lib/errorUtils.shared';
+import {AsyncStatus} from '@shared/types/asyncState.types';
+import type {FeedItemWithUrl} from '@shared/types/feedItems.types';
 
-import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems.types';
-
-import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
+import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
+import {useFeedItemsService} from '@sharedClient/hooks/feedItems.hooks';
 
 import {useCurrentTab} from '@src/lib/tabs.ext';
 
-export const App: React.FC = () => {
-  const [status, setStatus] = useState<string>('');
-  const {currentTab} = useCurrentTab();
+const SaveCurrentUrlButton: React.FC = () => {
   const feedItemsService = useFeedItemsService();
 
+  const {asyncState, setPending, setError, setSuccess} = useAsyncState<FeedItemWithUrl>();
+
   const handleClick = async (): Promise<void> => {
-    setStatus('Saving URL...');
+    setPending();
 
     const tabResult = await asyncTry(async () => {
       const [tab] = await chrome.tabs.query({active: true, lastFocusedWindow: true});
@@ -22,36 +24,79 @@ export const App: React.FC = () => {
     });
 
     if (!tabResult.success) {
-      setStatus(`Error getting tab: ${tabResult.error.message}`);
+      setError(prefixError(tabResult.error, 'Error getting tab'));
       return;
     }
-    const tab = tabResult.value;
 
+    const tab = tabResult.value;
     const tabUrl = tab.url;
     if (!tabUrl) {
-      setStatus('Error saving URL: No URL found for tab');
+      setError(new Error('No URL found for tab'));
       return;
     }
 
-    const addFeedItemResult = await feedItemsService.createFeedItem({
+    const title = tab.title ?? 'TODO: Add title support';
+    const addFeedItemResult = await feedItemsService.createFeedItemFromUrl({
+      feedSource: EXTENSION_FEED_SOURCE,
       url: tabUrl,
-      feedItemSource: FEED_ITEM_APP_SOURCE,
+      title,
     });
 
-    if (addFeedItemResult.success) {
-      setStatus('URL saved successfully!');
-    } else {
-      setStatus(`Error saving URL: ${addFeedItemResult.error.message}`);
+    if (!addFeedItemResult.success) {
+      setError(prefixError(addFeedItemResult.error, 'Error creating feed item'));
+      return;
     }
+
+    setSuccess(addFeedItemResult.value);
   };
+
+  let statusContent: React.ReactNode | null;
+  switch (asyncState.status) {
+    case AsyncStatus.Idle:
+      statusContent = null;
+      break;
+    case AsyncStatus.Pending:
+      statusContent = <p>Saving URL...</p>;
+      break;
+    case AsyncStatus.Error:
+      statusContent = <p style={{color: 'red'}}>Error saving URL: {asyncState.error.message}</p>;
+      break;
+    case AsyncStatus.Success:
+      statusContent = <p style={{color: 'green'}}>Feed item saved: {asyncState.value.title}</p>;
+      break;
+    default:
+      assertNever(asyncState);
+  }
 
   return (
     <>
-      <p>URL: {currentTab?.url}</p>
       <button id="saveButton" onClick={handleClick}>
         Save Current URL
       </button>
-      <p>{status}</p>
+      {statusContent}
+    </>
+  );
+};
+
+const CurrentTabContent: React.FC = () => {
+  const currentTabState = useCurrentTab();
+
+  switch (currentTabState.status) {
+    case AsyncStatus.Idle:
+    case AsyncStatus.Pending:
+      return <p>Loading tab...</p>;
+    case AsyncStatus.Error:
+      return <p>Error loading tab: {currentTabState.error.message}</p>;
+    case AsyncStatus.Success:
+      return <p>URL: {currentTabState.value.url}</p>;
+  }
+};
+
+export const App: React.FC = () => {
+  return (
+    <>
+      <CurrentTabContent />
+      <SaveCurrentUrlButton />
     </>
   );
 };

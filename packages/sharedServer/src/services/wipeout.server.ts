@@ -1,33 +1,29 @@
 import {logger} from '@shared/services/logger.shared';
 
 import {asyncTryAll, prefixError} from '@shared/lib/errorUtils.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {batchAsyncResults} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import type {AsyncResult} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/results.types';
 import type {Supplier} from '@shared/types/utils.types';
 
 import type {ServerAccountsService} from '@sharedServer/services/accounts.server';
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
-import type {ServerImportQueueService} from '@sharedServer/services/importQueue.server';
 import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
 
 export class WipeoutService {
   private accountsService: ServerAccountsService;
   private userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
   private feedItemsService: ServerFeedItemsService;
-  private importQueueService: ServerImportQueueService;
 
   constructor(args: {
     readonly accountsService: ServerAccountsService;
     readonly userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
-    readonly importQueueService: ServerImportQueueService;
     readonly feedItemsService: ServerFeedItemsService;
   }) {
     this.accountsService = args.accountsService;
     this.userFeedSubscriptionsService = args.userFeedSubscriptionsService;
-    this.importQueueService = args.importQueueService;
     this.feedItemsService = args.feedItemsService;
   }
 
@@ -66,7 +62,7 @@ export class WipeoutService {
         {activeUserFeedSubscriptionIds, ...logDetails}
       );
 
-      const unsubscribeFromFeedSuppliers: Supplier<AsyncResult<void>>[] =
+      const unsubscribeFromFeedSuppliers: Array<Supplier<AsyncResult<void>>> =
         activeUserFeedSubscriptionIds.map((userFeedSubscriptionId) => async () => {
           logger.log(
             `[WIPEOUT] Unsubscribing account ${accountId} from feed subscription ${userFeedSubscriptionId}...`,
@@ -108,7 +104,6 @@ export class WipeoutService {
     const deleteFirestoreResult = await asyncTryAll([
       this.accountsService.deleteAccountDoc(accountId),
       this.feedItemsService.deleteAllForAccount(accountId),
-      this.importQueueService.deleteAllForAccount(accountId),
       this.userFeedSubscriptionsService.deleteAllForAccount(accountId),
     ]);
     const deleteFirestoreResultError = deleteFirestoreResult.success

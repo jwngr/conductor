@@ -44,7 +44,7 @@ function getIsFirebaseEmulatorEnabled(): boolean {
   return import.meta.env.VITE_FIREBASE_USE_EMULATOR === 'true';
 }
 
-export class ClientFirebaseService {
+class ClientFirebaseService {
   private app: FirebaseApp;
   private config: FirebaseConfig;
   private isEmulatorEnabled: boolean;

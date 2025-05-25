@@ -1,31 +1,31 @@
-import {FieldValue} from 'firebase-admin/firestore';
+import type {FeedItemFromStorage} from '@conductor/shared/src/schemas/feedItems.schema';
 
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
+import {makeIntervalFeedSource} from '@shared/lib/feedSources.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
-import {omitUndefined} from '@shared/lib/utils.shared';
+import {assertNever, omitUndefined} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import {FeedItemType} from '@shared/types/feedItems.types';
 import type {
   FeedItem,
-  FeedItemFromStorage,
   FeedItemId,
-  FeedItemSource,
+  FeedItemWithUrl,
+  IntervalFeedItem,
 } from '@shared/types/feedItems.types';
-import type {AsyncResult} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import {SystemTagId} from '@shared/types/tags.types';
+import type {AsyncResult, Result} from '@shared/types/results.types';
+import type {IntervalUserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
+import {eventLogService} from '@sharedServer/services/eventLog.server';
 import {storage} from '@sharedServer/services/firebase.server';
-import {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
+import type {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
+import type {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
-interface UpdateImportedFeedItemInFirestoreArgs {
-  readonly links: string[] | null;
-  readonly title: string | null;
-  readonly description: string | null;
-  readonly summary: string | null;
-}
+import {WebsiteFeedItemImporter} from '@sharedServer/importers/website.import';
+import {XkcdFeedItemImporter} from '@sharedServer/importers/xkcd.import';
+import {YouTubeFeedItemImporter} from '@sharedServer/importers/youtube.import';
 
 type FeedItemCollectionService = ServerFirestoreCollectionService<
   FeedItemId,
@@ -35,35 +35,35 @@ type FeedItemCollectionService = ServerFirestoreCollectionService<
 
 export class ServerFeedItemsService {
   private readonly storageCollectionPath: string;
+  private readonly firecrawlService: ServerFirecrawlService;
   private readonly feedItemsCollectionService: FeedItemCollectionService;
 
   constructor(args: {
     readonly storageCollectionPath: string;
+    readonly firecrawlService: ServerFirecrawlService;
     readonly feedItemsCollectionService: FeedItemCollectionService;
   }) {
     this.storageCollectionPath = args.storageCollectionPath;
+    this.firecrawlService = args.firecrawlService;
     this.feedItemsCollectionService = args.feedItemsCollectionService;
   }
 
-  public async createFeedItem(args: {
-    readonly url: string;
-    readonly feedItemSource: FeedItemSource;
-    readonly accountId: AccountId;
-  }): AsyncResult<FeedItemId | null> {
-    const {url, accountId, feedItemSource} = args;
+  public async createFeedItemFromUrl(
+    args: Pick<FeedItemWithUrl, 'feedSource' | 'url' | 'accountId' | 'title' | 'description'>
+  ): AsyncResult<FeedItemWithUrl> {
+    const {feedSource, url, accountId, title, description} = args;
 
     const trimmedUrl = url.trim();
     if (!isValidUrl(trimmedUrl)) {
       return makeErrorResult(new Error(`Invalid URL provided for feed item: "${url}"`));
     }
 
-    const feedItemResult = SharedFeedItemHelpers.makeFeedItem({
-      // TODO: Make this dynamic based on the actual content. Maybe it should be null initially
-      // until we've done the import? Or should we compute this at save time?
-      type: FeedItemType.Website,
+    const feedItemResult = SharedFeedItemHelpers.makeFeedItemFromUrl({
+      feedSource,
       url: trimmedUrl,
-      feedItemSource,
       accountId,
+      title,
+      description,
     });
     if (!feedItemResult.success) return feedItemResult;
     const feedItem = feedItemResult.value;
@@ -77,34 +77,45 @@ export class ServerFeedItemsService {
       return prefixErrorResult(addFeedItemResult, 'Error creating feed item in Firestore');
     }
 
-    return makeSuccessResult(feedItem.feedItemId);
+    return makeSuccessResult(feedItem);
+  }
+
+  public async createIntervalFeedItem(args: {
+    readonly accountId: AccountId;
+    readonly userFeedSubscription: IntervalUserFeedSubscription;
+  }): AsyncResult<IntervalFeedItem> {
+    const {userFeedSubscription, accountId} = args;
+
+    const feedItemResult = SharedFeedItemHelpers.makeIntervalFeedItem({
+      feedSource: makeIntervalFeedSource({userFeedSubscription}),
+      accountId,
+      title: `Interval feed item for ${new Date().toISOString()}`,
+    });
+    if (!feedItemResult.success) return feedItemResult;
+    const feedItem = feedItemResult.value;
+
+    const addFeedItemResult = await this.feedItemsCollectionService.setDoc(
+      feedItem.feedItemId,
+      feedItem
+    );
+
+    if (!addFeedItemResult.success) {
+      return prefixErrorResult(addFeedItemResult, 'Error creating feed item in Firestore');
+    }
+
+    return makeSuccessResult(feedItem);
   }
 
   /**
-   * Updates a feed item after it has been imported.
+   * Updates a feed item in Firestore.
    */
-  public async updateImportedFeedItemInFirestore(
+  public async updateFeedItem(
     feedItemId: FeedItemId,
-    {links, title, description, summary}: UpdateImportedFeedItemInFirestoreArgs
+    updates: Partial<FeedItem>
   ): AsyncResult<void> {
-    // TODO: Consider switching to array unions so I can use FieldValue.arrayRemove.
-    const untypedUpdates = {
-      [`tagIds.${SystemTagId.Importing}`]: FieldValue.delete(),
-    };
-
     const updateResult = await this.feedItemsCollectionService.updateDoc(
       feedItemId,
-      omitUndefined({
-        // TODO: Determine the type based on the URL or fetched content.
-        type: FeedItemType.Website,
-        title: title ?? undefined,
-        description: description ?? undefined,
-        summary: summary ?? undefined,
-        outgoingLinks: links ?? undefined,
-        // TODO(timestamps): Use server timestamps instead.
-        lastImportedTime: new Date(),
-        ...untypedUpdates,
-      })
+      omitUndefined(updates)
     );
     return prefixResultIfError(updateResult, 'Error updating imported feed item in Firestore');
   }
@@ -121,29 +132,23 @@ export class ServerFeedItemsService {
     return await asyncTry(async () => {
       const sanitizedHtmlFile = storage
         .bucket()
-        .file(this.getStoragePathForFeedItem(feedItemId, accountId) + 'sanitized.html');
+        .file(this.getStoragePath({feedItemId, accountId, filename: 'sanitized.html'}));
       await sanitizedHtmlFile.save(sanitizedHtml, {contentType: 'text/html'});
     });
   }
 
   /**
-   * Saves the LLM Markdown context to storage.
+   * Writes content to storage file.
    */
-  public async saveMarkdownToStorage(args: {
-    readonly feedItemId: FeedItemId;
-    readonly markdown: string | null;
-    readonly accountId: AccountId;
+  public async writeFileToStorage(args: {
+    readonly storagePath: string;
+    readonly content: string;
+    readonly contentType: string;
   }): AsyncResult<void> {
-    const {feedItemId, markdown, accountId} = args;
-    if (markdown === null) {
-      return makeErrorResult(new Error('Markdown is null'));
-    }
-
+    const {storagePath, content, contentType} = args;
     return await asyncTry(async () => {
-      const llmContextFile = storage
-        .bucket()
-        .file(this.getStoragePathForFeedItem(feedItemId, accountId) + 'llmContext.md');
-      await llmContextFile.save(markdown, {contentType: 'text/markdown'});
+      const file = storage.bucket().file(storagePath);
+      await file.save(content, {contentType});
     });
   }
 
@@ -180,7 +185,54 @@ export class ServerFeedItemsService {
     return `${this.storageCollectionPath}/${accountId}/`;
   }
 
-  private getStoragePathForFeedItem(feedItemId: FeedItemId, accountId: AccountId): string {
-    return `${this.getStoragePathForAccount(accountId)}${feedItemId}/`;
+  public getStoragePath(args: {
+    readonly feedItemId: FeedItemId;
+    readonly accountId: AccountId;
+    readonly filename: string;
+  }): string {
+    const {feedItemId, accountId, filename} = args;
+    const accountPath = this.getStoragePathForAccount(accountId);
+    return `${accountPath}${feedItemId}/${filename}`;
+  }
+
+  public async importFeedItem(feedItem: FeedItem): AsyncResult<void> {
+    let importResult: Result<void, Error>;
+    switch (feedItem.feedItemType) {
+      case FeedItemType.YouTube: {
+        const importer = new YouTubeFeedItemImporter({feedItemService: this});
+        importResult = await importer.import(feedItem);
+        break;
+      }
+      case FeedItemType.Article:
+      case FeedItemType.Tweet:
+      case FeedItemType.Video:
+      case FeedItemType.Website: {
+        const importer = new WebsiteFeedItemImporter({
+          feedItemService: this,
+          firecrawlService: this.firecrawlService,
+        });
+        importResult = await importer.import(feedItem);
+        break;
+      }
+      case FeedItemType.Xkcd: {
+        const importer = new XkcdFeedItemImporter({feedItemService: this});
+        importResult = await importer.import(feedItem);
+        break;
+      }
+      case FeedItemType.Interval: {
+        return makeSuccessResult(undefined);
+      }
+      default:
+        assertNever(feedItem);
+    }
+
+    if (!importResult.success) return importResult;
+
+    void eventLogService.logFeedItemImportedEvent({
+      feedItemId: feedItem.feedItemId,
+      accountId: feedItem.accountId,
+    });
+
+    return makeSuccessResult(undefined);
   }
 }

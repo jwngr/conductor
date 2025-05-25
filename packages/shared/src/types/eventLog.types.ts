@@ -1,15 +1,8 @@
-import {z} from 'zod';
-
 import {makeUuid} from '@shared/lib/utils.shared';
 
-import {AccountIdSchema} from '@shared/types/accounts.types';
 import type {AccountId} from '@shared/types/accounts.types';
-import {ActorSchema} from '@shared/types/actors.types';
 import type {Actor} from '@shared/types/actors.types';
-import {FeedItemActionType, FeedItemIdSchema} from '@shared/types/feedItems.types';
-import type {FeedItemId} from '@shared/types/feedItems.types';
-import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
-import {UserFeedSubscriptionIdSchema} from '@shared/types/userFeedSubscriptions.types';
+import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 
@@ -17,12 +10,6 @@ import type {BaseStoreItem} from '@shared/types/utils.types';
  * Strongly-typed type for an event's unique identifier. Prefer this over plain strings.
  */
 export type EventId = string & {readonly __brand: 'EventIdBrand'};
-
-/**
- * Zod schema for an {@link EventId}.
- */
-// TODO: Consider adding `brand()` and defining `EventId` based on this schema.
-export const EventIdSchema = z.string().uuid();
 
 /**
  * Creates a new random {@link EventId}.
@@ -48,11 +35,6 @@ export interface FeedItemActionEventLogItemData extends Record<string, unknown> 
   readonly feedItemActionType: FeedItemActionType;
 }
 
-export const FeedItemActionEventLogItemDataSchema = z.object({
-  feedItemId: FeedItemIdSchema,
-  feedItemActionType: z.nativeEnum(FeedItemActionType),
-});
-
 export interface UserFeedSubscriptionEventLogItemData extends Record<string, unknown> {
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
   // TODO: Add `userFeedSubscriptionActionType`.
@@ -61,23 +43,6 @@ export interface UserFeedSubscriptionEventLogItemData extends Record<string, unk
 export interface FeedItemImportedEventLogItemData extends Record<string, unknown> {
   readonly feedItemId: FeedItemId;
 }
-
-export const FeedItemImportedEventLogItemDataSchema = z.object({
-  feedItemId: FeedItemIdSchema,
-});
-
-export type EventLogItemData =
-  | FeedItemActionEventLogItemData
-  | UserFeedSubscriptionEventLogItemData
-  | FeedItemImportedEventLogItemData;
-
-export const UserFeedSubscriptionEventLogItemDataSchema = z.object({
-  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
-});
-
-const EventLogItemDataSchema = FeedItemActionEventLogItemDataSchema.or(
-  UserFeedSubscriptionEventLogItemDataSchema
-).or(FeedItemImportedEventLogItemDataSchema);
 
 /**
  * Base interface for all event log items. Most things that happen in the app are logged and tracked
@@ -95,25 +60,6 @@ interface BaseEventLogItem extends BaseStoreItem {
   /** Arbitrary data associated with the event. */
   readonly data?: Record<string, unknown>;
 }
-
-/**
- * Zod schema for an {@link EventLogItem} persisted to Firestore.
- */
-export const EventLogItemFromStorageSchema = z.object({
-  eventId: EventIdSchema,
-  eventType: z.nativeEnum(EventType),
-  accountId: AccountIdSchema,
-  actor: ActorSchema,
-  environment: z.nativeEnum(Environment),
-  data: EventLogItemDataSchema,
-  createdTime: FirestoreTimestampSchema.or(z.date()),
-  lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
-});
-
-/**
- * Type for an {@link EventLogItem} persisted to Firestore.
- */
-export type EventLogItemFromStorage = z.infer<typeof EventLogItemFromStorageSchema>;
 
 export interface FeedItemActionEventLogItem extends BaseEventLogItem {
   readonly eventType: EventType.FeedItemAction;

@@ -27,7 +27,7 @@ import {
 import {asyncTry, prefixError, prefixResultIfError, syncTry} from '@shared/lib/errorUtils.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
 
-import type {AsyncResult, Result} from '@shared/types/result.types';
+import type {AsyncResult, Result} from '@shared/types/results.types';
 import type {Consumer, Func, Unsubscribe} from '@shared/types/utils.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';
@@ -174,10 +174,7 @@ export class ClientFirestoreCollectionService<
       }
     };
 
-    const handleError: Consumer<Error> = (error) => {
-      onError(error);
-    };
-
+    const handleError: Consumer<Error> = (error) => onError(error);
     return onSnapshot(this.getDocRef(docId), handleSnapshot, handleError);
   }
 

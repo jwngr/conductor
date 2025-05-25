@@ -1,26 +1,31 @@
-import {NavItems} from '@shared/lib/navItems.shared';
-
-import {NavItemId} from '@shared/types/urls.types';
+import {DEFAULT_NAV_ITEM} from '@shared/lib/navItems.shared';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
-import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
-import {ScreenWrapper} from '@src/components/layout/Screen';
+import {NavItemLink} from '@src/components/nav/NavItemLink';
+
+import {Screen} from '@src/screens/Screen';
 
 // TODO: Improve design of error screen.
 export const ErrorScreen: React.FC<{readonly error: Error}> = ({error}) => {
-  const navItem = NavItems.fromId(NavItemId.Untriaged);
+  const navItem = DEFAULT_NAV_ITEM;
+
   return (
-    <ScreenWrapper align="center" justify="center">
-      <FlexColumn align="center" style={{maxWidth: 960}} gap={8}>
-        <Text as="h1">Oops... something went wrong</Text>
-        <Text as="p">{error.message}</Text>
-        <Link to="/">
+    <Screen align="center" justify="center" maxWidth={960}>
+      <FlexColumn align="center" gap={2}>
+        <Text as="h1">Something went wrong</Text>
+        <Text as="p" className="text-error">
+          <Text as="span" bold>
+            Error:
+          </Text>{' '}
+          {error.message}
+        </Text>
+        <NavItemLink navItemId={navItem.id}>
           <Text as="p" underline="always">
             Go to {navItem.title}
           </Text>
-        </Link>
+        </NavItemLink>
       </FlexColumn>
-    </ScreenWrapper>
+    </Screen>
   );
 };

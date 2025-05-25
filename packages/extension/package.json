@@ -6,15 +6,16 @@
   "dependencies": {
     "@conductor/shared": "workspace:*",
     "@conductor/shared-client": "workspace:*",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "firebase": "^11.7.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
-    "@types/chrome": "^0.0.300",
-    "@types/react": "^19.0.8",
-    "@types/react-dom": "^19.0.3",
-    "@vitejs/plugin-react": "^4.3.4",
-    "vite": "^6.0.11"
+    "@types/chrome": "^0.0.322",
+    "@types/react": "^19.1.4",
+    "@types/react-dom": "^19.1.5",
+    "@vitejs/plugin-react": "^4.4.1",
+    "vite": "^6.3.5"
   },
   "scripts": {
     "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",
@@ -23,12 +24,12 @@
     "validate:types": "tsc --build",
     "validate:format": "prettier --check 'src/**/*.{js,jsx,ts,tsx,json,css}'",
     "format": "prettier --write 'src/**/*.{js,jsx,ts,tsx,json,css}'",
-    "start": "vite",
+    "dev": "vite",
     "clean": "rm -rf dist/ distIgnore/",
     "ci": "rm -rf node_modules/ && yarn install",
     "build": "yarn run clean && vite build",
     "preview": "vite preview",
-    "test": "echo 'TODO: Implement tests for extension'"
+    "test": "echo 'No tests implemented'"
   },
   "browserslist": [
     ">0.2%",

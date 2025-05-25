@@ -1,15 +1,12 @@
-import {z} from 'zod';
-
-import {makeUuid} from '@shared/lib/utils.shared';
-
 import type {AccountId} from '@shared/types/accounts.types';
-import {AccountIdSchema} from '@shared/types/accounts.types';
-import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
+import type {
+  FeedSource,
+  FeedSourceWithUrl,
+  IntervalFeedSource,
+} from '@shared/types/feedSources.types';
 import type {IconName} from '@shared/types/icons.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import type {TagId} from '@shared/types/tags.types';
-import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
-import {UserFeedSubscriptionIdSchema} from '@shared/types/userFeedSubscriptions.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 
 /**
@@ -18,114 +15,33 @@ import type {BaseStoreItem} from '@shared/types/utils.types';
 export type FeedItemId = string & {readonly __brand: 'FeedItemIdBrand'};
 
 /**
- * Zod schema for a {@link FeedItemId}.
+ * The type of content in a feed item. Some types persist additional data (e.g. XKCD stores the
+ * comic number, YouTube stores the video ID).
  */
-export const FeedItemIdSchema = z.string().uuid();
-
-/**
- * Creates a new random {@link FeedItemId}.
- */
-export function makeFeedItemId(): FeedItemId {
-  return makeUuid<FeedItemId>();
-}
-
-// TODO: Do I want to persist this or just compute it on the client?
 export enum FeedItemType {
   Article = 'ARTICLE',
   Video = 'VIDEO',
   Website = 'WEBSITE',
   Tweet = 'TWEET',
   Xkcd = 'XKCD',
+  YouTube = 'YOUTUBE',
+  /** Feed items emitted by an interval feed subscription. */
+  Interval = 'INTERVAL',
 }
-
-export enum FeedItemSourceType {
-  /** Feed item was manually added from the app. */
-  App = 'APP',
-  /** Feed item was manually added from the web extension. */
-  Extension = 'EXTENSION',
-  /** Feed item was added from an RSS feed subscription. */
-  RSS = 'RSS',
-}
-
-export enum TriageStatus {
-  Untriaged = 'UNTRIAGED',
-  Saved = 'SAVED',
-  Done = 'DONE',
-  Trashed = 'TRASHED',
-}
-
-export const AppFeedItemSourceSchema = z.object({
-  type: z.literal(FeedItemSourceType.App),
-});
-
-export const ExtensionFeedItemSourceSchema = z.object({
-  type: z.literal(FeedItemSourceType.Extension),
-});
-
-export const RssFeedItemSourceSchema = z.object({
-  type: z.literal(FeedItemSourceType.RSS),
-  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
-});
-
-export const FeedItemSourceFromStorageSchema = z.discriminatedUnion('type', [
-  AppFeedItemSourceSchema,
-  ExtensionFeedItemSourceSchema,
-  RssFeedItemSourceSchema,
-]);
-
-export type FeedItemSourceFromStorage = z.infer<typeof FeedItemSourceFromStorageSchema>;
-
-interface BaseFeedItemSource {
-  // TODO: Consider renaming this to `sourceType`.
-  readonly type: FeedItemSourceType;
-}
-
-export interface FeedItemAppSource extends BaseFeedItemSource {
-  readonly type: FeedItemSourceType.App;
-}
-
-export const FEED_ITEM_EXTENSION_SOURCE: FeedItemExtensionSource = {
-  type: FeedItemSourceType.Extension,
-};
-
-export interface FeedItemExtensionSource extends BaseFeedItemSource {
-  readonly type: FeedItemSourceType.Extension;
-}
-
-export const FEED_ITEM_APP_SOURCE: FeedItemAppSource = {
-  type: FeedItemSourceType.App,
-};
-
-export interface FeedItemRSSSource extends BaseFeedItemSource {
-  readonly type: FeedItemSourceType.RSS;
-  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-}
-
-export function makeFeedItemRSSSource(
-  userFeedSubscriptionId: UserFeedSubscriptionId
-): FeedItemRSSSource {
-  return {
-    type: FeedItemSourceType.RSS,
-    userFeedSubscriptionId: userFeedSubscriptionId,
-  };
-}
-
-export type FeedItemSource = FeedItemAppSource | FeedItemExtensionSource | FeedItemRSSSource;
 
 interface BaseFeedItem extends BaseStoreItem {
+  /** Unique ID for this feed item. */
   readonly feedItemId: FeedItemId;
+  /** Type of feed item (e.g. article, video, website). */
+  readonly feedItemType: FeedItemType;
+  /** Source of the feed item (e.g. RSS feed, YouTube channel, extension, ). */
+  readonly feedSource: FeedSource;
+  /** ID of the account that owns the feed item. */
   readonly accountId: AccountId;
-  readonly type: FeedItemType;
-  readonly feedItemSource: FeedItemSource;
-
-  // Content metadata.
-  readonly url: string;
+  /** State of the feed item's import process. */
+  readonly importState: FeedItemImportState;
+  /** Title of the content provided by the source. */
   readonly title: string;
-  readonly description: string;
-  /** Links found in the scraped URL content. */
-  readonly outgoingLinks: string[];
-  /** AI-generated hierarchical summary of the content. */
-  readonly summary: string;
 
   /**
    * Triage status determines where the feed item "lives" in the app.
@@ -142,54 +58,53 @@ interface BaseFeedItem extends BaseStoreItem {
    * To accomplish this, most state is stored as tags that either exist in this map or not.
    */
   readonly tagIds: Partial<Record<TagId, true>>;
-
-  // Timestamps.
-  readonly lastImportedTime?: Date;
 }
 
-/**
- * Zod schema for a {@link FeedItem} persisted to Firestore.
- */
-export const FeedItemFromStorageSchema = z.object({
-  feedItemId: FeedItemIdSchema,
-  accountId: AccountIdSchema,
-  type: z.nativeEnum(FeedItemType),
-  feedItemSource: FeedItemSourceFromStorageSchema,
-  url: z.string().url(),
-  title: z.string().min(1),
-  description: z.string(),
-  outgoingLinks: z.array(z.string().url()),
-  summary: z.string(),
-  triageStatus: z.nativeEnum(TriageStatus),
-  tagIds: z.record(z.string(), z.literal(true).optional()),
-  lastImportedTime: FirestoreTimestampSchema.or(z.date()).optional(),
-  createdTime: FirestoreTimestampSchema.or(z.date()),
-  lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
-});
-
-/**
- * Type for a {@link FeedItem} persisted to Firestore.
- */
-export type FeedItemFromStorage = z.infer<typeof FeedItemFromStorageSchema>;
-
-export interface ArticleFeedItem extends BaseFeedItem {
-  readonly type: FeedItemType.Article;
+export interface BaseFeedItemWithUrl extends BaseFeedItem {
+  // Use a more precise type for the feed source.
+  readonly feedSource: FeedSourceWithUrl;
+  /** URL of the source content. */
+  readonly url: string;
+  /** Description of the source content, provided by the source. */
+  readonly description: string | null;
+  /** Links found in the source content. */
+  readonly outgoingLinks: string[];
+  /** AI-generated summary of the source content. */
+  readonly summary: string | null;
 }
 
-export interface VideoFeedItem extends BaseFeedItem {
-  readonly type: FeedItemType.Video;
+export interface ArticleFeedItem extends BaseFeedItemWithUrl {
+  readonly feedItemType: FeedItemType.Article;
 }
 
-export interface WebsiteFeedItem extends BaseFeedItem {
-  readonly type: FeedItemType.Website;
+export interface VideoFeedItem extends BaseFeedItemWithUrl {
+  readonly feedItemType: FeedItemType.Video;
 }
 
-export interface TweetFeedItem extends BaseFeedItem {
-  readonly type: FeedItemType.Tweet;
+export interface WebsiteFeedItem extends BaseFeedItemWithUrl {
+  readonly feedItemType: FeedItemType.Website;
 }
 
-export interface XkcdFeedItem extends BaseFeedItem {
-  readonly type: FeedItemType.Xkcd;
+export interface TweetFeedItem extends BaseFeedItemWithUrl {
+  readonly feedItemType: FeedItemType.Tweet;
+}
+
+export interface XkcdFeedItem extends BaseFeedItemWithUrl {
+  readonly feedItemType: FeedItemType.Xkcd;
+  readonly xkcd: {
+    readonly altText: string;
+    readonly imageUrlSmall: string;
+    readonly imageUrlLarge: string;
+  } | null;
+}
+
+export interface YouTubeFeedItem extends BaseFeedItemWithUrl {
+  readonly feedItemType: FeedItemType.YouTube;
+}
+
+export interface IntervalFeedItem extends BaseFeedItem {
+  readonly feedItemType: FeedItemType.Interval;
+  readonly feedSource: IntervalFeedSource;
 }
 
 /**
@@ -201,19 +116,91 @@ export type FeedItem =
   | VideoFeedItem
   | WebsiteFeedItem
   | TweetFeedItem
-  | XkcdFeedItem;
+  | XkcdFeedItem
+  | YouTubeFeedItem
+  | IntervalFeedItem;
+
+export type FeedItemWithUrl = Exclude<FeedItem, IntervalFeedItem>;
+
+export enum TriageStatus {
+  Untriaged = 'UNTRIAGED',
+  Saved = 'SAVED',
+  Done = 'DONE',
+  Trashed = 'TRASHED',
+}
+
+export enum FeedItemImportStatus {
+  /** Created but not yet processed. */
+  New = 'NEW',
+  /** Currently being processed. */
+  Processing = 'PROCESSING',
+  /** Errored while processing. May have partially imported data. */
+  Failed = 'FAILED',
+  /** Successfully imported all data. */
+  Completed = 'COMPLETED',
+}
+
+interface BaseFeedItemImportState {
+  readonly status: FeedItemImportStatus;
+  readonly shouldFetch: boolean;
+  readonly lastImportRequestedTime: Date;
+  readonly lastSuccessfulImportTime: Date | null;
+}
+
+export interface NewFeedItemImportState extends BaseFeedItemImportState {
+  readonly status: FeedItemImportStatus.New;
+  readonly shouldFetch: true;
+  readonly lastSuccessfulImportTime: null;
+}
+
+export function makeNewFeedItemImportState(): NewFeedItemImportState {
+  return {
+    status: FeedItemImportStatus.New,
+    shouldFetch: true,
+    lastImportRequestedTime: new Date(),
+    lastSuccessfulImportTime: null,
+  };
+}
+
+export interface ProcessingFeedItemImportState extends BaseFeedItemImportState {
+  readonly status: FeedItemImportStatus.Processing;
+  readonly shouldFetch: false;
+  readonly importStartedTime: Date;
+  readonly lastSuccessfulImportTime: Date | null;
+}
+
+export interface FailedFeedItemImportState extends BaseFeedItemImportState {
+  readonly status: FeedItemImportStatus.Failed;
+  readonly shouldFetch: boolean;
+  readonly errorMessage: string;
+  readonly importFailedTime: Date;
+  readonly lastSuccessfulImportTime: Date | null;
+}
+
+export interface CompletedFeedItemImportState extends BaseFeedItemImportState {
+  readonly status: FeedItemImportStatus.Completed;
+  readonly shouldFetch: boolean;
+  readonly lastSuccessfulImportTime: Date;
+}
+
+export type FeedItemImportState =
+  | NewFeedItemImportState
+  | ProcessingFeedItemImportState
+  | FailedFeedItemImportState
+  | CompletedFeedItemImportState;
 
 export enum FeedItemActionType {
   Cancel = 'CANCEL',
-  DebugSaveExample = 'DEBUG_SAVE_EXAMPLE',
   MarkDone = 'MARK_DONE',
   MarkUnread = 'MARK_UNREAD',
   Save = 'SAVE',
   Star = 'STAR',
+  RetryImport = 'RETRY_IMPORT',
+  Undo = 'UNDO',
 }
 
 export interface FeedItemAction {
-  readonly type: FeedItemActionType;
+  readonly actionType: FeedItemActionType;
   // TODO: Should this have `feedId` on it? Should it be optional?
   readonly text: string;
   readonly icon: IconName;

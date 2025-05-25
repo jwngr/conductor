@@ -2,18 +2,20 @@ import type {WithFieldValue} from 'firebase-admin/firestore';
 
 import {logger} from '@shared/services/logger.shared';
 
+import {SYSTEM_ACTOR} from '@shared/lib/actors.shared';
 import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
 
-import {AccountId} from '@shared/types/accounts.types';
-import {SYSTEM_ACTOR} from '@shared/types/actors.types';
+import type {AccountId} from '@shared/types/accounts.types';
 import {Environment, EventType, makeEventId} from '@shared/types/eventLog.types';
-import type {EventId, EventLogItem, EventLogItemFromStorage} from '@shared/types/eventLog.types';
-import {FeedItemId} from '@shared/types/feedItems.types';
-import {makeSuccessResult} from '@shared/types/result.types';
-import type {AsyncResult} from '@shared/types/result.types';
+import type {EventId, EventLogItem} from '@shared/types/eventLog.types';
+import type {FeedItemId} from '@shared/types/feedItems.types';
+import type {AsyncResult} from '@shared/types/results.types';
+
+import type {EventLogItemFromStorage} from '@shared/schemas/eventLog.schema';
 
 import {
   makeFirestoreDataConverter,
@@ -26,7 +28,7 @@ type ServerEventLogCollectionService = ServerFirestoreCollectionService<
   EventLogItemFromStorage
 >;
 
-export class ServerEventLogService {
+class ServerEventLogService {
   private readonly eventLogCollectionService: ServerEventLogCollectionService;
 
   constructor(args: {readonly eventLogCollectionService: ServerEventLogCollectionService}) {
@@ -36,32 +38,6 @@ export class ServerEventLogService {
   public async fetchById(eventId: EventId): AsyncResult<EventLogItem | null> {
     return this.eventLogCollectionService.fetchById(eventId);
   }
-
-  // private async logEvent<T extends Record<string, unknown>>(args: {
-  //   readonly eventType: EventType;
-  //   readonly data: T;
-  //   readonly errorDetails?: Record<string, unknown>;
-  // }): AsyncResult<EventId | null> {
-  //   const eventId = makeEventId();
-  //   const createResult = await this.eventLogCollectionService.setDoc(eventId, {
-  //     eventId,
-  //     actor: makeUserActor(this.accountId),
-  //     environment: this.environment,
-  //     eventType: args.eventType,
-  //     data: args.data as EventLogItemData,
-  //     // TODO(timestamps): Use server timestamps instead.
-  //     createdTime: new Date(),
-  //     lastUpdatedTime: new Date(),
-  //   });
-
-  //   if (!createResult.success) {
-  //     const betterError = prefixError(createResult.error, 'Failed to log event');
-  //     logger.error(betterError, args.errorDetails);
-  //     return makeErrorResult(betterError);
-  //   }
-
-  //   return makeSuccessResult(eventId);
-  // }
 
   public async logFeedItemImportedEvent(args: {
     readonly feedItemId: FeedItemId;

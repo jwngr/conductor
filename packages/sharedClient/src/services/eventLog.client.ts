@@ -1,10 +1,12 @@
 import {limit as firestoreLimit, orderBy, where} from 'firebase/firestore';
-import {useEffect, useMemo, useState} from 'react';
+import {useEffect, useMemo} from 'react';
 
 import {logger} from '@shared/services/logger.shared';
 
+import {makeUserActor} from '@shared/lib/actors.shared';
 import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 import {filterNull} from '@shared/lib/utils.shared';
 
 import {
@@ -14,7 +16,7 @@ import {
 } from '@shared/parsers/eventLog.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import {makeUserActor} from '@shared/types/actors.types';
+import type {AsyncState} from '@shared/types/asyncState.types';
 import {
   Environment,
   EventType,
@@ -23,9 +25,7 @@ import {
   type EventLogItem,
 } from '@shared/types/eventLog.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
-import type {ViewType} from '@shared/types/query.types';
-import type {AsyncResult} from '@shared/types/result.types';
-import {makeSuccessResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/results.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
@@ -34,6 +34,7 @@ import {
   makeFirestoreDataConverter,
 } from '@sharedClient/services/firestore.client';
 
+import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
 // TODO: This is a somewhat arbitrary limit. Reconsider what the logic should be here.
@@ -64,62 +65,40 @@ export const useEventLogService = (): ClientEventLogService => {
   return eventLogService;
 };
 
-interface EventLogItemState {
-  readonly eventLogItem: EventLogItem | null;
-  readonly isLoading: boolean;
-  readonly error: Error | null;
-}
-
-// TODO: Ideally these hooks would live in the `shared` package.
-export function useEventLogItem(eventId: EventId): EventLogItemState {
+export function useEventLogItem(eventId: EventId): AsyncState<EventLogItem | null> {
   const eventLogService = useEventLogService();
 
-  const [state, setState] = useState<EventLogItemState>({
-    eventLogItem: null,
-    isLoading: true,
-    error: null,
-  });
+  const {asyncState, setPending, setError, setSuccess} = useAsyncState<EventLogItem | null>();
 
   useEffect(() => {
+    setPending();
     const unsubscribe = eventLogService.watchById(
       eventId,
-      (eventLogItem) => setState({eventLogItem, isLoading: false, error: null}),
-      (error) => setState({eventLogItem: null, isLoading: false, error})
+      (eventLogItem) => setSuccess(eventLogItem),
+      (error) => setError(error)
     );
     return () => unsubscribe();
-  }, [eventId, eventLogService]);
+  }, [eventId, eventLogService, setPending, setError, setSuccess]);
 
-  return state;
+  return asyncState;
 }
 
-interface EventLogItemsState {
-  readonly eventLogItems: EventLogItem[];
-  readonly isLoading: boolean;
-  readonly error: Error | null;
-  readonly limit: number;
-}
-
-export function useEventLogItems({viewType}: {readonly viewType: ViewType}): EventLogItemsState {
+export function useEventLogItems(): AsyncState<EventLogItem[]> {
   const eventLogService = useEventLogService();
 
-  const [state, setState] = useState<EventLogItemsState>({
-    eventLogItems: [],
-    isLoading: true,
-    error: null,
-    limit: 0,
-  });
+  const {asyncState, setPending, setError, setSuccess} = useAsyncState<EventLogItem[]>();
 
   useEffect(() => {
+    setPending();
     const unsubscribe = eventLogService.watchEventLog({
-      successCallback: (eventLogItems) =>
-        setState({eventLogItems, isLoading: false, error: null, limit: EVENT_LOG_LIMIT}),
-      errorCallback: (error) =>
-        setState({eventLogItems: [], isLoading: false, error, limit: EVENT_LOG_LIMIT}),
+      successCallback: (eventLogItems) => setSuccess(eventLogItems),
+      errorCallback: (error) => setError(error),
+      limit: EVENT_LOG_LIMIT,
     });
     return () => unsubscribe();
-  }, [viewType, eventLogService]);
+  }, [eventLogService, setPending, setError, setSuccess]);
 
-  return state;
+  return asyncState;
 }
 
 type ClientEventLogCollectionService = ClientFirestoreCollectionService<EventId, EventLogItem>;
@@ -178,32 +157,6 @@ export class ClientEventLogService {
     );
     return () => unsubscribe();
   }
-
-  // private async logEvent<T extends Record<string, unknown>>(args: {
-  //   readonly eventType: EventType;
-  //   readonly data: T;
-  //   readonly errorDetails?: Record<string, unknown>;
-  // }): AsyncResult<EventId | null> {
-  //   const eventId = makeEventId();
-  //   const createResult = await this.eventLogCollectionService.setDoc(eventId, {
-  //     eventId,
-  //     actor: makeUserActor(this.accountId),
-  //     environment: this.environment,
-  //     eventType: args.eventType,
-  //     data: args.data as EventLogItemData,
-  //     // TODO(timestamps): Use server timestamps instead.
-  //     createdTime: new Date(),
-  //     lastUpdatedTime: new Date(),
-  //   });
-
-  //   if (!createResult.success) {
-  //     const betterError = prefixError(createResult.error, 'Failed to log event');
-  //     logger.error(betterError, args.errorDetails);
-  //     return makeErrorResult(betterError);
-  //   }
-
-  //   return makeSuccessResult(eventId);
-  // }
 
   public async logFeedItemActionEvent(args: {
     readonly feedItemId: FeedItemId;

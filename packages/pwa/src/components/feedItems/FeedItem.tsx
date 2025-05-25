@@ -1,29 +1,60 @@
 import type React from 'react';
-import styled from 'styled-components';
 
-import type {FeedItem} from '@shared/types/feedItems.types';
+import {assertNever} from '@shared/lib/utils.shared';
 
-import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
+import {FeedItemType} from '@shared/types/feedItems.types';
+import type {FeedItem, FeedItemWithUrl} from '@shared/types/feedItems.types';
+
+import {ExternalLink} from '@src/components/atoms/Link';
 import {Spacer} from '@src/components/atoms/Spacer';
 import {Text} from '@src/components/atoms/Text';
 import {FeedItemActions} from '@src/components/feedItems/FeedItemActions';
+import {Markdown} from '@src/components/Markdown';
 
-export const FeedItemWrapper = styled(FlexColumn).attrs({gap: 12})`
-  flex: 1;
-  overflow: auto;
-  padding: 20px;
-`;
+export const FeedItemWrapper: React.FC<{readonly children: React.ReactNode}> = ({children}) => {
+  return <div className="flex flex-1 flex-col gap-3 overflow-auto p-5">{children}</div>;
+};
 
-const FeedItemHeaderWrapper = styled(FlexRow)``;
+const FeedItemHeaderTitle: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
+  const titleContentWithoutLink = (
+    <Text as="h1" bold>
+      {feedItem.title}
+    </Text>
+  );
+
+  switch (feedItem.feedItemType) {
+    case FeedItemType.Interval:
+      return titleContentWithoutLink;
+    case FeedItemType.Article:
+    case FeedItemType.Tweet:
+    case FeedItemType.Video:
+    case FeedItemType.Website:
+    case FeedItemType.Xkcd:
+    case FeedItemType.YouTube:
+      return <ExternalLink href={feedItem.url}>{titleContentWithoutLink}</ExternalLink>;
+    default:
+      assertNever(feedItem);
+  }
+};
 
 export const FeedItemHeader: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
   return (
-    <FeedItemHeaderWrapper>
-      <Text as="h1" bold>
-        {feedItem.title}
-      </Text>
+    <div className="flex">
+      <FeedItemHeaderTitle feedItem={feedItem} />
       <Spacer flex />
       <FeedItemActions feedItem={feedItem} />
-    </FeedItemHeaderWrapper>
+    </div>
   );
+};
+
+export const FeedItemSummary: React.FC<{readonly feedItem: FeedItemWithUrl}> = ({feedItem}) => {
+  if (feedItem.summary === null) {
+    return <Text as="p">No summary generated</Text>;
+  }
+
+  if (feedItem.summary.length === 0) {
+    return <Text as="p">Summary empty</Text>;
+  }
+
+  return <Markdown content={feedItem.summary.replace(/•/g, '*')} />;
 };

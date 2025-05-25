@@ -15,9 +15,9 @@ on:
       - '.github/actions/setup-workflow/**'
       - '.github/workflows/firebase-hosting-pull-request.yml'
 permissions:
-  checks: write
   contents: read
-  pull-requests: write
+  id-token: write
+  checks: write
 jobs:
   preview_hosting_stag:
     if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}

@@ -1,4 +1,4 @@
-type ConsoleColor = 'black' | 'green' | 'yellow' | 'red';
+type ConsoleColor = 'black' | 'green' | 'red';
 
 class SharedLoggerService {
   private logInternal(
@@ -22,7 +22,7 @@ class SharedLoggerService {
   }
 
   public warn(message: string, data?: Record<string, unknown>): void {
-    this.logInternal(`[WARNING] ${message}`, data, 'yellow');
+    this.logInternal(`[WARNING] ${message}`, data, 'black');
   }
 
   public error(error: Error, data?: Record<string, unknown>): void {

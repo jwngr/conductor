@@ -1,68 +1,75 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
-import {styled} from 'styled-components';
 
 import type {DevToolbarSectionInfo} from '@shared/types/devToolbar.types';
-import {ThemeColor} from '@shared/types/theme.types';
+import type {Task} from '@shared/types/utils.types';
 
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
+import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
 import {RequireLoggedInAccount} from '@src/components/auth/RequireLoggedInAccount';
 
-const DevToolbarWrapper = styled.div<{readonly $isOpen: boolean}>`
-  position: fixed;
-  bottom: 16px;
-  right: 16px;
-  background-color: ${({theme}) => theme.colors[ThemeColor.Neutral100]};
-  border-radius: ${({$isOpen}) => ($isOpen ? '12px' : '100%')};
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  border: 2px solid ${({theme}) => theme.colors.border};
-  cursor: ${({$isOpen}) => ($isOpen ? 'default' : 'pointer')};
-  width: ${({$isOpen}) => ($isOpen ? '300px' : '32px')};
-  height: ${({$isOpen}) => ($isOpen ? 'auto' : '32px')};
-  padding: ${({$isOpen}) => ($isOpen ? '16px' : '0')};
-`;
+import {IS_DEVELOPMENT} from '@src/lib/environment.pwa';
 
-const DevToolbarContent = styled.div<{readonly $isOpen: boolean}>`
-  display: ${({$isOpen}) => ($isOpen ? 'flex' : 'none')};
-  flex-direction: column;
-  gap: 12px;
-`;
+import {storiesRedirectRoute} from '@src/routes';
 
-const DevToolbarSectionWrapper = styled(FlexColumn)`
-  gap: 12px;
-`;
+const BugEmoji: React.FC = () => {
+  return (
+    <span
+      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-base"
+      aria-hidden="true"
+    >
+      🐛
+    </span>
+  );
+};
 
-const BugEmoji = styled.span<{readonly $isOpen: boolean}>`
-  display: ${({$isOpen}) => ($isOpen ? 'none' : 'block')};
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 16px;
-`;
+const DevToolbarContent: React.FC<{
+  readonly onClose: Task;
+}> = ({onClose}) => {
+  const devToolbarSections = useDevToolbarStore((state) => state.sections);
+  return (
+    <FlexColumn gap={4}>
+      {devToolbarSections.map((section) =>
+        section.requiresAuth ? (
+          <RequireLoggedInAccount key={section.sectionType}>
+            <DevToolbarSectionComponent section={section} />
+          </RequireLoggedInAccount>
+        ) : (
+          <DevToolbarSectionComponent key={section.sectionType} section={section} />
+        )
+      )}
+      <FlexColumn>
+        <Text as="h4" bold>
+          Links
+        </Text>
+        <Link to={storiesRedirectRoute.fullPath} onClick={onClose}>
+          <Text as="p" underline="hover">
+            Design system & stories
+          </Text>
+        </Link>
+      </FlexColumn>
+    </FlexColumn>
+  );
+};
 
 const DevToolbarSectionComponent: React.FC<{
   readonly section: DevToolbarSectionInfo;
 }> = ({section}) => {
   return (
-    <DevToolbarSectionWrapper>
+    <FlexColumn gap={1}>
       <Text as="h4" bold>
         {section.title}
       </Text>
-      {section.renderSection()}
-    </DevToolbarSectionWrapper>
+      <FlexColumn gap={2}>{section.renderSection()}</FlexColumn>
+    </FlexColumn>
   );
 };
 
-export const DevToolbar: React.FC<{
-  readonly isVisible?: boolean;
-}> = ({isVisible = true}) => {
+export const DevToolbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const toolbarRef = useRef<HTMLDivElement>(null);
-
-  const devToolbarSections = useDevToolbarStore((state) => state.sections);
 
   // Close the toolbar on clicks outside of it.
   useEffect(() => {
@@ -96,25 +103,21 @@ export const DevToolbar: React.FC<{
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  // TODO: Add `!IS_DEVELOPMENT` check back here.
-  if (!isVisible || devToolbarSections.length === 0) return null;
+  if (!IS_DEVELOPMENT) {
+    return null;
+  }
 
   return (
-    <DevToolbarWrapper ref={toolbarRef} $isOpen={isOpen} onClick={handleToolbarClick}>
-      <BugEmoji $isOpen={isOpen} aria-hidden="true">
-        🐛
-      </BugEmoji>
-      <DevToolbarContent $isOpen={isOpen}>
-        {devToolbarSections.map((section) =>
-          section.requiresAuth ? (
-            <RequireLoggedInAccount key={section.sectionType}>
-              <DevToolbarSectionComponent section={section} />
-            </RequireLoggedInAccount>
-          ) : (
-            <DevToolbarSectionComponent key={section.sectionType} section={section} />
-          )
-        )}
-      </DevToolbarContent>
-    </DevToolbarWrapper>
+    <div
+      ref={toolbarRef}
+      onClick={handleToolbarClick}
+      className={`border-border fixed right-4 bottom-4 border-2 border-solid shadow-md ${
+        isOpen
+          ? 'bg-neutral-1 h-auto w-[300px] cursor-default rounded-xl p-4'
+          : 'bg-neutral-1 h-8 w-8 cursor-pointer rounded-full p-0'
+      }`}
+    >
+      {isOpen ? <DevToolbarContent onClose={() => setIsOpen(false)} /> : <BugEmoji />}
+    </div>
   );
 };

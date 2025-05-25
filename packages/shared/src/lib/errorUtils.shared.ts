@@ -1,18 +1,18 @@
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {partition} from '@shared/lib/utils.shared';
 
-import type {AsyncResult, ErrorResult, Result, SuccessResult} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {AsyncResult, ErrorResult, Result, SuccessResult} from '@shared/types/results.types';
 import type {Supplier} from '@shared/types/utils.types';
+
+const DEFAULT_ERROR_MESSAGE = 'An unexpected error occurred';
 
 /**
  * Upgrades an unknown error into a proper `Error` object with the best message possible.
  */
 export function upgradeUnknownError(unknownError: unknown): Error {
-  const defaultErrorMessage = 'An unexpected error occurred';
-
   // Unknown error is already an `Error` object.
   if (unknownError instanceof Error) {
-    return new Error(unknownError.message || defaultErrorMessage, {
+    return new Error(unknownError.message || DEFAULT_ERROR_MESSAGE, {
       cause: unknownError.cause instanceof Error ? unknownError.cause : unknownError,
     });
   }
@@ -35,8 +35,17 @@ export function upgradeUnknownError(unknownError: unknown): Error {
   }
 
   // Unknown error has an unexpected type.
+  const stringifiedErrorResult = syncTry(() => JSON.stringify(unknownError));
+  if (!stringifiedErrorResult.success) {
+    // `JSON.stringify` may fail due to circular references.
+    return new Error(
+      `Expected error, but caught non-stringifiable object of type ${typeof unknownError}: \`${unknownError}\``,
+      {cause: unknownError}
+    );
+  }
+
   return new Error(
-    `Expected error, but caught \`${JSON.stringify(unknownError)}\` (${typeof unknownError})`,
+    `Expected error, but caught \`${stringifiedErrorResult.value}\` (${typeof unknownError})`,
     {cause: unknownError}
   );
 }
@@ -68,8 +77,8 @@ export function prefixResultIfError<T>(result: Result<T>, errorPrefix: string): 
 }
 
 /**
- * Executes the given synchronous function and returns its result. Errors should never be thrown.
- * Instead, an `ErrorResult` is returned.
+ * Executes the given synchronous function and returns its result. A thrown error is converted into
+ * an `ErrorResult`.
  *
  * For asynchronous functions, see {@link asyncTry}.
  */

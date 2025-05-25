@@ -1,22 +1,17 @@
-import type {ViewType} from '@shared/types/query.types';
+import type {ViewType} from '@shared/types/views.types';
 
-import {AppHeader} from '@src/components/AppHeader';
 import {FeedItemScreenKeyboardHandler} from '@src/components/feedItems/FeedItemScreenEscapeHandler';
-import {ScreenMainContentWrapper, ScreenWrapper} from '@src/components/layout/Screen';
-import {LeftSidebar} from '@src/components/LeftSidebar';
-import {View} from '@src/components/views/View';
+import {ViewRenderer} from '@src/components/views/View';
+
+import {Screen} from '@src/screens/Screen';
 
 export const ViewScreen: React.FC<{
   readonly viewType: ViewType;
 }> = ({viewType}) => {
   return (
-    <ScreenWrapper>
-      <AppHeader />
-      <ScreenMainContentWrapper>
-        <LeftSidebar />
-        <View viewType={viewType} />
-      </ScreenMainContentWrapper>
+    <Screen withHeader withLeftSidebar>
+      <ViewRenderer key={viewType} viewType={viewType} />
       <FeedItemScreenKeyboardHandler />
-    </ScreenWrapper>
+    </Screen>
   );
 };

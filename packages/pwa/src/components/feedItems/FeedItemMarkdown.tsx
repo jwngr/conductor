@@ -1,34 +1,31 @@
 import type React from 'react';
 
-import {logger} from '@shared/services/logger.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 
-import {prefixError} from '@shared/lib/errorUtils.shared';
-import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
-
+import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {FeedItem} from '@shared/types/feedItems.types';
 
-import {useFeedItemMarkdown} from '@sharedClient/services/feedItems.client';
+import {useFeedItemMarkdown} from '@sharedClient/hooks/feedItems.hooks';
 
 import {Text} from '@src/components/atoms/Text';
 import {Markdown} from '@src/components/Markdown';
 
 export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
-  const isFeedItemImported = !SharedFeedItemHelpers.isImporting(feedItem);
-  const {markdown, isLoading, error} = useFeedItemMarkdown(feedItem.feedItemId, isFeedItemImported);
+  const markdownState = useFeedItemMarkdown(feedItem);
 
-  if (error) {
-    logger.error(prefixError(error, 'Error fetching markdown for feed item'), {
-      feedItemId: feedItem.feedItemId,
-    });
-    // TODO: Introduce proper error screen.
-    return <Text as="p">Something went wrong: {error.message}</Text>;
-  } else if (!isFeedItemImported) {
-    return <Text as="p">Importing...</Text>;
-  } else if (isLoading) {
-    return <Text as="p">Loading markdown...</Text>;
-  } else if (markdown) {
-    return <Markdown content={markdown} />;
-  } else {
-    return <Text as="p">No markdown</Text>;
+  switch (markdownState.status) {
+    case AsyncStatus.Idle:
+    case AsyncStatus.Pending:
+      return <Text as="p">Loading markdown...</Text>;
+    case AsyncStatus.Error:
+      return (
+        <Text as="p" className="text-error">
+          Error loading markdown: {markdownState.error.message}
+        </Text>
+      );
+    case AsyncStatus.Success:
+      return <Markdown content={markdownState.value} />;
+    default:
+      assertNever(markdownState);
   }
 };
