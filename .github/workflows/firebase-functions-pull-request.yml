@@ -40,7 +40,7 @@ jobs:
           RSS_FEED_PROVIDER_TYPE: ${{ secrets.RSS_FEED_PROVIDER_TYPE }}
           SUPERFEEDR_USER: ${{ secrets.SUPERFEEDR_USER }}
           SUPERFEEDR_API_KEY: ${{ secrets.SUPERFEEDR_API_KEY }}
-          LOCAL_RSS_FEED_PROVIDER_PORT: ${{ secrets.LOCAL_RSS_FEED_PROVIDER_PORT }}
+          SUPERFEEDR_WEBHOOK_SECRET: ${{ secrets.SUPERFEEDR_WEBHOOK_SECRET }}
         run: |
           if [ -z "$FIRECRAWL_API_KEY" ]; then
             echo "Error: FIRECRAWL_API_KEY secret must be added in GitHub"
