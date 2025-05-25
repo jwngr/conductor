@@ -46,6 +46,7 @@ interface InitializedServices {
   readonly wipeoutService: WipeoutService;
   readonly rssFeedService: ServerRssFeedService;
   readonly feedItemsService: ServerFeedItemsService;
+  readonly rssFeedProvider: RssFeedProvider;
 }
 
 export function initServices(): Result<InitializedServices> {
@@ -103,9 +104,10 @@ export function initServices(): Result<InitializedServices> {
   if (!rssFeedProviderResult.success) {
     return prefixErrorResult(rssFeedProviderResult, 'Failed to initialize RSS feed provider');
   }
+  const rssFeedProvider = rssFeedProviderResult.value;
 
   const rssFeedService = new ServerRssFeedService({
-    rssFeedProvider: rssFeedProviderResult.value,
+    rssFeedProvider,
     userFeedSubscriptionsService,
   });
 
@@ -114,5 +116,6 @@ export function initServices(): Result<InitializedServices> {
     wipeoutService,
     rssFeedService,
     feedItemsService,
+    rssFeedProvider,
   });
 }

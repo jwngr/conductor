@@ -1,9 +1,14 @@
 import type {AsyncResult, Result} from '@conductor/shared/src/types/results.types';
 
-export type RssFeedProviderType = 'local' | 'superfeedr';
+export enum RssFeedProviderType {
+  Local = 'LOCAL',
+  Superfeedr = 'SUPERFEEDR',
+}
 
 /** Provides a way to subscribe to RSS feeds and be notified of new items. */
 export interface RssFeedProvider {
+  readonly type: RssFeedProviderType;
+  readonly webhookSecret: string;
   subscribeToUrl(feedUrl: string): AsyncResult<void>;
   unsubscribeFromUrl(feedUrl: string): AsyncResult<void>;
 }

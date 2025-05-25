@@ -38,7 +38,7 @@ const SuperfeedrFeedItemSchema = z.object({
   source: SuperfeedrFeedSourceSchema,
 });
 
-export const SuperfeedWebhookRequestBodySchema = z.object({
+export const SuperfeedrWebhookRequestBodySchema = z.object({
   status: z.object({
     code: z.number(),
     http: z.string(),
@@ -58,4 +58,4 @@ export const SuperfeedWebhookRequestBodySchema = z.object({
   items: z.array(SuperfeedrFeedItemSchema),
 });
 
-export type SuperfeedWebhookRequestBody = z.infer<typeof SuperfeedWebhookRequestBodySchema>;
+export type SuperfeedrWebhookRequestBody = z.infer<typeof SuperfeedrWebhookRequestBodySchema>;

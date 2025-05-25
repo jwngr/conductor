@@ -1,6 +1,3 @@
-import crypto from 'crypto';
-import type {IncomingHttpHeaders} from 'http2';
-
 import {defineString} from 'firebase-functions/params';
 
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
@@ -10,10 +7,8 @@ import {assertNever, isValidPort} from '@shared/lib/utils.shared';
 import {parseRssFeedProviderType} from '@shared/parsers/rss.parser';
 
 import type {Result} from '@shared/types/results.types';
-import type {RssFeedProvider} from '@shared/types/rss.types';
+import {RssFeedProviderType, type RssFeedProvider} from '@shared/types/rss.types';
 import type {SuperfeedrCredentials} from '@shared/types/superfeedr.types';
-
-import type {SuperfeedWebhookRequestBody} from '@shared/schemas/superfeedr.schema';
 
 import {LocalRssFeedProvider} from '@sharedServer/services/localRssFeedProvider';
 import {SuperfeedrService} from '@sharedServer/services/superfeedr.server';
@@ -25,10 +20,14 @@ const RSS_FEED_PROVIDER_TYPE = defineString('RSS_FEED_PROVIDER_TYPE');
 const SUPERFEEDR_USER = defineString('SUPERFEEDR_USER');
 const SUPERFEEDR_API_KEY = defineString('SUPERFEEDR_API_KEY');
 const SUPERFEEDR_WEBHOOK_SECRET = defineString('SUPERFEEDR_WEBHOOK_SECRET');
+const LOCAL_RSS_FEED_PROVIDER_WEBHOOK_SECRET = defineString(
+  'LOCAL_RSS_FEED_PROVIDER_WEBHOOK_SECRET'
+);
 
 export function getRssFeedProvider(): Result<RssFeedProvider> {
   const rawRssFeedProviderType = RSS_FEED_PROVIDER_TYPE.value();
-  const parsedFeedProviderTypeResult = parseRssFeedProviderType(rawRssFeedProviderType);
+  const uppercasedRssFeedProviderType = rawRssFeedProviderType.toUpperCase();
+  const parsedFeedProviderTypeResult = parseRssFeedProviderType(uppercasedRssFeedProviderType);
   if (!parsedFeedProviderTypeResult.success) {
     const message = `RSS_FEED_PROVIDER_TYPE environment variable has invalid value: "${rawRssFeedProviderType}"`;
     return prefixErrorResult(parsedFeedProviderTypeResult, message);
@@ -37,9 +36,9 @@ export function getRssFeedProvider(): Result<RssFeedProvider> {
   const feedProviderType = parsedFeedProviderTypeResult.value;
 
   switch (feedProviderType) {
-    case 'local':
+    case RssFeedProviderType.Local:
       return getLocalRssFeedProvider();
-    case 'superfeedr':
+    case RssFeedProviderType.Superfeedr:
       return getSuperfeedrRssFeedProvider();
     default: {
       assertNever(feedProviderType);
@@ -57,7 +56,11 @@ function getLocalRssFeedProvider(): Result<RssFeedProvider> {
     return makeErrorResult(new Error(message));
   }
 
-  const rssFeedProvider = new LocalRssFeedProvider({port, callbackUrl});
+  const rssFeedProvider = new LocalRssFeedProvider({
+    port,
+    callbackUrl,
+    webhookSecret: LOCAL_RSS_FEED_PROVIDER_WEBHOOK_SECRET.value(),
+  });
 
   return makeSuccessResult(rssFeedProvider);
 }
@@ -100,31 +103,4 @@ function validateSuperfeedrCredentials(): Result<SuperfeedrCredentials> {
     user: rawSuperfeedrUser,
     apiKey: rawSuperfeedrApiKey,
   });
-}
-
-export function validateSuperfeedrWebhookSignature(args: {
-  readonly headers: IncomingHttpHeaders;
-  readonly body: SuperfeedWebhookRequestBody;
-}): Result<void> {
-  const {headers, body} = args;
-
-  const rawSuperfeedrWebhookSecret = SUPERFEEDR_WEBHOOK_SECRET.value();
-
-  // Validate the expected signature header is present.
-  const receivedSignature = headers['x-hub-signature'];
-  if (!receivedSignature || typeof receivedSignature !== 'string') {
-    return makeErrorResult(new Error('Missing or invalid X-Hub-Signature header'));
-  }
-
-  // Create the expected signature using the webhook secret.
-  const hmac = crypto.createHmac('sha1', rawSuperfeedrWebhookSecret);
-  hmac.update(JSON.stringify(body));
-  const expectedSignature = `sha1=${hmac.digest('hex')}`;
-
-  // Ensure the received signature matches the expected signature.
-  if (receivedSignature !== expectedSignature) {
-    return makeErrorResult(new Error('Superfeedr webhook signature is invalid'));
-  }
-
-  return makeSuccessResult(undefined);
 }

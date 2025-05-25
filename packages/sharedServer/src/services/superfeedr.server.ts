@@ -1,9 +1,16 @@
+import crypto from 'node:crypto';
+import type {IncomingHttpHeaders} from 'node:http2';
+
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {requestPost} from '@shared/lib/requests.shared';
-import {makeSuccessResult} from '@shared/lib/results.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {makeUuid} from '@shared/lib/utils.shared';
 
-import type {AsyncResult} from '@shared/types/results.types';
+import type {AsyncResult, Result} from '@shared/types/results.types';
 import type {RssFeedProvider} from '@shared/types/rss.types';
+import {RssFeedProviderType} from '@shared/types/rss.types';
+
+import type {SuperfeedrWebhookRequestBody} from '@shared/schemas/superfeedr.schema';
 
 const SUPERFEEDR_BASE_URL = 'https://push.superfeedr.com/';
 
@@ -11,7 +18,7 @@ export class SuperfeedrService implements RssFeedProvider {
   private readonly superfeedrUser: string;
   private readonly superfeedrApiKey: string;
   private readonly callbackUrl: string;
-  private readonly webhookSecret: string;
+  public readonly webhookSecret: string;
 
   constructor(args: {
     readonly superfeedrUser: string;
@@ -24,6 +31,9 @@ export class SuperfeedrService implements RssFeedProvider {
     this.callbackUrl = args.callbackUrl;
     this.webhookSecret = args.webhookSecret;
   }
+
+  public readonly type = RssFeedProviderType.Superfeedr;
+  // TODO: Should this be something else?
 
   private getSuperfeedrAuthHeader(): string {
     return `Basic ${Buffer.from(`${this.superfeedrUser}:${this.superfeedrApiKey}`).toString('base64')}`;
@@ -78,4 +88,30 @@ export class SuperfeedrService implements RssFeedProvider {
 
     return makeSuccessResult(undefined);
   }
+}
+
+export function validateSuperfeedrWebhookSignature(args: {
+  readonly webhookSecret: string;
+  readonly headers: IncomingHttpHeaders;
+  readonly body: SuperfeedrWebhookRequestBody;
+}): Result<void> {
+  const {webhookSecret, headers, body} = args;
+
+  // Validate the expected signature header is present.
+  const receivedSignature = headers['x-hub-signature'];
+  if (!receivedSignature || typeof receivedSignature !== 'string') {
+    return makeErrorResult(new Error('Missing or invalid X-Hub-Signature header'));
+  }
+
+  // Create the expected signature from the secret.
+  const hmac = crypto.createHmac('sha1', webhookSecret);
+  hmac.update(JSON.stringify(body));
+  const expectedSignature = `sha1=${hmac.digest('hex')}`;
+
+  // Ensure signature match.
+  if (receivedSignature !== expectedSignature) {
+    return makeErrorResult(new Error('Superfeedr webhook signature is invalid'));
+  }
+
+  return makeSuccessResult(undefined);
 }
