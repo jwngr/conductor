@@ -18,6 +18,7 @@ import {useFeedItem, useFeedItemsService} from '@sharedClient/services/feedItems
 import {RegisterIndividualFeedItemDevToolbarSection} from '@src/components/devToolbar/RegisterIndividualFeedItemSection';
 import {FeedItemScreenKeyboardHandler} from '@src/components/feedItems/FeedItemScreenEscapeHandler';
 import {ArticleFeedItemRenderer} from '@src/components/feedItems/renderers/ArticleFeedItemRenderer';
+import {IntervalFeedItemRenderer} from '@src/components/feedItems/renderers/IntervalFeedItemRenderer';
 import {TweetFeedItemRenderer} from '@src/components/feedItems/renderers/TweetFeedItemRenderer';
 import {VideoFeedItemRenderer} from '@src/components/feedItems/renderers/VideoFeedItemRenderer';
 import {WebsiteFeedItemRenderer} from '@src/components/feedItems/renderers/WebsiteFeedItemRenderer';
@@ -105,6 +106,9 @@ const LoadedFeedItemScreenMainContent: React.FC<{
       break;
     case FeedItemType.YouTube:
       feedItemContent = <YouTubeFeedItemRenderer feedItem={feedItem} />;
+      break;
+    case FeedItemType.Interval:
+      feedItemContent = <IntervalFeedItemRenderer feedItem={feedItem} />;
       break;
     default:
       assertNever(feedItem);

@@ -2,14 +2,21 @@ import type {FeedItemFromStorage} from '@conductor/shared/src/schemas/feedItems.
 
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
+import {makeIntervalFeedSource} from '@shared/lib/feedSources.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
 import {assertNever, omitUndefined} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import {FeedItemType} from '@shared/types/feedItems.types';
-import type {FeedItem, FeedItemId, FeedItemWithUrl} from '@shared/types/feedItems.types';
+import type {
+  FeedItem,
+  FeedItemId,
+  FeedItemWithUrl,
+  IntervalFeedItem,
+} from '@shared/types/feedItems.types';
 import type {AsyncResult, Result} from '@shared/types/results.types';
+import type {IntervalUserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
 import {eventLogService} from '@sharedServer/services/eventLog.server';
 import {storage} from '@sharedServer/services/firebase.server';
@@ -57,6 +64,32 @@ export class ServerFeedItemsService {
       accountId,
       title,
       description,
+    });
+    if (!feedItemResult.success) return feedItemResult;
+    const feedItem = feedItemResult.value;
+
+    const addFeedItemResult = await this.feedItemsCollectionService.setDoc(
+      feedItem.feedItemId,
+      feedItem
+    );
+
+    if (!addFeedItemResult.success) {
+      return prefixErrorResult(addFeedItemResult, 'Error creating feed item in Firestore');
+    }
+
+    return makeSuccessResult(feedItem);
+  }
+
+  public async createIntervalFeedItem(args: {
+    readonly accountId: AccountId;
+    readonly userFeedSubscription: IntervalUserFeedSubscription;
+  }): AsyncResult<IntervalFeedItem> {
+    const {userFeedSubscription, accountId} = args;
+
+    const feedItemResult = SharedFeedItemHelpers.makeIntervalFeedItem({
+      feedSource: makeIntervalFeedSource({userFeedSubscription}),
+      accountId,
+      title: `Interval feed item for ${new Date().toISOString()}`,
     });
     if (!feedItemResult.success) return feedItemResult;
     const feedItem = feedItemResult.value;

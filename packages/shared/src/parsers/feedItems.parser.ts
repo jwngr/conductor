@@ -6,7 +6,7 @@ import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
-import {parseFeedSource} from '@shared/parsers/feedSources.parser';
+import {parseFeedSource, parseIntervalFeedSource} from '@shared/parsers/feedSources.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {
@@ -24,7 +24,6 @@ import {
   FeedItemType,
   makeNewFeedItemImportState,
 } from '@shared/types/feedItems.types';
-import type {FeedSource} from '@shared/types/feedSources.types';
 import type {Result} from '@shared/types/results.types';
 
 import type {
@@ -171,10 +170,6 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
   );
   if (!parsedImportStateResult.success) return parsedImportStateResult;
 
-  const parseFeedSourceResult = parseFeedSource(parsedBaseFeedItemResult.value.feedSource);
-  if (!parseFeedSourceResult.success) return parseFeedSourceResult;
-  const parsedFeedSource = parseFeedSourceResult.value;
-
   switch (parsedBaseFeedItemResult.value.feedItemType) {
     case FeedItemType.YouTube:
     case FeedItemType.Article:
@@ -187,7 +182,6 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
         feedItemId: parsedIdResult.value,
         accountId: parsedAccountIdResult.value,
         importState: parsedImportStateResult.value,
-        feedSource: parsedFeedSource,
       });
     case FeedItemType.Xkcd:
       return parseXkcdFeedItem({
@@ -195,7 +189,6 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
         feedItemId: parsedIdResult.value,
         accountId: parsedAccountIdResult.value,
         importState: parsedImportStateResult.value,
-        feedSource: parsedFeedSource,
       });
     case FeedItemType.Interval:
       return parseIntervalFeedItem({
@@ -203,7 +196,6 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
         feedItemId: parsedIdResult.value,
         accountId: parsedAccountIdResult.value,
         importState: parsedImportStateResult.value,
-        feedSource: parsedFeedSource,
       });
     default:
       return makeErrorResult(
@@ -214,13 +206,12 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
 
 export function parseBaseFeedItemWithUrl(args: {
   readonly maybeFeedItem: unknown;
-  readonly feedItemType: Exclude<FeedItemType, FeedItemType.Xkcd>;
+  readonly feedItemType: Exclude<FeedItemType, FeedItemType.Xkcd | FeedItemType.Interval>;
   readonly feedItemId: FeedItemId;
   readonly accountId: AccountId;
   readonly importState: FeedItemImportState;
-  readonly feedSource: FeedSource;
 }): Result<FeedItem> {
-  const {maybeFeedItem, feedItemType, feedItemId, feedSource, accountId, importState} = args;
+  const {maybeFeedItem, feedItemType, feedItemId, accountId, importState} = args;
 
   const parsedFeedItemResult = parseZodResult(BaseFeedItemWithUrlFromStorageSchema, maybeFeedItem);
   if (!parsedFeedItemResult.success) {
@@ -228,10 +219,14 @@ export function parseBaseFeedItemWithUrl(args: {
   }
   const storageBaseFeedItem = parsedFeedItemResult.value;
 
+  const parseFeedSourceResult = parseFeedSource(storageBaseFeedItem.feedSource);
+  if (!parseFeedSourceResult.success) return parseFeedSourceResult;
+  const parsedFeedSource = parseFeedSourceResult.value;
+
   return makeSuccessResult(
     omitUndefined({
       feedItemType,
-      feedSource,
+      feedSource: parsedFeedSource,
       accountId,
       importState,
       feedItemId,
@@ -253,9 +248,8 @@ export function parseXkcdFeedItem(args: {
   readonly feedItemId: FeedItemId;
   readonly accountId: AccountId;
   readonly importState: FeedItemImportState;
-  readonly feedSource: FeedSource;
 }): Result<XkcdFeedItem> {
-  const {maybeFeedItem, feedItemId, accountId, importState, feedSource} = args;
+  const {maybeFeedItem, feedItemId, accountId, importState} = args;
 
   const parsedXkcdFeedItemResult = parseZodResult(XkcdFeedItemFromStorageSchema, maybeFeedItem);
   if (!parsedXkcdFeedItemResult.success) {
@@ -263,11 +257,15 @@ export function parseXkcdFeedItem(args: {
   }
   const storageXkcdFeedItem = parsedXkcdFeedItemResult.value;
 
+  const parsedFeedSourceResult = parseFeedSource(storageXkcdFeedItem.feedSource);
+  if (!parsedFeedSourceResult.success) return parsedFeedSourceResult;
+  const parsedFeedSource = parsedFeedSourceResult.value;
+
   return makeSuccessResult(
     omitUndefined({
       feedItemType: FeedItemType.Xkcd,
       xkcd: parsedXkcdFeedItemResult.value.xkcd,
-      feedSource,
+      feedSource: parsedFeedSource,
       accountId,
       importState,
       feedItemId,
@@ -289,9 +287,8 @@ export function parseIntervalFeedItem(args: {
   readonly feedItemId: FeedItemId;
   readonly accountId: AccountId;
   readonly importState: FeedItemImportState;
-  readonly feedSource: FeedSource;
 }): Result<IntervalFeedItem> {
-  const {maybeFeedItem, feedItemId, accountId, importState, feedSource} = args;
+  const {maybeFeedItem, feedItemId, accountId, importState} = args;
 
   const parsedIntervalFeedItemResult = parseZodResult(
     IntervalFeedItemFromStorageSchema,
@@ -302,10 +299,14 @@ export function parseIntervalFeedItem(args: {
   }
   const storageIntervalFeedItem = parsedIntervalFeedItemResult.value;
 
+  const parsedFeedSourceResult = parseIntervalFeedSource(storageIntervalFeedItem.feedSource);
+  if (!parsedFeedSourceResult.success) return parsedFeedSourceResult;
+  const parsedFeedSource = parsedFeedSourceResult.value;
+
   return makeSuccessResult(
     omitUndefined({
       feedItemType: FeedItemType.Interval,
-      feedSource,
+      feedSource: parsedFeedSource,
       accountId,
       importState,
       feedItemId,

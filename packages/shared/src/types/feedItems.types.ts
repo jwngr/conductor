@@ -1,5 +1,9 @@
 import type {AccountId} from '@shared/types/accounts.types';
-import type {FeedSource} from '@shared/types/feedSources.types';
+import type {
+  FeedSource,
+  FeedSourceWithUrl,
+  IntervalFeedSource,
+} from '@shared/types/feedSources.types';
 import type {IconName} from '@shared/types/icons.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import type {TagId} from '@shared/types/tags.types';
@@ -65,6 +69,8 @@ export interface BaseFeedItemWithUrl extends BaseFeedItem {
   readonly outgoingLinks: string[];
   /** AI-generated summary of the source content. */
   readonly summary: string | null;
+  /** Source of the feed item. */
+  readonly feedSource: FeedSourceWithUrl;
 }
 
 export interface ArticleFeedItem extends BaseFeedItemWithUrl {
@@ -98,6 +104,7 @@ export interface YouTubeFeedItem extends BaseFeedItemWithUrl {
 
 export interface IntervalFeedItem extends BaseFeedItem {
   readonly feedItemType: FeedItemType.Interval;
+  readonly feedSource: IntervalFeedSource;
 }
 
 /**

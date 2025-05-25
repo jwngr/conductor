@@ -1,11 +1,10 @@
 import {logger} from '@shared/services/logger.shared';
 
 import {prefixError, prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {makeIntervalFeedSource} from '@shared/lib/feedSources.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {pluralizeWithCount} from '@shared/lib/utils.shared';
 
-import type {FeedItemWithUrl} from '@shared/types/feedItems.types';
+import type {IntervalFeedItem} from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
@@ -52,7 +51,7 @@ export async function handleEmitIntervalFeeds(args: {
     INTERVAL_FEED_EMISSION_INTERVAL_MINUTES;
 
   // Loop through each interval subscription and emit a new feed item if the time has come.
-  const feedItemEmitAsyncResults: Array<AsyncResult<FeedItemWithUrl>> = [];
+  const feedItemEmitAsyncResults: Array<AsyncResult<IntervalFeedItem>> = [];
   for (const currentIntervalSub of intervalSubscriptions) {
     const {intervalSeconds, accountId, userFeedSubscriptionId} = currentIntervalSub;
 
@@ -69,15 +68,9 @@ export async function handleEmitIntervalFeeds(args: {
     innerLog('Creating interval feed item', {accountId, userFeedSubscriptionId, intervalSeconds});
 
     feedItemEmitAsyncResults.push(
-      feedItemsService.createFeedItemFromUrl({
+      feedItemsService.createIntervalFeedItem({
         accountId,
-        feedSource: makeIntervalFeedSource({
-          userFeedSubscription: currentIntervalSub,
-        }),
-        // TODO: Consider making `url` optional.
-        url: 'https://conductor.now/',
-        title: `Interval feed item for ${now.toISOString()}`,
-        description: '',
+        userFeedSubscription: currentIntervalSub,
       })
     );
   }

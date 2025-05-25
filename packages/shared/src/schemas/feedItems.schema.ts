@@ -3,7 +3,7 @@ import {z} from 'zod';
 import {FeedItemImportStatus, FeedItemType, TriageStatus} from '@shared/types/feedItems.types';
 
 import {AccountIdSchema} from '@shared/schemas/accounts.schema';
-import {FeedSourceSchema} from '@shared/schemas/feedSources.schema';
+import {FeedSourceSchema, FeedSourceWithUrlSchema} from '@shared/schemas/feedSources.schema';
 import {FirestoreTimestampSchema} from '@shared/schemas/firebase.schema';
 
 /**
@@ -74,6 +74,7 @@ export const BaseFeedItemWithUrlFromStorageSchema = BaseFeedItemFromStorageSchem
   description: z.string().nullable(),
   summary: z.string().nullable(),
   outgoingLinks: z.array(z.string().url()),
+  feedSource: FeedSourceWithUrlSchema,
 });
 
 export type BaseFeedItemWithUrlFromStorage = z.infer<typeof BaseFeedItemWithUrlFromStorageSchema>;
