@@ -79,6 +79,7 @@ export async function handleSuperfeedrWebhookHelper(args: {
   });
   if (!validateResult.success) {
     respondWithError(validateResult.error, 'Error validating webhook signature');
+    return;
   }
 
   // Fetch all users subscribed to this RSS feed URL.

@@ -29,6 +29,12 @@ export class SuperfeedrService implements RssFeedProvider {
     this.superfeedrApiKey = args.superfeedrApiKey;
     this.callbackUrl = args.callbackUrl;
     this.webhookSecret = args.webhookSecret;
+
+    this.webhookSecret = args.webhookSecret;
+    if (this.webhookSecret.trim().length === 0) {
+      // eslint-disable-next-line no-restricted-syntax
+      throw new Error('Invalid webhook secret');
+    }
   }
 
   public readonly type = RssFeedProviderType.Superfeedr;
@@ -107,8 +113,13 @@ export function validateSuperfeedrWebhookSignature(args: {
   hmac.update(JSON.stringify(body));
   const expectedSignature = `sha1=${hmac.digest('hex')}`;
 
-  // Ensure signature match.
-  if (receivedSignature !== expectedSignature) {
+  // Ensure timing-safe signature match.
+  const receivedBuffer = Buffer.from(receivedSignature);
+  const expectedBuffer = Buffer.from(expectedSignature);
+  if (
+    receivedBuffer.length !== expectedBuffer.length ||
+    !crypto.timingSafeEqual(receivedBuffer, expectedBuffer)
+  ) {
     return makeErrorResult(new Error('Superfeedr webhook signature is invalid'));
   }
 
