@@ -1,5 +1,4 @@
 import * as cheerio from 'cheerio';
-import TurndownService from 'turndown';
 
 import {logger} from '@shared/services/logger.shared';
 
@@ -9,6 +8,8 @@ import {makeAbsoluteXkcdUrl, makeExplainXkcdUrl} from '@shared/lib/xkcd.shared';
 
 import type {AsyncResult} from '@shared/types/results.types';
 import type {ExplainXkcdContent, XkcdComic} from '@shared/types/xkcd.types';
+
+import {htmlToMarkdown} from '@sharedServer/lib/markdown.server';
 
 export async function fetchXkcdComic(comicId: number): AsyncResult<XkcdComic> {
   const url = `https://xkcd.com/${comicId}`;
@@ -55,7 +56,6 @@ export async function fetchExplainXkcdContent(comicId: number): AsyncResult<Expl
   const rawHtml = fetchDataResult.value;
 
   const $ = cheerio.load(rawHtml);
-  const turndownService = new TurndownService();
 
   let explanationMarkdown: string | null = null;
   let transcriptMarkdown: string | null = null;
@@ -69,9 +69,21 @@ export async function fetchExplainXkcdContent(comicId: number): AsyncResult<Expl
       explanationHtml += $.html(nextElement);
       nextElement = nextElement.next();
     }
-    if (explanationHtml) {
-      explanationMarkdown = turndownService.turndown(explanationHtml).trim();
+
+    const trimmedExplanationHtml = explanationHtml.trim();
+    if (trimmedExplanationHtml.length === 0) {
+      const error = new Error('Could not parse explanation from Explain XKCD page');
+      logger.error(error, {url, comicId});
+      return makeErrorResult(error);
     }
+
+    const explanationMarkdownResult = htmlToMarkdown(trimmedExplanationHtml);
+    if (!explanationMarkdownResult.success) {
+      const error = new Error('Error converting explanation HTML to Markdown');
+      logger.error(error, {url, comicId, explanationHtml});
+      return makeErrorResult(error);
+    }
+    explanationMarkdown = explanationMarkdownResult.value;
   }
 
   if (!explanationMarkdown) {
@@ -92,9 +104,21 @@ export async function fetchExplainXkcdContent(comicId: number): AsyncResult<Expl
       transcriptHtml += $.html(nextElement);
       nextElement = nextElement.next();
     }
-    if (transcriptHtml) {
-      transcriptMarkdown = turndownService.turndown(transcriptHtml).trim();
+
+    const trimmedTranscriptHtml = transcriptHtml.trim();
+    if (trimmedTranscriptHtml.length === 0) {
+      const error = new Error('Could not parse transcript from Explain XKCD page');
+      logger.error(error, {url, comicId});
+      return makeErrorResult(error);
     }
+
+    const transcriptMarkdownResult = htmlToMarkdown(trimmedTranscriptHtml);
+    if (!transcriptMarkdownResult.success) {
+      const error = new Error('Error converting transcript HTML to Markdown');
+      logger.error(error, {url, comicId, transcriptHtml});
+      return makeErrorResult(error);
+    }
+    transcriptMarkdown = transcriptMarkdownResult.value;
   }
 
   return makeSuccessResult({

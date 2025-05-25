@@ -2,10 +2,7 @@ import {where} from 'firebase/firestore';
 import type {StorageReference} from 'firebase/storage';
 import {getBlob, ref as storageRef} from 'firebase/storage';
 
-import {
-  FEED_ITEM_FILE_NAME_LLM_CONTEXT,
-  FEED_ITEM_FILE_NAME_TRANSCRIPT,
-} from '@shared/lib/constants.shared';
+import {FEED_ITEM_FILE_LLM_CONTEXT, FEED_ITEM_FILE_TRANSCRIPT} from '@shared/lib/constants.shared';
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
@@ -165,10 +162,10 @@ export class ClientFeedItemsService {
   }
 
   public async getFeedItemMarkdown(feedItemId: FeedItemId): AsyncResult<string> {
-    return this.getFileFromStorage({feedItemId, filename: FEED_ITEM_FILE_NAME_LLM_CONTEXT});
+    return this.getFileFromStorage({feedItemId, filename: FEED_ITEM_FILE_LLM_CONTEXT});
   }
 
   public async getFeedItemTranscript(feedItemId: FeedItemId): AsyncResult<string> {
-    return this.getFileFromStorage({feedItemId, filename: FEED_ITEM_FILE_NAME_TRANSCRIPT});
+    return this.getFileFromStorage({feedItemId, filename: FEED_ITEM_FILE_TRANSCRIPT});
   }
 }
