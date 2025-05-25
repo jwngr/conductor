@@ -56,11 +56,15 @@ function getLocalRssFeedProvider(): Result<RssFeedProvider> {
     return makeErrorResult(new Error(message));
   }
 
-  const rssFeedProvider = new LocalRssFeedProvider({
-    port,
-    callbackUrl,
-    webhookSecret: LOCAL_RSS_FEED_PROVIDER_WEBHOOK_SECRET.value(),
-  });
+  const webhookSecret = LOCAL_RSS_FEED_PROVIDER_WEBHOOK_SECRET.value();
+  if (webhookSecret.length === 0) {
+    const message =
+      'LOCAL_RSS_FEED_PROVIDER_WEBHOOK_SECRET environment variable must be set when Local RSS ' +
+      'feed provider enabled. Generate via `openssl rand -hex 16`.';
+    return makeErrorResult(new Error(message));
+  }
+
+  const rssFeedProvider = new LocalRssFeedProvider({port, callbackUrl, webhookSecret});
 
   return makeSuccessResult(rssFeedProvider);
 }
@@ -73,13 +77,21 @@ function getSuperfeedrRssFeedProvider(): Result<RssFeedProvider> {
     const message = 'Failed to initialize Superfeedr RSS feed provider';
     return prefixErrorResult(credentialsResult, message);
   }
-
   const credentials = credentialsResult.value;
+
+  const webhookSecret = SUPERFEEDR_WEBHOOK_SECRET.value();
+  if (webhookSecret.length === 0) {
+    const message =
+      'SUPERFEEDR_WEBHOOK_SECRET environment variable must be set when Superfeedr enabled. ' +
+      'Generate via `openssl rand -hex 16`.';
+    return makeErrorResult(new Error(message));
+  }
+
   const rssFeedProvider = new SuperfeedrService({
     superfeedrUser: credentials.user,
     superfeedrApiKey: credentials.apiKey,
     callbackUrl,
-    webhookSecret: SUPERFEEDR_WEBHOOK_SECRET.value(),
+    webhookSecret,
   });
 
   return makeSuccessResult(rssFeedProvider);
