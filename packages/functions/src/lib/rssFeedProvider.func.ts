@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import type {IncomingHttpHeaders} from 'http2';
 
 import {defineString} from 'firebase-functions/params';
