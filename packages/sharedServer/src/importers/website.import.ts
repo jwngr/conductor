@@ -1,6 +1,12 @@
+import {Defuddle} from 'defuddle/node';
+
+import {logger} from '@shared/services/logger.shared';
+
 import {
-  FEED_ITEM_FILE_NAME_HTML,
-  FEED_ITEM_FILE_NAME_LLM_CONTEXT,
+  FEED_ITEM_FILE_HTML,
+  FEED_ITEM_FILE_HTML_DEFUDDLE,
+  FEED_ITEM_FILE_HTML_MARKDOWN,
+  FEED_ITEM_FILE_LLM_CONTEXT,
 } from '@shared/lib/constants.shared';
 import {
   asyncTryAll,
@@ -44,7 +50,7 @@ export class WebsiteFeedItemImporter {
     readonly url: string;
     readonly feedItemId: FeedItemId;
     readonly accountId: AccountId;
-  }): AsyncResult<void> {
+  }): AsyncResult<string> {
     const {url, feedItemId, accountId} = args;
 
     // TODO: Extend the import functionality here:
@@ -61,18 +67,86 @@ export class WebsiteFeedItemImporter {
 
     const rawHtml = fetchDataResult.value;
 
-    const storagePath = this.feedItemService.getStoragePath({
+    const rawHtmlStoragePath = this.feedItemService.getStoragePath({
       feedItemId,
       accountId,
-      filename: FEED_ITEM_FILE_NAME_HTML,
+      filename: FEED_ITEM_FILE_HTML,
     });
-    const saveHtmlResult = await this.feedItemService.writeFileToStorage({
-      storagePath,
+
+    // Parse the HTML string into a document.
+    // const parser = new DOMParser();
+    // const doc = parser.parseFromString(htmlState.value, 'text/html');
+
+    const saveRawHtmlResult = await this.feedItemService.writeFileToStorage({
+      storagePath: rawHtmlStoragePath,
       content: rawHtml,
       contentType: 'text/html',
     });
 
-    return prefixResultIfError(saveHtmlResult, 'Error saving feed item HTML');
+    if (!saveRawHtmlResult.success) return saveRawHtmlResult;
+
+    return makeSuccessResult(rawHtml);
+  }
+
+  /**
+   * Uses Defuddle to extract clean HTML and Markdown and saves it to storage.
+   */
+  private async saveDefuddleData(args: {
+    readonly url: string;
+    readonly rawHtml: string;
+    readonly feedItemId: FeedItemId;
+    readonly accountId: AccountId;
+  }): AsyncResult<void> {
+    const {url, rawHtml, feedItemId, accountId} = args;
+
+    const defuddleData = await Defuddle(rawHtml, url, {
+      url,
+      debug: true,
+      markdown: true,
+      separateMarkdown: true,
+      removeExactSelectors: true,
+      removePartialSelectors: true,
+    });
+
+    console.log('+++ defuddleData keys', Object.keys(defuddleData));
+
+    const defuddleHtmlStoragePath = this.feedItemService.getStoragePath({
+      feedItemId,
+      accountId,
+      filename: FEED_ITEM_FILE_HTML_DEFUDDLE,
+    });
+
+    const defuddleMarkdownPath = this.feedItemService.getStoragePath({
+      feedItemId,
+      accountId,
+      filename: FEED_ITEM_FILE_HTML_MARKDOWN,
+    });
+
+    const saveDefuddleDataResult = await asyncTryAll([
+      this.feedItemService.writeFileToStorage({
+        storagePath: defuddleHtmlStoragePath,
+        content: defuddleData.content,
+        contentType: 'text/html',
+      }),
+      defuddleData.contentMarkdown
+        ? this.feedItemService.writeFileToStorage({
+            storagePath: defuddleMarkdownPath,
+            content: defuddleData.contentMarkdown as string,
+            contentType: 'text/markdown',
+          })
+        : Promise.resolve(makeErrorResult(new Error('Received no markdown content from Defuddle'))),
+    ]);
+
+    if (!saveDefuddleDataResult.success) {
+      return prefixErrorResult(saveDefuddleDataResult, 'Error saving Defuddle data');
+    }
+
+    const firstError = saveDefuddleDataResult.value.results.find((r) => !r.success)?.error;
+    if (firstError) {
+      return makeErrorResult(prefixError(firstError, 'Error saving Defuddle file'));
+    }
+
+    return makeSuccessResult(undefined);
   }
 
   /**
@@ -93,7 +167,7 @@ export class WebsiteFeedItemImporter {
     const storagePath = this.feedItemService.getStoragePath({
       feedItemId,
       accountId,
-      filename: FEED_ITEM_FILE_NAME_LLM_CONTEXT,
+      filename: FEED_ITEM_FILE_LLM_CONTEXT,
     });
 
     const saveFirecrawlDataResult = await asyncTryAll([
@@ -146,26 +220,36 @@ export class WebsiteFeedItemImporter {
   public async import(
     feedItem: Exclude<FeedItemWithUrl, YouTubeFeedItem | XkcdFeedItem>
   ): AsyncResult<void> {
+    const {url, feedItemId, accountId} = feedItem;
+
     const importAllDataResult = await asyncTryAll([
-      this.fetchAndSaveRawHtml({
-        url: feedItem.url,
-        feedItemId: feedItem.feedItemId,
-        accountId: feedItem.accountId,
-      }),
-      this.fetchAndSaveFirecrawlData({
-        url: feedItem.url,
-        feedItemId: feedItem.feedItemId,
-        accountId: feedItem.accountId,
-      }),
+      this.fetchAndSaveRawHtml({url, feedItemId, accountId}),
+      this.fetchAndSaveFirecrawlData({url, feedItemId, accountId}),
     ]);
 
     // TODO: Make this multi-result error handling pattern simpler.
-    const importAllDataResultError = importAllDataResult.success
-      ? importAllDataResult.value.results.find((result) => !result.success)?.error
-      : importAllDataResult.error;
-    if (importAllDataResultError) {
-      return makeErrorResult(prefixError(importAllDataResultError, 'Error importing feed item'));
+    if (!importAllDataResult.success) {
+      return makeErrorResult(prefixError(importAllDataResult.error, 'Error importing feed item'));
     }
+
+    const [saveRawHtmlResult, saveFirecrawlDataResult] = importAllDataResult.value.results;
+
+    // Consider failing to fetch the raw HTML as unrecoverable.
+    if (!saveRawHtmlResult.success) return saveRawHtmlResult;
+
+    // Consider failing to fetch the Firecrawl data as recoverable.
+    if (!saveFirecrawlDataResult.success) {
+      logger.error(saveFirecrawlDataResult.error, {feedItemId, accountId});
+    }
+
+    const saveDefuddleResult = await this.saveDefuddleData({
+      url,
+      rawHtml: saveRawHtmlResult.value,
+      feedItemId,
+      accountId,
+    });
+
+    if (!saveDefuddleResult.success) return saveDefuddleResult;
 
     return makeSuccessResult(undefined);
   }

@@ -5,9 +5,10 @@ import {logger} from '@shared/services/logger.shared';
 
 import {makeSuccessAsyncState} from '@shared/lib/asyncState.shared';
 import {
-  FEED_ITEM_FILE_NAME_LLM_CONTEXT,
-  FEED_ITEM_FILE_NAME_TRANSCRIPT,
-  FEED_ITEM_FILE_NAME_XKCD_EXPLAIN,
+  FEED_ITEM_FILE_HTML,
+  FEED_ITEM_FILE_LLM_CONTEXT,
+  FEED_ITEM_FILE_TRANSCRIPT,
+  FEED_ITEM_FILE_XKCD_EXPLAIN,
   FEED_ITEMS_DB_COLLECTION,
   FEED_ITEMS_STORAGE_COLLECTION,
 } from '@shared/lib/constants.shared';
@@ -239,14 +240,18 @@ function useFeedItemFile(args: {
   return asyncState;
 }
 
+export function useFeedItemHtml(feedItem: FeedItem): AsyncState<string> {
+  return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_HTML});
+}
+
 export function useFeedItemMarkdown(feedItem: FeedItem): AsyncState<string> {
-  return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_NAME_LLM_CONTEXT});
+  return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_LLM_CONTEXT});
 }
 
 export function useYouTubeFeedItemTranscript(feedItem: FeedItem): AsyncState<string> {
-  return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_NAME_TRANSCRIPT});
+  return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_TRANSCRIPT});
 }
 
 export function useExplainXkcdMarkdown(feedItem: XkcdFeedItem): AsyncState<string> {
-  return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_NAME_XKCD_EXPLAIN});
+  return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_XKCD_EXPLAIN});
 }

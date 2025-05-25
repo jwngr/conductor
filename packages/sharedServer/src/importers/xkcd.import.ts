@@ -1,4 +1,4 @@
-import {FEED_ITEM_FILE_NAME_XKCD_EXPLAIN} from '@shared/lib/constants.shared';
+import {FEED_ITEM_FILE_XKCD_EXPLAIN} from '@shared/lib/constants.shared';
 import {asyncTryAll, prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {parseXkcdComicIdFromUrl} from '@shared/lib/xkcd.shared';
@@ -49,7 +49,7 @@ export class XkcdFeedItemImporter {
     const storagePath = this.feedItemService.getStoragePath({
       feedItemId: feedItem.feedItemId,
       accountId: feedItem.accountId,
-      filename: FEED_ITEM_FILE_NAME_XKCD_EXPLAIN,
+      filename: FEED_ITEM_FILE_XKCD_EXPLAIN,
     });
 
     const saveExplainXkcdContentResult = await this.feedItemService.writeFileToStorage({

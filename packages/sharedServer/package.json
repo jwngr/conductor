@@ -11,14 +11,13 @@
     "@rowanmanning/feed-parser": "^2.0.2",
     "cheerio": "^1.0.0",
     "csv-parse": "^5.6.0",
+    "dompurify": "^3.2.6",
     "firebase-admin": "^13.4.0",
     "genkit": "^1.9.0",
-    "jsdom": "^26.1.0",
     "turndown": "^7.2.0",
     "youtube-transcript": "^1.2.1"
   },
   "devDependencies": {
-    "@types/jsdom": "^21.1.7",
     "@types/turndown": "^5.0.5"
   },
   "scripts": {

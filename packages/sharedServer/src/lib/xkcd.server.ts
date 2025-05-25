@@ -1,5 +1,4 @@
 import * as cheerio from 'cheerio';
-import TurndownService from 'turndown';
 
 import {logger} from '@shared/services/logger.shared';
 
@@ -9,6 +8,8 @@ import {makeAbsoluteXkcdUrl, makeExplainXkcdUrl} from '@shared/lib/xkcd.shared';
 
 import type {AsyncResult} from '@shared/types/results.types';
 import type {ExplainXkcdContent, XkcdComic} from '@shared/types/xkcd.types';
+
+import {htmlToMarkdown} from '@sharedServer/lib/markdown.server';
 
 export async function fetchXkcdComic(comicId: number): AsyncResult<XkcdComic> {
   const url = `https://xkcd.com/${comicId}`;
@@ -55,7 +56,6 @@ export async function fetchExplainXkcdContent(comicId: number): AsyncResult<Expl
   const rawHtml = fetchDataResult.value;
 
   const $ = cheerio.load(rawHtml);
-  const turndownService = new TurndownService();
 
   let explanationMarkdown: string | null = null;
   let transcriptMarkdown: string | null = null;
@@ -70,7 +70,7 @@ export async function fetchExplainXkcdContent(comicId: number): AsyncResult<Expl
       nextElement = nextElement.next();
     }
     if (explanationHtml) {
-      explanationMarkdown = turndownService.turndown(explanationHtml).trim();
+      explanationMarkdown = htmlToMarkdown(explanationHtml);
     }
   }
 
@@ -93,7 +93,7 @@ export async function fetchExplainXkcdContent(comicId: number): AsyncResult<Expl
       nextElement = nextElement.next();
     }
     if (transcriptHtml) {
-      transcriptMarkdown = turndownService.turndown(transcriptHtml).trim();
+      transcriptMarkdown = htmlToMarkdown(transcriptHtml);
     }
   }
 
