@@ -176,7 +176,7 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
     case FeedItemType.Video:
     case FeedItemType.Website:
     case FeedItemType.Tweet:
-      return parseBaseFeedItemWithUrl({
+      return parseFeedItemWithUrl({
         maybeFeedItem,
         feedItemType: parsedBaseFeedItemResult.value.feedItemType,
         feedItemId: parsedIdResult.value,
@@ -204,7 +204,7 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
   }
 }
 
-export function parseBaseFeedItemWithUrl(args: {
+export function parseFeedItemWithUrl(args: {
   readonly maybeFeedItem: unknown;
   readonly feedItemType: Exclude<FeedItemType, FeedItemType.Xkcd | FeedItemType.Interval>;
   readonly feedItemId: FeedItemId;
@@ -215,7 +215,7 @@ export function parseBaseFeedItemWithUrl(args: {
 
   const parsedFeedItemResult = parseZodResult(BaseFeedItemWithUrlFromStorageSchema, maybeFeedItem);
   if (!parsedFeedItemResult.success) {
-    return prefixErrorResult(parsedFeedItemResult, 'Invalid XKCD feed item');
+    return prefixErrorResult(parsedFeedItemResult, 'Invalid feed item with URL');
   }
   const storageBaseFeedItem = parsedFeedItemResult.value;
 
