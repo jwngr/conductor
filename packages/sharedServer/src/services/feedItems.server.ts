@@ -8,7 +8,7 @@ import {assertNever, omitUndefined} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import {FeedItemType} from '@shared/types/feedItems.types';
-import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
+import type {FeedItem, FeedItemId, FeedItemWithUrl} from '@shared/types/feedItems.types';
 import type {AsyncResult, Result} from '@shared/types/results.types';
 
 import {eventLogService} from '@sharedServer/services/eventLog.server';
@@ -41,9 +41,9 @@ export class ServerFeedItemsService {
     this.feedItemsCollectionService = args.feedItemsCollectionService;
   }
 
-  public async createFeedItem(
-    args: Pick<FeedItem, 'feedSource' | 'url' | 'accountId' | 'title' | 'description'>
-  ): AsyncResult<FeedItemId> {
+  public async createFeedItemFromUrl(
+    args: Pick<FeedItemWithUrl, 'feedSource' | 'url' | 'accountId' | 'title' | 'description'>
+  ): AsyncResult<FeedItemWithUrl> {
     const {feedSource, url, accountId, title, description} = args;
 
     const trimmedUrl = url.trim();
@@ -51,7 +51,7 @@ export class ServerFeedItemsService {
       return makeErrorResult(new Error(`Invalid URL provided for feed item: "${url}"`));
     }
 
-    const feedItemResult = SharedFeedItemHelpers.makeFeedItem({
+    const feedItemResult = SharedFeedItemHelpers.makeFeedItemFromUrl({
       feedSource,
       url: trimmedUrl,
       accountId,
@@ -70,7 +70,7 @@ export class ServerFeedItemsService {
       return prefixErrorResult(addFeedItemResult, 'Error creating feed item in Firestore');
     }
 
-    return makeSuccessResult(feedItem.feedItemId);
+    return makeSuccessResult(feedItem);
   }
 
   /**
@@ -146,11 +146,6 @@ export class ServerFeedItemsService {
   }
 
   public async importFeedItem(feedItem: FeedItem): AsyncResult<void> {
-    const isSafeUrlResult = SharedFeedItemHelpers.validateUrl(feedItem.url);
-    if (!isSafeUrlResult.success) {
-      return prefixErrorResult(isSafeUrlResult, 'Error validating feed item URL');
-    }
-
     let importResult: Result<void, Error>;
     switch (feedItem.feedItemType) {
       case FeedItemType.YouTube: {
@@ -173,6 +168,9 @@ export class ServerFeedItemsService {
         const importer = new XkcdFeedItemImporter({feedItemService: this});
         importResult = await importer.import(feedItem);
         break;
+      }
+      case FeedItemType.Interval: {
+        return makeSuccessResult(undefined);
       }
       default:
         assertNever(feedItem);

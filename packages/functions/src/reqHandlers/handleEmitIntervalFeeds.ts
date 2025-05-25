@@ -5,7 +5,7 @@ import {makeIntervalFeedSource} from '@shared/lib/feedSources.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {pluralizeWithCount} from '@shared/lib/utils.shared';
 
-import type {FeedItemId} from '@shared/types/feedItems.types';
+import type {FeedItemWithUrl} from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
@@ -52,7 +52,7 @@ export async function handleEmitIntervalFeeds(args: {
     INTERVAL_FEED_EMISSION_INTERVAL_MINUTES;
 
   // Loop through each interval subscription and emit a new feed item if the time has come.
-  const feedItemEmitAsyncResults: Array<AsyncResult<FeedItemId>> = [];
+  const feedItemEmitAsyncResults: Array<AsyncResult<FeedItemWithUrl>> = [];
   for (const currentIntervalSub of intervalSubscriptions) {
     const {intervalSeconds, accountId, userFeedSubscriptionId} = currentIntervalSub;
 
@@ -69,7 +69,7 @@ export async function handleEmitIntervalFeeds(args: {
     innerLog('Creating interval feed item', {accountId, userFeedSubscriptionId, intervalSeconds});
 
     feedItemEmitAsyncResults.push(
-      feedItemsService.createFeedItem({
+      feedItemsService.createFeedItemFromUrl({
         accountId,
         feedSource: makeIntervalFeedSource({
           userFeedSubscription: currentIntervalSub,

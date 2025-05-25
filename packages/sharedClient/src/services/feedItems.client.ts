@@ -29,7 +29,12 @@ import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers
 import type {AccountId, AuthStateChangedUnsubscribe} from '@shared/types/accounts.types';
 import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {AsyncState} from '@shared/types/asyncState.types';
-import type {FeedItem, FeedItemId, XkcdFeedItem} from '@shared/types/feedItems.types';
+import type {
+  FeedItem,
+  FeedItemId,
+  FeedItemWithUrl,
+  XkcdFeedItem,
+} from '@shared/types/feedItems.types';
 import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import {fromQueryFilterOp} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/results.types';
@@ -321,9 +326,9 @@ export class ClientFeedItemsService {
     return () => unsubscribe();
   }
 
-  public async createFeedItem(
-    args: Pick<FeedItem, 'feedSource' | 'url' | 'title'>
-  ): AsyncResult<FeedItem> {
+  public async createFeedItemFromUrl(
+    args: Pick<FeedItemWithUrl, 'feedSource' | 'url' | 'title'>
+  ): AsyncResult<FeedItemWithUrl> {
     const {feedSource, url, title} = args;
 
     const trimmedUrl = url.trim();
@@ -332,7 +337,8 @@ export class ClientFeedItemsService {
     }
 
     // Create a new feed item object locally.
-    const feedItemResult = SharedFeedItemHelpers.makeFeedItem({
+
+    const feedItemResult = SharedFeedItemHelpers.makeFeedItemFromUrl({
       feedSource,
       url: trimmedUrl,
       accountId: this.accountId,
@@ -355,9 +361,7 @@ export class ClientFeedItemsService {
 
   public async updateFeedItem(
     feedItemId: FeedItemId,
-    updates: Partial<
-      Pick<FeedItem, 'url' | 'title' | 'description' | 'outgoingLinks' | 'triageStatus' | 'tagIds'>
-    >
+    updates: Partial<FeedItem>
   ): AsyncResult<void> {
     const updateResult = await this.feedItemsCollectionService.updateDoc(
       feedItemId,

@@ -3,7 +3,7 @@ import {EXTENSION_FEED_SOURCE} from '@shared/lib/feedSources.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
-import type {FeedItem} from '@shared/types/feedItems.types';
+import type {FeedItemWithUrl} from '@shared/types/feedItems.types';
 
 import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
 
@@ -14,7 +14,7 @@ import {useCurrentTab} from '@src/lib/tabs.ext';
 const SaveCurrentUrlButton: React.FC = () => {
   const feedItemsService = useFeedItemsService();
 
-  const {asyncState, setPending, setError, setSuccess} = useAsyncState<FeedItem>();
+  const {asyncState, setPending, setError, setSuccess} = useAsyncState<FeedItemWithUrl>();
 
   const handleClick = async (): Promise<void> => {
     setPending();
@@ -37,7 +37,7 @@ const SaveCurrentUrlButton: React.FC = () => {
     }
 
     const title = tab.title ?? 'TODO: Add title support';
-    const addFeedItemResult = await feedItemsService.createFeedItem({
+    const addFeedItemResult = await feedItemsService.createFeedItemFromUrl({
       feedSource: EXTENSION_FEED_SOURCE,
       url: tabUrl,
       title,

@@ -15,6 +15,7 @@ import type {
   FeedItem,
   FeedItemId,
   FeedItemImportState,
+  IntervalFeedItem,
   ProcessingFeedItemImportState,
   XkcdFeedItem,
 } from '@shared/types/feedItems.types';
@@ -28,15 +29,19 @@ import type {Result} from '@shared/types/results.types';
 
 import type {
   BaseFeedItemFromStorage,
+  BaseFeedItemWithUrlFromStorage,
   FeedItemFromStorage,
   FeedItemImportStateFromStorage,
+  IntervalFeedItemFromStorage,
   XkcdFeedItemFromStorage,
 } from '@shared/schemas/feedItems.schema';
 import {
   BaseFeedItemFromStorageSchema,
+  BaseFeedItemWithUrlFromStorageSchema,
   CompletedFeedItemImportStateSchema,
   FailedFeedItemImportStateSchema,
   FeedItemIdSchema,
+  IntervalFeedItemFromStorageSchema,
   ProcessingFeedItemImportStateSchema,
   XkcdFeedItemFromStorageSchema,
 } from '@shared/schemas/feedItems.schema';
@@ -176,9 +181,9 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
     case FeedItemType.Video:
     case FeedItemType.Website:
     case FeedItemType.Tweet:
-      return parseBaseFeedItem({
+      return parseBaseFeedItemWithUrl({
+        maybeFeedItem,
         feedItemType: parsedBaseFeedItemResult.value.feedItemType,
-        storageBaseFeedItem: parsedBaseFeedItemResult.value,
         feedItemId: parsedIdResult.value,
         accountId: parsedAccountIdResult.value,
         importState: parsedImportStateResult.value,
@@ -192,6 +197,14 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
         importState: parsedImportStateResult.value,
         feedSource: parsedFeedSource,
       });
+    case FeedItemType.Interval:
+      return parseIntervalFeedItem({
+        maybeFeedItem,
+        feedItemId: parsedIdResult.value,
+        accountId: parsedAccountIdResult.value,
+        importState: parsedImportStateResult.value,
+        feedSource: parsedFeedSource,
+      });
     default:
       return makeErrorResult(
         new Error(`Unknown feed item type: ${parsedBaseFeedItemResult.value.feedItemType}`)
@@ -199,15 +212,21 @@ export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
   }
 }
 
-export function parseBaseFeedItem(args: {
+export function parseBaseFeedItemWithUrl(args: {
+  readonly maybeFeedItem: unknown;
   readonly feedItemType: Exclude<FeedItemType, FeedItemType.Xkcd>;
-  readonly storageBaseFeedItem: BaseFeedItemFromStorage;
   readonly feedItemId: FeedItemId;
   readonly accountId: AccountId;
   readonly importState: FeedItemImportState;
   readonly feedSource: FeedSource;
 }): Result<FeedItem> {
-  const {feedItemType, storageBaseFeedItem, feedItemId, feedSource, accountId, importState} = args;
+  const {maybeFeedItem, feedItemType, feedItemId, feedSource, accountId, importState} = args;
+
+  const parsedFeedItemResult = parseZodResult(BaseFeedItemWithUrlFromStorageSchema, maybeFeedItem);
+  if (!parsedFeedItemResult.success) {
+    return prefixErrorResult(parsedFeedItemResult, 'Invalid XKCD feed item');
+  }
+  const storageBaseFeedItem = parsedFeedItemResult.value;
 
   return makeSuccessResult(
     omitUndefined({
@@ -235,7 +254,7 @@ export function parseXkcdFeedItem(args: {
   readonly accountId: AccountId;
   readonly importState: FeedItemImportState;
   readonly feedSource: FeedSource;
-}): Result<FeedItem> {
+}): Result<XkcdFeedItem> {
   const {maybeFeedItem, feedItemId, accountId, importState, feedSource} = args;
 
   const parsedXkcdFeedItemResult = parseZodResult(XkcdFeedItemFromStorageSchema, maybeFeedItem);
@@ -265,6 +284,40 @@ export function parseXkcdFeedItem(args: {
   );
 }
 
+export function parseIntervalFeedItem(args: {
+  readonly maybeFeedItem: unknown;
+  readonly feedItemId: FeedItemId;
+  readonly accountId: AccountId;
+  readonly importState: FeedItemImportState;
+  readonly feedSource: FeedSource;
+}): Result<IntervalFeedItem> {
+  const {maybeFeedItem, feedItemId, accountId, importState, feedSource} = args;
+
+  const parsedIntervalFeedItemResult = parseZodResult(
+    IntervalFeedItemFromStorageSchema,
+    maybeFeedItem
+  );
+  if (!parsedIntervalFeedItemResult.success) {
+    return prefixErrorResult(parsedIntervalFeedItemResult, 'Invalid interval feed item');
+  }
+  const storageIntervalFeedItem = parsedIntervalFeedItemResult.value;
+
+  return makeSuccessResult(
+    omitUndefined({
+      feedItemType: FeedItemType.Interval,
+      feedSource,
+      accountId,
+      importState,
+      feedItemId,
+      title: storageIntervalFeedItem.title,
+      triageStatus: storageIntervalFeedItem.triageStatus,
+      tagIds: storageIntervalFeedItem.tagIds,
+      createdTime: parseStorageTimestamp(storageIntervalFeedItem.createdTime),
+      lastUpdatedTime: parseStorageTimestamp(storageIntervalFeedItem.lastUpdatedTime),
+    })
+  );
+}
+
 /**
  * Converts a {@link FeedItem} to a {@link FeedItemFromStorage} object that can be persisted to
  * Firestore.
@@ -279,6 +332,8 @@ export function toStorageFeedItem(feedItem: FeedItem): FeedItemFromStorage {
     case FeedItemType.Website:
     case FeedItemType.Tweet:
       return toStorageBaseFeedItem(feedItem);
+    case FeedItemType.Interval:
+      return toStorageIntervalFeedItem(feedItem);
     default:
       logger.error(new Error('Unknown feed item type'), {feedItem});
       return toStorageBaseFeedItem(feedItem);
@@ -289,9 +344,9 @@ export function toStorageFeedItem(feedItem: FeedItem): FeedItemFromStorage {
  * Converts an {@link BaseFeedItem} to a {@link BaseFeedItemFromStorage} object that can be
  * persisted to Firestore.
  */
-export function toStorageBaseFeedItem(
-  feedItem: Exclude<FeedItem, XkcdFeedItem>
-): BaseFeedItemFromStorage {
+function toStorageBaseFeedItem(
+  feedItem: Exclude<FeedItem, XkcdFeedItem | IntervalFeedItem>
+): BaseFeedItemWithUrlFromStorage {
   return omitUndefined({
     feedItemId: feedItem.feedItemId,
     feedItemType: feedItem.feedItemType,
@@ -314,7 +369,7 @@ export function toStorageBaseFeedItem(
  * Converts an {@link XkcdFeedItem} to a {@link XkcdFeedItemFromStorage} object that can be
  * persisted to Firestore.
  */
-export function toStorageXkcdFeedItem(feedItem: XkcdFeedItem): XkcdFeedItemFromStorage {
+function toStorageXkcdFeedItem(feedItem: XkcdFeedItem): XkcdFeedItemFromStorage {
   return omitUndefined({
     feedItemId: feedItem.feedItemId,
     feedItemType: feedItem.feedItemType,
@@ -331,5 +386,24 @@ export function toStorageXkcdFeedItem(feedItem: XkcdFeedItem): XkcdFeedItemFromS
     createdTime: feedItem.createdTime,
     lastUpdatedTime: feedItem.lastUpdatedTime,
     xkcd: feedItem.xkcd,
+  });
+}
+
+/**
+ * Converts an {@link IntervalFeedItem} to a {@link IntervalFeedItemFromStorage} object that can be
+ * persisted to Firestore.
+ */
+function toStorageIntervalFeedItem(feedItem: IntervalFeedItem): IntervalFeedItemFromStorage {
+  return omitUndefined({
+    feedItemId: feedItem.feedItemId,
+    feedItemType: feedItem.feedItemType,
+    feedSource: feedItem.feedSource,
+    accountId: feedItem.accountId,
+    importState: feedItem.importState,
+    title: feedItem.title,
+    triageStatus: feedItem.triageStatus,
+    tagIds: feedItem.tagIds,
+    createdTime: feedItem.createdTime,
+    lastUpdatedTime: feedItem.lastUpdatedTime,
   });
 }

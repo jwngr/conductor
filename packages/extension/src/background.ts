@@ -53,7 +53,7 @@ chrome.action.onClicked.addListener(async (tab) => {
     accountId,
   });
 
-  const addFeedItemResult = await feedItemsService.createFeedItem({
+  const addFeedItemResult = await feedItemsService.createFeedItemFromUrl({
     feedSource: EXTENSION_FEED_SOURCE,
     url: tabUrl,
     title: 'TODO: Add title support',
