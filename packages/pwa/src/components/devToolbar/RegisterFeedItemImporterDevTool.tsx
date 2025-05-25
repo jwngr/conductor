@@ -9,9 +9,8 @@ import {DevToolbarSectionType} from '@shared/types/devToolbar.types';
 
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
-import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
-
 import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
+import {useFeedItemsService} from '@sharedClient/hooks/feedItems.hooks';
 
 import {Button} from '@src/components/atoms/Button';
 import {Input} from '@src/components/atoms/Input';

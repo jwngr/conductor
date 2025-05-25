@@ -22,7 +22,7 @@ import {useFocusStore} from '@sharedClient/stores/FocusStore';
 import {
   useFeedItemsIgnoringDelivery,
   useFeedItemsRespectingDelivery,
-} from '@sharedClient/services/feedItems.client';
+} from '@sharedClient/hooks/feedItems.hooks';
 
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';

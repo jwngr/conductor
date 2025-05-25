@@ -5,9 +5,8 @@ import {assertNever} from '@shared/lib/utils.shared';
 import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {FeedItemWithUrl} from '@shared/types/feedItems.types';
 
-import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
-
 import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
+import {useFeedItemsService} from '@sharedClient/hooks/feedItems.hooks';
 
 import {useCurrentTab} from '@src/lib/tabs.ext';
 

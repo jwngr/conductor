@@ -23,7 +23,8 @@ import type {UndoableAction, UndoableActionFn} from '@shared/types/undo.types';
 import type {Func} from '@shared/types/utils.types';
 
 import {useEventLogService} from '@sharedClient/services/eventLog.client';
-import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
+
+import {useFeedItemsService} from '@sharedClient/hooks/feedItems.hooks';
 
 import type {MouseEvent} from '@sharedClient/types/utils.client.types';
 

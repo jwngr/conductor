@@ -5,7 +5,7 @@ import {assertNever} from '@shared/lib/utils.shared';
 import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {FeedItem} from '@shared/types/feedItems.types';
 
-import {useFeedItemMarkdown} from '@sharedClient/services/feedItems.client';
+import {useFeedItemMarkdown} from '@sharedClient/hooks/feedItems.hooks';
 
 import {Text} from '@src/components/atoms/Text';
 import {Markdown} from '@src/components/Markdown';

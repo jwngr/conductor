@@ -14,9 +14,9 @@ import type {ExternalMigrationItemState} from '@shared/types/migration.types';
 import type {PocketImportItem} from '@shared/types/pocket.types';
 import type {Task} from '@shared/types/utils.types';
 
-import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
-
 import {parsePocketCsvContent} from '@sharedClient/lib/pocket.client';
+
+import {useFeedItemsService} from '@sharedClient/hooks/feedItems.hooks';
 
 import type {WithChildren} from '@sharedClient/types/utils.client.types';
 
