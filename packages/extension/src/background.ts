@@ -5,19 +5,12 @@ import {logger} from '@shared/services/logger.shared';
 import {
   FEED_ITEMS_DB_COLLECTION,
   FEED_ITEMS_STORAGE_COLLECTION,
-  IMPORT_QUEUE_DB_COLLECTION,
 } from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
+import {EXTENSION_FEED_SOURCE} from '@shared/lib/feedSources.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
-import {
-  parseImportQueueItem,
-  parseImportQueueItemId,
-  toStorageImportQueueItem,
-} from '@shared/parsers/importQueue.parser';
-
-import {FEED_ITEM_EXTENSION_SOURCE} from '@shared/types/feedItems.types';
 
 import {ClientFeedItemsService} from '@sharedClient/services/feedItems.client';
 import {firebaseService} from '@sharedClient/services/firebase.client';
@@ -25,7 +18,6 @@ import {
   ClientFirestoreCollectionService,
   makeFirestoreDataConverter,
 } from '@sharedClient/services/firestore.client';
-import {ClientImportQueueService} from '@sharedClient/services/importQueue.client';
 
 // TODO: Refactor into a `FirebaseStorageCollectionService`.
 const feedItemsStorageRef = storageRef(firebaseService.storage, FEED_ITEMS_STORAGE_COLLECTION);
@@ -53,31 +45,18 @@ chrome.action.onClicked.addListener(async (tab) => {
     parseId: parseFeedItemId,
   });
 
-  const importQueueItemFirestoreConverter = makeFirestoreDataConverter(
-    toStorageImportQueueItem,
-    parseImportQueueItem
-  );
-
-  const importQueueService = new ClientImportQueueService({
-    importQueueCollectionService: new ClientFirestoreCollectionService({
-      collectionPath: IMPORT_QUEUE_DB_COLLECTION,
-      converter: importQueueItemFirestoreConverter,
-      parseId: parseImportQueueItemId,
-    }),
-  });
-
   // TODO: Ideally I would not need to recreate a one-off FeedItemsService here, but I cannot use
   // `useFeedItemsService` because we are not in a React component.
   const feedItemsService = new ClientFeedItemsService({
     feedItemsCollectionService: feedItemsCollectionService,
-    importQueueService: importQueueService,
     feedItemsStorageRef,
     accountId,
   });
 
-  const addFeedItemResult = await feedItemsService.createFeedItem({
+  const addFeedItemResult = await feedItemsService.createFeedItemFromUrl({
+    feedSource: EXTENSION_FEED_SOURCE,
     url: tabUrl,
-    feedItemSource: FEED_ITEM_EXTENSION_SOURCE,
+    title: 'TODO: Add title support',
   });
 
   if (!addFeedItemResult.success) {

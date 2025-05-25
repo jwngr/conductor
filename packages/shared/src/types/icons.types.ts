@@ -1,10 +1,15 @@
-// WARNING: Enum values must match the filenames in `@shared/src/icons`.
 export enum IconName {
-  Inbox = 'inbox',
-  MarkDone = 'markDone',
-  MarkUnread = 'markUnread',
-  Save = 'save',
-  Star = 'star',
+  Cancel = 'CANCEL',
+  Debug = 'DEBUG',
+  Inbox = 'INBOX',
+  MarkDone = 'MARK_DONE',
+  MarkUnread = 'MARK_UNREAD',
+  Save = 'SAVE',
+  Star = 'STAR',
+  RetryImport = 'RETRY_IMPORT',
+  SlidersHorizontal = 'SLIDERS_HORIZONTAL',
+  ArrowUp = 'ARROW_UP',
+  ArrowDown = 'ARROW_DOWN',
 }
 
 export type IconSize = 16 | 24 | 32 | 40;

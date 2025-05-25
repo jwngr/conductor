@@ -1,15 +1,16 @@
+import {Navigate} from '@tanstack/react-router';
 import {isSignInWithEmailLink} from 'firebase/auth';
 import type React from 'react';
-import {Navigate} from 'react-router-dom';
-
-import {Urls} from '@shared/lib/urls.shared';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';
 
 import {useMaybeLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
+import {signInRoute} from '@src/routes';
+
 export const RequireLoggedInAccount: React.FC<{
   readonly children: React.ReactNode;
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
 }> = ({children}) => {
   const {isLoading, loggedInAccount} = useMaybeLoggedInAccount();
 
@@ -24,5 +25,5 @@ export const RequireLoggedInAccount: React.FC<{
   if (isIgnoredPath) return null;
 
   // If not logged in, redirect to sign-in page.
-  return <Navigate to={Urls.forSignIn()} replace />;
+  return <Navigate to={signInRoute.fullPath} replace />;
 };

@@ -1,29 +1,32 @@
-import {useEffect, useState} from 'react';
+import {useEffect} from 'react';
 
 import {asyncTry} from '@shared/lib/errorUtils.shared';
 
-export function useCurrentTab() {
-  const [currentTab, setCurrentTab] = useState<chrome.tabs.Tab | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+import type {AsyncState} from '@shared/types/asyncState.types';
+
+import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
+
+export function useCurrentTab(): AsyncState<chrome.tabs.Tab> {
+  const {asyncState, setPending, setError, setSuccess} = useAsyncState<chrome.tabs.Tab>();
 
   useEffect(() => {
-    async function fetchCurrentTab() {
+    async function fetchCurrentTab(): Promise<void> {
+      setPending();
       const tabResult = await asyncTry(async () => {
         const [tab] = await chrome.tabs.query({active: true, lastFocusedWindow: true});
         return tab;
       });
-      if (tabResult.success) {
-        setCurrentTab(tabResult.value);
-        setIsLoading(false);
-      } else {
+
+      if (!tabResult.success) {
         setError(tabResult.error);
-        setIsLoading(false);
+        return;
       }
+
+      setSuccess(tabResult.value);
     }
 
     void fetchCurrentTab();
-  }, []);
+  }, [setError, setPending, setSuccess]);
 
-  return {currentTab, isLoading, error};
+  return asyncState;
 }

@@ -21,14 +21,22 @@ service cloud.firestore {
       return isOwner(request.resource.data.accountId);
     }
 
+    function isValidFeedSourceType(maybeFeedSourceType) {
+      return maybeFeedSourceType in ['RSS', 'YOUTUBE_CHANNEL', 'INTERVAL', 'PWA', 'EXTENSION', 'POCKET_EXPORT'];
+    }
+
+    function isValidDeliveryScheduleType(maybeDeliveryScheduleType) {
+      return maybeDeliveryScheduleType in ['IMMEDIATE', 'NEVER', 'DAYS_AND_TIMES_OF_WEEK', 'EVERY_N_HOURS'];
+    }
+
     function isValidFeedItemDoc(feedItemId) {
       return request.resource.data.keys().hasAll([
         'feedItemId',
-        'type',
-        'feedItemSource',
+        'feedItemType',
+        'feedSource',
+        'importState',
         'url',
         'title',
-        'description',
         'outgoingLinks',
         'triageStatus',
         'tagIds',
@@ -37,11 +45,11 @@ service cloud.firestore {
       ]) &&
       request.resource.data.feedItemId is string &&
       request.resource.data.feedItemId == feedItemId &&
-      request.resource.data.type in ['ARTICLE', 'VIDEO', 'WEBSITE', 'TWEET', 'XKCD'] &&
-      request.resource.data.feedItemSource.type in ['APP', 'EXTENSION', 'RSS'] &&
+      request.resource.data.feedItemType in ['ARTICLE', 'VIDEO', 'WEBSITE', 'TWEET', 'XKCD', 'YOUTUBE'] &&
+      request.resource.data.feedSource.keys().hasAll(['feedSourceType']) &&
+      isValidFeedSourceType(request.resource.data.feedSource.feedSourceType) &&
       request.resource.data.url is string &&
       request.resource.data.title is string &&
-      request.resource.data.description is string &&
       request.resource.data.outgoingLinks is list &&
       request.resource.data.triageStatus in ['UNTRIAGED', 'SAVED', 'DONE', 'TRASHED'] &&
       request.resource.data.tagIds is map &&
@@ -52,33 +60,20 @@ service cloud.firestore {
     function isValidUserFeedSubscriptionDoc(userFeedSubscriptionId) {
       return request.resource.data.keys().hasAll([
         'userFeedSubscriptionId',
+        'feedSourceType',
         'accountId',
-        'url',
-        'title',
         'isActive',
+        'deliverySchedule',
         'createdTime',
         'lastUpdatedTime'
       ]) &&
       request.resource.data.userFeedSubscriptionId is string &&
       request.resource.data.userFeedSubscriptionId == userFeedSubscriptionId &&
-      request.resource.data.url is string &&
-      request.resource.data.createdTime is timestamp &&
-      request.resource.data.lastUpdatedTime is timestamp;
-    }
-
-    function isValidImportQueueDoc(importQueueItemId) {
-      return request.resource.data.keys().hasAll([
-        'importQueueItemId',
-        'accountId',
-        'feedItemId', 
-        'url',
-        'createdTime',
-        'lastUpdatedTime'
-      ]) &&
-      request.resource.data.importQueueItemId is string &&
-      request.resource.data.importQueueItemId == importQueueItemId &&
-      request.resource.data.feedItemId is string &&
-      request.resource.data.url is string &&
+      isValidFeedSourceType(request.resource.data.feedSourceType) &&
+      request.resource.data.accountId is string &&
+      request.resource.data.isActive is bool &&
+      request.resource.data.deliverySchedule.keys().hasAll(['scheduleType']) &&
+      isValidDeliveryScheduleType(request.resource.data.deliverySchedule.scheduleType) &&
       request.resource.data.createdTime is timestamp &&
       request.resource.data.lastUpdatedTime is timestamp;
     }
@@ -87,12 +82,19 @@ service cloud.firestore {
       return request.resource.data.keys().hasAll([
         'eventId',
         'eventType',
+        'accountId',
+        'actor',
+        'environment',
         'createdTime',
         'lastUpdatedTime'
       ]) &&
       request.resource.data.eventId is string &&
       request.resource.data.eventId == eventId &&
       request.resource.data.eventType is string &&
+      request.resource.data.actor is map &&
+      request.resource.data.actor.keys().hasAll(['accountId']) &&
+      request.resource.data.actor.accountId == request.auth.uid &&
+      request.resource.data.environment is string &&
       request.resource.data.createdTime is timestamp &&
       request.resource.data.lastUpdatedTime is timestamp;
     }
@@ -109,14 +111,6 @@ service cloud.firestore {
 
       // Only allow deletes via the admin SDK.
       allow delete: if false;
-    }
-
-    match /feedSources/{feedSourceId} {
-      // Feed sources are publicly readable.
-      allow read: if true;
-
-      // Feed sources are only writable via the admin SDK.
-      allow create, update, delete: if false;
     }
 
     match /feedItems/{feedItemId} {
@@ -137,26 +131,15 @@ service cloud.firestore {
       allow delete: if isResourceOwner();
     }
 
-    match /importQueue/{importQueueItemId} {
-      // Allow creation if the current account owns the new document.
-      allow create: if isNewResourceOwner() && isValidImportQueueDoc(importQueueItemId);
-      allow update: if isNewResourceOwner() && isValidImportQueueDoc(importQueueItemId);
-
-      // Only allow reads or writes via the admin SDK - only the import queue server needs access.
-      allow read: if false
-      allow delete: if false
-    }
-
     match /eventLog/{eventId} {
       // Allow accounts to read their own events.
       allow read: if isResourceOwner();
 
       // Allow creation and deletion if the current account owns the new document.
       allow create: if isNewResourceOwner() && isValidEventLogItemDoc(eventId);
-      allow delete: if isResourceOwner();
 
-      // Event log items cannot be updated, only created or deleted.
-      allow update: if false;
+      // Event log items cannot be updated or deleted, only created.
+      allow update, delete: if false;
     }
   }
 }

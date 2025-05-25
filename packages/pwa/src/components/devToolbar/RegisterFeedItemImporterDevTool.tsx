@@ -1,89 +1,130 @@
 import {useCallback, useEffect, useState} from 'react';
-import styled from 'styled-components';
 
+import {PWA_FEED_SOURCE} from '@shared/lib/feedSources.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 
+import {AsyncStatus} from '@shared/types/asyncState.types';
 import {DevToolbarSectionType} from '@shared/types/devToolbar.types';
-import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems.types';
 
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
-import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
+import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
+import {useFeedItemsService} from '@sharedClient/hooks/feedItems.hooks';
 
-import {Button, ButtonVariant} from '@src/components/atoms/Button';
+import {Button} from '@src/components/atoms/Button';
 import {Input} from '@src/components/atoms/Input';
+import {Text} from '@src/components/atoms/Text';
 
-const StatusText = styled.div<{readonly $isError?: boolean}>`
-  font-size: 12px;
-  color: ${({theme, $isError}) => ($isError ? theme.colors.error : theme.colors.success)};
-`;
+const StatusText: React.FC<{
+  readonly isError?: boolean;
+  readonly children: React.ReactNode;
+}> = ({isError, children}) => {
+  return (
+    <Text as="p" className={`text-xs ${isError ? 'text-error' : 'text-success'}`}>
+      {children}
+    </Text>
+  );
+};
 
 const FeedItemImporter: React.FC = () => {
   const feedItemsService = useFeedItemsService();
 
-  const [url, setUrl] = useState('');
-  const [status, setStatus] = useState('');
+  const [urlInputValue, setUrlInputValue] = useState('');
+  const {asyncState, setPending, setError, setSuccess} = useAsyncState<undefined>();
 
   const handleAddItemToQueue = useCallback(
-    async (urlToAdd: string) => {
-      setStatus('Pending...');
-
-      const trimmedUrl = urlToAdd.trim();
+    async (maybeUrl: string) => {
+      const trimmedUrl = maybeUrl.trim();
       if (!isValidUrl(trimmedUrl)) {
-        setStatus('URL is not valid');
+        setError(new Error('URL is not valid'));
         return;
       }
 
-      const addFeedItemResult = await feedItemsService.createFeedItem({
+      setPending();
+
+      const addFeedItemResult = await feedItemsService.createFeedItemFromUrl({
+        feedSource: PWA_FEED_SOURCE,
         url: trimmedUrl,
-        feedItemSource: FEED_ITEM_APP_SOURCE,
+        title: trimmedUrl,
       });
 
-      if (addFeedItemResult.success) {
-        setStatus('URL saved successfully');
-        setUrl('');
-      } else {
-        setStatus(`Error adding item to import queue: ${addFeedItemResult.error.message}`);
+      if (!addFeedItemResult.success) {
+        setError(addFeedItemResult.error);
+        return;
       }
+
+      setUrlInputValue('');
+      setSuccess(undefined);
     },
-    [feedItemsService]
+    [feedItemsService, setError, setPending, setSuccess]
   );
+
+  const renderImportFeedItemButton = useCallback(
+    ({url, title}: {readonly url: string; readonly title: string}) => (
+      <Button key={url} variant="outline" onClick={async () => void handleAddItemToQueue(url)}>
+        {title}
+      </Button>
+    ),
+    [handleAddItemToQueue]
+  );
+
+  let statusText: React.ReactNode | null;
+  switch (asyncState.status) {
+    case AsyncStatus.Idle:
+      statusText = null;
+      break;
+    case AsyncStatus.Pending:
+      statusText = <StatusText>Importing...</StatusText>;
+      break;
+    case AsyncStatus.Error:
+      statusText = <StatusText isError>{asyncState.error.message}</StatusText>;
+      break;
+    case AsyncStatus.Success:
+      statusText = <StatusText>Success</StatusText>;
+      break;
+    default:
+      assertNever(asyncState);
+  }
 
   return (
     <>
+      {renderImportFeedItemButton({
+        url: 'https://dev.to/jsmanifest/14-beneficial-tips-to-write-cleaner-code-in-react-apps-1gcf',
+        title: 'React article',
+      })}
+      {renderImportFeedItemButton({
+        url: 'https://jwn.gr/posts/migrating-from-gatsby-to-astro/',
+        title: 'Personal blog post',
+      })}
+      {renderImportFeedItemButton({
+        url: 'https://wattenberger.com/thoughts/the-internet-for-the-mind',
+        title: 'Complex blog post',
+      })}
+      {renderImportFeedItemButton({
+        url: 'https://www.youtube.com/watch?v=p_di4Zn4wz4',
+        title: 'YouTube video',
+      })}
+      {renderImportFeedItemButton({
+        url: 'https://xkcd.com/927/',
+        title: 'XKCD comic',
+      })}
+      {renderImportFeedItemButton({
+        url: 'https://publicdomainreview.org/collection/chinese-fishes/',
+        title: 'Fish images',
+      })}
+
       <Input
         type="text"
-        value={url}
+        value={urlInputValue}
         placeholder="Enter URL to test"
-        onChange={(e) => setUrl(e.target.value)}
+        onChange={(e) => setUrlInputValue(e.target.value)}
       />
-      <Button
-        variant={ButtonVariant.Secondary}
-        onClick={() =>
-          void handleAddItemToQueue('https://jwn.gr/posts/migrating-from-gatsby-to-astro/')
-        }
-      >
-        Import personal blog post
-      </Button>
-      <Button
-        variant={ButtonVariant.Secondary}
-        onClick={() => handleAddItemToQueue('https://www.youtube.com/watch?v=p_di4Zn4wz4')}
-      >
-        Import YouTube video
-      </Button>
-      <Button
-        variant={ButtonVariant.Secondary}
-        onClick={() =>
-          handleAddItemToQueue('https://wattenberger.com/thoughts/the-internet-for-the-mind')
-        }
-      >
-        Import complex blog post
-      </Button>
-
-      <Button variant={ButtonVariant.Secondary} onClick={() => handleAddItemToQueue(url)}>
+      <Button variant="outline" onClick={async () => void handleAddItemToQueue(urlInputValue)}>
         Test URL import
       </Button>
-      {status ? <StatusText $isError={status.includes('Error')}>{status}</StatusText> : null}
+
+      {statusText}
     </>
   );
 };

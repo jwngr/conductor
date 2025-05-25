@@ -7,7 +7,6 @@ import type {
   QueryDocumentSnapshot,
   WithFieldValue,
 } from 'firebase-admin/firestore';
-import {FieldValue} from 'firebase-admin/firestore';
 
 import {
   asyncTry,
@@ -15,9 +14,10 @@ import {
   prefixErrorResult,
   prefixResultIfError,
 } from '@shared/lib/errorUtils.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {omitUndefined} from '@shared/lib/utils.shared';
 
-import type {AsyncResult, Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {AsyncResult, Result} from '@shared/types/results.types';
 import type {Func} from '@shared/types/utils.types';
 
 import {firestore} from '@sharedServer/services/firebase.server';
@@ -40,6 +40,7 @@ export function makeFirestoreDataConverter<ItemData, FirestoreItemData extends D
       if (!parseResult.success) {
         // The error thrown here is caught by the global error handler. Throwing here is safer than
         // trying to gracefully handle invalid state.
+        // eslint-disable-next-line no-restricted-syntax
         throw prefixError(
           parseResult.error,
           `Error parsing Firestore document data with path ${snapshot.ref.path}`
@@ -112,7 +113,7 @@ export class ServerFirestoreCollectionService<
       const querySnapshot = await queryToFetch.get();
       return querySnapshot.docs.map((doc) => doc.data());
     });
-    return prefixResultIfError(queryDataResult, 'Error fetching Firestore query data');
+    return prefixResultIfError(queryDataResult, 'Error fetching Firestore query docs');
   }
 
   /**
@@ -123,11 +124,12 @@ export class ServerFirestoreCollectionService<
     const queryDataResult = await asyncTry(async () => {
       const queryDocsResult = await this.fetchQueryDocs(queryToFetch);
       // Allow throwing here since we are inside `asyncTry`.
+      // eslint-disable-next-line no-restricted-syntax
       if (!queryDocsResult.success) throw queryDocsResult.error;
       if (queryDocsResult.value.length === 0) return null;
       return queryDocsResult.value[0];
     });
-    return prefixResultIfError(queryDataResult, 'Error fetching Firestore query data');
+    return prefixResultIfError(queryDataResult, 'Error fetching Firestore first query doc');
   }
 
   /**
@@ -139,6 +141,7 @@ export class ServerFirestoreCollectionService<
       return querySnapshot.docs.map((doc) => {
         const parseIdResult = this.parseId(doc.id);
         // Allow throwing here since we are inside `asyncTry`.
+        // eslint-disable-next-line no-restricted-syntax
         if (!parseIdResult.success) throw parseIdResult.error;
         return parseIdResult.value;
       });
@@ -151,6 +154,7 @@ export class ServerFirestoreCollectionService<
    * Sets a Firestore document. The entire document is replaced.
    */
   public async setDoc(docId: ItemId, data: WithFieldValue<ItemData>): AsyncResult<void> {
+    // TODO: Add `omitUndefined` here.
     const setResult = await asyncTry(async () => this.getDocRef(docId).set(data));
     if (!setResult.success) {
       return prefixErrorResult(setResult, 'Error setting Firestore document');
@@ -168,11 +172,13 @@ export class ServerFirestoreCollectionService<
   ): AsyncResult<void> {
     const docRef = this.getDocRef(docId);
     const updateResult = await asyncTry(async () =>
-      docRef.update({
-        ...updates,
-        // Always update the `lastUpdatedTime` field.
-        lastUpdatedTime: FieldValue.serverTimestamp(),
-      })
+      docRef.update(
+        omitUndefined({
+          ...updates,
+          // TODO(timestamps): Use server timestamps instead.
+          lastUpdatedTime: new Date(),
+        })
+      )
     );
     if (!updateResult.success) {
       return prefixErrorResult(updateResult, 'Error updating Firestore document');

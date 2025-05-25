@@ -5,7 +5,7 @@ import {prefixError, upgradeUnknownError} from '@shared/lib/errorUtils.shared';
 /**
  * Global error handler for the PWA application.
  */
-export function handleError(error: unknown): void {
+function handleError(error: unknown): void {
   logger.error(prefixError(upgradeUnknownError(error), 'Error caught by global error handler'));
   // TODO: Show an error page. We cannot guarantee React was even initialized, and it probably was
   // not since this error wasn't caught by `ErrorBoundary`.

@@ -1,0 +1,97 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Conductor Project Overview
+
+## Project Description
+Conductor is a modern web + AI application that combines RSS feed aggregation with read-it-later functionality. It's built as a full-stack TypeScript application using React + Firebase.
+
+## Architecture Overview
+
+### Package Structure
+The project is organized into several TypeScript packages managed via Yarn workspaces:
+
+- `/shared` - Core types, schemas, and utilities shared across all packages
+- `/sharedClient` - Client-side shared code and React hooks
+- `/sharedServer` - Server-side shared code and services
+- `/pwa` - Progressive Web App (main web interface)
+- `/extension` - Browser extension for Chromium-based browsers
+- `/functions` - Firebase Cloud Functions
+- `/scripts` - Maintenance and utility scripts
+- `/rssServer` - In-memory RSS feed provider implementation for local development
+
+### Key Technologies
+- **Frontend**: React 19, TypeScript, Tailwind v4, Radix UI, Zod
+- **Backend**: Firebase (Firestore, Functions, Storage, Auth)
+- **Build Tools**: Vite, Yarn 4
+- **External Services**: 
+  - Firecrawl (for web scraping)
+  - Superfeedr (for RSS feed management)
+  - Google AI (for AI features)
+
+### Core Features
+1. **Authentication**
+   - Passwordless email-based authentication
+   - Firebase Auth integration
+
+2. **Feed Management**
+   - RSS feed subscription and aggregation
+   - Feed item storage and retrieval
+   - Real-time feed updates via Superfeedr webhooks
+
+3. **Read-it-Later**
+   - Browser extension for saving articles
+   - Content storage and organization
+   - Web scraping capabilities via Firecrawl
+
+4. **Progressive Web App**
+   - Offline-first architecture
+   - Responsive design
+   - Modern UI with Radix components
+
+### Data Models
+Key data collections in Firestore:
+- `feed_sources` - RSS feed sources and configurations
+- `feed_items` - Individual feed entries
+- `user_feed_subscriptions` - User subscriptions to feeds
+
+### Development Workflow
+- Local development using Firebase emulators
+- CI/CD via GitHub Actions
+- Staging and production environments
+- Automated testing and validation
+
+### Code Style
+- Strict TypeScript usage
+- Functional programming patterns
+- Modular architecture
+- Shared type definitions
+- Consistent formatting and linting
+- Descriptive variable names with auxiliary verbs (e.g., `isLoading`, `hasError`)
+- For methods with more than one argument, use a single named `args` object that is immediately destructured in the method body
+- Write comments as full sentences with proper punctuation
+
+### Security
+- Firebase security rules
+- Environment-based configuration
+- Secure API key management
+- CORS configuration for storage
+
+### UI preferences
+- Use sentence case for headers
+
+## Development Guidelines
+
+### Testing
+- Unit tests with Jest
+- Integration tests
+- Test coverage requirements
+
+## Deployment
+- Firebase Hosting for PWA
+- Firebase Functions for backend
+- Firebase Storage for assets
+- Automated deployments via GitHub Actions
+- Staging and production environments

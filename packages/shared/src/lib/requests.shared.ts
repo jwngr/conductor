@@ -9,8 +9,6 @@ import {
   makeSuccessResponseResult,
 } from '@shared/types/requests.types';
 
-const DEFAULT_CONTENT_TYPE = 'application/json';
-
 function isJsonResponse(response: Response): boolean {
   const responseContentTypeHeader = response.headers.get('Content-Type');
   if (!responseContentTypeHeader) return false;
@@ -33,7 +31,8 @@ async function request<T>(
     fetch(url + queryString, {
       method,
       headers: {
-        'Content-Type': headers['Content-Type'] ?? DEFAULT_CONTENT_TYPE,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
         ...headers,
       },
       body: body ? JSON.stringify(body) : undefined,
@@ -55,14 +54,14 @@ async function request<T>(
     const rawResponseClone = rawResponse.clone();
 
     // Try to parse the error response as JSON.
-    const unknownErrorJsonResult = await asyncTry(() => rawResponse.json());
+    const unknownErrorJsonResult = await asyncTry(async () => rawResponse.json());
     if (unknownErrorJsonResult.success) {
       const betterError = upgradeUnknownError(unknownErrorJsonResult.value ?? defaultErrorMessage);
       return makeErrorResponseResult(betterError, statusCode);
     }
 
     // Fallback to parsing as text if JSON parsing fails.
-    const unknownErrorTextResult = await asyncTry(() => rawResponseClone.text());
+    const unknownErrorTextResult = await asyncTry(async () => rawResponseClone.text());
     if (unknownErrorTextResult.success) {
       const betterError = upgradeUnknownError(unknownErrorTextResult.value ?? defaultErrorMessage);
       return makeErrorResponseResult(betterError, statusCode);

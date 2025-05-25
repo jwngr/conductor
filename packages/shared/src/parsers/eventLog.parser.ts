@@ -1,28 +1,33 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {parseStorageTimestamp, parseZodResult, toStorageTimestamp} from '@shared/lib/parser.shared';
+import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
+import {parseActor} from '@shared/parsers/actors.parser';
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
 import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions.parser';
+
+import {EventType} from '@shared/types/eventLog.types';
+import type {
+  EventId,
+  EventLogItem,
+  FeedItemActionEventLogItem,
+  FeedItemActionEventLogItemData,
+  FeedItemImportedEventLogItem,
+  FeedItemImportedEventLogItemData,
+  UserFeedSubscriptionEventLogItem,
+  UserFeedSubscriptionEventLogItemData,
+} from '@shared/types/eventLog.types';
+import type {Result} from '@shared/types/results.types';
 
 import {
   EventIdSchema,
   EventLogItemFromStorageSchema,
-  EventType,
   FeedItemActionEventLogItemDataSchema,
+  FeedItemImportedEventLogItemDataSchema,
   UserFeedSubscriptionEventLogItemDataSchema,
-} from '@shared/types/eventLog.types';
-import type {
-  EventId,
-  EventLogItem,
-  EventLogItemFromStorage,
-  FeedItemActionEventLogItem,
-  FeedItemActionEventLogItemData,
-  UserFeedSubscriptionEventLogItem,
-  UserFeedSubscriptionEventLogItemData,
-} from '@shared/types/eventLog.types';
-import type {Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+} from '@shared/schemas/eventLog.schema';
+import type {EventLogItemFromStorage} from '@shared/schemas/eventLog.schema';
 
 /**
  * Parses a {@link EventId} from a plain string. Returns an `ErrorResult` if the string is not
@@ -51,6 +56,8 @@ export function parseEventLogItem(maybeEventLogItem: unknown): Result<EventLogIt
       return parseFeedItemActionEventLogItem(maybeEventLogItem);
     case EventType.UserFeedSubscription:
       return parseUserFeedSubscriptionEventLogItem(maybeEventLogItem);
+    case EventType.FeedItemImported:
+      return parseFeedItemImportedEventLogItem(maybeEventLogItem);
     default:
       return makeErrorResult(
         new Error(`Unknown event log item type: ${parsedResult.value.eventType}`)
@@ -66,12 +73,13 @@ function parseUserFeedSubscriptionEventLogItem(
   maybeEventLogItem: unknown
 ): Result<UserFeedSubscriptionEventLogItem> {
   const parsedResult = parseZodResult(EventLogItemFromStorageSchema, maybeEventLogItem);
-  if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid event log item');
-  }
+  if (!parsedResult.success) return prefixErrorResult(parsedResult, 'Invalid event log item');
 
   const parsedAccountIdResult = parseAccountId(parsedResult.value.accountId);
   if (!parsedAccountIdResult.success) return parsedAccountIdResult;
+
+  const parsedActorResult = parseActor(parsedResult.value.actor);
+  if (!parsedActorResult.success) return parsedActorResult;
 
   const parsedEventIdResult = parseEventId(parsedResult.value.eventId);
   if (!parsedEventIdResult.success) return parsedEventIdResult;
@@ -83,6 +91,8 @@ function parseUserFeedSubscriptionEventLogItem(
   return makeSuccessResult({
     eventId: parsedEventIdResult.value,
     accountId: parsedAccountIdResult.value,
+    actor: parsedActorResult.value,
+    environment: parsedResult.value.environment,
     eventType: EventType.UserFeedSubscription,
     data: parsedDataResult.value,
     createdTime: parseStorageTimestamp(createdTime),
@@ -105,6 +115,9 @@ function parseFeedItemActionEventLogItem(
   const parsedAccountIdResult = parseAccountId(parsedResult.value.accountId);
   if (!parsedAccountIdResult.success) return parsedAccountIdResult;
 
+  const parsedActorResult = parseActor(parsedResult.value.actor);
+  if (!parsedActorResult.success) return parsedActorResult;
+
   const parsedEventIdResult = parseEventId(parsedResult.value.eventId);
   if (!parsedEventIdResult.success) return parsedEventIdResult;
 
@@ -115,6 +128,8 @@ function parseFeedItemActionEventLogItem(
   return makeSuccessResult({
     eventId: parsedEventIdResult.value,
     accountId: parsedAccountIdResult.value,
+    actor: parsedActorResult.value,
+    environment: parsedResult.value.environment,
     eventType: EventType.FeedItemAction,
     data: parsedDataResult.value,
     createdTime: parseStorageTimestamp(createdTime),
@@ -138,6 +153,64 @@ function parseFeedItemActionEventLogItemData(
   return makeSuccessResult({
     feedItemId: parsedFeedItemIdResult.value,
     feedItemActionType: parsedResult.value.feedItemActionType,
+  });
+}
+
+/**
+ * Parses a {@link FeedItemActionEventLogItem} from an unknown value. Returns an `ErrorResult` if the
+ * value is not valid.
+ */
+function parseFeedItemImportedEventLogItem(
+  maybeEventLogItem: unknown
+): Result<FeedItemImportedEventLogItem> {
+  const parsedResult = parseZodResult(EventLogItemFromStorageSchema, maybeEventLogItem);
+  if (!parsedResult.success) {
+    return prefixErrorResult(parsedResult, 'Invalid event log item');
+  }
+
+  const parsedAccountIdResult = parseAccountId(parsedResult.value.accountId);
+  if (!parsedAccountIdResult.success) return parsedAccountIdResult;
+
+  const parsedActorResult = parseActor(parsedResult.value.actor);
+  if (!parsedActorResult.success) return parsedActorResult;
+
+  const parsedEventIdResult = parseEventId(parsedResult.value.eventId);
+  if (!parsedEventIdResult.success) return parsedEventIdResult;
+
+  const parsedDataResult = parseFeedItemImportedEventLogItemData(parsedResult.value.data);
+  if (!parsedDataResult.success) return parsedDataResult;
+
+  const {createdTime, lastUpdatedTime} = parsedResult.value;
+  return makeSuccessResult({
+    eventId: parsedEventIdResult.value,
+    accountId: parsedAccountIdResult.value,
+    actor: parsedActorResult.value,
+    environment: parsedResult.value.environment,
+    eventType: EventType.FeedItemImported,
+    data: parsedDataResult.value,
+    createdTime: parseStorageTimestamp(createdTime),
+    lastUpdatedTime: parseStorageTimestamp(lastUpdatedTime),
+  });
+}
+
+/**
+ * Parses a {@link FeedItemActionEventLogItemData} from an unknown value. Returns an `ErrorResult`
+ * if the value is not valid.
+ */
+function parseFeedItemImportedEventLogItemData(
+  maybeEventLogItemData: unknown
+): Result<FeedItemImportedEventLogItemData> {
+  const parsedResult = parseZodResult(
+    FeedItemImportedEventLogItemDataSchema,
+    maybeEventLogItemData
+  );
+  if (!parsedResult.success) return parsedResult;
+
+  const parsedFeedItemIdResult = parseFeedItemId(parsedResult.value.feedItemId);
+  if (!parsedFeedItemIdResult.success) return parsedFeedItemIdResult;
+
+  return makeSuccessResult({
+    feedItemId: parsedFeedItemIdResult.value,
   });
 }
 
@@ -172,9 +245,11 @@ export function toStorageEventLogItem(eventLogItem: EventLogItem): EventLogItemF
   return {
     eventId: eventLogItem.eventId,
     accountId: eventLogItem.accountId,
+    actor: eventLogItem.actor,
+    environment: eventLogItem.environment,
     eventType: eventLogItem.eventType,
     data: eventLogItem.data,
-    createdTime: toStorageTimestamp(eventLogItem.createdTime),
-    lastUpdatedTime: toStorageTimestamp(eventLogItem.lastUpdatedTime),
+    createdTime: eventLogItem.createdTime,
+    lastUpdatedTime: eventLogItem.lastUpdatedTime,
   };
 }

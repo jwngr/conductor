@@ -1,31 +1,89 @@
 import type React from 'react';
+import {useState} from 'react';
 
-import {logger} from '@shared/services/logger.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 
-import {prefixError} from '@shared/lib/errorUtils.shared';
-
+import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {FeedItem} from '@shared/types/feedItems.types';
 
-import {useFeedItemMarkdown} from '@sharedClient/services/feedItems.client';
+import {
+  useFeedItemDefuddleMarkdown,
+  useFeedItemMarkdown,
+} from '@sharedClient/hooks/feedItems.hooks';
 
+import {Button} from '@src/components/atoms/Button';
 import {Text} from '@src/components/atoms/Text';
 import {Markdown} from '@src/components/Markdown';
 
-export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
-  const isFeedItemImported = Boolean(feedItem.lastImportedTime);
-  const {markdown, isLoading, error} = useFeedItemMarkdown(feedItem.feedItemId, isFeedItemImported);
+type RenderStrategy = 'firecrawl' | 'defuddle';
 
-  if (error) {
-    logger.error(prefixError(error, 'Error fetching markdown for feed item'), {
-      feedItemId: feedItem.feedItemId,
-    });
-    // TODO: Introduce proper error screen.
-    return <Text as="p">Something went wrong: {error.message}</Text>;
-  } else if (isLoading) {
-    return <Text as="p">Loading markdown...</Text>;
-  } else if (markdown) {
-    return <Markdown content={markdown} />;
-  } else {
-    return <Text as="p">No markdown</Text>;
+const FirecrawlMarkdownRenderer: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
+  const markdownState = useFeedItemMarkdown(feedItem);
+
+  switch (markdownState.status) {
+    case AsyncStatus.Idle:
+    case AsyncStatus.Pending:
+      return <Text as="p">Loading Firecrawl markdown...</Text>;
+    case AsyncStatus.Error:
+      return (
+        <Text as="p" className="text-error">
+          Error loading Firecrawl markdown: {markdownState.error.message}
+        </Text>
+      );
+    case AsyncStatus.Success:
+      return <Markdown content={markdownState.value} />;
+    default:
+      assertNever(markdownState);
   }
+};
+
+const DefuddleMarkdownRenderer: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
+  const markdownState = useFeedItemDefuddleMarkdown(feedItem);
+
+  switch (markdownState.status) {
+    case AsyncStatus.Idle:
+    case AsyncStatus.Pending:
+      return <Text as="p">Loading Defuddle markdown...</Text>;
+    case AsyncStatus.Error:
+      return (
+        <Text as="p" className="text-error">
+          Error loading Defuddle markdown: {markdownState.error.message}
+        </Text>
+      );
+    case AsyncStatus.Success:
+      return <Markdown content={markdownState.value} />;
+    default:
+      assertNever(markdownState);
+  }
+};
+
+export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
+  const [renderStrategy, setRenderStrategy] = useState<RenderStrategy>('firecrawl');
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex gap-2">
+        <Button
+          variant={renderStrategy === 'firecrawl' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setRenderStrategy('firecrawl')}
+        >
+          Firecrawl
+        </Button>
+        <Button
+          variant={renderStrategy === 'defuddle' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setRenderStrategy('defuddle')}
+        >
+          Defuddle
+        </Button>
+      </div>
+
+      {renderStrategy === 'firecrawl' ? (
+        <FirecrawlMarkdownRenderer feedItem={feedItem} />
+      ) : (
+        <DefuddleMarkdownRenderer feedItem={feedItem} />
+      )}
+    </div>
+  );
 };

@@ -1,10 +1,12 @@
-import {limit as firestoreLimit, orderBy, serverTimestamp, where} from 'firebase/firestore';
-import {useEffect, useMemo, useState} from 'react';
+import {limit as firestoreLimit, orderBy, where} from 'firebase/firestore';
+import {useEffect, useMemo} from 'react';
 
 import {logger} from '@shared/services/logger.shared';
 
+import {makeUserActor} from '@shared/lib/actors.shared';
 import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 import {filterNull} from '@shared/lib/utils.shared';
 
 import {
@@ -14,16 +16,16 @@ import {
 } from '@shared/parsers/eventLog.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
+import type {AsyncState} from '@shared/types/asyncState.types';
 import {
+  Environment,
   EventType,
   makeEventId,
   type EventId,
   type EventLogItem,
 } from '@shared/types/eventLog.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
-import type {ViewType} from '@shared/types/query.types';
-import type {AsyncResult} from '@shared/types/result.types';
-import {makeSuccessResult} from '@shared/types/result.types';
+import type {AsyncResult} from '@shared/types/results.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
@@ -32,6 +34,7 @@ import {
   makeFirestoreDataConverter,
 } from '@sharedClient/services/firestore.client';
 
+import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
 // TODO: This is a somewhat arbitrary limit. Reconsider what the logic should be here.
@@ -42,7 +45,7 @@ const eventLogItemFirestoreConverter = makeFirestoreDataConverter(
   parseEventLogItem
 );
 
-export const useEventLogService = () => {
+export const useEventLogService = (): ClientEventLogService => {
   const loggedInAccount = useLoggedInAccount();
 
   const eventLogService = useMemo(() => {
@@ -53,6 +56,7 @@ export const useEventLogService = () => {
     });
 
     return new ClientEventLogService({
+      environment: Environment.PWA,
       eventLogCollectionService,
       accountId: loggedInAccount.accountId,
     });
@@ -61,74 +65,55 @@ export const useEventLogService = () => {
   return eventLogService;
 };
 
-interface EventLogItemState {
-  readonly eventLogItem: EventLogItem | null;
-  readonly isLoading: boolean;
-  readonly error: Error | null;
-}
-
-// TODO: Ideally these hooks would live in the `shared` package.
-export function useEventLogItem(eventId: EventId): EventLogItemState {
+export function useEventLogItem(eventId: EventId): AsyncState<EventLogItem | null> {
   const eventLogService = useEventLogService();
 
-  const [state, setState] = useState<EventLogItemState>({
-    eventLogItem: null,
-    isLoading: true,
-    error: null,
-  });
+  const {asyncState, setPending, setError, setSuccess} = useAsyncState<EventLogItem | null>();
 
   useEffect(() => {
+    setPending();
     const unsubscribe = eventLogService.watchById(
       eventId,
-      (eventLogItem) => setState({eventLogItem, isLoading: false, error: null}),
-      (error) => setState({eventLogItem: null, isLoading: false, error})
+      (eventLogItem) => setSuccess(eventLogItem),
+      (error) => setError(error)
     );
     return () => unsubscribe();
-  }, [eventId, eventLogService]);
+  }, [eventId, eventLogService, setPending, setError, setSuccess]);
 
-  return state;
+  return asyncState;
 }
 
-interface EventLogItemsState {
-  readonly eventLogItems: EventLogItem[];
-  readonly isLoading: boolean;
-  readonly error: Error | null;
-  readonly limit: number;
-}
-
-export function useEventLogItems({viewType}: {readonly viewType: ViewType}): EventLogItemsState {
+export function useEventLogItems(): AsyncState<EventLogItem[]> {
   const eventLogService = useEventLogService();
 
-  const [state, setState] = useState<EventLogItemsState>({
-    eventLogItems: [],
-    isLoading: true,
-    error: null,
-    limit: 0,
-  });
+  const {asyncState, setPending, setError, setSuccess} = useAsyncState<EventLogItem[]>();
 
   useEffect(() => {
+    setPending();
     const unsubscribe = eventLogService.watchEventLog({
-      successCallback: (eventLogItems) =>
-        setState({eventLogItems, isLoading: false, error: null, limit: EVENT_LOG_LIMIT}),
-      errorCallback: (error) =>
-        setState({eventLogItems: [], isLoading: false, error, limit: EVENT_LOG_LIMIT}),
+      successCallback: (eventLogItems) => setSuccess(eventLogItems),
+      errorCallback: (error) => setError(error),
+      limit: EVENT_LOG_LIMIT,
     });
     return () => unsubscribe();
-  }, [viewType, eventLogService]);
+  }, [eventLogService, setPending, setError, setSuccess]);
 
-  return state;
+  return asyncState;
 }
 
 type ClientEventLogCollectionService = ClientFirestoreCollectionService<EventId, EventLogItem>;
 
 export class ClientEventLogService {
+  private readonly environment: Environment;
   private readonly eventLogCollectionService: ClientEventLogCollectionService;
   private readonly accountId: AccountId;
 
   constructor(args: {
+    readonly environment: Environment;
     readonly eventLogCollectionService: ClientEventLogCollectionService;
     readonly accountId: AccountId;
   }) {
+    this.environment = args.environment;
     this.eventLogCollectionService = args.eventLogCollectionService;
     this.accountId = args.accountId;
   }
@@ -181,13 +166,16 @@ export class ClientEventLogService {
     const createResult = await this.eventLogCollectionService.setDoc(eventId, {
       eventId,
       accountId: this.accountId,
+      actor: makeUserActor(this.accountId),
+      environment: this.environment,
       eventType: EventType.FeedItemAction,
       data: {
         feedItemId: args.feedItemId,
         feedItemActionType: args.feedItemActionType,
       },
-      createdTime: serverTimestamp(),
-      lastUpdatedTime: serverTimestamp(),
+      // TODO(timestamps): Use server timestamps instead.
+      createdTime: new Date(),
+      lastUpdatedTime: new Date(),
     });
 
     if (!createResult.success) {
@@ -208,12 +196,15 @@ export class ClientEventLogService {
     const createResult = await this.eventLogCollectionService.setDoc(eventId, {
       eventId,
       accountId: this.accountId,
+      actor: makeUserActor(this.accountId),
+      environment: this.environment,
       eventType: EventType.UserFeedSubscription,
       data: {
         userFeedSubscriptionId: args.userFeedSubscriptionId,
       },
-      createdTime: serverTimestamp(),
-      lastUpdatedTime: serverTimestamp(),
+      // TODO(timestamps): Use server timestamps instead.
+      createdTime: new Date(),
+      lastUpdatedTime: new Date(),
     });
 
     if (!createResult.success) {

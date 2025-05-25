@@ -1,8 +1,12 @@
 import {v4 as uuidv4} from 'uuid';
 
-import type {AsyncResult, Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import type {EmailAddress, Func, Supplier, UUID} from '@shared/types/utils.types';
+import {logger} from '@shared/services/logger.shared';
+
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+
+import type {EmailAddress} from '@shared/types/emails.types';
+import type {AsyncResult, Result} from '@shared/types/results.types';
+import type {Func, Supplier, UUID} from '@shared/types/utils.types';
 
 /**
  * Formats a number with commas.
@@ -13,14 +17,29 @@ export const formatWithCommas = (val: number): string => {
   return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 };
 
+interface AssertNeverOptions {
+  /** Test-only option to avoid noisy logs for the `assertNever` tests themselves. */
+  readonly testNoLog?: boolean;
+}
+
+const DEFAULT_ASSERT_NEVER_OPTIONS: AssertNeverOptions = {
+  testNoLog: false,
+};
+
 /**
  * Throws an error if the provided value is not of type `never`. This is useful for exhaustive
  * switch statements.
  */
-export function assertNever(x: never): never {
-  // TODO: Add logging. Or a global error handler.
+export function assertNever(
+  val: never,
+  options: AssertNeverOptions = DEFAULT_ASSERT_NEVER_OPTIONS
+): never {
+  const {testNoLog = false} = options;
+  if (!testNoLog) {
+    logger.error(new Error('assertNever received non-empty value'), {val});
+  }
   // eslint-disable-next-line no-restricted-syntax
-  throw new Error(`Unexpected object: ${x}`);
+  throw new Error(`Unexpected value: ${val}`);
 }
 
 /**
@@ -90,7 +109,7 @@ export async function batchAsyncResults<T>(
 
   const allResults: Array<Result<T>> = [];
   for (const currentSuppliers of resultsPerBatch) {
-    const currentResults = await Promise.all(currentSuppliers.map((supplier) => supplier()));
+    const currentResults = await Promise.all(currentSuppliers.map(async (supplier) => supplier()));
     allResults.push(...currentResults);
   }
   return makeSuccessResult(allResults);
@@ -99,7 +118,10 @@ export async function batchAsyncResults<T>(
 /**
  * Partitions an array into two arrays based on the provided predicate.
  */
-export function partition<T, U>(arr: Array<T | U>, predicate: Func<T | U, boolean>): [T[], U[]] {
+export function partition<T, U>(
+  arr: ReadonlyArray<T | U>,
+  predicate: Func<T | U, boolean>
+): [T[], U[]] {
   return arr.reduce(
     (acc, item) => {
       if (predicate(item)) {
@@ -127,4 +149,86 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  */
 export function isValidEmail(maybeEmail: unknown): maybeEmail is EmailAddress {
   return typeof maybeEmail === 'string' && EMAIL_REGEX.test(maybeEmail);
+}
+
+/**
+ * Returns `true` if the provided value is a `Date`.
+ */
+export function isDate(value: unknown): value is Date {
+  return value instanceof Date;
+}
+
+/**
+ * Returns a pluralized string, not including the count.
+ *
+ * If `plural` is not provided, the string will be pluralized using the singular string and a basic
+ * heuristic.
+ *
+ * TODO: Use a more proper localization library which handles internationalization.
+ */
+export function pluralize(count: number, singular: string, plural?: string): string {
+  if (!plural) {
+    const pluralized = singular.endsWith('s') ? `${singular}es` : `${singular}s`;
+    return count === 1 ? singular : pluralized;
+  }
+  return count === 1 ? singular : plural;
+}
+
+/**
+ * Returns a pluralized string, including the count.
+ *
+ * If `plural` is not provided, the string will be pluralized using the singular string and a basic
+ * heuristic.
+ *
+ * TODO: Use a more proper localization library which handles internationalization.
+ */
+export function pluralizeWithCount(count: number, singular: string, plural?: string): string {
+  return `${formatWithCommas(count)} ${pluralize(count, singular, plural)}`;
+}
+
+/**
+ * A no-op function.
+ *
+ * This is useful for providing a function to callbacks that are not used.
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+export function noop(): void {}
+
+/**
+ * A no-op function that returns `true`.
+ *
+ * This is useful for providing a function to callbacks that should always return `true`.
+ */
+export function noopTrue(): true {
+  return true;
+}
+
+/**
+ * A no-op function that returns `false`.
+ *
+ * This is useful for providing a function to callbacks that should always return `false`.
+ */
+export function noopFalse(): false {
+  return false;
+}
+
+/**
+ * Returns `true` if the provided value is a valid port number.
+ */
+export function isValidPort(port: number): boolean {
+  return port >= 0 && port <= 65535;
+}
+
+/**
+ * Returns `true` if the provided value is an integer.
+ */
+export function isInteger(value: number): boolean {
+  return Number.isInteger(value);
+}
+
+/**
+ * Returns `true` if the provided value is a positive integer.
+ */
+export function isPositiveInteger(value: number): boolean {
+  return isInteger(value) && value > 0;
 }

@@ -1,12 +1,9 @@
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import React, {useEffect} from 'react';
-import styled from 'styled-components';
 
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
-import {ThemeColor} from '@shared/types/theme.types';
-import type {Task} from '@shared/types/utils.types';
+import type {Supplier} from '@shared/types/utils.types';
 
-import {FlexRow} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
 
 import {keyboardShortcutsService} from '@src/lib/shortcuts.pwa';
@@ -17,22 +14,16 @@ const TooltipRootComponent = TooltipPrimitive.Root;
 
 const TooltipTriggerComponent = TooltipPrimitive.Trigger;
 
-const TooltipContentComponentWrapper = styled(TooltipPrimitive.Content)`
-  z-index: 50;
-  overflow: hidden;
-  border-radius: 4px;
-  color: ${({theme}) => theme.colors[ThemeColor.Neutral100]};
-  background-color: ${({theme}) => theme.colors[ThemeColor.Neutral900]};
-  border: 1px solid ${({theme}) => theme.colors[ThemeColor.Neutral500]};
-  padding: 4px 8px;
-  // TODO: Add subtle slide-in animation.
-`;
-
 const TooltipContentComponent = React.forwardRef<
   React.ElementRef<typeof TooltipPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
->(({sideOffset = 4, ...props}, ref) => (
-  <TooltipContentComponentWrapper ref={ref} sideOffset={sideOffset} {...props} />
+>(({sideOffset = 4, className, ...props}, ref) => (
+  <TooltipPrimitive.Content
+    ref={ref}
+    sideOffset={sideOffset}
+    className={`border-neutral-3 bg-neutral-5 text-neutral-1 z-50 overflow-hidden rounded border px-2 py-1 ${className ?? ''}`}
+    {...props}
+  />
 ));
 
 TooltipContentComponent.displayName = TooltipPrimitive.Content.displayName;
@@ -47,7 +38,7 @@ interface TooltipProps extends TooltipPrimitive.TooltipProps {
   readonly trigger: React.ReactNode;
   readonly content: TooltipContent;
   readonly shortcutId?: KeyboardShortcutId;
-  readonly onShortcutTrigger?: Task;
+  readonly onShortcutTrigger?: Supplier<Promise<void>>;
 }
 
 export const Tooltip: React.FC<TooltipProps> = ({
@@ -61,12 +52,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
 
   useEffect(() => {
     if (!shortcut || !onShortcutTrigger) return;
-
-    keyboardShortcutsService.registerShortcut(shortcut, onShortcutTrigger);
-
-    return () => {
-      keyboardShortcutsService.unregisterShortcut(shortcut.shortcutId);
-    };
+    return keyboardShortcutsService.registerShortcut(shortcut, onShortcutTrigger);
   }, [onShortcutTrigger, shortcut]);
 
   let tooltipContent: React.ReactNode;
@@ -91,10 +77,10 @@ export const Tooltip: React.FC<TooltipProps> = ({
     <TooltipRootComponent {...tooltipProps}>
       <TooltipTriggerComponent>{trigger}</TooltipTriggerComponent>
       <TooltipContentComponent>
-        <FlexRow gap={8}>
+        <div className="flex flex-row items-center gap-2">
           {tooltipContent}
           {shortcutKeysContent}
-        </FlexRow>
+        </div>
       </TooltipContentComponent>
     </TooltipRootComponent>
   );
