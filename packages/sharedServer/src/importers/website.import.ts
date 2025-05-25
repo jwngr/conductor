@@ -1,5 +1,3 @@
-import {Defuddle} from 'defuddle/node';
-
 import {logger} from '@shared/services/logger.shared';
 
 import {
@@ -29,7 +27,7 @@ import type {AsyncResult} from '@shared/types/results.types';
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import type {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
 
-import {sanitizeHtml} from '@sharedServer/lib/html.server';
+import {extractMainContent, sanitizeHtml} from '@sharedServer/lib/html.server';
 import {htmlToMarkdown} from '@sharedServer/lib/markdown.server';
 import {generateHierarchicalSummary} from '@sharedServer/lib/summarization.server';
 
@@ -92,9 +90,10 @@ export class WebsiteFeedItemImporter {
   }
 
   /**
-   * Uses Defuddle to extract clean HTML and Markdown and saves it to storage.
+   * Extracts the main content from the full page sanitized HTML, converts it to HTML and Markdown,
+   * and saves it to storage.
    */
-  private async saveDefuddleData(args: {
+  private async saveMainContentHtmlAndMarkdown(args: {
     readonly url: string;
     readonly html: string;
     readonly feedItemId: FeedItemId;
@@ -102,59 +101,54 @@ export class WebsiteFeedItemImporter {
   }): AsyncResult<void> {
     const {url, html, feedItemId, accountId} = args;
 
-    const defuddleData = await Defuddle(html, url, {
-      url,
-      // markdown: true, // TODO: This is not working.
-      // separateMarkdown: true,
-      removeExactSelectors: true,
-      removePartialSelectors: true,
-    });
+    const mainContentResult = await extractMainContent({html, url});
+    if (!mainContentResult.success) {
+      return prefixErrorResult(mainContentResult, 'Error extracting main content HTML');
+    }
+    const mainContentData = mainContentResult.value;
+    const mainContentHtml = mainContentData.content;
 
-    console.log('+++ defuddleData keys', Object.keys(defuddleData));
-
-    const defuddleHtml = defuddleData.content;
-
-    const defuddleMarkdownResult = htmlToMarkdown(defuddleHtml);
-    if (!defuddleMarkdownResult.success) {
+    const mainContentMarkdownResult = htmlToMarkdown(mainContentHtml);
+    if (!mainContentMarkdownResult.success) {
       return prefixErrorResult(
-        defuddleMarkdownResult,
-        'Error converting Defuddle HTML to Markdown'
+        mainContentMarkdownResult,
+        'Error converting main content HTML to Markdown'
       );
     }
-    const defuddleMarkdown = defuddleMarkdownResult.value;
+    const mainContentMarkdown = mainContentMarkdownResult.value;
 
-    const defuddleHtmlStoragePath = this.feedItemService.getStoragePath({
+    const mainContentHtmlStoragePath = this.feedItemService.getStoragePath({
       feedItemId,
       accountId,
       filename: FEED_ITEM_FILE_HTML_DEFUDDLE,
     });
 
-    const defuddleMarkdownPath = this.feedItemService.getStoragePath({
+    const mainContentMarkdownPath = this.feedItemService.getStoragePath({
       feedItemId,
       accountId,
       filename: FEED_ITEM_FILE_HTML_MARKDOWN,
     });
 
-    const saveDefuddleDataResult = await asyncTryAll([
+    const saveMainContentResult = await asyncTryAll([
       this.feedItemService.writeFileToStorage({
-        storagePath: defuddleHtmlStoragePath,
-        content: defuddleHtml,
+        storagePath: mainContentHtmlStoragePath,
+        content: mainContentHtml,
         contentType: 'text/html',
       }),
       this.feedItemService.writeFileToStorage({
-        storagePath: defuddleMarkdownPath,
-        content: defuddleMarkdown,
+        storagePath: mainContentMarkdownPath,
+        content: mainContentMarkdown,
         contentType: 'text/markdown',
       }),
     ]);
 
-    if (!saveDefuddleDataResult.success) {
-      return prefixErrorResult(saveDefuddleDataResult, 'Error saving Defuddle data');
+    if (!saveMainContentResult.success) {
+      return prefixErrorResult(saveMainContentResult, 'Error saving main content data');
     }
 
-    const firstError = saveDefuddleDataResult.value.results.find((r) => !r.success)?.error;
+    const firstError = saveMainContentResult.value.results.find((r) => !r.success)?.error;
     if (firstError) {
-      return makeErrorResult(prefixError(firstError, 'Error saving Defuddle file'));
+      return makeErrorResult(prefixError(firstError, 'Error saving main content file'));
     }
 
     return makeSuccessResult(undefined);
@@ -263,14 +257,14 @@ export class WebsiteFeedItemImporter {
     if (!sanitizedHtmlResult.success) return sanitizedHtmlResult;
     const sanitizedHtml = sanitizedHtmlResult.value;
 
-    const saveDefuddleResult = await this.saveDefuddleData({
+    const saveMainContentResult = await this.saveMainContentHtmlAndMarkdown({
       url,
       html: sanitizedHtml,
       feedItemId,
       accountId,
     });
 
-    if (!saveDefuddleResult.success) return saveDefuddleResult;
+    if (!saveMainContentResult.success) return saveMainContentResult;
 
     return makeSuccessResult(undefined);
   }

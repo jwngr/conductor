@@ -6,6 +6,7 @@ import {logger} from '@shared/services/logger.shared';
 import {makeSuccessAsyncState} from '@shared/lib/asyncState.shared';
 import {
   FEED_ITEM_FILE_HTML,
+  FEED_ITEM_FILE_HTML_MARKDOWN,
   FEED_ITEM_FILE_LLM_CONTEXT,
   FEED_ITEM_FILE_TRANSCRIPT,
   FEED_ITEM_FILE_XKCD_EXPLAIN,
@@ -246,6 +247,10 @@ export function useFeedItemHtml(feedItem: FeedItem): AsyncState<string> {
 
 export function useFeedItemMarkdown(feedItem: FeedItem): AsyncState<string> {
   return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_LLM_CONTEXT});
+}
+
+export function useFeedItemDefuddleMarkdown(feedItem: FeedItem): AsyncState<string> {
+  return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_HTML_MARKDOWN});
 }
 
 export function useYouTubeFeedItemTranscript(feedItem: FeedItem): AsyncState<string> {
