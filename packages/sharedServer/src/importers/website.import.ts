@@ -30,6 +30,7 @@ import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.serv
 import type {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
 
 import {sanitizeHtml} from '@sharedServer/lib/html.server';
+import {htmlToMarkdown} from '@sharedServer/lib/markdown.server';
 import {generateHierarchicalSummary} from '@sharedServer/lib/summarization.server';
 
 export class WebsiteFeedItemImporter {
@@ -95,22 +96,32 @@ export class WebsiteFeedItemImporter {
    */
   private async saveDefuddleData(args: {
     readonly url: string;
-    readonly rawHtml: string;
+    readonly html: string;
     readonly feedItemId: FeedItemId;
     readonly accountId: AccountId;
   }): AsyncResult<void> {
-    const {url, rawHtml, feedItemId, accountId} = args;
+    const {url, html, feedItemId, accountId} = args;
 
-    const defuddleData = await Defuddle(rawHtml, url, {
+    const defuddleData = await Defuddle(html, url, {
       url,
-      debug: true,
-      markdown: true,
-      separateMarkdown: true,
+      // markdown: true, // TODO: This is not working.
+      // separateMarkdown: true,
       removeExactSelectors: true,
       removePartialSelectors: true,
     });
 
     console.log('+++ defuddleData keys', Object.keys(defuddleData));
+
+    const defuddleHtml = defuddleData.content;
+
+    const defuddleMarkdownResult = htmlToMarkdown(defuddleHtml);
+    if (!defuddleMarkdownResult.success) {
+      return prefixErrorResult(
+        defuddleMarkdownResult,
+        'Error converting Defuddle HTML to Markdown'
+      );
+    }
+    const defuddleMarkdown = defuddleMarkdownResult.value;
 
     const defuddleHtmlStoragePath = this.feedItemService.getStoragePath({
       feedItemId,
@@ -127,16 +138,14 @@ export class WebsiteFeedItemImporter {
     const saveDefuddleDataResult = await asyncTryAll([
       this.feedItemService.writeFileToStorage({
         storagePath: defuddleHtmlStoragePath,
-        content: defuddleData.content,
+        content: defuddleHtml,
         contentType: 'text/html',
       }),
-      defuddleData.contentMarkdown
-        ? this.feedItemService.writeFileToStorage({
-            storagePath: defuddleMarkdownPath,
-            content: defuddleData.contentMarkdown as string,
-            contentType: 'text/markdown',
-          })
-        : Promise.resolve(makeErrorResult(new Error('Received no markdown content from Defuddle'))),
+      this.feedItemService.writeFileToStorage({
+        storagePath: defuddleMarkdownPath,
+        content: defuddleMarkdown,
+        contentType: 'text/markdown',
+      }),
     ]);
 
     if (!saveDefuddleDataResult.success) {
@@ -172,7 +181,7 @@ export class WebsiteFeedItemImporter {
       filename: FEED_ITEM_FILE_LLM_CONTEXT,
     });
 
-    const saveFirecrawlDataResult = await asyncTryAll([
+    const firecrawlDataResult = await asyncTryAll([
       this.feedItemService.writeFileToStorage({
         storagePath,
         content: firecrawlData.markdown,
@@ -185,12 +194,12 @@ export class WebsiteFeedItemImporter {
       }),
     ]);
 
-    const saveFirecrawlDataResultError = saveFirecrawlDataResult.success
-      ? saveFirecrawlDataResult.value.results.find((result) => !result.success)?.error
-      : saveFirecrawlDataResult.error;
-    if (saveFirecrawlDataResultError) {
+    const firecrawlDataResultError = firecrawlDataResult.success
+      ? firecrawlDataResult.value.results.find((result) => !result.success)?.error
+      : firecrawlDataResult.error;
+    if (firecrawlDataResultError) {
       return makeErrorResult(
-        prefixError(saveFirecrawlDataResultError, 'Error saving Firecrawl data for feed item')
+        prefixError(firecrawlDataResultError, 'Error saving Firecrawl data for feed item')
       );
     }
 
@@ -242,19 +251,21 @@ export class WebsiteFeedItemImporter {
       return makeErrorResult(prefixError(importAllDataResult.error, 'Error importing feed item'));
     }
 
-    const [saveRawHtmlResult, saveFirecrawlDataResult] = importAllDataResult.value.results;
+    const [sanitizedHtmlResult, firecrawlDataResult] = importAllDataResult.value.results;
 
-    // Consider failing to fetch the raw HTML as unrecoverable.
-    if (!saveRawHtmlResult.success) return saveRawHtmlResult;
-
-    // Consider failing to fetch the Firecrawl data as recoverable.
-    if (!saveFirecrawlDataResult.success) {
-      logger.error(saveFirecrawlDataResult.error, {feedItemId, accountId});
+    // Consider failing to fetch the Firecrawl data as recoverable, so just log.
+    if (!firecrawlDataResult.success) {
+      logger.error(firecrawlDataResult.error, {feedItemId, accountId});
     }
+
+    // Consider failing to fetch the raw HTML as unrecoverable. Logging will happen at the next
+    // level up.
+    if (!sanitizedHtmlResult.success) return sanitizedHtmlResult;
+    const sanitizedHtml = sanitizedHtmlResult.value;
 
     const saveDefuddleResult = await this.saveDefuddleData({
       url,
-      rawHtml: saveRawHtmlResult.value,
+      html: sanitizedHtml,
       feedItemId,
       accountId,
     });

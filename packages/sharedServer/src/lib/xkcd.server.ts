@@ -69,9 +69,21 @@ export async function fetchExplainXkcdContent(comicId: number): AsyncResult<Expl
       explanationHtml += $.html(nextElement);
       nextElement = nextElement.next();
     }
-    if (explanationHtml) {
-      explanationMarkdown = htmlToMarkdown(explanationHtml);
+
+    const trimmedExplanationHtml = explanationHtml.trim();
+    if (trimmedExplanationHtml.length === 0) {
+      const error = new Error('Could not parse explanation from Explain XKCD page');
+      logger.error(error, {url, comicId});
+      return makeErrorResult(error);
     }
+
+    const explanationMarkdownResult = htmlToMarkdown(trimmedExplanationHtml);
+    if (!explanationMarkdownResult.success) {
+      const error = new Error('Error converting explanation HTML to Markdown');
+      logger.error(error, {url, comicId, explanationHtml});
+      return makeErrorResult(error);
+    }
+    explanationMarkdown = explanationMarkdownResult.value;
   }
 
   if (!explanationMarkdown) {
@@ -92,9 +104,21 @@ export async function fetchExplainXkcdContent(comicId: number): AsyncResult<Expl
       transcriptHtml += $.html(nextElement);
       nextElement = nextElement.next();
     }
-    if (transcriptHtml) {
-      transcriptMarkdown = htmlToMarkdown(transcriptHtml);
+
+    const trimmedTranscriptHtml = transcriptHtml.trim();
+    if (trimmedTranscriptHtml.length === 0) {
+      const error = new Error('Could not parse transcript from Explain XKCD page');
+      logger.error(error, {url, comicId});
+      return makeErrorResult(error);
     }
+
+    const transcriptMarkdownResult = htmlToMarkdown(trimmedTranscriptHtml);
+    if (!transcriptMarkdownResult.success) {
+      const error = new Error('Error converting transcript HTML to Markdown');
+      logger.error(error, {url, comicId, transcriptHtml});
+      return makeErrorResult(error);
+    }
+    transcriptMarkdown = transcriptMarkdownResult.value;
   }
 
   return makeSuccessResult({

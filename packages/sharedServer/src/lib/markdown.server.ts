@@ -1,7 +1,9 @@
 import TurndownService from 'turndown';
 
+import {syncTry} from '@shared/lib/errorUtils.shared';
+
 const turndownService = new TurndownService();
 
-export function htmlToMarkdown(html: string): string {
-  return turndownService.turndown(html).trim();
+export function htmlToMarkdown(html: string): Result<string> {
+  return syncTry(() => turndownService.turndown(html).trim());
 }
