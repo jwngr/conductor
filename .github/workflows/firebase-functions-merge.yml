@@ -74,6 +74,8 @@ jobs:
           echo "SUPERFEEDR_USER=${SUPERFEEDR_USER}" >> .env.conductor-prod
           echo "SUPERFEEDR_API_KEY=${SUPERFEEDR_API_KEY}" >> .env.conductor-prod
           echo "SUPERFEEDR_WEBHOOK_SECRET=${SUPERFEEDR_WEBHOOK_SECRET}" >> .env.conductor-prod
+          echo "LOCAL_RSS_FEED_PROVIDER_WEBHOOK_SECRET=" >> .env.conductor-prod
+          echo "LOCAL_RSS_FEED_PROVIDER_PORT=" >> .env.conductor-prod
       - name: Deploy Firebase Functions
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
