@@ -122,7 +122,7 @@ export function syncTryAll<T>(allResults: Array<Result<T>>): Result<T[]> {
 
 /**
  * Executes the given asynchronous function and returns its result. Errors should never be thrown.
- * Instead, a `ErrorResult` is returned.
+ * Instead, an `ErrorResult` is returned.
  *
  * For synchronous functions, see {@link syncTry}.
  */

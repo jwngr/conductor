@@ -23,6 +23,7 @@ import type {AsyncResult} from '@shared/types/results.types';
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import type {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
 
+import {sanitizeHtml} from '@sharedServer/lib/html.server';
 import {generateHierarchicalSummary} from '@sharedServer/lib/summarization.server';
 
 export class WebsiteFeedItemImporter {
@@ -38,9 +39,9 @@ export class WebsiteFeedItemImporter {
   }
 
   /**
-   * Imports a feed item's HTML and saves it to storage.
+   * Imports a feed item's raw HTML, sanitizes it, and saves it to storage.
    */
-  private async fetchAndSaveRawHtml(args: {
+  private async fetchAndSaveSanitizedHtml(args: {
     readonly url: string;
     readonly feedItemId: FeedItemId;
     readonly accountId: AccountId;
@@ -61,6 +62,12 @@ export class WebsiteFeedItemImporter {
 
     const rawHtml = fetchDataResult.value;
 
+    const sanitizedHtmlResult = sanitizeHtml(rawHtml);
+    if (!sanitizedHtmlResult.success) {
+      return prefixErrorResult(sanitizedHtmlResult, 'Error sanitizing feed item HTML');
+    }
+    const sanitizedHtml = sanitizedHtmlResult.value;
+
     const storagePath = this.feedItemService.getStoragePath({
       feedItemId,
       accountId,
@@ -68,7 +75,7 @@ export class WebsiteFeedItemImporter {
     });
     const saveHtmlResult = await this.feedItemService.writeFileToStorage({
       storagePath,
-      content: rawHtml,
+      content: sanitizedHtml,
       contentType: 'text/html',
     });
 
@@ -147,7 +154,7 @@ export class WebsiteFeedItemImporter {
     feedItem: Exclude<FeedItemWithUrl, YouTubeFeedItem | XkcdFeedItem>
   ): AsyncResult<void> {
     const importAllDataResult = await asyncTryAll([
-      this.fetchAndSaveRawHtml({
+      this.fetchAndSaveSanitizedHtml({
         url: feedItem.url,
         feedItemId: feedItem.feedItemId,
         accountId: feedItem.accountId,
