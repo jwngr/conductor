@@ -9,15 +9,11 @@ const jsdomWindow = new JSDOM('').window;
 const domPurify = createDOMPurify(jsdomWindow);
 
 const DOMPURIFY_SANITIZE_CONFIG = {
-  // Only allow HTML content.
+  // Use DOMPurify's default HTML configuration.
   USE_PROFILES: {html: true},
 
   // Return a string instead of a DOM object.
   RETURN_DOM: false,
-
-  // Forbid unsafe tags and attributes.
-  FORBID_TAGS: ['script', 'style', 'iframe', 'frame', 'object', 'embed', 'form', 'input', 'button'],
-  FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onfocus', 'onmouseover', 'onmouseout'],
 };
 
 /**
