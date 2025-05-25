@@ -16,6 +16,7 @@ import {prefixError} from '@shared/lib/errorUtils.shared';
 import {parseFeedItem, parseFeedItemId} from '@shared/parsers/feedItems.parser';
 
 import type {ErrorResult} from '@shared/types/results.types';
+import type {RssFeedProvider} from '@shared/types/rss.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import type {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
@@ -42,6 +43,7 @@ let userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
 let wipeoutService: WipeoutService;
 let rssFeedService: ServerRssFeedService;
 let feedItemsService: ServerFeedItemsService;
+let rssFeedProvider: RssFeedProvider;
 
 // Initialize services on startup.
 onInit(() => {
@@ -61,6 +63,7 @@ onInit(() => {
   wipeoutService = services.wipeoutService;
   rssFeedService = services.rssFeedService;
   feedItemsService = services.feedItemsService;
+  rssFeedProvider = services.rssFeedProvider;
 });
 
 setGlobalOptions({
@@ -80,6 +83,7 @@ export const handleSuperfeedrWebhook = onRequest(
       response,
       userFeedSubscriptionsService,
       feedItemsService,
+      rssFeedProvider,
     });
   }
 );

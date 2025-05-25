@@ -1,3 +1,5 @@
 import {z} from 'zod';
 
-export const RssFeedProviderTypeSchema = z.union([z.literal('local'), z.literal('superfeedr')]);
+import {RssFeedProviderType} from '@shared/types/rss.types';
+
+export const RssFeedProviderTypeSchema = z.nativeEnum(RssFeedProviderType);

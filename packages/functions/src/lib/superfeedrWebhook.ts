@@ -5,15 +5,18 @@ import {logger} from '@shared/services/logger.shared';
 
 import {prefixError} from '@shared/lib/errorUtils.shared';
 import {makeRssFeedSource} from '@shared/lib/feedSources.shared';
-import {batchAsyncResults, partition} from '@shared/lib/utils.shared';
+import {assertNever, batchAsyncResults, partition} from '@shared/lib/utils.shared';
 
 import {parseSuperfeedrWebhookRequestBody} from '@shared/parsers/superfeedr.parser';
 
 import type {FeedItemWithUrl} from '@shared/types/feedItems.types';
 import type {AsyncResult, ErrorResult, SuccessResult} from '@shared/types/results.types';
+import type {RssFeedProvider} from '@shared/types/rss.types';
+import {RssFeedProviderType} from '@shared/types/rss.types';
 import type {Supplier} from '@shared/types/utils.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
+import {validateSuperfeedrWebhookSignature} from '@sharedServer/services/superfeedr.server';
 import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
 
 /**
@@ -22,11 +25,12 @@ import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/us
 export async function handleSuperfeedrWebhookHelper(args: {
   readonly request: Request;
   readonly response: Response;
+  readonly rssFeedProvider: RssFeedProvider;
   readonly userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
   readonly feedItemsService: ServerFeedItemsService;
   // TODO: Use AsyncResult here.
 }): Promise<void> {
-  const {request, response, userFeedSubscriptionsService, feedItemsService} = args;
+  const {request, response, userFeedSubscriptionsService, feedItemsService, rssFeedProvider} = args;
 
   const respondWithError = (
     error: Error,
@@ -43,6 +47,17 @@ export async function handleSuperfeedrWebhookHelper(args: {
 
   logger.log('[SUPERFEEDR] Received webhook request', {body: JSON.stringify(request.body)});
 
+  // Verify the RSS feed provider that is initialized is for Superfeedr.
+  switch (rssFeedProvider.type) {
+    case RssFeedProviderType.Superfeedr:
+      break;
+    case RssFeedProviderType.Local:
+      respondWithError(new Error('RSS feed provider is not Superfeedr'));
+      return;
+    default:
+      assertNever(rssFeedProvider.type);
+  }
+
   // Parse the request from Superfeedr.
   const parseResult = parseSuperfeedrWebhookRequestBody(request.body);
   if (!parseResult.success) {
@@ -53,6 +68,17 @@ export async function handleSuperfeedrWebhookHelper(args: {
   const body = parseResult.value;
   if (body.status.code !== 200) {
     respondWithError(new Error('Webhook callback returned non-200 status'));
+    return;
+  }
+
+  // Validate the webhook signature.
+  const validateResult = validateSuperfeedrWebhookSignature({
+    webhookSecret: rssFeedProvider.webhookSecret,
+    headers: request.headers,
+    body,
+  });
+  if (!validateResult.success) {
+    respondWithError(validateResult.error, 'Error validating webhook signature');
     return;
   }
 

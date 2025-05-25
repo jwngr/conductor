@@ -1,11 +1,17 @@
 # Firecrawl.
-FIRECRAWL_API_KEY=
+FIRECRAWL_API_KEY= # Get from Firecrawl
 
 # Google.
-GOOGLE_GENAI_API_KEY=
+GOOGLE_GENAI_API_KEY= # Get from Google Cloud Console
 
-# RSS feed provider.
+# RSS feed provider selection.
 RSS_FEED_PROVIDER_TYPE='local' # 'local' | 'superfeedr'
+
+# Local RSS feed provider.
 LOCAL_RSS_FEED_PROVIDER_PORT=6556
-SUPERFEEDR_USER=
-SUPERFEEDR_API_KEY=
+LOCAL_RSS_FEED_PROVIDER_WEBHOOK_SECRET= # Generate via `openssl rand -hex 16`
+
+# Superfeedr RSS feed provider (optional).
+SUPERFEEDR_API_KEY= # Get from Superfeedr
+SUPERFEEDR_USER= # Get from Superfeedr
+SUPERFEEDR_WEBHOOK_SECRET= # Generate via `openssl rand -hex 16`

@@ -7,7 +7,7 @@ import {assertNever, isValidPort} from '@shared/lib/utils.shared';
 import {parseRssFeedProviderType} from '@shared/parsers/rss.parser';
 
 import type {Result} from '@shared/types/results.types';
-import type {RssFeedProvider} from '@shared/types/rss.types';
+import {RssFeedProviderType, type RssFeedProvider} from '@shared/types/rss.types';
 import type {SuperfeedrCredentials} from '@shared/types/superfeedr.types';
 
 import {LocalRssFeedProvider} from '@sharedServer/services/localRssFeedProvider';
@@ -19,10 +19,15 @@ const LOCAL_RSS_FEED_PROVIDER_PORT = defineString('LOCAL_RSS_FEED_PROVIDER_PORT'
 const RSS_FEED_PROVIDER_TYPE = defineString('RSS_FEED_PROVIDER_TYPE');
 const SUPERFEEDR_USER = defineString('SUPERFEEDR_USER');
 const SUPERFEEDR_API_KEY = defineString('SUPERFEEDR_API_KEY');
+const SUPERFEEDR_WEBHOOK_SECRET = defineString('SUPERFEEDR_WEBHOOK_SECRET');
+const LOCAL_RSS_FEED_PROVIDER_WEBHOOK_SECRET = defineString(
+  'LOCAL_RSS_FEED_PROVIDER_WEBHOOK_SECRET'
+);
 
 export function getRssFeedProvider(): Result<RssFeedProvider> {
   const rawRssFeedProviderType = RSS_FEED_PROVIDER_TYPE.value();
-  const parsedFeedProviderTypeResult = parseRssFeedProviderType(rawRssFeedProviderType);
+  const uppercasedRssFeedProviderType = rawRssFeedProviderType.toUpperCase();
+  const parsedFeedProviderTypeResult = parseRssFeedProviderType(uppercasedRssFeedProviderType);
   if (!parsedFeedProviderTypeResult.success) {
     const message = `RSS_FEED_PROVIDER_TYPE environment variable has invalid value: "${rawRssFeedProviderType}"`;
     return prefixErrorResult(parsedFeedProviderTypeResult, message);
@@ -31,9 +36,9 @@ export function getRssFeedProvider(): Result<RssFeedProvider> {
   const feedProviderType = parsedFeedProviderTypeResult.value;
 
   switch (feedProviderType) {
-    case 'local':
+    case RssFeedProviderType.Local:
       return getLocalRssFeedProvider();
-    case 'superfeedr':
+    case RssFeedProviderType.Superfeedr:
       return getSuperfeedrRssFeedProvider();
     default: {
       assertNever(feedProviderType);
@@ -51,7 +56,15 @@ function getLocalRssFeedProvider(): Result<RssFeedProvider> {
     return makeErrorResult(new Error(message));
   }
 
-  const rssFeedProvider = new LocalRssFeedProvider({port, callbackUrl});
+  const webhookSecret = LOCAL_RSS_FEED_PROVIDER_WEBHOOK_SECRET.value();
+  if (webhookSecret.length === 0) {
+    const message =
+      'LOCAL_RSS_FEED_PROVIDER_WEBHOOK_SECRET environment variable must be set when Local RSS ' +
+      'feed provider enabled. Generate via `openssl rand -hex 16`.';
+    return makeErrorResult(new Error(message));
+  }
+
+  const rssFeedProvider = new LocalRssFeedProvider({port, callbackUrl, webhookSecret});
 
   return makeSuccessResult(rssFeedProvider);
 }
@@ -64,12 +77,13 @@ function getSuperfeedrRssFeedProvider(): Result<RssFeedProvider> {
     const message = 'Failed to initialize Superfeedr RSS feed provider';
     return prefixErrorResult(credentialsResult, message);
   }
-
   const credentials = credentialsResult.value;
+
   const rssFeedProvider = new SuperfeedrService({
     superfeedrUser: credentials.user,
     superfeedrApiKey: credentials.apiKey,
     callbackUrl,
+    webhookSecret: SUPERFEEDR_WEBHOOK_SECRET.value(),
   });
 
   return makeSuccessResult(rssFeedProvider);

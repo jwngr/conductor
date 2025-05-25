@@ -42,7 +42,7 @@ jobs:
           RSS_FEED_PROVIDER_TYPE: ${{ secrets.RSS_FEED_PROVIDER_TYPE }}
           SUPERFEEDR_USER: ${{ secrets.SUPERFEEDR_USER }}
           SUPERFEEDR_API_KEY: ${{ secrets.SUPERFEEDR_API_KEY }}
-          LOCAL_RSS_FEED_PROVIDER_PORT: ${{ secrets.LOCAL_RSS_FEED_PROVIDER_PORT }}
+          SUPERFEEDR_WEBHOOK_SECRET: ${{ secrets.SUPERFEEDR_WEBHOOK_SECRET }}
         run: |
           if [ -z "$FIRECRAWL_API_KEY" ]; then
             echo "Error: FIRECRAWL_API_KEY secret must be added in GitHub"
@@ -64,8 +64,8 @@ jobs:
             echo "Error: SUPERFEEDR_API_KEY secret must be added in GitHub"
             exit 1
           fi
-          if [ -z "$LOCAL_RSS_FEED_PROVIDER_PORT" ]; then
-            echo "Error: LOCAL_RSS_FEED_PROVIDER_PORT secret must be added in GitHub"
+          if [ -z "$SUPERFEEDR_WEBHOOK_SECRET" ]; then
+            echo "Error: SUPERFEEDR_WEBHOOK_SECRET secret must be added in GitHub"
             exit 1
           fi
           echo "FIRECRAWL_API_KEY=${FIRECRAWL_API_KEY}" > .env.conductor-prod
@@ -73,7 +73,9 @@ jobs:
           echo "RSS_FEED_PROVIDER_TYPE=${RSS_FEED_PROVIDER_TYPE}" >> .env.conductor-prod
           echo "SUPERFEEDR_USER=${SUPERFEEDR_USER}" >> .env.conductor-prod
           echo "SUPERFEEDR_API_KEY=${SUPERFEEDR_API_KEY}" >> .env.conductor-prod
-          echo "LOCAL_RSS_FEED_PROVIDER_PORT=${LOCAL_RSS_FEED_PROVIDER_PORT}" >> .env.conductor-prod
+          echo "SUPERFEEDR_WEBHOOK_SECRET=${SUPERFEEDR_WEBHOOK_SECRET}" >> .env.conductor-prod
+          echo "LOCAL_RSS_FEED_PROVIDER_WEBHOOK_SECRET=" >> .env.conductor-prod
+          echo "LOCAL_RSS_FEED_PROVIDER_PORT=" >> .env.conductor-prod
       - name: Deploy Firebase Functions
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
