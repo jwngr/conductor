@@ -16,6 +16,8 @@ import type {Supplier} from '@shared/types/utils.types';
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
 
+import {validateSuperfeedrWebhookSignature} from '@src/lib/rssFeedProvider.func';
+
 /**
  * Implementation of the Superfeedr webhook handler.
  */
@@ -54,6 +56,15 @@ export async function handleSuperfeedrWebhookHelper(args: {
   if (body.status.code !== 200) {
     respondWithError(new Error('Webhook callback returned non-200 status'));
     return;
+  }
+
+  // Validate the webhook signature.
+  const validateResult = validateSuperfeedrWebhookSignature({
+    headers: request.headers,
+    body,
+  });
+  if (!validateResult.success) {
+    respondWithError(validateResult.error, 'Error validating webhook signature');
   }
 
   // Fetch all users subscribed to this RSS feed URL.
