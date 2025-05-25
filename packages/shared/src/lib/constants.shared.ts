@@ -8,7 +8,7 @@ export const ACCOUNTS_DB_COLLECTION = 'accounts';
 export const FEED_ITEMS_STORAGE_COLLECTION = 'feedItems';
 
 // Feed item file names.
-export const FEED_ITEM_FILE_HTML = 'raw.html';
+export const FEED_ITEM_FILE_HTML = 'sanitized.html';
 export const FEED_ITEM_FILE_HTML_DEFUDDLE = 'defuddle.html';
 export const FEED_ITEM_FILE_HTML_MARKDOWN = 'defuddle.md';
 export const FEED_ITEM_FILE_LLM_CONTEXT = 'llmContext.md';

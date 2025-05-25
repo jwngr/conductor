@@ -456,7 +456,6 @@ __metadata:
   dependencies:
     "@mendable/firecrawl-js": "npm:^1.24.0"
     "@types/jsdom": "npm:^21.1.7"
-    defuddle: "npm:^0.6.4"
     esbuild: "npm:^0.25.4"
     firebase-admin: "npm:^13.4.0"
     firebase-functions: "npm:^6.3.2"
@@ -550,12 +549,14 @@ __metadata:
     "@genkit-ai/googleai": "npm:^1.9.0"
     "@google-cloud/firestore": "npm:^7.11.1"
     "@rowanmanning/feed-parser": "npm:^2.0.2"
+    "@types/jsdom": "npm:^21.1.7"
     "@types/turndown": "npm:^5.0.5"
     cheerio: "npm:^1.0.0"
     csv-parse: "npm:^5.6.0"
     dompurify: "npm:^3.2.6"
     firebase-admin: "npm:^13.4.0"
     genkit: "npm:^1.9.0"
+    jsdom: "npm:^26.1.0"
     turndown: "npm:^7.2.0"
     youtube-transcript: "npm:^1.2.1"
   languageName: unknown
@@ -5563,13 +5564,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xmldom/xmldom@npm:^0.8.10":
-  version: 0.8.10
-  resolution: "@xmldom/xmldom@npm:0.8.10"
-  checksum: 10c0/c7647c442502720182b0d65b17d45d2d95317c1c8c497626fe524bda79b4fb768a9aa4fae2da919f308e7abcff7d67c058b102a9d641097e9a57f0b80187851f
-  languageName: node
-  linkType: hard
-
 "abab@npm:^2.0.6":
   version: 2.0.6
   resolution: "abab@npm:2.0.6"
@@ -6888,26 +6882,6 @@ __metadata:
     has-property-descriptors: "npm:^1.0.0"
     object-keys: "npm:^1.1.1"
   checksum: 10c0/88a152319ffe1396ccc6ded510a3896e77efac7a1bfbaa174a7b00414a1747377e0bb525d303794a47cf30e805c2ec84e575758512c6e44a993076d29fd4e6c3
-  languageName: node
-  linkType: hard
-
-"defuddle@npm:^0.6.4":
-  version: 0.6.4
-  resolution: "defuddle@npm:0.6.4"
-  dependencies:
-    mathml-to-latex: "npm:^1.4.3"
-    temml: "npm:^0.11.2"
-    turndown: "npm:^7.2.0"
-  peerDependencies:
-    jsdom: ^24.0.0
-  dependenciesMeta:
-    mathml-to-latex:
-      optional: true
-    temml:
-      optional: true
-    turndown:
-      optional: true
-  checksum: 10c0/a57e92c266dddc817aa0396911fb493cd4f8b554d2ac3fca6621621aee089aae3de7a097765c1212e2dcac487b8781b2ac855737dc40eb3520d574f24cf7ab34
   languageName: node
   linkType: hard
 
@@ -8505,9 +8479,9 @@ __metadata:
   linkType: hard
 
 "globals@npm:^16.1.0":
-  version: 16.1.0
-  resolution: "globals@npm:16.1.0"
-  checksum: 10c0/51df6319b5b9e679338baf058ecf1125af0d3148b97e57592deabd65fca5c5dcdcca321d7589282bd6afbea9f5a40bc7329c746f46d56780813d7d1c457209a2
+  version: 16.2.0
+  resolution: "globals@npm:16.2.0"
+  checksum: 10c0/c2b3ea163faa6f8a38076b471b12f4bda891f7df7f7d2e8294fb4801d735a51a73431bf4c1696c5bf5dbca5e0a0db894698acfcbd3068730c6b12eef185dea25
   languageName: node
   linkType: hard
 
@@ -10642,15 +10616,6 @@ __metadata:
   version: 1.1.0
   resolution: "math-intrinsics@npm:1.1.0"
   checksum: 10c0/7579ff94e899e2f76ab64491d76cf606274c874d8f2af4a442c016bd85688927fcfca157ba6bf74b08e9439dc010b248ce05b96cc7c126a354c3bae7fcb48b7f
-  languageName: node
-  linkType: hard
-
-"mathml-to-latex@npm:^1.4.3":
-  version: 1.5.0
-  resolution: "mathml-to-latex@npm:1.5.0"
-  dependencies:
-    "@xmldom/xmldom": "npm:^0.8.10"
-  checksum: 10c0/3034bc34eba6fe3b21970c34edfd7b354119740df8a7294672cb769dc83125564d515ddff38d879277b70462d7a3458f7b92643785c7e938ab93d19e2c1d3eb7
   languageName: node
   linkType: hard
 
@@ -13467,13 +13432,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"temml@npm:^0.11.2":
-  version: 0.11.7
-  resolution: "temml@npm:0.11.7"
-  checksum: 10c0/170d432c4e3b86d37c34cf30d1d70c6ca8cfac9fc9b6a9af3cfca1fd50e1c12ec164e98d83cbf4b5420323e8a807d426e1b9390d2df037a549b662884d2b1fd1
-  languageName: node
-  linkType: hard
-
 "test-exclude@npm:^6.0.0":
   version: 6.0.0
   resolution: "test-exclude@npm:6.0.0"
@@ -13507,12 +13465,12 @@ __metadata:
   linkType: hard
 
 "tinyglobby@npm:^0.2.12, tinyglobby@npm:^0.2.13":
-  version: 0.2.13
-  resolution: "tinyglobby@npm:0.2.13"
+  version: 0.2.14
+  resolution: "tinyglobby@npm:0.2.14"
   dependencies:
     fdir: "npm:^6.4.4"
     picomatch: "npm:^4.0.2"
-  checksum: 10c0/ef07dfaa7b26936601d3f6d999f7928a4d1c6234c5eb36896bb88681947c0d459b7ebe797022400e555fe4b894db06e922b95d0ce60cb05fd827a0a66326b18c
+  checksum: 10c0/f789ed6c924287a9b7d3612056ed0cda67306cd2c80c249fd280cf1504742b12583a2089b61f4abbd24605f390809017240e250241f09938054c9b363e51c0a6
   languageName: node
   linkType: hard
 

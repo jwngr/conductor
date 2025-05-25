@@ -1,30 +1,24 @@
-import DOMPurify from 'dompurify';
+import createDOMPurify from 'dompurify';
 import {JSDOM} from 'jsdom';
 
-const window = new JSDOM('').window;
-const domPurifySingleton = DOMPurify(window);
+import {syncTry} from '@shared/lib/errorUtils.shared';
 
-// Configure DOMPurify with sensible defaults for server-side sanitization
-domPurifySingleton.setConfig({
-  // Security-focused defaults
-  ALLOW_DATA_ATTR: false, // Disable data-* attributes unless specifically needed
-  ALLOW_UNKNOWN_PROTOCOLS: false, // Only allow known safe protocols
-  SANITIZE_DOM: true, // Enable DOM clobbering protection
-  SANITIZE_NAMED_PROPS: true, // Prevent named property clobbering
-  KEEP_CONTENT: true, // Keep content when removing elements
+import type {Result} from '@shared/types/results.types';
 
-  // Performance and consistency
-  RETURN_DOM: false, // Return string (default, but explicit)
-  RETURN_DOM_FRAGMENT: false,
-  WHOLE_DOCUMENT: false,
+const jsdomWindow = new JSDOM('').window;
+const domPurify = createDOMPurify(jsdomWindow);
 
-  // Template safety (useful for preventing template injection)
-  SAFE_FOR_TEMPLATES: true, // Strip template expressions like {{ }}, ${ }, <% %>
-
-  // Use HTML profile only (disable SVG/MathML unless needed)
+const DOMPURIFY_SANITIZE_CONFIG = {
+  // Use DOMPurify's default HTML configuration.
   USE_PROFILES: {html: true},
-});
 
-export function sanitizeHtml(dirtyHtml: string): string {
-  return domPurifySingleton.sanitize(dirtyHtml);
+  // Return a string instead of a DOM object.
+  RETURN_DOM: false,
+};
+
+/**
+ * Sanitizes HTML content by removing potentially dangerous elements and attributes.
+ */
+export function sanitizeHtml(html: string): Result<string> {
+  return syncTry(() => domPurify.sanitize(html, DOMPURIFY_SANITIZE_CONFIG));
 }

@@ -29,6 +29,7 @@ import type {AsyncResult} from '@shared/types/results.types';
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import type {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
 
+import {sanitizeHtml} from '@sharedServer/lib/html.server';
 import {generateHierarchicalSummary} from '@sharedServer/lib/summarization.server';
 
 export class WebsiteFeedItemImporter {
@@ -44,9 +45,9 @@ export class WebsiteFeedItemImporter {
   }
 
   /**
-   * Imports a feed item's HTML and saves it to storage.
+   * Imports a feed item's raw HTML, sanitizes it, and saves it to storage.
    */
-  private async fetchAndSaveRawHtml(args: {
+  private async fetchAndSaveSanitizedHtml(args: {
     readonly url: string;
     readonly feedItemId: FeedItemId;
     readonly accountId: AccountId;
@@ -67,25 +68,26 @@ export class WebsiteFeedItemImporter {
 
     const rawHtml = fetchDataResult.value;
 
-    const rawHtmlStoragePath = this.feedItemService.getStoragePath({
+    const sanitizedHtmlResult = sanitizeHtml(rawHtml);
+    if (!sanitizedHtmlResult.success) {
+      return prefixErrorResult(sanitizedHtmlResult, 'Error sanitizing feed item HTML');
+    }
+    const sanitizedHtml = sanitizedHtmlResult.value;
+
+    const storagePath = this.feedItemService.getStoragePath({
       feedItemId,
       accountId,
       filename: FEED_ITEM_FILE_HTML,
     });
-
-    // Parse the HTML string into a document.
-    // const parser = new DOMParser();
-    // const doc = parser.parseFromString(htmlState.value, 'text/html');
-
-    const saveRawHtmlResult = await this.feedItemService.writeFileToStorage({
-      storagePath: rawHtmlStoragePath,
-      content: rawHtml,
+    const saveHtmlResult = await this.feedItemService.writeFileToStorage({
+      storagePath,
+      content: sanitizedHtml,
       contentType: 'text/html',
     });
 
-    if (!saveRawHtmlResult.success) return saveRawHtmlResult;
+    if (!saveHtmlResult.success) return saveHtmlResult;
 
-    return makeSuccessResult(rawHtml);
+    return makeSuccessResult(sanitizedHtml);
   }
 
   /**
@@ -223,8 +225,16 @@ export class WebsiteFeedItemImporter {
     const {url, feedItemId, accountId} = feedItem;
 
     const importAllDataResult = await asyncTryAll([
-      this.fetchAndSaveRawHtml({url, feedItemId, accountId}),
-      this.fetchAndSaveFirecrawlData({url, feedItemId, accountId}),
+      this.fetchAndSaveSanitizedHtml({
+        url: feedItem.url,
+        feedItemId: feedItem.feedItemId,
+        accountId: feedItem.accountId,
+      }),
+      this.fetchAndSaveFirecrawlData({
+        url: feedItem.url,
+        feedItemId: feedItem.feedItemId,
+        accountId: feedItem.accountId,
+      }),
     ]);
 
     // TODO: Make this multi-result error handling pattern simpler.
