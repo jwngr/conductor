@@ -121,23 +121,6 @@ export class ServerFeedItemsService {
   }
 
   /**
-   * Saves the sanitized HTML to storage.
-   */
-  public async saveSanitizedHtmlToStorage(args: {
-    readonly feedItemId: FeedItemId;
-    readonly sanitizedHtml: string;
-    readonly accountId: AccountId;
-  }): AsyncResult<void> {
-    const {feedItemId, sanitizedHtml, accountId} = args;
-    return await asyncTry(async () => {
-      const sanitizedHtmlFile = storage
-        .bucket()
-        .file(this.getStoragePath({feedItemId, accountId, filename: 'sanitized.html'}));
-      await sanitizedHtmlFile.save(sanitizedHtml, {contentType: 'text/html'});
-    });
-  }
-
-  /**
    * Writes content to storage file.
    */
   public async writeFileToStorage(args: {
