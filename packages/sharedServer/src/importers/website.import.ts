@@ -39,9 +39,9 @@ export class WebsiteFeedItemImporter {
   }
 
   /**
-   * Imports a feed item's HTML and saves it to storage.
+   * Imports a feed item's raw HTML, sanitizes it, and saves it to storage.
    */
-  private async fetchAndSaveRawHtml(args: {
+  private async fetchAndSaveSanitizedHtml(args: {
     readonly url: string;
     readonly feedItemId: FeedItemId;
     readonly accountId: AccountId;
@@ -154,7 +154,7 @@ export class WebsiteFeedItemImporter {
     feedItem: Exclude<FeedItemWithUrl, YouTubeFeedItem | XkcdFeedItem>
   ): AsyncResult<void> {
     const importAllDataResult = await asyncTryAll([
-      this.fetchAndSaveRawHtml({
+      this.fetchAndSaveSanitizedHtml({
         url: feedItem.url,
         feedItemId: feedItem.feedItemId,
         accountId: feedItem.accountId,
