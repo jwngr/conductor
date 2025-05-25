@@ -61,6 +61,8 @@ interface BaseFeedItem extends BaseStoreItem {
 }
 
 export interface BaseFeedItemWithUrl extends BaseFeedItem {
+  // Use a more precise type for the feed source.
+  readonly feedSource: FeedSourceWithUrl;
   /** URL of the source content. */
   readonly url: string;
   /** Description of the source content, provided by the source. */
@@ -69,8 +71,6 @@ export interface BaseFeedItemWithUrl extends BaseFeedItem {
   readonly outgoingLinks: string[];
   /** AI-generated summary of the source content. */
   readonly summary: string | null;
-  /** Source of the feed item. */
-  readonly feedSource: FeedSourceWithUrl;
 }
 
 export interface ArticleFeedItem extends BaseFeedItemWithUrl {
