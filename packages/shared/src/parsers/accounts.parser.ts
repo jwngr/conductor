@@ -4,6 +4,8 @@ import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseZodResult} from '@shared/lib/parser.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
+import {parseEmailAddress} from '@shared/parsers/emails.parser';
+
 import type {Account, AccountId} from '@shared/types/accounts.types';
 import type {Result} from '@shared/types/results.types';
 
