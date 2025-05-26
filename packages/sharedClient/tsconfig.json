@@ -1,6 +1,6 @@
 {
-  "include": ["src"],
-  "extends": "../../tsconfig.json",
+  "include": ["src/**/*", "src/**/*.json"],
+  "extends": "../../tsconfig.base.json",
 
   // This package consumes the `shared` package.
   "references": [{"path": "../shared"}],
@@ -10,11 +10,13 @@
     "composite": true,
 
     // Build output.
+    "moduleResolution": "bundler",
     "outDir": "./dist",
     "declaration": true,
     "declarationMap": true,
 
     // Import aliases.
+    "baseUrl": ".",
     "paths": {
       "@shared/*": ["../shared/src/*"],
       // Despite this being in the `sharedClient` package itself, prefer `@sharedClient` imports

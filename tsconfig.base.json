@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    // Target latest ECMAScript.
+    "target": "ESNext",
+    "lib": ["ESNext"],
+    "module": "ESNext",
+
+    // Enable strict type checking.
+    "strict": true,
+
+    // TODO: Ideally this is not need, or could be replaced with an allow-list of offending packages
+    // complaining about types.
+    "skipLibCheck": true,
+
+    // Default to Node compatibility and override in each sub-package as needed.
+    "moduleResolution": "node",
+    "esModuleInterop": true, // Allow importing CommonJS modules.
+    "isolatedModules": true, // Ensure each file is its own module.
+    "resolveJsonModule": true // Allow importing JSON files.
+  }
+}

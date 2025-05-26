@@ -2,11 +2,14 @@ name: Deploy prod Firestore rules on merge
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - 'firestore.rules'
       - '.github/actions/setup-workflow/**'
       - '.github/workflows/firestore-rules-merge.yml'
+permissions:
+  contents: read
+  id-token: write
 jobs:
   deploy_firestore_rules_prod:
     runs-on: ubuntu-latest
@@ -16,7 +19,7 @@ jobs:
       - name: CI setup action for Firebase deploy
         uses: ./.github/actions/setup-workflow
         with:
-          install-deps: 'true' # TODO: This is not really needed, but CI fails without it.
+          install-firebase: 'true'
       - name: Deploy Firestore rules
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

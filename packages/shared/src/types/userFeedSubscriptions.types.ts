@@ -1,10 +1,8 @@
-import {makeId} from '@shared/lib/utils.shared';
-
-import type {FeedSource, FeedSourceId} from '@shared/types/feedSources.types';
-import type {Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import type {UserId} from '@shared/types/user.types';
-import type {BaseStoreItem, Timestamp} from '@shared/types/utils.types';
+import type {AccountId} from '@shared/types/accounts.types';
+import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
+import type {FeedSourceType, PersistedFeedSourceType} from '@shared/types/feedSourceTypes.types';
+import type {BaseStoreItem} from '@shared/types/utils.types';
+import type {YouTubeChannelId} from '@shared/types/youtube.types';
 
 /**
  * Strongly-typed type for a {@link UserFeedSubscription}'s unique identifier. Prefer this over
@@ -13,72 +11,46 @@ import type {BaseStoreItem, Timestamp} from '@shared/types/utils.types';
 export type UserFeedSubscriptionId = string & {readonly __brand: 'UserFeedSubscriptionIdBrand'};
 
 /**
- * An individual user's subscription to a feed source.
+ * An individual account's subscription to a feed source.
  *
- * A single {@link FeedSource} can have multiple {@link UserFeedSubscription}s, one for each
- * {@link User} subscribed to it.
+ * A single URL can have multiple {@link UserFeedSubscription}s, one for each {@link Account}
+ * subscribed to it.
  *
- * These are not deleted when a user unsubscribes from a feed. Instead, they are marked as
- * inactive. They are only deleted when a user is wiped out.
+ * User feed subscriptions are not deleted when an account unsubscribes from a feed. Instead, they
+ * are marked as inactive. They are only deleted when an account is wiped out.
  */
-export interface UserFeedSubscription extends BaseStoreItem {
+interface BaseUserFeedSubscription extends BaseStoreItem {
+  /** The unique identifier for this subscription. */
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-  readonly feedSourceId: FeedSourceId;
-  readonly userId: UserId;
+  /** The type of feed source this subscription is for. */
+  readonly feedSourceType: PersistedFeedSourceType;
+  /** The account that owns this subscription. */
+  readonly accountId: AccountId;
+  /** Whether this subscription is active. Inactive subscriptions do not generate new feed items. */
+  readonly isActive: boolean;
+  /** The delivery schedule for this subscription. */
+  readonly deliverySchedule: DeliverySchedule;
+  /** The time this subscription was unsubscribed from the feed source. */
+  readonly unsubscribedTime?: Date | undefined;
+}
+
+export interface RssUserFeedSubscription extends BaseUserFeedSubscription {
+  readonly feedSourceType: FeedSourceType.RSS;
   readonly url: string;
   readonly title: string;
-  readonly isActive: boolean;
-  readonly unsubscribedTime?: Timestamp;
 }
 
-/**
- * Checks if a value is a valid {@link UserFeedSubscriptionId}.
- */
-export function isUserFeedSubscriptionId(
-  userFeedSubscriptionId: unknown
-): userFeedSubscriptionId is UserFeedSubscriptionId {
-  return typeof userFeedSubscriptionId === 'string' && userFeedSubscriptionId.length > 0;
+export interface YouTubeChannelUserFeedSubscription extends BaseUserFeedSubscription {
+  readonly feedSourceType: FeedSourceType.YouTubeChannel;
+  readonly channelId: YouTubeChannelId;
 }
 
-/**
- * Creates a {@link UserFeedSubscriptionId} from a plain string. Returns an error if the string
- * is not valid.
- */
-export function makeUserFeedSubscriptionId(
-  maybeUserFeedSubscriptionId: string = makeId()
-): Result<UserFeedSubscriptionId> {
-  if (!isUserFeedSubscriptionId(maybeUserFeedSubscriptionId)) {
-    return makeErrorResult(
-      new Error(`Invalid user feed subscription ID: "${maybeUserFeedSubscriptionId}"`)
-    );
-  }
-  return makeSuccessResult(maybeUserFeedSubscriptionId);
+export interface IntervalUserFeedSubscription extends BaseUserFeedSubscription {
+  readonly feedSourceType: FeedSourceType.Interval;
+  readonly intervalSeconds: number;
 }
 
-/**
- * Creates a {@link UserFeedSubscription} object.
- */
-export function makeUserFeedSubscription(args: {
-  readonly feedSource: FeedSource;
-  readonly userId: UserId;
-  readonly createdTime: Timestamp;
-  readonly lastUpdatedTime: Timestamp;
-}): Result<UserFeedSubscription> {
-  const {feedSource, userId, createdTime, lastUpdatedTime} = args;
-  const userFeedSubscriptionIdResult = makeUserFeedSubscriptionId();
-  if (!userFeedSubscriptionIdResult.success) return userFeedSubscriptionIdResult;
-  const userFeedSubscriptionId = userFeedSubscriptionIdResult.value;
-
-  const userFeedSubscription: UserFeedSubscription = {
-    userFeedSubscriptionId,
-    userId,
-    feedSourceId: feedSource.feedSourceId,
-    url: feedSource.url,
-    title: feedSource.title,
-    isActive: true,
-    createdTime,
-    lastUpdatedTime,
-  };
-
-  return makeSuccessResult(userFeedSubscription);
-}
+export type UserFeedSubscription =
+  | RssUserFeedSubscription
+  | YouTubeChannelUserFeedSubscription
+  | IntervalUserFeedSubscription;

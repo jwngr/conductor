@@ -1,16 +1,22 @@
-import type {AsyncResult, Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {partition} from '@shared/lib/utils.shared';
+
+import type {AsyncResult, ErrorResult, Result, SuccessResult} from '@shared/types/results.types';
 import type {Supplier} from '@shared/types/utils.types';
+
+/** Default user-visible error message, intended for titles, such as on error pages. */
+export const DEFAULT_ERROR_TITLE = 'Something went wrong';
+
+/** Default error message when one cannot be parsed otherwise. */
+export const UNEXPECTED_ERROR_DEFAULT_MESSAGE = 'An unexpected error occurred';
 
 /**
  * Upgrades an unknown error into a proper `Error` object with the best message possible.
  */
 export function upgradeUnknownError(unknownError: unknown): Error {
-  const defaultErrorMessage = 'An unexpected error occurred';
-
   // Unknown error is already an `Error` object.
   if (unknownError instanceof Error) {
-    return new Error(unknownError.message || defaultErrorMessage, {
+    return new Error(unknownError.message || UNEXPECTED_ERROR_DEFAULT_MESSAGE, {
       cause: unknownError.cause instanceof Error ? unknownError.cause : unknownError,
     });
   }
@@ -33,8 +39,17 @@ export function upgradeUnknownError(unknownError: unknown): Error {
   }
 
   // Unknown error has an unexpected type.
+  const stringifiedErrorResult = syncTry(() => JSON.stringify(unknownError));
+  if (!stringifiedErrorResult.success) {
+    // `JSON.stringify` may fail due to circular references.
+    return new Error(
+      `Expected error, but caught non-stringifiable object of type ${typeof unknownError}: \`${unknownError}\``,
+      {cause: unknownError}
+    );
+  }
+
   return new Error(
-    `Expected error, but caught \`${JSON.stringify(unknownError)}\` (${typeof unknownError})`,
+    `Expected error, but caught \`${stringifiedErrorResult.value}\` (${typeof unknownError})`,
     {cause: unknownError}
   );
 }
@@ -50,8 +65,24 @@ export function prefixError(error: Error, prefix: string): Error {
 }
 
 /**
- * Executes the given synchronous function and returns its result. Errors should never be thrown.
- * Instead, a `ErrorResult` is returned.
+ * Returns a new `ErrorResult` matching the provided `ErrorResult` but with an additional prefix.
+ */
+export function prefixErrorResult(errorResult: ErrorResult, errorPrefix: string): ErrorResult {
+  return makeErrorResult(prefixError(errorResult.error, errorPrefix));
+}
+
+/**
+ * If the provided result is a `SuccessResult`, returns it unchanged. If it is an `ErrorResult`,
+ * returns a new `ErrorResult` matching it but with an additional prefix.
+ */
+export function prefixResultIfError<T>(result: Result<T>, errorPrefix: string): Result<T> {
+  if (result.success) return result;
+  return makeErrorResult(prefixError(result.error, errorPrefix));
+}
+
+/**
+ * Executes the given synchronous function and returns its result. A thrown error is converted into
+ * an `ErrorResult`.
  *
  * For asynchronous functions, see {@link asyncTry}.
  */
@@ -68,8 +99,34 @@ export function syncTry<T>(fn: Supplier<T>): Result<T> {
 }
 
 /**
+ * Executes the given synchronous functions and returns their results. If any of the functions
+ * return an `ErrorResult`, the first error will be returned as an `ErrorResult`.
+ *
+ * For asynchronous functions, see {@link asyncTryAll}.
+ */
+export function syncTryAll<T>(allResults: Array<Result<T>>): Result<T[]> {
+  // Allow `try` / `catch` block here.
+  // eslint-disable-next-line no-restricted-syntax
+  try {
+    const [successResults, failedResults] = partition<SuccessResult<T>, ErrorResult>(
+      allResults,
+      (result) => result.success
+    );
+    if (failedResults.length > 0) {
+      // Just use the first failed result as the error and ignore the rest.
+      return makeErrorResult(failedResults[0].error);
+    }
+    const allResultValues = successResults.map((result) => result.value);
+    return makeSuccessResult(allResultValues);
+  } catch (error) {
+    const betterError = upgradeUnknownError(error);
+    return makeErrorResult(betterError);
+  }
+}
+
+/**
  * Executes the given asynchronous function and returns its result. Errors should never be thrown.
- * Instead, a `ErrorResult` is returned.
+ * Instead, an `ErrorResult` is returned.
  *
  * For synchronous functions, see {@link syncTry}.
  */

@@ -1,36 +1,20 @@
-import {makeId} from '@shared/lib/utils.shared';
-
-import type {Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {BaseStoreItem} from '@shared/types/utils.types';
 
 export enum TagType {
+  /** A tag whose lifecycle is managed by the user. */
   User = 'USER',
+  /** A tag whose lifecycle is managed by the system. */
   System = 'SYSTEM',
 }
 
 /**
- * Strongly-typed type for a user tag's unique identifier. Prefer this over plain strings.
+ * Strongly-typed type for a {@link UserTag}'s unique identifier. Prefer this over plain strings.
  */
 export type UserTagId = string & {readonly __brand: 'UserTagIdBrand'};
 
 /**
- * Checks if a value is a valid `UserTagId`.
+ * Unique IDs for {@link SystemTag}s, which are tags whose lifecycle is managed by the system.
  */
-export function isUserTagId(maybeUserTagId: unknown): maybeUserTagId is UserTagId {
-  return typeof maybeUserTagId === 'string' && maybeUserTagId.length > 0;
-}
-
-/**
- * Creates a `UserTagId` from a plain string. Returns an error if the string is not a valid
- * `UserTagId`.
- */
-export function makeUserTagId(maybeUserTagId: string = makeId()): Result<UserTagId> {
-  if (!isUserTagId(maybeUserTagId)) {
-    return makeErrorResult(new Error(`Invalid user tag ID: "${maybeUserTagId}"`));
-  }
-  return makeSuccessResult(maybeUserTagId);
-}
-
 export enum SystemTagId {
   Unread = 'UNREAD',
   Starred = 'STARRED',
@@ -43,51 +27,30 @@ export enum SystemTagId {
 
 export type TagId = UserTagId | SystemTagId;
 
-export interface Tag {
+/**
+ * An arbitrary string which is either present or not for each {@link FeedItem}. Tags can have
+ * associated metadata, such as a color and icon. They can also be used as filter criteria for
+ * views and searches.
+ */
+interface BaseTag {
   readonly tagId: TagId;
-  readonly type: TagType;
+  readonly tagType: TagType;
   readonly name: string;
   // TODO: Add color.
 }
 
-export interface UserTag extends Tag {
-  readonly type: TagType.User;
+/**
+ * A tag whose lifecycle is managed by the user.
+ */
+export interface UserTag extends BaseTag, BaseStoreItem {
+  readonly tagType: TagType.User;
+  readonly tagId: UserTagId;
 }
 
-export interface SystemTag extends Tag {
-  readonly type: TagType.System;
+/**
+ * A tag whose lifecycle is managed by the system.
+ */
+export interface SystemTag extends BaseTag {
+  readonly tagType: TagType.System;
   readonly tagId: SystemTagId;
-}
-
-export class Tags {
-  static readonly UNREAD_TAG: Tag = {
-    tagId: SystemTagId.Unread,
-    type: TagType.System,
-    name: 'Unread',
-  };
-
-  static readonly STARRED_TAG: Tag = {
-    tagId: SystemTagId.Starred,
-    type: TagType.System,
-    name: 'Starred',
-  };
-
-  static readonly TRASHED_TAG: Tag = {
-    tagId: SystemTagId.Trashed,
-    type: TagType.System,
-    name: 'Trashed',
-  };
-
-  static readonly IMPORTING_TAG: Tag = {
-    tagId: SystemTagId.Importing,
-    type: TagType.System,
-    name: 'Importing',
-  };
-
-  static makeUserTag(tagInfo: Omit<UserTag, 'type'>): UserTag {
-    return {
-      ...tagInfo,
-      type: TagType.User,
-    };
-  }
 }

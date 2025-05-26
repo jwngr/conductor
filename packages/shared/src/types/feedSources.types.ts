@@ -1,58 +1,47 @@
-import {makeId} from '@shared/lib/utils.shared';
+import type {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
+import type {YouTubeChannelId} from '@shared/types/youtube.types';
 
-import type {Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import type {BaseStoreItem} from '@shared/types/utils.types';
+interface BaseFeedSource {
+  readonly feedSourceType: FeedSourceType;
+}
 
-/**
- * Strongly-typed type for a {@link FeedSource}'s unique identifier. Prefer this over plain strings.
- */
-export type FeedSourceId = string & {readonly __brand: 'FeedSourceIdBrand'};
-
-/**
- * A generator of {@link FeedItem}s over time.
- *
- * Use the {@link UserFeedSubscription} object to manage user subscriptions to a {@link FeedSource}.
- * A feed source is created the first time a user subscribes to a unique feed URL.
- */
-export interface FeedSource extends BaseStoreItem {
-  readonly feedSourceId: FeedSourceId;
+export interface RssFeedSource extends BaseFeedSource {
+  readonly feedSourceType: FeedSourceType.RSS;
+  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
   readonly url: string;
   readonly title: string;
 }
 
-/**
- * Checks if a value is a valid {@link FeedSourceId}.
- */
-export function isFeedSourceId(feedSourceId: unknown): feedSourceId is FeedSourceId {
-  return typeof feedSourceId === 'string' && feedSourceId.length > 0;
+export interface YouTubeChannelFeedSource extends BaseFeedSource {
+  readonly feedSourceType: FeedSourceType.YouTubeChannel;
+  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+  readonly channelId: YouTubeChannelId;
 }
 
-/**
- * Creates a {@link FeedSourceId} from a plain string. Returns an error if the string is not valid.
- */
-export function makeFeedSourceId(maybeFeedSourceId: string = makeId()): Result<FeedSourceId> {
-  if (!isFeedSourceId(maybeFeedSourceId)) {
-    return makeErrorResult(new Error(`Invalid feed source ID: "${maybeFeedSourceId}"`));
-  }
-  return makeSuccessResult(maybeFeedSourceId);
+export interface IntervalFeedSource extends BaseFeedSource {
+  readonly feedSourceType: FeedSourceType.Interval;
+  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
 }
 
-/**
- * Creates a {@link FeedSource} object.
- */
-export function makeFeedSource(args: Omit<FeedSource, 'feedSourceId'>): Result<FeedSource> {
-  const feedSourceIdResult = makeFeedSourceId();
-  if (!feedSourceIdResult.success) return feedSourceIdResult;
-  const feedSourceId = feedSourceIdResult.value;
-
-  const feedSource: FeedSource = {
-    feedSourceId,
-    url: args.url,
-    title: args.title,
-    createdTime: args.createdTime,
-    lastUpdatedTime: args.lastUpdatedTime,
-  };
-
-  return makeSuccessResult(feedSource);
+export interface PwaFeedSource extends BaseFeedSource {
+  readonly feedSourceType: FeedSourceType.PWA;
 }
+
+export interface ExtensionFeedSource extends BaseFeedSource {
+  readonly feedSourceType: FeedSourceType.Extension;
+}
+
+export interface PocketExportFeedSource extends BaseFeedSource {
+  readonly feedSourceType: FeedSourceType.PocketExport;
+}
+
+export type FeedSource =
+  | RssFeedSource
+  | YouTubeChannelFeedSource
+  | IntervalFeedSource
+  | PwaFeedSource
+  | ExtensionFeedSource
+  | PocketExportFeedSource;
+
+export type FeedSourceWithUrl = Exclude<FeedSource, IntervalFeedSource>;

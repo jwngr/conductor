@@ -1,95 +1,89 @@
-import type {CollectionReference, DocumentSnapshot} from 'firebase-admin/firestore';
-import {FieldValue} from 'firebase-admin/firestore';
+import type {WithFieldValue} from 'firebase-admin/firestore';
 
-import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
+import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 
-import type {FeedSource} from '@shared/types/feedSources.types';
-import type {AsyncResult} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import type {UserId} from '@shared/types/user.types';
+import type {AccountId} from '@shared/types/accounts.types';
+import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import type {AsyncResult} from '@shared/types/results.types';
 import type {
+  IntervalUserFeedSubscription,
+  RssUserFeedSubscription,
   UserFeedSubscription,
   UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
-import {makeUserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
-import {
-  batchDeleteFirestoreDocuments,
-  getFirestoreQuerySnapshot,
-} from '@sharedServer/lib/firebase.server';
+import type {UserFeedSubscriptionFromStorage} from '@shared/schemas/userFeedSubscriptions.schema';
+
+import type {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
+
+type UserFeedSubscriptionsCollectionService = ServerFirestoreCollectionService<
+  UserFeedSubscriptionId,
+  UserFeedSubscription,
+  UserFeedSubscriptionFromStorage
+>;
 
 export class ServerUserFeedSubscriptionsService {
-  private userFeedSubscriptionsDbRef: CollectionReference;
+  private readonly userFeedSubscriptionsCollectionService: UserFeedSubscriptionsCollectionService;
 
-  constructor(args: {readonly userFeedSubscriptionsDbRef: CollectionReference}) {
-    this.userFeedSubscriptionsDbRef = args.userFeedSubscriptionsDbRef;
+  constructor(args: {
+    readonly userFeedSubscriptionsCollectionService: UserFeedSubscriptionsCollectionService;
+  }) {
+    this.userFeedSubscriptionsCollectionService = args.userFeedSubscriptionsCollectionService;
   }
 
   /**
-   * Fetches all user feed subscription documents for an individual user from Firestore.
+   * Fetches all user feed subscription documents for an individual account from Firestore.
    */
-  public async fetchAllForUser(userId: UserId): AsyncResult<UserFeedSubscription[]> {
-    const docsQuery = this.userFeedSubscriptionsDbRef.where('userId', '==', userId);
-    const docsQueryResult = await getFirestoreQuerySnapshot(docsQuery);
-    if (!docsQueryResult.success) {
-      return makeErrorResult(
-        prefixError(docsQueryResult.error, 'Error fetching user feed subscriptions for user')
-      );
+  public async fetchAllForAccount(accountId: AccountId): AsyncResult<UserFeedSubscription[]> {
+    const query = this.userFeedSubscriptionsCollectionService
+      .getCollectionRef()
+      .where('accountId', '==', accountId);
+    const queryResult = await this.userFeedSubscriptionsCollectionService.fetchQueryDocs(query);
+    return prefixResultIfError(queryResult, 'Error fetching feed subscriptions for account');
+  }
+
+  /**
+   * Fetches all user feed subscription documents for an individual account from Firestore.
+   */
+  public async fetchActiveIntervalSubscriptions(): AsyncResult<IntervalUserFeedSubscription[]> {
+    const query = this.userFeedSubscriptionsCollectionService
+      .getCollectionRef()
+      .where('feedSourceType', '==', FeedSourceType.Interval)
+      .where('isActive', '==', true);
+    const queryResult = await this.userFeedSubscriptionsCollectionService.fetchQueryDocs(query);
+    if (!queryResult.success) return queryResult;
+    return makeSuccessResult(queryResult.value as IntervalUserFeedSubscription[]);
+  }
+
+  public async fetchForRssFeedSourceByUrl(url: string): AsyncResult<RssUserFeedSubscription[]> {
+    const query = this.userFeedSubscriptionsCollectionService
+      .getCollectionRef()
+      .where('feedSourceType', '==', FeedSourceType.RSS)
+      .where('url', '==', url);
+
+    const queryResult = await this.userFeedSubscriptionsCollectionService.fetchQueryDocs(query);
+    if (!queryResult.success) {
+      const message = 'Error fetching user feed subscriptions for RSS feed source';
+      return prefixErrorResult(queryResult, message);
     }
 
-    const userFeedSubscriptions = docsQueryResult.value.docs.map(
-      (doc: DocumentSnapshot) => doc.data() as UserFeedSubscription
-    );
-    return makeSuccessResult(userFeedSubscriptions);
+    return makeSuccessResult(queryResult.value as RssUserFeedSubscription[]);
   }
 
   /**
-   * Adds a new user feed subscription document to Firestore.
+   * Deactivates an account's subscription to an individual feed source. New subscription items will
+   * no longer be added to the subscribed account. The feed source may still be subscribed to by
+   * another account.
    */
-  public async add(args: {
-    feedSource: FeedSource;
-    userId: UserId;
-  }): AsyncResult<UserFeedSubscription> {
-    const {feedSource, userId} = args;
-
-    // Make a new user feed subscription object locally.
-    const userFeedSubscriptionResult = makeUserFeedSubscription({
-      feedSource,
-      userId,
-      createdTime: FieldValue.serverTimestamp(),
-      lastUpdatedTime: FieldValue.serverTimestamp(),
-    });
-    if (!userFeedSubscriptionResult.success) return userFeedSubscriptionResult;
-    const newUserFeedSubscription = userFeedSubscriptionResult.value;
-
-    // Add the new user feed subscription to Firestore.
-    const userFeedSubscriptionId = newUserFeedSubscription.userFeedSubscriptionId;
-    const userFeedSubscriptionDocRef = this.userFeedSubscriptionsDbRef.doc(userFeedSubscriptionId);
-    const saveToDbResult = await asyncTry(async () =>
-      userFeedSubscriptionDocRef.set(newUserFeedSubscription)
-    );
-    if (!saveToDbResult.success) {
-      return makeErrorResult(
-        prefixError(saveToDbResult.error, 'Error creating user feed subscription in Firestore')
-      );
-    }
-
-    return makeSuccessResult(newUserFeedSubscription);
-  }
-
-  /**
-   * Deactivates a user's subscription to an individual feed source.
-   */
-  public async unsubscribeUserFromFeed(
+  public async deactivateFeedSubscription(
     userFeedSubscriptionId: UserFeedSubscriptionId
   ): AsyncResult<void> {
-    const updateResult = await this.update(userFeedSubscriptionId, {
+    return this.update(userFeedSubscriptionId, {
       isActive: false,
-      unsubscribedTime: FieldValue.serverTimestamp(),
+      // TODO(timestamps): Use server timestamps instead.
+      unsubscribedTime: new Date(),
     });
-    if (!updateResult.success) return updateResult;
-
-    return makeSuccessResult(undefined);
   }
 
   /**
@@ -97,59 +91,42 @@ export class ServerUserFeedSubscriptionsService {
    */
   public async update(
     userFeedSubscriptionId: UserFeedSubscriptionId,
-    update: Partial<Pick<UserFeedSubscription, 'isActive' | 'unsubscribedTime'>>
+    update: Partial<WithFieldValue<Pick<UserFeedSubscription, 'isActive' | 'unsubscribedTime'>>>
   ): AsyncResult<void> {
-    const userFeedSubscriptionDocRef = this.userFeedSubscriptionsDbRef.doc(userFeedSubscriptionId);
-    const updateResult = await asyncTry(async () =>
-      userFeedSubscriptionDocRef.update({
-        ...update,
-        lastUpdatedTime: FieldValue.serverTimestamp(),
-      })
+    const updateResult = await this.userFeedSubscriptionsCollectionService.updateDoc(
+      userFeedSubscriptionId,
+      update
     );
-
-    if (!updateResult.success) {
-      return makeErrorResult(
-        prefixError(updateResult.error, 'Error updating user feed subscription in Firestore')
-      );
-    }
-
-    return makeSuccessResult(undefined);
+    return prefixResultIfError(updateResult, 'Error updating user feed subscription in Firestore');
   }
 
   /**
    * Permanently deletes a feed subscription document from Firestore.
    */
   public async delete(userFeedSubscriptionId: UserFeedSubscriptionId): AsyncResult<void> {
-    const userFeedSubscriptionDocRef = this.userFeedSubscriptionsDbRef.doc(userFeedSubscriptionId);
-    const deleteResult = await asyncTry(async () => userFeedSubscriptionDocRef.delete());
-    if (!deleteResult.success) {
-      return makeErrorResult(
-        prefixError(deleteResult.error, 'Error deleting user feed subscription in Firestore')
-      );
-    }
-
-    return makeSuccessResult(undefined);
+    const deleteResult =
+      await this.userFeedSubscriptionsCollectionService.deleteDoc(userFeedSubscriptionId);
+    return prefixResultIfError(deleteResult, 'Error deleting user feed subscription in Firestore');
   }
 
   /**
-   * Permanently deletes all user feed subscription documents associated with a user from Firestore.
+   * Permanently deletes all user feed subscription Firestore documents associated with an account.
    */
-  public async deleteAllForUser(userId: UserId): AsyncResult<void> {
-    const docsQuery = this.userFeedSubscriptionsDbRef.where('userId', '==', userId);
-    const docsQueryResult = await getFirestoreQuerySnapshot(docsQuery);
-    if (!docsQueryResult.success) {
-      return makeErrorResult(
-        prefixError(
-          docsQueryResult.error,
-          'Error fetching user feed subscriptions to delete in Firestore'
-        )
+  public async deleteAllForAccount(accountId: AccountId): AsyncResult<void> {
+    // Fetch the IDs for all of the account's feed subscriptions.
+    const query = this.userFeedSubscriptionsCollectionService
+      .getCollectionRef()
+      .where('accountId', '==', accountId);
+    const queryResult = await this.userFeedSubscriptionsCollectionService.fetchQueryIds(query);
+    if (!queryResult.success) {
+      return prefixErrorResult(
+        queryResult,
+        'Error fetching user feed subscriptions to delete for account in Firestore'
       );
     }
 
-    const subscriptionDocs = docsQueryResult.value;
-
-    return await batchDeleteFirestoreDocuments(
-      subscriptionDocs.docs.map((doc: DocumentSnapshot) => doc.ref)
-    );
+    // Delete all of the account's feed subscriptions.
+    const docIdsToDelete = queryResult.value;
+    return await this.userFeedSubscriptionsCollectionService.batchDeleteDocs(docIdsToDelete);
   }
 }

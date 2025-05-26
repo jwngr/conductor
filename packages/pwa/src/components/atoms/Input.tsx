@@ -1,36 +1,19 @@
-import * as React from 'react';
-import styled from 'styled-components';
+import type React from 'react';
 
-import {ThemeColor} from '@shared/types/theme.types';
+import {cn} from '@src/lib/utils.pwa';
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
-
-const InputWrapper = styled.input`
-  flex: 1;
-  height: 40px;
-  border-radius: 4px;
-
-  border: 1px solid ${({theme}) => theme.colors[ThemeColor.Neutral500]};
-  background-color: transparent;
-  padding: 8px 12px;
-  font-size: 14px;
-  color: ${({theme}) => theme.colors[ThemeColor.Neutral900]};
-  transition: color 0.2s ease-in-out;
-
-  &::placeholder {
-    color: ${({theme}) => theme.colors[ThemeColor.Neutral500]};
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
-`;
-
-const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
-  return <InputWrapper ref={ref} {...props} />;
-});
-Input.displayName = 'Input';
-
-export {Input};
+export const Input: React.FC<React.ComponentProps<'input'>> = ({className, type, ...props}) => {
+  return (
+    <input
+      type={type}
+      data-slot="input"
+      className={cn(
+        'border-input file:text-foreground placeholder:text-text-light selection:bg-primary selection:text-primary-foreground flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
+        'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]',
+        'aria-invalid:ring-error/20 dark:aria-invalid:ring-error/40 aria-invalid:border-error',
+        className
+      )}
+      {...props}
+    />
+  );
+};

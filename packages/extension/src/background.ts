@@ -1,4 +1,3 @@
-import {collection} from 'firebase/firestore';
 import {ref as storageRef} from 'firebase/storage';
 
 import {logger} from '@shared/services/logger.shared';
@@ -6,28 +5,31 @@ import {logger} from '@shared/services/logger.shared';
 import {
   FEED_ITEMS_DB_COLLECTION,
   FEED_ITEMS_STORAGE_COLLECTION,
-  IMPORT_QUEUE_DB_COLLECTION,
 } from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
+import {EXTENSION_FEED_SOURCE} from '@shared/lib/feedSources.shared';
 
-import {FEED_ITEM_EXTENSION_SOURCE} from '@shared/types/feedItems.types';
-import {makeUserId} from '@shared/types/user.types';
+import {parseAccountId} from '@shared/parsers/accounts.parser';
+import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 
 import {ClientFeedItemsService} from '@sharedClient/services/feedItems.client';
 import {firebaseService} from '@sharedClient/services/firebase.client';
+import {
+  ClientFirestoreCollectionService,
+  makeFirestoreDataConverter,
+} from '@sharedClient/services/firestore.client';
 
-const feedItemsDbRef = collection(firebaseService.firestore, FEED_ITEMS_DB_COLLECTION);
-const importQueueDbRef = collection(firebaseService.firestore, IMPORT_QUEUE_DB_COLLECTION);
+// TODO: Refactor into a `FirebaseStorageCollectionService`.
 const feedItemsStorageRef = storageRef(firebaseService.storage, FEED_ITEMS_STORAGE_COLLECTION);
 
 chrome.action.onClicked.addListener(async (tab) => {
-  // TODO: Get the user ID from the extension's auth once it's implemented.
-  const userIdResult = makeUserId('TODO');
-  if (!userIdResult.success) {
-    logger.error(prefixError(userIdResult.error, 'Error getting user ID'));
+  // TODO: Get the account ID from the extension's auth once it's implemented.
+  const accountIdResult = parseAccountId('TODO');
+  if (!accountIdResult.success) {
+    logger.error(prefixError(accountIdResult.error, 'Error getting account ID'));
     return;
   }
-  const userId = userIdResult.value;
+  const accountId = accountIdResult.value;
 
   const tabUrl = tab.url;
   if (!tabUrl) {
@@ -35,18 +37,26 @@ chrome.action.onClicked.addListener(async (tab) => {
     return;
   }
 
+  const feedItemFirestoreConverter = makeFirestoreDataConverter(toStorageFeedItem, parseFeedItem);
+
+  const feedItemsCollectionService = new ClientFirestoreCollectionService({
+    collectionPath: FEED_ITEMS_DB_COLLECTION,
+    converter: feedItemFirestoreConverter,
+    parseId: parseFeedItemId,
+  });
+
   // TODO: Ideally I would not need to recreate a one-off FeedItemsService here, but I cannot use
   // `useFeedItemsService` because we are not in a React component.
   const feedItemsService = new ClientFeedItemsService({
-    feedItemsDbRef,
-    importQueueDbRef,
+    feedItemsCollectionService: feedItemsCollectionService,
     feedItemsStorageRef,
-    userId,
+    accountId,
   });
 
-  const addFeedItemResult = await feedItemsService.addFeedItem({
+  const addFeedItemResult = await feedItemsService.createFeedItemFromUrl({
+    feedSource: EXTENSION_FEED_SOURCE,
     url: tabUrl,
-    source: FEED_ITEM_EXTENSION_SOURCE,
+    title: 'TODO: Add title support',
   });
 
   if (!addFeedItemResult.success) {
@@ -54,5 +64,5 @@ chrome.action.onClicked.addListener(async (tab) => {
     return;
   }
 
-  logger.log('URL saved successfully!', {userId});
+  logger.log('URL saved successfully!', {});
 });

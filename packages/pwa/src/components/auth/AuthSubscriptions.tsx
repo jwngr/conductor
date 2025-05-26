@@ -1,13 +1,12 @@
+import {useNavigate} from '@tanstack/react-router';
 import {isSignInWithEmailLink} from 'firebase/auth';
-import {useEffect} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {useEffect, useRef} from 'react';
 
 import {logger} from '@shared/services/logger.shared';
 
 import {prefixError} from '@shared/lib/errorUtils.shared';
-import {Urls} from '@shared/lib/urls.shared';
 
-import {isValidEmail} from '@shared/types/user.types';
+import {parseEmailAddress} from '@shared/parsers/emails.parser';
 
 import {useAuthStore} from '@sharedClient/stores/AuthStore';
 
@@ -16,51 +15,72 @@ import {firebaseService} from '@sharedClient/services/firebase.client';
 
 import {navigateToErrorPage} from '@src/lib/error.pwa';
 
+import {rootRoute} from '@src/routes/__root';
+
+/**
+ * Listener which updates the auth store when the user's authentication state changes in the auth
+ * service.
+ */
 const AuthServiceSubscription: React.FC = () => {
-  const {setLoggedInUser} = useAuthStore();
+  const {setLoggedInAccount} = useAuthStore();
   useEffect(() => {
     const unsubscribe = authService.onAuthStateChanged({
-      successCallback: (loggedInUser) => {
-        logger.log('Logged-in user state changed', {loggedInUser});
-        setLoggedInUser(loggedInUser);
+      successCallback: (loggedInAccount) => {
+        logger.log('Logged-in auth state changed', {loggedInAccount});
+        setLoggedInAccount(loggedInAccount);
       },
       errorCallback: (error) => {
-        logger.error(prefixError(error, 'User service `onAuthStateChanged` listener errored'));
+        logger.error(prefixError(error, '`onAuthStateChanged` listener errored'));
       },
     });
     return () => unsubscribe();
-  }, [setLoggedInUser]);
+  }, [setLoggedInAccount]);
   return null;
 };
 
+/**
+ * Listener which signs in the user when they visit a passwordless email link.
+ */
 const PasswordlessAuthSubscription: React.FC = () => {
   const navigate = useNavigate();
-  useEffect(() => {
-    const go = async () => {
-      // Only do something if the current URL is a "sign-in with email" link.
-      if (!isSignInWithEmailLink(firebaseService.auth, window.location.href)) return;
 
-      // The sign in screen persisted the email to login in local storage. If the user opened the
-      // link on the same browser as the one used to sign in, this value will be present.
+  const isFirstMount = useRef(true);
+
+  useEffect(() => {
+    // Only run this once on first mount.
+    if (!isFirstMount.current) return;
+    isFirstMount.current = false;
+
+    // Only do something if the current URL is a "sign-in with email" link.
+    if (!isSignInWithEmailLink(firebaseService.auth, window.location.href)) return;
+
+    const go = async (): Promise<void> => {
+      // The sign in screen persisted the email to login in local storage. If the sign-in link was
+      // opened using the same browser as the one used to sign in, this value will be present.
       let maybeEmail = window.localStorage.getItem('emailForSignIn');
 
       if (!maybeEmail) {
-        // If the user opened the link on a different device, ask them for the email again.
+        // The email is not available in local storage. Most likely, the sign-in link was opened on
+        // a different device or browser session than it was generated from. In this scenario,
+        // re-prompt for the email.
         // TODO: Replace this prompt with something nicer.
         maybeEmail = window.prompt('Please provide your email for confirmation');
       }
 
-      // Do nothing if the user didn't provide a valid email.
-      if (!isValidEmail(maybeEmail)) {
-        logger.log('Invalid email provided for passwordless sign-in', {email: maybeEmail});
-        navigateToErrorPage(new Error('Invalid email provided for passwordless sign-in'), navigate);
+      const emailResult = parseEmailAddress(maybeEmail ?? '');
+
+      // Log and error, but do nothing else if we don't have a valid email.
+      if (!emailResult.success) {
+        const betterError = prefixError(
+          emailResult.error,
+          'Invalid email provided for passwordless sign-in'
+        );
+        logger.error(betterError, {email: maybeEmail});
+        navigateToErrorPage(betterError, navigate);
         return;
       }
 
-      console.log('MESSING THINGS UP');
-      navigateToErrorPage(new Error('MESSING THINGS UP'), navigate);
-      return;
-      const email = maybeEmail;
+      const email = emailResult.value;
 
       const authCredentialResult = await authService.signInWithEmailLink(
         email,
@@ -70,22 +90,27 @@ const PasswordlessAuthSubscription: React.FC = () => {
       if (!authCredentialResult.success) {
         // TODO: More gracefully handle common Firebase auth errors.
         // See https://firebase.google.com/docs/reference/js/auth#autherrorcodes.
-        const error = new Error(
-          `Error signing in with email link: ${authCredentialResult.error.message}`,
-          {
-            cause: authCredentialResult.error,
-          }
-        );
-        navigateToErrorPage(error, navigate);
+        const message = 'Error signing in with email link';
+        const betterError = prefixError(authCredentialResult.error, message);
+        navigateToErrorPage(betterError, navigate);
         return;
       }
+
+      // TODO: Don't check this in.
+      // console.log('MESSING THINGS UP');
+      // navigateToErrorPage(new Error('MESSING THINGS UP'), navigate);
+      // return;
+
+      // Authentication successful. `AuthStore` will be updated via `AuthServiceSubscription`, but
+      // there is some other clean up to do.
 
       // Clear the email from local storage since we no longer need it.
       window.localStorage.removeItem('emailForSignIn');
 
-      // Redirect to the root path.
+      // Logic in `RequireLoggedInAccount` updates the UI when the logged-in state changes in
+      // `AuthStore`, but it does not update the URL. Update it to remove the used sign-in link.
       console.log('Navigating to root path AAA');
-      navigate(Urls.forRoot());
+      await navigate({to: rootRoute.fullPath, replace: true});
     };
 
     void go();

@@ -1,65 +1,60 @@
-import {prefixError} from '@shared/lib/errorUtils.shared';
+import {logger} from '@shared/services/logger.shared';
 
-import {AsyncResult, makeErrorResult} from '@shared/types/result.types';
-import {UserId} from '@shared/types/user.types';
-import {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
+import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 
-import {ServerFeedSourcesService} from './feedSources.server';
-import {SuperfeedrService} from './superfeedr.server';
-import {ServerUserFeedSubscriptionsService} from './userFeedSubscriptions.server';
+import type {AsyncResult} from '@shared/types/results.types';
+import type {RssFeedProvider} from '@shared/types/rss.types';
+
+import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
+
+import {parseRssFeed} from '@sharedServer/lib/rss.server';
 
 export class ServerRssFeedService {
-  private readonly superfeedrService: SuperfeedrService;
-  private readonly feedSourcesService: ServerFeedSourcesService;
+  private readonly rssFeedProvider: RssFeedProvider;
   private readonly userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
 
   constructor(args: {
-    readonly superfeedrService: SuperfeedrService;
-    readonly feedSourcesService: ServerFeedSourcesService;
+    readonly rssFeedProvider: RssFeedProvider;
     readonly userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
   }) {
-    this.superfeedrService = args.superfeedrService;
-    this.feedSourcesService = args.feedSourcesService;
+    this.rssFeedProvider = args.rssFeedProvider;
     this.userFeedSubscriptionsService = args.userFeedSubscriptionsService;
   }
 
-  async subscribeUserToUrl(args: {
-    readonly url: string;
-    readonly userId: UserId;
-  }): AsyncResult<UserFeedSubscription> {
-    const {url, userId} = args;
+  async subscribeToUrl(url: string): AsyncResult<void> {
+    // Fetch and parse the RSS feed.
+    const rssFeedResult = await parseRssFeed(url);
+    if (!rssFeedResult.success) return prefixErrorResult(rssFeedResult, 'Error parsing RSS feed');
 
-    // Check if the feed source already exists. A single feed source can have multiple users
-    // subscribed to it, but we only want to subscribe once to it in Superfeedr. Feed sources are
-    // deduped based on exact URL match, although we could probably be smarter in the future.
-    const fetchFeedSourceResult = await this.feedSourcesService.fetchByUrlOrCreate(url, {
-      // TODO: Enrich the feed sourcewith a title and image.
-      title: '',
+    // Subscribe to the feed source in the feed provider.
+    const subscribeResult = await this.rssFeedProvider.subscribeToUrl(url);
+    if (!subscribeResult.success) return subscribeResult;
+
+    return makeSuccessResult(subscribeResult.value);
+  }
+
+  /**
+   * Unsubscribes from an RSS feed by URL in the feed provider.
+   */
+  async unsubscribeFromUrl(url: string): AsyncResult<void> {
+    // Fetch all active subscriptions for the feed source.
+    const fetchSubsResult = await this.userFeedSubscriptionsService.fetchForRssFeedSourceByUrl(url);
+    if (!fetchSubsResult.success) {
+      const message =
+        '[UNSUBSCRIBE] Error fetching other subscriptions while unsubscribing from feed';
+      return prefixErrorResult(fetchSubsResult, message);
+    }
+
+    // If other active subscriptions exist, don't actually unsubscribe from the feed provider.
+    const activeSubscriptions = fetchSubsResult.value.filter((sub) => sub.isActive);
+    if (activeSubscriptions.length > 0) return makeSuccessResult(undefined);
+
+    logger.log('[UNSUBSCRIBE] No active subscriptions found, unsubscribing from feed', {
+      url,
     });
-    if (!fetchFeedSourceResult.success) {
-      return makeErrorResult(
-        prefixError(fetchFeedSourceResult.error, 'Error fetching existing feed source by URL')
-      );
-    }
 
-    const feedSource = fetchFeedSourceResult.value;
-
-    // Subscribe to the feed source in Superfeedr.
-    const subscribeToSuperfeedrResult = await this.superfeedrService.subscribeToUrl(feedSource.url);
-    if (!subscribeToSuperfeedrResult.success) {
-      return makeErrorResult(
-        prefixError(subscribeToSuperfeedrResult.error, 'Error subscribing to Superfeedr feed')
-      );
-    }
-
-    // Create a user feed subscription in the database.
-    const saveToDbResult = await this.userFeedSubscriptionsService.add({feedSource, userId});
-    if (!saveToDbResult.success) {
-      return makeErrorResult(
-        prefixError(saveToDbResult.error, 'Error creating user feed subscription')
-      );
-    }
-
-    return saveToDbResult;
+    // Unsubscribe from the feed provider.
+    return await this.rssFeedProvider.unsubscribeFromUrl(url);
   }
 }

@@ -1,6 +1,7 @@
 {
-  "include": ["src"],
-  "extends": "../../tsconfig.json",
+  "include": ["src/**/*", "src/**/*.json"],
+  "extends": "../../tsconfig.base.json",
+
   "compilerOptions": {
     // This project is referenced by other TypeScript projects, so it must be composite.
     "composite": true,
@@ -11,10 +12,10 @@
     "declarationMap": true,
 
     // Import aliases.
+    "baseUrl": ".",
     "paths": {
       // Despite this being in the `shared` package itself, prefer `@shared` imports over `@src`.
       // This makes code valid in any package when copy / pasting.
-      // TODO: Disallow relative imports.
       "@shared/*": ["./src/*"]
     }
   }

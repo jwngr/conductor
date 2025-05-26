@@ -1,18 +1,25 @@
-import type {Func, Supplier, Unsubscribe} from '@shared/types/utils.types';
+import type {Func, Supplier, Task, Unsubscribe} from '@shared/types/utils.types';
 
 export enum DevToolbarSectionType {
   FeedItemImporter = 'FEED_ITEM_IMPORTER',
-  UserFeedSubscriber = 'USER_FEED_SUBSCRIBER',
   IndividualFeedItemActions = 'INDIVIDUAL_FEED_ITEM_ACTIONS',
+  Debug = 'DEBUG',
 }
 
-export interface DevToolbarSection {
+export interface DevToolbarSectionInfo {
   readonly sectionType: DevToolbarSectionType;
   readonly title: string;
   readonly renderSection: Supplier<React.ReactNode>;
+  readonly requiresAuth: boolean;
 }
 
 export interface DevToolbarStore {
-  readonly sections: readonly DevToolbarSection[];
-  readonly registerSection: Func<DevToolbarSection, Unsubscribe>;
+  readonly sections: readonly DevToolbarSectionInfo[];
+  readonly registerSection: Func<DevToolbarSectionInfo, Unsubscribe>;
+
+  // Debug section.
+  readonly shouldShowRouterDevTools: boolean;
+  readonly toggleRouterDevTools: Task;
+  readonly shouldShowDebugActions: boolean;
+  readonly toggleDebugActions: Task;
 }

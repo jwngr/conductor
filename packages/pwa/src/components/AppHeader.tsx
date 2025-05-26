@@ -1,42 +1,33 @@
-import React from 'react';
-import styled from 'styled-components';
+import type React from 'react';
 
-import {Urls} from '@shared/lib/urls.shared';
+import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
-import {useMaybeLoggedInUser} from '@sharedClient/hooks/auth.hooks';
-
+import * as styles from '@src/components/AppHeader.css';
 import {FlexRow} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
 import {Spacer} from '@src/components/atoms/Spacer';
 import {Text} from '@src/components/atoms/Text';
+import {RecentActivityFeed} from '@src/components/devToolbar/RecentActivityFeed';
+import {ConductorLogo} from '@src/components/logos/ConductorLogo';
 
-const AppHeaderWrapper = styled(FlexRow)`
-  height: 60px;
-  padding: 0 16px;
-  border-bottom: 1px solid red;
-`;
+import {signOutRoute} from '@src/routes';
 
 export const AppHeader: React.FC = () => {
-  const {isLoading, loggedInUser} = useMaybeLoggedInUser();
-
-  let authContent: React.ReactNode = null;
-  if (!isLoading && loggedInUser) {
-    authContent = (
-      <>
-        <Text light>{loggedInUser.email}</Text>
-        <Spacer x={12} />
-        <Link to={Urls.forSignOut()}>
-          <Text underline="hover">Sign out</Text>
-        </Link>
-      </>
-    );
-  }
+  const loggedInAccount = useLoggedInAccount();
 
   return (
-    <AppHeaderWrapper>
-      <Text as="h2">Conductor</Text>
+    <FlexRow className={styles.appHeader}>
+      <ConductorLogo />
+      <Spacer x={12} />
+      <RecentActivityFeed />
       <Spacer flex />
-      {authContent}
-    </AppHeaderWrapper>
+      <Text light>{loggedInAccount.email}</Text>
+      <Spacer x={12} />
+      <Link to={signOutRoute.fullPath} replace>
+        <Text as="p" underline="hover">
+          Sign out
+        </Text>
+      </Link>
+    </FlexRow>
   );
 };
