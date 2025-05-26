@@ -6,6 +6,7 @@ import {
   DEFAULT_STORIES_SIDEBAR_ITEM,
   getAtomicComponentSidebarItems,
   getDesignSystemSidebarItems,
+  getMoleculeComponentSidebarItems,
   getRendererSidebarItems,
 } from '@shared/lib/stories.shared';
 import {assertNever} from '@shared/lib/utils.shared';
@@ -14,9 +15,10 @@ import {RendererType} from '@shared/types/renderers.types';
 import {
   AtomicComponentType,
   DesignSystemComponentType,
+  MoleculeComponentType,
   StoriesSidebarSectionId,
 } from '@shared/types/stories.types';
-import type {MoleculeComponentType, StoriesSidebarItem} from '@shared/types/stories.types';
+import type {StoriesSidebarItem} from '@shared/types/stories.types';
 import type {Consumer} from '@shared/types/utils.types';
 
 import {BadgeStories} from '@src/components/atoms/Badge.stories';
@@ -37,6 +39,8 @@ import {TextStories} from '@src/components/atoms/Text.stories';
 import {TextIconStories} from '@src/components/atoms/TextIcon.stories';
 import {ToastStories} from '@src/components/atoms/Toast.stories';
 import {TooltipStories} from '@src/components/atoms/Tooltip.stories';
+import {ErrorAreaStories} from '@src/components/errors/ErrorArea.stories';
+import {HeroAreaStories} from '@src/components/hero/HeroArea.stories';
 import {MarkdownStories} from '@src/components/Markdown.stories';
 import {NavItemLink} from '@src/components/nav/NavItemLink';
 import {ColorsStories} from '@src/components/stories/Colors.stories';
@@ -181,6 +185,12 @@ const StoriesLeftSidebar: React.FC<{
         <SidebarSection
           title="Atoms"
           items={getAtomicComponentSidebarItems()}
+          activeSidebarItem={activeSidebarItem}
+          onItemClick={onItemClick}
+        />
+        <SidebarSection
+          title="Molecules"
+          items={getMoleculeComponentSidebarItems()}
           activeSidebarItem={activeSidebarItem}
           onItemClick={onItemClick}
         />
