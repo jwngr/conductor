@@ -176,5 +176,5 @@ export const importRoute = createRoute({
 export const catchAllRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '*',
-  component: () => <NotFoundScreen message="Page not found" />,
+  component: () => <NotFoundScreen title={undefined} subtitle={undefined} />,
 });

@@ -5,10 +5,8 @@ import {assertNever} from '@shared/lib/utils.shared';
 
 import type {Task} from '@shared/types/utils.types';
 
-import {
-  ErrorScreenActionType,
-  type ErrorScreenAction,
-} from '@sharedClient/types/errors.client.types';
+import type {HeroAction} from '@sharedClient/types/heroActions.client.types';
+import {HeroActionType} from '@sharedClient/types/heroActions.client.types';
 
 import {Button} from '@src/components/atoms/Button';
 import {FlexRow} from '@src/components/atoms/Flex';
@@ -32,15 +30,15 @@ const DefaultRouteNavActionButton: React.FC = () => {
   );
 };
 
-const ErrorActionButton: React.FC<{
-  readonly action: ErrorScreenAction;
+const HeroActionButton: React.FC<{
+  readonly action: HeroAction;
 }> = ({action}) => {
   switch (action.type) {
-    case ErrorScreenActionType.Refresh:
+    case HeroActionType.Refresh:
       return <RefreshActionButton />;
-    case ErrorScreenActionType.DefaultRoute:
+    case HeroActionType.DefaultRoute:
       return <DefaultRouteNavActionButton />;
-    case ErrorScreenActionType.Custom:
+    case HeroActionType.Custom:
       return (
         <Button variant={action.variant} onClick={action.onClick}>
           {action.text}
@@ -51,36 +49,14 @@ const ErrorActionButton: React.FC<{
   }
 };
 
-export const ErrorActionButtons: React.FC<{
-  readonly actions: readonly ErrorScreenAction[];
+export const HeroActionButtons: React.FC<{
+  readonly actions: readonly HeroAction[];
 }> = ({actions}) => {
   return (
     <FlexRow gap={3}>
       {actions.map((action, i) => (
-        <ErrorActionButton key={`${i}-${action.type}`} action={action} />
+        <HeroActionButton key={`${i}-${action.type}`} action={action} />
       ))}
     </FlexRow>
-  );
-};
-
-export const TechnicalDetailsSection: React.FC<{
-  readonly error: Error;
-}> = ({error}) => {
-  if (!error.stack) {
-    return null;
-  }
-
-  return (
-    <details className="w-full">
-      <summary className="text-neutral-6 hover:text-neutral-7 focus:text-neutral-7 cursor-pointer list-none text-sm outline-none select-none [&[open]]:mb-2">
-        <span className="inline-block w-4 transition-transform duration-200 [details[open]_&]:rotate-90">
-          ▶
-        </span>
-        Show technical details
-      </summary>
-      <pre className="bg-neutral-1 text-neutral-7 max-h-40 overflow-auto rounded-md p-3 text-xs whitespace-pre-wrap">
-        {error.stack}
-      </pre>
-    </details>
   );
 };

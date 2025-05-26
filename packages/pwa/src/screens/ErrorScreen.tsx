@@ -2,13 +2,14 @@ import type React from 'react';
 
 import {DEFAULT_ERROR_TITLE} from '@shared/lib/errorUtils.shared';
 
+import {
+  DEFAULT_ROUTE_HERO_PAGE_ACTION,
+  REFRESH_HERO_PAGE_ACTION,
+} from '@sharedClient/lib/heroActions.client';
+
 import {useMaybeLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
-import {
-  DEFAULT_ROUTE_ERROR_PAGE_ACTION,
-  REFRESH_ERROR_PAGE_ACTION,
-  type ErrorScreenAction,
-} from '@sharedClient/types/errors.client.types';
+import type {HeroAction} from '@sharedClient/types/heroActions.client.types';
 
 import {Divider} from '@src/components/atoms/Divider';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
@@ -62,7 +63,7 @@ export const ErrorScreen: React.FC<{
   readonly error: Error;
   readonly title: string | React.ReactElement;
   readonly subtitle: string | React.ReactElement;
-  readonly actions: readonly ErrorScreenAction[];
+  readonly actions: readonly HeroAction[];
 }> = ({error, title, subtitle, actions}) => {
   return (
     <div className="relative">
@@ -94,7 +95,7 @@ export const DefaultErrorScreen: React.FC<{
       error={error}
       title={DEFAULT_ERROR_TITLE}
       subtitle={error.message}
-      actions={[DEFAULT_ROUTE_ERROR_PAGE_ACTION, REFRESH_ERROR_PAGE_ACTION]}
+      actions={[DEFAULT_ROUTE_HERO_PAGE_ACTION, REFRESH_HERO_PAGE_ACTION]}
     />
   );
 };

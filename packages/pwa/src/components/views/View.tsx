@@ -20,14 +20,14 @@ import type {
 import {useFocusStore} from '@sharedClient/stores/FocusStore';
 
 import {
+  DEFAULT_ROUTE_HERO_PAGE_ACTION,
+  REFRESH_HERO_PAGE_ACTION,
+} from '@sharedClient/lib/heroActions.client';
+
+import {
   useFeedItemsIgnoringDelivery,
   useFeedItemsRespectingDelivery,
 } from '@sharedClient/hooks/feedItems.hooks';
-
-import {
-  DEFAULT_ROUTE_ERROR_PAGE_ACTION,
-  REFRESH_ERROR_PAGE_ACTION,
-} from '@sharedClient/types/errors.client.types';
 
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
@@ -335,7 +335,7 @@ const ViewListErrorScreen: React.FC<{
       error={error}
       title="Failed to load items"
       subtitle="Refreshing may resolve the issue. If the problem persists, please contact support."
-      actions={[DEFAULT_ROUTE_ERROR_PAGE_ACTION, REFRESH_ERROR_PAGE_ACTION]}
+      actions={[DEFAULT_ROUTE_HERO_PAGE_ACTION, REFRESH_HERO_PAGE_ACTION]}
     />
   );
 };

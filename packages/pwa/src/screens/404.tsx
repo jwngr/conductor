@@ -1,16 +1,19 @@
-import {DEFAULT_NAV_ITEM} from '@shared/lib/navItems.shared';
+import {DEFAULT_ROUTE_HERO_PAGE_ACTION} from '@sharedClient/lib/heroActions.client';
 
 import {useMaybeLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
-import {FlexColumn} from '@src/components/atoms/Flex';
-import {Text} from '@src/components/atoms/Text';
-import {NavItemLink} from '@src/components/nav/NavItemLink';
+import {HeroArea} from '@src/components/hero/HeroArea';
 
 import {Screen} from '@src/screens/Screen';
 
-// TODO: Improve design of 404 screen.
-export const NotFoundScreen: React.FC<{readonly message: string}> = ({message}) => {
-  const navItem = DEFAULT_NAV_ITEM;
+const DEFAULT_NOT_FOUND_TITLE = 'Page not found';
+const DEFAULT_NOT_FOUND_SUBTITLE =
+  'You may not have access, or it might have been deleted. Check the URL and try again.';
+
+export const NotFoundScreen: React.FC<{
+  readonly title: string | undefined;
+  readonly subtitle: string | undefined;
+}> = ({title, subtitle}) => {
   const {isLoading, loggedInAccount} = useMaybeLoggedInAccount();
 
   if (isLoading) return null;
@@ -25,15 +28,11 @@ export const NotFoundScreen: React.FC<{readonly message: string}> = ({message}) 
       justify="center"
       maxWidth={960}
     >
-      <FlexColumn align="center" gap={2}>
-        <Text as="h1">404</Text>
-        <Text as="p">{message}</Text>
-        <NavItemLink navItemId={navItem.id}>
-          <Text as="p" underline="always">
-            Go to {navItem.title}
-          </Text>
-        </NavItemLink>
-      </FlexColumn>
+      <HeroArea
+        title={title ?? DEFAULT_NOT_FOUND_TITLE}
+        subtitle={subtitle ?? DEFAULT_NOT_FOUND_SUBTITLE}
+        actions={[DEFAULT_ROUTE_HERO_PAGE_ACTION]}
+      />
     </Screen>
   );
 };
