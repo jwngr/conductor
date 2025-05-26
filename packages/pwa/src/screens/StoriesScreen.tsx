@@ -250,6 +250,7 @@ export const StoriesScreen: React.FC = () => {
 
   const sidebarItemIdFromUrl = useSelectedStoryFromUrl();
   const selectedSidebarItem = sidebarItemIdFromUrl ?? DEFAULT_STORIES_SIDEBAR_ITEM;
+
   const handleSidebarItemClick = (item: StoriesSidebarItem): void => {
     void navigate({
       to: storiesRoute.fullPath,

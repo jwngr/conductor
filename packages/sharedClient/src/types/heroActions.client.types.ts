@@ -14,7 +14,7 @@ export interface RefreshHeroAction extends BaseHeroAction {
   readonly type: HeroActionType.Refresh;
 }
 
-export interface DefaultRouteHeroAction {
+export interface DefaultRouteHeroAction extends BaseHeroAction {
   readonly type: HeroActionType.DefaultRoute;
 }
 

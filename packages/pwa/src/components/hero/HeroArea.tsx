@@ -11,19 +11,25 @@ export const HeroArea: React.FC<{
   readonly subtitle: string | React.ReactElement;
   readonly actions: readonly HeroAction[];
   readonly bottomContent?: React.ReactElement;
-}> = (props) => {
-  const {title, subtitle, actions, bottomContent} = props;
+}> = ({title, subtitle, actions, bottomContent}) => {
+  const titleContent = (
+    <Text as="h2" bold align="center">
+      {title}
+    </Text>
+  );
+
+  const subtitleContent = (
+    <Text as="p" light align="center">
+      {subtitle}
+    </Text>
+  );
 
   return (
     <FlexColumn align="center" justify="center" className="h-full w-full">
       <FlexColumn align="center" gap={6} className="max-w-md">
         <FlexColumn align="center" gap={2}>
-          <Text as="h2" bold align="center">
-            {title}
-          </Text>
-          <Text as="p" light align="center">
-            {subtitle}
-          </Text>
+          {titleContent}
+          {subtitleContent}
         </FlexColumn>
         <HeroActionButtons actions={actions} />
         {bottomContent}

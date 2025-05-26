@@ -7,6 +7,8 @@ export const ErrorDetailsToggle: React.FC<{
     return null;
   }
 
+  // TODO: Make the other page content more stable when opening and closing the details toggle. Also
+  // simplify all the styles.
   return (
     <details className="w-full">
       <summary className="text-neutral-6 hover:text-neutral-7 focus:text-neutral-7 cursor-pointer list-none text-sm outline-none select-none [&[open]]:mb-2">

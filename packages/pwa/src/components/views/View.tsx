@@ -32,13 +32,13 @@ import {
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
+import {ErrorArea} from '@src/components/errors/ErrorArea';
 import {HoverFeedItemActions} from '@src/components/feedItems/FeedItemActions';
 import {FeedItemImportStatusBadge} from '@src/components/feedItems/FeedItemImportStatusBadge';
 import {ViewKeyboardShortcutHandler} from '@src/components/views/ViewKeyboardShortcutHandler';
 import {ViewOptionsDialog} from '@src/components/views/ViewOptionsDialog';
 
 import {feedItemRoute} from '@src/routes';
-import {ErrorScreen} from '@src/screens/ErrorScreen';
 
 function compareFeedItems(args: {
   readonly a: FeedItem;
@@ -327,11 +327,11 @@ const ViewList: React.FC<{
   }
 };
 
-const ViewListErrorScreen: React.FC<{
+const ViewListErrorArea: React.FC<{
   readonly error: Error;
 }> = ({error}) => {
   return (
-    <ErrorScreen
+    <ErrorArea
       error={error}
       title="Failed to load items"
       subtitle="Refreshing may resolve the issue. If the problem persists, please contact support."
@@ -361,7 +361,7 @@ const ViewListIgnoringDelivery: React.FC<{
         'Failed to load items ignoring delivery schedules'
       );
       logger.error(betterError, {viewType, sortBy, groupBy});
-      return <ViewListErrorScreen error={feedItemsState.error} />;
+      return <ViewListErrorArea error={feedItemsState.error} />;
     }
     case AsyncStatus.Success: {
       return (
@@ -399,7 +399,7 @@ const ViewListRespectingDelivery: React.FC<{
         'Failed to load items respecting delivery schedules'
       );
       logger.error(betterError, {viewType, sortBy, groupBy});
-      return <ViewListErrorScreen error={feedItemsState.error} />;
+      return <ViewListErrorArea error={feedItemsState.error} />;
     }
     case AsyncStatus.Success: {
       return (

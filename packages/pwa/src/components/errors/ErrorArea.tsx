@@ -10,9 +10,7 @@ export const ErrorArea: React.FC<{
   readonly title: string | React.ReactElement;
   readonly subtitle: string | React.ReactElement;
   readonly actions: readonly HeroAction[];
-}> = (props) => {
-  const {error, title, subtitle, actions} = props;
-
+}> = ({error, title, subtitle, actions}) => {
   return (
     <HeroArea
       title={title}
