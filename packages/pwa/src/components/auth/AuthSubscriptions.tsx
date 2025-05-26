@@ -6,7 +6,7 @@ import {logger} from '@shared/services/logger.shared';
 
 import {prefixError} from '@shared/lib/errorUtils.shared';
 
-import {parseEmailAddress} from '@shared/parsers/accounts.parser';
+import {parseEmailAddress} from '@shared/parsers/emails.parser';
 
 import {useAuthStore} from '@sharedClient/stores/AuthStore';
 
@@ -24,11 +24,11 @@ const AuthServiceSubscription: React.FC = () => {
   useEffect(() => {
     const unsubscribe = authService.onAuthStateChanged({
       successCallback: (loggedInAccount) => {
-        logger.log('Auth service auth state changed', {loggedInAccount});
+        logger.log('Logged-in auth state changed', {loggedInAccount});
         setLoggedInAccount(loggedInAccount);
       },
       errorCallback: (error) => {
-        logger.error(prefixError(error, 'Auth service `onAuthStateChanged` listener errored'));
+        logger.error(prefixError(error, '`onAuthStateChanged` listener errored'));
       },
     });
     return () => unsubscribe();

@@ -4,12 +4,12 @@ import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseZodResult} from '@shared/lib/parser.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
+import {parseEmailAddress} from '@shared/parsers/emails.parser';
+
 import type {Account, AccountId} from '@shared/types/accounts.types';
-import type {EmailAddress} from '@shared/types/emails.types';
 import type {Result} from '@shared/types/results.types';
 
 import {AccountIdSchema, AccountSchema} from '@shared/schemas/accounts.schema';
-import {EmailAddressSchema} from '@shared/schemas/emails.schema';
 
 /**
  * Parses a {@link AccountId} from a plain string. Returns an `ErrorResult` if the string is not valid.
@@ -43,18 +43,6 @@ export function parseAccount(maybeAccount: unknown): Result<Account> {
     email: parsedEmailResult.value,
     displayName: parsedResult.value.displayName,
   });
-}
-
-/**
- * Parses an {@link EmailAddress} from a plain string. Returns an `ErrorResult` if the string is not
- * valid.
- */
-export function parseEmailAddress(maybeEmail: string): Result<EmailAddress> {
-  const parsedResult = parseZodResult(EmailAddressSchema, maybeEmail);
-  if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid email address');
-  }
-  return makeSuccessResult(parsedResult.value as EmailAddress);
 }
 
 /**

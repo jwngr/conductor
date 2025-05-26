@@ -4,7 +4,7 @@ import '@src/globals.css';
 
 import {App} from '@src/components/App.pwa';
 
-import {setupGlobalErrorHandlers} from '@src/lib/error.pwa';
+import {setupGlobalErrorHandlers} from '@src/lib/errors.pwa';
 
 const rootDiv = document.getElementById('root');
 if (!rootDiv) {

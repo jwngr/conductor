@@ -4,7 +4,7 @@ import {useCallback, useState} from 'react';
 
 import {isValidEmail} from '@shared/lib/emails.shared';
 
-import {parseEmailAddress} from '@shared/parsers/accounts.parser';
+import {parseEmailAddress} from '@shared/parsers/emails.parser';
 
 import type {Consumer} from '@shared/types/utils.types';
 
