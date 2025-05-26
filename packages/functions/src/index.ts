@@ -24,6 +24,7 @@ import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/us
 import type {WipeoutService} from '@sharedServer/services/wipeout.server';
 
 import {wipeoutAccountHelper} from '@src/lib/accountWipeout';
+import {FIREBASE_FUNCTIONS_REGION} from '@src/lib/env';
 import {handleFeedUnsubscribeHelper} from '@src/lib/feedUnsubscribe';
 import {initServices} from '@src/lib/initServices';
 import {validateUrlParam, verifyAuth} from '@src/lib/middleware';
@@ -35,9 +36,6 @@ import {
 } from '@src/reqHandlers/handleEmitIntervalFeeds';
 import {handleFeedItemImport} from '@src/reqHandlers/handleFeedItemImport';
 import {handleSubscribeToRssFeed} from '@src/reqHandlers/handleSubscribeToRssFeed';
-
-// TODO: Make region an environment variable.
-const FIREBASE_FUNCTIONS_REGION = 'us-central1';
 
 let userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
 let wipeoutService: WipeoutService;
@@ -78,13 +76,22 @@ export const handleSuperfeedrWebhook = onRequest(
   // This webhook is server-to-server, so we don't need to worry about CORS.
   {cors: false},
   async (request, response) => {
-    await handleSuperfeedrWebhookHelper({
+    const handleWebhookResult = await handleSuperfeedrWebhookHelper({
       request,
-      response,
       userFeedSubscriptionsService,
       feedItemsService,
       rssFeedProvider,
     });
+
+    if (!handleWebhookResult.success) {
+      const betterError = prefixError(handleWebhookResult.error, '[SUPERFEEDR]');
+      logger.error(betterError, {body: request.body});
+      response.status(400).json({success: false, error: betterError.message});
+      return;
+    }
+
+    response.status(200).json({success: true, value: undefined});
+    return;
   }
 );
 
