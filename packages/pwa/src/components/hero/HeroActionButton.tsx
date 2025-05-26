@@ -52,6 +52,10 @@ const HeroActionButton: React.FC<{
 export const HeroActionButtons: React.FC<{
   readonly actions: readonly HeroAction[];
 }> = ({actions}) => {
+  if (actions.length === 0) {
+    return null;
+  }
+
   return (
     <FlexRow gap={3}>
       {actions.map((action, i) => (

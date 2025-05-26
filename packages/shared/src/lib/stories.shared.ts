@@ -192,5 +192,11 @@ export function findStoriesSidebarItemById(
   const rendererItem = rendererSidebarItems.find((item) => item.sidebarItemId === itemId);
   if (rendererItem) return rendererItem;
 
+  const moleculeComponentSidebarItems = getMoleculeComponentSidebarItems();
+  const moleculeComponentItem = moleculeComponentSidebarItems.find(
+    (item) => item.sidebarItemId === itemId
+  );
+  if (moleculeComponentItem) return moleculeComponentItem;
+
   return null;
 }

@@ -16,8 +16,8 @@ export const HeroArea: React.FC<{
 
   return (
     <FlexColumn align="center" justify="center" className="h-full w-full">
-      <FlexColumn align="center" gap={6}>
-        <FlexColumn align="center" gap={2} className="max-w-md">
+      <FlexColumn align="center" gap={6} className="max-w-md">
+        <FlexColumn align="center" gap={2}>
           <Text as="h2" bold align="center">
             {title}
           </Text>
