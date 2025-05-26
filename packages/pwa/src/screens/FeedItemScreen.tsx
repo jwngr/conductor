@@ -30,6 +30,7 @@ import {VideoFeedItemRenderer} from '@src/components/feedItems/renderers/VideoFe
 import {WebsiteFeedItemRenderer} from '@src/components/feedItems/renderers/WebsiteFeedItemRenderer';
 import {XkcdFeedItemRenderer} from '@src/components/feedItems/renderers/XkcdFeedItemRenderer';
 import {YouTubeFeedItemRenderer} from '@src/components/feedItems/renderers/YouTubeFeedItemRenderer';
+import {LoadingArea} from '@src/components/loading/LoadingArea';
 
 import {useFeedItemIdFromUrl} from '@src/lib/router.pwa';
 
@@ -135,8 +136,7 @@ const FeedItemScreenMainContent: React.FC<{
   switch (feedItemState.status) {
     case AsyncStatus.Idle:
     case AsyncStatus.Pending:
-      // TODO: Introduce proper loading component.
-      return <div>Loading...</div>;
+      return <LoadingArea text="Loading feed item..." />;
     case AsyncStatus.Error: {
       const betterError = prefixError(feedItemState.error, 'Failed to load feed item');
       logger.error(betterError, {feedItemId});

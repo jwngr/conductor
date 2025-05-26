@@ -7,15 +7,33 @@ import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {FeedItem} from '@shared/types/feedItems.types';
 
 import {
+  DEFAULT_ROUTE_HERO_PAGE_ACTION,
+  REFRESH_HERO_PAGE_ACTION,
+} from '@sharedClient/lib/heroActions.client';
+
+import {
   useFeedItemDefuddleMarkdown,
   useFeedItemMarkdown,
 } from '@sharedClient/hooks/feedItems.hooks';
 
 import {Button} from '@src/components/atoms/Button';
-import {Text} from '@src/components/atoms/Text';
+import {ErrorArea} from '@src/components/errors/ErrorArea';
+import {LoadingArea} from '@src/components/loading/LoadingArea';
 import {Markdown} from '@src/components/Markdown';
 
 type RenderStrategy = 'firecrawl' | 'defuddle';
+
+const MarkdownErrorArea: React.FC<{readonly error: Error; readonly title: string}> = (args) => {
+  const {error, title} = args;
+  return (
+    <ErrorArea
+      error={error}
+      title={title}
+      subtitle="Refreshing may resolve the issue. If the problem persists, please contact support."
+      actions={[DEFAULT_ROUTE_HERO_PAGE_ACTION, REFRESH_HERO_PAGE_ACTION]}
+    />
+  );
+};
 
 const FirecrawlMarkdownRenderer: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
   const markdownState = useFeedItemMarkdown(feedItem);
@@ -23,12 +41,10 @@ const FirecrawlMarkdownRenderer: React.FC<{readonly feedItem: FeedItem}> = ({fee
   switch (markdownState.status) {
     case AsyncStatus.Idle:
     case AsyncStatus.Pending:
-      return <Text as="p">Loading Firecrawl markdown...</Text>;
+      return <LoadingArea text="Loading Firecrawl markdown..." />;
     case AsyncStatus.Error:
       return (
-        <Text as="p" className="text-error">
-          Error loading Firecrawl markdown: {markdownState.error.message}
-        </Text>
+        <MarkdownErrorArea error={markdownState.error} title="Error loading Firecrawl markdown" />
       );
     case AsyncStatus.Success:
       return <Markdown content={markdownState.value} />;
@@ -43,12 +59,10 @@ const DefuddleMarkdownRenderer: React.FC<{readonly feedItem: FeedItem}> = ({feed
   switch (markdownState.status) {
     case AsyncStatus.Idle:
     case AsyncStatus.Pending:
-      return <Text as="p">Loading Defuddle markdown...</Text>;
+      return <LoadingArea text="Loading Defuddle markdown..." />;
     case AsyncStatus.Error:
       return (
-        <Text as="p" className="text-error">
-          Error loading Defuddle markdown: {markdownState.error.message}
-        </Text>
+        <MarkdownErrorArea error={markdownState.error} title="Error loading Defuddle markdown" />
       );
     case AsyncStatus.Success:
       return <Markdown content={markdownState.value} />;

@@ -35,6 +35,7 @@ import {Text} from '@src/components/atoms/Text';
 import {ErrorArea} from '@src/components/errors/ErrorArea';
 import {HoverFeedItemActions} from '@src/components/feedItems/FeedItemActions';
 import {FeedItemImportStatusBadge} from '@src/components/feedItems/FeedItemImportStatusBadge';
+import {LoadingArea} from '@src/components/loading/LoadingArea';
 import {ViewKeyboardShortcutHandler} from '@src/components/views/ViewKeyboardShortcutHandler';
 import {ViewOptionsDialog} from '@src/components/views/ViewOptionsDialog';
 
@@ -353,8 +354,7 @@ const ViewListIgnoringDelivery: React.FC<{
   switch (feedItemsState.status) {
     case AsyncStatus.Idle:
     case AsyncStatus.Pending:
-      // TODO: Introduce proper loading component.
-      return <div>Loading...</div>;
+      return <LoadingArea text="Loading items..." />;
     case AsyncStatus.Error: {
       const betterError = prefixError(
         feedItemsState.error,
@@ -391,8 +391,7 @@ const ViewListRespectingDelivery: React.FC<{
   switch (feedItemsState.status) {
     case AsyncStatus.Idle:
     case AsyncStatus.Pending:
-      // TODO: Introduce proper loading component.
-      return <div>Loading...</div>;
+      return <LoadingArea text="Loading items..." />;
     case AsyncStatus.Error: {
       const betterError = prefixError(
         feedItemsState.error,
