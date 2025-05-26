@@ -31,6 +31,7 @@ const ErrorScreenAuthFooter: React.FC = () => {
 
   let innerContent: React.ReactNode;
   if (loggedInAccount) {
+    // TODO: Make this more responsive on mobile.
     innerContent = (
       <FlexRow align="center" gap={3}>
         <Text as="h5" light>
@@ -38,7 +39,8 @@ const ErrorScreenAuthFooter: React.FC = () => {
         </Text>
         <Divider y={24} x={1} />
         <Link to={signOutRoute.fullPath} replace>
-          <Text as="h5" underline="always" light>
+          {/* TODO: Add `nowrap` as a prop to `Text`. */}
+          <Text as="h5" underline="always" light className="text-nowrap">
             Sign out
           </Text>
         </Link>
