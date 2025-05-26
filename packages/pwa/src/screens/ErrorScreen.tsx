@@ -31,13 +31,13 @@ const ErrorScreenAuthFooter: React.FC = () => {
 
   if (loggedInAccount) {
     innerContent = (
-      <FlexRow align="center" gap={4}>
-        <Text as="p" light>
+      <FlexRow align="center" gap={3}>
+        <Text as="h5" light>
           Logged in as <b>{loggedInAccount.email}</b>
         </Text>
-        <Divider y={28} x={1} />
+        <Divider y={24} x={1} />
         <Link to={signOutRoute.fullPath} replace>
-          <Text as="p" underline="always" light>
+          <Text as="h5" underline="always" light>
             Sign out
           </Text>
         </Link>
