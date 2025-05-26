@@ -25,7 +25,7 @@ const RefreshActionButton: React.FC = () => {
 const DefaultRouteNavActionButton: React.FC = () => {
   return (
     <NavItemLink navItemId={DEFAULT_NAV_ITEM.id}>
-      <Button variant="outline">Go to {DEFAULT_NAV_ITEM.title}</Button>
+      <Button variant="outline">Back to {DEFAULT_NAV_ITEM.title}</Button>
     </NavItemLink>
   );
 };

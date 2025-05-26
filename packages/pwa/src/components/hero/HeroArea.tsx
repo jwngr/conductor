@@ -26,7 +26,7 @@ export const HeroArea: React.FC<{
 
   return (
     <FlexColumn align="center" justify="center" className="h-full w-full">
-      <FlexColumn align="center" gap={6} className="max-w-md">
+      <FlexColumn align="center" gap={6} className="max-w-[720px]">
         <FlexColumn align="center" gap={2}>
           {titleContent}
           {subtitleContent}

@@ -30,7 +30,6 @@ const ErrorScreenAuthFooter: React.FC = () => {
   }
 
   let innerContent: React.ReactNode;
-
   if (loggedInAccount) {
     innerContent = (
       <FlexRow align="center" gap={3}>
@@ -67,8 +66,8 @@ export const ErrorScreen: React.FC<{
   readonly actions: readonly HeroAction[];
 }> = ({error, title, subtitle, actions}) => {
   return (
-    <div className="relative">
-      <Screen maxWidth={960}>
+    <Screen>
+      <div className="relative">
         {/* Conductor logo, top left. */}
         <FlexRow className="absolute top-4 left-4 z-10">
           <ConductorLogo />
@@ -83,23 +82,31 @@ export const ErrorScreen: React.FC<{
         </FlexColumn>
 
         {/* Auth state, centered at bottom. */}
-        <div className="bg-background fixed bottom-0 h-[80px] w-[960px]">
+        <div className="bg-background fixed bottom-0 left-0 h-[80px] w-full">
           <ErrorScreenAuthFooter />
         </div>
-      </Screen>
-    </div>
+      </div>
+    </Screen>
   );
 };
 
 export const DefaultErrorScreen: React.FC<{
   readonly error: Error;
 }> = ({error}) => {
+  const {isLoading, loggedInAccount} = useMaybeLoggedInAccount();
+
+  const isLoggedIn = isLoading ? false : loggedInAccount !== null;
+
   return (
     <ErrorScreen
       error={error}
       title={DEFAULT_ERROR_TITLE}
       subtitle={error.message}
-      actions={[DEFAULT_ROUTE_HERO_PAGE_ACTION, REFRESH_HERO_PAGE_ACTION]}
+      actions={
+        isLoggedIn
+          ? [DEFAULT_ROUTE_HERO_PAGE_ACTION, REFRESH_HERO_PAGE_ACTION]
+          : [REFRESH_HERO_PAGE_ACTION]
+      }
     />
   );
 };

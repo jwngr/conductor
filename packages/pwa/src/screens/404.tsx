@@ -21,17 +21,11 @@ export const NotFoundScreen: React.FC<{
   const isLoggedIn = loggedInAccount !== null;
 
   return (
-    <Screen
-      withHeader={isLoggedIn}
-      withLeftSidebar={isLoggedIn}
-      align="center"
-      justify="center"
-      maxWidth={960}
-    >
+    <Screen withHeader={isLoggedIn} withLeftSidebar={isLoggedIn} align="center" justify="center">
       <HeroArea
         title={title ?? DEFAULT_NOT_FOUND_TITLE}
         subtitle={subtitle ?? DEFAULT_NOT_FOUND_SUBTITLE}
-        actions={[DEFAULT_ROUTE_HERO_PAGE_ACTION]}
+        actions={isLoggedIn ? [DEFAULT_ROUTE_HERO_PAGE_ACTION] : []}
       />
     </Screen>
   );

@@ -50,7 +50,7 @@ export const ErrorDetailsToggle: React.FC<{
         <pre
           className={cn(
             'bg-neutral-1 text-neutral-7 mt-2 rounded-md p-3 text-xs',
-            'max-h-60 overflow-auto whitespace-pre-wrap'
+            'max-h-60 overflow-auto whitespace-pre'
           )}
         >
           {error.stack}
