@@ -6,7 +6,7 @@ import type {AsyncResult} from '@shared/types/results.types';
 
 import type {WipeoutService} from '@sharedServer/services/wipeout.server';
 
-export async function wipeoutAccountHelper(args: {
+export async function handleWipeoutAccount(args: {
   readonly firebaseUid: string;
   readonly wipeoutService: WipeoutService;
 }): AsyncResult<void> {

@@ -23,12 +23,10 @@ import type {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
 import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
 import type {WipeoutService} from '@sharedServer/services/wipeout.server';
 
-import {wipeoutAccountHelper} from '@src/lib/accountWipeout';
 import {FIREBASE_FUNCTIONS_REGION} from '@src/lib/env';
-import {handleFeedUnsubscribeHelper} from '@src/lib/feedUnsubscribe';
+import {handleFeedUnsubscribe} from '@src/lib/feedUnsubscribe';
 import {initServices} from '@src/lib/initServices';
 import {validateUrlParam, verifyAuth} from '@src/lib/middleware';
-import {handleSuperfeedrWebhookHelper} from '@src/lib/superfeedrWebhook';
 
 import {
   handleEmitIntervalFeeds,
@@ -36,6 +34,8 @@ import {
 } from '@src/reqHandlers/handleEmitIntervalFeeds';
 import {handleFeedItemImport} from '@src/reqHandlers/handleFeedItemImport';
 import {handleSubscribeToRssFeed} from '@src/reqHandlers/handleSubscribeToRssFeed';
+import {handleSuperfeedrWebhookHelper} from '@src/reqHandlers/handleSuperfeedrWebhook';
+import {handleWipeoutAccount} from '@src/reqHandlers/handleWipeoutAccount';
 
 let userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
 let wipeoutService: WipeoutService;
@@ -104,7 +104,7 @@ export const wipeoutAccountOnAuthDelete = auth.user().onDelete(async (firebaseUs
 
   logger.log(`[WIPEOUT] Firebase user deleted. Processing account wipeout...`, logDetails);
 
-  const wipeoutResult = await wipeoutAccountHelper({firebaseUid, wipeoutService});
+  const wipeoutResult = await handleWipeoutAccount({firebaseUid, wipeoutService});
 
   if (!wipeoutResult.success) {
     const betterError = prefixError(wipeoutResult.error, '[WIPEOUT] Failed to wipe out account');
@@ -212,7 +212,7 @@ export const handleFeedUnsubscribeOnUpdate = onDocumentUpdated(
 
     const logDetails = {userFeedSubscriptionId, beforeData, afterData} as const;
 
-    const result = await handleFeedUnsubscribeHelper({
+    const result = await handleFeedUnsubscribe({
       beforeData,
       afterData,
       rssFeedService,
