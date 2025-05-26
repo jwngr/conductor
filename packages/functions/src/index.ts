@@ -23,21 +23,19 @@ import type {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
 import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
 import type {WipeoutService} from '@sharedServer/services/wipeout.server';
 
-import {wipeoutAccountHelper} from '@src/lib/accountWipeout';
-import {handleFeedUnsubscribeHelper} from '@src/lib/feedUnsubscribe';
+import {FIREBASE_FUNCTIONS_REGION} from '@src/lib/env';
 import {initServices} from '@src/lib/initServices';
 import {validateUrlParam, verifyAuth} from '@src/lib/middleware';
-import {handleSuperfeedrWebhookHelper} from '@src/lib/superfeedrWebhook';
 
 import {
   handleEmitIntervalFeeds,
   INTERVAL_FEED_EMISSION_INTERVAL_MINUTES,
 } from '@src/reqHandlers/handleEmitIntervalFeeds';
 import {handleFeedItemImport} from '@src/reqHandlers/handleFeedItemImport';
+import {handleFeedUnsubscribe} from '@src/reqHandlers/handleFeedUnsubscribe';
 import {handleSubscribeToRssFeed} from '@src/reqHandlers/handleSubscribeToRssFeed';
-
-// TODO: Make region an environment variable.
-const FIREBASE_FUNCTIONS_REGION = 'us-central1';
+import {handleSuperfeedrWebhookHelper} from '@src/reqHandlers/handleSuperfeedrWebhook';
+import {handleWipeoutAccount} from '@src/reqHandlers/handleWipeoutAccount';
 
 let userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
 let wipeoutService: WipeoutService;
@@ -78,13 +76,22 @@ export const handleSuperfeedrWebhook = onRequest(
   // This webhook is server-to-server, so we don't need to worry about CORS.
   {cors: false},
   async (request, response) => {
-    await handleSuperfeedrWebhookHelper({
+    const handleWebhookResult = await handleSuperfeedrWebhookHelper({
       request,
-      response,
       userFeedSubscriptionsService,
       feedItemsService,
       rssFeedProvider,
     });
+
+    if (!handleWebhookResult.success) {
+      const betterError = prefixError(handleWebhookResult.error, '[SUPERFEEDR]');
+      logger.error(betterError, {body: request.body});
+      response.status(400).json({success: false, error: betterError.message});
+      return;
+    }
+
+    response.status(200).json({success: true, value: undefined});
+    return;
   }
 );
 
@@ -97,7 +104,7 @@ export const wipeoutAccountOnAuthDelete = auth.user().onDelete(async (firebaseUs
 
   logger.log(`[WIPEOUT] Firebase user deleted. Processing account wipeout...`, logDetails);
 
-  const wipeoutResult = await wipeoutAccountHelper({firebaseUid, wipeoutService});
+  const wipeoutResult = await handleWipeoutAccount({firebaseUid, wipeoutService});
 
   if (!wipeoutResult.success) {
     const betterError = prefixError(wipeoutResult.error, '[WIPEOUT] Failed to wipe out account');
@@ -205,7 +212,7 @@ export const handleFeedUnsubscribeOnUpdate = onDocumentUpdated(
 
     const logDetails = {userFeedSubscriptionId, beforeData, afterData} as const;
 
-    const result = await handleFeedUnsubscribeHelper({
+    const result = await handleFeedUnsubscribe({
       beforeData,
       afterData,
       rssFeedService,

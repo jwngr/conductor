@@ -8,7 +8,7 @@ import type {AsyncResult} from '@shared/types/results.types';
 
 import type {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
 
-export async function handleFeedUnsubscribeHelper(args: {
+export async function handleFeedUnsubscribe(args: {
   readonly beforeData: unknown;
   readonly afterData: unknown;
   readonly rssFeedService: ServerRssFeedService;

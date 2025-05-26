@@ -10,6 +10,8 @@ import {useEventLogItems} from '@sharedClient/services/eventLog.client';
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {Popover, PopoverContent, PopoverTrigger} from '@src/components/atoms/Popover';
 import {Text} from '@src/components/atoms/Text';
+import {ErrorArea} from '@src/components/errors/ErrorArea';
+import {LoadingArea} from '@src/components/loading/LoadingArea';
 
 const RecentActivityFeedItem: React.FC<{
   readonly eventLogItem: EventLogItem;
@@ -71,18 +73,15 @@ export const RecentActivityFeed: React.FC = () => {
   switch (eventLogItemsState.status) {
     case AsyncStatus.Idle:
     case AsyncStatus.Pending:
-      // TODO: Improve styling of loading state.
-      return (
-        <Text light truncate>
-          Loading...
-        </Text>
-      );
+      return <LoadingArea text="Loading recent activity..." />;
     case AsyncStatus.Error:
-      // TODO: Improve styling of error state.
       return (
-        <Text truncate className="text-error">
-          Error loading recent activity: {eventLogItemsState.error.message}
-        </Text>
+        <ErrorArea
+          error={eventLogItemsState.error}
+          title="Error loading activity"
+          subtitle="Refreshing may resolve the issue. If the problem persists, please contact support."
+          actions={[]}
+        />
       );
     case AsyncStatus.Success:
       return <LoadedRecentActivityFeed eventLogItems={eventLogItemsState.value} />;

@@ -32,9 +32,9 @@ import type {Consumer} from '@shared/types/utils.types';
  *   case AsyncStatus.Idle:
  *     return <button onClick={handleClick}>Click me</button>;
  *   case AsyncStatus.Pending:
- *     return <p>Loading...</p>;
+ *     return <LoadingArea text="Loading..." />;
  *   case AsyncStatus.Error:
- *     return <p>Error: {asyncState.error.message}</p>;
+ *     return <ErrorArea error={asyncState.error} />;
  *   case AsyncStatus.Success:
  *     return <p>Hello {asyncState.value}</p>;
  *   default:

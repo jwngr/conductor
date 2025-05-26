@@ -6,11 +6,17 @@ import {assertNever} from '@shared/lib/utils.shared';
 import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {YouTubeFeedItem} from '@shared/types/feedItems.types';
 
+import {
+  DEFAULT_ROUTE_HERO_PAGE_ACTION,
+  REFRESH_HERO_PAGE_ACTION,
+} from '@sharedClient/lib/heroActions.client';
+
 import {useYouTubeFeedItemTranscript} from '@sharedClient/hooks/feedItems.hooks';
 
-import {Text} from '@src/components/atoms/Text';
+import {ErrorArea} from '@src/components/errors/ErrorArea';
 import {FeedItemHeader, FeedItemWrapper} from '@src/components/feedItems/FeedItem';
 import {ImportingFeedItem} from '@src/components/feedItems/ImportingFeedItem';
+import {LoadingArea} from '@src/components/loading/LoadingArea';
 import {Markdown} from '@src/components/Markdown';
 
 const YouTubeFeedItemTranscript: React.FC<{readonly feedItem: YouTubeFeedItem}> = ({feedItem}) => {
@@ -19,12 +25,15 @@ const YouTubeFeedItemTranscript: React.FC<{readonly feedItem: YouTubeFeedItem}> 
   switch (transcriptState.status) {
     case AsyncStatus.Idle:
     case AsyncStatus.Pending:
-      return <Text as="p">Loading transcript...</Text>;
+      return <LoadingArea text="Loading transcript..." />;
     case AsyncStatus.Error:
       return (
-        <Text as="p" className="text-error">
-          Error loading transcript: {transcriptState.error.message}
-        </Text>
+        <ErrorArea
+          error={transcriptState.error}
+          title="Error loading transcript"
+          subtitle="Refreshing may resolve the issue. If the problem persists, please contact support."
+          actions={[DEFAULT_ROUTE_HERO_PAGE_ACTION, REFRESH_HERO_PAGE_ACTION]}
+        />
       );
     case AsyncStatus.Success:
       return <Markdown content={transcriptState.value} />;

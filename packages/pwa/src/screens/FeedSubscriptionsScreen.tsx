@@ -13,13 +13,20 @@ import {
   useUserFeedSubscriptionsService,
 } from '@sharedClient/services/userFeedSubscriptions.client';
 
+import {
+  DEFAULT_ROUTE_HERO_PAGE_ACTION,
+  REFRESH_HERO_PAGE_ACTION,
+} from '@sharedClient/lib/heroActions.client';
+
 import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 
 import {Button} from '@src/components/atoms/Button';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Input} from '@src/components/atoms/Input';
 import {Text} from '@src/components/atoms/Text';
+import {ErrorArea} from '@src/components/errors/ErrorArea';
 import {FeedSubscriptionSettingsButton} from '@src/components/feedSubscriptions/FeedSubscriptionSettings';
+import {LoadingArea} from '@src/components/loading/LoadingArea';
 
 import {Screen} from '@src/screens/Screen';
 
@@ -219,16 +226,15 @@ const FeedSubscriptionsList: React.FC = () => {
     switch (userFeedSubscriptionsState.status) {
       case AsyncStatus.Idle:
       case AsyncStatus.Pending:
-        return (
-          <Text as="p" light>
-            Loading...
-          </Text>
-        );
+        return <LoadingArea text="Loading feed subscriptions..." />;
       case AsyncStatus.Error:
         return (
-          <Text as="p" className="text-error">
-            Error loading feed subscriptions: {userFeedSubscriptionsState.error.message}
-          </Text>
+          <ErrorArea
+            error={userFeedSubscriptionsState.error}
+            title="Error loading feed subscriptions"
+            subtitle="Refreshing may resolve the issue. If the problem persists, please contact support."
+            actions={[DEFAULT_ROUTE_HERO_PAGE_ACTION, REFRESH_HERO_PAGE_ACTION]}
+          />
         );
       case AsyncStatus.Success:
         return (
