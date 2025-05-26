@@ -2,7 +2,7 @@ import {Navigate} from '@tanstack/react-router';
 import type {ActionCodeSettings} from 'firebase/auth';
 import {useCallback, useState} from 'react';
 
-import {isValidEmail} from '@shared/lib/utils.shared';
+import {isValidEmail} from '@shared/lib/emails.shared';
 
 import {parseEmailAddress} from '@shared/parsers/accounts.parser';
 

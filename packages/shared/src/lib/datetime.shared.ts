@@ -7,6 +7,13 @@ import {DayOfWeek} from '@shared/types/datetime.types';
 import type {DayOfWeekIndex, TimeOfDay} from '@shared/types/datetime.types';
 import type {Result} from '@shared/types/results.types';
 
+/**
+ * Returns `true` if the provided value is a `Date`.
+ */
+export function isDate(value: unknown): value is Date {
+  return value instanceof Date;
+}
+
 export function makeTimeOfDay(timeOfDay: TimeOfDay): Result<TimeOfDay> {
   const hourResult = validateHour(timeOfDay.hour);
   if (!hourResult.success) return hourResult;
