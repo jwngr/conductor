@@ -1,6 +1,7 @@
 import {
   dayOfWeekToIndex,
   formatRelativeTime,
+  isDate,
   makeTimeOfDay,
   validateHour,
   validateMinute,
@@ -8,6 +9,31 @@ import {
 import {expectErrorResult, expectSuccessResult} from '@shared/lib/testUtils.shared';
 
 import {DayOfWeek} from '@shared/types/datetime.types';
+
+describe('isDate', () => {
+  test('should return true for Date objects', () => {
+    expect(isDate(new Date())).toBe(true);
+    expect(isDate(new Date('2023-01-01'))).toBe(true);
+  });
+
+  test('should return false for non-Date objects', () => {
+    expect(isDate(null)).toBe(false);
+    expect(isDate(undefined)).toBe(false);
+    expect(isDate('2023-01-01')).toBe(false);
+    expect(isDate(123)).toBe(false);
+    expect(isDate({})).toBe(false);
+    expect(isDate([])).toBe(false);
+    expect(isDate(true)).toBe(false);
+  });
+
+  test('should return false for Date-like objects that are not actual Date instances', () => {
+    const dateLike = {
+      getTime: () => 1672531200000,
+      toISOString: () => '2023-01-01T00:00:00.000Z',
+    };
+    expect(isDate(dateLike)).toBe(false);
+  });
+});
 
 describe('validateHour', () => {
   it('should accept valid hours', () => {

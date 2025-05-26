@@ -4,7 +4,6 @@ import {logger} from '@shared/services/logger.shared';
 
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
-import type {EmailAddress} from '@shared/types/emails.types';
 import type {AsyncResult, Result} from '@shared/types/results.types';
 import type {Func, Supplier, UUID} from '@shared/types/utils.types';
 
@@ -140,22 +139,6 @@ export function partition<T, U>(
  */
 export function makeUuid<T = UUID>(): T {
   return uuidv4() as T;
-}
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-/**
- * Checks if a value is a valid `EmailAddress`.
- */
-export function isValidEmail(maybeEmail: unknown): maybeEmail is EmailAddress {
-  return typeof maybeEmail === 'string' && EMAIL_REGEX.test(maybeEmail);
-}
-
-/**
- * Returns `true` if the provided value is a `Date`.
- */
-export function isDate(value: unknown): value is Date {
-  return value instanceof Date;
 }
 
 /**
