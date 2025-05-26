@@ -16,7 +16,7 @@ import {
   DesignSystemComponentType,
   StoriesSidebarSectionId,
 } from '@shared/types/stories.types';
-import type {StoriesSidebarItem} from '@shared/types/stories.types';
+import type {MoleculeComponentType, StoriesSidebarItem} from '@shared/types/stories.types';
 import type {Consumer} from '@shared/types/utils.types';
 
 import {BadgeStories} from '@src/components/atoms/Badge.stories';
@@ -116,6 +116,20 @@ const RendererStoryContent: React.FC<{readonly rendererType: RendererType}> = ({
   }
 };
 
+const MoleculeStoryContent: React.FC<{readonly moleculeType: MoleculeComponentType}> = ({
+  moleculeType,
+}) => {
+  switch (moleculeType) {
+    case MoleculeComponentType.HeroArea:
+      return <HeroAreaStories />;
+    case MoleculeComponentType.ErrorArea:
+      return <ErrorAreaStories />;
+    default: {
+      assertNever(moleculeType);
+    }
+  }
+};
+
 const SidebarSection: React.FC<{
   readonly title: string;
   readonly items: StoriesSidebarItem[];
@@ -196,6 +210,9 @@ const StoriesScreenMainContent: React.FC<{
       break;
     case StoriesSidebarSectionId.Renderers:
       mainContent = <RendererStoryContent rendererType={activeSidebarItem.sidebarItemId} />;
+      break;
+    case StoriesSidebarSectionId.Molecules:
+      mainContent = <MoleculeStoryContent moleculeType={activeSidebarItem.sidebarItemId} />;
       break;
     default: {
       assertNever(activeSidebarItem);

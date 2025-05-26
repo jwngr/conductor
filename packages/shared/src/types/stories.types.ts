@@ -4,6 +4,7 @@ export enum StoriesSidebarSectionId {
   AtomicComponents = 'ATOMIC_COMPONENTS',
   DesignSystem = 'DESIGN_SYSTEM',
   Renderers = 'RENDERERS',
+  Molecules = 'MOLECULES',
 }
 
 export enum AtomicComponentType {
@@ -31,6 +32,11 @@ export enum DesignSystemComponentType {
   Icons = 'ICONS',
 }
 
+export enum MoleculeComponentType {
+  HeroArea = 'HERO_AREA',
+  ErrorArea = 'ERROR_AREA',
+}
+
 export interface AtomicComponentSidebarItem {
   readonly sidebarSectionId: StoriesSidebarSectionId.AtomicComponents;
   readonly sidebarItemId: AtomicComponentType;
@@ -49,9 +55,20 @@ export interface RendererSidebarItem {
   readonly title: string;
 }
 
-export type StoriesSidebarItemId = AtomicComponentType | DesignSystemComponentType | RendererType;
+export interface MoleculeComponentSidebarItem {
+  readonly sidebarSectionId: StoriesSidebarSectionId.Molecules;
+  readonly sidebarItemId: MoleculeComponentType;
+  readonly title: string;
+}
+
+export type StoriesSidebarItemId =
+  | AtomicComponentType
+  | DesignSystemComponentType
+  | RendererType
+  | MoleculeComponentType;
 
 export type StoriesSidebarItem =
   | AtomicComponentSidebarItem
   | DesignSystemSidebarItem
-  | RendererSidebarItem;
+  | RendererSidebarItem
+  | MoleculeComponentSidebarItem;
