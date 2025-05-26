@@ -16,7 +16,7 @@ import {ThemeProvider} from '@src/components/ThemeProvider';
 
 import {IS_DEVELOPMENT} from '@src/lib/environment.pwa';
 
-import {ErrorScreen} from '@src/screens/ErrorScreen';
+import {DefaultErrorScreen} from '@src/screens/ErrorScreen';
 
 /**
  * Subscriptions that are always active whenever the app is loaded.
@@ -47,7 +47,7 @@ const RootComponent: React.FC = () => {
   return (
     <TooltipProvider>
       <ThemeProvider>
-        <ErrorBoundary fallback={(error) => <ErrorScreen error={error} />}>
+        <ErrorBoundary fallback={(error) => <DefaultErrorScreen error={error} />}>
           <Outlet />
           <Toaster richColors />
           <PermanentGlobalSubscriptions />

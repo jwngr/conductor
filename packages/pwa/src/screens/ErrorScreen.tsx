@@ -1,31 +1,100 @@
-import {DEFAULT_NAV_ITEM} from '@shared/lib/navItems.shared';
+import type React from 'react';
 
-import {FlexColumn} from '@src/components/atoms/Flex';
+import {DEFAULT_ERROR_TITLE} from '@shared/lib/errorUtils.shared';
+
+import {useMaybeLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
+
+import {
+  DEFAULT_ROUTE_ERROR_PAGE_ACTION,
+  REFRESH_ERROR_PAGE_ACTION,
+  type ErrorScreenAction,
+} from '@sharedClient/types/errors.client.types';
+
+import {Divider} from '@src/components/atoms/Divider';
+import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
+import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
-import {NavItemLink} from '@src/components/nav/NavItemLink';
+import {ErrorArea} from '@src/components/errors/ErrorArea';
+import {ConductorLogo} from '@src/components/logos/ConductorLogo';
 
+import {signOutRoute} from '@src/routes';
 import {Screen} from '@src/screens/Screen';
 
-// TODO: Improve design of error screen.
-export const ErrorScreen: React.FC<{readonly error: Error}> = ({error}) => {
-  const navItem = DEFAULT_NAV_ITEM;
+const ErrorScreenAuthFooter: React.FC = () => {
+  const {isLoading, loggedInAccount} = useMaybeLoggedInAccount();
+
+  if (isLoading) {
+    return null;
+  }
+
+  let innerContent: React.ReactNode;
+
+  if (loggedInAccount) {
+    innerContent = (
+      <FlexRow align="center" gap={4}>
+        <Text as="p" light>
+          Logged in as <b>{loggedInAccount.email}</b>
+        </Text>
+        <Divider y={28} x={1} />
+        <Link to={signOutRoute.fullPath} replace>
+          <Text as="p" underline="always" light>
+            Sign out
+          </Text>
+        </Link>
+      </FlexRow>
+    );
+  } else {
+    innerContent = (
+      <Text as="p" light>
+        Not logged in
+      </Text>
+    );
+  }
 
   return (
-    <Screen align="center" justify="center" maxWidth={960}>
-      <FlexColumn align="center" gap={2}>
-        <Text as="h1">Something went wrong</Text>
-        <Text as="p" className="text-error">
-          <Text as="span" bold>
-            Error:
-          </Text>{' '}
-          {error.message}
-        </Text>
-        <NavItemLink navItemId={navItem.id}>
-          <Text as="p" underline="always">
-            Go to {navItem.title}
-          </Text>
-        </NavItemLink>
-      </FlexColumn>
-    </Screen>
+    <FlexRow align="center" gap={3}>
+      {innerContent}
+    </FlexRow>
+  );
+};
+
+export const ErrorScreen: React.FC<{
+  readonly error: Error;
+  readonly title: string | React.ReactElement;
+  readonly subtitle: string | React.ReactElement;
+  readonly actions: readonly ErrorScreenAction[];
+}> = ({error, title, subtitle, actions}) => {
+  return (
+    <div className="relative">
+      <Screen maxWidth={960}>
+        {/* Conductor logo, top left. */}
+        <FlexRow className="absolute top-4 left-4 z-10">
+          <ConductorLogo />
+        </FlexRow>
+
+        {/* Main error content, centered horizontally and vertically. */}
+        <FlexColumn align="center" justify="center" className="min-h-screen px-4">
+          <ErrorArea error={error} title={title} subtitle={subtitle} actions={actions} />
+        </FlexColumn>
+
+        {/* Auth state, centered at bottom. */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
+          <ErrorScreenAuthFooter />
+        </div>
+      </Screen>
+    </div>
+  );
+};
+
+export const DefaultErrorScreen: React.FC<{
+  readonly error: Error;
+}> = ({error}) => {
+  return (
+    <ErrorScreen
+      error={error}
+      title={DEFAULT_ERROR_TITLE}
+      subtitle={error.message}
+      actions={[DEFAULT_ROUTE_ERROR_PAGE_ACTION, REFRESH_ERROR_PAGE_ACTION]}
+    />
   );
 };

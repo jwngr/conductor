@@ -24,6 +24,11 @@ import {
   useFeedItemsRespectingDelivery,
 } from '@sharedClient/hooks/feedItems.hooks';
 
+import {
+  DEFAULT_ROUTE_ERROR_PAGE_ACTION,
+  REFRESH_ERROR_PAGE_ACTION,
+} from '@sharedClient/types/errors.client.types';
+
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
@@ -322,6 +327,19 @@ const ViewList: React.FC<{
   }
 };
 
+const ViewListErrorScreen: React.FC<{
+  readonly error: Error;
+}> = ({error}) => {
+  return (
+    <ErrorScreen
+      error={error}
+      title="Failed to load items"
+      subtitle="Refreshing may resolve the issue. If the problem persists, please contact support."
+      actions={[DEFAULT_ROUTE_ERROR_PAGE_ACTION, REFRESH_ERROR_PAGE_ACTION]}
+    />
+  );
+};
+
 /**
  * Primary list component for views which do not filter items based on delivery schedules.
  */
@@ -343,7 +361,7 @@ const ViewListIgnoringDelivery: React.FC<{
         'Failed to load items ignoring delivery schedules'
       );
       logger.error(betterError, {viewType, sortBy, groupBy});
-      return <ErrorScreen error={betterError} />;
+      return <ViewListErrorScreen error={feedItemsState.error} />;
     }
     case AsyncStatus.Success: {
       return (
@@ -381,7 +399,7 @@ const ViewListRespectingDelivery: React.FC<{
         'Failed to load items respecting delivery schedules'
       );
       logger.error(betterError, {viewType, sortBy, groupBy});
-      return <ErrorScreen error={betterError} />;
+      return <ViewListErrorScreen error={feedItemsState.error} />;
     }
     case AsyncStatus.Success: {
       return (

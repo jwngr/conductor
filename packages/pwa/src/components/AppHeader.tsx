@@ -8,6 +8,7 @@ import {Link} from '@src/components/atoms/Link';
 import {Spacer} from '@src/components/atoms/Spacer';
 import {Text} from '@src/components/atoms/Text';
 import {RecentActivityFeed} from '@src/components/devToolbar/RecentActivityFeed';
+import {ConductorLogo} from '@src/components/logos/ConductorLogo';
 
 import {signOutRoute} from '@src/routes';
 
@@ -16,7 +17,7 @@ export const AppHeader: React.FC = () => {
 
   return (
     <FlexRow className={styles.appHeader}>
-      <Text as="h2">Conductor</Text>
+      <ConductorLogo />
       <Spacer x={12} />
       <RecentActivityFeed />
       <Spacer flex />
