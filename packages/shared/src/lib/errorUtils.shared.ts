@@ -4,7 +4,11 @@ import {partition} from '@shared/lib/utils.shared';
 import type {AsyncResult, ErrorResult, Result, SuccessResult} from '@shared/types/results.types';
 import type {Supplier} from '@shared/types/utils.types';
 
-const DEFAULT_ERROR_MESSAGE = 'An unexpected error occurred';
+/** Default user-visible error message, intended for titles, such as on error pages. */
+export const DEFAULT_ERROR_TITLE = 'Something went wrong';
+
+/** Default error message when one cannot be parsed otherwise. */
+export const UNEXPECTED_ERROR_DEFAULT_MESSAGE = 'An unexpected error occurred';
 
 /**
  * Upgrades an unknown error into a proper `Error` object with the best message possible.
@@ -12,7 +16,7 @@ const DEFAULT_ERROR_MESSAGE = 'An unexpected error occurred';
 export function upgradeUnknownError(unknownError: unknown): Error {
   // Unknown error is already an `Error` object.
   if (unknownError instanceof Error) {
-    return new Error(unknownError.message || DEFAULT_ERROR_MESSAGE, {
+    return new Error(unknownError.message || UNEXPECTED_ERROR_DEFAULT_MESSAGE, {
       cause: unknownError.cause instanceof Error ? unknownError.cause : unknownError,
     });
   }

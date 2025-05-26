@@ -100,6 +100,7 @@ export class ServerFirestoreCollectionService<
     const docRef = this.getDocRef(id);
     const docDataResult = await asyncTry(async () => {
       const docSnap = await docRef.get();
+      if (!docSnap.exists) return null;
       return docSnap.data() ?? null;
     });
     return prefixResultIfError(docDataResult, 'Error fetching Firestore document data');

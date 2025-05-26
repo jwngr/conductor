@@ -6,6 +6,7 @@ import {
   DEFAULT_STORIES_SIDEBAR_ITEM,
   getAtomicComponentSidebarItems,
   getDesignSystemSidebarItems,
+  getMoleculeComponentSidebarItems,
   getRendererSidebarItems,
 } from '@shared/lib/stories.shared';
 import {assertNever} from '@shared/lib/utils.shared';
@@ -14,6 +15,7 @@ import {RendererType} from '@shared/types/renderers.types';
 import {
   AtomicComponentType,
   DesignSystemComponentType,
+  MoleculeComponentType,
   StoriesSidebarSectionId,
 } from '@shared/types/stories.types';
 import type {StoriesSidebarItem} from '@shared/types/stories.types';
@@ -37,6 +39,8 @@ import {TextStories} from '@src/components/atoms/Text.stories';
 import {TextIconStories} from '@src/components/atoms/TextIcon.stories';
 import {ToastStories} from '@src/components/atoms/Toast.stories';
 import {TooltipStories} from '@src/components/atoms/Tooltip.stories';
+import {ErrorAreaStories} from '@src/components/errors/ErrorArea.stories';
+import {HeroAreaStories} from '@src/components/hero/HeroArea.stories';
 import {MarkdownStories} from '@src/components/Markdown.stories';
 import {NavItemLink} from '@src/components/nav/NavItemLink';
 import {ColorsStories} from '@src/components/stories/Colors.stories';
@@ -116,6 +120,20 @@ const RendererStoryContent: React.FC<{readonly rendererType: RendererType}> = ({
   }
 };
 
+const MoleculeStoryContent: React.FC<{readonly moleculeType: MoleculeComponentType}> = ({
+  moleculeType,
+}) => {
+  switch (moleculeType) {
+    case MoleculeComponentType.HeroArea:
+      return <HeroAreaStories />;
+    case MoleculeComponentType.ErrorArea:
+      return <ErrorAreaStories />;
+    default: {
+      assertNever(moleculeType);
+    }
+  }
+};
+
 const SidebarSection: React.FC<{
   readonly title: string;
   readonly items: StoriesSidebarItem[];
@@ -171,6 +189,12 @@ const StoriesLeftSidebar: React.FC<{
           onItemClick={onItemClick}
         />
         <SidebarSection
+          title="Molecules"
+          items={getMoleculeComponentSidebarItems()}
+          activeSidebarItem={activeSidebarItem}
+          onItemClick={onItemClick}
+        />
+        <SidebarSection
           title="Renderers"
           items={getRendererSidebarItems()}
           activeSidebarItem={activeSidebarItem}
@@ -196,6 +220,9 @@ const StoriesScreenMainContent: React.FC<{
       break;
     case StoriesSidebarSectionId.Renderers:
       mainContent = <RendererStoryContent rendererType={activeSidebarItem.sidebarItemId} />;
+      break;
+    case StoriesSidebarSectionId.Molecules:
+      mainContent = <MoleculeStoryContent moleculeType={activeSidebarItem.sidebarItemId} />;
       break;
     default: {
       assertNever(activeSidebarItem);

@@ -4,6 +4,7 @@ import {RendererType} from '@shared/types/renderers.types';
 import type {
   AtomicComponentSidebarItem,
   DesignSystemSidebarItem,
+  MoleculeComponentSidebarItem,
   RendererSidebarItem,
   StoriesSidebarItem,
   StoriesSidebarItemId,
@@ -11,6 +12,7 @@ import type {
 import {
   AtomicComponentType,
   DesignSystemComponentType,
+  MoleculeComponentType,
   StoriesSidebarSectionId,
 } from '@shared/types/stories.types';
 
@@ -78,6 +80,17 @@ function getRendererSidebarItemTitle(type: RendererType): string {
   }
 }
 
+function getMoleculeComponentSidebarItemTitle(type: MoleculeComponentType): string {
+  switch (type) {
+    case MoleculeComponentType.HeroArea:
+      return 'HeroArea';
+    case MoleculeComponentType.ErrorArea:
+      return 'ErrorArea';
+    default: {
+      assertNever(type);
+    }
+  }
+}
 function makeDesignSystemSidebarItem(type: DesignSystemComponentType): DesignSystemSidebarItem {
   return {
     title: getDesignSystemSidebarItemTitle(type),
@@ -99,6 +112,16 @@ function makeRendererSidebarItem(type: RendererType): RendererSidebarItem {
     title: getRendererSidebarItemTitle(type),
     sidebarItemId: type,
     sidebarSectionId: StoriesSidebarSectionId.Renderers,
+  };
+}
+
+function makeMoleculeComponentSidebarItem(
+  type: MoleculeComponentType
+): MoleculeComponentSidebarItem {
+  return {
+    title: getMoleculeComponentSidebarItemTitle(type),
+    sidebarItemId: type,
+    sidebarSectionId: StoriesSidebarSectionId.Molecules,
   };
 }
 
@@ -141,6 +164,15 @@ export function getRendererSidebarItems(): RendererSidebarItem[] {
   return ORDERED_RENDERER_TYPES.map((type) => makeRendererSidebarItem(type));
 }
 
+const ORDERED_MOLECULE_COMPONENT_TYPES: MoleculeComponentType[] = [
+  MoleculeComponentType.HeroArea,
+  MoleculeComponentType.ErrorArea,
+];
+
+export function getMoleculeComponentSidebarItems(): MoleculeComponentSidebarItem[] {
+  return ORDERED_MOLECULE_COMPONENT_TYPES.map((type) => makeMoleculeComponentSidebarItem(type));
+}
+
 export const DEFAULT_STORIES_SIDEBAR_ITEM = getDesignSystemSidebarItems()[0];
 
 export function findStoriesSidebarItemById(
@@ -159,6 +191,12 @@ export function findStoriesSidebarItemById(
   const rendererSidebarItems = getRendererSidebarItems();
   const rendererItem = rendererSidebarItems.find((item) => item.sidebarItemId === itemId);
   if (rendererItem) return rendererItem;
+
+  const moleculeComponentSidebarItems = getMoleculeComponentSidebarItems();
+  const moleculeComponentItem = moleculeComponentSidebarItems.find(
+    (item) => item.sidebarItemId === itemId
+  );
+  if (moleculeComponentItem) return moleculeComponentItem;
 
   return null;
 }

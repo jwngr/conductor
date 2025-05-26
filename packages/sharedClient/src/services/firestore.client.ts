@@ -166,12 +166,18 @@ export class ClientFirestoreCollectionService<
     onError: Consumer<Error>
   ): Unsubscribe {
     const handleSnapshot: Consumer<DocumentSnapshot<ItemData>> = (docSnap) => {
-      const parsedDataResult = syncTry(() => docSnap.data());
-      if (parsedDataResult.success) {
-        onData(parsedDataResult.value ?? null);
-      } else {
-        onError(parsedDataResult.error);
+      if (!docSnap.exists()) {
+        onData(null);
+        return;
       }
+
+      const parsedDataResult = syncTry(() => docSnap.data());
+      if (!parsedDataResult.success) {
+        onError(parsedDataResult.error);
+        return;
+      }
+
+      onData(parsedDataResult.value ?? null);
     };
 
     const handleError: Consumer<Error> = (error) => onError(error);
@@ -188,11 +194,13 @@ export class ClientFirestoreCollectionService<
   ): Unsubscribe {
     const handleSnapshot: Consumer<QuerySnapshot<ItemData>> = (querySnap) => {
       const parsedDataResult = syncTry(() => querySnap.docs.map((doc) => doc.data()));
-      if (parsedDataResult.success) {
-        onData(parsedDataResult.value);
-      } else {
+
+      if (!parsedDataResult.success) {
         onError(parsedDataResult.error);
+        return;
       }
+
+      onData(parsedDataResult.value);
     };
 
     const handleError: Consumer<Error> = (error) => {
