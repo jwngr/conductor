@@ -14,6 +14,7 @@ import type {HeroAction} from '@sharedClient/types/heroActions.client.types';
 import {Divider} from '@src/components/atoms/Divider';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
+import {Spacer} from '@src/components/atoms/Spacer';
 import {Text} from '@src/components/atoms/Text';
 import {ErrorArea} from '@src/components/errors/ErrorArea';
 import {ConductorLogo} from '@src/components/logos/ConductorLogo';
@@ -46,14 +47,14 @@ const ErrorScreenAuthFooter: React.FC = () => {
     );
   } else {
     innerContent = (
-      <Text as="p" light>
+      <Text as="p" align="center" light>
         Not logged in
       </Text>
     );
   }
 
   return (
-    <FlexRow align="center" gap={3}>
+    <FlexRow gap={3} align="center" justify="center" className="h-full w-full">
       {innerContent}
     </FlexRow>
   );
@@ -76,10 +77,13 @@ export const ErrorScreen: React.FC<{
         {/* Main error content, centered horizontally and vertically. */}
         <FlexColumn align="center" justify="center" className="min-h-screen px-4">
           <ErrorArea error={error} title={title} subtitle={subtitle} actions={actions} />
+
+          {/* Add a space the same size as the footer to ensure all main content is visible. */}
+          <Spacer y={80} />
         </FlexColumn>
 
         {/* Auth state, centered at bottom. */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
+        <div className="bg-background fixed bottom-0 h-[80px] w-[960px]">
           <ErrorScreenAuthFooter />
         </div>
       </Screen>
