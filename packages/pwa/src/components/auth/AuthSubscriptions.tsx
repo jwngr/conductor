@@ -6,7 +6,7 @@ import {logger} from '@shared/services/logger.shared';
 
 import {prefixError} from '@shared/lib/errorUtils.shared';
 
-import {parseEmailAddress} from '@shared/parsers/accounts.parser';
+import {parseEmailAddress} from '@shared/parsers/emails.parser';
 
 import {useAuthStore} from '@sharedClient/stores/AuthStore';
 
