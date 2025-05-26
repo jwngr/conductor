@@ -24,7 +24,6 @@ import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/us
 import type {WipeoutService} from '@sharedServer/services/wipeout.server';
 
 import {FIREBASE_FUNCTIONS_REGION} from '@src/lib/env';
-import {handleFeedUnsubscribe} from '@src/lib/feedUnsubscribe';
 import {initServices} from '@src/lib/initServices';
 import {validateUrlParam, verifyAuth} from '@src/lib/middleware';
 
@@ -33,6 +32,7 @@ import {
   INTERVAL_FEED_EMISSION_INTERVAL_MINUTES,
 } from '@src/reqHandlers/handleEmitIntervalFeeds';
 import {handleFeedItemImport} from '@src/reqHandlers/handleFeedItemImport';
+import {handleFeedUnsubscribe} from '@src/reqHandlers/handleFeedUnsubscribe';
 import {handleSubscribeToRssFeed} from '@src/reqHandlers/handleSubscribeToRssFeed';
 import {handleSuperfeedrWebhookHelper} from '@src/reqHandlers/handleSuperfeedrWebhook';
 import {handleWipeoutAccount} from '@src/reqHandlers/handleWipeoutAccount';
