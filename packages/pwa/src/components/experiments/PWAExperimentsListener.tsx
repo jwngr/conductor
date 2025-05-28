@@ -14,7 +14,7 @@ import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
  * Updates the experiment store every time the logged-in account's experiments state
  * changes, or the logged-in account itself changes.
  */
-export const ExperimentsServiceSubscription: React.FC = () => {
+export const PWAExperimentsListener: React.FC = () => {
   const {setExperimentStates} = useExperimentsStore();
   const loggedInAccount = useLoggedInAccount();
   const accountExperimentsState = useAccountExperimentsState(loggedInAccount.accountId);

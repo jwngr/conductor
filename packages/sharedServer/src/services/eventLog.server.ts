@@ -11,7 +11,7 @@ import {makeSuccessResult} from '@shared/lib/results.shared';
 import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import type {Environment} from '@shared/types/environment.types';
+import {Environment} from '@shared/types/environment.types';
 import {EventType} from '@shared/types/eventLog.types';
 import type {EventId, EventLogItem} from '@shared/types/eventLog.types';
 import type {FeedItemId} from '@shared/types/feedItems.types';
