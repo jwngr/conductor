@@ -1,8 +1,9 @@
-import {useEffect, useMemo, useState} from 'react';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 
 import {logger} from '@shared/services/logger.shared';
 
 import {ACCOUNTS_EXPERIMENTS_DB_COLLECTION} from '@shared/lib/constants.shared';
+import {prefixError} from '@shared/lib/errorUtils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {
@@ -48,22 +49,28 @@ export function useAccountExperimentsCollectionService(): ClientAccountExperimen
 
 export function useAccountExperimentsState(accountId: AccountId): AccountExperimentsState {
   const [state, setState] = useState<AccountExperimentsState>({
+    accountId,
     accountVisibility: DEFAULT_ACCOUNT_EXPERIMENT_VISIBILITY,
     experimentOverrides: {},
   });
   const accountExperimentsCollectionService = useAccountExperimentsCollectionService();
 
-  useEffect(() => {
-    async function go(): Promise<void> {
-      // TODO: Switch to watchDoc.
-      const experimentsResult = await accountExperimentsCollectionService.fetchById(accountId);
-      if (!experimentsResult.success) {
-        const message = 'Failed to fetch account experiments state. Using default experiments.';
+  const resetState = useCallback(() => {
+    setState({
+      accountId,
+      accountVisibility: DEFAULT_ACCOUNT_EXPERIMENT_VISIBILITY,
+      experimentOverrides: {},
+    });
+  }, [accountId]);
+
+  const handleOnData = useCallback(
+    (accountExperimentsState: AccountExperimentsState | null): void => {
+      if (!accountExperimentsState) {
+        const message = 'Failed to fetch account experiments state. Resetting to default.';
         logger.error(new Error(message));
+        resetState();
         return;
       }
-
-      const accountExperimentsState = experimentsResult.value;
 
       let accountVisibility: ExperimentVisibility = DEFAULT_ACCOUNT_EXPERIMENT_VISIBILITY;
       if (accountExperimentsState?.accountVisibility) {
@@ -75,11 +82,30 @@ export function useAccountExperimentsState(accountId: AccountId): AccountExperim
         experimentOverrides = accountExperimentsState.experimentOverrides;
       }
 
-      setState({accountVisibility, experimentOverrides});
-    }
+      setState({accountId, accountVisibility, experimentOverrides});
+    },
+    [accountId, resetState]
+  );
 
-    void go();
-  }, [accountId, accountExperimentsCollectionService]);
+  const handleError = useCallback(
+    (error: Error): void => {
+      const message = 'Failed to fetch account experiments state. Using default experiments.';
+      const betterError = prefixError(error, message);
+      logger.error(betterError);
+      resetState();
+    },
+    [resetState]
+  );
+
+  useEffect(() => {
+    const unsubscribe = accountExperimentsCollectionService.watchDoc(
+      accountId,
+      handleOnData,
+      handleError
+    );
+
+    return () => unsubscribe();
+  }, [accountExperimentsCollectionService, handleOnData, handleError, accountId]);
 
   return state;
 }

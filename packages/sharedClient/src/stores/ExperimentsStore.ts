@@ -14,7 +14,7 @@ interface ExperimentsStoreState {
   readonly getExperimentState: Func<ExperimentId, ExperimentState | undefined>;
 }
 
-export const useExperimentsStore = create<ExperimentsStoreState>((set) => ({
+export const useExperimentsStore = create<ExperimentsStoreState>((set, get) => ({
   // Initial state.
   experimentStates: [],
 
@@ -23,7 +23,6 @@ export const useExperimentsStore = create<ExperimentsStoreState>((set) => ({
 
   // Getters.
   getExperimentState: (experimentId): ExperimentState | undefined => {
-    const experimentStates = useExperimentsStore.getState().experimentStates;
-    return experimentStates.find((state) => state.definition.experimentId === experimentId);
+    return get().experimentStates.find((state) => state.definition.experimentId === experimentId);
   },
 }));

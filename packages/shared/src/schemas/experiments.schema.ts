@@ -2,6 +2,7 @@ import {z} from 'zod';
 
 import {ExperimentId, ExperimentType, ExperimentVisibility} from '@shared/types/experiments.types';
 
+import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 import {EnvironmentSchema} from '@shared/schemas/environments.schema';
 
 export const ExperimentIdSchema = z.nativeEnum(ExperimentId);
@@ -72,6 +73,7 @@ const ExperimentOverrideFromStorageSchema = z.union([
 ]);
 
 export const AccountExperimentsStateFromStorageSchema = z.object({
+  accountId: AccountIdSchema,
   accountVisibility: ExperimentVisibilitySchema,
   experimentOverrides: z.record(ExperimentIdSchema, ExperimentOverrideFromStorageSchema),
 });

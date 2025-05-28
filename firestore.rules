@@ -99,6 +99,21 @@ service cloud.firestore {
       request.resource.data.lastUpdatedTime is timestamp;
     }
 
+    function isValidAccountExperimentsDoc() {
+      return request.resource.data.keys().hasAll([
+        'accountId',
+        'accountVisibility',
+        'experimentOverrides',
+      ]) &&
+      request.resource.data.accountVisibility is string &&
+      request.resource.data.accountVisibility in ['PUBLIC', 'INTERNAL'] &&
+      request.resource.data.experimentOverrides is map &&
+      request.resource.data.experimentOverrides.keys().hasAll(['experimentId', 'experimentType', 'experimentValue']) &&
+      request.resource.data.experimentOverrides.experimentId is string &&
+      request.resource.data.experimentOverrides.experimentType is string &&
+      request.resource.data.experimentOverrides.experimentType in ['BOOLEAN', 'STRING'];
+    }
+
     /////////////
     //  Rules  //
     /////////////
@@ -114,10 +129,10 @@ service cloud.firestore {
     }
 
     match /accountExperiments/{accountId} {
-      allow read: if isOwner(accountId);
+      allow read: if isOwner(accountId) && isResourceOwner();
       // TODO: Validate the actual schema of the experiment data being written.
-      allow create: if isNewResourceOwner();
-      allow update: if isResourceOwner() && isNewResourceOwner();
+      allow create: if isNewResourceOwner() && isValidAccountExperimentsDoc();
+      allow update: if isResourceOwner() && isNewResourceOwner() && isValidAccountExperimentsDoc();
       
       // Only allow deletes via the admin SDK.
       allow delete: if false;

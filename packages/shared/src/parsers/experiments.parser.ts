@@ -1,9 +1,11 @@
 import {logger} from '@shared/services/logger.shared';
 
-import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseZodResult} from '@shared/lib/parser.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
+
+import {parseAccountId} from '@shared/parsers/accounts.parser';
 
 import type {
   AccountExperimentsState,
@@ -175,10 +177,23 @@ export function parseAccountExperimentsState(
     maybeAccountExperimentsState
   );
 
-  return prefixResultIfError(
-    parsedAccountExperimentsStateResult,
-    'Invalid account experiments state'
-  );
+  if (!parsedAccountExperimentsStateResult.success) {
+    const message = 'Invalid account experiments state';
+    return prefixErrorResult(parsedAccountExperimentsStateResult, message);
+  }
+
+  const parsedAccountExperimentsState = parsedAccountExperimentsStateResult.value;
+
+  const parsedAccountId = parseAccountId(parsedAccountExperimentsState.accountId);
+  if (!parsedAccountId.success) {
+    return prefixErrorResult(parsedAccountId, 'Invalid account ID');
+  }
+
+  return makeSuccessResult({
+    accountId: parsedAccountId.value,
+    accountVisibility: parsedAccountExperimentsState.accountVisibility,
+    experimentOverrides: parsedAccountExperimentsState.experimentOverrides,
+  });
 }
 
 /**
@@ -189,6 +204,7 @@ export function toStorageAccountExperimentsState(
   state: AccountExperimentsState
 ): AccountExperimentsStateFromStorage {
   return omitUndefined({
+    accountId: state.accountId,
     accountVisibility: state.accountVisibility,
     experimentOverrides: omitUndefined(state.experimentOverrides),
   });

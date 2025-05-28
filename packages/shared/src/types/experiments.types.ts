@@ -1,3 +1,4 @@
+import type {AccountId} from '@shared/types/accounts.types';
 import type {Environment} from '@shared/types/environment.types';
 
 export enum ExperimentId {
@@ -91,6 +92,7 @@ export type AccountExperimentOverrides = Partial<Record<ExperimentId, Experiment
  * Account-level experiment state.
  */
 export interface AccountExperimentsState {
+  readonly accountId: AccountId;
   /**
    * The visibility level of the account. Not set for public accounts.
    */
