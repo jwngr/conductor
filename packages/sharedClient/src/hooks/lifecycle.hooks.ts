@@ -44,13 +44,16 @@ export function useFirstMountEffect(callback: Task): void {
   const savedCallback = useRef(callback);
 
   if (savedCallback.current !== callback) {
-    logger.warn('Callback identity changed between renders. Consider memoizing it.');
+    const message =
+      `Callback identity changed between renders. The original callback will be used. ` +
+      `Memoize the callback provided to \`useFirstMountEffect\` to avoid this error.`;
+    logger.error(new Error(message));
   }
 
   useEffect(() => {
-    if (!hasRun.current) {
-      hasRun.current = true;
-      savedCallback.current();
-    }
+    if (hasRun.current) return;
+
+    hasRun.current = true;
+    savedCallback.current();
   }, []);
 }
