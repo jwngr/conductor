@@ -1,11 +1,15 @@
+import {ALL_EXPERIMENT_DEFINITIONS} from '@shared/lib/experimentDefinitions.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import type {Environment} from '@shared/types/environment.types';
 import type {
+  AccountExperimentOverrides,
   BooleanExperimentDefinition,
-  EnumExperimentDefinition,
+  BooleanExperimentState,
   ExperimentDefinition,
+  ExperimentState,
   StringExperimentDefinition,
+  StringExperimentState,
 } from '@shared/types/experiments.types';
 import {ExperimentType, ExperimentVisibility} from '@shared/types/experiments.types';
 
@@ -37,18 +41,23 @@ export function makeStringExperimentDefinition(
   };
 }
 
-export function makeEnumExperimentDefinition(
-  args: Omit<EnumExperimentDefinition, 'experimentType'>
-): EnumExperimentDefinition {
+export function makeBooleanExperimentState(args: {
+  readonly definition: BooleanExperimentDefinition;
+  readonly value: boolean | undefined;
+}): BooleanExperimentState {
   return {
-    experimentId: args.experimentId,
-    experimentType: ExperimentType.Enum,
-    environments: args.environments,
-    title: args.title,
-    description: args.description,
-    visibility: args.visibility,
-    defaultValue: args.defaultValue,
-    options: args.options,
+    definition: args.definition,
+    value: typeof args.value === 'undefined' ? args.definition.defaultValue : args.value,
+  };
+}
+
+export function makeStringExperimentState(args: {
+  readonly definition: StringExperimentDefinition;
+  readonly value: string | undefined;
+}): StringExperimentState {
+  return {
+    definition: args.definition,
+    value: typeof args.value === 'undefined' ? args.definition.defaultValue : args.value,
   };
 }
 
@@ -68,22 +77,22 @@ export function isExperimentEnabledForEnvironment(args: {
  */
 export function isExperimentVisible(args: {
   readonly experiment: ExperimentDefinition;
-  readonly viewerAccess: ExperimentVisibility;
+  readonly accountVisibility: ExperimentVisibility;
 }): boolean {
-  const {experiment, viewerAccess} = args;
+  const {experiment, accountVisibility} = args;
   switch (experiment.visibility) {
     case ExperimentVisibility.Public:
       // Public experiments are always visible.
       return true;
     case ExperimentVisibility.Internal: {
       // Internal experiments are visible if the account can view internal experiments.
-      switch (viewerAccess) {
+      switch (accountVisibility) {
         case ExperimentVisibility.Public:
           return false;
         case ExperimentVisibility.Internal:
           return true;
         default:
-          assertNever(viewerAccess);
+          assertNever(accountVisibility);
       }
       break;
     }
@@ -94,13 +103,48 @@ export function isExperimentVisible(args: {
 
 export function filterExperimentsByVisibilityAndEnvironment(args: {
   readonly experiments: readonly ExperimentDefinition[];
-  readonly viewerAccess: ExperimentVisibility;
+  readonly accountVisibility: ExperimentVisibility;
   readonly environment: Environment;
 }): readonly ExperimentDefinition[] {
-  const {experiments, viewerAccess, environment} = args;
+  const {experiments, accountVisibility, environment} = args;
   return experiments.filter(
     (experiment) =>
-      isExperimentVisible({experiment, viewerAccess}) &&
+      isExperimentVisible({experiment, accountVisibility}) &&
       isExperimentEnabledForEnvironment({experiment, environment})
   );
+}
+
+export function getExperimentStatesForAccount(args: {
+  readonly environment: Environment;
+  readonly accountVisibility: ExperimentVisibility;
+  readonly accountOverrides: AccountExperimentOverrides;
+}): readonly ExperimentState[] {
+  const {accountVisibility, environment, accountOverrides: experimentOverrides} = args;
+
+  // Filter by visibility and environment.
+  const filteredExperimentDefinitions = ALL_EXPERIMENT_DEFINITIONS.filter(
+    (experiment) =>
+      isExperimentVisible({experiment, accountVisibility}) &&
+      isExperimentEnabledForEnvironment({experiment, environment})
+  );
+
+  // Merge user overrides into default values.
+  return filteredExperimentDefinitions.map((definition) => {
+    const override = experimentOverrides[definition.experimentId];
+
+    switch (definition.experimentType) {
+      case ExperimentType.Boolean:
+        return makeBooleanExperimentState({
+          definition,
+          value: typeof override?.value === 'boolean' ? override.value : undefined,
+        });
+      case ExperimentType.String:
+        return makeStringExperimentState({
+          definition,
+          value: typeof override?.value === 'string' ? override.value : undefined,
+        });
+      default:
+        assertNever(definition);
+    }
+  });
 }

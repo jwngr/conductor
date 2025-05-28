@@ -10,7 +10,6 @@ export enum ExperimentId {
 export enum ExperimentType {
   Boolean = 'BOOLEAN',
   String = 'STRING',
-  Enum = 'ENUM',
 }
 
 export enum ClientPlatform {
@@ -48,42 +47,65 @@ export interface StringExperimentDefinition extends BaseExperimentDefinition {
   readonly defaultValue: string;
 }
 
-interface EnumExperimentOption {
-  readonly value: string;
-  readonly text: string;
-}
-
-export interface EnumExperimentDefinition extends BaseExperimentDefinition {
-  readonly experimentType: ExperimentType.Enum;
-  /** Default `EnumExperimentOption.value` from `options`. */
-  readonly defaultValue: string;
-  readonly options: readonly EnumExperimentOption[];
-}
-
-export type ExperimentDefinition =
-  | BooleanExperimentDefinition
-  | StringExperimentDefinition
-  | EnumExperimentDefinition;
+export type ExperimentDefinition = BooleanExperimentDefinition | StringExperimentDefinition;
 
 interface BaseExperimentState {
-  readonly experiment: ExperimentDefinition;
-  readonly isEnabled: boolean;
+  readonly definition: ExperimentDefinition;
 }
 
 export interface BooleanExperimentState extends BaseExperimentState {
-  readonly experiment: BooleanExperimentDefinition;
+  readonly definition: BooleanExperimentDefinition;
   readonly value: boolean;
 }
 
 export interface StringExperimentState extends BaseExperimentState {
-  readonly experiment: StringExperimentDefinition;
+  readonly definition: StringExperimentDefinition;
   readonly value: string;
 }
 
-export interface EnumExperimentState extends BaseExperimentState {
-  readonly experiment: EnumExperimentDefinition;
-  /** `value` of the selected `EnumExperimentOption`. */
+export type ExperimentState = BooleanExperimentState | StringExperimentState;
+
+interface BaseExperimentOverride {
+  readonly experimentId: ExperimentId;
+  readonly experimentType: ExperimentType;
+}
+
+interface BooleanExperimentOverride extends BaseExperimentOverride {
+  readonly experimentType: ExperimentType.Boolean;
+  readonly value: boolean;
+}
+
+interface StringExperimentOverride extends BaseExperimentOverride {
+  readonly experimentType: ExperimentType.String;
   readonly value: string;
 }
 
-export type ExperimentState = BooleanExperimentState | StringExperimentState | EnumExperimentState;
+export type ExperimentOverride = BooleanExperimentOverride | StringExperimentOverride;
+
+/**
+ * Account-level experiment overrides. A map from experiment ID to override state.
+ */
+export type AccountExperimentOverrides = Partial<Record<ExperimentId, ExperimentOverride>>;
+
+/**
+ * Account-level experiment state.
+ */
+export interface AccountExperimentsState {
+  /**
+   * The visibility level of the account. Not set for public accounts.
+   */
+  readonly accountVisibility: ExperimentVisibility;
+
+  /**
+   * Account-specific overrides from the default experiment values.
+   *
+   * Warnings:
+   * 1. An experiment value here may be identical to the default value. When switching back to the
+   *    default, the value is not deleted.
+   * 2. The overrides may include experimernts which no longer exist. The source of truth is kept in
+   *    code, which will ignore overrides for experiments which it does not know about.
+   * 3. This document may not exist for a given account. It is only created when an experiment is
+   *    first changed.
+   */
+  readonly experimentOverrides: AccountExperimentOverrides;
+}

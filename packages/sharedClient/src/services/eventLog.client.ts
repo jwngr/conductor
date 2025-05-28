@@ -18,7 +18,7 @@ import {
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {AsyncState} from '@shared/types/asyncState.types';
-import type {Environment} from '@shared/types/environment.types';
+import {Environment} from '@shared/types/environment.types';
 import {EventType} from '@shared/types/eventLog.types';
 import type {EventId, EventLogItem} from '@shared/types/eventLog.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';

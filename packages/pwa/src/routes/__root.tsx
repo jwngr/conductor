@@ -14,6 +14,7 @@ import {DevToolbar} from '@src/components/devToolbar/DevToolbar';
 import {RegisterDebugDevToolbarSection} from '@src/components/devToolbar/RegisterDebugDevToolbarSection';
 import {RegisterFeedItemImporterDevToolbarSection} from '@src/components/devToolbar/RegisterFeedItemImporterDevTool';
 import {ErrorBoundary} from '@src/components/errors/ErrorBoundary';
+import {ExperimentsServiceSubscription} from '@src/components/experiments/ExperimentsServiceSubscription';
 import {ThemeProvider} from '@src/components/ThemeProvider';
 
 import {DefaultErrorScreen} from '@src/screens/ErrorScreen';
@@ -38,7 +39,12 @@ const LoggedInGlobalSubscriptions: React.FC = () => {
 
   if (isLoading || !loggedInAccount) return null;
 
-  return <RegisterFeedItemImporterDevToolbarSection />;
+  return (
+    <>
+      <RegisterFeedItemImporterDevToolbarSection />
+      <ExperimentsServiceSubscription />
+    </>
+  );
 };
 
 const RootComponent: React.FC = () => {

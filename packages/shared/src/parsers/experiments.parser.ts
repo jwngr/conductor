@@ -1,13 +1,13 @@
 import {logger} from '@shared/services/logger.shared';
 
-import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
+import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {parseZodResult} from '@shared/lib/parser.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {omitUndefined} from '@shared/lib/utils.shared';
 
 import type {
+  AccountExperimentsState,
   BooleanExperimentDefinition,
-  EnumExperimentDefinition,
   ExperimentDefinition,
   StringExperimentDefinition,
 } from '@shared/types/experiments.types';
@@ -15,15 +15,15 @@ import {ExperimentType} from '@shared/types/experiments.types';
 import type {Result} from '@shared/types/results.types';
 
 import {
+  AccountExperimentsStateFromStorageSchema,
   BaseExperimentDefinitionFromStorageSchema,
   BooleanExperimentDefinitionFromStorageSchema,
-  EnumExperimentDefinitionFromStorageSchema,
   StringExperimentDefinitionFromStorageSchema,
 } from '@shared/schemas/experiments.schema';
 import type {
+  AccountExperimentsStateFromStorage,
   BaseExperimentDefinitionFromStorage,
   BooleanExperimentDefinitionFromStorage,
-  EnumExperimentDefinitionFromStorage,
   ExperimentDefinitionFromStorage,
   StringExperimentDefinitionFromStorage,
 } from '@shared/schemas/experiments.schema';
@@ -40,16 +40,14 @@ export function parseExperimentDefinition(
     maybeExperimentDefinition
   );
   if (!parsedExperimentResult.success) {
-    return prefixErrorResult(parsedExperimentResult, 'Invalid experiment');
+    return prefixErrorResult(parsedExperimentResult, 'Invalid experiment definition');
   }
 
   switch (parsedExperimentResult.value.experimentType) {
     case ExperimentType.Boolean:
-      return parseBooleanExperiment({maybeExperimentDefinition});
+      return parseBooleanExperimentDefinition({maybeExperimentDefinition});
     case ExperimentType.String:
-      return parseStringExperiment({maybeExperimentDefinition});
-    case ExperimentType.Enum:
-      return parseEnumExperiment({maybeExperimentDefinition});
+      return parseStringExperimentDefinition({maybeExperimentDefinition});
     default:
       return makeErrorResult(
         new Error(`Unknown experiment type: ${parsedExperimentResult.value.experimentType}`)
@@ -57,7 +55,7 @@ export function parseExperimentDefinition(
   }
 }
 
-export function parseBooleanExperiment(args: {
+function parseBooleanExperimentDefinition(args: {
   readonly maybeExperimentDefinition: unknown;
 }): Result<BooleanExperimentDefinition> {
   const {maybeExperimentDefinition} = args;
@@ -67,7 +65,7 @@ export function parseBooleanExperiment(args: {
     maybeExperimentDefinition
   );
   if (!parsedExperimentResult.success) {
-    return prefixErrorResult(parsedExperimentResult, 'Invalid boolean experiment');
+    return prefixErrorResult(parsedExperimentResult, 'Invalid boolean experiment definition');
   }
   const storageBooleanExperiment = parsedExperimentResult.value;
 
@@ -84,7 +82,7 @@ export function parseBooleanExperiment(args: {
   );
 }
 
-export function parseStringExperiment(args: {
+function parseStringExperimentDefinition(args: {
   readonly maybeExperimentDefinition: unknown;
 }): Result<StringExperimentDefinition> {
   const {maybeExperimentDefinition} = args;
@@ -94,7 +92,7 @@ export function parseStringExperiment(args: {
     maybeExperimentDefinition
   );
   if (!parsedExperimentResult.success) {
-    return prefixErrorResult(parsedExperimentResult, 'Invalid string experiment');
+    return prefixErrorResult(parsedExperimentResult, 'Invalid string experiment definition');
   }
   const storageStringExperiment = parsedExperimentResult.value;
 
@@ -111,51 +109,21 @@ export function parseStringExperiment(args: {
   );
 }
 
-export function parseEnumExperiment(args: {
-  readonly maybeExperimentDefinition: unknown;
-}): Result<EnumExperimentDefinition> {
-  const {maybeExperimentDefinition} = args;
-
-  const parsedExperimentResult = parseZodResult<EnumExperimentDefinitionFromStorage>(
-    EnumExperimentDefinitionFromStorageSchema,
-    maybeExperimentDefinition
-  );
-  if (!parsedExperimentResult.success) {
-    return prefixErrorResult(parsedExperimentResult, 'Invalid enum experiment');
-  }
-  const storageEnumExperiment = parsedExperimentResult.value;
-
-  return makeSuccessResult(
-    omitUndefined({
-      experimentType: ExperimentType.Enum,
-      defaultValue: storageEnumExperiment.defaultValue,
-      options: storageEnumExperiment.options,
-      experimentId: storageEnumExperiment.experimentId,
-      environments: storageEnumExperiment.environments,
-      visibility: storageEnumExperiment.visibility,
-      title: storageEnumExperiment.title,
-      description: storageEnumExperiment.description,
-    })
-  );
-}
-
 /**
  * Converts an {@link ExperimentDefinition} to an {@link ExperimentDefinitionFromStorage} object
  * that can be persisted to Firestore.
  */
-export function toStorageExperiment(
+export function toStorageExperimentDefinition(
   experiment: ExperimentDefinition
 ): ExperimentDefinitionFromStorage {
   switch (experiment.experimentType) {
     case ExperimentType.Boolean:
-      return toStorageBooleanExperiment(experiment);
+      return toStorageBooleanExperimentDefinition(experiment);
     case ExperimentType.String:
-      return toStorageStringExperiment(experiment);
-    case ExperimentType.Enum:
-      return toStorageEnumExperiment(experiment);
+      return toStorageStringExperimentDefinition(experiment);
     default:
       logger.error(new Error('Unknown experiment type'), {experiment});
-      return toStorageBooleanExperiment(experiment);
+      return toStorageBooleanExperimentDefinition(experiment);
   }
 }
 
@@ -163,7 +131,7 @@ export function toStorageExperiment(
  * Converts a {@link BooleanExperimentDefinition} to a {@link BooleanExperimentDefinitionFromStorage} object that can be
  * persisted to Firestore.
  */
-function toStorageBooleanExperiment(
+function toStorageBooleanExperimentDefinition(
   experiment: BooleanExperimentDefinition
 ): BooleanExperimentDefinitionFromStorage {
   return omitUndefined({
@@ -181,7 +149,7 @@ function toStorageBooleanExperiment(
  * Converts an {@link StringExperimentDefinition} to a {@link StringExperimentDefinitionFromStorage} object that can be
  * persisted to Firestore.
  */
-function toStorageStringExperiment(
+function toStorageStringExperimentDefinition(
   experiment: StringExperimentDefinition
 ): StringExperimentDefinitionFromStorage {
   return omitUndefined({
@@ -196,20 +164,32 @@ function toStorageStringExperiment(
 }
 
 /**
- * Converts an {@link EnumExperimentDefinition} to a {@link EnumExperimentDefinitionFromStorage} object that can be
- * persisted to Firestore.
+ * Parses an {@link AccountExperimentsState} from an unknown value. Returns an `ErrorResult` if the
+ * value is not valid.
  */
-function toStorageEnumExperiment(
-  experiment: EnumExperimentDefinition
-): EnumExperimentDefinitionFromStorage {
+export function parseAccountExperimentsState(
+  maybeAccountExperimentsState: unknown
+): Result<AccountExperimentsState> {
+  const parsedAccountExperimentsStateResult = parseZodResult<AccountExperimentsStateFromStorage>(
+    AccountExperimentsStateFromStorageSchema,
+    maybeAccountExperimentsState
+  );
+
+  return prefixResultIfError(
+    parsedAccountExperimentsStateResult,
+    'Invalid account experiments state'
+  );
+}
+
+/**
+ * Converts an {@link AccountExperimentsState} to an {@link AccountExperimentsStateFromStorage}
+ * object that can be persisted to Firestore.
+ */
+export function toStorageAccountExperimentsState(
+  state: AccountExperimentsState
+): AccountExperimentsStateFromStorage {
   return omitUndefined({
-    experimentId: experiment.experimentId,
-    experimentType: ExperimentType.Enum,
-    defaultValue: experiment.defaultValue,
-    options: [...experiment.options],
-    environments: [...experiment.environments],
-    visibility: experiment.visibility,
-    title: experiment.title,
-    description: experiment.description,
+    accountVisibility: state.accountVisibility,
+    experimentOverrides: omitUndefined(state.experimentOverrides),
   });
 }

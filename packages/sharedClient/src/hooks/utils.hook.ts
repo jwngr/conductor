@@ -2,6 +2,12 @@ import {useEffect, useRef, useState} from 'react';
 
 import type {Task} from '@shared/types/utils.types';
 
+export function useOnFirstMount(callback: Task): void {
+  useEffect(() => {
+    callback();
+  }, [callback]);
+}
+
 export function useIsMounted(): React.RefObject<boolean> {
   const isMounted = useRef(false);
 

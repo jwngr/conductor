@@ -1,102 +1,85 @@
-// export class ClientExperimentsService extends ExperimentsService {
-//   constructor(args: {readonly visibilityAccess: ExperimentVisibility}) {
-//     super({
-//       environment: Environment.PWA,
-//       visibilityAccess: args.visibilityAccess,
-//     });
-//   }
-// }
+import {useEffect, useMemo, useState} from 'react';
 
-// // export const pwaExperimentsService = new ExperimentsService({
-// //   environment: Environment.PWA,
-// //   visibilityAccess: ExperimentVisibility.Internal,
-// // });
+import {logger} from '@shared/services/logger.shared';
 
-// export const pwaExperimentsService = new ClientExperimentsService({
-//   visibilityAccess: ExperimentVisibility.Internal,
-// });
+import {ACCOUNTS_EXPERIMENTS_DB_COLLECTION} from '@shared/lib/constants.shared';
 
-// export function useExperimentsService(args: {
-//   readonly environment: ClientEnvironment;
-//   readonly visibilityAccess: ExperimentVisibility;
-// }): ClientExperimentsService {
-//   const {visibilityAccess} = args;
-
-//   const loggedInAccount = useLoggedInAccount();
-
-//   const experimentsService = useMemo(() => {
-//     return new ExperimentsService({
-//       environment,
-//       accountId: loggedInAccount.accountId,
-//     });
-//   }, [environment, loggedInAccount.accountId]);
-
-//   return experimentsService;
-// }
-
-import {ALL_EXPERIMENT_DEFINITIONS} from '@shared/lib/experimentDefinitions.shared';
+import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {
-  isExperimentEnabledForEnvironment,
-  isExperimentVisible,
-} from '@shared/lib/experiments.shared';
+  parseAccountExperimentsState,
+  toStorageAccountExperimentsState,
+} from '@shared/parsers/experiments.parser';
 
-import type {Environment} from '@shared/types/environment.types';
+import type {AccountId} from '@shared/types/accounts.types';
 import type {
-  ExperimentDefinition,
-  ExperimentId,
-  ExperimentVisibility,
+  AccountExperimentOverrides,
+  AccountExperimentsState,
 } from '@shared/types/experiments.types';
+import {ExperimentVisibility} from '@shared/types/experiments.types';
 
-import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+import {
+  ClientFirestoreCollectionService,
+  makeFirestoreDataConverter,
+} from '@sharedClient/services/firestore.client';
 
-type ClientAccountExperimentsCollectionService = ClientFirestoreCollectionService<
-  ExperimentId,
-  ExperimentDefinition
+const DEFAULT_ACCOUNT_EXPERIMENT_VISIBILITY = ExperimentVisibility.Public;
+
+const accountExperimentsFirestoreConverter = makeFirestoreDataConverter(
+  toStorageAccountExperimentsState,
+  parseAccountExperimentsState
+);
+
+export type ClientAccountExperimentsCollectionService = ClientFirestoreCollectionService<
+  AccountId,
+  AccountExperimentsState
 >;
 
-export class ClientExperimentsService {
-  private readonly environment: Environment;
-  private readonly visibilityAccess: ExperimentVisibility;
-  private readonly experiments: readonly ExperimentDefinition[];
-  private readonly accountExperimentsCollectionService: ClientAccountExperimentsCollectionService;
+export function useAccountExperimentsCollectionService(): ClientAccountExperimentsCollectionService {
+  const accountExperimentsCollectionService = useMemo(() => {
+    return new ClientFirestoreCollectionService({
+      collectionPath: ACCOUNTS_EXPERIMENTS_DB_COLLECTION,
+      converter: accountExperimentsFirestoreConverter,
+      parseId: parseAccountId,
+    });
+  }, []);
 
-  constructor(args: {
-    readonly environment: Environment;
-    readonly accountId: AccountId;
-    readonly visibilityAccess: ExperimentVisibility;
-  }) {
-    const {environment, accountId, visibilityAccess} = args;
+  return accountExperimentsCollectionService;
+}
 
-    this.environment = environment;
-    this.accountId = accountId;
-    this.visibilityAccess = visibilityAccess;
+export function useAccountExperimentsState(accountId: AccountId): AccountExperimentsState {
+  const [state, setState] = useState<AccountExperimentsState>({
+    accountVisibility: DEFAULT_ACCOUNT_EXPERIMENT_VISIBILITY,
+    experimentOverrides: {},
+  });
+  const accountExperimentsCollectionService = useAccountExperimentsCollectionService();
 
-    this.experiments = ALL_EXPERIMENT_DEFINITIONS.filter(
-      (experiment) =>
-        isExperimentEnabledForEnvironment({experiment, environment}) &&
-        isExperimentVisible({experiment, viewerAccess: this.visibilityAccess})
-    );
-  }
+  useEffect(() => {
+    async function go(): Promise<void> {
+      // TODO: Switch to watchDoc.
+      const experimentsResult = await accountExperimentsCollectionService.fetchById(accountId);
+      if (!experimentsResult.success) {
+        const message = 'Failed to fetch account experiments state. Using default experiments.';
+        logger.error(new Error(message));
+        return;
+      }
 
-  public getExperiment(id: ExperimentId): ExperimentDefinition | undefined {
-    return this.experiments.find((experiment) => experiment.id === id);
-  }
+      const accountExperimentsState = experimentsResult.value;
 
-  public getExperiments(): readonly ExperimentDefinition[] {
-    return this.experiments;
-  }
+      let accountVisibility: ExperimentVisibility = DEFAULT_ACCOUNT_EXPERIMENT_VISIBILITY;
+      if (accountExperimentsState?.accountVisibility) {
+        accountVisibility = accountExperimentsState.accountVisibility;
+      }
 
-  public getActiveExperiments(): readonly ExperimentDefinition[] {
-    return this.experiments.filter((experiment) =>
-      isExperimentEnabledForEnvironment({experiment, environment: this.environment})
-    );
-  }
+      let experimentOverrides: AccountExperimentOverrides = {};
+      if (accountExperimentsState?.experimentOverrides) {
+        experimentOverrides = accountExperimentsState.experimentOverrides;
+      }
 
-  public isExperimentEnabled(id: ExperimentId): boolean {
-    const experiment = this.getExperiment(id);
-    return (
-      experiment !== undefined &&
-      isExperimentEnabledForEnvironment({experiment, environment: this.environment})
-    );
-  }
+      setState({accountVisibility, experimentOverrides});
+    }
+
+    void go();
+  }, [accountId, accountExperimentsCollectionService]);
+
+  return state;
 }
