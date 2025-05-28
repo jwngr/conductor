@@ -113,6 +113,16 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    match /accountExperiments/{accountId} {
+      allow read: if isOwner(accountId);
+      // TODO: Validate the actual schema of the experiment data being written.
+      allow create: if isNewResourceOwner();
+      allow update: if isResourceOwner() && isNewResourceOwner();
+      
+      // Only allow deletes via the admin SDK.
+      allow delete: if false;
+    }
+
     match /feedItems/{feedItemId} {
       // Allow accounts to manage their own feed items.
       // TODO: Some fields should not be user-editable.
