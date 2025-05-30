@@ -1,6 +1,6 @@
 import type {AccountId} from '@shared/types/accounts.types';
 import type {Environment} from '@shared/types/environment.types';
-import {BaseStoreItem} from '@shared/types/utils.types';
+import type {BaseStoreItem} from '@shared/types/utils.types';
 
 export enum ExperimentId {
   Internal1 = 'INTERNAL_1',
