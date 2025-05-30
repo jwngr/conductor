@@ -1,5 +1,6 @@
 import type {AccountId} from '@shared/types/accounts.types';
 import type {Environment} from '@shared/types/environment.types';
+import {BaseStoreItem} from '@shared/types/utils.types';
 
 export enum ExperimentId {
   Internal1 = 'INTERNAL_1',
@@ -50,21 +51,21 @@ export interface StringExperimentDefinition extends BaseExperimentDefinition {
 
 export type ExperimentDefinition = BooleanExperimentDefinition | StringExperimentDefinition;
 
-interface BaseExperimentState {
+interface BaseAccountExperiment {
   readonly definition: ExperimentDefinition;
 }
 
-export interface BooleanExperimentState extends BaseExperimentState {
+export interface BooleanAccountExperiment extends BaseAccountExperiment {
   readonly definition: BooleanExperimentDefinition;
   readonly value: boolean;
 }
 
-export interface StringExperimentState extends BaseExperimentState {
+export interface StringAccountExperiment extends BaseAccountExperiment {
   readonly definition: StringExperimentDefinition;
   readonly value: string;
 }
 
-export type ExperimentState = BooleanExperimentState | StringExperimentState;
+export type AccountExperiment = BooleanAccountExperiment | StringAccountExperiment;
 
 interface BaseExperimentOverride {
   readonly experimentId: ExperimentId;
@@ -91,7 +92,7 @@ export type AccountExperimentOverrides = Partial<Record<ExperimentId, Experiment
 /**
  * Account-level experiment state.
  */
-export interface AccountExperimentsState {
+export interface AccountExperimentsState extends BaseStoreItem {
   readonly accountId: AccountId;
   /**
    * The visibility level of the account. Not set for public accounts.

@@ -1,28 +1,28 @@
 import {create} from 'zustand';
 
-import type {ExperimentId, ExperimentState} from '@shared/types/experiments.types';
+import type {AccountExperiment, ExperimentId} from '@shared/types/experiments.types';
 import type {Consumer, Func} from '@shared/types/utils.types';
 
 interface ExperimentsStoreState {
   // State.
-  readonly experimentStates: readonly ExperimentState[];
+  readonly experiments: readonly AccountExperiment[];
 
   // Actions.
-  readonly setExperimentStates: Consumer<readonly ExperimentState[]>;
+  readonly setExperiments: Consumer<readonly AccountExperiment[]>;
 
   // Getters.
-  readonly getExperimentState: Func<ExperimentId, ExperimentState | undefined>;
+  readonly getExperimentState: Func<ExperimentId, AccountExperiment | undefined>;
 }
 
 export const useExperimentsStore = create<ExperimentsStoreState>((set, get) => ({
   // Initial state.
-  experimentStates: [],
+  experiments: [],
 
   // Actions.
-  setExperimentStates: (experimentStates) => set({experimentStates}),
+  setExperiments: (experimentStates) => set({experiments: experimentStates}),
 
   // Getters.
-  getExperimentState: (experimentId): ExperimentState | undefined => {
-    return get().experimentStates.find((state) => state.definition.experimentId === experimentId);
+  getExperimentState: (experimentId): AccountExperiment | undefined => {
+    return get().experiments.find((state) => state.definition.experimentId === experimentId);
   },
 }));

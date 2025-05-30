@@ -8,6 +8,7 @@ import type {
   QueryConstraint,
   QueryDocumentSnapshot,
   QuerySnapshot,
+  SetOptions,
   SnapshotOptions,
   WithFieldValue,
 } from 'firebase/firestore';
@@ -213,11 +214,35 @@ export class ClientFirestoreCollectionService<
   /**
    * Sets a Firestore document. The entire document is replaced.
    */
-  public async setDoc(docId: ItemId, data: WithFieldValue<ItemData>): AsyncResult<void> {
+  public async setDoc(
+    docId: ItemId,
+    data: WithFieldValue<ItemData>,
+    options: SetOptions = {}
+  ): AsyncResult<void> {
     const setResult = await asyncTry(async () =>
-      setDoc(this.getDocRef(docId), omitUndefined(data))
+      setDoc(this.getDocRef(docId), omitUndefined(data), options)
     );
     return prefixResultIfError(setResult, 'Error setting Firestore document');
+  }
+
+  /**
+   * Updates a Firestore document using setDoc() with the `merge` option. This is useful for
+   * updating a doc that may or may not exist without having to first fetch it.
+   */
+  public async setDocWithMerge(
+    docId: ItemId,
+    data: Partial<WithFieldValue<ItemData>>
+  ): AsyncResult<void> {
+    const setResult = await asyncTry(async () =>
+      setDoc(
+        this.getDocRef(docId),
+        // The Firestore data converter does not allow for partial writes via `setDoc` at the type
+        // level. However, the entire point of `merge: true` is to allow for partial updates.
+        omitUndefined(data) as WithFieldValue<ItemData>,
+        {merge: true}
+      )
+    );
+    return prefixResultIfError(setResult, 'Error setting Firestore document with merge');
   }
 
   /**

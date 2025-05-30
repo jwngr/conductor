@@ -1,32 +1,32 @@
 import {useEffect} from 'react';
 
-import {getExperimentStatesForAccount} from '@shared/lib/experiments.shared';
-
 import {Environment} from '@shared/types/environment.types';
 
 import {useExperimentsStore} from '@sharedClient/stores/ExperimentsStore';
 
-import {useAccountExperimentsState} from '@sharedClient/services/experiments.client';
+import {
+  ClientExperimentsService,
+  useAccountExperimentsCollectionService,
+} from '@sharedClient/services/experiments.client';
 
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
-/**
- * Updates the experiment store every time the logged-in account's experiments state
- * changes, or the logged-in account itself changes.
- */
 export const PWAExperimentsListener: React.FC = () => {
-  const {setExperimentStates} = useExperimentsStore();
+  const {setExperiments} = useExperimentsStore();
   const loggedInAccount = useLoggedInAccount();
-  const accountExperimentsState = useAccountExperimentsState(loggedInAccount.accountId);
+  const accountExperimentsCollectionService = useAccountExperimentsCollectionService();
 
   useEffect(() => {
-    const experiments = getExperimentStatesForAccount({
+    const pwaExperimentsService = new ClientExperimentsService({
       environment: Environment.PWA,
-      accountVisibility: accountExperimentsState.accountVisibility,
-      accountOverrides: accountExperimentsState.experimentOverrides,
+      accountId: loggedInAccount.accountId,
+      accountExperimentsCollectionService,
     });
-    setExperimentStates(experiments);
-  }, [setExperimentStates, accountExperimentsState]);
+
+    const unsubscribe = pwaExperimentsService.watchAccountExperiments(setExperiments);
+
+    return () => unsubscribe();
+  }, [setExperiments, accountExperimentsCollectionService, loggedInAccount.accountId]);
 
   return null;
 };

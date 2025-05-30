@@ -4,6 +4,7 @@ import {ExperimentId, ExperimentType, ExperimentVisibility} from '@shared/types/
 
 import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 import {EnvironmentSchema} from '@shared/schemas/environments.schema';
+import {FirestoreTimestampSchema} from '@shared/schemas/firebase.schema';
 
 export const ExperimentIdSchema = z.nativeEnum(ExperimentId);
 export const ExperimentTypeSchema = z.nativeEnum(ExperimentType);
@@ -76,6 +77,8 @@ export const AccountExperimentsStateFromStorageSchema = z.object({
   accountId: AccountIdSchema,
   accountVisibility: ExperimentVisibilitySchema,
   experimentOverrides: z.record(ExperimentIdSchema, ExperimentOverrideFromStorageSchema),
+  createdTime: FirestoreTimestampSchema,
+  lastUpdatedTime: FirestoreTimestampSchema,
 });
 
 export type AccountExperimentsStateFromStorage = z.infer<

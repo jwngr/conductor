@@ -3,7 +3,7 @@ export const EVENT_LOG_DB_COLLECTION = 'eventLog';
 export const FEED_ITEMS_DB_COLLECTION = 'feedItems';
 export const USER_FEED_SUBSCRIPTIONS_DB_COLLECTION = 'userFeedSubscriptions';
 export const ACCOUNTS_DB_COLLECTION = 'accounts';
-export const ACCOUNTS_EXPERIMENTS_DB_COLLECTION = 'accountExperiments';
+export const ACCOUNT_EXPERIMENTS_DB_COLLECTION = 'accountExperiments';
 
 // Firebase Cloud Storage collections.
 export const FEED_ITEMS_STORAGE_COLLECTION = 'feedItems';

@@ -3,13 +3,13 @@ import {assertNever} from '@shared/lib/utils.shared';
 
 import type {Environment} from '@shared/types/environment.types';
 import type {
+  AccountExperiment,
   AccountExperimentOverrides,
+  BooleanAccountExperiment,
   BooleanExperimentDefinition,
-  BooleanExperimentState,
   ExperimentDefinition,
-  ExperimentState,
+  StringAccountExperiment,
   StringExperimentDefinition,
-  StringExperimentState,
 } from '@shared/types/experiments.types';
 import {ExperimentType, ExperimentVisibility} from '@shared/types/experiments.types';
 
@@ -44,7 +44,7 @@ export function makeStringExperimentDefinition(
 export function makeBooleanExperimentState(args: {
   readonly definition: BooleanExperimentDefinition;
   readonly value: boolean | undefined;
-}): BooleanExperimentState {
+}): BooleanAccountExperiment {
   return {
     definition: args.definition,
     value: typeof args.value === 'undefined' ? args.definition.defaultValue : args.value,
@@ -54,7 +54,7 @@ export function makeBooleanExperimentState(args: {
 export function makeStringExperimentState(args: {
   readonly definition: StringExperimentDefinition;
   readonly value: string | undefined;
-}): StringExperimentState {
+}): StringAccountExperiment {
   return {
     definition: args.definition,
     value: typeof args.value === 'undefined' ? args.definition.defaultValue : args.value,
@@ -101,7 +101,7 @@ export function isExperimentVisible(args: {
   }
 }
 
-export function filterExperimentsByVisibilityAndEnvironment(args: {
+function filterExperimentsByVisibilityAndEnvironment(args: {
   readonly experiments: readonly ExperimentDefinition[];
   readonly accountVisibility: ExperimentVisibility;
   readonly environment: Environment;
@@ -114,19 +114,19 @@ export function filterExperimentsByVisibilityAndEnvironment(args: {
   );
 }
 
-export function getExperimentStatesForAccount(args: {
+export function getExperimentsForAccount(args: {
   readonly environment: Environment;
   readonly accountVisibility: ExperimentVisibility;
   readonly accountOverrides: AccountExperimentOverrides;
-}): readonly ExperimentState[] {
+}): readonly AccountExperiment[] {
   const {accountVisibility, environment, accountOverrides: experimentOverrides} = args;
 
   // Filter by visibility and environment.
-  const filteredExperimentDefinitions = ALL_EXPERIMENT_DEFINITIONS.filter(
-    (experiment) =>
-      isExperimentVisible({experiment, accountVisibility}) &&
-      isExperimentEnabledForEnvironment({experiment, environment})
-  );
+  const filteredExperimentDefinitions = filterExperimentsByVisibilityAndEnvironment({
+    experiments: ALL_EXPERIMENT_DEFINITIONS,
+    accountVisibility,
+    environment,
+  });
 
   // Merge user overrides into default values.
   return filteredExperimentDefinitions.map((definition) => {

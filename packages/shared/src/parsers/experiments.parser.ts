@@ -193,6 +193,8 @@ export function parseAccountExperimentsState(
     accountId: parsedAccountId.value,
     accountVisibility: parsedAccountExperimentsState.accountVisibility,
     experimentOverrides: parsedAccountExperimentsState.experimentOverrides,
+    createdTime: parsedAccountExperimentsState.createdTime,
+    lastUpdatedTime: parsedAccountExperimentsState.lastUpdatedTime,
   });
 }
 
