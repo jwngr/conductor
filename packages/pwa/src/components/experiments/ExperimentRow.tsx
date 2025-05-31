@@ -1,5 +1,5 @@
 import type React from 'react';
-import {useCallback, useRef, useState} from 'react';
+import {useCallback, useState} from 'react';
 import {toast} from 'sonner';
 
 import {logger} from '@shared/services/logger.shared';
