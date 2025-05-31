@@ -99,32 +99,17 @@ service cloud.firestore {
       request.resource.data.lastUpdatedTime is timestamp;
     }
 
-    function isValidAccountExperimentsDoc() {
-      return true;
-      // return request.resource.data.keys().hasAll([
-      //   'accountId',
-      //   'accountVisibility',
-      //   'experimentOverrides',
-      // ]);
+    function isValidAccountExperimentsDoc(accountId) {
+      return request.resource.data.keys().hasAll([
+        'accountId',
+        'accountVisibility',
+        'experimentOverrides',
+      ]) &&
+      request.resource.data.accountId == accountId &&
+      request.resource.data.accountVisibility is string &&
+      request.resource.data.accountVisibility in ['PUBLIC', 'INTERNAL'] &&
+      request.resource.data.experimentOverrides is map;
     }
-
-    // function isValidAccountExperimentsDoc2() {
-    //   return request.resource.data.keys().hasAll([
-    //     'accountId',
-    //     'accountVisibility',
-    //     'experimentOverrides',
-    //   ]) &&
-    //   request.resource.data.accountVisibility is string &&
-    //   request.resource.data.accountVisibility in ['PUBLIC', 'INTERNAL'] &&
-    //   request.resource.data.experimentOverrides is map &&
-    //   request.resource.data.experimentOverrides.keys().hasAll(['experimentId', 'experimentType', 'value']) &&
-    //   request.resource.data.experimentOverrides.experimentId is string &&
-    //   request.resource.data.experimentOverrides.experimentType is string &&
-    //   (
-    //     (request.resource.data.experimentOverrides.experimentType == 'BOOLEAN' && request.resource.data.experimentOverrides.value is boolean) ||
-    //     (request.resource.data.experimentOverrides.experimentType == 'STRING' && request.resource.data.experimentOverrides.value is string)
-    //   );
-    // }
 
     /////////////
     //  Rules  //
@@ -143,8 +128,8 @@ service cloud.firestore {
     match /accountExperiments/{accountId} {
       allow read: if isOwner(accountId) && isResourceOwner();
       // TODO: Validate the actual schema of the experiment data being written.
-      allow create: if isNewResourceOwner() && isValidAccountExperimentsDoc();
-      allow update: if isResourceOwner() && isNewResourceOwner() && isValidAccountExperimentsDoc();
+      allow create: if isNewResourceOwner() && isValidAccountExperimentsDoc(accountId);
+      allow update: if isResourceOwner() && isNewResourceOwner() && isValidAccountExperimentsDoc(accountId);
       
       // Only allow deletes via the admin SDK.
       allow delete: if false;
