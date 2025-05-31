@@ -2,20 +2,6 @@ import {useEffect, useRef, useState} from 'react';
 
 import type {Task} from '@shared/types/utils.types';
 
-export function useIsMounted(): React.RefObject<boolean> {
-  const isMounted = useRef(false);
-
-  useEffect(() => {
-    isMounted.current = true;
-
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
-
-  return isMounted;
-}
-
 export function useTimeout(callback: Task, delay: number | null): void {
   const savedCallback = useRef(callback);
 

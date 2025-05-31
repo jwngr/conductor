@@ -6,6 +6,7 @@ import {logger} from '@shared/services/logger.shared';
 import {makeUserActor} from '@shared/lib/actors.shared';
 import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {makeEventId} from '@shared/lib/eventLog.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {filterNull} from '@shared/lib/utils.shared';
 
@@ -17,13 +18,9 @@ import {
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {AsyncState} from '@shared/types/asyncState.types';
-import {
-  Environment,
-  EventType,
-  makeEventId,
-  type EventId,
-  type EventLogItem,
-} from '@shared/types/eventLog.types';
+import {Environment} from '@shared/types/environment.types';
+import {EventType} from '@shared/types/eventLog.types';
+import type {EventId, EventLogItem} from '@shared/types/eventLog.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';

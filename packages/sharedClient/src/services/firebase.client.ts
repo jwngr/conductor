@@ -3,7 +3,7 @@ import {initializeApp} from 'firebase/app';
 import type {Auth} from 'firebase/auth';
 import {connectAuthEmulator, getAuth} from 'firebase/auth';
 import type {FieldValue, Firestore} from 'firebase/firestore';
-import {connectFirestoreEmulator, getFirestore, serverTimestamp} from 'firebase/firestore';
+import {connectFirestoreEmulator, initializeFirestore, serverTimestamp} from 'firebase/firestore';
 import type {Functions} from 'firebase/functions';
 import {connectFunctionsEmulator, getFunctions} from 'firebase/functions';
 import type {FirebaseStorage} from 'firebase/storage';
@@ -100,7 +100,9 @@ class ClientFirebaseService {
 
   public get firestore(): Firestore {
     if (!this.firestoreInstance) {
-      this.firestoreInstance = getFirestore(this.app);
+      this.firestoreInstance = initializeFirestore(this.app, {
+        ignoreUndefinedProperties: true,
+      });
     }
     return this.firestoreInstance;
   }

@@ -8,6 +8,7 @@ import type {
   QueryConstraint,
   QueryDocumentSnapshot,
   QuerySnapshot,
+  SetOptions,
   SnapshotOptions,
   WithFieldValue,
 } from 'firebase/firestore';
@@ -25,7 +26,6 @@ import {
 } from 'firebase/firestore';
 
 import {asyncTry, prefixError, prefixResultIfError, syncTry} from '@shared/lib/errorUtils.shared';
-import {omitUndefined} from '@shared/lib/utils.shared';
 
 import type {AsyncResult, Result} from '@shared/types/results.types';
 import type {Consumer, Func, Unsubscribe} from '@shared/types/utils.types';
@@ -213,11 +213,37 @@ export class ClientFirestoreCollectionService<
   /**
    * Sets a Firestore document. The entire document is replaced.
    */
-  public async setDoc(docId: ItemId, data: WithFieldValue<ItemData>): AsyncResult<void> {
-    const setResult = await asyncTry(async () =>
-      setDoc(this.getDocRef(docId), omitUndefined(data))
-    );
+  public async setDoc(
+    docId: ItemId,
+    data: WithFieldValue<ItemData>,
+    options: SetOptions = {}
+  ): AsyncResult<void> {
+    const setResult = await asyncTry(async () => setDoc(this.getDocRef(docId), data, options));
     return prefixResultIfError(setResult, 'Error setting Firestore document');
+  }
+
+  /**
+   * Updates a Firestore document using setDoc() with the `merge` option. This is useful for
+   * updating a doc that may or may not exist without having to first fetch it.
+   */
+  public async setDocWithMerge(
+    docId: ItemId,
+    data: Partial<WithFieldValue<ItemData>>
+  ): AsyncResult<void> {
+    const setResult = await asyncTry(async () =>
+      setDoc(
+        this.getDocRef(docId),
+        // The Firestore data converter does not allow for partial writes via `setDoc` at the type
+        // level. However, the entire point of `merge: true` is to allow for partial updates.
+        {
+          ...data,
+          // TODO(timestamps): Use server timestamps instead.
+          lastUpdatedTime: new Date(),
+        } as WithFieldValue<ItemData>,
+        {merge: true}
+      )
+    );
+    return prefixResultIfError(setResult, 'Error setting Firestore document with merge');
   }
 
   /**
@@ -229,14 +255,11 @@ export class ClientFirestoreCollectionService<
   ): AsyncResult<void> {
     const docRef = this.getDocRef(docId);
     const updateResult = await asyncTry(async () =>
-      updateDoc(
-        docRef,
-        omitUndefined({
-          ...updates,
-          // TODO(timestamps): Use server timestamps instead.
-          lastUpdatedTime: new Date(),
-        })
-      )
+      updateDoc(docRef, {
+        ...updates,
+        // TODO(timestamps): Use server timestamps instead.
+        lastUpdatedTime: new Date(),
+      })
     );
     return prefixResultIfError(updateResult, 'Error updating Firestore document');
   }

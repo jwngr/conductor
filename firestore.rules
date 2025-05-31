@@ -99,6 +99,18 @@ service cloud.firestore {
       request.resource.data.lastUpdatedTime is timestamp;
     }
 
+    function isValidAccountExperimentsDoc(accountId) {
+      return request.resource.data.keys().hasAll([
+        'accountId',
+        'accountVisibility',
+        'experimentOverrides',
+      ]) &&
+      request.resource.data.accountId == accountId &&
+      request.resource.data.accountVisibility is string &&
+      request.resource.data.accountVisibility in ['PUBLIC', 'INTERNAL'] &&
+      request.resource.data.experimentOverrides is map;
+    }
+
     /////////////
     //  Rules  //
     /////////////
@@ -109,6 +121,15 @@ service cloud.firestore {
       allow create: if isNewResourceOwner();
       allow update: if isResourceOwner() && isNewResourceOwner();
 
+      // Only allow deletes via the admin SDK.
+      allow delete: if false;
+    }
+
+    match /accountExperiments/{accountId} {
+      allow read: if isOwner(accountId) && isResourceOwner();
+      allow create: if isNewResourceOwner() && isValidAccountExperimentsDoc(accountId);
+      allow update: if isResourceOwner() && isNewResourceOwner() && isValidAccountExperimentsDoc(accountId);
+      
       // Only allow deletes via the admin SDK.
       allow delete: if false;
     }

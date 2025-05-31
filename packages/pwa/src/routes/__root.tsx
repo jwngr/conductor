@@ -3,18 +3,20 @@ import {TanStackRouterDevtools} from '@tanstack/react-router-devtools';
 
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
+import {IS_DEVELOPMENT} from '@sharedClient/lib/environment.client';
+
 import {useMaybeLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
 import {Toaster} from '@src/components/atoms/Toaster';
 import {TooltipProvider} from '@src/components/atoms/Tooltip';
 import {AuthSubscriptions} from '@src/components/auth/AuthSubscriptions';
+import {RequireLoggedInAccount} from '@src/components/auth/RequireLoggedInAccount';
 import {DevToolbar} from '@src/components/devToolbar/DevToolbar';
 import {RegisterDebugDevToolbarSection} from '@src/components/devToolbar/RegisterDebugDevToolbarSection';
 import {RegisterFeedItemImporterDevToolbarSection} from '@src/components/devToolbar/RegisterFeedItemImporterDevTool';
 import {ErrorBoundary} from '@src/components/errors/ErrorBoundary';
+import {PWAExperimentsListener} from '@src/components/experiments/PWAExperimentsListener';
 import {ThemeProvider} from '@src/components/ThemeProvider';
-
-import {IS_DEVELOPMENT} from '@src/lib/environment.pwa';
 
 import {DefaultErrorScreen} from '@src/screens/ErrorScreen';
 
@@ -38,7 +40,12 @@ const LoggedInGlobalSubscriptions: React.FC = () => {
 
   if (isLoading || !loggedInAccount) return null;
 
-  return <RegisterFeedItemImporterDevToolbarSection />;
+  return (
+    <RequireLoggedInAccount>
+      <RegisterFeedItemImporterDevToolbarSection />
+      <PWAExperimentsListener />
+    </RequireLoggedInAccount>
+  );
 };
 
 const RootComponent: React.FC = () => {
