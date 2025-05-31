@@ -32,12 +32,6 @@ import {
 import {Environment} from '@shared/types/environment.types';
 import type {Result} from '@shared/types/results.types';
 import type {RssFeedProvider} from '@shared/types/rss.types';
-import type {
-  UserFeedSubscription,
-  UserFeedSubscriptionId,
-} from '@shared/types/userFeedSubscriptions.types';
-
-import type {UserFeedSubscriptionFromStorage} from '@shared/schemas/userFeedSubscriptions.schema';
 
 import {ServerAccountsService} from '@sharedServer/services/accounts.server';
 import {ServerEventLogService} from '@sharedServer/services/eventLog.server';
