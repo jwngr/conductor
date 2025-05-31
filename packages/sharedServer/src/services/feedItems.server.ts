@@ -5,7 +5,7 @@ import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {makeIntervalFeedSource} from '@shared/lib/feedSources.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
-import {assertNever, omitUndefined} from '@shared/lib/utils.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import {FeedItemType} from '@shared/types/feedItems.types';
@@ -116,10 +116,7 @@ export class ServerFeedItemsService {
     feedItemId: FeedItemId,
     updates: Partial<FeedItem>
   ): AsyncResult<void> {
-    const updateResult = await this.feedItemsCollectionService.updateDoc(
-      feedItemId,
-      omitUndefined(updates)
-    );
+    const updateResult = await this.feedItemsCollectionService.updateDoc(feedItemId, updates);
     return prefixResultIfError(updateResult, 'Error updating imported feed item in Firestore');
   }
 

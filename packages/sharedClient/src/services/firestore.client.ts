@@ -26,7 +26,6 @@ import {
 } from 'firebase/firestore';
 
 import {asyncTry, prefixError, prefixResultIfError, syncTry} from '@shared/lib/errorUtils.shared';
-import {omitUndefined} from '@shared/lib/utils.shared';
 
 import type {AsyncResult, Result} from '@shared/types/results.types';
 import type {Consumer, Func, Unsubscribe} from '@shared/types/utils.types';
@@ -219,9 +218,7 @@ export class ClientFirestoreCollectionService<
     data: WithFieldValue<ItemData>,
     options: SetOptions = {}
   ): AsyncResult<void> {
-    const setResult = await asyncTry(async () =>
-      setDoc(this.getDocRef(docId), omitUndefined(data), options)
-    );
+    const setResult = await asyncTry(async () => setDoc(this.getDocRef(docId), data, options));
     return prefixResultIfError(setResult, 'Error setting Firestore document');
   }
 
@@ -238,7 +235,7 @@ export class ClientFirestoreCollectionService<
         this.getDocRef(docId),
         // The Firestore data converter does not allow for partial writes via `setDoc` at the type
         // level. However, the entire point of `merge: true` is to allow for partial updates.
-        omitUndefined(data) as WithFieldValue<ItemData>,
+        data as WithFieldValue<ItemData>,
         {merge: true}
       )
     );
@@ -254,14 +251,11 @@ export class ClientFirestoreCollectionService<
   ): AsyncResult<void> {
     const docRef = this.getDocRef(docId);
     const updateResult = await asyncTry(async () =>
-      updateDoc(
-        docRef,
-        omitUndefined({
-          ...updates,
-          // TODO(timestamps): Use server timestamps instead.
-          lastUpdatedTime: new Date(),
-        })
-      )
+      updateDoc(docRef, {
+        ...updates,
+        // TODO(timestamps): Use server timestamps instead.
+        lastUpdatedTime: new Date(),
+      })
     );
     return prefixResultIfError(updateResult, 'Error updating Firestore document');
   }

@@ -102,7 +102,7 @@ export const handleSuperfeedrWebhook = onRequest(
 /**
  * Initializes an account when a Firebase user is created.
  */
-auth.user().onCreate(async (firebaseUser) => {
+export const initializeAccountOnAuthCreate = auth.user().onCreate(async (firebaseUser) => {
   const firebaseUid = firebaseUser.uid;
   const email = firebaseUser.email;
   const logDetails = {firebaseUid, email} as const;
