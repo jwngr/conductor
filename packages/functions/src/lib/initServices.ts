@@ -2,7 +2,9 @@ import FirecrawlApp from '@mendable/firecrawl-js';
 import {defineString} from 'firebase-functions/params';
 
 import {
+  ACCOUNT_EXPERIMENTS_DB_COLLECTION,
   ACCOUNTS_DB_COLLECTION,
+  EVENT_LOG_DB_COLLECTION,
   FEED_ITEMS_DB_COLLECTION,
   FEED_ITEMS_STORAGE_COLLECTION,
   USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
@@ -11,6 +13,15 @@ import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import {parseAccount, parseAccountId, toStorageAccount} from '@shared/parsers/accounts.parser';
+import {
+  parseEventId,
+  parseEventLogItem,
+  toStorageEventLogItem,
+} from '@shared/parsers/eventLog.parser';
+import {
+  parseAccountExperimentsState,
+  toStorageAccountExperimentsState,
+} from '@shared/parsers/experiments.parser';
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 import {
   parseUserFeedSubscription,
@@ -18,6 +29,7 @@ import {
   toStorageUserFeedSubscription,
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
+import {Environment} from '@shared/types/environment.types';
 import type {Result} from '@shared/types/results.types';
 import type {RssFeedProvider} from '@shared/types/rss.types';
 import type {
@@ -28,6 +40,8 @@ import type {
 import type {UserFeedSubscriptionFromStorage} from '@shared/schemas/userFeedSubscriptions.schema';
 
 import {ServerAccountsService} from '@sharedServer/services/accounts.server';
+import {ServerEventLogService} from '@sharedServer/services/eventLog.server';
+import {ServerExperimentsService} from '@sharedServer/services/experiments.server';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
 import {
@@ -41,9 +55,11 @@ import {WipeoutService} from '@sharedServer/services/wipeout.server';
 import {getRssFeedProvider} from '@src/lib/rssFeedProvider.func';
 
 const FIRECRAWL_API_KEY = defineString('FIRECRAWL_API_KEY');
+const ENVIRONMENT = Environment.FirebaseFunctions;
 
 interface InitializedServices {
   readonly userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
+  readonly accountsService: ServerAccountsService;
   readonly wipeoutService: WipeoutService;
   readonly rssFeedService: ServerRssFeedService;
   readonly feedItemsService: ServerFeedItemsService;
@@ -56,11 +72,7 @@ export function initServices(): Result<InitializedServices> {
     parseUserFeedSubscription
   );
 
-  const userFeedSubscriptionsCollectionService = new ServerFirestoreCollectionService<
-    UserFeedSubscriptionId,
-    UserFeedSubscription,
-    UserFeedSubscriptionFromStorage
-  >({
+  const userFeedSubscriptionsCollectionService = new ServerFirestoreCollectionService({
     collectionPath: USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
     converter: userFeedSubscriptionFirestoreConverter,
     parseId: parseUserFeedSubscriptionId,
@@ -81,10 +93,42 @@ export function initServices(): Result<InitializedServices> {
   const firecrawlApp = new FirecrawlApp({apiKey: FIRECRAWL_API_KEY.value()});
   const firecrawlService = new ServerFirecrawlService(firecrawlApp);
 
+  const eventLogItemFirestoreConverter = makeFirestoreDataConverter(
+    toStorageEventLogItem,
+    parseEventLogItem
+  );
+
+  const eventLogCollectionService = new ServerFirestoreCollectionService({
+    collectionPath: EVENT_LOG_DB_COLLECTION,
+    converter: eventLogItemFirestoreConverter,
+    parseId: parseEventId,
+  });
+
+  const eventLogService = new ServerEventLogService({
+    environment: ENVIRONMENT,
+    eventLogCollectionService,
+  });
+
   const feedItemsService = new ServerFeedItemsService({
     feedItemsCollectionService,
     storageCollectionPath: FEED_ITEMS_STORAGE_COLLECTION,
+    eventLogService,
     firecrawlService,
+  });
+
+  const accountExperimentsFirestoreConverter = makeFirestoreDataConverter(
+    toStorageAccountExperimentsState,
+    parseAccountExperimentsState
+  );
+
+  const accountExperimentsCollectionService = new ServerFirestoreCollectionService({
+    collectionPath: ACCOUNT_EXPERIMENTS_DB_COLLECTION,
+    converter: accountExperimentsFirestoreConverter,
+    parseId: parseAccountId,
+  });
+
+  const experimentsService = new ServerExperimentsService({
+    accountExperimentsCollectionService: accountExperimentsCollectionService,
   });
 
   const accountFirestoreConverter = makeFirestoreDataConverter(toStorageAccount, parseAccount);
@@ -95,8 +139,13 @@ export function initServices(): Result<InitializedServices> {
     parseId: parseAccountId,
   });
 
+  const accountsService = new ServerAccountsService({
+    accountsCollectionService,
+    experimentsService,
+  });
+
   const wipeoutService = new WipeoutService({
-    accountsService: new ServerAccountsService({accountsCollectionService}),
+    accountsService,
     userFeedSubscriptionsService,
     feedItemsService,
   });
@@ -114,6 +163,7 @@ export function initServices(): Result<InitializedServices> {
 
   return makeSuccessResult({
     userFeedSubscriptionsService,
+    accountsService,
     wipeoutService,
     rssFeedService,
     feedItemsService,

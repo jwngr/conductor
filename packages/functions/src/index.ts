@@ -18,6 +18,7 @@ import {parseFeedItem, parseFeedItemId} from '@shared/parsers/feedItems.parser';
 import type {ErrorResult} from '@shared/types/results.types';
 import type {RssFeedProvider} from '@shared/types/rss.types';
 
+import type {ServerAccountsService} from '@sharedServer/services/accounts.server';
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import type {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
 import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
@@ -27,6 +28,7 @@ import {FIREBASE_FUNCTIONS_REGION} from '@src/lib/env';
 import {initServices} from '@src/lib/initServices';
 import {validateUrlParam, verifyAuth} from '@src/lib/middleware';
 
+import {handleCreateAccount} from '@src/reqHandlers/handleCreateAccount';
 import {
   handleEmitIntervalFeeds,
   INTERVAL_FEED_EMISSION_INTERVAL_MINUTES,
@@ -39,6 +41,7 @@ import {handleWipeoutAccount} from '@src/reqHandlers/handleWipeoutAccount';
 
 let userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
 let wipeoutService: WipeoutService;
+let accountsService: ServerAccountsService;
 let rssFeedService: ServerRssFeedService;
 let feedItemsService: ServerFeedItemsService;
 let rssFeedProvider: RssFeedProvider;
@@ -58,6 +61,7 @@ onInit(() => {
   const services = initResult.value;
 
   userFeedSubscriptionsService = services.userFeedSubscriptionsService;
+  accountsService = services.accountsService;
   wipeoutService = services.wipeoutService;
   rssFeedService = services.rssFeedService;
   feedItemsService = services.feedItemsService;
@@ -94,6 +98,34 @@ export const handleSuperfeedrWebhook = onRequest(
     return;
   }
 );
+
+/**
+ * Initializes an account when a Firebase user is created.
+ */
+auth.user().onCreate(async (firebaseUser) => {
+  const firebaseUid = firebaseUser.uid;
+  const email = firebaseUser.email;
+  const logDetails = {firebaseUid, email} as const;
+
+  logger.log(`[CREATE ACCOUNT] Firebase user created. Processing account creation...`, logDetails);
+
+  const createAccountResult = await handleCreateAccount({
+    firebaseUid,
+    email,
+    accountsService,
+  });
+
+  if (!createAccountResult.success) {
+    const betterError = prefixError(
+      createAccountResult.error,
+      '[CREATE ACCOUNT] Failed to create account'
+    );
+    logger.error(betterError, logDetails);
+    return;
+  }
+
+  logger.log(`[CREATE ACCOUNT] Successfully created account`, logDetails);
+});
 
 /**
  * Permanently deletes all data associated with an account when their Firebase auth user is deleted.

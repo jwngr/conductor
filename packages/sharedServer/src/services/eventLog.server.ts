@@ -3,15 +3,12 @@ import type {WithFieldValue} from 'firebase-admin/firestore';
 import {logger} from '@shared/services/logger.shared';
 
 import {SYSTEM_ACTOR} from '@shared/lib/actors.shared';
-import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {makeEventId} from '@shared/lib/eventLog.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
-import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
-
 import type {AccountId} from '@shared/types/accounts.types';
-import {Environment} from '@shared/types/environment.types';
+import type {ServerEnvironment} from '@shared/types/environment.types';
 import {EventType} from '@shared/types/eventLog.types';
 import type {EventId, EventLogItem} from '@shared/types/eventLog.types';
 import type {FeedItemId} from '@shared/types/feedItems.types';
@@ -19,10 +16,7 @@ import type {AsyncResult} from '@shared/types/results.types';
 
 import type {EventLogItemFromStorage} from '@shared/schemas/eventLog.schema';
 
-import {
-  makeFirestoreDataConverter,
-  ServerFirestoreCollectionService,
-} from '@sharedServer/services/firestore.server';
+import type {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
 type ServerEventLogCollectionService = ServerFirestoreCollectionService<
   EventId,
@@ -30,10 +24,15 @@ type ServerEventLogCollectionService = ServerFirestoreCollectionService<
   EventLogItemFromStorage
 >;
 
-class ServerEventLogService {
+export class ServerEventLogService {
+  private readonly environment: ServerEnvironment;
   private readonly eventLogCollectionService: ServerEventLogCollectionService;
 
-  constructor(args: {readonly eventLogCollectionService: ServerEventLogCollectionService}) {
+  constructor(args: {
+    readonly environment: ServerEnvironment;
+    readonly eventLogCollectionService: ServerEventLogCollectionService;
+  }) {
+    this.environment = args.environment;
     this.eventLogCollectionService = args.eventLogCollectionService;
   }
 
@@ -50,7 +49,7 @@ class ServerEventLogService {
       eventId,
       accountId: args.accountId,
       actor: SYSTEM_ACTOR,
-      environment: Environment.Server,
+      environment: this.environment,
       eventType: EventType.FeedItemImported,
       data: {
         feedItemId: args.feedItemId,
@@ -83,22 +82,6 @@ class ServerEventLogService {
     return prefixResultIfError(deleteResult, 'Error deleting event log item');
   }
 }
-
-// Initialize a singleton instance of the event log service
-const eventLogItemFirestoreConverter = makeFirestoreDataConverter(
-  toStorageEventLogItem,
-  parseEventLogItem
-);
-
-const eventLogCollectionService = new ServerFirestoreCollectionService({
-  collectionPath: EVENT_LOG_DB_COLLECTION,
-  converter: eventLogItemFirestoreConverter,
-  parseId: parseEventId,
-});
-
-export const eventLogService = new ServerEventLogService({
-  eventLogCollectionService,
-});
 
 /**
  * Converts a {@link EventLogItem} to a {@link EventLogItemFromStorage} object that can be persisted

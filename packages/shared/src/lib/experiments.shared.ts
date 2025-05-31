@@ -4,10 +4,12 @@ import {
 } from '@shared/lib/experimentDefinitions.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
+import type {AccountId} from '@shared/types/accounts.types';
 import type {Environment} from '@shared/types/environment.types';
 import type {
   AccountExperiment,
   AccountExperimentOverrides,
+  AccountExperimentsState,
   BooleanAccountExperiment,
   BooleanExperimentDefinition,
   BooleanExperimentOverride,
@@ -19,6 +21,9 @@ import type {
 } from '@shared/types/experiments.types';
 import {ExperimentType, ExperimentVisibility} from '@shared/types/experiments.types';
 
+//////////////////////////////
+//  EXPERIMENT DEFINITIONS  //
+//////////////////////////////
 export function makeBooleanExperimentDefinition(
   args: Omit<BooleanExperimentDefinition, 'experimentType'>
 ): BooleanExperimentDefinition {
@@ -49,6 +54,9 @@ export function makeStringExperimentDefinition(
   };
 }
 
+///////////////////////////
+//  ACCOUNT EXPERIMENTS  //
+///////////////////////////
 export function makeBooleanAccountExperiment(args: {
   readonly definition: BooleanExperimentDefinition;
   readonly value: boolean | undefined;
@@ -91,6 +99,9 @@ export function makeAccountExperimentWithDefaultValue(args: {
   }
 }
 
+////////////////////////////
+//  EXPERIMENT OVERRIDES  //
+////////////////////////////
 export function makeBooleanExperimentOverride(args: {
   readonly experimentId: ExperimentId;
   readonly value: boolean;
@@ -115,6 +126,28 @@ export function makeStringExperimentOverride(args: {
   };
 }
 
+/////////////////////////////////
+//  ACCOUNT EXPERIMENTS STATE  //
+/////////////////////////////////
+const DEFAULT_ACCOUNT_EXPERIMENT_VISIBILITY = ExperimentVisibility.Public;
+
+export function makeDefaultAccountExperimentsState(args: {
+  readonly accountId: AccountId;
+}): AccountExperimentsState {
+  const {accountId} = args;
+  return {
+    accountId,
+    accountVisibility: DEFAULT_ACCOUNT_EXPERIMENT_VISIBILITY,
+    experimentOverrides: {},
+    // TODO(timestamps): Use server timestamps instead.
+    createdTime: new Date(),
+    lastUpdatedTime: new Date(),
+  };
+}
+
+/////////////////////
+//  OTHER HELPERS  //
+/////////////////////
 /**
  * Returns whether or not an experiment is enabled for a given environment.
  */

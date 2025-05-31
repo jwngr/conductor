@@ -9,6 +9,7 @@ import {
   getExperimentsForAccount,
   makeAccountExperimentWithDefaultValue,
   makeBooleanExperimentOverride,
+  makeDefaultAccountExperimentsState,
   makeStringExperimentOverride,
 } from '@shared/lib/experiments.shared';
 
@@ -25,7 +26,6 @@ import type {
   AccountExperimentsState,
   ExperimentId,
 } from '@shared/types/experiments.types';
-import {ExperimentVisibility} from '@shared/types/experiments.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
@@ -33,8 +33,6 @@ import {
   ClientFirestoreCollectionService,
   makeFirestoreDataConverter,
 } from '@sharedClient/services/firestore.client';
-
-const DEFAULT_ACCOUNT_EXPERIMENT_VISIBILITY = ExperimentVisibility.Public;
 
 export class ClientExperimentsService {
   private readonly environment: ClientEnvironment;
@@ -71,16 +69,8 @@ export class ClientExperimentsService {
       this.accountId,
       (accountExperimentsState) => {
         if (!accountExperimentsState) {
-          // If no account experiments state is found, the user has never changed any experiments.
-          // Use the default experiment values.
-          callback({
-            accountId: this.accountId,
-            accountVisibility: DEFAULT_ACCOUNT_EXPERIMENT_VISIBILITY,
-            experimentOverrides: {},
-            // TODO(timestamps): Use server timestamps instead.
-            createdTime: new Date(),
-            lastUpdatedTime: new Date(),
-          });
+          // If no account experiments state is found, assume default experiment values.
+          callback(makeDefaultAccountExperimentsState({accountId: this.accountId}));
           return;
         }
 
@@ -98,14 +88,8 @@ export class ClientExperimentsService {
           'Failed to fetch account experiments state. Using default experiment values.';
         logger.error(prefixError(error, message));
 
-        callback({
-          accountId: this.accountId,
-          accountVisibility: DEFAULT_ACCOUNT_EXPERIMENT_VISIBILITY,
-          experimentOverrides: {},
-          // TODO(timestamps): Use server timestamps instead.
-          createdTime: new Date(),
-          lastUpdatedTime: new Date(),
-        });
+        // Assume default experiment values in error case.
+        callback(makeDefaultAccountExperimentsState({accountId: this.accountId}));
       }
     );
   }
@@ -182,24 +166,6 @@ export class ClientExperimentsService {
       {[pathToUpdate]: experimentOverride}
     );
     return prefixResultIfError(updateResult, 'Error updating string experiment value');
-  }
-
-  public async createAccountExperimentsState(): AsyncResult<void> {
-    const addAccountExperimentsStateResult = await this.accountExperimentsCollectionService.setDoc(
-      this.accountId,
-      {
-        accountId: this.accountId,
-        accountVisibility: DEFAULT_ACCOUNT_EXPERIMENT_VISIBILITY,
-        experimentOverrides: {},
-        // TODO(timestamps): Use server timestamps instead.
-        createdTime: new Date(),
-        lastUpdatedTime: new Date(),
-      }
-    );
-    return prefixResultIfError(
-      addAccountExperimentsStateResult,
-      'Error creating account experiments state'
-    );
   }
 }
 

@@ -18,7 +18,7 @@ import type {
 import type {AsyncResult, Result} from '@shared/types/results.types';
 import type {IntervalUserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
-import {eventLogService} from '@sharedServer/services/eventLog.server';
+import type {ServerEventLogService} from '@sharedServer/services/eventLog.server';
 import {storage} from '@sharedServer/services/firebase.server';
 import type {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
 import type {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
@@ -36,15 +36,18 @@ type FeedItemCollectionService = ServerFirestoreCollectionService<
 export class ServerFeedItemsService {
   private readonly storageCollectionPath: string;
   private readonly firecrawlService: ServerFirecrawlService;
+  private readonly eventLogService: ServerEventLogService;
   private readonly feedItemsCollectionService: FeedItemCollectionService;
 
   constructor(args: {
     readonly storageCollectionPath: string;
     readonly firecrawlService: ServerFirecrawlService;
+    readonly eventLogService: ServerEventLogService;
     readonly feedItemsCollectionService: FeedItemCollectionService;
   }) {
     this.storageCollectionPath = args.storageCollectionPath;
     this.firecrawlService = args.firecrawlService;
+    this.eventLogService = args.eventLogService;
     this.feedItemsCollectionService = args.feedItemsCollectionService;
   }
 
@@ -211,7 +214,7 @@ export class ServerFeedItemsService {
 
     if (!importResult.success) return importResult;
 
-    void eventLogService.logFeedItemImportedEvent({
+    void this.eventLogService.logFeedItemImportedEvent({
       feedItemId: feedItem.feedItemId,
       accountId: feedItem.accountId,
     });
