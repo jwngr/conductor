@@ -235,7 +235,11 @@ export class ClientFirestoreCollectionService<
         this.getDocRef(docId),
         // The Firestore data converter does not allow for partial writes via `setDoc` at the type
         // level. However, the entire point of `merge: true` is to allow for partial updates.
-        data as WithFieldValue<ItemData>,
+        {
+          ...data,
+          // TODO(timestamps): Use server timestamps instead.
+          lastUpdatedTime: new Date(),
+        } as WithFieldValue<ItemData>,
         {merge: true}
       )
     );

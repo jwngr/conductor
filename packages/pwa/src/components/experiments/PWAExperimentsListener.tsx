@@ -12,7 +12,7 @@ import {
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
 export const PWAExperimentsListener: React.FC = () => {
-  const {setExperiments} = useExperimentsStore();
+  const {setExperiments, setExperimentsService, resetExperimentsStore} = useExperimentsStore();
   const loggedInAccount = useLoggedInAccount();
   const accountExperimentsCollectionService = useAccountExperimentsCollectionService();
 
@@ -23,10 +23,21 @@ export const PWAExperimentsListener: React.FC = () => {
       accountExperimentsCollectionService,
     });
 
+    setExperimentsService(pwaExperimentsService);
+
     const unsubscribe = pwaExperimentsService.watchAccountExperiments(setExperiments);
 
-    return () => unsubscribe();
-  }, [setExperiments, accountExperimentsCollectionService, loggedInAccount.accountId]);
+    return () => {
+      unsubscribe();
+      resetExperimentsStore();
+    };
+  }, [
+    setExperiments,
+    setExperimentsService,
+    resetExperimentsStore,
+    accountExperimentsCollectionService,
+    loggedInAccount.accountId,
+  ]);
 
   return null;
 };

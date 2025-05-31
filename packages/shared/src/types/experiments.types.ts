@@ -52,15 +52,18 @@ export interface StringExperimentDefinition extends BaseExperimentDefinition {
 export type ExperimentDefinition = BooleanExperimentDefinition | StringExperimentDefinition;
 
 interface BaseAccountExperiment {
+  readonly experimentType: ExperimentType;
   readonly definition: ExperimentDefinition;
 }
 
 export interface BooleanAccountExperiment extends BaseAccountExperiment {
+  readonly experimentType: ExperimentType.Boolean;
   readonly definition: BooleanExperimentDefinition;
   readonly value: boolean;
 }
 
 export interface StringAccountExperiment extends BaseAccountExperiment {
+  readonly experimentType: ExperimentType.String;
   readonly definition: StringExperimentDefinition;
   readonly value: string;
 }

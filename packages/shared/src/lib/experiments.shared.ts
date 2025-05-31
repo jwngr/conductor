@@ -63,6 +63,7 @@ export function makeBooleanAccountExperiment(args: {
 }): BooleanAccountExperiment {
   const {definition, value} = args;
   return {
+    experimentType: ExperimentType.Boolean,
     definition,
     value: typeof value === 'undefined' ? definition.defaultValue : value,
   };
@@ -74,6 +75,7 @@ export function makeStringAccountExperiment(args: {
 }): StringAccountExperiment {
   const {definition, value} = args;
   return {
+    experimentType: ExperimentType.String,
     definition,
     value: typeof value === 'undefined' ? definition.defaultValue : value,
   };

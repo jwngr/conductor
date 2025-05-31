@@ -100,19 +100,31 @@ service cloud.firestore {
     }
 
     function isValidAccountExperimentsDoc() {
-      return request.resource.data.keys().hasAll([
-        'accountId',
-        'accountVisibility',
-        'experimentOverrides',
-      ]) &&
-      request.resource.data.accountVisibility is string &&
-      request.resource.data.accountVisibility in ['PUBLIC', 'INTERNAL'] &&
-      request.resource.data.experimentOverrides is map &&
-      request.resource.data.experimentOverrides.keys().hasAll(['experimentId', 'experimentType', 'experimentValue']) &&
-      request.resource.data.experimentOverrides.experimentId is string &&
-      request.resource.data.experimentOverrides.experimentType is string &&
-      request.resource.data.experimentOverrides.experimentType in ['BOOLEAN', 'STRING'];
+      return true;
+      // return request.resource.data.keys().hasAll([
+      //   'accountId',
+      //   'accountVisibility',
+      //   'experimentOverrides',
+      // ]);
     }
+
+    // function isValidAccountExperimentsDoc2() {
+    //   return request.resource.data.keys().hasAll([
+    //     'accountId',
+    //     'accountVisibility',
+    //     'experimentOverrides',
+    //   ]) &&
+    //   request.resource.data.accountVisibility is string &&
+    //   request.resource.data.accountVisibility in ['PUBLIC', 'INTERNAL'] &&
+    //   request.resource.data.experimentOverrides is map &&
+    //   request.resource.data.experimentOverrides.keys().hasAll(['experimentId', 'experimentType', 'value']) &&
+    //   request.resource.data.experimentOverrides.experimentId is string &&
+    //   request.resource.data.experimentOverrides.experimentType is string &&
+    //   (
+    //     (request.resource.data.experimentOverrides.experimentType == 'BOOLEAN' && request.resource.data.experimentOverrides.value is boolean) ||
+    //     (request.resource.data.experimentOverrides.experimentType == 'STRING' && request.resource.data.experimentOverrides.value is string)
+    //   );
+    // }
 
     /////////////
     //  Rules  //

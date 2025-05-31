@@ -145,10 +145,9 @@ export class ClientExperimentsService {
     const pathToUpdate = `experimentOverrides.${experimentId}`;
     const experimentOverride = makeBooleanExperimentOverride({experimentId, value});
 
-    const updateResult = await this.accountExperimentsCollectionService.setDocWithMerge(
-      this.accountId,
-      {[pathToUpdate]: experimentOverride}
-    );
+    const updateResult = await this.accountExperimentsCollectionService.updateDoc(this.accountId, {
+      [pathToUpdate]: experimentOverride,
+    });
     return prefixResultIfError(updateResult, 'Error updating boolean experiment value');
   }
 
@@ -161,10 +160,9 @@ export class ClientExperimentsService {
     const pathToUpdate = `experimentOverrides.${experimentId}`;
     const experimentOverride = makeStringExperimentOverride({experimentId, value});
 
-    const updateResult = await this.accountExperimentsCollectionService.setDocWithMerge(
-      this.accountId,
-      {[pathToUpdate]: experimentOverride}
-    );
+    const updateResult = await this.accountExperimentsCollectionService.updateDoc(this.accountId, {
+      [pathToUpdate]: experimentOverride,
+    });
     return prefixResultIfError(updateResult, 'Error updating string experiment value');
   }
 }
