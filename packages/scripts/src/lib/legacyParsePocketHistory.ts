@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import {logger} from '@shared/services/logger.shared';
 
 import {
+  EVENT_LOG_DB_COLLECTION,
   FEED_ITEMS_DB_COLLECTION,
   FEED_ITEMS_STORAGE_COLLECTION,
 } from '@shared/lib/constants.shared';
@@ -15,10 +16,13 @@ import {POCKET_EXPORT_FEED_SOURCE} from '@shared/lib/feedSources.shared';
 import {pluralizeWithCount} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
+import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 
+import {Environment} from '@shared/types/environment.types';
 import type {PocketImportItem} from '@shared/types/pocket.types';
 
+import {ServerEventLogService, toStorageEventLogItem} from '@sharedServer/services/eventLog.server';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
 import {
@@ -73,10 +77,27 @@ async function main(): Promise<void> {
   const firecrawlApp = new FirecrawlApp({apiKey: firecrawlApiKey});
   const firecrawlService = new ServerFirecrawlService(firecrawlApp);
 
+  const eventLogItemFirestoreConverter = makeFirestoreDataConverter(
+    toStorageEventLogItem,
+    parseEventLogItem
+  );
+
+  const eventLogCollectionService = new ServerFirestoreCollectionService({
+    collectionPath: EVENT_LOG_DB_COLLECTION,
+    converter: eventLogItemFirestoreConverter,
+    parseId: parseEventId,
+  });
+
+  const eventLogService = new ServerEventLogService({
+    environment: Environment.Scripts,
+    eventLogCollectionService,
+  });
+
   const feedItemsService = new ServerFeedItemsService({
     feedItemsCollectionService,
     storageCollectionPath: FEED_ITEMS_STORAGE_COLLECTION,
     firecrawlService,
+    eventLogService,
   });
 
   const pocketItemsResult = await ServerPocketService.parseHtmlExportFile(POCKET_EXPORT_FILE_PATH);

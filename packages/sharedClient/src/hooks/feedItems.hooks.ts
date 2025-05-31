@@ -39,7 +39,7 @@ import {useUserFeedSubscriptions} from '@sharedClient/services/userFeedSubscript
 
 import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
-import {useIsMounted} from '@sharedClient/hooks/utils.hook';
+import {useIsMounted} from '@sharedClient/hooks/lifecycle.hooks';
 
 const feedItemsStorageRef = storageRef(firebaseService.storage, FEED_ITEMS_STORAGE_COLLECTION);
 

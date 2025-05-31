@@ -7,7 +7,6 @@ import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/erro
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
-import {omitUndefined} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
 
 import type {AccountId, AuthStateChangedUnsubscribe} from '@shared/types/accounts.types';
@@ -117,10 +116,7 @@ export class ClientFeedItemsService {
     feedItemId: FeedItemId,
     updates: Partial<FeedItem>
   ): AsyncResult<void> {
-    const updateResult = await this.feedItemsCollectionService.updateDoc(
-      feedItemId,
-      omitUndefined(updates)
-    );
+    const updateResult = await this.feedItemsCollectionService.updateDoc(feedItemId, updates);
     return prefixResultIfError(updateResult, 'Error updating feed item');
   }
 

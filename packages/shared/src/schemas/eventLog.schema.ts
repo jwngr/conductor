@@ -1,6 +1,7 @@
 import {z} from 'zod';
 
-import {Environment, EventType} from '@shared/types/eventLog.types';
+import {Environment} from '@shared/types/environment.types';
+import {EventType} from '@shared/types/eventLog.types';
 import {FeedItemActionType} from '@shared/types/feedItems.types';
 
 import {AccountIdSchema} from '@shared/schemas/accounts.schema';

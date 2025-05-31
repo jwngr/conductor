@@ -5,6 +5,7 @@ import {TriageStatus} from '@shared/types/feedItems.types';
 import {QueryFilterOp} from '@shared/types/query.types';
 import {SystemTagId} from '@shared/types/tags.types';
 import {NavItemId} from '@shared/types/urls.types';
+import type {ViewNavItemId} from '@shared/types/urls.types';
 import type {
   View,
   ViewGroupByField,
@@ -158,9 +159,7 @@ export class Views {
     return Object.keys(ALL_VIEW_CONFIGS).map((key) => key as ViewType);
   }
 
-  static fromNavItemId(
-    navItemId: Exclude<NavItemId, NavItemId.Feeds | NavItemId.Import>
-  ): ViewType {
+  static fromNavItemId(navItemId: ViewNavItemId): ViewType {
     switch (navItemId) {
       case NavItemId.Untriaged:
         return ViewType.Untriaged;

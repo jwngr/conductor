@@ -10,14 +10,14 @@ import type {Consumer} from '@shared/types/utils.types';
 
 import {authService} from '@sharedClient/services/auth.client';
 
+import {IS_DEVELOPMENT} from '@sharedClient/lib/environment.client';
+
 import {useMaybeLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
 import {Button} from '@src/components/atoms/Button';
 import {Input} from '@src/components/atoms/Input';
 import {Spacer} from '@src/components/atoms/Spacer';
 import {Text} from '@src/components/atoms/Text';
-
-import {IS_DEVELOPMENT} from '@src/lib/environment.pwa';
 
 import type {OnClick} from '@src/types/utils.pwa.types';
 

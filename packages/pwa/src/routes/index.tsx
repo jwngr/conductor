@@ -10,6 +10,7 @@ import {SignOutRedirect} from '@src/components/auth/SignOutRedirect';
 
 import {rootRoute} from '@src/routes/__root';
 import {NotFoundScreen} from '@src/screens/404';
+import {ExperimentsScreen} from '@src/screens/ExperimentsScreen';
 import {FeedItemScreen} from '@src/screens/FeedItemScreen';
 import {FeedSubscriptionsScreen} from '@src/screens/FeedSubscriptionsScreen';
 import {ImportScreen} from '@src/screens/ImportScreen';
@@ -166,6 +167,16 @@ export const importRoute = createRoute({
   component: () => (
     <RequireLoggedInAccount>
       <ImportScreen />
+    </RequireLoggedInAccount>
+  ),
+});
+
+export const experimentsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/experiments',
+  component: () => (
+    <RequireLoggedInAccount>
+      <ExperimentsScreen />
     </RequireLoggedInAccount>
   ),
 });

@@ -8,11 +8,12 @@ import {assertNever} from '@shared/lib/utils.shared';
 import type {KeyboardShortcut, ShortcutHandler} from '@shared/types/shortcuts.types';
 import {NavItemId} from '@shared/types/urls.types';
 
-import {IS_MAC} from '@src/lib/environment.pwa';
+import {IS_MAC} from '@sharedClient/lib/environment.client';
 
 import {
   allViewRoute,
   doneViewRoute,
+  experimentsRoute,
   feedSubscriptionsRoute,
   importRoute,
   savedViewRoute,
@@ -91,6 +92,9 @@ export function useNavShortcut(shortcut: KeyboardShortcut, navItemId: NavItemId)
         break;
       case NavItemId.Import:
         await navigate({to: importRoute.fullPath});
+        break;
+      case NavItemId.Experiments:
+        await navigate({to: experimentsRoute.fullPath});
         break;
       default:
         assertNever(navItemId);

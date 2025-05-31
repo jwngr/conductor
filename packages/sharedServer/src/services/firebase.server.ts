@@ -9,6 +9,9 @@ import {prefixError} from '@shared/lib/errorUtils.shared';
 admin.initializeApp();
 
 export const firestore = admin.firestore();
+firestore.settings({
+  ignoreUndefinedProperties: true,
+});
 
 export const storage = admin.storage();
 
