@@ -22,12 +22,12 @@ export async function handleCreateAccount(args: {
   const parsedAccountId = parsedAccountIdResult.value;
 
   if (!email) {
-    return makeErrorResult(new Error('Created account must have an email address'));
+    return makeErrorResult(new Error('No email address'));
   }
 
   const parsedEmailResult = parseEmailAddress(email);
   if (!parsedEmailResult.success) {
-    return makeErrorResult(new Error('Invalid email address'));
+    return prefixErrorResult(parsedEmailResult, 'Invalid email address');
   }
   const parsedEmail = parsedEmailResult.value;
 
