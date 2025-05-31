@@ -4,10 +4,8 @@ import {logger} from '@shared/services/logger.shared';
 
 import {ACCOUNT_EXPERIMENTS_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {ALL_EXPERIMENT_DEFINITIONS} from '@shared/lib/experimentDefinitions.shared';
 import {
   getExperimentsForAccount,
-  makeAccountExperimentWithEmptyValue,
   makeBooleanExperimentOverride,
   makeDefaultAccountExperimentsState,
   makeStringExperimentOverride,

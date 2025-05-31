@@ -10,7 +10,7 @@ export const DEBUG_EXPERIMENT = makeBooleanExperimentDefinition({
   title: 'Debug',
   description: 'Enables debug UI',
   visibility: ExperimentVisibility.Internal,
-  defaultValue: true,
+  defaultIsEnabled: true,
 });
 
 export const ALL_EXPERIMENT_DEFINITIONS: Record<ExperimentId, ExperimentDefinition> = {

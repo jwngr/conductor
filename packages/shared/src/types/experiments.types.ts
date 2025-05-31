@@ -34,15 +34,17 @@ interface BaseExperimentDefinition {
   readonly description: string;
   /** Which set of users can see the experiment. */
   readonly visibility: ExperimentVisibility;
+  /** Whether or not the experiment is enabled by default. */
+  readonly defaultIsEnabled: boolean;
 }
 
 export interface BooleanExperimentDefinition extends BaseExperimentDefinition {
   readonly experimentType: ExperimentType.Boolean;
-  readonly defaultValue: boolean;
 }
 
 export interface StringExperimentDefinition extends BaseExperimentDefinition {
   readonly experimentType: ExperimentType.String;
+  /** The default value of the experiment. Exists even when the experiment is disabled. */
   readonly defaultValue: string;
 }
 

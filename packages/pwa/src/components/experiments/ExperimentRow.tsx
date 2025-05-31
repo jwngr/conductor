@@ -105,7 +105,7 @@ export const ExperimentRow: React.FC<{
         </Text>
         <Text as="p" light>
           ID: {experiment.definition.experimentId} | Type: {experiment.definition.experimentType} |
-          Default: {String(experiment.definition.defaultValue)}
+          Default: {String(experiment.definition.defaultIsEnabled)}
         </Text>
       </FlexColumn>
       <FlexColumn gap={2} className="items-end">

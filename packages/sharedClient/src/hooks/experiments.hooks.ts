@@ -1,10 +1,6 @@
 import {useMemo} from 'react';
 
 import {ALL_EXPERIMENT_DEFINITIONS} from '@shared/lib/experimentDefinitions.shared';
-import {
-  makeBooleanAccountExperiment,
-  makeStringAccountExperiment,
-} from '@shared/lib/experiments.shared';
 
 import type {
   BooleanAccountExperiment,
@@ -18,7 +14,9 @@ import {useExperimentsStore} from '@sharedClient/stores/ExperimentsStore';
 export function useBooleanAccountExperiment(
   experimentId: ExperimentId
 ): BooleanAccountExperiment | null {
-  const experiments = useExperimentsStore((state) => state.experiments);
+  const getBooleanAccountExperiment = useExperimentsStore(
+    (state) => state.getBooleanAccountExperiment
+  );
 
   const experimentDefinition = ALL_EXPERIMENT_DEFINITIONS[experimentId];
 
@@ -28,24 +26,10 @@ export function useBooleanAccountExperiment(
     throw new Error(`Experiment ${experimentId} is not a boolean experiment`);
   }
 
-  const memoedAccounExperiment = useMemo(() => {
-    if (!experiments) {
-      // Still loading which experience the account has for this experiment.
-      return null;
-    }
-
-    const experiment = experiments?.find((exp) => exp.definition.experimentId === experimentId);
-    if (!experiment) {
-      // If the experiment is not actually visible to this user on this environment, fall back to
-      // it being disabled.
-      return makeBooleanAccountExperiment({
-        definition: experimentDefinition,
-        value: false,
-      });
-    }
-
-    return experiment as BooleanAccountExperiment;
-  }, [experiments, experimentId, experimentDefinition]);
+  const memoedAccounExperiment = useMemo(
+    () => getBooleanAccountExperiment(experimentId),
+    [getBooleanAccountExperiment, experimentId]
+  );
 
   return memoedAccounExperiment;
 }
@@ -53,7 +37,9 @@ export function useBooleanAccountExperiment(
 export function useStringAccountExperiment(
   experimentId: ExperimentId
 ): StringAccountExperiment | null {
-  const experiments = useExperimentsStore((state) => state.experiments);
+  const getStringAccountExperiment = useExperimentsStore(
+    (state) => state.getStringAccountExperiment
+  );
 
   const experimentDefinition = ALL_EXPERIMENT_DEFINITIONS[experimentId];
 
@@ -63,24 +49,10 @@ export function useStringAccountExperiment(
     throw new Error(`Experiment ${experimentId} is not a string experiment`);
   }
 
-  const memoedAccounExperiment = useMemo(() => {
-    if (!experiments) {
-      // Still loading which experience the account has for this experiment.
-      return null;
-    }
-
-    const experiment = experiments?.find((exp) => exp.definition.experimentId === experimentId);
-    if (!experiment) {
-      // If the experiment is not actually visible to this user on this environment, fall back to
-      // it being empty.
-      return makeStringAccountExperiment({
-        definition: experimentDefinition,
-        value: '',
-      });
-    }
-
-    return experiment as StringAccountExperiment;
-  }, [experiments, experimentId, experimentDefinition]);
+  const memoedAccounExperiment = useMemo(
+    () => getStringAccountExperiment(experimentId),
+    [getStringAccountExperiment, experimentId]
+  );
 
   return memoedAccounExperiment;
 }

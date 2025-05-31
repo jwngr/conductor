@@ -20,6 +20,7 @@ export const BaseExperimentDefinitionFromStorageSchema = z.object({
   title: z.string(),
   description: z.string(),
   visibility: ExperimentVisibilitySchema,
+  defaultIsEnabled: z.boolean(),
 });
 
 export type BaseExperimentDefinitionFromStorage = z.infer<
@@ -29,7 +30,6 @@ export type BaseExperimentDefinitionFromStorage = z.infer<
 export const BooleanExperimentDefinitionFromStorageSchema =
   BaseExperimentDefinitionFromStorageSchema.extend({
     experimentType: z.literal(ExperimentType.Boolean),
-    defaultValue: z.boolean(),
   });
 
 export type BooleanExperimentDefinitionFromStorage = z.infer<

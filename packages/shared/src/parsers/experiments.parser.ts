@@ -74,7 +74,7 @@ function parseBooleanExperimentDefinition(args: {
   return makeSuccessResult(
     omitUndefined({
       experimentType: ExperimentType.Boolean,
-      defaultValue: storageBooleanExperiment.defaultValue,
+      defaultIsEnabled: storageBooleanExperiment.defaultIsEnabled,
       experimentId: storageBooleanExperiment.experimentId,
       environments: storageBooleanExperiment.environments,
       visibility: storageBooleanExperiment.visibility,
@@ -101,6 +101,7 @@ function parseStringExperimentDefinition(args: {
   return makeSuccessResult(
     omitUndefined({
       experimentType: ExperimentType.String,
+      defaultIsEnabled: storageStringExperiment.defaultIsEnabled,
       defaultValue: storageStringExperiment.defaultValue,
       experimentId: storageStringExperiment.experimentId,
       environments: storageStringExperiment.environments,
@@ -139,7 +140,7 @@ function toStorageBooleanExperimentDefinition(
   return omitUndefined({
     experimentId: experiment.experimentId,
     experimentType: ExperimentType.Boolean,
-    defaultValue: experiment.defaultValue,
+    defaultIsEnabled: experiment.defaultIsEnabled,
     environments: [...experiment.environments],
     visibility: experiment.visibility,
     title: experiment.title,
@@ -161,6 +162,7 @@ function toStorageStringExperimentDefinition(
     visibility: experiment.visibility,
     title: experiment.title,
     description: experiment.description,
+    defaultIsEnabled: experiment.defaultIsEnabled,
     defaultValue: experiment.defaultValue,
   });
 }
