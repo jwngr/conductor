@@ -47,6 +47,7 @@ const BooleanExperimentControl: React.FC<{
         isEnabled: isChecked,
       });
 
+      // TODO: Unify some of this logic across different experiment types.
       const enableOrDisable = isChecked ? 'enable' : 'disable';
       if (!updateResult.success) {
         logger.error(updateResult.error, {experiment, isChecked});
@@ -55,6 +56,8 @@ const BooleanExperimentControl: React.FC<{
       }
 
       toast(`Experiment ${enableOrDisable}d`);
+
+      // TODO: Add event log entry for experiment enabled/disabled.
     },
     [experiment, experimentsService]
   );
@@ -78,6 +81,7 @@ const StringExperimentControl: React.FC<{
         value: experiment.value,
       });
 
+      // TODO: Unify some of this logic across different experiment types.
       const enableOrDisable = isChecked ? 'enable' : 'disable';
       if (!updateResult.success) {
         logger.error(updateResult.error, {
@@ -89,6 +93,8 @@ const StringExperimentControl: React.FC<{
       }
 
       toast(`Experiment ${enableOrDisable}d`);
+
+      // TODO: Add event log entry for experiment enabled/disabled.
     },
     [experiment, experimentsService]
   );
