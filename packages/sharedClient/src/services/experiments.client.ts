@@ -25,7 +25,7 @@ import type {
   AccountExperimentsState,
   ExperimentId,
 } from '@shared/types/experiments.types';
-import {ExperimentType, ExperimentVisibility} from '@shared/types/experiments.types';
+import {ExperimentVisibility} from '@shared/types/experiments.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
@@ -158,14 +158,12 @@ export class ClientExperimentsService {
   }): AsyncResult<void> {
     const {experimentId, value} = args;
 
+    const pathToUpdate = `experimentOverrides.${experimentId}`;
+    const experimentOverride = makeBooleanExperimentOverride({experimentId, value});
+
     const updateResult = await this.accountExperimentsCollectionService.setDocWithMerge(
       this.accountId,
-      {
-        [`experimentOverrides.${experimentId}`]: makeBooleanExperimentOverride({
-          experimentId,
-          value,
-        }),
-      }
+      {[pathToUpdate]: experimentOverride}
     );
     return prefixResultIfError(updateResult, 'Error updating boolean experiment value');
   }
@@ -176,14 +174,12 @@ export class ClientExperimentsService {
   }): AsyncResult<void> {
     const {experimentId, value} = args;
 
+    const pathToUpdate = `experimentOverrides.${experimentId}`;
+    const experimentOverride = makeStringExperimentOverride({experimentId, value});
+
     const updateResult = await this.accountExperimentsCollectionService.setDocWithMerge(
       this.accountId,
-      {
-        [`experimentOverrides.${experimentId}`]: makeStringExperimentOverride({
-          experimentId,
-          value,
-        }),
-      }
+      {[pathToUpdate]: experimentOverride}
     );
     return prefixResultIfError(updateResult, 'Error updating string experiment value');
   }
