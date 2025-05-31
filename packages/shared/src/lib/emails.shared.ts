@@ -10,3 +10,5 @@ const EMAIL_REGEX =
 export function isValidEmail(maybeEmail: unknown): maybeEmail is EmailAddress {
   return typeof maybeEmail === 'string' && EMAIL_REGEX.test(maybeEmail);
 }
+
+// TODO: Add `compareEmail` and `normalizeEmail` methods.

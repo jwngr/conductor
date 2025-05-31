@@ -131,7 +131,6 @@ export function makeStringExperimentOverride(args: {
 /////////////////////////////////
 //  ACCOUNT EXPERIMENTS STATE  //
 /////////////////////////////////
-
 export function makeDefaultAccountExperimentsState(args: {
   readonly accountId: AccountId;
   readonly isInternalAccount: boolean;
@@ -246,4 +245,15 @@ export function getExperimentsForAccount(args: {
         assertNever(definition);
     }
   });
+}
+
+export function isBooleanExperimentEnabled(
+  accountExperiment: BooleanAccountExperiment | undefined | null
+): boolean {
+  if (!accountExperiment) {
+    // Assume boolean experiments are disabled by default.
+    return false;
+  }
+
+  return accountExperiment.value;
 }

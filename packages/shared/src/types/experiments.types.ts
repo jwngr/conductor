@@ -4,10 +4,6 @@ import type {BaseStoreItem} from '@shared/types/utils.types';
 
 export enum ExperimentId {
   Debug = 'DEBUG',
-  Internal1 = 'INTERNAL_1',
-  Internal2 = 'INTERNAL_2',
-  Public1 = 'PUBLIC_1',
-  Public2 = 'PUBLIC_2',
 }
 
 export enum ExperimentType {

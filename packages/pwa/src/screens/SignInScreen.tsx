@@ -146,6 +146,7 @@ export const SignInScreen: React.FC = () => {
 
       {IS_DEVELOPMENT
         ? renderPasswordlessAuthButton({
+            // TODO: Move to enviroment variable.
             maybeEmail: 'wenger.jacob@gmail.com',
             text: 'Send link to myself',
           })

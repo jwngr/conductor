@@ -1,9 +1,13 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 
+import {isBooleanExperimentEnabled} from '@shared/lib/experiments.shared';
+
 import type {DevToolbarSectionInfo} from '@shared/types/devToolbar.types';
+import {ExperimentId} from '@shared/types/experiments.types';
 import type {Task} from '@shared/types/utils.types';
 
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
+import {useBooleanAccountExperiment} from '@sharedClient/stores/ExperimentsStore';
 
 import {IS_DEVELOPMENT} from '@sharedClient/lib/environment.client';
 
@@ -70,6 +74,7 @@ const DevToolbarSectionComponent: React.FC<{
 export const DevToolbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const toolbarRef = useRef<HTMLDivElement>(null);
+  const debugExperiment = useBooleanAccountExperiment(ExperimentId.Debug);
 
   // Close the toolbar on clicks outside of it.
   useEffect(() => {
@@ -103,7 +108,8 @@ export const DevToolbar: React.FC = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  if (!IS_DEVELOPMENT) {
+  const shouldShowDevToolbar = IS_DEVELOPMENT || isBooleanExperimentEnabled(debugExperiment);
+  if (!shouldShowDevToolbar) {
     return null;
   }
 
