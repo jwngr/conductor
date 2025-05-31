@@ -7,9 +7,10 @@ import {ExperimentId} from '@shared/types/experiments.types';
 import type {Task} from '@shared/types/utils.types';
 
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
-import {useBooleanAccountExperiment} from '@sharedClient/stores/ExperimentsStore';
 
 import {IS_DEVELOPMENT} from '@sharedClient/lib/environment.client';
+
+import {useBooleanAccountExperiment} from '@sharedClient/hooks/experiments.hooks';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';

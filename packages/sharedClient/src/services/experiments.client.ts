@@ -118,42 +118,14 @@ export class ClientExperimentsService {
     });
   }
 
-  public watchExperiment(args: {
-    readonly experimentId: ExperimentId;
-    readonly callback: Consumer<AccountExperiment>;
-  }): Unsubscribe {
-    const {experimentId, callback} = args;
-
-    const experimentDefinition = ALL_EXPERIMENT_DEFINITIONS[experimentId];
-
-    const unsubscribe = this.watchAccountExperiments((accountExperiments) => {
-      const accountExperiment = accountExperiments.find(
-        (exp) => exp.definition.experimentId === experimentId
-      );
-
-      // If an experiment is not found in the account's list of visible experiments,
-      // assume it has the default value.
-      // TODO: Should I be throwing an error here? Could this leak an experiment for
-      // an account that doesn't have access to it?
-      if (!accountExperiment) {
-        callback(makeAccountExperimentWithEmptyValue({experimentDefinition}));
-        return;
-      }
-
-      callback(accountExperiment);
-    });
-
-    return () => unsubscribe();
-  }
-
   public async setBooleanExperimentValue(args: {
     readonly experimentId: ExperimentId;
-    readonly value: boolean;
+    readonly isEnabled: boolean;
   }): AsyncResult<void> {
-    const {experimentId, value} = args;
+    const {experimentId, isEnabled} = args;
 
     const pathToUpdate = `experimentOverrides.${experimentId}`;
-    const experimentOverride = makeBooleanExperimentOverride({experimentId, value});
+    const experimentOverride = makeBooleanExperimentOverride({experimentId, isEnabled});
 
     const updateResult = await this.accountExperimentsCollectionService.updateDoc(this.accountId, {
       [pathToUpdate]: experimentOverride,
@@ -163,12 +135,13 @@ export class ClientExperimentsService {
 
   public async setStringExperimentValue(args: {
     readonly experimentId: ExperimentId;
+    readonly isEnabled: boolean;
     readonly value: string;
   }): AsyncResult<void> {
-    const {experimentId, value} = args;
+    const {experimentId, isEnabled, value} = args;
 
     const pathToUpdate = `experimentOverrides.${experimentId}`;
-    const experimentOverride = makeStringExperimentOverride({experimentId, value});
+    const experimentOverride = makeStringExperimentOverride({experimentId, isEnabled, value});
 
     const updateResult = await this.accountExperimentsCollectionService.updateDoc(this.accountId, {
       [pathToUpdate]: experimentOverride,

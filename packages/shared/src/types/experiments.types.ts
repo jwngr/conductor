@@ -51,12 +51,12 @@ export type ExperimentDefinition = BooleanExperimentDefinition | StringExperimen
 interface BaseAccountExperiment {
   readonly experimentType: ExperimentType;
   readonly definition: ExperimentDefinition;
+  readonly isEnabled: boolean;
 }
 
 export interface BooleanAccountExperiment extends BaseAccountExperiment {
   readonly experimentType: ExperimentType.Boolean;
   readonly definition: BooleanExperimentDefinition;
-  readonly value: boolean;
 }
 
 export interface StringAccountExperiment extends BaseAccountExperiment {
@@ -70,11 +70,11 @@ export type AccountExperiment = BooleanAccountExperiment | StringAccountExperime
 interface BaseExperimentOverride {
   readonly experimentId: ExperimentId;
   readonly experimentType: ExperimentType;
+  readonly isEnabled: boolean;
 }
 
 export interface BooleanExperimentOverride extends BaseExperimentOverride {
   readonly experimentType: ExperimentType.Boolean;
-  readonly value: boolean;
 }
 
 export interface StringExperimentOverride extends BaseExperimentOverride {

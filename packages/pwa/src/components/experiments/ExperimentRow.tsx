@@ -39,26 +39,23 @@ const BooleanExperimentControl: React.FC<{
   const experimentsService = useExperimentsStore((state) => state.experimentsService);
 
   const handleBooleanValueChanged = useCallback(
-    async (checked: boolean) => {
+    async (isChecked: boolean) => {
       if (!experimentsService) return;
 
       const updateResult = await experimentsService.setBooleanExperimentValue({
         experimentId: experiment.definition.experimentId,
-        value: checked,
+        isEnabled: isChecked,
       });
 
       if (!updateResult.success) {
-        logger.error(updateResult.error, {
-          experimentId: experiment.definition.experimentId,
-          value: checked,
-        });
+        logger.error(updateResult.error, {experiment, isChecked});
         toast.error('Failed to update experiment value');
       }
     },
-    [experiment.definition.experimentId, experimentsService]
+    [experiment, experimentsService]
   );
 
-  return <Checkbox checked={experiment.value} onCheckedChange={handleBooleanValueChanged} />;
+  return <Checkbox checked={experiment.isEnabled} onCheckedChange={handleBooleanValueChanged} />;
 };
 
 const StringExperimentControl: React.FC<{
@@ -72,23 +69,24 @@ const StringExperimentControl: React.FC<{
 
       const updateResult = await experimentsService.setStringExperimentValue({
         experimentId: experiment.definition.experimentId,
+        isEnabled: experiment.isEnabled,
         value,
       });
 
       if (!updateResult.success) {
         logger.error(updateResult.error, {
-          experimentId: experiment.definition.experimentId,
+          experiment: experiment,
           value,
         });
         toast.error('Failed to update experiment value');
       }
     },
-    [experiment.definition.experimentId, experimentsService]
+    [experiment, experimentsService]
   );
 
   return (
     <Input
-      value={experiment.value as string}
+      value={experiment.value}
       onChange={async (event) => await handleStringValueChanged(event.target.value)}
       className="max-w-xs"
     />

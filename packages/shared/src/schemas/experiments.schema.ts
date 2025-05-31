@@ -56,11 +56,11 @@ export type ExperimentDefinitionFromStorage =
 const BaseExperimentOverrideFromStorageSchema = z.object({
   experimentId: ExperimentIdSchema,
   experimentType: ExperimentTypeSchema,
+  isEnabled: z.boolean(),
 });
 
 const BooleanExperimentOverrideFromStorageSchema = BaseExperimentOverrideFromStorageSchema.extend({
   experimentType: z.literal(ExperimentType.Boolean),
-  value: z.boolean(),
 });
 
 const StringExperimentOverrideFromStorageSchema = BaseExperimentOverrideFromStorageSchema.extend({

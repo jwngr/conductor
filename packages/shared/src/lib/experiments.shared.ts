@@ -59,46 +59,65 @@ export function makeStringExperimentDefinition(
 ///////////////////////////
 export function makeBooleanAccountExperiment(args: {
   readonly definition: BooleanExperimentDefinition;
-  readonly value: boolean | undefined;
+  readonly isEnabled: boolean;
 }): BooleanAccountExperiment {
-  const {definition, value} = args;
+  const {definition, isEnabled} = args;
   return {
     experimentType: ExperimentType.Boolean,
     definition,
-    value: typeof value === 'undefined' ? definition.defaultValue : value,
+    isEnabled,
   };
 }
 
 export function makeStringAccountExperiment(args: {
   readonly definition: StringExperimentDefinition;
+  readonly isEnabled: true;
   readonly value: string | undefined;
+}): StringAccountExperiment {
+  const {definition, isEnabled, value} = args;
+  return {
+    experimentType: ExperimentType.String,
+    definition,
+    isEnabled,
+    value: typeof value === 'undefined' ? definition.defaultValue : value,
+  };
+}
+
+export function makeEnabledStringAccountExperiment(args: {
+  readonly definition: StringExperimentDefinition;
+  readonly value: string;
 }): StringAccountExperiment {
   const {definition, value} = args;
   return {
     experimentType: ExperimentType.String,
     definition,
-    value: typeof value === 'undefined' ? definition.defaultValue : value,
+    isEnabled: true,
+    value,
   };
 }
 
-export function makeAccountExperimentWithEmptyValue(args: {
-  readonly experimentDefinition: ExperimentDefinition;
-}): AccountExperiment {
-  const {experimentDefinition} = args;
-  switch (experimentDefinition.experimentType) {
-    case ExperimentType.Boolean:
-      return makeBooleanAccountExperiment({
-        definition: experimentDefinition,
-        value: false,
-      });
-    case ExperimentType.String:
-      return makeStringAccountExperiment({
-        definition: experimentDefinition,
-        value: '',
-      });
-    default:
-      assertNever(experimentDefinition);
-  }
+export function makeDisabledStringAccountExperiment(args: {
+  readonly definition: StringExperimentDefinition;
+  readonly value: string;
+}): StringAccountExperiment {
+  const {definition, value} = args;
+  return {
+    experimentType: ExperimentType.String,
+    definition,
+    isEnabled: true,
+    value,
+  };
+}
+
+export function makeEnabledBooleanAccountExperiment(args: {
+  readonly definition: BooleanExperimentDefinition;
+}): BooleanAccountExperiment {
+  const {definition} = args;
+  return {
+    experimentType: ExperimentType.Boolean,
+    definition,
+    isEnabled: true,
+  };
 }
 
 ////////////////////////////
@@ -106,24 +125,26 @@ export function makeAccountExperimentWithEmptyValue(args: {
 ////////////////////////////
 export function makeBooleanExperimentOverride(args: {
   readonly experimentId: ExperimentId;
-  readonly value: boolean;
+  readonly isEnabled: boolean;
 }): BooleanExperimentOverride {
-  const {experimentId, value} = args;
+  const {experimentId, isEnabled} = args;
   return {
     experimentId,
     experimentType: ExperimentType.Boolean,
-    value,
+    isEnabled,
   };
 }
 
 export function makeStringExperimentOverride(args: {
   readonly experimentId: ExperimentId;
+  readonly isEnabled: boolean;
   readonly value: string;
 }): StringExperimentOverride {
-  const {experimentId, value} = args;
+  const {experimentId, isEnabled, value} = args;
   return {
     experimentId,
     experimentType: ExperimentType.String,
+    isEnabled,
     value,
   };
 }
@@ -234,12 +255,14 @@ export function getExperimentsForAccount(args: {
       case ExperimentType.Boolean:
         return makeBooleanAccountExperiment({
           definition,
-          value: typeof override?.value === 'boolean' ? override.value : undefined,
+          isEnabled:
+            typeof override?.value === 'boolean' ? override.value : definition.defaultValue,
         });
       case ExperimentType.String:
         return makeStringAccountExperiment({
           definition,
-          value: typeof override?.value === 'string' ? override.value : undefined,
+          isEnabled: true,
+          value: typeof override?.value === 'string' ? override.value : definition.defaultValue,
         });
       default:
         assertNever(definition);
@@ -255,5 +278,5 @@ export function isBooleanExperimentEnabled(
     return false;
   }
 
-  return accountExperiment.value;
+  return accountExperiment.isEnabled;
 }
