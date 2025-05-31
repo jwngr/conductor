@@ -1,5 +1,5 @@
 import type React from 'react';
-import {useCallback} from 'react';
+import {useCallback, useRef, useState} from 'react';
 import {toast} from 'sonner';
 
 import {logger} from '@shared/services/logger.shared';
@@ -47,10 +47,14 @@ const BooleanExperimentControl: React.FC<{
         isEnabled: isChecked,
       });
 
+      const enableOrDisable = isChecked ? 'enable' : 'disable';
       if (!updateResult.success) {
         logger.error(updateResult.error, {experiment, isChecked});
-        toast.error('Failed to update experiment value');
+        toast.error(`Failed to ${enableOrDisable} experiment`);
+        return;
       }
+
+      toast(`Experiment ${enableOrDisable}d`);
     },
     [experiment, experimentsService]
   );
@@ -62,8 +66,34 @@ const StringExperimentControl: React.FC<{
   readonly experiment: StringAccountExperiment;
 }> = ({experiment}) => {
   const experimentsService = useExperimentsStore((state) => state.experimentsService);
+  const [inputValue, setInputValue] = useState(experiment.value);
 
-  const handleStringValueChanged = useCallback(
+  const handleStringExperimentEnabled = useCallback(
+    async (isChecked: boolean) => {
+      if (!experimentsService) return;
+
+      const updateResult = await experimentsService.setStringExperimentValue({
+        experimentId: experiment.definition.experimentId,
+        isEnabled: isChecked,
+        value: experiment.value,
+      });
+
+      const enableOrDisable = isChecked ? 'enable' : 'disable';
+      if (!updateResult.success) {
+        logger.error(updateResult.error, {
+          experiment: experiment,
+          isChecked,
+        });
+        toast.error(`Failed to ${enableOrDisable} experiment`);
+        return;
+      }
+
+      toast(`Experiment ${enableOrDisable}d`);
+    },
+    [experiment, experimentsService]
+  );
+
+  const handleStringExperimentValueChanged = useCallback(
     async (value: string) => {
       if (!experimentsService) return;
 
@@ -79,17 +109,25 @@ const StringExperimentControl: React.FC<{
           value,
         });
         toast.error('Failed to update experiment value');
+        return;
       }
+
+      toast('Experiment value updated');
     },
     [experiment, experimentsService]
   );
 
   return (
-    <Input
-      value={experiment.value}
-      onChange={async (event) => await handleStringValueChanged(event.target.value)}
-      className="max-w-xs"
-    />
+    <FlexRow gap={2}>
+      <Input
+        value={inputValue}
+        onChange={(event) => setInputValue(event.target.value)}
+        onBlur={async () => await handleStringExperimentValueChanged(inputValue)}
+        className="max-w-xs"
+        disabled={!experiment.isEnabled}
+      />
+      <Checkbox checked={experiment.isEnabled} onCheckedChange={handleStringExperimentEnabled} />
+    </FlexRow>
   );
 };
 
