@@ -2,7 +2,7 @@ import {isInternalAccount} from '@shared/lib/accounts.shared';
 import {makeDefaultAccountExperimentsState} from '@shared/lib/experiments.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import {EmailAddress} from '@shared/types/emails.types';
+import type {EmailAddress} from '@shared/types/emails.types';
 import type {AccountExperimentsState} from '@shared/types/experiments.types';
 import type {AsyncResult} from '@shared/types/results.types';
 

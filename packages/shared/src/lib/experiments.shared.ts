@@ -4,7 +4,7 @@ import {
 } from '@shared/lib/experimentDefinitions.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
-import type {AccountId, EmailAddress} from '@shared/types/accounts.types';
+import type {AccountId} from '@shared/types/accounts.types';
 import type {Environment} from '@shared/types/environment.types';
 import type {
   AccountExperiment,

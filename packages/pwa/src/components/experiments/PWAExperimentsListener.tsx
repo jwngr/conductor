@@ -1,5 +1,7 @@
 import {useEffect} from 'react';
 
+import {isInternalAccount} from '@shared/lib/accounts.shared';
+
 import {Environment} from '@shared/types/environment.types';
 
 import {useExperimentsStore} from '@sharedClient/stores/ExperimentsStore';
@@ -21,6 +23,7 @@ export const PWAExperimentsListener: React.FC = () => {
       environment: Environment.PWA,
       accountId: loggedInAccount.accountId,
       accountExperimentsCollectionService,
+      isInternalAccount: isInternalAccount({email: loggedInAccount.email}),
     });
 
     setExperimentsService(pwaExperimentsService);
@@ -37,6 +40,7 @@ export const PWAExperimentsListener: React.FC = () => {
     resetExperimentsStore,
     accountExperimentsCollectionService,
     loggedInAccount.accountId,
+    loggedInAccount.email,
   ]);
 
   return null;
