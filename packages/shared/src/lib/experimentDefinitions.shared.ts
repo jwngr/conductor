@@ -7,6 +7,15 @@ import {
 import type {ExperimentDefinition} from '@shared/types/experiments.types';
 import {ExperimentId, ExperimentVisibility} from '@shared/types/experiments.types';
 
+const DEBUG_EXPERIMENT = makeBooleanExperimentDefinition({
+  experimentId: ExperimentId.Debug,
+  environments: ALL_ENVIRONMENTS,
+  title: 'Debug',
+  description: 'Enables debug UI',
+  visibility: ExperimentVisibility.Internal,
+  defaultValue: true,
+});
+
 const INTERNAL_EXPERIMENT_1 = makeBooleanExperimentDefinition({
   experimentId: ExperimentId.Internal1,
   environments: ALL_ENVIRONMENTS,
@@ -45,6 +54,7 @@ const PUBLIC_EXPERIMENT_2 = makeStringExperimentDefinition({
 });
 
 export const ALL_EXPERIMENT_DEFINITIONS: Record<ExperimentId, ExperimentDefinition> = {
+  [ExperimentId.Debug]: DEBUG_EXPERIMENT,
   [ExperimentId.Internal1]: INTERNAL_EXPERIMENT_1,
   [ExperimentId.Internal2]: INTERNAL_EXPERIMENT_2,
   [ExperimentId.Public1]: PUBLIC_EXPERIMENT_1,
@@ -52,6 +62,7 @@ export const ALL_EXPERIMENT_DEFINITIONS: Record<ExperimentId, ExperimentDefiniti
 };
 
 export const ORDERED_EXPERIMENT_IDS = [
+  ExperimentId.Debug,
   ExperimentId.Public1,
   ExperimentId.Public2,
   ExperimentId.Internal1,

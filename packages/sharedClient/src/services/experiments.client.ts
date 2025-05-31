@@ -7,7 +7,7 @@ import {prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {ALL_EXPERIMENT_DEFINITIONS} from '@shared/lib/experimentDefinitions.shared';
 import {
   getExperimentsForAccount,
-  makeAccountExperimentWithDefaultValue,
+  makeAccountExperimentWithEmptyValue,
   makeBooleanExperimentOverride,
   makeDefaultAccountExperimentsState,
   makeStringExperimentOverride,
@@ -39,14 +39,17 @@ export class ClientExperimentsService {
   private readonly accountExperimentsCollectionService: ClientAccountExperimentsCollectionService;
   private readonly accountId: AccountId;
   private readonly unsubscribeWatcher: Unsubscribe;
+  private readonly isInternalAccount: boolean;
   private accountExperimentsState: AccountExperimentsState | null = null;
 
   constructor(args: {
     readonly accountId: AccountId;
+    readonly isInternalAccount: boolean;
     readonly environment: ClientEnvironment;
     readonly accountExperimentsCollectionService: ClientAccountExperimentsCollectionService;
   }) {
     this.accountId = args.accountId;
+    this.isInternalAccount = args.isInternalAccount;
     this.environment = args.environment;
     this.accountExperimentsCollectionService = args.accountExperimentsCollectionService;
 
@@ -69,8 +72,13 @@ export class ClientExperimentsService {
       this.accountId,
       (accountExperimentsState) => {
         if (!accountExperimentsState) {
-          // If no account experiments state is found, assume default experiment values.
-          callback(makeDefaultAccountExperimentsState({accountId: this.accountId}));
+          // If no account experiments state is found, assume default state.
+          callback(
+            makeDefaultAccountExperimentsState({
+              accountId: this.accountId,
+              isInternalAccount: this.isInternalAccount,
+            })
+          );
           return;
         }
 
@@ -89,7 +97,12 @@ export class ClientExperimentsService {
         logger.error(prefixError(error, message));
 
         // Assume default experiment values in error case.
-        callback(makeDefaultAccountExperimentsState({accountId: this.accountId}));
+        callback(
+          makeDefaultAccountExperimentsState({
+            accountId: this.accountId,
+            isInternalAccount: this.isInternalAccount,
+          })
+        );
       }
     );
   }
@@ -112,9 +125,6 @@ export class ClientExperimentsService {
     const {experimentId, callback} = args;
 
     const experimentDefinition = ALL_EXPERIMENT_DEFINITIONS[experimentId];
-    const defaultAccountExperiment = makeAccountExperimentWithDefaultValue({
-      experimentDefinition,
-    });
 
     const unsubscribe = this.watchAccountExperiments((accountExperiments) => {
       const accountExperiment = accountExperiments.find(
@@ -126,7 +136,7 @@ export class ClientExperimentsService {
       // TODO: Should I be throwing an error here? Could this leak an experiment for
       // an account that doesn't have access to it?
       if (!accountExperiment) {
-        callback(defaultAccountExperiment);
+        callback(makeAccountExperimentWithEmptyValue({experimentDefinition}));
         return;
       }
 

@@ -4,7 +4,7 @@ import {
 } from '@shared/lib/experimentDefinitions.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
-import type {AccountId} from '@shared/types/accounts.types';
+import type {AccountId, EmailAddress} from '@shared/types/accounts.types';
 import type {Environment} from '@shared/types/environment.types';
 import type {
   AccountExperiment,
@@ -81,7 +81,7 @@ export function makeStringAccountExperiment(args: {
   };
 }
 
-export function makeAccountExperimentWithDefaultValue(args: {
+export function makeAccountExperimentWithEmptyValue(args: {
   readonly experimentDefinition: ExperimentDefinition;
 }): AccountExperiment {
   const {experimentDefinition} = args;
@@ -89,12 +89,12 @@ export function makeAccountExperimentWithDefaultValue(args: {
     case ExperimentType.Boolean:
       return makeBooleanAccountExperiment({
         definition: experimentDefinition,
-        value: experimentDefinition.defaultValue,
+        value: false,
       });
     case ExperimentType.String:
       return makeStringAccountExperiment({
         definition: experimentDefinition,
-        value: experimentDefinition.defaultValue,
+        value: '',
       });
     default:
       assertNever(experimentDefinition);
@@ -131,15 +131,20 @@ export function makeStringExperimentOverride(args: {
 /////////////////////////////////
 //  ACCOUNT EXPERIMENTS STATE  //
 /////////////////////////////////
-const DEFAULT_ACCOUNT_EXPERIMENT_VISIBILITY = ExperimentVisibility.Public;
 
 export function makeDefaultAccountExperimentsState(args: {
   readonly accountId: AccountId;
+  readonly isInternalAccount: boolean;
 }): AccountExperimentsState {
-  const {accountId} = args;
+  const {accountId, isInternalAccount} = args;
+
+  const accountVisibility = isInternalAccount
+    ? ExperimentVisibility.Internal
+    : ExperimentVisibility.Public;
+
   return {
     accountId,
-    accountVisibility: DEFAULT_ACCOUNT_EXPERIMENT_VISIBILITY,
+    accountVisibility,
     experimentOverrides: {},
     // TODO(timestamps): Use server timestamps instead.
     createdTime: new Date(),

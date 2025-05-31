@@ -52,7 +52,7 @@ export class ServerAccountsService {
 
     const createAccountResult = await asyncTryAll([
       this.createAccountsDoc({accountId, email}),
-      this.experimentsService.initializeForAccount({accountId}),
+      this.experimentsService.initializeForAccount({accountId, email}),
     ]);
 
     if (!createAccountResult.success) {

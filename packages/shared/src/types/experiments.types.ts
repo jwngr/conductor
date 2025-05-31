@@ -3,6 +3,7 @@ import type {Environment} from '@shared/types/environment.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 
 export enum ExperimentId {
+  Debug = 'DEBUG',
   Internal1 = 'INTERNAL_1',
   Internal2 = 'INTERNAL_2',
   Public1 = 'PUBLIC_1',
