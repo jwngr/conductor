@@ -107,7 +107,10 @@ export const initializeAccountOnAuthCreate = auth.user().onCreate(async (firebas
   const email = firebaseUser.email;
   const logDetails = {firebaseUid, email} as const;
 
-  logger.log(`[CREATE ACCOUNT] Firebase user created. Processing account creation...`, logDetails);
+  logger.log(
+    `[CREATE ACCOUNT] Firebase user created. Processing account initialization...`,
+    logDetails
+  );
 
   const createAccountResult = await handleCreateAccount({
     firebaseUid,
@@ -116,15 +119,13 @@ export const initializeAccountOnAuthCreate = auth.user().onCreate(async (firebas
   });
 
   if (!createAccountResult.success) {
-    const betterError = prefixError(
-      createAccountResult.error,
-      '[CREATE ACCOUNT] Failed to create account'
-    );
+    const message = '[CREATE ACCOUNT] Failed to initialize account';
+    const betterError = prefixError(createAccountResult.error, message);
     logger.error(betterError, logDetails);
     return;
   }
 
-  logger.log(`[CREATE ACCOUNT] Successfully created account`, logDetails);
+  logger.log(`[CREATE ACCOUNT] Successfully initialized account`, logDetails);
 });
 
 /**
