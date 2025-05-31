@@ -72,12 +72,12 @@ interface BaseExperimentOverride {
   readonly experimentType: ExperimentType;
 }
 
-interface BooleanExperimentOverride extends BaseExperimentOverride {
+export interface BooleanExperimentOverride extends BaseExperimentOverride {
   readonly experimentType: ExperimentType.Boolean;
   readonly value: boolean;
 }
 
-interface StringExperimentOverride extends BaseExperimentOverride {
+export interface StringExperimentOverride extends BaseExperimentOverride {
   readonly experimentType: ExperimentType.String;
   readonly value: string;
 }

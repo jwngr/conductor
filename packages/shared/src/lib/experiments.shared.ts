@@ -1,4 +1,7 @@
-import {ALL_EXPERIMENT_DEFINITIONS} from '@shared/lib/experimentDefinitions.shared';
+import {
+  ALL_EXPERIMENT_DEFINITIONS,
+  ORDERED_EXPERIMENT_IDS,
+} from '@shared/lib/experimentDefinitions.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import type {Environment} from '@shared/types/environment.types';
@@ -7,57 +10,108 @@ import type {
   AccountExperimentOverrides,
   BooleanAccountExperiment,
   BooleanExperimentDefinition,
+  BooleanExperimentOverride,
   ExperimentDefinition,
+  ExperimentId,
   StringAccountExperiment,
   StringExperimentDefinition,
+  StringExperimentOverride,
 } from '@shared/types/experiments.types';
 import {ExperimentType, ExperimentVisibility} from '@shared/types/experiments.types';
 
 export function makeBooleanExperimentDefinition(
   args: Omit<BooleanExperimentDefinition, 'experimentType'>
 ): BooleanExperimentDefinition {
+  const {experimentId, environments, title, description, visibility, defaultValue} = args;
   return {
-    experimentId: args.experimentId,
+    experimentId,
     experimentType: ExperimentType.Boolean,
-    environments: args.environments,
-    title: args.title,
-    description: args.description,
-    visibility: args.visibility,
-    defaultValue: args.defaultValue,
+    environments,
+    title,
+    description,
+    visibility,
+    defaultValue,
   };
 }
 
 export function makeStringExperimentDefinition(
   args: Omit<StringExperimentDefinition, 'experimentType'>
 ): StringExperimentDefinition {
+  const {experimentId, environments, title, description, visibility, defaultValue} = args;
   return {
-    experimentId: args.experimentId,
+    experimentId,
     experimentType: ExperimentType.String,
-    environments: args.environments,
-    title: args.title,
-    description: args.description,
-    visibility: args.visibility,
-    defaultValue: args.defaultValue,
+    environments,
+    title,
+    description,
+    visibility,
+    defaultValue,
   };
 }
 
-export function makeBooleanExperimentState(args: {
+export function makeBooleanAccountExperiment(args: {
   readonly definition: BooleanExperimentDefinition;
   readonly value: boolean | undefined;
 }): BooleanAccountExperiment {
+  const {definition, value} = args;
   return {
-    definition: args.definition,
-    value: typeof args.value === 'undefined' ? args.definition.defaultValue : args.value,
+    definition,
+    value: typeof value === 'undefined' ? definition.defaultValue : value,
   };
 }
 
-export function makeStringExperimentState(args: {
+export function makeStringAccountExperiment(args: {
   readonly definition: StringExperimentDefinition;
   readonly value: string | undefined;
 }): StringAccountExperiment {
+  const {definition, value} = args;
   return {
-    definition: args.definition,
-    value: typeof args.value === 'undefined' ? args.definition.defaultValue : args.value,
+    definition,
+    value: typeof value === 'undefined' ? definition.defaultValue : value,
+  };
+}
+
+export function makeAccountExperimentWithDefaultValue(args: {
+  readonly experimentDefinition: ExperimentDefinition;
+}): AccountExperiment {
+  const {experimentDefinition} = args;
+  switch (experimentDefinition.experimentType) {
+    case ExperimentType.Boolean:
+      return makeBooleanAccountExperiment({
+        definition: experimentDefinition,
+        value: experimentDefinition.defaultValue,
+      });
+    case ExperimentType.String:
+      return makeStringAccountExperiment({
+        definition: experimentDefinition,
+        value: experimentDefinition.defaultValue,
+      });
+    default:
+      assertNever(experimentDefinition);
+  }
+}
+
+export function makeBooleanExperimentOverride(args: {
+  readonly experimentId: ExperimentId;
+  readonly value: boolean;
+}): BooleanExperimentOverride {
+  const {experimentId, value} = args;
+  return {
+    experimentId,
+    experimentType: ExperimentType.Boolean,
+    value,
+  };
+}
+
+export function makeStringExperimentOverride(args: {
+  readonly experimentId: ExperimentId;
+  readonly value: string;
+}): StringExperimentOverride {
+  const {experimentId, value} = args;
+  return {
+    experimentId,
+    experimentType: ExperimentType.String,
+    value,
   };
 }
 
@@ -102,16 +156,19 @@ export function isExperimentVisible(args: {
 }
 
 function filterExperimentsByVisibilityAndEnvironment(args: {
-  readonly experiments: readonly ExperimentDefinition[];
+  readonly experiments: Record<ExperimentId, ExperimentDefinition>;
+  readonly orderedExperimentIds: readonly ExperimentId[];
   readonly accountVisibility: ExperimentVisibility;
   readonly environment: Environment;
-}): readonly ExperimentDefinition[] {
-  const {experiments, accountVisibility, environment} = args;
-  return experiments.filter(
-    (experiment) =>
+}): readonly ExperimentId[] {
+  const {experiments, orderedExperimentIds, accountVisibility, environment} = args;
+  return orderedExperimentIds.filter((experimentId) => {
+    const experiment = experiments[experimentId];
+    return (
       isExperimentVisible({experiment, accountVisibility}) &&
       isExperimentEnabledForEnvironment({experiment, environment})
-  );
+    );
+  });
 }
 
 export function getExperimentsForAccount(args: {
@@ -122,24 +179,26 @@ export function getExperimentsForAccount(args: {
   const {accountVisibility, environment, accountOverrides: experimentOverrides} = args;
 
   // Filter by visibility and environment.
-  const filteredExperimentDefinitions = filterExperimentsByVisibilityAndEnvironment({
+  const filteredExperimentIds = filterExperimentsByVisibilityAndEnvironment({
     experiments: ALL_EXPERIMENT_DEFINITIONS,
+    orderedExperimentIds: ORDERED_EXPERIMENT_IDS,
     accountVisibility,
     environment,
   });
 
   // Merge user overrides into default values.
-  return filteredExperimentDefinitions.map((definition) => {
+  return filteredExperimentIds.map((experimentId) => {
+    const definition = ALL_EXPERIMENT_DEFINITIONS[experimentId];
     const override = experimentOverrides[definition.experimentId];
 
     switch (definition.experimentType) {
       case ExperimentType.Boolean:
-        return makeBooleanExperimentState({
+        return makeBooleanAccountExperiment({
           definition,
           value: typeof override?.value === 'boolean' ? override.value : undefined,
         });
       case ExperimentType.String:
-        return makeStringExperimentState({
+        return makeStringAccountExperiment({
           definition,
           value: typeof override?.value === 'string' ? override.value : undefined,
         });

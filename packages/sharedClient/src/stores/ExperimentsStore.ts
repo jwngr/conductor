@@ -19,7 +19,7 @@ export const useExperimentsStore = create<ExperimentsStoreState>((set, get) => (
   experiments: [],
 
   // Actions.
-  setExperiments: (experimentStates) => set({experiments: experimentStates}),
+  setExperiments: (experiments) => set({experiments}),
 
   // Getters.
   getExperimentState: (experimentId): AccountExperiment | undefined => {

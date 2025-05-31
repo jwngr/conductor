@@ -208,6 +208,8 @@ export function toStorageAccountExperimentsState(
   return omitUndefined({
     accountId: state.accountId,
     accountVisibility: state.accountVisibility,
-    experimentOverrides: omitUndefined(state.experimentOverrides),
+    experimentOverrides: state.experimentOverrides,
+    createdTime: state.createdTime,
+    lastUpdatedTime: state.lastUpdatedTime,
   });
 }

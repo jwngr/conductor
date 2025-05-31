@@ -4,7 +4,13 @@ import {logger} from '@shared/services/logger.shared';
 
 import {ACCOUNT_EXPERIMENTS_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {getExperimentsForAccount} from '@shared/lib/experiments.shared';
+import {ALL_EXPERIMENT_DEFINITIONS} from '@shared/lib/experimentDefinitions.shared';
+import {
+  getExperimentsForAccount,
+  makeAccountExperimentWithDefaultValue,
+  makeBooleanExperimentOverride,
+  makeStringExperimentOverride,
+} from '@shared/lib/experiments.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {
@@ -19,7 +25,7 @@ import type {
   AccountExperimentsState,
   ExperimentId,
 } from '@shared/types/experiments.types';
-import {ExperimentVisibility} from '@shared/types/experiments.types';
+import {ExperimentType, ExperimentVisibility} from '@shared/types/experiments.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
@@ -32,9 +38,10 @@ const DEFAULT_ACCOUNT_EXPERIMENT_VISIBILITY = ExperimentVisibility.Public;
 
 export class ClientExperimentsService {
   private readonly environment: ClientEnvironment;
-  private accountExperimentsCollectionService: ClientAccountExperimentsCollectionService;
-  private accountExperimentsState: AccountExperimentsState | null = null;
+  private readonly accountExperimentsCollectionService: ClientAccountExperimentsCollectionService;
   private readonly accountId: AccountId;
+  private readonly unsubscribeWatcher: Unsubscribe;
+  private accountExperimentsState: AccountExperimentsState | null = null;
 
   constructor(args: {
     readonly accountId: AccountId;
@@ -45,9 +52,13 @@ export class ClientExperimentsService {
     this.environment = args.environment;
     this.accountExperimentsCollectionService = args.accountExperimentsCollectionService;
 
-    this.watchAccountExperimentsState((accountExperimentsState) => {
+    this.unsubscribeWatcher = this.watchAccountExperimentsState((accountExperimentsState) => {
       this.accountExperimentsState = accountExperimentsState;
     });
+  }
+
+  public destroy(): void {
+    this.unsubscribeWatcher();
   }
 
   private watchAccountExperimentsState(callback: Consumer<AccountExperimentsState>): Unsubscribe {
@@ -101,12 +112,12 @@ export class ClientExperimentsService {
 
   public watchAccountExperiments(callback: Consumer<readonly AccountExperiment[]>): Unsubscribe {
     return this.watchAccountExperimentsState((accountExperimentsState) => {
-      const experimentStates = getExperimentsForAccount({
+      const accountExperiments = getExperimentsForAccount({
         environment: this.environment,
         accountVisibility: accountExperimentsState.accountVisibility,
         accountOverrides: accountExperimentsState.experimentOverrides,
       });
-      callback(experimentStates);
+      callback(accountExperiments);
     });
   }
 
@@ -116,12 +127,26 @@ export class ClientExperimentsService {
   }): Unsubscribe {
     const {experimentId, callback} = args;
 
-    const unsubscribe = this.watchAccountExperiments((experiments) => {
-      const experiment = experiments.find(
-        (experiment) => experiment.definition.experimentId === experimentId
+    const experimentDefinition = ALL_EXPERIMENT_DEFINITIONS[experimentId];
+    const defaultAccountExperiment = makeAccountExperimentWithDefaultValue({
+      experimentDefinition,
+    });
+
+    const unsubscribe = this.watchAccountExperiments((accountExperiments) => {
+      const accountExperiment = accountExperiments.find(
+        (exp) => exp.definition.experimentId === experimentId
       );
 
-      callback(experiment);
+      // If an experiment is not found in the account's list of visible experiments,
+      // assume it has the default value.
+      // TODO: Should I be throwing an error here? Could this leak an experiment for
+      // an account that doesn't have access to it?
+      if (!accountExperiment) {
+        callback(defaultAccountExperiment);
+        return;
+      }
+
+      callback(accountExperiment);
     });
 
     return () => unsubscribe();
@@ -135,7 +160,12 @@ export class ClientExperimentsService {
 
     const updateResult = await this.accountExperimentsCollectionService.setDocWithMerge(
       this.accountId,
-      {[`experimentOverrides.${experimentId}`]: value}
+      {
+        [`experimentOverrides.${experimentId}`]: makeBooleanExperimentOverride({
+          experimentId,
+          value,
+        }),
+      }
     );
     return prefixResultIfError(updateResult, 'Error updating boolean experiment value');
   }
@@ -148,7 +178,12 @@ export class ClientExperimentsService {
 
     const updateResult = await this.accountExperimentsCollectionService.setDocWithMerge(
       this.accountId,
-      {[`experimentOverrides.${experimentId}`]: value}
+      {
+        [`experimentOverrides.${experimentId}`]: makeStringExperimentOverride({
+          experimentId,
+          value,
+        }),
+      }
     );
     return prefixResultIfError(updateResult, 'Error updating string experiment value');
   }

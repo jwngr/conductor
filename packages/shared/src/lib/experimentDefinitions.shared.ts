@@ -41,9 +41,16 @@ const PUBLIC_EXPERIMENT_2 = makeBooleanExperimentDefinition({
   defaultValue: true,
 });
 
-export const ALL_EXPERIMENT_DEFINITIONS: ExperimentDefinition[] = [
-  INTERNAL_EXPERIMENT_1,
-  INTERNAL_EXPERIMENT_2,
-  PUBLIC_EXPERIMENT_1,
-  PUBLIC_EXPERIMENT_2,
+export const ALL_EXPERIMENT_DEFINITIONS: Record<ExperimentId, ExperimentDefinition> = {
+  [ExperimentId.Internal1]: INTERNAL_EXPERIMENT_1,
+  [ExperimentId.Internal2]: INTERNAL_EXPERIMENT_2,
+  [ExperimentId.Public1]: PUBLIC_EXPERIMENT_1,
+  [ExperimentId.Public2]: PUBLIC_EXPERIMENT_2,
+};
+
+export const ORDERED_EXPERIMENT_IDS = [
+  ExperimentId.Public1,
+  ExperimentId.Public2,
+  ExperimentId.Internal1,
+  ExperimentId.Internal2,
 ];
