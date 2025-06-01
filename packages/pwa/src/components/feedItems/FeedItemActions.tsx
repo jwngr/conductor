@@ -78,10 +78,10 @@ const MarkDoneFeedItemActionIcon: React.FC<{
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}
       getIsActive={SharedFeedItemHelpers.isMarkedDone}
-      performAction={() =>
+      performAction={async () =>
         isDone
-          ? feedItemsService.markFeedItemAsUndone(feedItem.feedItemId)
-          : feedItemsService.markFeedItemAsDone(feedItem.feedItemId)
+          ? await feedItemsService.markFeedItemAsUndone(feedItem.feedItemId)
+          : await feedItemsService.markFeedItemAsDone(feedItem.feedItemId)
       }
     />
   );
@@ -101,10 +101,10 @@ const SaveFeedItemActionIcon: React.FC<{
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}
       getIsActive={SharedFeedItemHelpers.isSaved}
-      performAction={() =>
+      performAction={async () =>
         isSaved
-          ? feedItemsService.unsaveFeedItem(feedItem.feedItemId)
-          : feedItemsService.saveFeedItem(feedItem.feedItemId)
+          ? await feedItemsService.unsaveFeedItem(feedItem.feedItemId)
+          : await feedItemsService.saveFeedItem(feedItem.feedItemId)
       }
     />
   );
@@ -124,10 +124,10 @@ const MarkUnreadFeedItemActionIcon: React.FC<{
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}
       getIsActive={SharedFeedItemHelpers.isUnread}
-      performAction={() =>
+      performAction={async () =>
         isUnread
-          ? feedItemsService.markFeedItemAsRead(feedItem.feedItemId)
-          : feedItemsService.markFeedItemAsUnread(feedItem.feedItemId)
+          ? await feedItemsService.markFeedItemAsRead(feedItem.feedItemId)
+          : await feedItemsService.markFeedItemAsUnread(feedItem.feedItemId)
       }
     />
   );
@@ -147,10 +147,10 @@ const StarFeedItemActionIcon: React.FC<{
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}
       getIsActive={SharedFeedItemHelpers.isStarred}
-      performAction={() =>
+      performAction={async () =>
         isStarred
-          ? feedItemsService.unstarFeedItem(feedItem.feedItemId)
-          : feedItemsService.starFeedItem(feedItem.feedItemId)
+          ? await feedItemsService.unstarFeedItem(feedItem.feedItemId)
+          : await feedItemsService.starFeedItem(feedItem.feedItemId)
       }
     />
   );
@@ -169,7 +169,7 @@ const RetryImportActionIcon: React.FC<{
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}
       getIsActive={noopFalse}
-      performAction={() => feedItemsService.retryImport(feedItem)}
+      performAction={async () => await feedItemsService.retryImport(feedItem)}
       disabled={feedItem.importState.status === FeedItemImportStatus.Processing}
     />
   );
