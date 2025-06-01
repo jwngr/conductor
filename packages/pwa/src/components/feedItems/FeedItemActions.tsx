@@ -10,7 +10,7 @@ import {FeedItemImportStatus} from '@shared/types/feedItems.types';
 import type {IconName} from '@shared/types/icons.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
-import type {UndoableAction, UndoableActionFn} from '@shared/types/undo.types';
+import type {UndoableActionFn} from '@shared/types/undo.types';
 import type {Func} from '@shared/types/utils.types';
 
 import {useFeedItemsService} from '@sharedClient/hooks/feedItems.hooks';
@@ -41,8 +41,8 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
   const isCurrentlyActive = useMemo(() => getIsActive(feedItem), [getIsActive, feedItem]);
 
   const handleAction = useCallback(
-    async (event?: MouseEvent<HTMLDivElement>): AsyncResult<UndoableAction | null> => {
-      if (disabled) return makeSuccessResult(null);
+    async (event?: MouseEvent<HTMLDivElement>): AsyncResult<void> => {
+      if (disabled) return makeSuccessResult(undefined);
 
       event?.stopPropagation();
       event?.preventDefault();

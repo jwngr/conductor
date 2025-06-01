@@ -15,7 +15,6 @@ import type {FeedItem, FeedItemId, FeedItemWithUrl} from '@shared/types/feedItem
 import {fromQueryFilterOp} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import {SystemTagId} from '@shared/types/tags.types';
-import type {UndoableAction} from '@shared/types/undo.types';
 import type {Consumer} from '@shared/types/utils.types';
 import type {ViewType} from '@shared/types/views.types';
 
@@ -174,7 +173,7 @@ export class ClientFeedItemsService {
     return this.getFileFromStorage({feedItemId, filename: FEED_ITEM_FILE_TRANSCRIPT});
   }
 
-  public async markFeedItemAsDone(feedItemId: FeedItemId): AsyncResult<UndoableAction> {
+  public async markFeedItemAsDone(feedItemId: FeedItemId): AsyncResult<void> {
     return this.performFeedItemActionWithUndo({
       feedItemId,
       targetState: {triageStatus: TriageStatus.Done},
@@ -187,7 +186,7 @@ export class ClientFeedItemsService {
     });
   }
 
-  public async markFeedItemAsUndone(feedItemId: FeedItemId): AsyncResult<UndoableAction> {
+  public async markFeedItemAsUndone(feedItemId: FeedItemId): AsyncResult<void> {
     return this.performFeedItemActionWithUndo({
       feedItemId,
       targetState: {triageStatus: TriageStatus.Untriaged},
@@ -200,7 +199,7 @@ export class ClientFeedItemsService {
     });
   }
 
-  public async markFeedItemAsRead(feedItemId: FeedItemId): AsyncResult<UndoableAction> {
+  public async markFeedItemAsRead(feedItemId: FeedItemId): AsyncResult<void> {
     return this.performFeedItemActionWithUndo({
       feedItemId,
       targetState: {[`tagIds.${SystemTagId.Unread}`]: false} as Partial<FeedItem>,
@@ -213,7 +212,7 @@ export class ClientFeedItemsService {
     });
   }
 
-  public async markFeedItemAsUnread(feedItemId: FeedItemId): AsyncResult<UndoableAction> {
+  public async markFeedItemAsUnread(feedItemId: FeedItemId): AsyncResult<void> {
     return this.performFeedItemActionWithUndo({
       feedItemId,
       targetState: {[`tagIds.${SystemTagId.Unread}`]: true} as Partial<FeedItem>,
@@ -226,7 +225,7 @@ export class ClientFeedItemsService {
     });
   }
 
-  public async starFeedItem(feedItemId: FeedItemId): AsyncResult<UndoableAction> {
+  public async starFeedItem(feedItemId: FeedItemId): AsyncResult<void> {
     return this.performFeedItemActionWithUndo({
       feedItemId,
       targetState: {[`tagIds.${SystemTagId.Starred}`]: true} as Partial<FeedItem>,
@@ -239,7 +238,7 @@ export class ClientFeedItemsService {
     });
   }
 
-  public async unstarFeedItem(feedItemId: FeedItemId): AsyncResult<UndoableAction> {
+  public async unstarFeedItem(feedItemId: FeedItemId): AsyncResult<void> {
     return this.performFeedItemActionWithUndo({
       feedItemId,
       targetState: {[`tagIds.${SystemTagId.Starred}`]: false} as Partial<FeedItem>,
@@ -252,7 +251,7 @@ export class ClientFeedItemsService {
     });
   }
 
-  public async saveFeedItem(feedItemId: FeedItemId): AsyncResult<UndoableAction> {
+  public async saveFeedItem(feedItemId: FeedItemId): AsyncResult<void> {
     return this.performFeedItemActionWithUndo({
       feedItemId,
       targetState: {triageStatus: TriageStatus.Saved},
@@ -265,7 +264,7 @@ export class ClientFeedItemsService {
     });
   }
 
-  public async unsaveFeedItem(feedItemId: FeedItemId): AsyncResult<UndoableAction> {
+  public async unsaveFeedItem(feedItemId: FeedItemId): AsyncResult<void> {
     return this.performFeedItemActionWithUndo({
       feedItemId,
       targetState: {triageStatus: TriageStatus.Untriaged},
@@ -278,7 +277,7 @@ export class ClientFeedItemsService {
     });
   }
 
-  public async retryImport(feedItem: FeedItem): AsyncResult<UndoableAction> {
+  public async retryImport(feedItem: FeedItem): AsyncResult<void> {
     return this.performFeedItemActionWithUndo({
       feedItemId: feedItem.feedItemId,
       targetState: {
@@ -308,7 +307,7 @@ export class ClientFeedItemsService {
     readonly originalActionType: FeedItemActionType;
     readonly toastMessage: string | React.ReactNode;
     readonly errorToastMessage: string | React.ReactNode;
-  }): AsyncResult<UndoableAction> {
+  }): AsyncResult<void> {
     const {feedItemId, targetState, undoState, undoMessage, undoFailureMessage} = args;
     const {originalActionType, toastMessage, errorToastMessage} = args;
 
@@ -323,7 +322,7 @@ export class ClientFeedItemsService {
       feedItemActionType: originalActionType,
     });
 
-    // Actions with undo show a toast with an undo button.
+    // Show a toast with an undo button.
     toastWithUndo({
       message: toastMessage,
       undoMessage: undoMessage,
@@ -342,17 +341,6 @@ export class ClientFeedItemsService {
       },
     });
 
-    const undoAction = async (): AsyncResult<void> => {
-      const undoResult = await this.updateFeedItem(feedItemId, undoState);
-      if (!undoResult.success) return undoResult;
-      return makeSuccessResult(undefined);
-    };
-
-    return makeSuccessResult({
-      undoAction,
-      undoMessage,
-      undoFailureMessage,
-      originalActionType,
-    });
+    return makeSuccessResult(undefined);
   }
 }
