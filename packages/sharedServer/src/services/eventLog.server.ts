@@ -4,12 +4,12 @@ import {logger} from '@shared/services/logger.shared';
 
 import {SYSTEM_ACTOR} from '@shared/lib/actors.shared';
 import {prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {makeFeedItemImportedEventLogItem} from '@shared/lib/eventLog.shared';
+import {makeEventLogItem, makeFeedItemImportedEventLogItemData} from '@shared/lib/eventLog.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {ServerEnvironment} from '@shared/types/environment.types';
-import type {EventId, EventLogItem} from '@shared/types/eventLog.types';
+import type {EventId, EventLogItem, EventLogItemData} from '@shared/types/eventLog.types';
 import type {FeedItemId} from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
@@ -52,18 +52,26 @@ export class ServerEventLogService {
     return makeSuccessResult(eventLogItem);
   }
 
+  private makeEventLogItem(args: {
+    readonly accountId: AccountId;
+    readonly data: EventLogItemData;
+  }): EventLogItem {
+    const {accountId, data} = args;
+    return makeEventLogItem({
+      accountId,
+      actor: SYSTEM_ACTOR,
+      environment: this.environment,
+      data,
+    });
+  }
+
   public async logFeedItemImportedEvent(args: {
     readonly accountId: AccountId;
     readonly feedItemId: FeedItemId;
   }): AsyncResult<EventLogItem> {
     const {accountId, feedItemId} = args;
-    const eventLogItem = makeFeedItemImportedEventLogItem({
-      accountId,
-      actor: SYSTEM_ACTOR,
-      feedItemId,
-      environment: this.environment,
-    });
-
+    const eventLogItemData = makeFeedItemImportedEventLogItemData({feedItemId});
+    const eventLogItem = this.makeEventLogItem({accountId, data: eventLogItemData});
     return this.logEvent(eventLogItem);
   }
 

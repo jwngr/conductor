@@ -7,11 +7,12 @@ import {makeUserActor} from '@shared/lib/actors.shared';
 import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {
-  makeExperimentDisabledEventLogItem,
-  makeExperimentEnabledEventLogItem,
-  makeFeedItemActionEventLogItem,
-  makeStringExperimentValueChangedEventLogItem,
-  makeUserFeedSubscriptionEventLogItem,
+  makeEventLogItem,
+  makeExperimentDisabledEventLogItemData,
+  makeExperimentEnabledEventLogItemData,
+  makeFeedItemActionEventLogItemData,
+  makeStringExperimentValueChangedEventLogItemData,
+  makeUserFeedSubscriptionEventLogItemData,
 } from '@shared/lib/eventLog.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {filterNull} from '@shared/lib/utils.shared';
@@ -25,7 +26,7 @@ import {
 import type {AccountId} from '@shared/types/accounts.types';
 import type {AsyncState} from '@shared/types/asyncState.types';
 import {Environment} from '@shared/types/environment.types';
-import type {EventId, EventLogItem} from '@shared/types/eventLog.types';
+import type {EventId, EventLogItem, EventLogItemData} from '@shared/types/eventLog.types';
 import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/results.types';
@@ -174,19 +175,22 @@ export class ClientEventLogService {
     return makeSuccessResult(eventLogItem);
   }
 
+  private makeEventLogItem(data: EventLogItemData): EventLogItem {
+    return makeEventLogItem({
+      accountId: this.accountId,
+      actor: makeUserActor(this.accountId),
+      environment: this.environment,
+      data,
+    });
+  }
+
   public async logFeedItemActionEvent(args: {
     readonly feedItemId: FeedItemId;
     readonly feedItemActionType: FeedItemActionType;
   }): AsyncResult<EventLogItem> {
     const {feedItemId, feedItemActionType} = args;
-    const eventLogItem = makeFeedItemActionEventLogItem({
-      accountId: this.accountId,
-      actor: makeUserActor(this.accountId),
-      environment: this.environment,
-      feedItemId,
-      feedItemActionType,
-    });
-
+    const eventLogItemData = makeFeedItemActionEventLogItemData({feedItemId, feedItemActionType});
+    const eventLogItem = this.makeEventLogItem(eventLogItemData);
     return this.logEvent(eventLogItem);
   }
 
@@ -194,12 +198,8 @@ export class ClientEventLogService {
     readonly userFeedSubscriptionId: UserFeedSubscriptionId;
   }): AsyncResult<EventLogItem> {
     const {userFeedSubscriptionId} = args;
-    const eventLogItem = makeUserFeedSubscriptionEventLogItem({
-      accountId: this.accountId,
-      actor: makeUserActor(this.accountId),
-      environment: this.environment,
-      userFeedSubscriptionId,
-    });
+    const eventLogItemData = makeUserFeedSubscriptionEventLogItemData({userFeedSubscriptionId});
+    const eventLogItem = this.makeEventLogItem(eventLogItemData);
 
     return this.logEvent(eventLogItem);
   }
@@ -209,13 +209,8 @@ export class ClientEventLogService {
     readonly experimentType: ExperimentType;
   }): AsyncResult<EventLogItem> {
     const {experimentId, experimentType} = args;
-    const eventLogItem = makeExperimentEnabledEventLogItem({
-      accountId: this.accountId,
-      actor: makeUserActor(this.accountId),
-      environment: this.environment,
-      experimentId,
-      experimentType,
-    });
+    const eventLogItemData = makeExperimentEnabledEventLogItemData({experimentId, experimentType});
+    const eventLogItem = this.makeEventLogItem(eventLogItemData);
 
     return this.logEvent(eventLogItem);
   }
@@ -225,13 +220,8 @@ export class ClientEventLogService {
     readonly experimentType: ExperimentType;
   }): AsyncResult<EventLogItem> {
     const {experimentId, experimentType} = args;
-    const eventLogItem = makeExperimentDisabledEventLogItem({
-      accountId: this.accountId,
-      actor: makeUserActor(this.accountId),
-      environment: this.environment,
-      experimentId,
-      experimentType,
-    });
+    const eventLogItemData = makeExperimentDisabledEventLogItemData({experimentId, experimentType});
+    const eventLogItem = this.makeEventLogItem(eventLogItemData);
 
     return this.logEvent(eventLogItem);
   }
@@ -241,13 +231,11 @@ export class ClientEventLogService {
     readonly value: string;
   }): AsyncResult<EventLogItem> {
     const {experimentId, value} = args;
-    const eventLogItem = makeStringExperimentValueChangedEventLogItem({
-      accountId: this.accountId,
-      actor: makeUserActor(this.accountId),
-      environment: this.environment,
+    const eventLogItemData = makeStringExperimentValueChangedEventLogItemData({
       experimentId,
       value,
     });
+    const eventLogItem = this.makeEventLogItem(eventLogItemData);
 
     return this.logEvent(eventLogItem);
   }

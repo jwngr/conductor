@@ -3,7 +3,17 @@ import {makeUuid} from '@shared/lib/utils.shared';
 import type {AccountId} from '@shared/types/accounts.types';
 import type {Actor} from '@shared/types/actors.types';
 import type {Environment} from '@shared/types/environment.types';
-import type {EventId, EventLogItem, EventLogItemData} from '@shared/types/eventLog.types';
+import type {
+  EventId,
+  EventLogItem,
+  EventLogItemData,
+  ExperimentDisabledEventLogItemData,
+  ExperimentEnabledEventLogItemData,
+  FeedItemActionEventLogItemData,
+  FeedItemImportedEventLogItemData,
+  StringExperimentValueChangedEventLogItemData,
+  UserFeedSubscriptionEventLogItemData,
+} from '@shared/types/eventLog.types';
 import {EventType} from '@shared/types/eventLog.types';
 import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
@@ -35,118 +45,73 @@ export function makeEventLogItem(args: {
   } as EventLogItem;
 }
 
-export function makeFeedItemActionEventLogItem(args: {
-  readonly accountId: AccountId;
-  readonly actor: Actor;
-  readonly environment: Environment;
+////////////////////////////////////////////////
+//  INDIVIDUAL EVENT LOG ITEM DATA FACTORIES  //
+////////////////////////////////////////////////
+export function makeFeedItemActionEventLogItemData(args: {
   readonly feedItemId: FeedItemId;
   readonly feedItemActionType: FeedItemActionType;
-}): EventLogItem {
-  const {accountId, actor, environment, feedItemId, feedItemActionType} = args;
-  return makeEventLogItem({
-    accountId,
-    actor,
-    environment,
-    data: {
-      eventType: EventType.FeedItemAction,
-      feedItemId,
-      feedItemActionType,
-    },
-  });
+}): FeedItemActionEventLogItemData {
+  const {feedItemId, feedItemActionType} = args;
+  return {
+    eventType: EventType.FeedItemAction,
+    feedItemId,
+    feedItemActionType,
+  };
 }
 
-export function makeFeedItemImportedEventLogItem(args: {
-  readonly accountId: AccountId;
-  readonly actor: Actor;
-  readonly environment: Environment;
+export function makeFeedItemImportedEventLogItemData(args: {
   readonly feedItemId: FeedItemId;
-}): EventLogItem {
-  const {accountId, actor, environment, feedItemId} = args;
-  return makeEventLogItem({
-    accountId,
-    actor,
-    environment,
-    data: {
-      eventType: EventType.FeedItemImported,
-      feedItemId,
-    },
-  });
+}): FeedItemImportedEventLogItemData {
+  const {feedItemId} = args;
+  return {
+    eventType: EventType.FeedItemImported,
+    feedItemId,
+  };
 }
 
-export function makeUserFeedSubscriptionEventLogItem(args: {
-  readonly accountId: AccountId;
-  readonly actor: Actor;
-  readonly environment: Environment;
+export function makeUserFeedSubscriptionEventLogItemData(args: {
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-}): EventLogItem {
-  const {accountId, actor, environment, userFeedSubscriptionId} = args;
-  return makeEventLogItem({
-    accountId,
-    actor,
-    environment,
-    data: {
-      eventType: EventType.UserFeedSubscription,
-      userFeedSubscriptionId,
-    },
-  });
+}): UserFeedSubscriptionEventLogItemData {
+  const {userFeedSubscriptionId} = args;
+  return {
+    eventType: EventType.UserFeedSubscription,
+    userFeedSubscriptionId,
+  };
 }
 
-export function makeExperimentEnabledEventLogItem(args: {
-  readonly accountId: AccountId;
-  readonly actor: Actor;
-  readonly environment: Environment;
+export function makeExperimentEnabledEventLogItemData(args: {
   readonly experimentId: ExperimentId;
   readonly experimentType: ExperimentType;
-}): EventLogItem {
-  const {accountId, actor, environment, experimentId, experimentType} = args;
-  return makeEventLogItem({
-    accountId,
-    actor,
-    environment,
-    data: {
-      eventType: EventType.ExperimentEnabled,
-      experimentId,
-      experimentType,
-    },
-  });
+}): ExperimentEnabledEventLogItemData {
+  const {experimentId, experimentType} = args;
+  return {
+    eventType: EventType.ExperimentEnabled,
+    experimentId,
+    experimentType,
+  };
 }
 
-export function makeExperimentDisabledEventLogItem(args: {
-  readonly accountId: AccountId;
-  readonly actor: Actor;
-  readonly environment: Environment;
+export function makeExperimentDisabledEventLogItemData(args: {
   readonly experimentId: ExperimentId;
   readonly experimentType: ExperimentType;
-}): EventLogItem {
-  const {accountId, actor, environment, experimentId, experimentType} = args;
-  return makeEventLogItem({
-    accountId,
-    actor,
-    environment,
-    data: {
-      eventType: EventType.ExperimentDisabled,
-      experimentId,
-      experimentType,
-    },
-  });
+}): ExperimentDisabledEventLogItemData {
+  const {experimentId, experimentType} = args;
+  return {
+    eventType: EventType.ExperimentDisabled,
+    experimentId,
+    experimentType,
+  };
 }
 
-export function makeStringExperimentValueChangedEventLogItem(args: {
-  readonly accountId: AccountId;
-  readonly actor: Actor;
-  readonly environment: Environment;
+export function makeStringExperimentValueChangedEventLogItemData(args: {
   readonly experimentId: ExperimentId;
   readonly value: string;
-}): EventLogItem {
-  const {accountId, actor, environment, experimentId, value} = args;
-  return makeEventLogItem({
-    accountId,
-    actor,
-    environment,
-    data: {
-      eventType: EventType.StringExperimentValueChanged,
-      experimentId,
-      value,
-    },
-  });
+}): StringExperimentValueChangedEventLogItemData {
+  const {experimentId, value} = args;
+  return {
+    eventType: EventType.StringExperimentValueChanged,
+    experimentId,
+    value,
+  };
 }
