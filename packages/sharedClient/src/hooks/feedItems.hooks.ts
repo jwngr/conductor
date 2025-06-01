@@ -36,11 +36,11 @@ import {
   ClientFirestoreCollectionService,
   makeFirestoreDataConverter,
 } from '@sharedClient/services/firestore.client';
-import {useUserFeedSubscriptions} from '@sharedClient/services/userFeedSubscriptions.client';
 
 import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 import {useIsMounted} from '@sharedClient/hooks/lifecycle.hooks';
+import {useUserFeedSubscriptions} from '@sharedClient/hooks/userFeedSubscriptions.hooks';
 
 const feedItemsStorageRef = storageRef(firebaseService.storage, FEED_ITEMS_STORAGE_COLLECTION);
 

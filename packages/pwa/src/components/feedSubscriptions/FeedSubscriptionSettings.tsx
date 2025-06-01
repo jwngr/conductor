@@ -23,9 +23,8 @@ import type {
   UserFeedSubscription,
 } from '@shared/types/userFeedSubscriptions.types';
 
-import {useUserFeedSubscriptionsService} from '@sharedClient/services/userFeedSubscriptions.client';
-
 import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
+import {useUserFeedSubscriptionsService} from '@sharedClient/hooks/userFeedSubscriptions.hooks';
 
 import {Button} from '@src/components/atoms/Button';
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';

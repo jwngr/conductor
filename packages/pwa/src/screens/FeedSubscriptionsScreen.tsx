@@ -9,16 +9,15 @@ import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
 import {
-  useUserFeedSubscriptions,
-  useUserFeedSubscriptionsService,
-} from '@sharedClient/services/userFeedSubscriptions.client';
-
-import {
   DEFAULT_ROUTE_HERO_PAGE_ACTION,
   REFRESH_HERO_PAGE_ACTION,
 } from '@sharedClient/lib/heroActions.client';
 
 import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
+import {
+  useUserFeedSubscriptions,
+  useUserFeedSubscriptionsService,
+} from '@sharedClient/hooks/userFeedSubscriptions.hooks';
 
 import {Button} from '@src/components/atoms/Button';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
