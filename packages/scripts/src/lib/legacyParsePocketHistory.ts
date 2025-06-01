@@ -16,13 +16,17 @@ import {POCKET_EXPORT_FEED_SOURCE} from '@shared/lib/feedSources.shared';
 import {pluralizeWithCount} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
-import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
+import {
+  parseEventId,
+  parseEventLogItem,
+  toStorageEventLogItem,
+} from '@shared/parsers/eventLog.parser';
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 
 import {Environment} from '@shared/types/environment.types';
 import type {PocketImportItem} from '@shared/types/pocket.types';
 
-import {ServerEventLogService, toStorageEventLogItem} from '@sharedServer/services/eventLog.server';
+import {ServerEventLogService} from '@sharedServer/services/eventLog.server';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
 import {

@@ -162,7 +162,7 @@ export class ClientEventLogService {
     return () => unsubscribe();
   }
 
-  public async logEvent(eventLogItem: EventLogItem): AsyncResult<EventLogItem> {
+  private async logEvent(eventLogItem: EventLogItem): AsyncResult<EventLogItem> {
     const {eventId} = eventLogItem;
 
     const createResult = await this.eventLogCollectionService.setDoc(eventId, eventLogItem);
@@ -184,6 +184,22 @@ export class ClientEventLogService {
     });
   }
 
+  public async updateEventLogItem(
+    eventId: EventId,
+    item: Partial<Pick<EventLogItem, 'data'>>
+  ): AsyncResult<void> {
+    const updateResult = await this.eventLogCollectionService.updateDoc(eventId, item);
+    return prefixResultIfError(updateResult, 'Error updating event log item');
+  }
+
+  public async deleteEventLogItem(eventId: EventId): AsyncResult<void> {
+    const deleteResult = await this.eventLogCollectionService.deleteDoc(eventId);
+    return prefixResultIfError(deleteResult, 'Error deleting event log item');
+  }
+
+  //////////////////////////////////////////
+  //  BEGIN INDIVIDUAL EVENT LOG HELPERS  //
+  //////////////////////////////////////////
   public async logFeedItemActionEvent(args: {
     readonly feedItemId: FeedItemId;
     readonly feedItemActionType: FeedItemActionType;
@@ -239,17 +255,7 @@ export class ClientEventLogService {
 
     return this.logEvent(eventLogItem);
   }
-
-  public async updateEventLogItem(
-    eventId: EventId,
-    item: Partial<Pick<EventLogItem, 'data'>>
-  ): AsyncResult<void> {
-    const updateResult = await this.eventLogCollectionService.updateDoc(eventId, item);
-    return prefixResultIfError(updateResult, 'Error updating event log item');
-  }
-
-  public async deleteEventLogItem(eventId: EventId): AsyncResult<void> {
-    const deleteResult = await this.eventLogCollectionService.deleteDoc(eventId);
-    return prefixResultIfError(deleteResult, 'Error deleting event log item');
-  }
+  //////////////////////////////////////
+  // END INDIVIDUAL EVENT LOG HELPERS //
+  //////////////////////////////////////
 }

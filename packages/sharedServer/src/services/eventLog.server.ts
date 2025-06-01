@@ -39,7 +39,7 @@ export class ServerEventLogService {
     return this.eventLogCollectionService.fetchById(eventId);
   }
 
-  public async logEvent(eventLogItem: EventLogItem): AsyncResult<EventLogItem> {
+  private async logEvent(eventLogItem: EventLogItem): AsyncResult<EventLogItem> {
     const {eventId} = eventLogItem;
 
     const createResult = await this.eventLogCollectionService.setDoc(eventId, eventLogItem);
@@ -65,16 +65,6 @@ export class ServerEventLogService {
     });
   }
 
-  public async logFeedItemImportedEvent(args: {
-    readonly accountId: AccountId;
-    readonly feedItemId: FeedItemId;
-  }): AsyncResult<EventLogItem> {
-    const {accountId, feedItemId} = args;
-    const eventLogItemData = makeFeedItemImportedEventLogItemData({feedItemId});
-    const eventLogItem = this.makeEventLogItem({accountId, data: eventLogItemData});
-    return this.logEvent(eventLogItem);
-  }
-
   public async updateEventLogItem(
     eventId: EventId,
     item: Partial<WithFieldValue<Pick<EventLogItem, 'data'>>>
@@ -87,20 +77,20 @@ export class ServerEventLogService {
     const deleteResult = await this.eventLogCollectionService.deleteDoc(eventId);
     return prefixResultIfError(deleteResult, 'Error deleting event log item');
   }
-}
 
-/**
- * Converts a {@link EventLogItem} to a {@link EventLogItemFromStorage} object that can be persisted
- * to Firestore.
- */
-export function toStorageEventLogItem(eventLogItem: EventLogItem): EventLogItemFromStorage {
-  return {
-    eventId: eventLogItem.eventId,
-    accountId: eventLogItem.accountId,
-    actor: eventLogItem.actor,
-    environment: eventLogItem.environment,
-    data: eventLogItem.data,
-    createdTime: eventLogItem.createdTime,
-    lastUpdatedTime: eventLogItem.lastUpdatedTime,
-  };
+  //////////////////////////////////////////
+  //  BEGIN INDIVIDUAL EVENT LOG HELPERS  //
+  //////////////////////////////////////////
+  public async logFeedItemImportedEvent(args: {
+    readonly accountId: AccountId;
+    readonly feedItemId: FeedItemId;
+  }): AsyncResult<EventLogItem> {
+    const {accountId, feedItemId} = args;
+    const eventLogItemData = makeFeedItemImportedEventLogItemData({feedItemId});
+    const eventLogItem = this.makeEventLogItem({accountId, data: eventLogItemData});
+    return this.logEvent(eventLogItem);
+  }
+  ////////////////////////////////////////
+  //  END INDIVIDUAL EVENT LOG HELPERS  //
+  ////////////////////////////////////////
 }
