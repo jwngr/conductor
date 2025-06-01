@@ -195,7 +195,7 @@ export class ClientFeedItemsService {
       errorToastMessage: 'Error marking feed item as undone',
       undoMessage: 'Feed item marked as undone',
       undoFailureMessage: 'Error marking feed item as undone',
-      feedItemActionType: FeedItemActionType.MarkDone,
+      feedItemActionType: FeedItemActionType.MarkUndone,
     });
   }
 
@@ -208,7 +208,7 @@ export class ClientFeedItemsService {
       errorToastMessage: 'Error marking feed item as read',
       undoMessage: 'Feed item marked as unread',
       undoFailureMessage: 'Error marking feed item as unread',
-      feedItemActionType: FeedItemActionType.MarkUnread,
+      feedItemActionType: FeedItemActionType.MarkRead,
     });
   }
 
@@ -247,7 +247,7 @@ export class ClientFeedItemsService {
       errorToastMessage: 'Error unstarring feed item',
       undoMessage: 'Feed item starred',
       undoFailureMessage: 'Error starring feed item',
-      feedItemActionType: FeedItemActionType.Star,
+      feedItemActionType: FeedItemActionType.Unstar,
     });
   }
 
@@ -273,7 +273,7 @@ export class ClientFeedItemsService {
       errorToastMessage: 'Error unsaving feed item',
       undoMessage: 'Feed item saved',
       undoFailureMessage: 'Error saving feed item',
-      feedItemActionType: FeedItemActionType.Save,
+      feedItemActionType: FeedItemActionType.Unsave,
     });
   }
 

@@ -192,9 +192,13 @@ export type FeedItemImportState =
 export enum FeedItemActionType {
   Cancel = 'CANCEL',
   MarkDone = 'MARK_DONE',
+  MarkUndone = 'MARK_UNDONE',
+  MarkRead = 'MARK_READ',
   MarkUnread = 'MARK_UNREAD',
   Save = 'SAVE',
+  Unsave = 'UNSAVE',
   Star = 'STAR',
+  Unstar = 'UNSTAR',
   RetryImport = 'RETRY_IMPORT',
   Undo = 'UNDO',
 }

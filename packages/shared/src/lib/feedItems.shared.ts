@@ -165,7 +165,7 @@ export class SharedFeedItemHelpers {
   public static getMarkDoneFeedItemActionInfo(feedItem: FeedItem): FeedItemAction {
     const isAlreadyDone = SharedFeedItemHelpers.isMarkedDone(feedItem);
     return {
-      actionType: FeedItemActionType.MarkDone,
+      actionType: isAlreadyDone ? FeedItemActionType.MarkUndone : FeedItemActionType.MarkDone,
       text: isAlreadyDone ? 'Mark undone' : 'Mark done',
       icon: IconName.MarkDone, // TODO: Make icon dynamic.
       shortcutId: KeyboardShortcutId.ToggleDone,
@@ -175,7 +175,7 @@ export class SharedFeedItemHelpers {
   public static getSaveFeedItemActionInfo(feedItem: FeedItem): FeedItemAction {
     const isAlreadySaved = SharedFeedItemHelpers.isSaved(feedItem);
     return {
-      actionType: FeedItemActionType.Save,
+      actionType: isAlreadySaved ? FeedItemActionType.Unsave : FeedItemActionType.Save,
       text: isAlreadySaved ? 'Unsave' : 'Save',
       icon: IconName.Save,
       shortcutId: KeyboardShortcutId.ToggleSaved,
@@ -185,7 +185,7 @@ export class SharedFeedItemHelpers {
   public static getMarkUnreadFeedItemActionInfo(feedItem: FeedItem): FeedItemAction {
     const isAlreadyUnread = SharedFeedItemHelpers.isUnread(feedItem);
     return {
-      actionType: FeedItemActionType.MarkUnread,
+      actionType: isAlreadyUnread ? FeedItemActionType.MarkRead : FeedItemActionType.MarkUnread,
       text: isAlreadyUnread ? 'Mark read' : 'Mark unread',
       icon: IconName.MarkUnread,
       shortcutId: KeyboardShortcutId.ToggleUnread,
@@ -195,7 +195,7 @@ export class SharedFeedItemHelpers {
   public static getStarFeedItemActionInfo(feedItem: FeedItem): FeedItemAction {
     const isAlreadyStarred = SharedFeedItemHelpers.isStarred(feedItem);
     return {
-      actionType: FeedItemActionType.Star,
+      actionType: isAlreadyStarred ? FeedItemActionType.Unstar : FeedItemActionType.Star,
       text: isAlreadyStarred ? 'Unstar' : 'Star',
       icon: IconName.Star,
       shortcutId: KeyboardShortcutId.ToggleStarred,
