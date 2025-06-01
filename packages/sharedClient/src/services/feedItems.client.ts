@@ -182,7 +182,7 @@ export class ClientFeedItemsService {
       errorToastMessage: 'Error marking feed item as done',
       undoMessage: 'Feed item marked as done',
       undoFailureMessage: 'Error marking feed item as done',
-      originalActionType: FeedItemActionType.MarkDone,
+      feedItemActionType: FeedItemActionType.MarkDone,
     });
   }
 
@@ -195,7 +195,7 @@ export class ClientFeedItemsService {
       errorToastMessage: 'Error marking feed item as undone',
       undoMessage: 'Feed item marked as undone',
       undoFailureMessage: 'Error marking feed item as undone',
-      originalActionType: FeedItemActionType.MarkDone,
+      feedItemActionType: FeedItemActionType.MarkDone,
     });
   }
 
@@ -208,7 +208,7 @@ export class ClientFeedItemsService {
       errorToastMessage: 'Error marking feed item as read',
       undoMessage: 'Feed item marked as unread',
       undoFailureMessage: 'Error marking feed item as unread',
-      originalActionType: FeedItemActionType.MarkUnread,
+      feedItemActionType: FeedItemActionType.MarkUnread,
     });
   }
 
@@ -221,7 +221,7 @@ export class ClientFeedItemsService {
       errorToastMessage: 'Error marking feed item as unread',
       undoMessage: 'Feed item marked as read',
       undoFailureMessage: 'Error marking feed item as read',
-      originalActionType: FeedItemActionType.MarkUnread,
+      feedItemActionType: FeedItemActionType.MarkUnread,
     });
   }
 
@@ -234,7 +234,7 @@ export class ClientFeedItemsService {
       errorToastMessage: 'Error starring feed item',
       undoMessage: 'Feed item unstarred',
       undoFailureMessage: 'Error unstarring feed item',
-      originalActionType: FeedItemActionType.Star,
+      feedItemActionType: FeedItemActionType.Star,
     });
   }
 
@@ -247,7 +247,7 @@ export class ClientFeedItemsService {
       errorToastMessage: 'Error unstarring feed item',
       undoMessage: 'Feed item starred',
       undoFailureMessage: 'Error starring feed item',
-      originalActionType: FeedItemActionType.Star,
+      feedItemActionType: FeedItemActionType.Star,
     });
   }
 
@@ -260,7 +260,7 @@ export class ClientFeedItemsService {
       errorToastMessage: 'Error saving feed item',
       undoMessage: 'Feed item unsaved',
       undoFailureMessage: 'Error unsaving feed item',
-      originalActionType: FeedItemActionType.Save,
+      feedItemActionType: FeedItemActionType.Save,
     });
   }
 
@@ -273,7 +273,7 @@ export class ClientFeedItemsService {
       errorToastMessage: 'Error unsaving feed item',
       undoMessage: 'Feed item saved',
       undoFailureMessage: 'Error saving feed item',
-      originalActionType: FeedItemActionType.Save,
+      feedItemActionType: FeedItemActionType.Save,
     });
   }
 
@@ -294,7 +294,7 @@ export class ClientFeedItemsService {
       errorToastMessage: 'Error retrying feed item import',
       undoMessage: 'Feed item import failed',
       undoFailureMessage: 'Error retrying feed item import',
-      originalActionType: FeedItemActionType.RetryImport,
+      feedItemActionType: FeedItemActionType.RetryImport,
     });
   }
 
@@ -304,12 +304,12 @@ export class ClientFeedItemsService {
     readonly undoState: Partial<FeedItem>;
     readonly undoMessage: string | React.ReactNode;
     readonly undoFailureMessage: string | React.ReactNode;
-    readonly originalActionType: FeedItemActionType;
+    readonly feedItemActionType: FeedItemActionType;
     readonly toastMessage: string | React.ReactNode;
     readonly errorToastMessage: string | React.ReactNode;
   }): AsyncResult<void> {
     const {feedItemId, targetState, undoState, undoMessage, undoFailureMessage} = args;
-    const {originalActionType, toastMessage, errorToastMessage} = args;
+    const {feedItemActionType, toastMessage, errorToastMessage} = args;
 
     const updateResult = await this.updateFeedItem(feedItemId, targetState);
     if (!updateResult.success) {
@@ -317,10 +317,7 @@ export class ClientFeedItemsService {
       return updateResult;
     }
 
-    void this.eventLogService.logFeedItemActionEvent({
-      feedItemId,
-      feedItemActionType: originalActionType,
-    });
+    void this.eventLogService.logFeedItemActionEvent({feedItemId, feedItemActionType});
 
     // Show a toast with an undo button.
     toastWithUndo({

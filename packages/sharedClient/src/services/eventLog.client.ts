@@ -44,7 +44,7 @@ import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 // TODO: This is a somewhat arbitrary limit. Reconsider what the logic should be here.
 const EVENT_LOG_LIMIT = 100;
 
-const eventLogItemFirestoreConverter = makeFirestoreDataConverter(
+export const eventLogItemFirestoreConverter = makeFirestoreDataConverter(
   toStorageEventLogItem,
   parseEventLogItem
 );
