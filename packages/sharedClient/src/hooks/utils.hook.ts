@@ -1,15 +1,30 @@
-import {useEffect, useRef} from 'react';
+import {useEffect, useRef, useState} from 'react';
 
-export function useIsMounted(): React.RefObject<boolean> {
-  const isMounted = useRef(false);
+import type {Task} from '@shared/types/utils.types';
 
+export function useTimeout(callback: Task, delay: number | null): void {
+  const savedCallback = useRef(callback);
+
+  // Remember the latest callback if it changes.
   useEffect(() => {
-    isMounted.current = true;
+    savedCallback.current = callback;
+  }, [callback]);
 
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
+  // Set up the timeout.
+  useEffect(() => {
+    // Don't schedule if no delay is specified.
+    if (delay === null) return;
 
-  return isMounted;
+    const id = setTimeout(() => savedCallback.current(), delay);
+
+    return () => clearTimeout(id);
+  }, [delay]);
+}
+
+export function useDelayedVisibility(delay = 150): boolean {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useTimeout(() => setIsVisible(true), delay);
+
+  return isVisible;
 }

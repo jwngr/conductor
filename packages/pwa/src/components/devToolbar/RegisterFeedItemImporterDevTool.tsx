@@ -1,49 +1,20 @@
 import {useCallback, useEffect, useState} from 'react';
 
+import {PWA_FEED_SOURCE} from '@shared/lib/feedSources.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
+import {AsyncStatus} from '@shared/types/asyncState.types';
 import {DevToolbarSectionType} from '@shared/types/devToolbar.types';
-import {FEED_ITEM_APP_SOURCE} from '@shared/types/feedItems.types';
 
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
-import {useFeedItemsService} from '@sharedClient/services/feedItems.client';
+import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
+import {useFeedItemsService} from '@sharedClient/hooks/feedItems.hooks';
 
 import {Button} from '@src/components/atoms/Button';
 import {Input} from '@src/components/atoms/Input';
 import {Text} from '@src/components/atoms/Text';
-
-enum ImportStatus {
-  Idle = 'IDLE',
-  Pending = 'PENDING',
-  Error = 'ERROR',
-  Success = 'SUCCESS',
-}
-
-interface BaseImportState {
-  readonly url: string;
-  readonly status: ImportStatus;
-}
-
-interface IdleImportState extends BaseImportState {
-  readonly status: ImportStatus.Idle;
-}
-
-interface PendingImportState extends BaseImportState {
-  readonly status: ImportStatus.Pending;
-}
-
-interface ErrorImportState extends BaseImportState {
-  readonly status: ImportStatus.Error;
-  readonly error: Error;
-}
-
-interface SuccessImportState extends BaseImportState {
-  readonly status: ImportStatus.Success;
-}
-
-type ImportState = IdleImportState | PendingImportState | ErrorImportState | SuccessImportState;
 
 const StatusText: React.FC<{
   readonly isError?: boolean;
@@ -59,48 +30,34 @@ const StatusText: React.FC<{
 const FeedItemImporter: React.FC = () => {
   const feedItemsService = useFeedItemsService();
 
-  const [state, setState] = useState<ImportState>({
-    url: '',
-    status: ImportStatus.Idle,
-  });
+  const [urlInputValue, setUrlInputValue] = useState('');
+  const {asyncState, setPending, setError, setSuccess} = useAsyncState<undefined>();
 
   const handleAddItemToQueue = useCallback(
     async (maybeUrl: string) => {
       const trimmedUrl = maybeUrl.trim();
       if (!isValidUrl(trimmedUrl)) {
-        setState((current) => ({
-          ...current,
-          status: ImportStatus.Error,
-          error: new Error('URL is not valid'),
-        }));
+        setError(new Error('URL is not valid'));
         return;
       }
 
-      setState((current) => ({
-        ...current,
-        status: ImportStatus.Pending,
-      }));
+      setPending();
 
-      const addFeedItemResult = await feedItemsService.createFeedItem({
+      const addFeedItemResult = await feedItemsService.createFeedItemFromUrl({
+        feedSource: PWA_FEED_SOURCE,
         url: trimmedUrl,
-        feedItemSource: FEED_ITEM_APP_SOURCE,
         title: trimmedUrl,
       });
 
-      if (addFeedItemResult.success) {
-        setState({
-          url: '',
-          status: ImportStatus.Success,
-        });
-      } else {
-        setState((current) => ({
-          ...current,
-          status: ImportStatus.Error,
-          error: addFeedItemResult.error,
-        }));
+      if (!addFeedItemResult.success) {
+        setError(addFeedItemResult.error);
+        return;
       }
+
+      setUrlInputValue('');
+      setSuccess(undefined);
     },
-    [feedItemsService]
+    [feedItemsService, setError, setPending, setSuccess]
   );
 
   const renderImportFeedItemButton = useCallback(
@@ -113,21 +70,21 @@ const FeedItemImporter: React.FC = () => {
   );
 
   let statusText: React.ReactNode | null;
-  switch (state.status) {
-    case ImportStatus.Idle:
+  switch (asyncState.status) {
+    case AsyncStatus.Idle:
       statusText = null;
       break;
-    case ImportStatus.Pending:
+    case AsyncStatus.Pending:
       statusText = <StatusText>Importing...</StatusText>;
       break;
-    case ImportStatus.Error:
-      statusText = <StatusText isError>{state.error.message}</StatusText>;
+    case AsyncStatus.Error:
+      statusText = <StatusText isError>{asyncState.error.message}</StatusText>;
       break;
-    case ImportStatus.Success:
+    case AsyncStatus.Success:
       statusText = <StatusText>Success</StatusText>;
       break;
     default:
-      assertNever(state);
+      assertNever(asyncState);
   }
 
   return (
@@ -152,14 +109,18 @@ const FeedItemImporter: React.FC = () => {
         url: 'https://xkcd.com/927/',
         title: 'XKCD comic',
       })}
+      {renderImportFeedItemButton({
+        url: 'https://publicdomainreview.org/collection/chinese-fishes/',
+        title: 'Fish images',
+      })}
 
       <Input
         type="text"
-        value={state.url}
+        value={urlInputValue}
         placeholder="Enter URL to test"
-        onChange={(e) => setState((current) => ({...current, url: e.target.value}))}
+        onChange={(e) => setUrlInputValue(e.target.value)}
       />
-      <Button variant="outline" onClick={async () => void handleAddItemToQueue(state.url)}>
+      <Button variant="outline" onClick={async () => void handleAddItemToQueue(urlInputValue)}>
         Test URL import
       </Button>
 
@@ -172,12 +133,14 @@ export const RegisterFeedItemImporterDevToolbarSection: React.FC = () => {
   const registerSection = useDevToolbarStore((state) => state.registerSection);
 
   useEffect(() => {
-    return registerSection({
+    const unregister = registerSection({
       sectionType: DevToolbarSectionType.FeedItemImporter,
       title: 'Feed item importer',
       renderSection: () => <FeedItemImporter />,
       requiresAuth: true,
     });
+
+    return () => unregister();
   }, [registerSection]);
 
   return null;

@@ -1,65 +1,113 @@
-import {useCallback, useEffect, useState} from 'react';
+import {useCallback, useState} from 'react';
 
-import {isValidUrl} from '@shared/lib/urls.shared';
+import {prefixError} from '@shared/lib/errorUtils.shared';
+import {parseUrl} from '@shared/lib/urls.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 
+import {AsyncStatus} from '@shared/types/asyncState.types';
+import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
-import {useUserFeedSubscriptionsService} from '@sharedClient/services/userFeedSubscriptions.client';
+import {
+  DEFAULT_ROUTE_HERO_PAGE_ACTION,
+  REFRESH_HERO_PAGE_ACTION,
+} from '@sharedClient/lib/heroActions.client';
+import {toast} from '@sharedClient/lib/toasts.client';
+
+import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
+import {
+  useUserFeedSubscriptions,
+  useUserFeedSubscriptionsService,
+} from '@sharedClient/hooks/userFeedSubscriptions.hooks';
 
 import {Button} from '@src/components/atoms/Button';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Input} from '@src/components/atoms/Input';
 import {Text} from '@src/components/atoms/Text';
+import {ErrorArea} from '@src/components/errors/ErrorArea';
+import {FeedSubscriptionSettingsButton} from '@src/components/feedSubscriptions/FeedSubscriptionSettings';
+import {LoadingArea} from '@src/components/loading/LoadingArea';
 
 import {Screen} from '@src/screens/Screen';
 
-interface FeedAdderState {
-  readonly url: string;
-  readonly status: string;
-}
-
-const INITIAL_FEED_ADDER_STATE: FeedAdderState = {
-  url: '',
-  status: '',
-};
-
 const FeedAdder: React.FC = () => {
-  const [state, setState] = useState<FeedAdderState>(INITIAL_FEED_ADDER_STATE);
   const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
 
-  const handleSubscribeToFeedUrl = useCallback(
-    async (feedUrl: string): Promise<void> => {
-      setState((current) => ({
-        ...current,
-        status: 'Subscribing to feed source...',
-      }));
+  const [urlInputValue, setUrlInputValue] = useState('');
+  const {asyncState, setPending, setError, setSuccess} = useAsyncState<undefined>();
 
-      const trimmedUrl = feedUrl.trim();
-      if (!isValidUrl(trimmedUrl)) {
-        setState((current) => ({
-          ...current,
-          status: 'Error: URL is not valid',
-        }));
-        return;
-      }
-
-      const subscribeResult = await userFeedSubscriptionsService.subscribeToUrl(trimmedUrl);
-      if (!subscribeResult.success) {
-        setState((current) => ({
-          ...current,
-          status: `Error subscribing to feed source: ${subscribeResult.error.message}`,
-        }));
-        return;
-      }
-
-      setState((current) => ({
-        ...current,
-        status: `Successfully subscribed to feed source`,
-        url: '',
-      }));
+  const handleError = useCallback(
+    (args: {readonly error: Error; readonly toastMessage: string}) => {
+      const {error, toastMessage} = args;
+      toast.error(toastMessage);
+      const betterError = prefixError(error, toastMessage);
+      setError(betterError);
     },
-    [userFeedSubscriptionsService]
+    [setError]
   );
+
+  const handleSubscribeToRssFeedByUrl = useCallback(
+    async (rssFeedUrl: string): Promise<void> => {
+      const parsedUrl = parseUrl(rssFeedUrl.trim());
+      if (!parsedUrl) {
+        setError(new Error('URL is not valid'));
+        return;
+      }
+
+      setPending();
+
+      const subscribeResult = await userFeedSubscriptionsService.subscribeToRssFeed(parsedUrl);
+      if (!subscribeResult.success) {
+        handleError({
+          error: subscribeResult.error,
+          toastMessage: 'Failed to subscribe to RSS feed',
+        });
+        return;
+      }
+
+      setSuccess(undefined);
+      setUrlInputValue('');
+    },
+    [handleError, setError, setPending, setSuccess, userFeedSubscriptionsService]
+  );
+
+  const handleSubscribeToYouTubeChannel = useCallback(
+    async (youtubeChannelUrl: string): Promise<void> => {
+      setPending();
+
+      const subscribeResult =
+        await userFeedSubscriptionsService.subscribeToYouTubeChannel(youtubeChannelUrl);
+      if (!subscribeResult.success) {
+        handleError({
+          error: subscribeResult.error,
+          toastMessage: 'Failed to subscribe to YouTube channel',
+        });
+        return;
+      }
+
+      setSuccess(undefined);
+      setUrlInputValue('');
+    },
+    [handleError, setPending, setSuccess, userFeedSubscriptionsService]
+  );
+
+  const handleSubscribeToIntervalFeed = useCallback(async (): Promise<void> => {
+    setPending();
+
+    const subscribeResult = await userFeedSubscriptionsService.subscribeToIntervalFeed({
+      intervalSeconds: 60,
+    });
+    if (!subscribeResult.success) {
+      handleError({
+        error: subscribeResult.error,
+        toastMessage: 'Failed to subscribe to interval feed',
+      });
+      return;
+    }
+
+    setSuccess(undefined);
+    setUrlInputValue('');
+  }, [handleError, setPending, setSuccess, userFeedSubscriptionsService]);
 
   return (
     <FlexColumn flex={1} gap={3}>
@@ -70,16 +118,22 @@ const FeedAdder: React.FC = () => {
       <FlexRow gap={3} flex={1}>
         <Input
           type="text"
-          value={state.url}
+          value={urlInputValue}
           placeholder="Enter RSS feed URL"
-          onChange={(e) => setState((current) => ({...current, url: e.target.value}))}
+          onChange={(e) => setUrlInputValue(e.target.value)}
           className="flex-1"
         />
-        <Button onClick={async () => void handleSubscribeToFeedUrl(state.url)}>Subscribe</Button>
+        <Button onClick={async () => void handleSubscribeToRssFeedByUrl(urlInputValue)}>
+          Subscribe
+        </Button>
       </FlexRow>
 
-      {status ? (
-        <Text className={status.includes('Error') ? 'text-error' : 'text-success'}>{status}</Text>
+      {asyncState.status === AsyncStatus.Error ? (
+        <Text className="text-error">{asyncState.error.message}</Text>
+      ) : asyncState.status === AsyncStatus.Pending ? (
+        <Text light>Subscribing to feed...</Text>
+      ) : asyncState.status === AsyncStatus.Success ? (
+        <Text className="text-success">Successfully subscribed to feed source</Text>
       ) : null}
 
       <FlexColumn gap={3}>
@@ -87,19 +141,32 @@ const FeedAdder: React.FC = () => {
         <FlexRow gap={3}>
           <Button
             variant="default"
-            onClick={async () => void handleSubscribeToFeedUrl('https://jwn.gr/rss.xml')}
+            onClick={async () => void handleSubscribeToRssFeedByUrl('https://jwn.gr/rss.xml')}
           >
             Personal blog feed
           </Button>
           <Button
             variant="default"
             onClick={async () =>
-              void handleSubscribeToFeedUrl(
+              void handleSubscribeToRssFeedByUrl(
                 'https://lorem-rss.herokuapp.com/feed?unit=second&interval=30'
               )
             }
           >
-            Dummy feed w/ 30s updates
+            Lorem RSS feed w/ 30s updates
+          </Button>
+          <Button
+            variant="default"
+            onClick={async () =>
+              void handleSubscribeToYouTubeChannel(
+                'https://www.youtube.com/channel/UCndkjnoQawp7Tjy1uNj53yQ'
+              )
+            }
+          >
+            Personal YouTube channel
+          </Button>
+          <Button variant="default" onClick={async () => void handleSubscribeToIntervalFeed()}>
+            Interval feed
           </Button>
         </FlexRow>
       </FlexColumn>
@@ -107,76 +174,96 @@ const FeedAdder: React.FC = () => {
   );
 };
 
-const FeedSubscriptionsList: React.FC = () => {
-  const [subscriptions, setSubscriptions] = useState<UserFeedSubscription[]>([]);
-  const [error, setError] = useState<string>('');
-  const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
+const FeedSubscriptionItem: React.FC<{
+  subscription: UserFeedSubscription;
+}> = ({subscription}) => {
+  let primaryRowText: string;
+  let secondaryRowText: string | null;
 
-  useEffect(() => {
-    const unsubscribe = userFeedSubscriptionsService.watchAllSubscriptions({
-      successCallback: (updatedSubscriptions) => {
-        setSubscriptions(updatedSubscriptions);
-        setError('');
-      },
-      errorCallback: () => {
-        setError('Error loading feed subscriptions');
-      },
-    });
+  switch (subscription.feedSourceType) {
+    case FeedSourceType.RSS:
+      primaryRowText = `RSS (${subscription.title ?? subscription.url})`;
+      secondaryRowText = subscription.title ?? null;
+      break;
+    case FeedSourceType.YouTubeChannel:
+      primaryRowText = 'YouTube';
+      secondaryRowText = subscription.channelId;
+      break;
+    case FeedSourceType.Interval:
+      primaryRowText = 'Interval';
+      secondaryRowText = null;
+      break;
+    default:
+      assertNever(subscription);
+  }
 
-    return () => unsubscribe();
-  }, [userFeedSubscriptionsService]);
+  return (
+    <FlexRow gap={3} padding={3} className="rounded-lg border border-gray-200">
+      <FlexColumn flex={1} gap={1}>
+        <Text bold className={subscription.isActive ? undefined : 'text-error'}>
+          {primaryRowText}
+        </Text>
+        {secondaryRowText ? (
+          <Text as="p" light>
+            {secondaryRowText}
+          </Text>
+        ) : null}
+      </FlexColumn>
+      <FeedSubscriptionSettingsButton userFeedSubscription={subscription} />
+    </FlexRow>
+  );
+};
 
-  const handleUnsubscribe = async (subscription: UserFeedSubscription): Promise<void> => {
-    const unsubscribeResult = await userFeedSubscriptionsService.updateSubscription(
-      subscription.userFeedSubscriptionId,
-      {
-        isActive: false,
-        unsubscribedTime: new Date(),
-      }
+const LoadedFeedSubscriptionsListMainContent: React.FC<{
+  subscriptions: UserFeedSubscription[];
+}> = ({subscriptions}) => {
+  if (subscriptions.length === 0) {
+    // TODO: Add better empty state.
+    return (
+      <Text as="p" light>
+        None
+      </Text>
     );
+  }
 
-    if (!unsubscribeResult.success) {
-      setError(`Error unsubscribing from feed: ${unsubscribeResult.error.message}`);
-      return;
-    }
-  };
+  return (
+    <FlexColumn flex={1}>
+      {subscriptions.map((subscription) => (
+        <FeedSubscriptionItem
+          key={subscription.userFeedSubscriptionId}
+          subscription={subscription}
+        />
+      ))}
+    </FlexColumn>
+  );
+};
+
+const FeedSubscriptionsList: React.FC = () => {
+  const userFeedSubscriptionsState = useUserFeedSubscriptions();
 
   const renderMainContent = (): React.ReactNode => {
-    if (error) {
-      return <Text className="text-error">Error loading feed subscriptions</Text>;
+    switch (userFeedSubscriptionsState.status) {
+      case AsyncStatus.Idle:
+      case AsyncStatus.Pending:
+        return <LoadingArea text="Loading feed subscriptions..." />;
+      case AsyncStatus.Error:
+        return (
+          <ErrorArea
+            error={userFeedSubscriptionsState.error}
+            title="Error loading feed subscriptions"
+            subtitle="Refreshing may resolve the issue. If the problem persists, please contact support."
+            actions={[DEFAULT_ROUTE_HERO_PAGE_ACTION, REFRESH_HERO_PAGE_ACTION]}
+          />
+        );
+      case AsyncStatus.Success:
+        return (
+          <LoadedFeedSubscriptionsListMainContent
+            subscriptions={userFeedSubscriptionsState.value}
+          />
+        );
+      default:
+        assertNever(userFeedSubscriptionsState);
     }
-
-    if (subscriptions.length === 0) {
-      // TODO: Add better empty state.
-      return <Text>None</Text>;
-    }
-
-    return (
-      <FlexColumn flex={1}>
-        {subscriptions.map((subscription) => (
-          <FlexRow
-            key={subscription.userFeedSubscriptionId}
-            gap={3}
-            padding={3}
-            className="rounded-lg border border-gray-200"
-          >
-            <FlexColumn flex={1} gap={1}>
-              <Text bold className={subscription.isActive ? undefined : 'text-error'}>
-                {subscription.title}
-              </Text>
-              <Text as="p" light>
-                {subscription.url}
-              </Text>
-            </FlexColumn>
-            {subscription.isActive ? (
-              <Button variant="default" onClick={async () => void handleUnsubscribe(subscription)}>
-                Unsubscribe
-              </Button>
-            ) : null}
-          </FlexRow>
-        ))}
-      </FlexColumn>
-    );
   };
 
   return (

@@ -1,9 +1,11 @@
 import {v4 as uuidv4} from 'uuid';
 
+import {logger} from '@shared/services/logger.shared';
+
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AsyncResult, Result} from '@shared/types/results.types';
-import type {EmailAddress, Func, Supplier, UUID} from '@shared/types/utils.types';
+import type {Func, Supplier, UUID} from '@shared/types/utils.types';
 
 /**
  * Formats a number with commas.
@@ -14,14 +16,37 @@ export const formatWithCommas = (val: number): string => {
   return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 };
 
+interface AssertNeverOptions {
+  /** Test-only option to avoid noisy logs for the `assertNever` tests themselves. */
+  readonly testNoLog?: boolean;
+}
+
+const DEFAULT_ASSERT_NEVER_OPTIONS: AssertNeverOptions = {
+  testNoLog: false,
+};
+
 /**
  * Throws an error if the provided value is not of type `never`. This is useful for exhaustive
  * switch statements.
  */
-export function assertNever(x: never): never {
-  // TODO: Add logging. Or a global error handler.
+export function assertNever(
+  val: never,
+  options: AssertNeverOptions = DEFAULT_ASSERT_NEVER_OPTIONS
+): never {
+  const {testNoLog = false} = options;
+  if (!testNoLog) {
+    logger.error(new Error('assertNever received non-empty value'), {val});
+  }
   // eslint-disable-next-line no-restricted-syntax
-  throw new Error(`Unexpected object: ${x}`);
+  throw new Error(`Unexpected value: ${val}`);
+}
+
+/**
+ * Logs an error if the provided value is not of type `never`. This is useful for exhaustive
+ * switch statements.
+ */
+export function safeAssertNever(val: never): void {
+  logger.error(new Error('safeAssertNever received non-empty value'), {val});
 }
 
 /**
@@ -124,22 +149,6 @@ export function makeUuid<T = UUID>(): T {
   return uuidv4() as T;
 }
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-/**
- * Checks if a value is a valid `EmailAddress`.
- */
-export function isValidEmail(maybeEmail: unknown): maybeEmail is EmailAddress {
-  return typeof maybeEmail === 'string' && EMAIL_REGEX.test(maybeEmail);
-}
-
-/**
- * Returns `true` if the provided value is a `Date`.
- */
-export function isDate(value: unknown): value is Date {
-  return value instanceof Date;
-}
-
 /**
  * Returns a pluralized string, not including the count.
  *
@@ -192,4 +201,25 @@ export function noopTrue(): true {
  */
 export function noopFalse(): false {
   return false;
+}
+
+/**
+ * Returns `true` if the provided value is a valid port number.
+ */
+export function isValidPort(port: number): boolean {
+  return port >= 0 && port <= 65535;
+}
+
+/**
+ * Returns `true` if the provided value is an integer.
+ */
+export function isInteger(value: number): boolean {
+  return Number.isInteger(value);
+}
+
+/**
+ * Returns `true` if the provided value is a positive integer.
+ */
+export function isPositiveInteger(value: number): boolean {
+  return isInteger(value) && value > 0;
 }

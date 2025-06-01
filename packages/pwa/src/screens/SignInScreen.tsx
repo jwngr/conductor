@@ -2,13 +2,15 @@ import {Navigate} from '@tanstack/react-router';
 import type {ActionCodeSettings} from 'firebase/auth';
 import {useCallback, useState} from 'react';
 
-import {isValidEmail} from '@shared/lib/utils.shared';
+import {isValidEmail} from '@shared/lib/emails.shared';
 
-import {parseEmailAddress} from '@shared/parsers/accounts.parser';
+import {parseEmailAddress} from '@shared/parsers/emails.parser';
 
 import type {Consumer} from '@shared/types/utils.types';
 
 import {authService} from '@sharedClient/services/auth.client';
+
+import {IS_DEVELOPMENT} from '@sharedClient/lib/environment.client';
 
 import {useMaybeLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
@@ -16,8 +18,6 @@ import {Button} from '@src/components/atoms/Button';
 import {Input} from '@src/components/atoms/Input';
 import {Spacer} from '@src/components/atoms/Spacer';
 import {Text} from '@src/components/atoms/Text';
-
-import {IS_DEVELOPMENT} from '@src/lib/environment.pwa';
 
 import type {OnClick} from '@src/types/utils.pwa.types';
 
@@ -146,6 +146,7 @@ export const SignInScreen: React.FC = () => {
 
       {IS_DEVELOPMENT
         ? renderPasswordlessAuthButton({
+            // TODO: Move to enviroment variable.
             maybeEmail: 'wenger.jacob@gmail.com',
             text: 'Send link to myself',
           })

@@ -1,20 +1,20 @@
 import type {WithFieldValue} from 'firebase-admin/firestore';
 
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {withFirestoreTimestamps} from '@shared/lib/parser.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import type {FeedSource, FeedSourceId} from '@shared/types/feedSources.types';
+import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {
+  IntervalUserFeedSubscription,
+  RssUserFeedSubscription,
   UserFeedSubscription,
-  UserFeedSubscriptionFromStorage,
   UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
-import {makeUserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
-import {serverTimestampSupplier} from '@sharedServer/services/firebase.server';
+import type {UserFeedSubscriptionFromStorage} from '@shared/schemas/userFeedSubscriptions.schema';
+
 import type {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
 type UserFeedSubscriptionsCollectionService = ServerFirestoreCollectionService<
@@ -40,47 +40,35 @@ export class ServerUserFeedSubscriptionsService {
       .getCollectionRef()
       .where('accountId', '==', accountId);
     const queryResult = await this.userFeedSubscriptionsCollectionService.fetchQueryDocs(query);
-    return prefixResultIfError(queryResult, 'Error fetching user feed subscriptions for account');
+    return prefixResultIfError(queryResult, 'Error fetching feed subscriptions for account');
   }
 
   /**
-   * Fetches all user feed subscription documents for an individual feed source from Firestore.
+   * Fetches all user feed subscription documents for an individual account from Firestore.
    */
-  public async fetchForFeedSource(feedSourceId: FeedSourceId): AsyncResult<UserFeedSubscription[]> {
+  public async fetchActiveIntervalSubscriptions(): AsyncResult<IntervalUserFeedSubscription[]> {
     const query = this.userFeedSubscriptionsCollectionService
       .getCollectionRef()
-      .where('feedSourceId', '==', feedSourceId);
+      .where('feedSourceType', '==', FeedSourceType.Interval)
+      .where('isActive', '==', true);
     const queryResult = await this.userFeedSubscriptionsCollectionService.fetchQueryDocs(query);
-    return prefixResultIfError(
-      queryResult,
-      'Error fetching user feed subscriptions for feed source'
-    );
+    if (!queryResult.success) return queryResult;
+    return makeSuccessResult(queryResult.value as IntervalUserFeedSubscription[]);
   }
 
-  /**
-   * Adds a new user feed subscription document to Firestore.
-   */
-  public async create(args: {
-    feedSource: FeedSource;
-    accountId: AccountId;
-  }): AsyncResult<UserFeedSubscription> {
-    const {feedSource, accountId} = args;
+  public async fetchForRssFeedSourceByUrl(url: string): AsyncResult<RssUserFeedSubscription[]> {
+    const query = this.userFeedSubscriptionsCollectionService
+      .getCollectionRef()
+      .where('feedSourceType', '==', FeedSourceType.RSS)
+      .where('url', '==', url);
 
-    // Make a new user feed subscription object locally.
-    const userFeedSubscriptionResult = makeUserFeedSubscription({feedSource, accountId});
-    if (!userFeedSubscriptionResult.success) return userFeedSubscriptionResult;
-    const newUserFeedSubscription = userFeedSubscriptionResult.value;
-
-    // Add the new user feed subscription to Firestore.
-    const userFeedSubscriptionId = newUserFeedSubscription.userFeedSubscriptionId;
-    const createResult = await this.userFeedSubscriptionsCollectionService.setDoc(
-      userFeedSubscriptionId,
-      withFirestoreTimestamps(newUserFeedSubscription, serverTimestampSupplier)
-    );
-    if (!createResult.success) {
-      return prefixErrorResult(createResult, 'Error creating user feed subscription in Firestore');
+    const queryResult = await this.userFeedSubscriptionsCollectionService.fetchQueryDocs(query);
+    if (!queryResult.success) {
+      const message = 'Error fetching user feed subscriptions for RSS feed source';
+      return prefixErrorResult(queryResult, message);
     }
-    return makeSuccessResult(newUserFeedSubscription);
+
+    return makeSuccessResult(queryResult.value as RssUserFeedSubscription[]);
   }
 
   /**

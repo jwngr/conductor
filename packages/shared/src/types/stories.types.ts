@@ -1,19 +1,20 @@
-import {z} from 'zod';
-
-import {RendererType} from '@shared/types/renderers.types';
+import type {RendererType} from '@shared/types/renderers.types';
 
 export enum StoriesSidebarSectionId {
   AtomicComponents = 'ATOMIC_COMPONENTS',
   DesignSystem = 'DESIGN_SYSTEM',
   Renderers = 'RENDERERS',
+  Molecules = 'MOLECULES',
 }
 
 export enum AtomicComponentType {
   Badge = 'BADGE',
   Button = 'BUTTON',
   ButtonIcon = 'BUTTON_ICON',
+  Checkbox = 'CHECKBOX',
   Dialog = 'DIALOG',
   Divider = 'DIVIDER',
+  DropdownMenu = 'DROPDOWN_MENU',
   Flex = 'FLEX',
   Input = 'INPUT',
   Link = 'LINK',
@@ -29,6 +30,11 @@ export enum DesignSystemComponentType {
   Colors = 'COLORS',
   ColorsVanilla = 'COLORS_VANILLA',
   Icons = 'ICONS',
+}
+
+export enum MoleculeComponentType {
+  HeroArea = 'HERO_AREA',
+  ErrorArea = 'ERROR_AREA',
 }
 
 export interface AtomicComponentSidebarItem {
@@ -49,18 +55,20 @@ export interface RendererSidebarItem {
   readonly title: string;
 }
 
-export type StoriesSidebarItemId = AtomicComponentType | DesignSystemComponentType | RendererType;
+export interface MoleculeComponentSidebarItem {
+  readonly sidebarSectionId: StoriesSidebarSectionId.Molecules;
+  readonly sidebarItemId: MoleculeComponentType;
+  readonly title: string;
+}
+
+export type StoriesSidebarItemId =
+  | AtomicComponentType
+  | DesignSystemComponentType
+  | RendererType
+  | MoleculeComponentType;
 
 export type StoriesSidebarItem =
   | AtomicComponentSidebarItem
   | DesignSystemSidebarItem
-  | RendererSidebarItem;
-
-/**
- * Zod schema for a {@link StoriesSidebarItemId}.
- */
-export const StoriesSidebarItemIdSchema = z.union([
-  z.nativeEnum(AtomicComponentType),
-  z.nativeEnum(DesignSystemComponentType),
-  z.nativeEnum(RendererType),
-]);
+  | RendererSidebarItem
+  | MoleculeComponentSidebarItem;

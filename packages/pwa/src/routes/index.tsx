@@ -10,6 +10,7 @@ import {SignOutRedirect} from '@src/components/auth/SignOutRedirect';
 
 import {rootRoute} from '@src/routes/__root';
 import {NotFoundScreen} from '@src/screens/404';
+import {ExperimentsScreen} from '@src/screens/ExperimentsScreen';
 import {FeedItemScreen} from '@src/screens/FeedItemScreen';
 import {FeedSubscriptionsScreen} from '@src/screens/FeedSubscriptionsScreen';
 import {ImportScreen} from '@src/screens/ImportScreen';
@@ -170,11 +171,21 @@ export const importRoute = createRoute({
   ),
 });
 
+export const experimentsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/experiments',
+  component: () => (
+    <RequireLoggedInAccount>
+      <ExperimentsScreen />
+    </RequireLoggedInAccount>
+  ),
+});
+
 //////////////////////
 //  CATCH-ALL ROUTE //
 //////////////////////
 export const catchAllRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '*',
-  component: () => <NotFoundScreen message="Page not found" />,
+  component: () => <NotFoundScreen title={undefined} subtitle={undefined} />,
 });

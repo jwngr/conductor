@@ -3,16 +3,24 @@ import {ref as storageRef} from 'firebase/storage';
 import {logger} from '@shared/services/logger.shared';
 
 import {
+  EVENT_LOG_DB_COLLECTION,
   FEED_ITEMS_DB_COLLECTION,
   FEED_ITEMS_STORAGE_COLLECTION,
 } from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
+import {EXTENSION_FEED_SOURCE} from '@shared/lib/feedSources.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
+import {
+  parseEventId,
+  parseEventLogItem,
+  toStorageEventLogItem,
+} from '@shared/parsers/eventLog.parser';
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 
-import {FEED_ITEM_EXTENSION_SOURCE} from '@shared/types/feedItems.types';
+import {Environment} from '@shared/types/environment.types';
 
+import {ClientEventLogService} from '@sharedClient/services/eventLog.client';
 import {ClientFeedItemsService} from '@sharedClient/services/feedItems.client';
 import {firebaseService} from '@sharedClient/services/firebase.client';
 import {
@@ -46,17 +54,35 @@ chrome.action.onClicked.addListener(async (tab) => {
     parseId: parseFeedItemId,
   });
 
-  // TODO: Ideally I would not need to recreate a one-off FeedItemsService here, but I cannot use
-  // `useFeedItemsService` because we are not in a React component.
-  const feedItemsService = new ClientFeedItemsService({
-    feedItemsCollectionService: feedItemsCollectionService,
-    feedItemsStorageRef,
+  const eventLogItemFirestoreConverter = makeFirestoreDataConverter(
+    toStorageEventLogItem,
+    parseEventLogItem
+  );
+
+  const eventLogCollectionService = new ClientFirestoreCollectionService({
+    collectionPath: EVENT_LOG_DB_COLLECTION,
+    converter: eventLogItemFirestoreConverter,
+    parseId: parseEventId,
+  });
+
+  const eventLogService = new ClientEventLogService({
+    environment: Environment.Extension,
+    eventLogCollectionService,
     accountId,
   });
 
-  const addFeedItemResult = await feedItemsService.createFeedItem({
+  // TODO: Ideally I would not need to recreate a one-off FeedItemsService here, but I cannot use
+  // `useFeedItemsService` because we are not in a React component.
+  const feedItemsService = new ClientFeedItemsService({
+    feedItemsCollectionService,
+    feedItemsStorageRef,
+    accountId,
+    eventLogService,
+  });
+
+  const addFeedItemResult = await feedItemsService.createFeedItemFromUrl({
+    feedSource: EXTENSION_FEED_SOURCE,
     url: tabUrl,
-    feedItemSource: FEED_ITEM_EXTENSION_SOURCE,
     title: 'TODO: Add title support',
   });
 

@@ -8,6 +8,7 @@ updates:
       - '/packages/extension/'
       - '/packages/functions/'
       - '/packages/pwa/'
+      - '/packages/rssServer/'
       - '/packages/scripts/'
       - '/packages/shared/'
       - '/packages/sharedClient/'

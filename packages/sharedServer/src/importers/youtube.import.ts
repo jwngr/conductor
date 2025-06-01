@@ -1,4 +1,4 @@
-import {FEED_ITEM_FILE_NAME_TRANSCRIPT} from '@shared/lib/constants.shared';
+import {FEED_ITEM_FILE_TRANSCRIPT} from '@shared/lib/constants.shared';
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 
 import type {YouTubeFeedItem} from '@shared/types/feedItems.types';
@@ -25,7 +25,7 @@ export class YouTubeFeedItemImporter {
       storagePath: this.feedItemService.getStoragePath({
         feedItemId: feedItem.feedItemId,
         accountId: feedItem.accountId,
-        filename: FEED_ITEM_FILE_NAME_TRANSCRIPT,
+        filename: FEED_ITEM_FILE_TRANSCRIPT,
       }),
       content: fetchTranscriptResult.value,
       contentType: 'text/markdown',

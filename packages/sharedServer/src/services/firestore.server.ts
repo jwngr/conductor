@@ -15,7 +15,6 @@ import {
   prefixResultIfError,
 } from '@shared/lib/errorUtils.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
-import {omitUndefined} from '@shared/lib/utils.shared';
 
 import type {AsyncResult, Result} from '@shared/types/results.types';
 import type {Func} from '@shared/types/utils.types';
@@ -100,6 +99,7 @@ export class ServerFirestoreCollectionService<
     const docRef = this.getDocRef(id);
     const docDataResult = await asyncTry(async () => {
       const docSnap = await docRef.get();
+      if (!docSnap.exists) return null;
       return docSnap.data() ?? null;
     });
     return prefixResultIfError(docDataResult, 'Error fetching Firestore document data');
@@ -154,7 +154,6 @@ export class ServerFirestoreCollectionService<
    * Sets a Firestore document. The entire document is replaced.
    */
   public async setDoc(docId: ItemId, data: WithFieldValue<ItemData>): AsyncResult<void> {
-    // TODO: Add `omitUndefined` here.
     const setResult = await asyncTry(async () => this.getDocRef(docId).set(data));
     if (!setResult.success) {
       return prefixErrorResult(setResult, 'Error setting Firestore document');
@@ -172,13 +171,11 @@ export class ServerFirestoreCollectionService<
   ): AsyncResult<void> {
     const docRef = this.getDocRef(docId);
     const updateResult = await asyncTry(async () =>
-      docRef.update(
-        omitUndefined({
-          ...updates,
-          // TODO(timestamps): Use server timestamps instead.
-          lastUpdatedTime: new Date(),
-        })
-      )
+      docRef.update({
+        ...updates,
+        // TODO(timestamps): Use server timestamps instead.
+        lastUpdatedTime: new Date(),
+      })
     );
     if (!updateResult.success) {
       return prefixErrorResult(updateResult, 'Error updating Firestore document');

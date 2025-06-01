@@ -14,8 +14,9 @@ import {
 import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
 
 import type {AuthStateChangedCallback} from '@shared/types/accounts.types';
+import type {EmailAddress} from '@shared/types/emails.types';
 import type {AsyncResult} from '@shared/types/results.types';
-import type {Consumer, EmailAddress, Task} from '@shared/types/utils.types';
+import type {Consumer, Task} from '@shared/types/utils.types';
 
 import {firebaseService} from '@sharedClient/services/firebase.client';
 
@@ -23,8 +24,8 @@ import {parseLoggedInAccount} from '@sharedClient/types/accounts.client.types';
 import type {LoggedInAccount} from '@sharedClient/types/accounts.client.types';
 
 interface AuthServiceSubscriptionCallbacks {
-  successCallback: AuthStateChangedCallback;
-  errorCallback: Consumer<Error>;
+  readonly successCallback: AuthStateChangedCallback;
+  readonly errorCallback: Consumer<Error>;
 }
 
 /**

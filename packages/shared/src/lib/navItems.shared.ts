@@ -54,6 +54,11 @@ const ALL_NAV_ITEMS: Record<NavItemId, NavItem> = {
     icon: makeEmojiIcon('📥'),
     title: 'Import',
   },
+  [NavItemId.Experiments]: {
+    id: NavItemId.Experiments,
+    icon: makeEmojiIcon('🧪'),
+    title: 'Experiments',
+  },
 };
 
 export class NavItems {
@@ -78,4 +83,5 @@ export const ORDERED_VIEW_NAV_ITEMS: NavItem[] = [
 export const ORDERED_SOURCE_NAV_ITEMS: NavItem[] = [
   NavItems.fromId(NavItemId.Feeds),
   NavItems.fromId(NavItemId.Import),
+  NavItems.fromId(NavItemId.Experiments),
 ];

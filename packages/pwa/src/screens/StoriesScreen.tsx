@@ -6,6 +6,7 @@ import {
   DEFAULT_STORIES_SIDEBAR_ITEM,
   getAtomicComponentSidebarItems,
   getDesignSystemSidebarItems,
+  getMoleculeComponentSidebarItems,
   getRendererSidebarItems,
 } from '@shared/lib/stories.shared';
 import {assertNever} from '@shared/lib/utils.shared';
@@ -14,6 +15,7 @@ import {RendererType} from '@shared/types/renderers.types';
 import {
   AtomicComponentType,
   DesignSystemComponentType,
+  MoleculeComponentType,
   StoriesSidebarSectionId,
 } from '@shared/types/stories.types';
 import type {StoriesSidebarItem} from '@shared/types/stories.types';
@@ -22,8 +24,10 @@ import type {Consumer} from '@shared/types/utils.types';
 import {BadgeStories} from '@src/components/atoms/Badge.stories';
 import {ButtonStories} from '@src/components/atoms/Button.stories';
 import {ButtonIconStories} from '@src/components/atoms/ButtonIcon.stories';
+import {CheckboxStories} from '@src/components/atoms/Checkbox.stories';
 import {DialogStories} from '@src/components/atoms/Dialog.stories';
 import {DividerStories} from '@src/components/atoms/Divider.stories';
+import {DropdownMenuStories} from '@src/components/atoms/DropdownMenu.stories';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {FlexStories} from '@src/components/atoms/Flex.stories';
 import {IconStories} from '@src/components/atoms/Icon.stories';
@@ -35,6 +39,8 @@ import {TextStories} from '@src/components/atoms/Text.stories';
 import {TextIconStories} from '@src/components/atoms/TextIcon.stories';
 import {ToastStories} from '@src/components/atoms/Toast.stories';
 import {TooltipStories} from '@src/components/atoms/Tooltip.stories';
+import {ErrorAreaStories} from '@src/components/errors/ErrorArea.stories';
+import {HeroAreaStories} from '@src/components/hero/HeroArea.stories';
 import {MarkdownStories} from '@src/components/Markdown.stories';
 import {NavItemLink} from '@src/components/nav/NavItemLink';
 import {ColorsStories} from '@src/components/stories/Colors.stories';
@@ -56,10 +62,14 @@ const AtomicComponentStoryContent: React.FC<{
       return <ButtonStories />;
     case AtomicComponentType.ButtonIcon:
       return <ButtonIconStories />;
+    case AtomicComponentType.Checkbox:
+      return <CheckboxStories />;
     case AtomicComponentType.Dialog:
       return <DialogStories />;
     case AtomicComponentType.Divider:
       return <DividerStories />;
+    case AtomicComponentType.DropdownMenu:
+      return <DropdownMenuStories />;
     case AtomicComponentType.Flex:
       return <FlexStories />;
     case AtomicComponentType.Input:
@@ -106,6 +116,20 @@ const RendererStoryContent: React.FC<{readonly rendererType: RendererType}> = ({
       return <MarkdownStories />;
     default: {
       assertNever(rendererType);
+    }
+  }
+};
+
+const MoleculeStoryContent: React.FC<{readonly moleculeType: MoleculeComponentType}> = ({
+  moleculeType,
+}) => {
+  switch (moleculeType) {
+    case MoleculeComponentType.HeroArea:
+      return <HeroAreaStories />;
+    case MoleculeComponentType.ErrorArea:
+      return <ErrorAreaStories />;
+    default: {
+      assertNever(moleculeType);
     }
   }
 };
@@ -165,6 +189,12 @@ const StoriesLeftSidebar: React.FC<{
           onItemClick={onItemClick}
         />
         <SidebarSection
+          title="Molecules"
+          items={getMoleculeComponentSidebarItems()}
+          activeSidebarItem={activeSidebarItem}
+          onItemClick={onItemClick}
+        />
+        <SidebarSection
           title="Renderers"
           items={getRendererSidebarItems()}
           activeSidebarItem={activeSidebarItem}
@@ -190,6 +220,9 @@ const StoriesScreenMainContent: React.FC<{
       break;
     case StoriesSidebarSectionId.Renderers:
       mainContent = <RendererStoryContent rendererType={activeSidebarItem.sidebarItemId} />;
+      break;
+    case StoriesSidebarSectionId.Molecules:
+      mainContent = <MoleculeStoryContent moleculeType={activeSidebarItem.sidebarItemId} />;
       break;
     default: {
       assertNever(activeSidebarItem);

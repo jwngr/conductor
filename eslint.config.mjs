@@ -1,6 +1,7 @@
 import eslint from '@eslint/js';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
+import unusedImports from 'eslint-plugin-unused-imports';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
@@ -12,6 +13,10 @@ const SHARED_LANGUAGE_OPTIONS = {
     project: ['./tsconfig.json', './packages/*/tsconfig.json'],
     tsconfigRootDir: '.',
   },
+};
+
+const SHARED_PLUGINS = {
+  'unused-imports': unusedImports,
 };
 
 const NO_RELATIVE_IMPORTS_PATTERN = {
@@ -39,6 +44,12 @@ const NO_SHARED_CLIENT_IMPORT_PATTERN = {
 const NO_SHARED_SERVER_IMPORT_PATTERN = {
   group: ['@sharedServer', '@sharedServer/*'],
   message: 'Importing from the `@sharedServer` package is not allowed in this package.',
+};
+
+// There is a separate override below that allows test utils to be imported in test files.
+const NO_TEST_UTILS_IMPORT_PATTERN = {
+  group: ['@shared/lib/testUtils.shared'],
+  message: 'Test utils can only be imported in test files.',
 };
 
 function makeSharedRules({
@@ -99,7 +110,21 @@ function makeSharedRules({
           disallowFirebaseClientImports ? NO_FIREBASE_CLIENT_IMPORT_PATTERN : null,
           disallowSharedClientImports ? NO_SHARED_CLIENT_IMPORT_PATTERN : null,
           disallowSharedServerImports ? NO_SHARED_SERVER_IMPORT_PATTERN : null,
+          NO_TEST_UTILS_IMPORT_PATTERN,
         ].filter((p) => p !== null),
+      },
+    ],
+
+    // Handle unused imports + vars via plugin which support auto-fixing.
+    '@typescript-eslint/no-unused-vars': 'off',
+    'unused-imports/no-unused-imports': 'error',
+    'unused-imports/no-unused-vars': [
+      'error',
+      {
+        vars: 'all',
+        varsIgnorePattern: '^_',
+        args: 'after-used',
+        argsIgnorePattern: '^_',
       },
     ],
   };
@@ -131,6 +156,7 @@ export default tseslint.config(
   {
     files: ['packages/shared/src/**/*.ts'],
     languageOptions: SHARED_LANGUAGE_OPTIONS,
+    plugins: SHARED_PLUGINS,
     rules: makeSharedRules({
       disallowFirebaseAdminImports: true,
       disallowFirebaseClientImports: true,
@@ -162,6 +188,7 @@ export default tseslint.config(
       globals: globals.browser,
     },
     plugins: {
+      ...SHARED_PLUGINS,
       react,
       'react-hooks': reactHooks,
     },
@@ -180,6 +207,7 @@ export default tseslint.config(
   {
     files: ['packages/sharedServer/**/*.ts'],
     languageOptions: SHARED_LANGUAGE_OPTIONS,
+    plugins: SHARED_PLUGINS,
     rules: makeSharedRules({
       disallowFirebaseClientImports: true,
       disallowSharedClientImports: true,
@@ -196,6 +224,7 @@ export default tseslint.config(
       globals: globals.browser,
     },
     plugins: {
+      ...SHARED_PLUGINS,
       'react-hooks': reactHooks,
     },
     rules: {
@@ -213,6 +242,7 @@ export default tseslint.config(
   {
     files: ['packages/scripts/**/*.ts'],
     languageOptions: SHARED_LANGUAGE_OPTIONS,
+    plugins: SHARED_PLUGINS,
     rules: {
       ...makeSharedRules({
         disallowFirebaseClientImports: true,
@@ -231,6 +261,7 @@ export default tseslint.config(
       globals: globals.browser,
     },
     plugins: {
+      ...SHARED_PLUGINS,
       'react-hooks': reactHooks,
     },
     rules: {
@@ -248,11 +279,33 @@ export default tseslint.config(
   {
     files: ['packages/functions/**/*.ts'],
     languageOptions: SHARED_LANGUAGE_OPTIONS,
+    plugins: SHARED_PLUGINS,
     rules: makeSharedRules({
       disallowFirebaseClientImports: true,
       disallowSharedClientImports: true,
       disallowFirebaseAdminImports: false,
       disallowSharedServerImports: false,
     }),
+  },
+
+  // RSS server package config.
+  {
+    files: ['packages/rssServer/**/*.ts'],
+    languageOptions: SHARED_LANGUAGE_OPTIONS,
+    plugins: SHARED_PLUGINS,
+    rules: makeSharedRules({
+      disallowFirebaseClientImports: true,
+      disallowSharedClientImports: true,
+      disallowFirebaseAdminImports: false,
+      disallowSharedServerImports: false,
+    }),
+  },
+
+  // Clear the restriction on importing test utils in test files.
+  {
+    files: ['**/*.test.ts', '**/*.test.tsx'],
+    rules: {
+      'no-restricted-imports': ['error', {paths: []}],
+    },
   }
 );

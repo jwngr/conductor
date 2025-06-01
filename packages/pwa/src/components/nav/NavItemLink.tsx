@@ -12,6 +12,7 @@ import type {LinkProps} from '@src/components/atoms/Link';
 import {
   allViewRoute,
   doneViewRoute,
+  experimentsRoute,
   feedSubscriptionsRoute,
   importRoute,
   savedViewRoute,
@@ -89,6 +90,12 @@ export const NavItemLink: React.FC<WithChildren<NavItemLinkProps>> = ({
     case NavItemId.Import:
       return (
         <Link to={importRoute.fullPath} {...linkProps}>
+          {children}
+        </Link>
+      );
+    case NavItemId.Experiments:
+      return (
+        <Link to={experimentsRoute.fullPath} {...linkProps}>
           {children}
         </Link>
       );

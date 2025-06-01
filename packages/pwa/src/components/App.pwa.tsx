@@ -7,6 +7,7 @@ import {
   allViewRoute,
   catchAllRoute,
   doneViewRoute,
+  experimentsRoute,
   feedItemRoute,
   feedSubscriptionsRoute,
   importRoute,
@@ -38,6 +39,7 @@ const routeTree = rootRoute.addChildren([
   feedSubscriptionsRoute,
   storiesRedirectRoute,
   importRoute,
+  experimentsRoute,
   catchAllRoute,
 ]);
 

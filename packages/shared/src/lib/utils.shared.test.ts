@@ -1,4 +1,5 @@
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {expectErrorResult, expectSuccessResult} from '@shared/lib/testUtils.shared';
 import {
   assertNever,
   batchAsyncResults,
@@ -6,8 +7,9 @@ import {
   filterNull,
   filterUndefined,
   formatWithCommas,
-  isDate,
-  isValidEmail,
+  isInteger,
+  isPositiveInteger,
+  isValidPort,
   makeUuid,
   noopTrue,
   omitUndefined,
@@ -70,30 +72,6 @@ describe('filterUndefined', () => {
 
   test('should handle empty array', () => {
     expect(filterUndefined([])).toEqual([]);
-  });
-});
-
-describe('isValidEmail', () => {
-  test('should return true for valid email addresses', () => {
-    expect(isValidEmail('test@example.com')).toBe(true);
-    expect(isValidEmail('user.name@domain.co.uk')).toBe(true);
-    expect(isValidEmail('user+tag@example.com')).toBe(true);
-  });
-
-  test('should return false for invalid email addresses', () => {
-    expect(isValidEmail('not-an-email')).toBe(false);
-    expect(isValidEmail('missing@domain')).toBe(false);
-    expect(isValidEmail('@nodomain.com')).toBe(false);
-    expect(isValidEmail('no@domain.')).toBe(false);
-    expect(isValidEmail('')).toBe(false);
-  });
-
-  test('should return false for non-string values', () => {
-    expect(isValidEmail(null)).toBe(false);
-    expect(isValidEmail(undefined)).toBe(false);
-    expect(isValidEmail(123)).toBe(false);
-    expect(isValidEmail({})).toBe(false);
-    expect(isValidEmail([])).toBe(false);
   });
 });
 
@@ -181,41 +159,16 @@ describe('partition', () => {
   });
 });
 
-describe('isDate', () => {
-  test('should return true for Date objects', () => {
-    expect(isDate(new Date())).toBe(true);
-    expect(isDate(new Date('2023-01-01'))).toBe(true);
-  });
-
-  test('should return false for non-Date objects', () => {
-    expect(isDate(null)).toBe(false);
-    expect(isDate(undefined)).toBe(false);
-    expect(isDate('2023-01-01')).toBe(false);
-    expect(isDate(123)).toBe(false);
-    expect(isDate({})).toBe(false);
-    expect(isDate([])).toBe(false);
-    expect(isDate(true)).toBe(false);
-  });
-
-  test('should return false for Date-like objects that are not actual Date instances', () => {
-    const dateLike = {
-      getTime: () => 1672531200000,
-      toISOString: () => '2023-01-01T00:00:00.000Z',
-    };
-    expect(isDate(dateLike)).toBe(false);
-  });
-});
-
 describe('assertNever', () => {
   test('should throw an error when called', () => {
     // TypeScript would normally prevent us from calling this with a non-never type
     // but for testing purposes we can cast to any and then to never
     expect(() => {
-      assertNever('not never' as never);
+      assertNever('not never' as never, {testNoLog: true});
     }).toThrow();
 
     expect(() => {
-      assertNever(123 as never);
+      assertNever(123 as never, {testNoLog: true});
     }).toThrow();
   });
 });
@@ -306,20 +259,14 @@ describe('batchSyncResults', () => {
     if (result.success) {
       expect(result.value.length).toBe(5);
       result.value.forEach((res: Result<number>, i: number) => {
-        expect(res.success).toBe(true);
-        if (res.success) {
-          expect(res.value).toBe(i + 1);
-        }
+        expectSuccessResult(res, i + 1);
       });
     }
   });
 
   test('should handle empty tasks array', () => {
     const result = batchSyncResults([], 2);
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.value).toEqual([]);
-    }
+    expectSuccessResult(result, []);
   });
 
   test('should handle errors in tasks', () => {
@@ -334,13 +281,9 @@ describe('batchSyncResults', () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.value.length).toBe(3);
-      expect(result.value[0].success).toBe(true);
-      expect(result.value[1].success).toBe(false);
-      expect(result.value[2].success).toBe(true);
-
-      if (!result.value[1].success) {
-        expect(result.value[1].error).toBe(error);
-      }
+      expectSuccessResult(result.value[0], 1);
+      expectErrorResult(result.value[1], error.message);
+      expectSuccessResult(result.value[2], 3);
     }
   });
 
@@ -348,10 +291,10 @@ describe('batchSyncResults', () => {
     const tasks = [() => makeSuccessResult(1)];
 
     const result = batchSyncResults(tasks, 0);
-    expect(result.success).toBe(false);
+    expectErrorResult(result);
 
     const result2 = batchSyncResults(tasks, -1);
-    expect(result2.success).toBe(false);
+    expectErrorResult(result2);
   });
 });
 
@@ -370,20 +313,14 @@ describe('batchAsyncResults', () => {
     if (result.success) {
       expect(result.value.length).toBe(5);
       result.value.forEach((res: Result<number>, i: number) => {
-        expect(res.success).toBe(true);
-        if (res.success) {
-          expect(res.value).toBe(i + 1);
-        }
+        expectSuccessResult(res, i + 1);
       });
     }
   });
 
   test('should handle empty tasks array', async () => {
     const result = await batchAsyncResults([], 2);
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.value).toEqual([]);
-    }
+    expectSuccessResult(result, []);
   });
 
   test('should handle errors in async tasks', async () => {
@@ -398,13 +335,9 @@ describe('batchAsyncResults', () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.value.length).toBe(3);
-      expect(result.value[0].success).toBe(true);
-      expect(result.value[1].success).toBe(false);
-      expect(result.value[2].success).toBe(true);
-
-      if (!result.value[1].success) {
-        expect(result.value[1].error).toBe(error);
-      }
+      expectSuccessResult(result.value[0], 1);
+      expectErrorResult(result.value[1], error.message);
+      expectSuccessResult(result.value[2], 3);
     }
   });
 
@@ -412,9 +345,66 @@ describe('batchAsyncResults', () => {
     const tasks = [async () => makeSuccessResult(1)];
 
     const result = await batchAsyncResults(tasks, 0);
-    expect(result.success).toBe(false);
+    expectErrorResult(result);
 
     const result2 = await batchAsyncResults(tasks, -1);
-    expect(result2.success).toBe(false);
+    expectErrorResult(result2);
+  });
+});
+
+describe('isValidPort', () => {
+  test('should return true for valid port numbers', () => {
+    expect(isValidPort(1)).toBe(true);
+    expect(isValidPort(9)).toBe(true);
+    expect(isValidPort(65535)).toBe(true);
+  });
+
+  test('should return false for invalid port numbers', () => {
+    expect(isValidPort(-1)).toBe(false);
+    expect(isValidPort(65536)).toBe(false);
+  });
+});
+
+describe('isInteger', () => {
+  test('should return true for positive integers', () => {
+    expect(isInteger(1)).toBe(true);
+    expect(isInteger(9)).toBe(true);
+  });
+
+  test('should return true for negative integers', () => {
+    expect(isInteger(-1)).toBe(true);
+    expect(isInteger(-9)).toBe(true);
+  });
+
+  test('should return true for zero', () => {
+    expect(isInteger(0)).toBe(true);
+  });
+
+  test('should return false for non-integers', () => {
+    expect(isInteger(1.5)).toBe(false);
+    expect(isInteger(0.1)).toBe(false);
+    expect(isInteger(-1.5)).toBe(false);
+  });
+});
+
+describe('isPositiveInteger', () => {
+  test('should return true for positive integers', () => {
+    expect(isPositiveInteger(1)).toBe(true);
+    expect(isPositiveInteger(9)).toBe(true);
+  });
+
+  test('should return false for negative integers', () => {
+    expect(isPositiveInteger(-1)).toBe(false);
+    expect(isPositiveInteger(-9)).toBe(false);
+  });
+
+  test('should return false for zero', () => {
+    expect(isPositiveInteger(0)).toBe(false);
+  });
+
+  test('should return false for non-integers', () => {
+    expect(isPositiveInteger(1.5)).toBe(false);
+    expect(isPositiveInteger(0.1)).toBe(false);
+    expect(isPositiveInteger(-1.5)).toBe(false);
   });
 });

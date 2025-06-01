@@ -8,25 +8,33 @@ import {prefixError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
+import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
 import {FeedItemType} from '@shared/types/feedItems.types';
 import {SystemTagId} from '@shared/types/tags.types';
 
-import {useFeedItem, useFeedItemsService} from '@sharedClient/services/feedItems.client';
+import {
+  DEFAULT_ROUTE_HERO_PAGE_ACTION,
+  REFRESH_HERO_PAGE_ACTION,
+} from '@sharedClient/lib/heroActions.client';
+
+import {useFeedItem, useFeedItemsService} from '@sharedClient/hooks/feedItems.hooks';
 
 import {RegisterIndividualFeedItemDevToolbarSection} from '@src/components/devToolbar/RegisterIndividualFeedItemSection';
+import {ErrorArea} from '@src/components/errors/ErrorArea';
 import {FeedItemScreenKeyboardHandler} from '@src/components/feedItems/FeedItemScreenEscapeHandler';
 import {ArticleFeedItemRenderer} from '@src/components/feedItems/renderers/ArticleFeedItemRenderer';
+import {IntervalFeedItemRenderer} from '@src/components/feedItems/renderers/IntervalFeedItemRenderer';
 import {TweetFeedItemRenderer} from '@src/components/feedItems/renderers/TweetFeedItemRenderer';
 import {VideoFeedItemRenderer} from '@src/components/feedItems/renderers/VideoFeedItemRenderer';
 import {WebsiteFeedItemRenderer} from '@src/components/feedItems/renderers/WebsiteFeedItemRenderer';
 import {XkcdFeedItemRenderer} from '@src/components/feedItems/renderers/XkcdFeedItemRenderer';
 import {YouTubeFeedItemRenderer} from '@src/components/feedItems/renderers/YouTubeFeedItemRenderer';
+import {LoadingArea} from '@src/components/loading/LoadingArea';
 
 import {useFeedItemIdFromUrl} from '@src/lib/router.pwa';
 
 import {NotFoundScreen} from '@src/screens/404';
-import {ErrorScreen} from '@src/screens/ErrorScreen';
 import {Screen} from '@src/screens/Screen';
 
 const useMarkFeedItemRead = (args: {
@@ -80,30 +88,13 @@ const useMarkFeedItemRead = (args: {
   }, [feedItemId, isFeedItemNull, feedItemsService, hasFeedItemBeenImported]);
 };
 
-const FeedItemScreenMainContent: React.FC<{
-  readonly feedItemId: FeedItemId;
-}> = ({feedItemId}) => {
-  const {feedItem, isLoading: isItemLoading, error: feedItemError} = useFeedItem(feedItemId);
-
-  useMarkFeedItemRead({feedItem, feedItemId});
-
-  if (isItemLoading) {
-    // TODO: Introduce proper loading component.
-    return <div>Loading...</div>;
-  }
-
-  if (feedItemError) {
-    const betterError = prefixError(feedItemError, 'Failed to load item');
-    logger.error(betterError, {feedItemId, isItemLoading});
-    return <ErrorScreen error={betterError} />;
-  }
-
-  if (!feedItem) {
-    return <NotFoundScreen message="Feed item not found" />;
-  }
+const LoadedFeedItemScreenMainContent: React.FC<{
+  readonly feedItem: FeedItem;
+}> = ({feedItem}) => {
+  useMarkFeedItemRead({feedItem, feedItemId: feedItem.feedItemId});
 
   let feedItemContent: React.ReactNode;
-  switch (feedItem.type) {
+  switch (feedItem.feedItemType) {
     case FeedItemType.Article:
       feedItemContent = <ArticleFeedItemRenderer feedItem={feedItem} />;
       break;
@@ -122,6 +113,9 @@ const FeedItemScreenMainContent: React.FC<{
     case FeedItemType.YouTube:
       feedItemContent = <YouTubeFeedItemRenderer feedItem={feedItem} />;
       break;
+    case FeedItemType.Interval:
+      feedItemContent = <IntervalFeedItemRenderer feedItem={feedItem} />;
+      break;
     default:
       assertNever(feedItem);
   }
@@ -134,18 +128,52 @@ const FeedItemScreenMainContent: React.FC<{
   );
 };
 
+const FeedItemScreenMainContent: React.FC<{
+  readonly feedItemId: FeedItemId;
+}> = ({feedItemId}) => {
+  const feedItemState = useFeedItem(feedItemId);
+
+  switch (feedItemState.status) {
+    case AsyncStatus.Idle:
+    case AsyncStatus.Pending:
+      return <LoadingArea text="Loading feed item..." />;
+    case AsyncStatus.Error: {
+      const betterError = prefixError(feedItemState.error, 'Failed to load feed item');
+      logger.error(betterError, {feedItemId});
+      return (
+        <ErrorArea
+          error={feedItemState.error}
+          title="Failed to load feed item"
+          subtitle="Refreshing may resolve the issue. If the problem persists, please contact support."
+          actions={[DEFAULT_ROUTE_HERO_PAGE_ACTION, REFRESH_HERO_PAGE_ACTION]}
+        />
+      );
+    }
+    case AsyncStatus.Success:
+      if (!feedItemState.value) {
+        return <NotFoundScreen title="Feed item not found" subtitle={undefined} />;
+      }
+      return <LoadedFeedItemScreenMainContent feedItem={feedItemState.value} />;
+    default:
+      assertNever(feedItemState);
+  }
+};
+
 export const FeedItemScreen: React.FC = () => {
   const feedItemId = useFeedItemIdFromUrl();
 
-  const mainContent = feedItemId ? (
-    <FeedItemScreenMainContent feedItemId={feedItemId} />
-  ) : (
-    <NotFoundScreen message="No feed item ID in URL" />
-  );
+  if (!feedItemId) {
+    return (
+      <NotFoundScreen
+        title="Feed item ID missing"
+        subtitle="Make sure the URL includes a valid feed item ID"
+      />
+    );
+  }
 
   return (
     <Screen withHeader withLeftSidebar>
-      {mainContent}
+      <FeedItemScreenMainContent feedItemId={feedItemId} />
       <FeedItemScreenKeyboardHandler />
     </Screen>
   );

@@ -11,13 +11,14 @@ import {SORT_BY_CREATED_TIME_DESC_OPTION} from '@shared/types/views.types';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
+import {Label} from '@src/components/atoms/Label';
 import {Popover, PopoverContent, PopoverTrigger} from '@src/components/atoms/Popover';
 
 export const ViewOptionsDialog: React.FC<{
-  sortBy: readonly ViewSortByOption[];
-  groupBy: readonly ViewGroupByOption[];
-  onSortByChange: React.Dispatch<React.SetStateAction<ViewSortByOption[]>>;
-  onGroupByChange: React.Dispatch<React.SetStateAction<ViewGroupByOption[]>>;
+  readonly sortBy: readonly ViewSortByOption[];
+  readonly groupBy: readonly ViewGroupByOption[];
+  readonly onSortByChange: React.Dispatch<React.SetStateAction<ViewSortByOption[]>>;
+  readonly onGroupByChange: React.Dispatch<React.SetStateAction<ViewGroupByOption[]>>;
 }> = ({sortBy, groupBy, onSortByChange, onGroupByChange}) => {
   const firstSortByOption = sortBy[0] ?? SORT_BY_CREATED_TIME_DESC_OPTION;
   const firstGroupByOption = groupBy.length === 0 ? null : groupBy[0].field;
@@ -70,9 +71,7 @@ export const ViewOptionsDialog: React.FC<{
       <PopoverContent className="w-auto" align="end" side="bottom">
         <FlexColumn gap={4} padding={4}>
           <FlexRow gap={2} justify="between">
-            <label htmlFor="groupBy" className="text-sm font-medium">
-              Group by
-            </label>
+            <Label htmlFor="groupBy">Group by</Label>
             <select
               id="groupBy"
               value={firstGroupByOption ?? 'none'}
@@ -80,14 +79,13 @@ export const ViewOptionsDialog: React.FC<{
               className="rounded border border-stone-300 p-1 text-sm"
             >
               <option value="none">None</option>
-              <option value="type">{toViewGroupByOptionText('type')}</option>
+              <option value="feedItemType">{toViewGroupByOptionText('feedItemType')}</option>
+              <option value="feedSourceType">{toViewGroupByOptionText('feedSourceType')}</option>
               <option value="importState">{toViewGroupByOptionText('importState')}</option>
             </select>
           </FlexRow>
           <FlexRow gap={2} justify="between">
-            <label htmlFor="sortField" className="text-sm font-medium">
-              Sort by
-            </label>
+            <Label htmlFor="sortField">Sort by</Label>
             <div className="flex items-center gap-1">
               <select
                 id="sortField"

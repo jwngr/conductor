@@ -1,7 +1,7 @@
+import {toast} from '@sharedClient/lib/toasts.client';
+
 import {Button} from '@src/components/atoms/Button';
 import {StorySection} from '@src/components/stories/StorySection';
-
-import {toast} from '@src/lib/toasts';
 
 const ToastStory: React.FC<{
   readonly buttonText: string;

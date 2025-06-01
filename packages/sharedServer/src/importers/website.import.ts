@@ -1,6 +1,10 @@
+import {logger} from '@shared/services/logger.shared';
+
 import {
-  FEED_ITEM_FILE_NAME_HTML,
-  FEED_ITEM_FILE_NAME_LLM_CONTEXT,
+  FEED_ITEM_FILE_HTML,
+  FEED_ITEM_FILE_HTML_DEFUDDLE,
+  FEED_ITEM_FILE_HTML_MARKDOWN,
+  FEED_ITEM_FILE_LLM_CONTEXT,
 } from '@shared/lib/constants.shared';
 import {
   asyncTryAll,
@@ -13,8 +17,8 @@ import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {
-  FeedItem,
   FeedItemId,
+  FeedItemWithUrl,
   XkcdFeedItem,
   YouTubeFeedItem,
 } from '@shared/types/feedItems.types';
@@ -23,6 +27,8 @@ import type {AsyncResult} from '@shared/types/results.types';
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import type {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
 
+import {extractMainContent, sanitizeHtml} from '@sharedServer/lib/html.server';
+import {htmlToMarkdown} from '@sharedServer/lib/markdown.server';
 import {generateHierarchicalSummary} from '@sharedServer/lib/summarization.server';
 
 export class WebsiteFeedItemImporter {
@@ -38,13 +44,13 @@ export class WebsiteFeedItemImporter {
   }
 
   /**
-   * Imports a feed item's HTML and saves it to storage.
+   * Imports a feed item's raw HTML, sanitizes it, and saves it to storage.
    */
-  private async fetchAndSaveRawHtml(args: {
+  private async fetchAndSaveSanitizedHtml(args: {
     readonly url: string;
     readonly feedItemId: FeedItemId;
     readonly accountId: AccountId;
-  }): AsyncResult<void> {
+  }): AsyncResult<string> {
     const {url, feedItemId, accountId} = args;
 
     // TODO: Extend the import functionality here:
@@ -61,18 +67,91 @@ export class WebsiteFeedItemImporter {
 
     const rawHtml = fetchDataResult.value;
 
+    const sanitizedHtmlResult = sanitizeHtml(rawHtml);
+    if (!sanitizedHtmlResult.success) {
+      return prefixErrorResult(sanitizedHtmlResult, 'Error sanitizing feed item HTML');
+    }
+    const sanitizedHtml = sanitizedHtmlResult.value;
+
     const storagePath = this.feedItemService.getStoragePath({
       feedItemId,
       accountId,
-      filename: FEED_ITEM_FILE_NAME_HTML,
+      filename: FEED_ITEM_FILE_HTML,
     });
     const saveHtmlResult = await this.feedItemService.writeFileToStorage({
       storagePath,
-      content: rawHtml,
+      content: sanitizedHtml,
       contentType: 'text/html',
     });
 
-    return prefixResultIfError(saveHtmlResult, 'Error saving feed item HTML');
+    if (!saveHtmlResult.success) return saveHtmlResult;
+
+    return makeSuccessResult(sanitizedHtml);
+  }
+
+  /**
+   * Extracts the main content from the full page sanitized HTML, converts it to HTML and Markdown,
+   * and saves it to storage.
+   */
+  private async saveMainContentHtmlAndMarkdown(args: {
+    readonly url: string;
+    readonly html: string;
+    readonly feedItemId: FeedItemId;
+    readonly accountId: AccountId;
+  }): AsyncResult<void> {
+    const {url, html, feedItemId, accountId} = args;
+
+    const mainContentResult = await extractMainContent({html, url});
+    if (!mainContentResult.success) {
+      return prefixErrorResult(mainContentResult, 'Error extracting main content HTML');
+    }
+    const mainContentData = mainContentResult.value;
+    const mainContentHtml = mainContentData.content;
+
+    const mainContentMarkdownResult = htmlToMarkdown(mainContentHtml);
+    if (!mainContentMarkdownResult.success) {
+      return prefixErrorResult(
+        mainContentMarkdownResult,
+        'Error converting main content HTML to Markdown'
+      );
+    }
+    const mainContentMarkdown = mainContentMarkdownResult.value;
+
+    const mainContentHtmlStoragePath = this.feedItemService.getStoragePath({
+      feedItemId,
+      accountId,
+      filename: FEED_ITEM_FILE_HTML_DEFUDDLE,
+    });
+
+    const mainContentMarkdownPath = this.feedItemService.getStoragePath({
+      feedItemId,
+      accountId,
+      filename: FEED_ITEM_FILE_HTML_MARKDOWN,
+    });
+
+    const saveMainContentResult = await asyncTryAll([
+      this.feedItemService.writeFileToStorage({
+        storagePath: mainContentHtmlStoragePath,
+        content: mainContentHtml,
+        contentType: 'text/html',
+      }),
+      this.feedItemService.writeFileToStorage({
+        storagePath: mainContentMarkdownPath,
+        content: mainContentMarkdown,
+        contentType: 'text/markdown',
+      }),
+    ]);
+
+    if (!saveMainContentResult.success) {
+      return prefixErrorResult(saveMainContentResult, 'Error saving main content data');
+    }
+
+    const firstError = saveMainContentResult.value.results.find((r) => !r.success)?.error;
+    if (firstError) {
+      return makeErrorResult(prefixError(firstError, 'Error saving main content file'));
+    }
+
+    return makeSuccessResult(undefined);
   }
 
   /**
@@ -93,10 +172,10 @@ export class WebsiteFeedItemImporter {
     const storagePath = this.feedItemService.getStoragePath({
       feedItemId,
       accountId,
-      filename: FEED_ITEM_FILE_NAME_LLM_CONTEXT,
+      filename: FEED_ITEM_FILE_LLM_CONTEXT,
     });
 
-    const saveFirecrawlDataResult = await asyncTryAll([
+    const firecrawlDataResult = await asyncTryAll([
       this.feedItemService.writeFileToStorage({
         storagePath,
         content: firecrawlData.markdown,
@@ -109,12 +188,12 @@ export class WebsiteFeedItemImporter {
       }),
     ]);
 
-    const saveFirecrawlDataResultError = saveFirecrawlDataResult.success
-      ? saveFirecrawlDataResult.value.results.find((result) => !result.success)?.error
-      : saveFirecrawlDataResult.error;
-    if (saveFirecrawlDataResultError) {
+    const firecrawlDataResultError = firecrawlDataResult.success
+      ? firecrawlDataResult.value.results.find((result) => !result.success)?.error
+      : firecrawlDataResult.error;
+    if (firecrawlDataResultError) {
       return makeErrorResult(
-        prefixError(saveFirecrawlDataResultError, 'Error saving Firecrawl data for feed item')
+        prefixError(firecrawlDataResultError, 'Error saving Firecrawl data for feed item')
       );
     }
 
@@ -144,10 +223,12 @@ export class WebsiteFeedItemImporter {
   }
 
   public async import(
-    feedItem: Exclude<FeedItem, YouTubeFeedItem | XkcdFeedItem>
+    feedItem: Exclude<FeedItemWithUrl, YouTubeFeedItem | XkcdFeedItem>
   ): AsyncResult<void> {
+    const {url, feedItemId, accountId} = feedItem;
+
     const importAllDataResult = await asyncTryAll([
-      this.fetchAndSaveRawHtml({
+      this.fetchAndSaveSanitizedHtml({
         url: feedItem.url,
         feedItemId: feedItem.feedItemId,
         accountId: feedItem.accountId,
@@ -160,12 +241,30 @@ export class WebsiteFeedItemImporter {
     ]);
 
     // TODO: Make this multi-result error handling pattern simpler.
-    const importAllDataResultError = importAllDataResult.success
-      ? importAllDataResult.value.results.find((result) => !result.success)?.error
-      : importAllDataResult.error;
-    if (importAllDataResultError) {
-      return makeErrorResult(prefixError(importAllDataResultError, 'Error importing feed item'));
+    if (!importAllDataResult.success) {
+      return makeErrorResult(prefixError(importAllDataResult.error, 'Error importing feed item'));
     }
+
+    const [sanitizedHtmlResult, firecrawlDataResult] = importAllDataResult.value.results;
+
+    // Consider failing to fetch the Firecrawl data as recoverable, so just log.
+    if (!firecrawlDataResult.success) {
+      logger.error(firecrawlDataResult.error, {feedItemId, accountId});
+    }
+
+    // Consider failing to fetch the raw HTML as unrecoverable. Logging will happen at the next
+    // level up.
+    if (!sanitizedHtmlResult.success) return sanitizedHtmlResult;
+    const sanitizedHtml = sanitizedHtmlResult.value;
+
+    const saveMainContentResult = await this.saveMainContentHtmlAndMarkdown({
+      url,
+      html: sanitizedHtml,
+      feedItemId,
+      accountId,
+    });
+
+    if (!saveMainContentResult.success) return saveMainContentResult;
 
     return makeSuccessResult(undefined);
   }

@@ -8,6 +8,7 @@ import type {
   QueryConstraint,
   QueryDocumentSnapshot,
   QuerySnapshot,
+  SetOptions,
   SnapshotOptions,
   WithFieldValue,
 } from 'firebase/firestore';
@@ -25,7 +26,6 @@ import {
 } from 'firebase/firestore';
 
 import {asyncTry, prefixError, prefixResultIfError, syncTry} from '@shared/lib/errorUtils.shared';
-import {omitUndefined} from '@shared/lib/utils.shared';
 
 import type {AsyncResult, Result} from '@shared/types/results.types';
 import type {Consumer, Func, Unsubscribe} from '@shared/types/utils.types';
@@ -166,18 +166,21 @@ export class ClientFirestoreCollectionService<
     onError: Consumer<Error>
   ): Unsubscribe {
     const handleSnapshot: Consumer<DocumentSnapshot<ItemData>> = (docSnap) => {
-      const parsedDataResult = syncTry(() => docSnap.data());
-      if (parsedDataResult.success) {
-        onData(parsedDataResult.value ?? null);
-      } else {
-        onError(parsedDataResult.error);
+      if (!docSnap.exists()) {
+        onData(null);
+        return;
       }
+
+      const parsedDataResult = syncTry(() => docSnap.data());
+      if (!parsedDataResult.success) {
+        onError(parsedDataResult.error);
+        return;
+      }
+
+      onData(parsedDataResult.value ?? null);
     };
 
-    const handleError: Consumer<Error> = (error) => {
-      onError(error);
-    };
-
+    const handleError: Consumer<Error> = (error) => onError(error);
     return onSnapshot(this.getDocRef(docId), handleSnapshot, handleError);
   }
 
@@ -191,11 +194,13 @@ export class ClientFirestoreCollectionService<
   ): Unsubscribe {
     const handleSnapshot: Consumer<QuerySnapshot<ItemData>> = (querySnap) => {
       const parsedDataResult = syncTry(() => querySnap.docs.map((doc) => doc.data()));
-      if (parsedDataResult.success) {
-        onData(parsedDataResult.value);
-      } else {
+
+      if (!parsedDataResult.success) {
         onError(parsedDataResult.error);
+        return;
       }
+
+      onData(parsedDataResult.value);
     };
 
     const handleError: Consumer<Error> = (error) => {
@@ -208,11 +213,37 @@ export class ClientFirestoreCollectionService<
   /**
    * Sets a Firestore document. The entire document is replaced.
    */
-  public async setDoc(docId: ItemId, data: WithFieldValue<ItemData>): AsyncResult<void> {
-    const setResult = await asyncTry(async () =>
-      setDoc(this.getDocRef(docId), omitUndefined(data))
-    );
+  public async setDoc(
+    docId: ItemId,
+    data: WithFieldValue<ItemData>,
+    options: SetOptions = {}
+  ): AsyncResult<void> {
+    const setResult = await asyncTry(async () => setDoc(this.getDocRef(docId), data, options));
     return prefixResultIfError(setResult, 'Error setting Firestore document');
+  }
+
+  /**
+   * Updates a Firestore document using setDoc() with the `merge` option. This is useful for
+   * updating a doc that may or may not exist without having to first fetch it.
+   */
+  public async setDocWithMerge(
+    docId: ItemId,
+    data: Partial<WithFieldValue<ItemData>>
+  ): AsyncResult<void> {
+    const setResult = await asyncTry(async () =>
+      setDoc(
+        this.getDocRef(docId),
+        // The Firestore data converter does not allow for partial writes via `setDoc` at the type
+        // level. However, the entire point of `merge: true` is to allow for partial updates.
+        {
+          ...data,
+          // TODO(timestamps): Use server timestamps instead.
+          lastUpdatedTime: new Date(),
+        } as WithFieldValue<ItemData>,
+        {merge: true}
+      )
+    );
+    return prefixResultIfError(setResult, 'Error setting Firestore document with merge');
   }
 
   /**
@@ -224,14 +255,11 @@ export class ClientFirestoreCollectionService<
   ): AsyncResult<void> {
     const docRef = this.getDocRef(docId);
     const updateResult = await asyncTry(async () =>
-      updateDoc(
-        docRef,
-        omitUndefined({
-          ...updates,
-          // TODO(timestamps): Use server timestamps instead.
-          lastUpdatedTime: new Date(),
-        })
-      )
+      updateDoc(docRef, {
+        ...updates,
+        // TODO(timestamps): Use server timestamps instead.
+        lastUpdatedTime: new Date(),
+      })
     );
     return prefixResultIfError(updateResult, 'Error updating Firestore document');
   }

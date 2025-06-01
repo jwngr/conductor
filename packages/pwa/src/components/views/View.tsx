@@ -7,29 +7,39 @@ import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
 
-import type {FeedItem} from '@shared/types/feedItems.types';
+import {AsyncStatus} from '@shared/types/asyncState.types';
+import {FeedItemType, type FeedItem} from '@shared/types/feedItems.types';
+import {ViewType} from '@shared/types/views.types';
 import type {
   ViewGroupByField,
   ViewGroupByOption,
   ViewSortByField,
   ViewSortByOption,
-  ViewType,
 } from '@shared/types/views.types';
 
 import {useFocusStore} from '@sharedClient/stores/FocusStore';
 
-import {useFeedItems} from '@sharedClient/services/feedItems.client';
+import {
+  DEFAULT_ROUTE_HERO_PAGE_ACTION,
+  REFRESH_HERO_PAGE_ACTION,
+} from '@sharedClient/lib/heroActions.client';
+
+import {
+  useFeedItemsIgnoringDelivery,
+  useFeedItemsRespectingDelivery,
+} from '@sharedClient/hooks/feedItems.hooks';
 
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
 import {Text} from '@src/components/atoms/Text';
+import {ErrorArea} from '@src/components/errors/ErrorArea';
 import {HoverFeedItemActions} from '@src/components/feedItems/FeedItemActions';
 import {FeedItemImportStatusBadge} from '@src/components/feedItems/FeedItemImportStatusBadge';
+import {LoadingArea} from '@src/components/loading/LoadingArea';
 import {ViewKeyboardShortcutHandler} from '@src/components/views/ViewKeyboardShortcutHandler';
 import {ViewOptionsDialog} from '@src/components/views/ViewOptionsDialog';
 
 import {feedItemRoute} from '@src/routes';
-import {ErrorScreen} from '@src/screens/ErrorScreen';
 
 function compareFeedItems(args: {
   readonly a: FeedItem;
@@ -131,9 +141,19 @@ function useGroupedFeedItems(
 
     const groupedItems: Record<string, FeedItem[]> = {};
     switch (groupByField) {
-      case 'type':
+      case 'feedItemType':
         for (const item of feedItems) {
-          const groupKey = item.type;
+          const groupKey = item.feedItemType;
+          if (!groupedItems[groupKey]) {
+            groupedItems[groupKey] = [];
+          }
+          groupedItems[groupKey].push(item);
+        }
+        return groupedItems;
+
+      case 'feedSourceType':
+        for (const item of feedItems) {
+          const groupKey = item.feedSource.feedSourceType;
           if (!groupedItems[groupKey]) {
             groupedItems[groupKey] = [];
           }
@@ -151,7 +171,7 @@ function useGroupedFeedItems(
         }
         return groupedItems;
 
-      case 'createdDate':
+      case 'createdTime':
         // TODO: Handle timezones.
         for (const item of feedItems) {
           const groupKey = getDateGroupKey(item.createdTime);
@@ -162,7 +182,7 @@ function useGroupedFeedItems(
         }
         return groupedItems;
 
-      case 'lastUpdatedDate':
+      case 'lastUpdatedTime':
         // TODO: Handle timezones.
         for (const item of feedItems) {
           const groupKey = getDateGroupKey(item.lastUpdatedTime);
@@ -221,7 +241,7 @@ const ViewListItem: React.FC<{
             <FeedItemImportStatusBadge importState={feedItem.importState} />
           </FlexRow>
           <Text as="p" light>
-            {feedItem.url}
+            {feedItem.feedItemType === FeedItemType.Interval ? 'Interval' : feedItem.url}
           </Text>
         </div>
         {shouldShowActions ? (
@@ -289,22 +309,110 @@ const ViewList: React.FC<{
   readonly sortBy: readonly ViewSortByOption[];
   readonly groupBy: readonly ViewGroupByOption[];
 }> = ({viewType, sortBy, groupBy}) => {
-  const {feedItems, isLoading, error} = useFeedItems({viewType});
-
-  if (isLoading) {
-    // TODO: Introduce proper loading component.
-    return <div>Loading...</div>;
+  // Split views based on whether or not they filter items based on delivery schedules. This is
+  // because fetching delivery schedules is more expensive, so we want to avoid doing so for views
+  // which do not need them.
+  switch (viewType) {
+    case ViewType.Untriaged:
+      return <ViewListRespectingDelivery viewType={viewType} sortBy={sortBy} groupBy={groupBy} />;
+    case ViewType.Saved:
+    case ViewType.Done:
+    case ViewType.Trashed:
+    case ViewType.Unread:
+    case ViewType.Starred:
+    case ViewType.All:
+    case ViewType.Today:
+      return <ViewListIgnoringDelivery viewType={viewType} sortBy={sortBy} groupBy={groupBy} />;
+    default:
+      assertNever(viewType);
   }
+};
 
-  if (error) {
-    const betterError = prefixError(error, 'Failed to load items');
-    logger.error(betterError, {viewType, sortBy, groupBy});
-    return <ErrorScreen error={betterError} />;
-  }
-
+const ViewListErrorArea: React.FC<{
+  readonly error: Error;
+}> = ({error}) => {
   return (
-    <LoadedViewList viewType={viewType} feedItems={feedItems} sortBy={sortBy} groupBy={groupBy} />
+    <ErrorArea
+      error={error}
+      title="Failed to load items"
+      subtitle="Refreshing may resolve the issue. If the problem persists, please contact support."
+      actions={[DEFAULT_ROUTE_HERO_PAGE_ACTION, REFRESH_HERO_PAGE_ACTION]}
+    />
   );
+};
+
+/**
+ * Primary list component for views which do not filter items based on delivery schedules.
+ */
+const ViewListIgnoringDelivery: React.FC<{
+  readonly viewType: Exclude<ViewType, ViewType.Untriaged>;
+  readonly sortBy: readonly ViewSortByOption[];
+  readonly groupBy: readonly ViewGroupByOption[];
+}> = ({viewType, sortBy, groupBy}) => {
+  const feedItemsState = useFeedItemsIgnoringDelivery({viewType});
+
+  switch (feedItemsState.status) {
+    case AsyncStatus.Idle:
+    case AsyncStatus.Pending:
+      return <LoadingArea text="Loading items..." />;
+    case AsyncStatus.Error: {
+      const betterError = prefixError(
+        feedItemsState.error,
+        'Failed to load items ignoring delivery schedules'
+      );
+      logger.error(betterError, {viewType, sortBy, groupBy});
+      return <ViewListErrorArea error={feedItemsState.error} />;
+    }
+    case AsyncStatus.Success: {
+      return (
+        <LoadedViewList
+          viewType={viewType}
+          feedItems={feedItemsState.value}
+          sortBy={sortBy}
+          groupBy={groupBy}
+        />
+      );
+    }
+    default:
+      assertNever(feedItemsState);
+  }
+};
+
+/**
+ * Primary list component for views which filter items based on delivery schedules.
+ */
+const ViewListRespectingDelivery: React.FC<{
+  readonly viewType: ViewType.Untriaged;
+  readonly sortBy: readonly ViewSortByOption[];
+  readonly groupBy: readonly ViewGroupByOption[];
+}> = ({viewType, sortBy, groupBy}) => {
+  const feedItemsState = useFeedItemsRespectingDelivery({viewType});
+
+  switch (feedItemsState.status) {
+    case AsyncStatus.Idle:
+    case AsyncStatus.Pending:
+      return <LoadingArea text="Loading items..." />;
+    case AsyncStatus.Error: {
+      const betterError = prefixError(
+        feedItemsState.error,
+        'Failed to load items respecting delivery schedules'
+      );
+      logger.error(betterError, {viewType, sortBy, groupBy});
+      return <ViewListErrorArea error={feedItemsState.error} />;
+    }
+    case AsyncStatus.Success: {
+      return (
+        <LoadedViewList
+          viewType={viewType}
+          feedItems={feedItemsState.value}
+          sortBy={sortBy}
+          groupBy={groupBy}
+        />
+      );
+    }
+    default:
+      assertNever(feedItemsState);
+  }
 };
 
 const ViewHeader: React.FC<{

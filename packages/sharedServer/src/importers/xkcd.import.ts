@@ -1,17 +1,14 @@
-import {FEED_ITEM_FILE_NAME_XKCD_EXPLAIN} from '@shared/lib/constants.shared';
+import {FEED_ITEM_FILE_XKCD_EXPLAIN} from '@shared/lib/constants.shared';
 import {asyncTryAll, prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {parseXkcdComicIdFromUrl} from '@shared/lib/xkcd.shared';
 
-import type {FeedItem, XkcdFeedItem} from '@shared/types/feedItems.types';
+import type {XkcdFeedItem} from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 
-import {
-  fetchExplainXkcdContent,
-  fetchXkcdComic,
-  parseXkcdComicIdFromUrl,
-} from '@sharedServer/lib/xkcd.server';
+import {fetchExplainXkcdContent, fetchXkcdComic} from '@sharedServer/lib/xkcd.server';
 
 export class XkcdFeedItemImporter {
   private readonly feedItemService: ServerFeedItemsService;
@@ -22,7 +19,7 @@ export class XkcdFeedItemImporter {
 
   public async fetchAndSaveXkcdComic(args: {
     readonly comicId: number;
-    readonly feedItem: FeedItem;
+    readonly feedItem: XkcdFeedItem;
   }): AsyncResult<void> {
     const {comicId, feedItem} = args;
 
@@ -40,7 +37,7 @@ export class XkcdFeedItemImporter {
 
   public async fetchAndSaveExplainXkcdContent(args: {
     readonly comicId: number;
-    readonly feedItem: FeedItem;
+    readonly feedItem: XkcdFeedItem;
   }): AsyncResult<void> {
     const {comicId, feedItem} = args;
 
@@ -52,7 +49,7 @@ export class XkcdFeedItemImporter {
     const storagePath = this.feedItemService.getStoragePath({
       feedItemId: feedItem.feedItemId,
       accountId: feedItem.accountId,
-      filename: FEED_ITEM_FILE_NAME_XKCD_EXPLAIN,
+      filename: FEED_ITEM_FILE_XKCD_EXPLAIN,
     });
 
     const saveExplainXkcdContentResult = await this.feedItemService.writeFileToStorage({

@@ -1,15 +1,9 @@
-import {z} from 'zod';
-
-import {makeUuid} from '@shared/lib/utils.shared';
-
-import {AccountIdSchema} from '@shared/types/accounts.types';
 import type {AccountId} from '@shared/types/accounts.types';
-import {ActorSchema} from '@shared/types/actors.types';
 import type {Actor} from '@shared/types/actors.types';
-import {FeedItemActionType, FeedItemIdSchema} from '@shared/types/feedItems.types';
-import type {FeedItemId} from '@shared/types/feedItems.types';
-import {FirestoreTimestampSchema} from '@shared/types/firebase.types';
-import {UserFeedSubscriptionIdSchema} from '@shared/types/userFeedSubscriptions.types';
+import type {Environment} from '@shared/types/environment.types';
+import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
+import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
+import type {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 
@@ -18,68 +12,67 @@ import type {BaseStoreItem} from '@shared/types/utils.types';
  */
 export type EventId = string & {readonly __brand: 'EventIdBrand'};
 
-/**
- * Zod schema for an {@link EventId}.
- */
-// TODO: Consider adding `brand()` and defining `EventId` based on this schema.
-export const EventIdSchema = z.string().uuid();
-
-/**
- * Creates a new random {@link EventId}.
- */
-export function makeEventId(): EventId {
-  return makeUuid<EventId>();
-}
-
 export enum EventType {
   FeedItemAction = 'FEED_ITEM_ACTION',
-  UserFeedSubscription = 'USER_FEED_SUBSCRIPTION',
   FeedItemImported = 'FEED_ITEM_IMPORTED',
+  ExperimentEnabled = 'EXPERIMENT_ENABLED',
+  ExperimentDisabled = 'EXPERIMENT_DISABLED',
+  StringExperimentValueChanged = 'STRING_EXPERIMENT_VALUE_CHANGED',
+  SubscribedToFeedSource = 'SUBSCRIBED_TO_FEED_SOURCE',
+  UnsubscribedFromFeedSource = 'UNSUBSCRIBED_FROM_FEED_SOURCE',
 }
 
-export enum Environment {
-  Server = 'SERVER',
-  PWA = 'PWA',
-  Extension = 'EXTENSION',
+interface BaseEventLogItemData extends Record<string, unknown> {
+  readonly eventType: EventType;
 }
 
-export interface FeedItemActionEventLogItemData extends Record<string, unknown> {
+export interface FeedItemActionEventLogItemData extends BaseEventLogItemData {
+  readonly eventType: EventType.FeedItemAction;
   readonly feedItemId: FeedItemId;
   readonly feedItemActionType: FeedItemActionType;
 }
 
-export const FeedItemActionEventLogItemDataSchema = z.object({
-  feedItemId: FeedItemIdSchema,
-  feedItemActionType: z.nativeEnum(FeedItemActionType),
-});
-
-export interface UserFeedSubscriptionEventLogItemData extends Record<string, unknown> {
-  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-  // TODO: Add `userFeedSubscriptionActionType`.
-}
-
-export interface FeedItemImportedEventLogItemData extends Record<string, unknown> {
+export interface FeedItemImportedEventLogItemData extends BaseEventLogItemData {
+  readonly eventType: EventType.FeedItemImported;
   readonly feedItemId: FeedItemId;
 }
 
-export const FeedItemImportedEventLogItemDataSchema = z.object({
-  feedItemId: FeedItemIdSchema,
-});
+export interface ExperimentEnabledEventLogItemData extends BaseEventLogItemData {
+  readonly eventType: EventType.ExperimentEnabled;
+  readonly experimentId: ExperimentId;
+  readonly experimentType: ExperimentType;
+}
 
-export const UserFeedSubscriptionEventLogItemDataSchema = z.object({
-  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
-});
+export interface ExperimentDisabledEventLogItemData extends BaseEventLogItemData {
+  readonly eventType: EventType.ExperimentDisabled;
+  readonly experimentId: ExperimentId;
+  readonly experimentType: ExperimentType;
+}
 
-const EventLogItemDataSchema = FeedItemActionEventLogItemDataSchema.or(
-  UserFeedSubscriptionEventLogItemDataSchema
-).or(FeedItemImportedEventLogItemDataSchema);
+export interface StringExperimentValueChangedEventLogItemData extends BaseEventLogItemData {
+  readonly eventType: EventType.StringExperimentValueChanged;
+  readonly experimentId: ExperimentId;
+  readonly value: string;
+}
+
+export interface SubscribedToFeedSourceEventLogItemData extends BaseEventLogItemData {
+  readonly eventType: EventType.SubscribedToFeedSource;
+  readonly feedSourceType: FeedSourceType;
+  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+  readonly isResubscribe: boolean;
+}
+
+export interface UnsubscribedFromFeedSourceEventLogItemData extends BaseEventLogItemData {
+  readonly eventType: EventType.UnsubscribedFromFeedSource;
+  readonly feedSourceType: FeedSourceType;
+  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+}
 
 /**
  * Base interface for all event log items. Most things that happen in the app are logged and tracked
  * as an event.
  */
 interface BaseEventLogItem extends BaseStoreItem {
-  readonly eventType: EventType;
   readonly eventId: EventId;
   /** The account that the event belongs to. */
   readonly accountId: AccountId;
@@ -87,45 +80,52 @@ interface BaseEventLogItem extends BaseStoreItem {
   readonly actor: Actor;
   /** The environment in which the event occurred. */
   readonly environment: Environment;
-  /** Arbitrary data associated with the event. */
-  readonly data?: Record<string, unknown>;
+  /** Arbitrary data associated with the event, including the event type. */
+  readonly data: EventLogItemData;
 }
 
-/**
- * Zod schema for an {@link EventLogItem} persisted to Firestore.
- */
-export const EventLogItemFromStorageSchema = z.object({
-  eventId: EventIdSchema,
-  eventType: z.nativeEnum(EventType),
-  accountId: AccountIdSchema,
-  actor: ActorSchema,
-  environment: z.nativeEnum(Environment),
-  data: EventLogItemDataSchema,
-  createdTime: FirestoreTimestampSchema.or(z.date()),
-  lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
-});
-
-/**
- * Type for an {@link EventLogItem} persisted to Firestore.
- */
-export type EventLogItemFromStorage = z.infer<typeof EventLogItemFromStorageSchema>;
-
-export interface FeedItemActionEventLogItem extends BaseEventLogItem {
-  readonly eventType: EventType.FeedItemAction;
+interface FeedItemActionEventLogItem extends BaseEventLogItem {
   readonly data: FeedItemActionEventLogItemData;
 }
 
-export interface UserFeedSubscriptionEventLogItem extends BaseEventLogItem {
-  readonly eventType: EventType.UserFeedSubscription;
-  readonly data: UserFeedSubscriptionEventLogItemData;
-}
-
-export interface FeedItemImportedEventLogItem extends BaseEventLogItem {
-  readonly eventType: EventType.FeedItemImported;
+interface FeedItemImportedEventLogItem extends BaseEventLogItem {
   readonly data: FeedItemImportedEventLogItemData;
 }
 
+interface ExperimentEnabledEventLogItem extends BaseEventLogItem {
+  readonly data: ExperimentEnabledEventLogItemData;
+}
+
+interface ExperimentDisabledEventLogItem extends BaseEventLogItem {
+  readonly data: ExperimentDisabledEventLogItemData;
+}
+
+interface StringExperimentValueChangedEventLogItem extends BaseEventLogItem {
+  readonly data: StringExperimentValueChangedEventLogItemData;
+}
+
+interface SubscribedToFeedSourceEventLogItem extends BaseEventLogItem {
+  readonly data: SubscribedToFeedSourceEventLogItemData;
+}
+
+interface UnsubscribedFromFeedSourceEventLogItem extends BaseEventLogItem {
+  readonly data: UnsubscribedFromFeedSourceEventLogItemData;
+}
+
+export type EventLogItemData =
+  | FeedItemActionEventLogItemData
+  | FeedItemImportedEventLogItemData
+  | ExperimentEnabledEventLogItemData
+  | ExperimentDisabledEventLogItemData
+  | StringExperimentValueChangedEventLogItemData
+  | SubscribedToFeedSourceEventLogItemData
+  | UnsubscribedFromFeedSourceEventLogItemData;
+
 export type EventLogItem =
   | FeedItemActionEventLogItem
-  | UserFeedSubscriptionEventLogItem
-  | FeedItemImportedEventLogItem;
+  | FeedItemImportedEventLogItem
+  | ExperimentEnabledEventLogItem
+  | ExperimentDisabledEventLogItem
+  | StringExperimentValueChangedEventLogItem
+  | SubscribedToFeedSourceEventLogItem
+  | UnsubscribedFromFeedSourceEventLogItem;

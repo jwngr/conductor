@@ -1,10 +1,20 @@
 import {limit as firestoreLimit, orderBy, where} from 'firebase/firestore';
-import {useEffect, useMemo, useState} from 'react';
+import {useEffect, useMemo} from 'react';
 
 import {logger} from '@shared/services/logger.shared';
 
+import {makeUserActor} from '@shared/lib/actors.shared';
 import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {
+  makeEventLogItem,
+  makeExperimentDisabledEventLogItemData,
+  makeExperimentEnabledEventLogItemData,
+  makeFeedItemActionEventLogItemData,
+  makeStringExperimentValueChangedEventLogItemData,
+  makeSubscribedToFeedSourceEventLogItemData,
+  makeUnsubscribedFromFeedSourceEventLogItemData,
+} from '@shared/lib/eventLog.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {filterNull} from '@shared/lib/utils.shared';
 
@@ -15,15 +25,12 @@ import {
 } from '@shared/parsers/eventLog.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import {makeUserActor} from '@shared/types/actors.types';
-import {
-  Environment,
-  EventType,
-  makeEventId,
-  type EventId,
-  type EventLogItem,
-} from '@shared/types/eventLog.types';
+import type {AsyncState} from '@shared/types/asyncState.types';
+import {Environment} from '@shared/types/environment.types';
+import type {EventId, EventLogItem, EventLogItemData} from '@shared/types/eventLog.types';
+import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
+import type {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
@@ -33,12 +40,13 @@ import {
   makeFirestoreDataConverter,
 } from '@sharedClient/services/firestore.client';
 
+import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
 // TODO: This is a somewhat arbitrary limit. Reconsider what the logic should be here.
 const EVENT_LOG_LIMIT = 100;
 
-const eventLogItemFirestoreConverter = makeFirestoreDataConverter(
+export const eventLogItemFirestoreConverter = makeFirestoreDataConverter(
   toStorageEventLogItem,
   parseEventLogItem
 );
@@ -63,62 +71,40 @@ export const useEventLogService = (): ClientEventLogService => {
   return eventLogService;
 };
 
-interface EventLogItemState {
-  readonly eventLogItem: EventLogItem | null;
-  readonly isLoading: boolean;
-  readonly error: Error | null;
-}
-
-// TODO: Ideally these hooks would live in the `shared` package.
-export function useEventLogItem(eventId: EventId): EventLogItemState {
+export function useEventLogItem(eventId: EventId): AsyncState<EventLogItem | null> {
   const eventLogService = useEventLogService();
 
-  const [state, setState] = useState<EventLogItemState>({
-    eventLogItem: null,
-    isLoading: true,
-    error: null,
-  });
+  const {asyncState, setPending, setError, setSuccess} = useAsyncState<EventLogItem | null>();
 
   useEffect(() => {
+    setPending();
     const unsubscribe = eventLogService.watchById(
       eventId,
-      (eventLogItem) => setState({eventLogItem, isLoading: false, error: null}),
-      (error) => setState({eventLogItem: null, isLoading: false, error})
+      (eventLogItem) => setSuccess(eventLogItem),
+      (error) => setError(error)
     );
     return () => unsubscribe();
-  }, [eventId, eventLogService]);
+  }, [eventId, eventLogService, setPending, setError, setSuccess]);
 
-  return state;
+  return asyncState;
 }
 
-interface EventLogItemsState {
-  readonly eventLogItems: EventLogItem[];
-  readonly isLoading: boolean;
-  readonly error: Error | null;
-  readonly limit: number;
-}
-
-export function useEventLogItems(): EventLogItemsState {
+export function useEventLogItems(): AsyncState<EventLogItem[]> {
   const eventLogService = useEventLogService();
 
-  const [state, setState] = useState<EventLogItemsState>({
-    eventLogItems: [],
-    isLoading: true,
-    error: null,
-    limit: 0,
-  });
+  const {asyncState, setPending, setError, setSuccess} = useAsyncState<EventLogItem[]>();
 
   useEffect(() => {
+    setPending();
     const unsubscribe = eventLogService.watchEventLog({
-      successCallback: (eventLogItems) =>
-        setState({eventLogItems, isLoading: false, error: null, limit: EVENT_LOG_LIMIT}),
-      errorCallback: (error) =>
-        setState({eventLogItems: [], isLoading: false, error, limit: EVENT_LOG_LIMIT}),
+      successCallback: (eventLogItems) => setSuccess(eventLogItems),
+      errorCallback: (error) => setError(error),
+      limit: EVENT_LOG_LIMIT,
     });
     return () => unsubscribe();
-  }, [eventLogService]);
+  }, [eventLogService, setPending, setError, setSuccess]);
 
-  return state;
+  return asyncState;
 }
 
 type ClientEventLogCollectionService = ClientFirestoreCollectionService<EventId, EventLogItem>;
@@ -178,63 +164,26 @@ export class ClientEventLogService {
     return () => unsubscribe();
   }
 
-  public async logFeedItemActionEvent(args: {
-    readonly feedItemId: FeedItemId;
-    readonly feedItemActionType: FeedItemActionType;
-  }): AsyncResult<EventId | null> {
-    const eventId = makeEventId();
-    const createResult = await this.eventLogCollectionService.setDoc(eventId, {
-      eventId,
-      accountId: this.accountId,
-      actor: makeUserActor(this.accountId),
-      environment: this.environment,
-      eventType: EventType.FeedItemAction,
-      data: {
-        feedItemId: args.feedItemId,
-        feedItemActionType: args.feedItemActionType,
-      },
-      // TODO(timestamps): Use server timestamps instead.
-      createdTime: new Date(),
-      lastUpdatedTime: new Date(),
-    });
+  private async logEvent(eventLogItem: EventLogItem): AsyncResult<EventLogItem> {
+    const {eventId} = eventLogItem;
+
+    const createResult = await this.eventLogCollectionService.setDoc(eventId, eventLogItem);
 
     if (!createResult.success) {
-      logger.error(prefixError(createResult.error, 'Failed to log feed item action event'), {
-        feedItemId: args.feedItemId,
-        feedItemActionType: args.feedItemActionType,
-      });
+      logger.error(prefixError(createResult.error, 'Failed to log event'), {eventLogItem});
       return createResult;
     }
 
-    return makeSuccessResult(eventId);
+    return makeSuccessResult(eventLogItem);
   }
 
-  public async logUserFeedSubscriptionEvent(args: {
-    readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-  }): AsyncResult<EventId | null> {
-    const eventId = makeEventId();
-    const createResult = await this.eventLogCollectionService.setDoc(eventId, {
-      eventId,
+  private makeEventLogItem(data: EventLogItemData): EventLogItem {
+    return makeEventLogItem({
       accountId: this.accountId,
       actor: makeUserActor(this.accountId),
       environment: this.environment,
-      eventType: EventType.UserFeedSubscription,
-      data: {
-        userFeedSubscriptionId: args.userFeedSubscriptionId,
-      },
-      // TODO(timestamps): Use server timestamps instead.
-      createdTime: new Date(),
-      lastUpdatedTime: new Date(),
+      data,
     });
-
-    if (!createResult.success) {
-      logger.error(prefixError(createResult.error, 'Failed to log user feed subscription event'), {
-        userFeedSubscriptionId: args.userFeedSubscriptionId,
-      });
-      return createResult;
-    }
-
-    return makeSuccessResult(eventId);
   }
 
   public async updateEventLogItem(
@@ -249,4 +198,86 @@ export class ClientEventLogService {
     const deleteResult = await this.eventLogCollectionService.deleteDoc(eventId);
     return prefixResultIfError(deleteResult, 'Error deleting event log item');
   }
+
+  //////////////////////////////////////////
+  //  BEGIN INDIVIDUAL EVENT LOG HELPERS  //
+  //////////////////////////////////////////
+  public async logFeedItemActionEvent(args: {
+    readonly feedItemId: FeedItemId;
+    readonly feedItemActionType: FeedItemActionType;
+  }): AsyncResult<EventLogItem> {
+    const {feedItemId, feedItemActionType} = args;
+    const eventLogItemData = makeFeedItemActionEventLogItemData({feedItemId, feedItemActionType});
+    const eventLogItem = this.makeEventLogItem(eventLogItemData);
+    return this.logEvent(eventLogItem);
+  }
+
+  public async logExperimentEnabledEvent(args: {
+    readonly experimentId: ExperimentId;
+    readonly experimentType: ExperimentType;
+  }): AsyncResult<EventLogItem> {
+    const {experimentId, experimentType} = args;
+    const eventLogItemData = makeExperimentEnabledEventLogItemData({experimentId, experimentType});
+    const eventLogItem = this.makeEventLogItem(eventLogItemData);
+
+    return this.logEvent(eventLogItem);
+  }
+
+  public async logExperimentDisabledEvent(args: {
+    readonly experimentId: ExperimentId;
+    readonly experimentType: ExperimentType;
+  }): AsyncResult<EventLogItem> {
+    const {experimentId, experimentType} = args;
+    const eventLogItemData = makeExperimentDisabledEventLogItemData({experimentId, experimentType});
+    const eventLogItem = this.makeEventLogItem(eventLogItemData);
+
+    return this.logEvent(eventLogItem);
+  }
+
+  public async logStringExperimentValueChangedEvent(args: {
+    readonly experimentId: ExperimentId;
+    readonly value: string;
+  }): AsyncResult<EventLogItem> {
+    const {experimentId, value} = args;
+    const eventLogItemData = makeStringExperimentValueChangedEventLogItemData({
+      experimentId,
+      value,
+    });
+    const eventLogItem = this.makeEventLogItem(eventLogItemData);
+
+    return this.logEvent(eventLogItem);
+  }
+
+  public async logSubscribedToFeedSourceEvent(args: {
+    readonly feedSourceType: FeedSourceType;
+    readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+    readonly isResubscribe: boolean;
+  }): AsyncResult<EventLogItem> {
+    const {feedSourceType, userFeedSubscriptionId, isResubscribe} = args;
+    const eventLogItemData = makeSubscribedToFeedSourceEventLogItemData({
+      feedSourceType,
+      userFeedSubscriptionId,
+      isResubscribe,
+    });
+    const eventLogItem = this.makeEventLogItem(eventLogItemData);
+
+    return this.logEvent(eventLogItem);
+  }
+
+  public async logUnsubscribedFromFeedSourceEvent(args: {
+    readonly feedSourceType: FeedSourceType;
+    readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+  }): AsyncResult<EventLogItem> {
+    const {feedSourceType, userFeedSubscriptionId} = args;
+    const eventLogItemData = makeUnsubscribedFromFeedSourceEventLogItemData({
+      feedSourceType,
+      userFeedSubscriptionId,
+    });
+    const eventLogItem = this.makeEventLogItem(eventLogItemData);
+
+    return this.logEvent(eventLogItem);
+  }
+  //////////////////////////////////////
+  // END INDIVIDUAL EVENT LOG HELPERS //
+  //////////////////////////////////////
 }

@@ -36,12 +36,22 @@ jobs:
         working-directory: packages/functions
         env:
           FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+          GOOGLE_GENAI_API_KEY: ${{ secrets.GOOGLE_GENAI_API_KEY }}
+          RSS_FEED_PROVIDER_TYPE: ${{ secrets.RSS_FEED_PROVIDER_TYPE }}
           SUPERFEEDR_USER: ${{ secrets.SUPERFEEDR_USER }}
           SUPERFEEDR_API_KEY: ${{ secrets.SUPERFEEDR_API_KEY }}
-          GOOGLE_GENAI_API_KEY: ${{ secrets.GOOGLE_GENAI_API_KEY }}
+          SUPERFEEDR_WEBHOOK_SECRET: ${{ secrets.SUPERFEEDR_WEBHOOK_SECRET }}
         run: |
           if [ -z "$FIRECRAWL_API_KEY" ]; then
             echo "Error: FIRECRAWL_API_KEY secret must be added in GitHub"
+            exit 1
+          fi
+          if [ -z "$GOOGLE_GENAI_API_KEY" ]; then 
+            echo "Error: GOOGLE_GENAI_API_KEY secret must be added in GitHub"
+            exit 1
+          fi
+          if [ -z "$RSS_FEED_PROVIDER_TYPE" ]; then
+            echo "Error: RSS_FEED_PROVIDER_TYPE secret must be added in GitHub"
             exit 1
           fi
           if [ -z "$SUPERFEEDR_USER" ]; then
@@ -52,14 +62,18 @@ jobs:
             echo "Error: SUPERFEEDR_API_KEY secret must be added in GitHub"
             exit 1
           fi
-          if [ -z "$GOOGLE_GENAI_API_KEY" ]; then 
-            echo "Error: GOOGLE_GENAI_API_KEY secret must be added in GitHub"
+          if [ -z "$SUPERFEEDR_WEBHOOK_SECRET" ]; then
+            echo "Error: SUPERFEEDR_WEBHOOK_SECRET secret must be added in GitHub"
             exit 1
           fi
           echo "FIRECRAWL_API_KEY=${FIRECRAWL_API_KEY}" > .env.conductor-stag
+          echo "GOOGLE_GENAI_API_KEY=${GOOGLE_GENAI_API_KEY}" >> .env.conductor-stag
+          echo "RSS_FEED_PROVIDER_TYPE=${RSS_FEED_PROVIDER_TYPE}" >> .env.conductor-stag
           echo "SUPERFEEDR_USER=${SUPERFEEDR_USER}" >> .env.conductor-stag
           echo "SUPERFEEDR_API_KEY=${SUPERFEEDR_API_KEY}" >> .env.conductor-stag
-          echo "GOOGLE_GENAI_API_KEY=${GOOGLE_GENAI_API_KEY}" >> .env.conductor-stag
+          echo "SUPERFEEDR_WEBHOOK_SECRET=${SUPERFEEDR_WEBHOOK_SECRET}" >> .env.conductor-stag
+          echo "LOCAL_RSS_FEED_PROVIDER_WEBHOOK_SECRET=" >> .env.conductor-stag
+          echo "LOCAL_RSS_FEED_PROVIDER_PORT=" >> .env.conductor-stag
       - name: Deploy Firebase Functions
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

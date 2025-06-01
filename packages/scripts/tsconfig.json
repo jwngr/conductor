@@ -2,7 +2,7 @@
   "include": ["src/**/*", "src/**/*.json"],
   "extends": "../../tsconfig.base.json",
 
-  // This package consumes other packages.
+  // This package consumes other shared packages.
   "references": [{"path": "../shared"}, {"path": "../sharedServer"}],
 
   "compilerOptions": {
