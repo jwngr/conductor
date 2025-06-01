@@ -1,10 +1,10 @@
 import {IconName} from '@shared/types/icons.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 
+import {toast} from '@sharedClient/lib/toasts.client';
+
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {StorySection} from '@src/components/stories/StorySection';
-
-import {toast} from '@src/lib/toasts';
 
 export const ButtonIconStories: React.FC = () => {
   const handleButtonIconClick = (): void => {
