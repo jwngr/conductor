@@ -29,6 +29,7 @@ import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 import type {ViewType} from '@shared/types/views.types';
 
+import {useEventLogService} from '@sharedClient/services/eventLog.client';
 import {ClientFeedItemsService} from '@sharedClient/services/feedItems.client';
 import {firebaseService} from '@sharedClient/services/firebase.client';
 import {
@@ -47,6 +48,7 @@ const feedItemFirestoreConverter = makeFirestoreDataConverter(toStorageFeedItem,
 
 export function useFeedItemsService(): ClientFeedItemsService {
   const loggedInAccount = useLoggedInAccount();
+  const eventLogService = useEventLogService();
 
   const feedItemsService = useMemo(() => {
     const feedItemsCollectionService = new ClientFirestoreCollectionService({
@@ -59,8 +61,9 @@ export function useFeedItemsService(): ClientFeedItemsService {
       feedItemsCollectionService,
       feedItemsStorageRef,
       accountId: loggedInAccount.accountId,
+      eventLogService,
     });
-  }, [loggedInAccount.accountId]);
+  }, [loggedInAccount.accountId, eventLogService]);
 
   return feedItemsService;
 }
