@@ -212,8 +212,8 @@ export class ServerFeedItemsService {
     if (!importResult.success) return importResult;
 
     void this.eventLogService.logFeedItemImportedEvent({
-      feedItemId: feedItem.feedItemId,
       accountId: feedItem.accountId,
+      feedItemId: feedItem.feedItemId,
     });
 
     return makeSuccessResult(undefined);

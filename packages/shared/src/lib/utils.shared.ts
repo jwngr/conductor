@@ -42,6 +42,14 @@ export function assertNever(
 }
 
 /**
+ * Logs an error if the provided value is not of type `never`. This is useful for exhaustive
+ * switch statements.
+ */
+export function safeAssertNever(val: never): void {
+  logger.error(new Error('safeAssertNever received non-empty value'), {val});
+}
+
+/**
  * Filters out all null values from the provided array.
  */
 export function filterNull<T>(arr: Array<T | null>): T[] {
