@@ -10,7 +10,7 @@ import {LoadingArea} from '@src/components/loading/LoadingArea';
 import {Screen} from '@src/screens/Screen';
 
 const ExperimentsScreenMainContent: React.FC = () => {
-  const experiments = useExperimentsStore((state) => state.experiments);
+  const accountExperiments = useExperimentsStore((state) => state.experiments);
 
   return (
     <FlexColumn flex={1} gap={6} padding={5} overflow="auto">
@@ -24,14 +24,17 @@ const ExperimentsScreenMainContent: React.FC = () => {
         </Text>
       </FlexColumn>
 
-      {experiments === null ? (
+      {accountExperiments === null ? (
         <LoadingArea text="Loading experiments..." />
-      ) : experiments.length === 0 ? (
+      ) : accountExperiments.length === 0 ? (
         <Text>No experiments available</Text>
       ) : (
         <FlexColumn gap={3}>
-          {experiments.map((experiment) => (
-            <ExperimentRow key={experiment.definition.experimentId} experiment={experiment} />
+          {accountExperiments.map((accountExperiment) => (
+            <ExperimentRow
+              key={accountExperiment.definition.experimentId}
+              accountExperiment={accountExperiment}
+            />
           ))}
         </FlexColumn>
       )}

@@ -6,7 +6,13 @@ import {logger} from '@shared/services/logger.shared';
 import {makeUserActor} from '@shared/lib/actors.shared';
 import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {makeEventId} from '@shared/lib/eventLog.shared';
+import {
+  makeExperimentDisabledEventLogItem,
+  makeExperimentEnabledEventLogItem,
+  makeFeedItemActionEventLogItem,
+  makeStringExperimentValueChangedEventLogItem,
+  makeUserFeedSubscriptionEventLogItem,
+} from '@shared/lib/eventLog.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {filterNull} from '@shared/lib/utils.shared';
 
@@ -19,8 +25,8 @@ import {
 import type {AccountId} from '@shared/types/accounts.types';
 import type {AsyncState} from '@shared/types/asyncState.types';
 import {Environment} from '@shared/types/environment.types';
-import {EventType} from '@shared/types/eventLog.types';
 import type {EventId, EventLogItem} from '@shared/types/eventLog.types';
+import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
@@ -155,63 +161,95 @@ export class ClientEventLogService {
     return () => unsubscribe();
   }
 
-  public async logFeedItemActionEvent(args: {
-    readonly feedItemId: FeedItemId;
-    readonly feedItemActionType: FeedItemActionType;
-  }): AsyncResult<EventId | null> {
-    const eventId = makeEventId();
-    const createResult = await this.eventLogCollectionService.setDoc(eventId, {
-      eventId,
-      accountId: this.accountId,
-      actor: makeUserActor(this.accountId),
-      environment: this.environment,
-      eventType: EventType.FeedItemAction,
-      data: {
-        feedItemId: args.feedItemId,
-        feedItemActionType: args.feedItemActionType,
-      },
-      // TODO(timestamps): Use server timestamps instead.
-      createdTime: new Date(),
-      lastUpdatedTime: new Date(),
-    });
+  public async logEvent(eventLogItem: EventLogItem): AsyncResult<EventLogItem> {
+    const {eventId} = eventLogItem;
+
+    const createResult = await this.eventLogCollectionService.setDoc(eventId, eventLogItem);
 
     if (!createResult.success) {
-      logger.error(prefixError(createResult.error, 'Failed to log feed item action event'), {
-        feedItemId: args.feedItemId,
-        feedItemActionType: args.feedItemActionType,
-      });
+      logger.error(prefixError(createResult.error, 'Failed to log event'), {eventLogItem});
       return createResult;
     }
 
-    return makeSuccessResult(eventId);
+    return makeSuccessResult(eventLogItem);
+  }
+
+  public async logFeedItemActionEvent(args: {
+    readonly feedItemId: FeedItemId;
+    readonly feedItemActionType: FeedItemActionType;
+  }): AsyncResult<EventLogItem> {
+    const {feedItemId, feedItemActionType} = args;
+    const eventLogItem = makeFeedItemActionEventLogItem({
+      accountId: this.accountId,
+      actor: makeUserActor(this.accountId),
+      environment: this.environment,
+      feedItemId,
+      feedItemActionType,
+    });
+
+    return this.logEvent(eventLogItem);
   }
 
   public async logUserFeedSubscriptionEvent(args: {
     readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-  }): AsyncResult<EventId | null> {
-    const eventId = makeEventId();
-    const createResult = await this.eventLogCollectionService.setDoc(eventId, {
-      eventId,
+  }): AsyncResult<EventLogItem> {
+    const {userFeedSubscriptionId} = args;
+    const eventLogItem = makeUserFeedSubscriptionEventLogItem({
       accountId: this.accountId,
       actor: makeUserActor(this.accountId),
       environment: this.environment,
-      eventType: EventType.UserFeedSubscription,
-      data: {
-        userFeedSubscriptionId: args.userFeedSubscriptionId,
-      },
-      // TODO(timestamps): Use server timestamps instead.
-      createdTime: new Date(),
-      lastUpdatedTime: new Date(),
+      userFeedSubscriptionId,
     });
 
-    if (!createResult.success) {
-      logger.error(prefixError(createResult.error, 'Failed to log user feed subscription event'), {
-        userFeedSubscriptionId: args.userFeedSubscriptionId,
-      });
-      return createResult;
-    }
+    return this.logEvent(eventLogItem);
+  }
 
-    return makeSuccessResult(eventId);
+  public async logExperimentEnabledEvent(args: {
+    readonly experimentId: ExperimentId;
+    readonly experimentType: ExperimentType;
+  }): AsyncResult<EventLogItem> {
+    const {experimentId, experimentType} = args;
+    const eventLogItem = makeExperimentEnabledEventLogItem({
+      accountId: this.accountId,
+      actor: makeUserActor(this.accountId),
+      environment: this.environment,
+      experimentId,
+      experimentType,
+    });
+
+    return this.logEvent(eventLogItem);
+  }
+
+  public async logExperimentDisabledEvent(args: {
+    readonly experimentId: ExperimentId;
+    readonly experimentType: ExperimentType;
+  }): AsyncResult<EventLogItem> {
+    const {experimentId, experimentType} = args;
+    const eventLogItem = makeExperimentDisabledEventLogItem({
+      accountId: this.accountId,
+      actor: makeUserActor(this.accountId),
+      environment: this.environment,
+      experimentId,
+      experimentType,
+    });
+
+    return this.logEvent(eventLogItem);
+  }
+
+  public async logStringExperimentValueChangedEvent(args: {
+    readonly experimentId: ExperimentId;
+    readonly value: string;
+  }): AsyncResult<EventLogItem> {
+    const {experimentId, value} = args;
+    const eventLogItem = makeStringExperimentValueChangedEventLogItem({
+      accountId: this.accountId,
+      actor: makeUserActor(this.accountId),
+      environment: this.environment,
+      experimentId,
+      value,
+    });
+
+    return this.logEvent(eventLogItem);
   }
 
   public async updateEventLogItem(

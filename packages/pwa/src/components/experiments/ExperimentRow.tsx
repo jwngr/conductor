@@ -21,82 +21,76 @@ import {Input} from '@src/components/atoms/Input';
 import {Text} from '@src/components/atoms/Text';
 
 const ExperimentControl: React.FC<{
-  readonly experiment: AccountExperiment;
-}> = ({experiment}) => {
-  switch (experiment.experimentType) {
+  readonly accountExperiment: AccountExperiment;
+}> = ({accountExperiment}) => {
+  switch (accountExperiment.experimentType) {
     case ExperimentType.Boolean:
-      return <BooleanExperimentControl experiment={experiment} />;
+      return <BooleanExperimentControl accountExperiment={accountExperiment} />;
     case ExperimentType.String:
-      return <StringExperimentControl experiment={experiment} />;
+      return <StringExperimentControl accountExperiment={accountExperiment} />;
     default:
-      assertNever(experiment);
+      assertNever(accountExperiment);
   }
 };
 
 const BooleanExperimentControl: React.FC<{
-  readonly experiment: BooleanAccountExperiment;
-}> = ({experiment}) => {
+  readonly accountExperiment: BooleanAccountExperiment;
+}> = ({accountExperiment}) => {
   const experimentsService = useExperimentsStore((state) => state.experimentsService);
 
   const handleBooleanValueChanged = useCallback(
     async (isChecked: boolean) => {
       if (!experimentsService) return;
 
-      const updateResult = await experimentsService.setBooleanExperimentValue({
-        experimentId: experiment.definition.experimentId,
+      const updateResult = await experimentsService.setIsExperimentEnabled({
+        experimentId: accountExperiment.definition.experimentId,
         isEnabled: isChecked,
       });
 
       // TODO: Unify some of this logic across different experiment types.
       const enableOrDisable = isChecked ? 'enable' : 'disable';
       if (!updateResult.success) {
-        logger.error(updateResult.error, {experiment, isChecked});
+        logger.error(updateResult.error, {accountExperiment, isChecked});
         toast.error(`Failed to ${enableOrDisable} experiment`);
         return;
       }
 
       toast(`Experiment ${enableOrDisable}d`);
-
-      // TODO: Add event log entry for experiment enabled/disabled.
     },
-    [experiment, experimentsService]
+    [accountExperiment, experimentsService]
   );
 
-  return <Checkbox checked={experiment.isEnabled} onCheckedChange={handleBooleanValueChanged} />;
+  return (
+    <Checkbox checked={accountExperiment.isEnabled} onCheckedChange={handleBooleanValueChanged} />
+  );
 };
 
 const StringExperimentControl: React.FC<{
-  readonly experiment: StringAccountExperiment;
-}> = ({experiment}) => {
+  readonly accountExperiment: StringAccountExperiment;
+}> = ({accountExperiment}) => {
   const experimentsService = useExperimentsStore((state) => state.experimentsService);
-  const [inputValue, setInputValue] = useState(experiment.value);
+  const [inputValue, setInputValue] = useState(accountExperiment.value);
 
   const handleStringExperimentEnabled = useCallback(
     async (isChecked: boolean) => {
       if (!experimentsService) return;
 
-      const updateResult = await experimentsService.setStringExperimentValue({
-        experimentId: experiment.definition.experimentId,
+      const updateResult = await experimentsService.setIsExperimentEnabled({
+        experimentId: accountExperiment.definition.experimentId,
         isEnabled: isChecked,
-        value: experiment.value,
       });
 
       // TODO: Unify some of this logic across different experiment types.
       const enableOrDisable = isChecked ? 'enable' : 'disable';
       if (!updateResult.success) {
-        logger.error(updateResult.error, {
-          experiment: experiment,
-          isChecked,
-        });
+        logger.error(updateResult.error, {accountExperiment, isChecked});
         toast.error(`Failed to ${enableOrDisable} experiment`);
         return;
       }
 
       toast(`Experiment ${enableOrDisable}d`);
-
-      // TODO: Add event log entry for experiment enabled/disabled.
     },
-    [experiment, experimentsService]
+    [accountExperiment, experimentsService]
   );
 
   const handleStringExperimentValueChanged = useCallback(
@@ -104,23 +98,19 @@ const StringExperimentControl: React.FC<{
       if (!experimentsService) return;
 
       const updateResult = await experimentsService.setStringExperimentValue({
-        experimentId: experiment.definition.experimentId,
-        isEnabled: experiment.isEnabled,
+        accountExperiment,
         value,
       });
 
       if (!updateResult.success) {
-        logger.error(updateResult.error, {
-          experiment: experiment,
-          value,
-        });
-        toast.error('Failed to update experiment value');
+        logger.error(updateResult.error, {accountExperiment, value});
+        toast.error('Failed to update string experiment value');
         return;
       }
 
       toast('Experiment value updated');
     },
-    [experiment, experimentsService]
+    [accountExperiment, experimentsService]
   );
 
   return (
@@ -130,30 +120,34 @@ const StringExperimentControl: React.FC<{
         onChange={(event) => setInputValue(event.target.value)}
         onBlur={async () => await handleStringExperimentValueChanged(inputValue)}
         className="max-w-xs"
-        disabled={!experiment.isEnabled}
+        disabled={!accountExperiment.isEnabled}
       />
-      <Checkbox checked={experiment.isEnabled} onCheckedChange={handleStringExperimentEnabled} />
+      <Checkbox
+        checked={accountExperiment.isEnabled}
+        onCheckedChange={handleStringExperimentEnabled}
+      />
     </FlexRow>
   );
 };
 
 export const ExperimentRow: React.FC<{
-  readonly experiment: AccountExperiment;
-}> = ({experiment}) => {
+  readonly accountExperiment: AccountExperiment;
+}> = ({accountExperiment}) => {
   return (
     <FlexRow gap={4} padding={4} className="rounded-lg border border-gray-200">
       <FlexColumn flex={1} gap={2}>
-        <Text bold>{experiment.definition.title}</Text>
+        <Text bold>{accountExperiment.definition.title}</Text>
         <Text as="p" light>
-          {experiment.definition.description}
+          {accountExperiment.definition.description}
         </Text>
         <Text as="p" light>
-          ID: {experiment.definition.experimentId} | Type: {experiment.definition.experimentType} |
-          Default: {String(experiment.definition.defaultIsEnabled)}
+          ID: {accountExperiment.definition.experimentId} | Type:{' '}
+          {accountExperiment.definition.experimentType} | Default:{' '}
+          {String(accountExperiment.definition.defaultIsEnabled)}
         </Text>
       </FlexColumn>
       <FlexColumn gap={2} className="items-end">
-        <ExperimentControl experiment={experiment} />
+        <ExperimentControl accountExperiment={accountExperiment} />
       </FlexColumn>
     </FlexRow>
   );

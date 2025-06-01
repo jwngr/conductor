@@ -16,12 +16,12 @@ import {LoadingArea} from '@src/components/loading/LoadingArea';
 const RecentActivityFeedItem: React.FC<{
   readonly eventLogItem: EventLogItem;
 }> = ({eventLogItem}) => {
-  const {eventId, eventType, createdTime, data} = eventLogItem;
+  const {eventId, createdTime, data} = eventLogItem;
 
   return (
     <li key={eventId} className="border-border bg-background rounded border p-1">
       <div className="flex justify-between">
-        <Text bold>{eventType}</Text>
+        <Text bold>{data.eventType}</Text>
         <Text light title={createdTime.toISOString()}>
           {formatRelativeTime(createdTime)}
         </Text>

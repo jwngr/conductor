@@ -3,7 +3,7 @@ import {useMemo} from 'react';
 import {logger} from '@shared/services/logger.shared';
 
 import {ACCOUNT_EXPERIMENTS_DB_COLLECTION} from '@shared/lib/constants.shared';
-import {prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {prefixError} from '@shared/lib/errorUtils.shared';
 import {
   getExperimentsForAccount,
   makeBooleanExperimentOverride,
@@ -27,6 +27,7 @@ import type {
 import type {AsyncResult} from '@shared/types/results.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
+import type {ClientEventLogService} from '@sharedClient/services/eventLog.client';
 import {
   ClientFirestoreCollectionService,
   makeFirestoreDataConverter,
@@ -38,6 +39,7 @@ export class ClientExperimentsService {
   private readonly accountId: AccountId;
   private readonly unsubscribeWatcher: Unsubscribe;
   private readonly isInternalAccount: boolean;
+  private readonly eventLogService: ClientEventLogService;
   private accountExperimentsState: AccountExperimentsState | null = null;
 
   constructor(args: {
@@ -45,11 +47,13 @@ export class ClientExperimentsService {
     readonly isInternalAccount: boolean;
     readonly environment: ClientEnvironment;
     readonly accountExperimentsCollectionService: ClientAccountExperimentsCollectionService;
+    readonly eventLogService: ClientEventLogService;
   }) {
     this.accountId = args.accountId;
     this.isInternalAccount = args.isInternalAccount;
     this.environment = args.environment;
     this.accountExperimentsCollectionService = args.accountExperimentsCollectionService;
+    this.eventLogService = args.eventLogService;
 
     this.unsubscribeWatcher = this.watchAccountExperimentsState((accountExperimentsState) => {
       this.accountExperimentsState = accountExperimentsState;
@@ -116,7 +120,7 @@ export class ClientExperimentsService {
     });
   }
 
-  public async setBooleanExperimentValue(args: {
+  public async setIsExperimentEnabled(args: {
     readonly experimentId: ExperimentId;
     readonly isEnabled: boolean;
   }): AsyncResult<void> {
@@ -128,23 +132,47 @@ export class ClientExperimentsService {
     const updateResult = await this.accountExperimentsCollectionService.updateDoc(this.accountId, {
       [pathToUpdate]: experimentOverride,
     });
-    return prefixResultIfError(updateResult, 'Error updating boolean experiment value');
+
+    if (!updateResult.success) return updateResult;
+
+    if (isEnabled) {
+      void this.eventLogService.logExperimentEnabledEvent({
+        experimentId,
+        experimentType: experimentOverride.experimentType,
+      });
+    } else {
+      void this.eventLogService.logExperimentDisabledEvent({
+        experimentId,
+        experimentType: experimentOverride.experimentType,
+      });
+    }
+
+    return updateResult;
   }
 
   public async setStringExperimentValue(args: {
-    readonly experimentId: ExperimentId;
-    readonly isEnabled: boolean;
+    readonly accountExperiment: AccountExperiment;
     readonly value: string;
   }): AsyncResult<void> {
-    const {experimentId, isEnabled, value} = args;
+    const {accountExperiment, value} = args;
+    const {experimentId} = accountExperiment.definition;
 
     const pathToUpdate = `experimentOverrides.${experimentId}`;
-    const experimentOverride = makeStringExperimentOverride({experimentId, isEnabled, value});
+    const experimentOverride = makeStringExperimentOverride({
+      experimentId,
+      isEnabled: true,
+      value,
+    });
 
     const updateResult = await this.accountExperimentsCollectionService.updateDoc(this.accountId, {
       [pathToUpdate]: experimentOverride,
     });
-    return prefixResultIfError(updateResult, 'Error updating string experiment value');
+
+    if (!updateResult.success) return updateResult;
+
+    void this.eventLogService.logStringExperimentValueChangedEvent({experimentId, value});
+
+    return updateResult;
   }
 }
 
