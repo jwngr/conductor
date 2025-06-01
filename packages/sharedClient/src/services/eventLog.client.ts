@@ -12,8 +12,8 @@ import {
   makeExperimentEnabledEventLogItemData,
   makeFeedItemActionEventLogItemData,
   makeStringExperimentValueChangedEventLogItemData,
-  makeSubscribeToFeedSourceEventLogItemData,
-  makeUnsubscribeFromFeedSourceEventLogItemData,
+  makeSubscribedToFeedSourceEventLogItemData,
+  makeUnsubscribedFromFeedSourceEventLogItemData,
 } from '@shared/lib/eventLog.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {filterNull} from '@shared/lib/utils.shared';
@@ -248,26 +248,28 @@ export class ClientEventLogService {
     return this.logEvent(eventLogItem);
   }
 
-  public async logSubscribeToFeedSourceEvent(args: {
+  public async logSubscribedToFeedSourceEvent(args: {
     readonly feedSourceType: FeedSourceType;
     readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+    readonly isResubscribe: boolean;
   }): AsyncResult<EventLogItem> {
-    const {feedSourceType, userFeedSubscriptionId} = args;
-    const eventLogItemData = makeSubscribeToFeedSourceEventLogItemData({
+    const {feedSourceType, userFeedSubscriptionId, isResubscribe} = args;
+    const eventLogItemData = makeSubscribedToFeedSourceEventLogItemData({
       feedSourceType,
       userFeedSubscriptionId,
+      isResubscribe,
     });
     const eventLogItem = this.makeEventLogItem(eventLogItemData);
 
     return this.logEvent(eventLogItem);
   }
 
-  public async logUnsubscribeFromFeedSourceEvent(args: {
+  public async logUnsubscribedFromFeedSourceEvent(args: {
     readonly feedSourceType: FeedSourceType;
     readonly userFeedSubscriptionId: UserFeedSubscriptionId;
   }): AsyncResult<EventLogItem> {
     const {feedSourceType, userFeedSubscriptionId} = args;
-    const eventLogItemData = makeUnsubscribeFromFeedSourceEventLogItemData({
+    const eventLogItemData = makeUnsubscribedFromFeedSourceEventLogItemData({
       feedSourceType,
       userFeedSubscriptionId,
     });

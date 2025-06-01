@@ -59,6 +59,7 @@ export interface SubscribedToFeedSourceEventLogItemData extends BaseEventLogItem
   readonly eventType: EventType.SubscribedToFeedSource;
   readonly feedSourceType: FeedSourceType;
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+  readonly isResubscribe: boolean;
 }
 
 export interface UnsubscribedFromFeedSourceEventLogItemData extends BaseEventLogItemData {

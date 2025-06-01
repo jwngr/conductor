@@ -23,6 +23,10 @@ import type {
   UserFeedSubscription,
 } from '@shared/types/userFeedSubscriptions.types';
 
+import {useEventLogService} from '@sharedClient/services/eventLog.client';
+
+import {toast} from '@sharedClient/lib/toasts.client';
+
 import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {useUserFeedSubscriptionsService} from '@sharedClient/hooks/userFeedSubscriptions.hooks';
 
@@ -137,8 +141,10 @@ const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
 const FeedSubscriptionUnsubscribeButton: React.FC<{
   readonly userFeedSubscription: UserFeedSubscription;
 }> = ({userFeedSubscription}) => {
+  const eventLogService = useEventLogService();
   const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
 
+  const {userFeedSubscriptionId} = userFeedSubscription;
   const {asyncState, setPending, setError, setSuccess} = useAsyncState<undefined>();
 
   const handleToggleSubscription = useCallback(async (): Promise<void> => {
@@ -146,15 +152,14 @@ const FeedSubscriptionUnsubscribeButton: React.FC<{
 
     let result: Result<void, Error>;
     if (userFeedSubscription.isActive) {
-      result = await userFeedSubscriptionsService.updateSubscription(
-        userFeedSubscription.userFeedSubscriptionId,
-        {isActive: false, unsubscribedTime: new Date()}
-      );
+      result = await userFeedSubscriptionsService.updateSubscription(userFeedSubscriptionId, {
+        isActive: false,
+        unsubscribedTime: new Date(),
+      });
     } else {
-      result = await userFeedSubscriptionsService.updateSubscription(
-        userFeedSubscription.userFeedSubscriptionId,
-        {isActive: true}
-      );
+      result = await userFeedSubscriptionsService.updateSubscription(userFeedSubscriptionId, {
+        isActive: true,
+      });
     }
 
     if (!result.success) {
@@ -162,14 +167,37 @@ const FeedSubscriptionUnsubscribeButton: React.FC<{
       return;
     }
 
+    if (userFeedSubscription.isActive) {
+      // Toast.
+      toast('Unsubscribed from feed');
+
+      // Log.
+      void eventLogService.logUnsubscribedFromFeedSourceEvent({
+        feedSourceType: userFeedSubscription.feedSourceType,
+        userFeedSubscriptionId: userFeedSubscriptionId,
+      });
+    } else {
+      // Toast.
+      toast('Re-subscribed to feed');
+
+      // Log.
+      void eventLogService.logSubscribedToFeedSourceEvent({
+        feedSourceType: userFeedSubscription.feedSourceType,
+        userFeedSubscriptionId: userFeedSubscriptionId,
+        isResubscribe: true,
+      });
+    }
+
     setSuccess(undefined);
   }, [
-    userFeedSubscription.isActive,
-    userFeedSubscription.userFeedSubscriptionId,
-    userFeedSubscriptionsService,
-    setError,
     setPending,
+    userFeedSubscription.isActive,
+    userFeedSubscription.feedSourceType,
     setSuccess,
+    userFeedSubscriptionsService,
+    userFeedSubscriptionId,
+    setError,
+    eventLogService,
   ]);
 
   let footer: React.ReactNode | null;

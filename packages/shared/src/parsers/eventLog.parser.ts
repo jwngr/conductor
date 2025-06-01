@@ -212,6 +212,7 @@ function parseSubscribedToFeedSourceEventLogItemData(
     eventType: EventType.SubscribedToFeedSource,
     feedSourceType: parsedResult.value.feedSourceType,
     userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
+    isResubscribe: parsedResult.value.isResubscribe,
   });
 }
 

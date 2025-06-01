@@ -211,9 +211,12 @@ export class ClientUserFeedSubscriptionsService {
     toast.success(toastMessage);
 
     // Log.
-    void this.eventLogService.logSubscribeToFeedSourceEvent({
+    void this.eventLogService.logSubscribedToFeedSourceEvent({
       feedSourceType,
       userFeedSubscriptionId,
+      // TODO: Technically this may sometimes be a resubscribe since we don't check, but it's not
+      // via the main UI entry point for resubscribing.
+      isResubscribe: false,
     });
 
     return makeSuccessResult(userFeedSubscription);

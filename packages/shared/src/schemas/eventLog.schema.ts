@@ -56,6 +56,7 @@ export const SubscribedToFeedSourceEventLogItemDataSchema = BaseEventLogItemData
   eventType: z.literal(EventType.SubscribedToFeedSource),
   feedSourceType: z.nativeEnum(FeedSourceType),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
+  isResubscribe: z.boolean(),
 });
 
 export const UnsubscribedFromFeedSourceEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
