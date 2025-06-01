@@ -21,11 +21,13 @@ import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {
   IntervalUserFeedSubscription,
+  RssUserFeedSubscription,
   UserFeedSubscription,
   UserFeedSubscriptionId,
   YouTubeChannelUserFeedSubscription,
 } from '@shared/types/userFeedSubscriptions.types';
-import type {Consumer, Supplier, Unsubscribe} from '@shared/types/utils.types';
+import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
+import type {YouTubeChannelId} from '@shared/types/youtube.types';
 
 import type {ClientEventLogService} from '@sharedClient/services/eventLog.client';
 import {clientTimestampSupplier} from '@sharedClient/services/firebase.client';
@@ -70,11 +72,7 @@ export class ClientUserFeedSubscriptionsService {
    */
   public async subscribeToRssFeed(url: URL): AsyncResult<UserFeedSubscription> {
     // Check if the user is already subscribed to this RSS feed.
-    const existingSubResult = await this.userFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
-      where('accountId', '==', this.accountId),
-      where('feedSourceType', '==', FeedSourceType.RSS),
-      where('url', '==', url.href),
-    ]);
+    const existingSubResult = await this.fetchExistingRssFeedSubscription(url);
     if (!existingSubResult.success) return existingSubResult;
 
     // TODO: Handle this error more gracefully. Do not consider it full failure.
@@ -100,13 +98,12 @@ export class ClientUserFeedSubscriptionsService {
       accountId: this.accountId,
     });
 
-    // Save the new user feed subscription to Firestore.
-    const docId = userFeedSubscription.userFeedSubscriptionId;
-    const docData = withFirestoreTimestamps(userFeedSubscription, clientTimestampSupplier);
-    const saveResult = await this.userFeedSubscriptionsCollectionService.setDoc(docId, docData);
-    if (!saveResult.success) return prefixErrorResult(saveResult, 'Error saving feed subscription');
-
-    return makeSuccessResult(userFeedSubscription);
+    // Save the new user feed subscription.
+    return this.createSubscription({
+      userFeedSubscription,
+      toastMessage: 'Subscribed to RSS feed',
+      toastErrorMessage: 'Error subscribing to RSS feed',
+    });
   }
 
   /**
@@ -124,18 +121,12 @@ export class ClientUserFeedSubscriptionsService {
     if (channelId === null) return makeErrorResult(new Error('Channel ID not found in URL'));
 
     // Check if the user is already subscribed to this YouTube channel.
-    const existingSubResult = await this.userFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
-      where('accountId', '==', this.accountId),
-      where('feedSourceType', '==', FeedSourceType.YouTubeChannel),
-      where('channelId', '==', channelId),
-    ]);
+    const existingSubResult = await this.fetchExistingYouTubeChannelSubscription(channelId);
     if (!existingSubResult.success) return existingSubResult;
 
     // TODO: Handle this error more gracefully. Do not consider it full failure.
     const existingSubscription = existingSubResult.value;
     if (existingSubscription) return makeErrorResult(new Error('Already subscribed to channel'));
-
-    // TODO: Fetch current feed source and use it below.
 
     // Create a new user feed subscription object locally.
     const userFeedSubscription = makeYouTubeChannelUserFeedSubscription({
@@ -143,41 +134,40 @@ export class ClientUserFeedSubscriptionsService {
       accountId: this.accountId,
     });
 
-    // Save the new user feed subscription to Firestore.
-    const docId = userFeedSubscription.userFeedSubscriptionId;
-    const docData = withFirestoreTimestamps(userFeedSubscription, clientTimestampSupplier);
-    const saveResult = await this.userFeedSubscriptionsCollectionService.setDoc(docId, docData);
-    if (!saveResult.success) return prefixErrorResult(saveResult, 'Error saving feed subscription');
-
-    return makeSuccessResult(userFeedSubscription);
+    // Save the new user feed subscription.
+    return this.createSubscription({
+      userFeedSubscription,
+      toastMessage: 'Subscribed to YouTube channel',
+      toastErrorMessage: 'Error subscribing to YouTube channel',
+    });
   }
 
-  public async subscribeToYouTubeChannel2(
-    maybeYouTubeUrl: string
-  ): AsyncResult<UserFeedSubscription> {
-    // Parse the channel ID from the URL.
-    // TODO: Also support channel handles.
-    const channelIdResult = getYouTubeChannelId(maybeYouTubeUrl);
-    if (!channelIdResult.success) return channelIdResult;
-    const channelId = channelIdResult.value;
-    if (channelId === null) return makeErrorResult(new Error('Channel ID not found in URL'));
+  private async fetchExistingRssFeedSubscription(
+    url: URL
+  ): AsyncResult<RssUserFeedSubscription | null> {
+    const result = await this.userFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
+      where('accountId', '==', this.accountId),
+      where('feedSourceType', '==', FeedSourceType.RSS),
+      where('url', '==', url.href),
+    ]);
+    if (!result.success) return result;
+    const existingSubscription = result.value;
+    if (!existingSubscription) return makeSuccessResult(null);
+    return makeSuccessResult(existingSubscription as RssUserFeedSubscription);
+  }
 
-    const userFeedSubscription = makeYouTubeChannelUserFeedSubscription({
-      channelId,
-      accountId: this.accountId,
-    });
-
-    const fetchExistingSubscription = async () =>
-      await this.userFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
-        where('accountId', '==', this.accountId),
-        where('feedSourceType', '==', FeedSourceType.YouTubeChannel),
-        where('channelId', '==', channelId),
-      ]);
-
-    return this.subscribeToFeedSource<YouTubeChannelUserFeedSubscription>({
-      newUserFeedSubscription: userFeedSubscription,
-      fetchExistingSubscription,
-    });
+  private async fetchExistingYouTubeChannelSubscription(
+    channelId: YouTubeChannelId
+  ): AsyncResult<YouTubeChannelUserFeedSubscription | null> {
+    const result = await this.userFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
+      where('accountId', '==', this.accountId),
+      where('feedSourceType', '==', FeedSourceType.YouTubeChannel),
+      where('channelId', '==', channelId),
+    ]);
+    if (!result.success) return result;
+    const existingSubscription = result.value;
+    if (!existingSubscription) return makeSuccessResult(null);
+    return makeSuccessResult(existingSubscription as YouTubeChannelUserFeedSubscription);
   }
 
   public async subscribeToIntervalFeed(args: {
@@ -194,71 +184,44 @@ export class ClientUserFeedSubscriptionsService {
       accountId: this.accountId,
     });
 
-    return this.subscribeToFeedSource<IntervalUserFeedSubscription>({
-      newUserFeedSubscription: userFeedSubscription,
-      fetchExistingSubscription: async () => makeSuccessResult(null),
+    return this.createSubscription({
+      userFeedSubscription,
+      toastMessage: 'Subscribed to interval feed',
+      toastErrorMessage: 'Error subscribing to interval feed',
     });
   }
 
-  /**
-   * Subscribes the account to a feed source. A new feed source is created if one does not already
-   * exist.
-   */
-  private async subscribeToFeedSource<T extends UserFeedSubscription>(args: {
-    readonly newUserFeedSubscription: T;
-    readonly fetchExistingSubscription: Supplier<AsyncResult<T | null>>;
+  private async createSubscription(args: {
+    readonly userFeedSubscription: UserFeedSubscription;
+    readonly toastMessage: string;
+    readonly toastErrorMessage: string;
   }): AsyncResult<T> {
-    const {newUserFeedSubscription, fetchExistingSubscription} = args;
+    const {userFeedSubscription, toastMessage, toastErrorMessage} = args;
+    const {accountId, feedSourceType, userFeedSubscriptionId} = userFeedSubscription;
 
-    const logDetails = {
-      accountId: newUserFeedSubscription.accountId,
-      feedSourceType: newUserFeedSubscription.feedSourceType,
-    } as const;
-
-    // Check if the user is already subscribed to this feed source.
-    const existingSubResult = await fetchExistingSubscription();
-    if (!existingSubResult.success) {
-      const message = 'Error fetching existing subscription';
-      toast.error(message);
-      logger.error(existingSubResult.error, logDetails);
-      return existingSubResult;
-    }
-
-    const existingSubscription = existingSubResult.value;
-    if (existingSubscription) {
-      const message = 'Already subscribed to feed';
-      toast.error(message);
-      // TODO: Handle this error more gracefully. Do not consider it full failure.
-      return makeErrorResult(new Error(message));
-    }
-
-    // TODO: Fetch current feed source and use it below.
-
-    // Create a new user feed subscription object locally.
-    // const userFeedSubscription = m  akeYouTubeChannelUserFeedSubscription({
-    //   channelId,
-    //   accountId: this.accountId,
-    // });
-
-    // Save the new user feed subscription to Firestore.
-    const docId = newUserFeedSubscription.userFeedSubscriptionId;
-    const docData = withFirestoreTimestamps(newUserFeedSubscription, clientTimestampSupplier);
-    const saveResult = await this.userFeedSubscriptionsCollectionService.setDoc(docId, docData);
+    // Save to Firestore.
+    const docData = withFirestoreTimestamps(userFeedSubscription, clientTimestampSupplier);
+    const saveResult = await this.userFeedSubscriptionsCollectionService.setDoc(
+      userFeedSubscriptionId,
+      docData
+    );
     if (!saveResult.success) {
-      toast.error('Error subscribing to feed');
+      toast.error(toastErrorMessage);
       const betterError = prefixErrorResult(saveResult, 'Error saving feed subscription');
-      logger.error(betterError.error, logDetails);
+      logger.error(betterError.error, {userFeedSubscriptionId, accountId, feedSourceType});
       return betterError;
     }
 
-    toast.success('Subscribed to feed');
+    // Toast.
+    toast.success(toastMessage);
 
-    this.eventLogService.logSubscribeToFeedSourceEvent({
-      feedSourceType: newUserFeedSubscription.feedSourceType,
-      userFeedSubscriptionId: newUserFeedSubscription.userFeedSubscriptionId,
+    // Log.
+    void this.eventLogService.logSubscribeToFeedSourceEvent({
+      feedSourceType,
+      userFeedSubscriptionId,
     });
 
-    return makeSuccessResult(newUserFeedSubscription);
+    return makeSuccessResult(userFeedSubscription);
   }
 
   /**

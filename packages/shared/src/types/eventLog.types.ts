@@ -103,6 +103,14 @@ interface StringExperimentValueChangedEventLogItem extends BaseEventLogItem {
   readonly data: StringExperimentValueChangedEventLogItemData;
 }
 
+interface SubscribedToFeedSourceEventLogItem extends BaseEventLogItem {
+  readonly data: SubscribedToFeedSourceEventLogItemData;
+}
+
+interface UnsubscribedFromFeedSourceEventLogItem extends BaseEventLogItem {
+  readonly data: UnsubscribedFromFeedSourceEventLogItemData;
+}
+
 export type EventLogItemData =
   | FeedItemActionEventLogItemData
   | FeedItemImportedEventLogItemData
@@ -118,5 +126,5 @@ export type EventLogItem =
   | ExperimentEnabledEventLogItem
   | ExperimentDisabledEventLogItem
   | StringExperimentValueChangedEventLogItem
-  | SubscribedToFeedSourceEventLogItemData
-  | UnsubscribedFromFeedSourceEventLogItemData;
+  | SubscribedToFeedSourceEventLogItem
+  | UnsubscribedFromFeedSourceEventLogItem;
