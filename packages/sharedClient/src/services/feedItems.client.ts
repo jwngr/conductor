@@ -1,4 +1,4 @@
-import {where} from 'firebase/firestore';
+import {deleteField, where} from 'firebase/firestore';
 import type {StorageReference} from 'firebase/storage';
 import {getBlob, ref as storageRef} from 'firebase/storage';
 
@@ -202,7 +202,7 @@ export class ClientFeedItemsService {
   public async markFeedItemAsRead(feedItemId: FeedItemId): AsyncResult<void> {
     return this.performFeedItemActionWithUndo({
       feedItemId,
-      targetState: {[`tagIds.${SystemTagId.Unread}`]: false} as Partial<FeedItem>,
+      targetState: {[`tagIds.${SystemTagId.Unread}`]: deleteField()} as Partial<FeedItem>,
       undoState: {[`tagIds.${SystemTagId.Unread}`]: true} as Partial<FeedItem>,
       toastMessage: 'Feed item marked as read',
       errorToastMessage: 'Error marking feed item as read',
@@ -216,7 +216,7 @@ export class ClientFeedItemsService {
     return this.performFeedItemActionWithUndo({
       feedItemId,
       targetState: {[`tagIds.${SystemTagId.Unread}`]: true} as Partial<FeedItem>,
-      undoState: {[`tagIds.${SystemTagId.Unread}`]: false} as Partial<FeedItem>,
+      undoState: {[`tagIds.${SystemTagId.Unread}`]: deleteField()} as Partial<FeedItem>,
       toastMessage: 'Feed item marked as unread',
       errorToastMessage: 'Error marking feed item as unread',
       undoMessage: 'Feed item marked as read',
@@ -229,7 +229,7 @@ export class ClientFeedItemsService {
     return this.performFeedItemActionWithUndo({
       feedItemId,
       targetState: {[`tagIds.${SystemTagId.Starred}`]: true} as Partial<FeedItem>,
-      undoState: {[`tagIds.${SystemTagId.Starred}`]: false} as Partial<FeedItem>,
+      undoState: {[`tagIds.${SystemTagId.Starred}`]: deleteField()} as Partial<FeedItem>,
       toastMessage: 'Feed item starred',
       errorToastMessage: 'Error starring feed item',
       undoMessage: 'Feed item unstarred',
@@ -241,7 +241,7 @@ export class ClientFeedItemsService {
   public async unstarFeedItem(feedItemId: FeedItemId): AsyncResult<void> {
     return this.performFeedItemActionWithUndo({
       feedItemId,
-      targetState: {[`tagIds.${SystemTagId.Starred}`]: false} as Partial<FeedItem>,
+      targetState: {[`tagIds.${SystemTagId.Starred}`]: deleteField()} as Partial<FeedItem>,
       undoState: {[`tagIds.${SystemTagId.Starred}`]: true} as Partial<FeedItem>,
       toastMessage: 'Feed item unstarred',
       errorToastMessage: 'Error unstarring feed item',
