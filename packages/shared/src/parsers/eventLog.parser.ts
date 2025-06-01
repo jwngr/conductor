@@ -101,7 +101,7 @@ function parseEventLogItemData(maybeEventLogItemData: unknown): Result<EventLogI
     case EventType.StringExperimentValueChanged:
       return parseStringExperimentValueChangedEventLogItemData(parsedLogItemData);
     default:
-      safeAssertNever(parsedLogItemData.eventType);
+      safeAssertNever(parsedLogItemData);
       return makeErrorResult(new Error('Unknown event log item type'));
   }
 }

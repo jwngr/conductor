@@ -20,31 +20,37 @@ const BaseEventLogItemDataSchema = z.object({
 });
 
 export const FeedItemActionEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
+  eventType: z.literal(EventType.FeedItemAction),
   feedItemId: FeedItemIdSchema,
   feedItemActionType: z.nativeEnum(FeedItemActionType),
 });
 
 export const FeedItemImportedEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
+  eventType: z.literal(EventType.FeedItemImported),
   feedItemId: FeedItemIdSchema,
 });
 
 export const UserFeedSubscriptionEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
+  eventType: z.literal(EventType.UserFeedSubscription),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
 });
 
 export const ExperimentEnabledEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
+  eventType: z.literal(EventType.ExperimentEnabled),
   experimentId: ExperimentIdSchema,
   experimentType: ExperimentTypeSchema,
   value: z.string().optional(), // For string experiments, the value that was set
 });
 
 export const ExperimentDisabledEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
+  eventType: z.literal(EventType.ExperimentDisabled),
   experimentId: ExperimentIdSchema,
   experimentType: ExperimentTypeSchema,
 });
 
 export const StringExperimentValueChangedEventLogItemDataSchema = BaseEventLogItemDataSchema.extend(
   {
+    eventType: z.literal(EventType.StringExperimentValueChanged),
     experimentId: ExperimentIdSchema,
     value: z.string(),
   }
