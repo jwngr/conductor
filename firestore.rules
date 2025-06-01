@@ -81,22 +81,24 @@ service cloud.firestore {
     function isValidEventLogItemDoc(eventId) {
       return request.resource.data.keys().hasAll([
         'eventId',
-        'eventType',
         'accountId',
         'actor',
         'environment',
+        'data',
         'createdTime',
         'lastUpdatedTime'
       ]) &&
       request.resource.data.eventId is string &&
       request.resource.data.eventId == eventId &&
-      request.resource.data.eventType is string &&
       request.resource.data.actor is map &&
       request.resource.data.actor.keys().hasAll(['accountId']) &&
       request.resource.data.actor.accountId == request.auth.uid &&
       request.resource.data.environment is string &&
       request.resource.data.createdTime is timestamp &&
-      request.resource.data.lastUpdatedTime is timestamp;
+      request.resource.data.lastUpdatedTime is timestamp &&
+      request.resource.data.data is map &&
+      request.resource.data.data.keys().hasAll(['eventType']) &&
+      request.resource.data.data.eventType is string;
     }
 
     function isValidAccountExperimentsDoc(accountId) {

@@ -18,7 +18,8 @@ import type {
   FeedItemActionEventLogItemData,
   FeedItemImportedEventLogItemData,
   StringExperimentValueChangedEventLogItemData,
-  UserFeedSubscriptionEventLogItemData,
+  SubscribedToFeedSourceEventLogItemData,
+  UnsubscribedFromFeedSourceEventLogItemData,
 } from '@shared/types/eventLog.types';
 import type {Result} from '@shared/types/results.types';
 
@@ -31,7 +32,8 @@ import {
   FeedItemActionEventLogItemDataSchema,
   FeedItemImportedEventLogItemDataSchema,
   StringExperimentValueChangedEventLogItemDataSchema,
-  UserFeedSubscriptionEventLogItemDataSchema,
+  SubscribedToFeedSourceEventLogItemDataSchema,
+  UnsubscribedFromFeedSourceEventLogItemDataSchema,
 } from '@shared/schemas/eventLog.schema';
 import type {EventLogItemFromStorage} from '@shared/schemas/eventLog.schema';
 
@@ -90,8 +92,6 @@ function parseEventLogItemData(maybeEventLogItemData: unknown): Result<EventLogI
   switch (parsedLogItemData.eventType) {
     case EventType.FeedItemAction:
       return parseFeedItemActionEventLogItemData(parsedLogItemData);
-    case EventType.UserFeedSubscription:
-      return parseUserFeedSubscriptionEventLogItemData(parsedLogItemData);
     case EventType.FeedItemImported:
       return parseFeedItemImportedEventLogItemData(parsedLogItemData);
     case EventType.ExperimentEnabled:
@@ -100,6 +100,10 @@ function parseEventLogItemData(maybeEventLogItemData: unknown): Result<EventLogI
       return parseExperimentDisabledEventLogItemData(parsedLogItemData);
     case EventType.StringExperimentValueChanged:
       return parseStringExperimentValueChangedEventLogItemData(parsedLogItemData);
+    case EventType.SubscribedToFeedSource:
+      return parseSubscribedToFeedSourceEventLogItemData(parsedLogItemData);
+    case EventType.UnsubscribedFromFeedSource:
+      return parseUnsubscribedFromFeedSourceEventLogItemData(parsedLogItemData);
     default:
       safeAssertNever(parsedLogItemData);
       return makeErrorResult(new Error('Unknown event log item type'));
@@ -121,32 +125,6 @@ function parseFeedItemActionEventLogItemData(
     eventType: EventType.FeedItemAction,
     feedItemId: parsedFeedItemIdResult.value,
     feedItemActionType: parsedResult.value.feedItemActionType,
-  });
-}
-
-function parseUserFeedSubscriptionEventLogItemData(
-  maybeEventLogItemData: unknown
-): Result<UserFeedSubscriptionEventLogItemData> {
-  const parsedLogItemDataResult = parseZodResult(
-    UserFeedSubscriptionEventLogItemDataSchema,
-    maybeEventLogItemData
-  );
-  if (!parsedLogItemDataResult.success) {
-    return prefixErrorResult(parsedLogItemDataResult, 'Invalid event log item data');
-  }
-  const parsedLogItemData = parsedLogItemDataResult.value;
-
-  const parsedUserFeedSubscriptionIdResult = parseUserFeedSubscriptionId(
-    parsedLogItemData.userFeedSubscriptionId
-  );
-  if (!parsedUserFeedSubscriptionIdResult.success) {
-    const message = 'Invalid user feed subscription ID';
-    return prefixErrorResult(parsedUserFeedSubscriptionIdResult, message);
-  }
-
-  return makeSuccessResult({
-    eventType: EventType.UserFeedSubscription,
-    userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
   });
 }
 
@@ -213,6 +191,49 @@ function parseStringExperimentValueChangedEventLogItemData(
     eventType: EventType.StringExperimentValueChanged,
     experimentId: parsedResult.value.experimentId,
     value: parsedResult.value.value,
+  });
+}
+
+function parseSubscribedToFeedSourceEventLogItemData(
+  maybeEventLogItemData: unknown
+): Result<SubscribedToFeedSourceEventLogItemData> {
+  const parsedResult = parseZodResult(
+    SubscribedToFeedSourceEventLogItemDataSchema,
+    maybeEventLogItemData
+  );
+  if (!parsedResult.success) return parsedResult;
+
+  const parsedUserFeedSubscriptionIdResult = parseUserFeedSubscriptionId(
+    parsedResult.value.userFeedSubscriptionId
+  );
+  if (!parsedUserFeedSubscriptionIdResult.success) return parsedUserFeedSubscriptionIdResult;
+
+  return makeSuccessResult({
+    eventType: EventType.SubscribedToFeedSource,
+    feedSourceType: parsedResult.value.feedSourceType,
+    userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
+    isResubscribe: parsedResult.value.isResubscribe,
+  });
+}
+
+function parseUnsubscribedFromFeedSourceEventLogItemData(
+  maybeEventLogItemData: unknown
+): Result<UnsubscribedFromFeedSourceEventLogItemData> {
+  const parsedResult = parseZodResult(
+    UnsubscribedFromFeedSourceEventLogItemDataSchema,
+    maybeEventLogItemData
+  );
+  if (!parsedResult.success) return parsedResult;
+
+  const parsedUserFeedSubscriptionIdResult = parseUserFeedSubscriptionId(
+    parsedResult.value.userFeedSubscriptionId
+  );
+  if (!parsedUserFeedSubscriptionIdResult.success) return parsedUserFeedSubscriptionIdResult;
+
+  return makeSuccessResult({
+    eventType: EventType.UnsubscribedFromFeedSource,
+    feedSourceType: parsedResult.value.feedSourceType,
+    userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
   });
 }
 

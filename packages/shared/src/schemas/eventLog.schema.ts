@@ -3,6 +3,7 @@ import {z} from 'zod';
 import {Environment} from '@shared/types/environment.types';
 import {EventType} from '@shared/types/eventLog.types';
 import {FeedItemActionType} from '@shared/types/feedItems.types';
+import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 
 import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 import {ActorSchema} from '@shared/schemas/actors.schema';
@@ -30,11 +31,6 @@ export const FeedItemImportedEventLogItemDataSchema = BaseEventLogItemDataSchema
   feedItemId: FeedItemIdSchema,
 });
 
-export const UserFeedSubscriptionEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
-  eventType: z.literal(EventType.UserFeedSubscription),
-  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
-});
-
 export const ExperimentEnabledEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
   eventType: z.literal(EventType.ExperimentEnabled),
   experimentId: ExperimentIdSchema,
@@ -56,13 +52,27 @@ export const StringExperimentValueChangedEventLogItemDataSchema = BaseEventLogIt
   }
 );
 
+export const SubscribedToFeedSourceEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
+  eventType: z.literal(EventType.SubscribedToFeedSource),
+  feedSourceType: z.nativeEnum(FeedSourceType),
+  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
+  isResubscribe: z.boolean(),
+});
+
+export const UnsubscribedFromFeedSourceEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
+  eventType: z.literal(EventType.UnsubscribedFromFeedSource),
+  feedSourceType: z.nativeEnum(FeedSourceType),
+  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
+});
+
 export const EventLogItemDataSchema = z.discriminatedUnion('eventType', [
   FeedItemActionEventLogItemDataSchema,
-  UserFeedSubscriptionEventLogItemDataSchema,
   FeedItemImportedEventLogItemDataSchema,
   ExperimentEnabledEventLogItemDataSchema,
   ExperimentDisabledEventLogItemDataSchema,
   StringExperimentValueChangedEventLogItemDataSchema,
+  SubscribedToFeedSourceEventLogItemDataSchema,
+  UnsubscribedFromFeedSourceEventLogItemDataSchema,
 ]);
 
 /** Zod schema for an {@link EventLogItem} persisted to Firestore. */

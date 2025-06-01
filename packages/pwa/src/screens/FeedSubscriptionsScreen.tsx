@@ -9,16 +9,16 @@ import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
 import {
-  useUserFeedSubscriptions,
-  useUserFeedSubscriptionsService,
-} from '@sharedClient/services/userFeedSubscriptions.client';
-
-import {
   DEFAULT_ROUTE_HERO_PAGE_ACTION,
   REFRESH_HERO_PAGE_ACTION,
 } from '@sharedClient/lib/heroActions.client';
+import {toast} from '@sharedClient/lib/toasts.client';
 
 import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
+import {
+  useUserFeedSubscriptions,
+  useUserFeedSubscriptionsService,
+} from '@sharedClient/hooks/userFeedSubscriptions.hooks';
 
 import {Button} from '@src/components/atoms/Button';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
@@ -36,6 +36,16 @@ const FeedAdder: React.FC = () => {
   const [urlInputValue, setUrlInputValue] = useState('');
   const {asyncState, setPending, setError, setSuccess} = useAsyncState<undefined>();
 
+  const handleError = useCallback(
+    (args: {readonly error: Error; readonly toastMessage: string}) => {
+      const {error, toastMessage} = args;
+      toast.error(toastMessage);
+      const betterError = prefixError(error, toastMessage);
+      setError(betterError);
+    },
+    [setError]
+  );
+
   const handleSubscribeToRssFeedByUrl = useCallback(
     async (rssFeedUrl: string): Promise<void> => {
       const parsedUrl = parseUrl(rssFeedUrl.trim());
@@ -48,14 +58,17 @@ const FeedAdder: React.FC = () => {
 
       const subscribeResult = await userFeedSubscriptionsService.subscribeToRssFeed(parsedUrl);
       if (!subscribeResult.success) {
-        setError(prefixError(subscribeResult.error, 'Failed to subscribe to RSS feed'));
+        handleError({
+          error: subscribeResult.error,
+          toastMessage: 'Failed to subscribe to RSS feed',
+        });
         return;
       }
 
       setSuccess(undefined);
       setUrlInputValue('');
     },
-    [setError, setPending, setSuccess, userFeedSubscriptionsService]
+    [handleError, setError, setPending, setSuccess, userFeedSubscriptionsService]
   );
 
   const handleSubscribeToYouTubeChannel = useCallback(
@@ -65,14 +78,17 @@ const FeedAdder: React.FC = () => {
       const subscribeResult =
         await userFeedSubscriptionsService.subscribeToYouTubeChannel(youtubeChannelUrl);
       if (!subscribeResult.success) {
-        setError(prefixError(subscribeResult.error, 'Failed to subscribe to YouTube channel'));
+        handleError({
+          error: subscribeResult.error,
+          toastMessage: 'Failed to subscribe to YouTube channel',
+        });
         return;
       }
 
       setSuccess(undefined);
       setUrlInputValue('');
     },
-    [setError, setPending, setSuccess, userFeedSubscriptionsService]
+    [handleError, setPending, setSuccess, userFeedSubscriptionsService]
   );
 
   const handleSubscribeToIntervalFeed = useCallback(async (): Promise<void> => {
@@ -82,13 +98,16 @@ const FeedAdder: React.FC = () => {
       intervalSeconds: 60,
     });
     if (!subscribeResult.success) {
-      setError(prefixError(subscribeResult.error, 'Failed to subscribe to interval feed'));
+      handleError({
+        error: subscribeResult.error,
+        toastMessage: 'Failed to subscribe to interval feed',
+      });
       return;
     }
 
     setSuccess(undefined);
     setUrlInputValue('');
-  }, [setError, setPending, setSuccess, userFeedSubscriptionsService]);
+  }, [handleError, setPending, setSuccess, userFeedSubscriptionsService]);
 
   return (
     <FlexColumn flex={1} gap={3}>
