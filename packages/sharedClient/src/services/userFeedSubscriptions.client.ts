@@ -6,7 +6,6 @@ import {logger} from '@shared/services/logger.shared';
 
 import {DEFAULT_FEED_TITLE} from '@shared/lib/constants.shared';
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {withFirestoreTimestamps} from '@shared/lib/parser.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {
   makeIntervalUserFeedSubscription,
@@ -30,7 +29,6 @@ import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 import type {YouTubeChannelId} from '@shared/types/youtube.types';
 
 import type {ClientEventLogService} from '@sharedClient/services/eventLog.client';
-import {clientTimestampSupplier} from '@sharedClient/services/firebase.client';
 import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
 
 import {toast} from '@sharedClient/lib/toasts.client';
@@ -70,7 +68,7 @@ export class ClientUserFeedSubscriptionsService {
    * This is done via Firebase Functions since a privileged server is needed to contact the RSS feed
    * provider (e.g. Superfeedr), which is responsible for managing RSS feed subscriptions.
    */
-  public async subscribeToRssFeed(url: URL): AsyncResult<UserFeedSubscription> {
+  public async subscribeToRssFeed(url: URL): AsyncResult<RssUserFeedSubscription> {
     // Check if the user is already subscribed to this RSS feed.
     const existingSubResult = await this.fetchExistingRssFeedSubscription(url);
     if (!existingSubResult.success) return existingSubResult;
@@ -99,10 +97,9 @@ export class ClientUserFeedSubscriptionsService {
     });
 
     // Save the new user feed subscription.
-    return this.createSubscription({
+    return this.saveSubscription<RssUserFeedSubscription>({
       userFeedSubscription,
       toastMessage: 'Subscribed to RSS feed',
-      toastErrorMessage: 'Error subscribing to RSS feed',
     });
   }
 
@@ -112,7 +109,7 @@ export class ClientUserFeedSubscriptionsService {
    */
   public async subscribeToYouTubeChannel(
     maybeYouTubeUrl: string
-  ): AsyncResult<UserFeedSubscription> {
+  ): AsyncResult<YouTubeChannelUserFeedSubscription> {
     // Parse the channel ID from the URL.
     // TODO: Also support channel handles.
     const channelIdResult = getYouTubeChannelId(maybeYouTubeUrl);
@@ -135,10 +132,9 @@ export class ClientUserFeedSubscriptionsService {
     });
 
     // Save the new user feed subscription.
-    return this.createSubscription({
+    return this.saveSubscription<YouTubeChannelUserFeedSubscription>({
       userFeedSubscription,
       toastMessage: 'Subscribed to YouTube channel',
-      toastErrorMessage: 'Error subscribing to YouTube channel',
     });
   }
 
@@ -184,29 +180,28 @@ export class ClientUserFeedSubscriptionsService {
       accountId: this.accountId,
     });
 
-    return this.createSubscription({
+    return this.saveSubscription<IntervalUserFeedSubscription>({
       userFeedSubscription,
       toastMessage: 'Subscribed to interval feed',
-      toastErrorMessage: 'Error subscribing to interval feed',
     });
   }
 
-  private async createSubscription(args: {
-    readonly userFeedSubscription: UserFeedSubscription;
+  /**
+   * Saves a user feed subscription to Firestore. Also handles event logging and toasts.
+   */
+  private async saveSubscription<T extends UserFeedSubscription>(args: {
+    readonly userFeedSubscription: T;
     readonly toastMessage: string;
-    readonly toastErrorMessage: string;
   }): AsyncResult<T> {
-    const {userFeedSubscription, toastMessage, toastErrorMessage} = args;
+    const {userFeedSubscription, toastMessage} = args;
     const {accountId, feedSourceType, userFeedSubscriptionId} = userFeedSubscription;
 
     // Save to Firestore.
-    const docData = withFirestoreTimestamps(userFeedSubscription, clientTimestampSupplier);
     const saveResult = await this.userFeedSubscriptionsCollectionService.setDoc(
       userFeedSubscriptionId,
-      docData
+      userFeedSubscription
     );
     if (!saveResult.success) {
-      toast.error(toastErrorMessage);
       const betterError = prefixErrorResult(saveResult, 'Error saving feed subscription');
       logger.error(betterError.error, {userFeedSubscriptionId, accountId, feedSourceType});
       return betterError;
