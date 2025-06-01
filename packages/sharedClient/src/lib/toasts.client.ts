@@ -5,7 +5,8 @@ import {logger} from '@shared/services/logger.shared';
 
 import {prefixError} from '@shared/lib/errorUtils.shared';
 
-import type {UndoAction} from '@shared/types/undo.types';
+import type {AsyncResult} from '@shared/types/results.types';
+import type {Supplier} from '@shared/types/utils.types';
 
 export const toast = sonnerToast as typeof sonnerToast;
 
@@ -13,7 +14,7 @@ const DEFAULT_UNDO_TIMEOUT_MS = 5_000;
 
 export function toastWithUndo(args: {
   readonly message: string | React.ReactNode;
-  readonly undoAction: UndoAction;
+  readonly undoAction: Supplier<AsyncResult<void>>;
   readonly undoMessage: string | React.ReactNode;
   readonly undoFailureMessage: string | React.ReactNode;
   readonly options?: ExternalToast;

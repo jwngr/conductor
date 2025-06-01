@@ -1,17 +1,15 @@
 import type React from 'react';
-import {useCallback, useMemo} from 'react';
+import {useCallback} from 'react';
 
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
-import {noopFalse} from '@shared/lib/utils.shared';
 
 import type {FeedItem} from '@shared/types/feedItems.types';
 import {FeedItemImportStatus} from '@shared/types/feedItems.types';
 import type {IconName} from '@shared/types/icons.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
-import type {UndoableActionFn} from '@shared/types/undo.types';
-import type {Func} from '@shared/types/utils.types';
+import type {Supplier} from '@shared/types/utils.types';
 
 import {useFeedItemsService} from '@sharedClient/hooks/feedItems.hooks';
 
@@ -20,26 +18,20 @@ import type {MouseEvent} from '@sharedClient/types/utils.client.types';
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 
 interface GenericFeedItemActionIconProps {
-  readonly feedItem: FeedItem;
   readonly icon: IconName;
   readonly tooltip: string;
   readonly shortcutId: KeyboardShortcutId | undefined;
-  readonly getIsActive: Func<FeedItem, boolean>;
-  readonly performAction: UndoableActionFn;
+  readonly performAction: Supplier<AsyncResult<void>>;
   readonly disabled?: boolean;
 }
 
 const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
-  feedItem,
   icon,
   tooltip,
   shortcutId,
-  getIsActive,
   performAction,
   disabled,
 }) => {
-  const isCurrentlyActive = useMemo(() => getIsActive(feedItem), [getIsActive, feedItem]);
-
   const handleAction = useCallback(
     async (event?: MouseEvent<HTMLDivElement>): AsyncResult<void> => {
       if (disabled) return makeSuccessResult(undefined);
@@ -47,9 +39,9 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
       event?.stopPropagation();
       event?.preventDefault();
 
-      return await performAction({isActive: isCurrentlyActive});
+      return await performAction();
     },
-    [disabled, performAction, isCurrentlyActive]
+    [disabled, performAction]
   );
 
   return (
@@ -73,11 +65,9 @@ const MarkDoneFeedItemActionIcon: React.FC<{
 
   return (
     <GenericFeedItemActionIcon
-      feedItem={feedItem}
       icon={actionInfo.icon}
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}
-      getIsActive={SharedFeedItemHelpers.isMarkedDone}
       performAction={async () =>
         isDone
           ? await feedItemsService.markFeedItemAsUndone(feedItem.feedItemId)
@@ -96,11 +86,9 @@ const SaveFeedItemActionIcon: React.FC<{
 
   return (
     <GenericFeedItemActionIcon
-      feedItem={feedItem}
       icon={actionInfo.icon}
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}
-      getIsActive={SharedFeedItemHelpers.isSaved}
       performAction={async () =>
         isSaved
           ? await feedItemsService.unsaveFeedItem(feedItem.feedItemId)
@@ -119,11 +107,9 @@ const MarkUnreadFeedItemActionIcon: React.FC<{
 
   return (
     <GenericFeedItemActionIcon
-      feedItem={feedItem}
       icon={actionInfo.icon}
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}
-      getIsActive={SharedFeedItemHelpers.isUnread}
       performAction={async () =>
         isUnread
           ? await feedItemsService.markFeedItemAsRead(feedItem.feedItemId)
@@ -142,11 +128,9 @@ const StarFeedItemActionIcon: React.FC<{
 
   return (
     <GenericFeedItemActionIcon
-      feedItem={feedItem}
       icon={actionInfo.icon}
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}
-      getIsActive={SharedFeedItemHelpers.isStarred}
       performAction={async () =>
         isStarred
           ? await feedItemsService.unstarFeedItem(feedItem.feedItemId)
@@ -164,11 +148,9 @@ const RetryImportActionIcon: React.FC<{
 
   return (
     <GenericFeedItemActionIcon
-      feedItem={feedItem}
       icon={actionInfo.icon}
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}
-      getIsActive={noopFalse}
       performAction={async () => await feedItemsService.retryImport(feedItem)}
       disabled={feedItem.importState.status === FeedItemImportStatus.Processing}
     />
