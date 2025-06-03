@@ -73,7 +73,7 @@ export function initServices(): Result<InitializedServices> {
   });
 
   const userFeedSubscriptionsService = new ServerUserFeedSubscriptionsService({
-    userFeedSubscriptionsCollectionService,
+    collectionService: userFeedSubscriptionsCollectionService,
   });
 
   // Event log.
@@ -86,7 +86,7 @@ export function initServices(): Result<InitializedServices> {
 
   const eventLogService = new ServerEventLogService({
     environment: ENVIRONMENT,
-    eventLogCollectionService,
+    collectionService: eventLogCollectionService,
   });
 
   // Firecrawl.
@@ -102,7 +102,7 @@ export function initServices(): Result<InitializedServices> {
   });
 
   const feedItemsService = new ServerFeedItemsService({
-    feedItemsCollectionService,
+    collectionService: feedItemsCollectionService,
     storageCollectionPath: FEED_ITEMS_STORAGE_COLLECTION,
     eventLogService,
     firecrawlService,
@@ -117,7 +117,7 @@ export function initServices(): Result<InitializedServices> {
   });
 
   const experimentsService = new ServerExperimentsService({
-    accountExperimentsCollectionService,
+    collectionService: accountExperimentsCollectionService,
   });
 
   // Account settings.
@@ -129,7 +129,7 @@ export function initServices(): Result<InitializedServices> {
   });
 
   const accountSettingsService = new ServerAccountSettingsService({
-    accountSettingsCollectionService,
+    collectionService: accountSettingsCollectionService,
   });
 
   // Accounts.
@@ -141,7 +141,7 @@ export function initServices(): Result<InitializedServices> {
   });
 
   const accountsService = new ServerAccountsService({
-    accountsCollectionService,
+    collectionService: accountsCollectionService,
     accountSettingsService,
     experimentsService,
   });

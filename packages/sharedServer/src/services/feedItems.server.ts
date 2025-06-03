@@ -37,18 +37,18 @@ export class ServerFeedItemsService {
   private readonly storageCollectionPath: string;
   private readonly firecrawlService: ServerFirecrawlService;
   private readonly eventLogService: ServerEventLogService;
-  private readonly feedItemsCollectionService: FeedItemCollectionService;
+  private readonly collectionService: FeedItemCollectionService;
 
   constructor(args: {
     readonly storageCollectionPath: string;
     readonly firecrawlService: ServerFirecrawlService;
     readonly eventLogService: ServerEventLogService;
-    readonly feedItemsCollectionService: FeedItemCollectionService;
+    readonly collectionService: FeedItemCollectionService;
   }) {
     this.storageCollectionPath = args.storageCollectionPath;
     this.firecrawlService = args.firecrawlService;
     this.eventLogService = args.eventLogService;
-    this.feedItemsCollectionService = args.feedItemsCollectionService;
+    this.collectionService = args.collectionService;
   }
 
   public async createFeedItemFromUrl(
@@ -71,10 +71,7 @@ export class ServerFeedItemsService {
     if (!feedItemResult.success) return feedItemResult;
     const feedItem = feedItemResult.value;
 
-    const addFeedItemResult = await this.feedItemsCollectionService.setDoc(
-      feedItem.feedItemId,
-      feedItem
-    );
+    const addFeedItemResult = await this.collectionService.setDoc(feedItem.feedItemId, feedItem);
 
     if (!addFeedItemResult.success) {
       return prefixErrorResult(addFeedItemResult, 'Error creating feed item in Firestore');
@@ -97,10 +94,7 @@ export class ServerFeedItemsService {
     if (!feedItemResult.success) return feedItemResult;
     const feedItem = feedItemResult.value;
 
-    const addFeedItemResult = await this.feedItemsCollectionService.setDoc(
-      feedItem.feedItemId,
-      feedItem
-    );
+    const addFeedItemResult = await this.collectionService.setDoc(feedItem.feedItemId, feedItem);
 
     if (!addFeedItemResult.success) {
       return prefixErrorResult(addFeedItemResult, 'Error creating feed item in Firestore');
@@ -116,7 +110,7 @@ export class ServerFeedItemsService {
     feedItemId: FeedItemId,
     updates: Partial<FeedItem>
   ): AsyncResult<void> {
-    const updateResult = await this.feedItemsCollectionService.updateDoc(feedItemId, updates);
+    const updateResult = await this.collectionService.updateDoc(feedItemId, updates);
     return prefixResultIfError(updateResult, 'Error updating imported feed item in Firestore');
   }
 
@@ -140,17 +134,15 @@ export class ServerFeedItemsService {
    */
   public async deleteAllForAccount(accountId: AccountId): AsyncResult<void> {
     // Fetch the IDs for all of the account's feed items.
-    const query = this.feedItemsCollectionService
-      .getCollectionRef()
-      .where('accountId', '==', accountId);
-    const queryResult = await this.feedItemsCollectionService.fetchQueryIds(query);
+    const query = this.collectionService.getCollectionRef().where('accountId', '==', accountId);
+    const queryResult = await this.collectionService.fetchQueryIds(query);
     if (!queryResult.success) {
       return prefixErrorResult(queryResult, 'Error fetching feed items to delete for account');
     }
 
     // Delete all of the account's feed items.
     const docIdsToDelete = queryResult.value;
-    return await this.feedItemsCollectionService.batchDeleteDocs(docIdsToDelete);
+    return await this.collectionService.batchDeleteDocs(docIdsToDelete);
   }
 
   /**

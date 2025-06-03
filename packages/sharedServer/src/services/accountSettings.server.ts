@@ -9,23 +9,23 @@ import type {AccountSettingsFromStorage} from '@shared/schemas/accountSettings.s
 
 import type {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
-type AccountSettingsCollectionService = ServerFirestoreCollectionService<
+type ServerAccountSettingsCollectionService = ServerFirestoreCollectionService<
   AccountId,
   AccountSettings,
   AccountSettingsFromStorage
 >;
 
 export class ServerAccountSettingsService {
-  private readonly accountSettingsCollectionService: AccountSettingsCollectionService;
+  private readonly collectionService: ServerAccountSettingsCollectionService;
 
-  constructor(args: {readonly accountSettingsCollectionService: AccountSettingsCollectionService}) {
-    this.accountSettingsCollectionService = args.accountSettingsCollectionService;
+  constructor(args: {readonly collectionService: ServerAccountSettingsCollectionService}) {
+    this.collectionService = args.collectionService;
   }
 
   public async initializeForAccount(args: {readonly accountId: AccountId}): AsyncResult<void> {
     const {accountId} = args;
     const defaultAccountSettings = makeDefaultAccountSettings({accountId});
-    return this.accountSettingsCollectionService.setDoc(accountId, defaultAccountSettings);
+    return this.collectionService.setDoc(accountId, defaultAccountSettings);
   }
 
   private async updateForAccount(args: {
@@ -33,7 +33,7 @@ export class ServerAccountSettingsService {
     readonly updates: Partial<AccountSettings>;
   }): AsyncResult<void> {
     const {accountId, updates} = args;
-    return this.accountSettingsCollectionService.updateDoc(accountId, updates);
+    return this.collectionService.updateDoc(accountId, updates);
   }
 
   public async updateThemePreference(args: {
@@ -48,6 +48,6 @@ export class ServerAccountSettingsService {
    * Permanently deletes all account settings documents associated with an account.
    */
   public async deleteForAccount(accountId: AccountId): AsyncResult<void> {
-    return await this.accountSettingsCollectionService.deleteDoc(accountId);
+    return await this.collectionService.deleteDoc(accountId);
   }
 }

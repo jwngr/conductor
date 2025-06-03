@@ -25,24 +25,24 @@ type ServerEventLogCollectionService = ServerFirestoreCollectionService<
 
 export class ServerEventLogService {
   private readonly environment: ServerEnvironment;
-  private readonly eventLogCollectionService: ServerEventLogCollectionService;
+  private readonly collectionService: ServerEventLogCollectionService;
 
   constructor(args: {
     readonly environment: ServerEnvironment;
-    readonly eventLogCollectionService: ServerEventLogCollectionService;
+    readonly collectionService: ServerEventLogCollectionService;
   }) {
     this.environment = args.environment;
-    this.eventLogCollectionService = args.eventLogCollectionService;
+    this.collectionService = args.collectionService;
   }
 
   public async fetchById(eventId: EventId): AsyncResult<EventLogItem | null> {
-    return this.eventLogCollectionService.fetchById(eventId);
+    return this.collectionService.fetchById(eventId);
   }
 
   private async logEvent(eventLogItem: EventLogItem): AsyncResult<EventLogItem> {
     const {eventId} = eventLogItem;
 
-    const createResult = await this.eventLogCollectionService.setDoc(eventId, eventLogItem);
+    const createResult = await this.collectionService.setDoc(eventId, eventLogItem);
 
     if (!createResult.success) {
       logger.error(prefixError(createResult.error, 'Failed to log event'), {eventLogItem});
@@ -69,12 +69,12 @@ export class ServerEventLogService {
     eventId: EventId,
     item: Partial<WithFieldValue<Pick<EventLogItem, 'data'>>>
   ): AsyncResult<void> {
-    const updateResult = await this.eventLogCollectionService.updateDoc(eventId, item);
+    const updateResult = await this.collectionService.updateDoc(eventId, item);
     return prefixResultIfError(updateResult, 'Error updating event log item');
   }
 
   public async deleteEventLogItem(eventId: EventId): AsyncResult<void> {
-    const deleteResult = await this.eventLogCollectionService.deleteDoc(eventId);
+    const deleteResult = await this.collectionService.deleteDoc(eventId);
     return prefixResultIfError(deleteResult, 'Error deleting event log item');
   }
 

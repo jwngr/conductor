@@ -86,11 +86,11 @@ async function main(): Promise<void> {
 
   const eventLogService = new ServerEventLogService({
     environment: Environment.Scripts,
-    eventLogCollectionService,
+    collectionService: eventLogCollectionService,
   });
 
   const feedItemsService = new ServerFeedItemsService({
-    feedItemsCollectionService,
+    collectionService: feedItemsCollectionService,
     storageCollectionPath: FEED_ITEMS_STORAGE_COLLECTION,
     firecrawlService,
     eventLogService,

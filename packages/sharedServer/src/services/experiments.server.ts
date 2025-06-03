@@ -17,12 +17,10 @@ type ServerAccountExperimentsCollectionService = ServerFirestoreCollectionServic
 >;
 
 export class ServerExperimentsService {
-  private readonly accountExperimentsCollectionService: ServerAccountExperimentsCollectionService;
+  private readonly collectionService: ServerAccountExperimentsCollectionService;
 
-  constructor(args: {
-    readonly accountExperimentsCollectionService: ServerAccountExperimentsCollectionService;
-  }) {
-    this.accountExperimentsCollectionService = args.accountExperimentsCollectionService;
+  constructor(args: {readonly collectionService: ServerAccountExperimentsCollectionService}) {
+    this.collectionService = args.collectionService;
   }
 
   public async initializeForAccount(args: {
@@ -47,10 +45,10 @@ export class ServerExperimentsService {
     readonly accountExperimentsState: AccountExperimentsState;
   }): AsyncResult<void> {
     const {accountId, accountExperimentsState} = args;
-    return this.accountExperimentsCollectionService.setDoc(accountId, accountExperimentsState);
+    return this.collectionService.setDoc(accountId, accountExperimentsState);
   }
 
   public async deleteForAccount(accountId: AccountId): AsyncResult<void> {
-    return this.accountExperimentsCollectionService.deleteDoc(accountId);
+    return this.collectionService.deleteDoc(accountId);
   }
 }
