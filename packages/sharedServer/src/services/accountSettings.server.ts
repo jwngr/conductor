@@ -1,31 +1,31 @@
 import {makeDefaultAccountSettings} from '@shared/lib/accountSettings.shared';
-import {ACCOUNT_SETTINGS_DB_COLLECTION} from '@shared/lib/constants.shared';
-
-import {parseAccountId} from '@shared/parsers/accounts.parser';
-import {
-  parseAccountSettings,
-  toStorageAccountSettings,
-} from '@shared/parsers/accountSettings.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {AccountSettings} from '@shared/types/accountSettings.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {ThemePreference} from '@shared/types/theme.types';
 
-import {makeServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
+import type {AccountSettingsFromStorage} from '@shared/schemas/accountSettings.schema';
 
-const accountSettingsCollectionService = makeServerFirestoreCollectionService({
-  collectionPath: ACCOUNT_SETTINGS_DB_COLLECTION,
-  parseId: parseAccountId,
-  toStorage: toStorageAccountSettings,
-  fromStorage: parseAccountSettings,
-});
+import type {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
+
+type AccountSettingsCollectionService = ServerFirestoreCollectionService<
+  AccountId,
+  AccountSettings,
+  AccountSettingsFromStorage
+>;
 
 export class ServerAccountSettingsService {
+  private readonly accountSettingsCollectionService: AccountSettingsCollectionService;
+
+  constructor(args: {readonly accountSettingsCollectionService: AccountSettingsCollectionService}) {
+    this.accountSettingsCollectionService = args.accountSettingsCollectionService;
+  }
+
   public async initializeForAccount(args: {readonly accountId: AccountId}): AsyncResult<void> {
     const {accountId} = args;
     const defaultAccountSettings = makeDefaultAccountSettings({accountId});
-    return accountSettingsCollectionService.setDoc(accountId, defaultAccountSettings);
+    return this.accountSettingsCollectionService.setDoc(accountId, defaultAccountSettings);
   }
 
   private async updateForAccount(args: {
@@ -33,7 +33,7 @@ export class ServerAccountSettingsService {
     readonly updates: Partial<AccountSettings>;
   }): AsyncResult<void> {
     const {accountId, updates} = args;
-    return accountSettingsCollectionService.updateDoc(accountId, updates);
+    return this.accountSettingsCollectionService.updateDoc(accountId, updates);
   }
 
   public async updateThemePreference(args: {
@@ -48,6 +48,6 @@ export class ServerAccountSettingsService {
    * Permanently deletes all account settings documents associated with an account.
    */
   public async deleteForAccount(accountId: AccountId): AsyncResult<void> {
-    return await accountSettingsCollectionService.deleteDoc(accountId);
+    return await this.accountSettingsCollectionService.deleteDoc(accountId);
   }
 }

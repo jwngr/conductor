@@ -3,6 +3,7 @@ import {defineString} from 'firebase-functions/params';
 
 import {
   ACCOUNT_EXPERIMENTS_DB_COLLECTION,
+  ACCOUNT_SETTINGS_DB_COLLECTION,
   ACCOUNTS_DB_COLLECTION,
   EVENT_LOG_DB_COLLECTION,
   FEED_ITEMS_DB_COLLECTION,
@@ -13,6 +14,10 @@ import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import {parseAccount, parseAccountId, toStorageAccount} from '@shared/parsers/accounts.parser';
+import {
+  parseAccountSettings,
+  toStorageAccountSettings,
+} from '@shared/parsers/accountSettings.parser';
 import {
   parseEventId,
   parseEventLogItem,
@@ -110,7 +115,16 @@ export function initServices(): Result<InitializedServices> {
     accountExperimentsCollectionService,
   });
 
-  const accountSettingsService = new ServerAccountSettingsService();
+  const accountSettingsCollectionService = makeServerFirestoreCollectionService({
+    collectionPath: ACCOUNT_SETTINGS_DB_COLLECTION,
+    parseId: parseAccountId,
+    toStorage: toStorageAccountSettings,
+    fromStorage: parseAccountSettings,
+  });
+
+  const accountSettingsService = new ServerAccountSettingsService({
+    accountSettingsCollectionService,
+  });
 
   const accountsCollectionService = makeServerFirestoreCollectionService({
     collectionPath: ACCOUNTS_DB_COLLECTION,
