@@ -18,16 +18,16 @@ type AccountsCollectionService = ServerFirestoreCollectionService<
 >;
 
 export class ServerAccountsService {
-  private readonly accountsCollectionService: AccountsCollectionService;
+  private readonly collectionService: AccountsCollectionService;
   private readonly accountSettingsService: ServerAccountSettingsService;
   private readonly experimentsService: ServerExperimentsService;
 
   constructor(args: {
-    readonly accountsCollectionService: AccountsCollectionService;
+    readonly collectionService: AccountsCollectionService;
     readonly accountSettingsService: ServerAccountSettingsService;
     readonly experimentsService: ServerExperimentsService;
   }) {
-    this.accountsCollectionService = args.accountsCollectionService;
+    this.collectionService = args.collectionService;
     this.accountSettingsService = args.accountSettingsService;
     this.experimentsService = args.experimentsService;
   }
@@ -45,7 +45,7 @@ export class ServerAccountsService {
       lastUpdatedTime: new Date(),
     };
 
-    return this.accountsCollectionService.setDoc(accountId, account);
+    return this.collectionService.setDoc(accountId, account);
   }
 
   public async createAccount(args: {
@@ -98,6 +98,6 @@ export class ServerAccountsService {
    * Permanently deletes the `/accounts/$accountId` document from Firestore.
    */
   private async deleteAccountDoc(accountId: AccountId): AsyncResult<void> {
-    return this.accountsCollectionService.deleteDoc(accountId);
+    return this.collectionService.deleteDoc(accountId);
   }
 }

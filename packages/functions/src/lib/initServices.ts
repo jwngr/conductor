@@ -44,10 +44,7 @@ import {ServerEventLogService} from '@sharedServer/services/eventLog.server';
 import {ServerExperimentsService} from '@sharedServer/services/experiments.server';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
-import {
-  makeFirestoreDataConverter,
-  ServerFirestoreCollectionService,
-} from '@sharedServer/services/firestore.server';
+import {makeServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 import {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
 import {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
 import {WipeoutService} from '@sharedServer/services/wipeout.server';
@@ -67,105 +64,96 @@ interface InitializedServices {
 }
 
 export function initServices(): Result<InitializedServices> {
-  const userFeedSubscriptionFirestoreConverter = makeFirestoreDataConverter(
-    toStorageUserFeedSubscription,
-    parseUserFeedSubscription
-  );
-
-  const userFeedSubscriptionsCollectionService = new ServerFirestoreCollectionService({
+  // User feed subscriptions.
+  const userFeedSubscriptionsCollectionService = makeServerFirestoreCollectionService({
     collectionPath: USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
-    converter: userFeedSubscriptionFirestoreConverter,
     parseId: parseUserFeedSubscriptionId,
+    toStorage: toStorageUserFeedSubscription,
+    fromStorage: parseUserFeedSubscription,
   });
 
   const userFeedSubscriptionsService = new ServerUserFeedSubscriptionsService({
-    userFeedSubscriptionsCollectionService,
+    collectionService: userFeedSubscriptionsCollectionService,
   });
 
-  const feedItemFirestoreConverter = makeFirestoreDataConverter(toStorageFeedItem, parseFeedItem);
-
-  const feedItemsCollectionService = new ServerFirestoreCollectionService({
-    collectionPath: FEED_ITEMS_DB_COLLECTION,
-    converter: feedItemFirestoreConverter,
-    parseId: parseFeedItemId,
-  });
-
-  const firecrawlApp = new FirecrawlApp({apiKey: FIRECRAWL_API_KEY.value()});
-  const firecrawlService = new ServerFirecrawlService(firecrawlApp);
-
-  const eventLogItemFirestoreConverter = makeFirestoreDataConverter(
-    toStorageEventLogItem,
-    parseEventLogItem
-  );
-
-  const eventLogCollectionService = new ServerFirestoreCollectionService({
+  // Event log.
+  const eventLogCollectionService = makeServerFirestoreCollectionService({
     collectionPath: EVENT_LOG_DB_COLLECTION,
-    converter: eventLogItemFirestoreConverter,
+    toStorage: toStorageEventLogItem,
+    fromStorage: parseEventLogItem,
     parseId: parseEventId,
   });
 
   const eventLogService = new ServerEventLogService({
     environment: ENVIRONMENT,
-    eventLogCollectionService,
+    collectionService: eventLogCollectionService,
+  });
+
+  // Firecrawl.
+  const firecrawlApp = new FirecrawlApp({apiKey: FIRECRAWL_API_KEY.value()});
+  const firecrawlService = new ServerFirecrawlService(firecrawlApp);
+
+  // Feed items.
+  const feedItemsCollectionService = makeServerFirestoreCollectionService({
+    collectionPath: FEED_ITEMS_DB_COLLECTION,
+    toStorage: toStorageFeedItem,
+    fromStorage: parseFeedItem,
+    parseId: parseFeedItemId,
   });
 
   const feedItemsService = new ServerFeedItemsService({
-    feedItemsCollectionService,
+    collectionService: feedItemsCollectionService,
     storageCollectionPath: FEED_ITEMS_STORAGE_COLLECTION,
     eventLogService,
     firecrawlService,
   });
 
-  const accountExperimentsFirestoreConverter = makeFirestoreDataConverter(
-    toStorageAccountExperimentsState,
-    parseAccountExperimentsState
-  );
-
-  const accountExperimentsCollectionService = new ServerFirestoreCollectionService({
+  // Account experiments.
+  const accountExperimentsCollectionService = makeServerFirestoreCollectionService({
     collectionPath: ACCOUNT_EXPERIMENTS_DB_COLLECTION,
-    converter: accountExperimentsFirestoreConverter,
     parseId: parseAccountId,
+    toStorage: toStorageAccountExperimentsState,
+    fromStorage: parseAccountExperimentsState,
   });
 
   const experimentsService = new ServerExperimentsService({
-    accountExperimentsCollectionService: accountExperimentsCollectionService,
+    collectionService: accountExperimentsCollectionService,
   });
 
-  const accountSettingsFirestoreConverter = makeFirestoreDataConverter(
-    toStorageAccountSettings,
-    parseAccountSettings
-  );
-
-  const accountSettingsCollectionService = new ServerFirestoreCollectionService({
+  // Account settings.
+  const accountSettingsCollectionService = makeServerFirestoreCollectionService({
     collectionPath: ACCOUNT_SETTINGS_DB_COLLECTION,
-    converter: accountSettingsFirestoreConverter,
     parseId: parseAccountId,
+    toStorage: toStorageAccountSettings,
+    fromStorage: parseAccountSettings,
   });
 
   const accountSettingsService = new ServerAccountSettingsService({
-    accountSettingsCollectionService,
+    collectionService: accountSettingsCollectionService,
   });
 
-  const accountFirestoreConverter = makeFirestoreDataConverter(toStorageAccount, parseAccount);
-
-  const accountsCollectionService = new ServerFirestoreCollectionService({
+  // Accounts.
+  const accountsCollectionService = makeServerFirestoreCollectionService({
     collectionPath: ACCOUNTS_DB_COLLECTION,
-    converter: accountFirestoreConverter,
+    toStorage: toStorageAccount,
+    fromStorage: parseAccount,
     parseId: parseAccountId,
   });
 
   const accountsService = new ServerAccountsService({
-    accountsCollectionService,
+    collectionService: accountsCollectionService,
     accountSettingsService,
     experimentsService,
   });
 
+  // Wipeout.
   const wipeoutService = new WipeoutService({
     accountsService,
     userFeedSubscriptionsService,
     feedItemsService,
   });
 
+  // RSS feed provider.
   const rssFeedProviderResult = getRssFeedProvider();
   if (!rssFeedProviderResult.success) {
     return prefixErrorResult(rssFeedProviderResult, 'Failed to initialize RSS feed provider');

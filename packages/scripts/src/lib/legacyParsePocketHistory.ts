@@ -29,10 +29,7 @@ import type {PocketImportItem} from '@shared/types/pocket.types';
 import {ServerEventLogService} from '@sharedServer/services/eventLog.server';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
-import {
-  makeFirestoreDataConverter,
-  ServerFirestoreCollectionService,
-} from '@sharedServer/services/firestore.server';
+import {makeServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
 import {ServerPocketService} from '@sharedServer/lib/pocket.server';
 
@@ -69,43 +66,50 @@ if (args.length === 0) {
 
 const POCKET_EXPORT_FILE_PATH = path.resolve(args[0]);
 
-async function main(): Promise<void> {
-  const feedItemFirestoreConverter = makeFirestoreDataConverter(toStorageFeedItem, parseFeedItem);
-
-  const feedItemsCollectionService = new ServerFirestoreCollectionService({
-    collectionPath: FEED_ITEMS_DB_COLLECTION,
-    converter: feedItemFirestoreConverter,
-    parseId: parseFeedItemId,
-  });
-
-  const firecrawlApp = new FirecrawlApp({apiKey: firecrawlApiKey});
-  const firecrawlService = new ServerFirecrawlService(firecrawlApp);
-
-  const eventLogItemFirestoreConverter = makeFirestoreDataConverter(
-    toStorageEventLogItem,
-    parseEventLogItem
-  );
-
-  const eventLogCollectionService = new ServerFirestoreCollectionService({
+const initServices = async (): Promise<{
+  readonly feedItemsService: ServerFeedItemsService;
+}> => {
+  // Event log.
+  const eventLogCollectionService = makeServerFirestoreCollectionService({
     collectionPath: EVENT_LOG_DB_COLLECTION,
-    converter: eventLogItemFirestoreConverter,
+    toStorage: toStorageEventLogItem,
+    fromStorage: parseEventLogItem,
     parseId: parseEventId,
   });
 
   const eventLogService = new ServerEventLogService({
     environment: Environment.Scripts,
-    eventLogCollectionService,
+    collectionService: eventLogCollectionService,
+  });
+
+  // Firecrawl.
+  const firecrawlApp = new FirecrawlApp({apiKey: firecrawlApiKey});
+  const firecrawlService = new ServerFirecrawlService(firecrawlApp);
+
+  // Feed items.
+  const feedItemsCollectionService = makeServerFirestoreCollectionService({
+    collectionPath: FEED_ITEMS_DB_COLLECTION,
+    toStorage: toStorageFeedItem,
+    fromStorage: parseFeedItem,
+    parseId: parseFeedItemId,
   });
 
   const feedItemsService = new ServerFeedItemsService({
-    feedItemsCollectionService,
+    collectionService: feedItemsCollectionService,
     storageCollectionPath: FEED_ITEMS_STORAGE_COLLECTION,
     firecrawlService,
     eventLogService,
   });
 
-  const pocketItemsResult = await ServerPocketService.parseHtmlExportFile(POCKET_EXPORT_FILE_PATH);
+  return {
+    feedItemsService,
+  };
+};
 
+async function main(): Promise<void> {
+  const {feedItemsService} = await initServices();
+
+  const pocketItemsResult = await ServerPocketService.parseHtmlExportFile(POCKET_EXPORT_FILE_PATH);
   if (!pocketItemsResult.success) {
     logger.error(prefixError(pocketItemsResult.error, 'Error parsing Pocket export file'));
     process.exit(1);
