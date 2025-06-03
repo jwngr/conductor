@@ -1,7 +1,8 @@
 import {create} from 'zustand';
 
 import type {AccountSettings} from '@shared/types/accountSettings.types';
-import {ThemePreference} from '@shared/types/theme.types';
+import {DEFAULT_THEME_PREFERENCE} from '@shared/types/theme.types';
+import type {ThemePreference} from '@shared/types/theme.types';
 import type {Consumer, Supplier} from '@shared/types/utils.types';
 
 import type {ClientAccountSettingsService} from '@sharedClient/services/accountSettings.client';
@@ -34,7 +35,7 @@ export const useAccountSettingsStore = create<AccountSettingsStoreState>((set, g
   getThemePreference: (): ThemePreference => {
     const accountSettings = get().accountSettings;
     if (!accountSettings) {
-      return ThemePreference.System;
+      return DEFAULT_THEME_PREFERENCE;
     }
 
     return accountSettings.themePreference;
