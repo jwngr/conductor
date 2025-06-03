@@ -10,6 +10,7 @@ import {ActorSchema} from '@shared/schemas/actors.schema';
 import {ExperimentIdSchema, ExperimentTypeSchema} from '@shared/schemas/experiments.schema';
 import {FeedItemIdSchema} from '@shared/schemas/feedItems.schema';
 import {FirestoreTimestampSchema} from '@shared/schemas/firebase.schema';
+import {ThemePreferenceSchema} from '@shared/schemas/theme.schema';
 import {UserFeedSubscriptionIdSchema} from '@shared/schemas/userFeedSubscriptions.schema';
 
 /** Zod schema for an {@link EventId}. */
@@ -20,23 +21,39 @@ const BaseEventLogItemDataSchema = z.object({
   eventType: z.nativeEnum(EventType),
 });
 
-export const FeedItemActionEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
+const FeedItemActionEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
   eventType: z.literal(EventType.FeedItemAction),
   feedItemId: FeedItemIdSchema,
   feedItemActionType: z.nativeEnum(FeedItemActionType),
 });
 
-export const FeedItemImportedEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
+export type FeedItemActionEventLogItemDataFromStorage = z.infer<
+  typeof FeedItemActionEventLogItemDataSchema
+>;
+
+const FeedItemImportedEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
   eventType: z.literal(EventType.FeedItemImported),
   feedItemId: FeedItemIdSchema,
 });
 
-export const ExperimentEnabledEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
+export type FeedItemImportedEventLogItemDataFromStorage = z.infer<
+  typeof FeedItemImportedEventLogItemDataSchema
+>;
+
+const ExperimentEnabledEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
   eventType: z.literal(EventType.ExperimentEnabled),
   experimentId: ExperimentIdSchema,
   experimentType: ExperimentTypeSchema,
   value: z.string().optional(), // For string experiments, the value that was set
 });
+
+export type ExperimentEnabledEventLogItemDataFromStorage = z.infer<
+  typeof ExperimentEnabledEventLogItemDataSchema
+>;
+
+export type ExperimentDisabledEventLogItemDataFromStorage = z.infer<
+  typeof ExperimentDisabledEventLogItemDataSchema
+>;
 
 export const ExperimentDisabledEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
   eventType: z.literal(EventType.ExperimentDisabled),
@@ -44,25 +61,44 @@ export const ExperimentDisabledEventLogItemDataSchema = BaseEventLogItemDataSche
   experimentType: ExperimentTypeSchema,
 });
 
-export const StringExperimentValueChangedEventLogItemDataSchema = BaseEventLogItemDataSchema.extend(
-  {
-    eventType: z.literal(EventType.StringExperimentValueChanged),
-    experimentId: ExperimentIdSchema,
-    value: z.string(),
-  }
-);
+export type StringExperimentValueChangedEventLogItemDataFromStorage = z.infer<
+  typeof StringExperimentValueChangedEventLogItemDataSchema
+>;
 
-export const SubscribedToFeedSourceEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
+const StringExperimentValueChangedEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
+  eventType: z.literal(EventType.StringExperimentValueChanged),
+  experimentId: ExperimentIdSchema,
+  value: z.string(),
+});
+
+export type SubscribedToFeedSourceEventLogItemDataFromStorage = z.infer<
+  typeof SubscribedToFeedSourceEventLogItemDataSchema
+>;
+
+const SubscribedToFeedSourceEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
   eventType: z.literal(EventType.SubscribedToFeedSource),
   feedSourceType: z.nativeEnum(FeedSourceType),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
   isResubscribe: z.boolean(),
 });
 
+export type UnsubscribedFromFeedSourceEventLogItemDataFromStorage = z.infer<
+  typeof UnsubscribedFromFeedSourceEventLogItemDataSchema
+>;
+
 export const UnsubscribedFromFeedSourceEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
   eventType: z.literal(EventType.UnsubscribedFromFeedSource),
   feedSourceType: z.nativeEnum(FeedSourceType),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
+});
+
+export type ThemePreferenceChangedEventLogItemDataFromStorage = z.infer<
+  typeof ThemePreferenceChangedEventLogItemDataSchema
+>;
+
+const ThemePreferenceChangedEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
+  eventType: z.literal(EventType.ThemePreferenceChanged),
+  themePreference: ThemePreferenceSchema,
 });
 
 export const EventLogItemDataSchema = z.discriminatedUnion('eventType', [
@@ -73,6 +109,7 @@ export const EventLogItemDataSchema = z.discriminatedUnion('eventType', [
   StringExperimentValueChangedEventLogItemDataSchema,
   SubscribedToFeedSourceEventLogItemDataSchema,
   UnsubscribedFromFeedSourceEventLogItemDataSchema,
+  ThemePreferenceChangedEventLogItemDataSchema,
 ]);
 
 /** Zod schema for an {@link EventLogItem} persisted to Firestore. */

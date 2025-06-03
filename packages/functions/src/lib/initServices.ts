@@ -3,6 +3,7 @@ import {defineString} from 'firebase-functions/params';
 
 import {
   ACCOUNT_EXPERIMENTS_DB_COLLECTION,
+  ACCOUNT_SETTINGS_DB_COLLECTION,
   ACCOUNTS_DB_COLLECTION,
   EVENT_LOG_DB_COLLECTION,
   FEED_ITEMS_DB_COLLECTION,
@@ -13,6 +14,10 @@ import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import {parseAccount, parseAccountId, toStorageAccount} from '@shared/parsers/accounts.parser';
+import {
+  parseAccountSettings,
+  toStorageAccountSettings,
+} from '@shared/parsers/accountSettings.parser';
 import {
   parseEventId,
   parseEventLogItem,
@@ -34,6 +39,7 @@ import type {Result} from '@shared/types/results.types';
 import type {RssFeedProvider} from '@shared/types/rss.types';
 
 import {ServerAccountsService} from '@sharedServer/services/accounts.server';
+import {ServerAccountSettingsService} from '@sharedServer/services/accountSettings.server';
 import {ServerEventLogService} from '@sharedServer/services/eventLog.server';
 import {ServerExperimentsService} from '@sharedServer/services/experiments.server';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
@@ -125,6 +131,21 @@ export function initServices(): Result<InitializedServices> {
     accountExperimentsCollectionService: accountExperimentsCollectionService,
   });
 
+  const accountSettingsFirestoreConverter = makeFirestoreDataConverter(
+    toStorageAccountSettings,
+    parseAccountSettings
+  );
+
+  const accountSettingsCollectionService = new ServerFirestoreCollectionService({
+    collectionPath: ACCOUNT_SETTINGS_DB_COLLECTION,
+    converter: accountSettingsFirestoreConverter,
+    parseId: parseAccountId,
+  });
+
+  const accountSettingsService = new ServerAccountSettingsService({
+    accountSettingsCollectionService,
+  });
+
   const accountFirestoreConverter = makeFirestoreDataConverter(toStorageAccount, parseAccount);
 
   const accountsCollectionService = new ServerFirestoreCollectionService({
@@ -135,6 +156,7 @@ export function initServices(): Result<InitializedServices> {
 
   const accountsService = new ServerAccountsService({
     accountsCollectionService,
+    accountSettingsService,
     experimentsService,
   });
 

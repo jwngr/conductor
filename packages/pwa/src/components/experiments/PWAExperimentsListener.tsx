@@ -15,10 +15,10 @@ import {
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
 export const PWAExperimentsListener: React.FC = () => {
-  const {setExperiments, setExperimentsService, resetExperimentsStore} = useExperimentsStore();
   const loggedInAccount = useLoggedInAccount();
-  const accountExperimentsCollectionService = useAccountExperimentsCollectionService();
   const eventLogService = useEventLogService();
+  const accountExperimentsCollectionService = useAccountExperimentsCollectionService();
+  const {setExperiments, setExperimentsService, resetExperimentsStore} = useExperimentsStore();
 
   useEffect(() => {
     const pwaExperimentsService = new ClientExperimentsService({

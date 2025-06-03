@@ -13,6 +13,7 @@ import {
   makeFeedItemActionEventLogItemData,
   makeStringExperimentValueChangedEventLogItemData,
   makeSubscribedToFeedSourceEventLogItemData,
+  makeThemePreferenceChangedEventLogItemData,
   makeUnsubscribedFromFeedSourceEventLogItemData,
 } from '@shared/lib/eventLog.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
@@ -32,6 +33,7 @@ import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
 import type {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import type {AsyncResult} from '@shared/types/results.types';
+import type {ThemePreference} from '@shared/types/theme.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
@@ -219,7 +221,6 @@ export class ClientEventLogService {
     const {experimentId, experimentType} = args;
     const eventLogItemData = makeExperimentEnabledEventLogItemData({experimentId, experimentType});
     const eventLogItem = this.makeEventLogItem(eventLogItemData);
-
     return this.logEvent(eventLogItem);
   }
 
@@ -230,7 +231,6 @@ export class ClientEventLogService {
     const {experimentId, experimentType} = args;
     const eventLogItemData = makeExperimentDisabledEventLogItemData({experimentId, experimentType});
     const eventLogItem = this.makeEventLogItem(eventLogItemData);
-
     return this.logEvent(eventLogItem);
   }
 
@@ -244,7 +244,6 @@ export class ClientEventLogService {
       value,
     });
     const eventLogItem = this.makeEventLogItem(eventLogItemData);
-
     return this.logEvent(eventLogItem);
   }
 
@@ -260,7 +259,6 @@ export class ClientEventLogService {
       isResubscribe,
     });
     const eventLogItem = this.makeEventLogItem(eventLogItemData);
-
     return this.logEvent(eventLogItem);
   }
 
@@ -274,7 +272,15 @@ export class ClientEventLogService {
       userFeedSubscriptionId,
     });
     const eventLogItem = this.makeEventLogItem(eventLogItemData);
+    return this.logEvent(eventLogItem);
+  }
 
+  public async logThemePreferenceChangedEvent(args: {
+    readonly themePreference: ThemePreference;
+  }): AsyncResult<EventLogItem> {
+    const {themePreference} = args;
+    const eventLogItemData = makeThemePreferenceChangedEventLogItemData({themePreference});
+    const eventLogItem = this.makeEventLogItem(eventLogItemData);
     return this.logEvent(eventLogItem);
   }
   //////////////////////////////////////

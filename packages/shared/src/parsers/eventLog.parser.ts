@@ -19,23 +19,27 @@ import type {
   FeedItemImportedEventLogItemData,
   StringExperimentValueChangedEventLogItemData,
   SubscribedToFeedSourceEventLogItemData,
+  ThemePreferenceChangedEventLogItemData,
   UnsubscribedFromFeedSourceEventLogItemData,
 } from '@shared/types/eventLog.types';
 import type {Result} from '@shared/types/results.types';
 
+import type {
+  EventLogItemFromStorage,
+  ExperimentDisabledEventLogItemDataFromStorage,
+  ExperimentEnabledEventLogItemDataFromStorage,
+  FeedItemActionEventLogItemDataFromStorage,
+  FeedItemImportedEventLogItemDataFromStorage,
+  StringExperimentValueChangedEventLogItemDataFromStorage,
+  SubscribedToFeedSourceEventLogItemDataFromStorage,
+  ThemePreferenceChangedEventLogItemDataFromStorage,
+  UnsubscribedFromFeedSourceEventLogItemDataFromStorage,
+} from '@shared/schemas/eventLog.schema';
 import {
   EventIdSchema,
   EventLogItemDataSchema,
   EventLogItemFromStorageSchema,
-  ExperimentDisabledEventLogItemDataSchema,
-  ExperimentEnabledEventLogItemDataSchema,
-  FeedItemActionEventLogItemDataSchema,
-  FeedItemImportedEventLogItemDataSchema,
-  StringExperimentValueChangedEventLogItemDataSchema,
-  SubscribedToFeedSourceEventLogItemDataSchema,
-  UnsubscribedFromFeedSourceEventLogItemDataSchema,
 } from '@shared/schemas/eventLog.schema';
-import type {EventLogItemFromStorage} from '@shared/schemas/eventLog.schema';
 
 /**
  * Parses a {@link EventId} from a plain string. Returns an `ErrorResult` if the string is not
@@ -104,40 +108,32 @@ function parseEventLogItemData(maybeEventLogItemData: unknown): Result<EventLogI
       return parseSubscribedToFeedSourceEventLogItemData(parsedLogItemData);
     case EventType.UnsubscribedFromFeedSource:
       return parseUnsubscribedFromFeedSourceEventLogItemData(parsedLogItemData);
-    default:
+    case EventType.ThemePreferenceChanged:
+      return parseThemePreferenceChangedEventLogItemData(parsedLogItemData);
+    default: {
       safeAssertNever(parsedLogItemData);
       return makeErrorResult(new Error('Unknown event log item type'));
+    }
   }
 }
 
 function parseFeedItemActionEventLogItemData(
-  maybeEventLogItemData: unknown
+  eventLogItemData: FeedItemActionEventLogItemDataFromStorage
 ): Result<FeedItemActionEventLogItemData> {
-  const parsedResult = parseZodResult(FeedItemActionEventLogItemDataSchema, maybeEventLogItemData);
-  if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid event log item data');
-  }
-
-  const parsedFeedItemIdResult = parseFeedItemId(parsedResult.value.feedItemId);
+  const parsedFeedItemIdResult = parseFeedItemId(eventLogItemData.feedItemId);
   if (!parsedFeedItemIdResult.success) return parsedFeedItemIdResult;
 
   return makeSuccessResult({
     eventType: EventType.FeedItemAction,
     feedItemId: parsedFeedItemIdResult.value,
-    feedItemActionType: parsedResult.value.feedItemActionType,
+    feedItemActionType: eventLogItemData.feedItemActionType,
   });
 }
 
 function parseFeedItemImportedEventLogItemData(
-  maybeEventLogItemData: unknown
+  eventLogItemData: FeedItemImportedEventLogItemDataFromStorage
 ): Result<FeedItemImportedEventLogItemData> {
-  const parsedResult = parseZodResult(
-    FeedItemImportedEventLogItemDataSchema,
-    maybeEventLogItemData
-  );
-  if (!parsedResult.success) return parsedResult;
-
-  const parsedFeedItemIdResult = parseFeedItemId(parsedResult.value.feedItemId);
+  const parsedFeedItemIdResult = parseFeedItemId(eventLogItemData.feedItemId);
   if (!parsedFeedItemIdResult.success) return parsedFeedItemIdResult;
 
   return makeSuccessResult({
@@ -147,93 +143,68 @@ function parseFeedItemImportedEventLogItemData(
 }
 
 function parseExperimentEnabledEventLogItemData(
-  maybeEventLogItemData: unknown
+  eventLogItemData: ExperimentEnabledEventLogItemDataFromStorage
 ): Result<ExperimentEnabledEventLogItemData> {
-  const parsedResult = parseZodResult(
-    ExperimentEnabledEventLogItemDataSchema,
-    maybeEventLogItemData
-  );
-  if (!parsedResult.success) return parsedResult;
-
   return makeSuccessResult({
     eventType: EventType.ExperimentEnabled,
-    experimentId: parsedResult.value.experimentId,
-    experimentType: parsedResult.value.experimentType,
+    experimentId: eventLogItemData.experimentId,
+    experimentType: eventLogItemData.experimentType,
   });
 }
 
 function parseExperimentDisabledEventLogItemData(
-  maybeEventLogItemData: unknown
+  eventLogItemData: ExperimentDisabledEventLogItemDataFromStorage
 ): Result<ExperimentDisabledEventLogItemData> {
-  const parsedResult = parseZodResult(
-    ExperimentDisabledEventLogItemDataSchema,
-    maybeEventLogItemData
-  );
-  if (!parsedResult.success) return parsedResult;
-
   return makeSuccessResult({
     eventType: EventType.ExperimentDisabled,
-    experimentId: parsedResult.value.experimentId,
-    experimentType: parsedResult.value.experimentType,
+    experimentId: eventLogItemData.experimentId,
+    experimentType: eventLogItemData.experimentType,
   });
 }
 
 function parseStringExperimentValueChangedEventLogItemData(
-  maybeEventLogItemData: unknown
+  eventLogItemData: StringExperimentValueChangedEventLogItemDataFromStorage
 ): Result<StringExperimentValueChangedEventLogItemData> {
-  const parsedResult = parseZodResult(
-    StringExperimentValueChangedEventLogItemDataSchema,
-    maybeEventLogItemData
-  );
-  if (!parsedResult.success) return parsedResult;
-
   return makeSuccessResult({
     eventType: EventType.StringExperimentValueChanged,
-    experimentId: parsedResult.value.experimentId,
-    value: parsedResult.value.value,
+    experimentId: eventLogItemData.experimentId,
+    value: eventLogItemData.value,
   });
 }
 
 function parseSubscribedToFeedSourceEventLogItemData(
-  maybeEventLogItemData: unknown
+  eventLogItemData: SubscribedToFeedSourceEventLogItemDataFromStorage
 ): Result<SubscribedToFeedSourceEventLogItemData> {
-  const parsedResult = parseZodResult(
-    SubscribedToFeedSourceEventLogItemDataSchema,
-    maybeEventLogItemData
-  );
-  if (!parsedResult.success) return parsedResult;
-
-  const parsedUserFeedSubscriptionIdResult = parseUserFeedSubscriptionId(
-    parsedResult.value.userFeedSubscriptionId
-  );
-  if (!parsedUserFeedSubscriptionIdResult.success) return parsedUserFeedSubscriptionIdResult;
+  const parsedSubIdResult = parseUserFeedSubscriptionId(eventLogItemData.userFeedSubscriptionId);
+  if (!parsedSubIdResult.success) return parsedSubIdResult;
 
   return makeSuccessResult({
     eventType: EventType.SubscribedToFeedSource,
-    feedSourceType: parsedResult.value.feedSourceType,
-    userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
-    isResubscribe: parsedResult.value.isResubscribe,
+    feedSourceType: eventLogItemData.feedSourceType,
+    userFeedSubscriptionId: parsedSubIdResult.value,
+    isResubscribe: eventLogItemData.isResubscribe,
   });
 }
 
 function parseUnsubscribedFromFeedSourceEventLogItemData(
-  maybeEventLogItemData: unknown
+  eventLogItemData: UnsubscribedFromFeedSourceEventLogItemDataFromStorage
 ): Result<UnsubscribedFromFeedSourceEventLogItemData> {
-  const parsedResult = parseZodResult(
-    UnsubscribedFromFeedSourceEventLogItemDataSchema,
-    maybeEventLogItemData
-  );
-  if (!parsedResult.success) return parsedResult;
-
-  const parsedUserFeedSubscriptionIdResult = parseUserFeedSubscriptionId(
-    parsedResult.value.userFeedSubscriptionId
-  );
-  if (!parsedUserFeedSubscriptionIdResult.success) return parsedUserFeedSubscriptionIdResult;
+  const parsedSubIdResult = parseUserFeedSubscriptionId(eventLogItemData.userFeedSubscriptionId);
+  if (!parsedSubIdResult.success) return parsedSubIdResult;
 
   return makeSuccessResult({
     eventType: EventType.UnsubscribedFromFeedSource,
-    feedSourceType: parsedResult.value.feedSourceType,
-    userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
+    feedSourceType: eventLogItemData.feedSourceType,
+    userFeedSubscriptionId: parsedSubIdResult.value,
+  });
+}
+
+function parseThemePreferenceChangedEventLogItemData(
+  eventLogItemData: ThemePreferenceChangedEventLogItemDataFromStorage
+): Result<ThemePreferenceChangedEventLogItemData> {
+  return makeSuccessResult({
+    eventType: EventType.ThemePreferenceChanged,
+    themePreference: eventLogItemData.themePreference,
   });
 }
 

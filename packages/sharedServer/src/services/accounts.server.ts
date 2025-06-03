@@ -7,6 +7,7 @@ import type {AsyncResult} from '@shared/types/results.types';
 
 import type {AccountFromStorage} from '@shared/schemas/accounts.schema';
 
+import type {ServerAccountSettingsService} from '@sharedServer/services/accountSettings.server';
 import type {ServerExperimentsService} from '@sharedServer/services/experiments.server';
 import type {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
@@ -18,13 +19,16 @@ type AccountsCollectionService = ServerFirestoreCollectionService<
 
 export class ServerAccountsService {
   private readonly accountsCollectionService: AccountsCollectionService;
+  private readonly accountSettingsService: ServerAccountSettingsService;
   private readonly experimentsService: ServerExperimentsService;
 
   constructor(args: {
     readonly accountsCollectionService: AccountsCollectionService;
+    readonly accountSettingsService: ServerAccountSettingsService;
     readonly experimentsService: ServerExperimentsService;
   }) {
     this.accountsCollectionService = args.accountsCollectionService;
+    this.accountSettingsService = args.accountSettingsService;
     this.experimentsService = args.experimentsService;
   }
 
@@ -52,6 +56,7 @@ export class ServerAccountsService {
 
     const createAccountResult = await asyncTryAll([
       this.createAccountsDoc({accountId, email}),
+      this.accountSettingsService.initializeForAccount({accountId}),
       this.experimentsService.initializeForAccount({accountId, email}),
     ]);
 
@@ -68,9 +73,31 @@ export class ServerAccountsService {
   }
 
   /**
-   * Permanently deletes an account document from Firestore.
+   * Permanently deletes all account-related documents from Firestore.
    */
-  public async deleteAccountDoc(accountId: AccountId): AsyncResult<void> {
+  public async deleteAccount(accountId: AccountId): AsyncResult<void> {
+    const deleteResult = await asyncTryAll([
+      this.deleteAccountDoc(accountId),
+      this.accountSettingsService.deleteForAccount(accountId),
+      this.experimentsService.deleteForAccount(accountId),
+    ]);
+
+    if (!deleteResult.success) {
+      return deleteResult;
+    }
+
+    const firstErrorResult = deleteResult.value.results.find((result) => !result.success);
+    if (firstErrorResult) {
+      return firstErrorResult;
+    }
+
+    return makeSuccessResult(undefined);
+  }
+
+  /**
+   * Permanently deletes the `/accounts/$accountId` document from Firestore.
+   */
+  private async deleteAccountDoc(accountId: AccountId): AsyncResult<void> {
     return this.accountsCollectionService.deleteDoc(accountId);
   }
 }

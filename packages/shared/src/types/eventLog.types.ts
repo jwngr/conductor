@@ -4,6 +4,7 @@ import type {Environment} from '@shared/types/environment.types';
 import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
 import type {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import type {ThemePreference} from '@shared/types/theme.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 
@@ -20,6 +21,7 @@ export enum EventType {
   StringExperimentValueChanged = 'STRING_EXPERIMENT_VALUE_CHANGED',
   SubscribedToFeedSource = 'SUBSCRIBED_TO_FEED_SOURCE',
   UnsubscribedFromFeedSource = 'UNSUBSCRIBED_FROM_FEED_SOURCE',
+  ThemePreferenceChanged = 'THEME_PREFERENCE_CHANGED',
 }
 
 interface BaseEventLogItemData extends Record<string, unknown> {
@@ -68,6 +70,11 @@ export interface UnsubscribedFromFeedSourceEventLogItemData extends BaseEventLog
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
 }
 
+export interface ThemePreferenceChangedEventLogItemData extends BaseEventLogItemData {
+  readonly eventType: EventType.ThemePreferenceChanged;
+  readonly themePreference: ThemePreference;
+}
+
 /**
  * Base interface for all event log items. Most things that happen in the app are logged and tracked
  * as an event.
@@ -112,6 +119,10 @@ interface UnsubscribedFromFeedSourceEventLogItem extends BaseEventLogItem {
   readonly data: UnsubscribedFromFeedSourceEventLogItemData;
 }
 
+interface ThemePreferenceChangedEventLogItem extends BaseEventLogItem {
+  readonly data: ThemePreferenceChangedEventLogItemData;
+}
+
 export type EventLogItemData =
   | FeedItemActionEventLogItemData
   | FeedItemImportedEventLogItemData
@@ -119,7 +130,8 @@ export type EventLogItemData =
   | ExperimentDisabledEventLogItemData
   | StringExperimentValueChangedEventLogItemData
   | SubscribedToFeedSourceEventLogItemData
-  | UnsubscribedFromFeedSourceEventLogItemData;
+  | UnsubscribedFromFeedSourceEventLogItemData
+  | ThemePreferenceChangedEventLogItemData;
 
 export type EventLogItem =
   | FeedItemActionEventLogItem
@@ -128,4 +140,5 @@ export type EventLogItem =
   | ExperimentDisabledEventLogItem
   | StringExperimentValueChangedEventLogItem
   | SubscribedToFeedSourceEventLogItem
-  | UnsubscribedFromFeedSourceEventLogItem;
+  | UnsubscribedFromFeedSourceEventLogItem
+  | ThemePreferenceChangedEventLogItem;

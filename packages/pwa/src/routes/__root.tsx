@@ -7,6 +7,7 @@ import {IS_DEVELOPMENT} from '@sharedClient/lib/environment.client';
 
 import {useMaybeLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
+import {PWAAccountSettingsListener} from '@src/components/accountSettings/PWAAccountSettingsListener';
 import {Toaster} from '@src/components/atoms/Toaster';
 import {TooltipProvider} from '@src/components/atoms/Tooltip';
 import {AuthSubscriptions} from '@src/components/auth/AuthSubscriptions';
@@ -44,6 +45,7 @@ const LoggedInGlobalSubscriptions: React.FC = () => {
     <RequireLoggedInAccount>
       <RegisterFeedItemImporterDevToolbarSection />
       <PWAExperimentsListener />
+      <PWAAccountSettingsListener />
     </RequireLoggedInAccount>
   );
 };
