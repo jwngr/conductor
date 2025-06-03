@@ -25,7 +25,7 @@ import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/us
 import type {WipeoutService} from '@sharedServer/services/wipeout.server';
 
 import {FIREBASE_FUNCTIONS_REGION} from '@src/lib/env';
-import {initServices} from '@src/lib/initServices';
+import {initServices} from '@src/lib/initServices.func';
 import {validateUrlParam, verifyAuth} from '@src/lib/middleware';
 
 import {handleCreateAccount} from '@src/reqHandlers/handleCreateAccount';
