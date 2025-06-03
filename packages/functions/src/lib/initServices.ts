@@ -64,6 +64,7 @@ interface InitializedServices {
 }
 
 export function initServices(): Result<InitializedServices> {
+  // User feed subscriptions.
   const userFeedSubscriptionsCollectionService = makeServerFirestoreCollectionService({
     collectionPath: USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
     parseId: parseUserFeedSubscriptionId,
@@ -75,16 +76,7 @@ export function initServices(): Result<InitializedServices> {
     userFeedSubscriptionsCollectionService,
   });
 
-  const feedItemsCollectionService = makeServerFirestoreCollectionService({
-    collectionPath: FEED_ITEMS_DB_COLLECTION,
-    toStorage: toStorageFeedItem,
-    fromStorage: parseFeedItem,
-    parseId: parseFeedItemId,
-  });
-
-  const firecrawlApp = new FirecrawlApp({apiKey: FIRECRAWL_API_KEY.value()});
-  const firecrawlService = new ServerFirecrawlService(firecrawlApp);
-
+  // Event log.
   const eventLogCollectionService = makeServerFirestoreCollectionService({
     collectionPath: EVENT_LOG_DB_COLLECTION,
     toStorage: toStorageEventLogItem,
@@ -97,6 +89,18 @@ export function initServices(): Result<InitializedServices> {
     eventLogCollectionService,
   });
 
+  // Firecrawl.
+  const firecrawlApp = new FirecrawlApp({apiKey: FIRECRAWL_API_KEY.value()});
+  const firecrawlService = new ServerFirecrawlService(firecrawlApp);
+
+  // Feed items.
+  const feedItemsCollectionService = makeServerFirestoreCollectionService({
+    collectionPath: FEED_ITEMS_DB_COLLECTION,
+    toStorage: toStorageFeedItem,
+    fromStorage: parseFeedItem,
+    parseId: parseFeedItemId,
+  });
+
   const feedItemsService = new ServerFeedItemsService({
     feedItemsCollectionService,
     storageCollectionPath: FEED_ITEMS_STORAGE_COLLECTION,
@@ -104,6 +108,7 @@ export function initServices(): Result<InitializedServices> {
     firecrawlService,
   });
 
+  // Account experiments.
   const accountExperimentsCollectionService = makeServerFirestoreCollectionService({
     collectionPath: ACCOUNT_EXPERIMENTS_DB_COLLECTION,
     parseId: parseAccountId,
@@ -115,6 +120,7 @@ export function initServices(): Result<InitializedServices> {
     accountExperimentsCollectionService,
   });
 
+  // Account settings.
   const accountSettingsCollectionService = makeServerFirestoreCollectionService({
     collectionPath: ACCOUNT_SETTINGS_DB_COLLECTION,
     parseId: parseAccountId,
@@ -126,6 +132,7 @@ export function initServices(): Result<InitializedServices> {
     accountSettingsCollectionService,
   });
 
+  // Accounts.
   const accountsCollectionService = makeServerFirestoreCollectionService({
     collectionPath: ACCOUNTS_DB_COLLECTION,
     toStorage: toStorageAccount,
@@ -139,12 +146,14 @@ export function initServices(): Result<InitializedServices> {
     experimentsService,
   });
 
+  // Wipeout.
   const wipeoutService = new WipeoutService({
     accountsService,
     userFeedSubscriptionsService,
     feedItemsService,
   });
 
+  // RSS feed provider.
   const rssFeedProviderResult = getRssFeedProvider();
   if (!rssFeedProviderResult.success) {
     return prefixErrorResult(rssFeedProviderResult, 'Failed to initialize RSS feed provider');
