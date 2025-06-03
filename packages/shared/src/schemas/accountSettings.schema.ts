@@ -7,7 +7,7 @@ import {ThemePreferenceSchema} from '@shared/schemas/theme.schema';
 /**
  * Zod schema for {@link AccountSettings} persisted to Firestore.
  */
-export const AccountSettingsFromStorageSchema = z.object({
+export const AccountSettingsSchema = z.object({
   accountId: AccountIdSchema,
   themePreference: ThemePreferenceSchema,
   createdTime: FirestoreTimestampSchema.or(z.date()),
@@ -17,4 +17,4 @@ export const AccountSettingsFromStorageSchema = z.object({
 /**
  * Type for {@link AccountSettings} persisted to Firestore.
  */
-export type AccountSettingsFromStorage = z.infer<typeof AccountSettingsFromStorageSchema>;
+export type AccountSettingsFromStorage = z.infer<typeof AccountSettingsSchema>;

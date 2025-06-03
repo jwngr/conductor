@@ -17,10 +17,10 @@ import {ExperimentType} from '@shared/types/experiments.types';
 import type {Result} from '@shared/types/results.types';
 
 import {
-  AccountExperimentsStateFromStorageSchema,
-  BaseExperimentDefinitionFromStorageSchema,
-  BooleanExperimentDefinitionFromStorageSchema,
-  StringExperimentDefinitionFromStorageSchema,
+  AccountExperimentsStateSchema,
+  BaseExperimentDefinitionSchema,
+  BooleanExperimentDefinitionSchema,
+  StringExperimentDefinitionSchema,
 } from '@shared/schemas/experiments.schema';
 import type {
   AccountExperimentsStateFromStorage,
@@ -38,7 +38,7 @@ export function parseExperimentDefinition(
   maybeExperimentDefinition: unknown
 ): Result<ExperimentDefinition> {
   const parsedExperimentResult = parseZodResult<BaseExperimentDefinitionFromStorage>(
-    BaseExperimentDefinitionFromStorageSchema,
+    BaseExperimentDefinitionSchema,
     maybeExperimentDefinition
   );
   if (!parsedExperimentResult.success) {
@@ -63,7 +63,7 @@ function parseBooleanExperimentDefinition(args: {
   const {maybeExperimentDefinition} = args;
 
   const parsedExperimentResult = parseZodResult<BooleanExperimentDefinitionFromStorage>(
-    BooleanExperimentDefinitionFromStorageSchema,
+    BooleanExperimentDefinitionSchema,
     maybeExperimentDefinition
   );
   if (!parsedExperimentResult.success) {
@@ -90,7 +90,7 @@ function parseStringExperimentDefinition(args: {
   const {maybeExperimentDefinition} = args;
 
   const parsedExperimentResult = parseZodResult<StringExperimentDefinitionFromStorage>(
-    StringExperimentDefinitionFromStorageSchema,
+    StringExperimentDefinitionSchema,
     maybeExperimentDefinition
   );
   if (!parsedExperimentResult.success) {
@@ -175,7 +175,7 @@ export function parseAccountExperimentsState(
   maybeAccountExperimentsState: unknown
 ): Result<AccountExperimentsState> {
   const parsedAccountExperimentsStateResult = parseZodResult<AccountExperimentsStateFromStorage>(
-    AccountExperimentsStateFromStorageSchema,
+    AccountExperimentsStateSchema,
     maybeAccountExperimentsState
   );
 

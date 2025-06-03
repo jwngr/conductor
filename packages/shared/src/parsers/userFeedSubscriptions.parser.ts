@@ -21,11 +21,11 @@ import type {
 } from '@shared/types/userFeedSubscriptions.types';
 
 import {
-  IntervalUserFeedSubscriptionFromStorageSchema,
-  RssUserFeedSubscriptionFromStorageSchema,
-  UserFeedSubscriptionFromStorageSchema,
+  IntervalUserFeedSubscriptionSchema,
+  RssUserFeedSubscriptionSchema,
   UserFeedSubscriptionIdSchema,
-  YouTubeChannelUserFeedSubscriptionFromStorageSchema,
+  UserFeedSubscriptionSchema,
+  YouTubeChannelUserFeedSubscriptionSchema,
 } from '@shared/schemas/userFeedSubscriptions.schema';
 import type {UserFeedSubscriptionFromStorage} from '@shared/schemas/userFeedSubscriptions.schema';
 
@@ -50,10 +50,7 @@ export function parseUserFeedSubscriptionId(
 export function parseUserFeedSubscription(
   maybeUserFeedSubscription: unknown
 ): Result<UserFeedSubscription> {
-  const parsedResult = parseZodResult(
-    UserFeedSubscriptionFromStorageSchema,
-    maybeUserFeedSubscription
-  );
+  const parsedResult = parseZodResult(UserFeedSubscriptionSchema, maybeUserFeedSubscription);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid user feed subscription');
   }
@@ -73,10 +70,7 @@ export function parseUserFeedSubscription(
 function parseRssUserFeedSubscription(
   maybeUserFeedSubscription: unknown
 ): Result<RssUserFeedSubscription> {
-  const parsedResult = parseZodResult(
-    RssUserFeedSubscriptionFromStorageSchema,
-    maybeUserFeedSubscription
-  );
+  const parsedResult = parseZodResult(RssUserFeedSubscriptionSchema, maybeUserFeedSubscription);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid user feed subscription');
   }
@@ -114,7 +108,7 @@ function parseYouTubeChannelUserFeedSubscription(
   maybeUserFeedSubscription: unknown
 ): Result<YouTubeChannelUserFeedSubscription> {
   const parsedResult = parseZodResult(
-    YouTubeChannelUserFeedSubscriptionFromStorageSchema,
+    YouTubeChannelUserFeedSubscriptionSchema,
     maybeUserFeedSubscription
   );
   if (!parsedResult.success) {
@@ -156,7 +150,7 @@ function parseIntervalUserFeedSubscription(
   maybeUserFeedSubscription: unknown
 ): Result<IntervalUserFeedSubscription> {
   const parsedResult = parseZodResult(
-    IntervalUserFeedSubscriptionFromStorageSchema,
+    IntervalUserFeedSubscriptionSchema,
     maybeUserFeedSubscription
   );
   if (!parsedResult.success) {
