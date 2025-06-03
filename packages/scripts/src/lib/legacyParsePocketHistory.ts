@@ -66,17 +66,10 @@ if (args.length === 0) {
 
 const POCKET_EXPORT_FILE_PATH = path.resolve(args[0]);
 
-async function main(): Promise<void> {
-  const feedItemsCollectionService = makeServerFirestoreCollectionService({
-    collectionPath: FEED_ITEMS_DB_COLLECTION,
-    toStorage: toStorageFeedItem,
-    fromStorage: parseFeedItem,
-    parseId: parseFeedItemId,
-  });
-
-  const firecrawlApp = new FirecrawlApp({apiKey: firecrawlApiKey});
-  const firecrawlService = new ServerFirecrawlService(firecrawlApp);
-
+const initServices = async (): Promise<{
+  readonly feedItemsService: ServerFeedItemsService;
+}> => {
+  // Event log.
   const eventLogCollectionService = makeServerFirestoreCollectionService({
     collectionPath: EVENT_LOG_DB_COLLECTION,
     toStorage: toStorageEventLogItem,
@@ -89,6 +82,18 @@ async function main(): Promise<void> {
     collectionService: eventLogCollectionService,
   });
 
+  // Firecrawl.
+  const firecrawlApp = new FirecrawlApp({apiKey: firecrawlApiKey});
+  const firecrawlService = new ServerFirecrawlService(firecrawlApp);
+
+  // Feed items.
+  const feedItemsCollectionService = makeServerFirestoreCollectionService({
+    collectionPath: FEED_ITEMS_DB_COLLECTION,
+    toStorage: toStorageFeedItem,
+    fromStorage: parseFeedItem,
+    parseId: parseFeedItemId,
+  });
+
   const feedItemsService = new ServerFeedItemsService({
     collectionService: feedItemsCollectionService,
     storageCollectionPath: FEED_ITEMS_STORAGE_COLLECTION,
@@ -96,8 +101,15 @@ async function main(): Promise<void> {
     eventLogService,
   });
 
-  const pocketItemsResult = await ServerPocketService.parseHtmlExportFile(POCKET_EXPORT_FILE_PATH);
+  return {
+    feedItemsService,
+  };
+};
 
+async function main(): Promise<void> {
+  const {feedItemsService} = await initServices();
+
+  const pocketItemsResult = await ServerPocketService.parseHtmlExportFile(POCKET_EXPORT_FILE_PATH);
   if (!pocketItemsResult.success) {
     logger.error(prefixError(pocketItemsResult.error, 'Error parsing Pocket export file'));
     process.exit(1);
