@@ -224,7 +224,7 @@ const ViewListItem: React.FC<{
     <Link to={feedItemRoute.fullPath} params={{feedItemId: feedItem.feedItemId}}>
       <div
         ref={itemRef}
-        className={`hover:bg-neutral-1 focus-visible:bg-neutral-1 relative flex cursor-pointer flex-col justify-center gap-1 rounded p-2 outline-none ${
+        className={`hover:bg-neutral-1 focus-visible:bg-neutral-1 relative -m-2 flex cursor-pointer flex-col justify-center gap-1 rounded p-2 outline-none ${
           isFocused ? `bg-neutral-1 outline-2 outline-stone-500` : ''
         }`}
         tabIndex={0}
@@ -423,7 +423,7 @@ const ViewHeader: React.FC<{
   onGroupByChange: React.Dispatch<React.SetStateAction<ViewGroupByOption[]>>;
 }> = ({name, sortBy, groupBy, onSortByChange, onGroupByChange}) => {
   return (
-    <FlexRow justify="between" padding={4}>
+    <FlexRow justify="between">
       <Text as="h2" bold>
         {name}
       </Text>
@@ -458,7 +458,7 @@ export const ViewRenderer: React.FC<{
   });
 
   return (
-    <FlexColumn flex={1} overflow="auto" padding={4}>
+    <FlexColumn flex={1} gap={2} padding={4} overflow="auto">
       <ViewHeader
         name={defaultViewConfig.name}
         sortBy={viewOptions.sortBy}
