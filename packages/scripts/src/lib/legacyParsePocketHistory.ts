@@ -29,10 +29,7 @@ import type {PocketImportItem} from '@shared/types/pocket.types';
 import {ServerEventLogService} from '@sharedServer/services/eventLog.server';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
-import {
-  makeFirestoreDataConverter,
-  ServerFirestoreCollectionService,
-} from '@sharedServer/services/firestore.server';
+import {makeServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
 import {ServerPocketService} from '@sharedServer/lib/pocket.server';
 
@@ -70,25 +67,20 @@ if (args.length === 0) {
 const POCKET_EXPORT_FILE_PATH = path.resolve(args[0]);
 
 async function main(): Promise<void> {
-  const feedItemFirestoreConverter = makeFirestoreDataConverter(toStorageFeedItem, parseFeedItem);
-
-  const feedItemsCollectionService = new ServerFirestoreCollectionService({
+  const feedItemsCollectionService = makeServerFirestoreCollectionService({
     collectionPath: FEED_ITEMS_DB_COLLECTION,
-    converter: feedItemFirestoreConverter,
+    toStorage: toStorageFeedItem,
+    fromStorage: parseFeedItem,
     parseId: parseFeedItemId,
   });
 
   const firecrawlApp = new FirecrawlApp({apiKey: firecrawlApiKey});
   const firecrawlService = new ServerFirecrawlService(firecrawlApp);
 
-  const eventLogItemFirestoreConverter = makeFirestoreDataConverter(
-    toStorageEventLogItem,
-    parseEventLogItem
-  );
-
-  const eventLogCollectionService = new ServerFirestoreCollectionService({
+  const eventLogCollectionService = makeServerFirestoreCollectionService({
     collectionPath: EVENT_LOG_DB_COLLECTION,
-    converter: eventLogItemFirestoreConverter,
+    toStorage: toStorageEventLogItem,
+    fromStorage: parseEventLogItem,
     parseId: parseEventId,
   });
 

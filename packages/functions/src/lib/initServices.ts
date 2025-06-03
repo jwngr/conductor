@@ -3,7 +3,6 @@ import {defineString} from 'firebase-functions/params';
 
 import {
   ACCOUNT_EXPERIMENTS_DB_COLLECTION,
-  ACCOUNT_SETTINGS_DB_COLLECTION,
   ACCOUNTS_DB_COLLECTION,
   EVENT_LOG_DB_COLLECTION,
   FEED_ITEMS_DB_COLLECTION,
@@ -14,10 +13,6 @@ import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import {parseAccount, parseAccountId, toStorageAccount} from '@shared/parsers/accounts.parser';
-import {
-  parseAccountSettings,
-  toStorageAccountSettings,
-} from '@shared/parsers/accountSettings.parser';
 import {
   parseEventId,
   parseEventLogItem,
@@ -44,10 +39,7 @@ import {ServerEventLogService} from '@sharedServer/services/eventLog.server';
 import {ServerExperimentsService} from '@sharedServer/services/experiments.server';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
-import {
-  makeFirestoreDataConverter,
-  ServerFirestoreCollectionService,
-} from '@sharedServer/services/firestore.server';
+import {makeServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 import {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
 import {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
 import {WipeoutService} from '@sharedServer/services/wipeout.server';
@@ -67,40 +59,31 @@ interface InitializedServices {
 }
 
 export function initServices(): Result<InitializedServices> {
-  const userFeedSubscriptionFirestoreConverter = makeFirestoreDataConverter(
-    toStorageUserFeedSubscription,
-    parseUserFeedSubscription
-  );
-
-  const userFeedSubscriptionsCollectionService = new ServerFirestoreCollectionService({
+  const userFeedSubscriptionsCollectionService = makeServerFirestoreCollectionService({
     collectionPath: USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
-    converter: userFeedSubscriptionFirestoreConverter,
     parseId: parseUserFeedSubscriptionId,
+    toStorage: toStorageUserFeedSubscription,
+    fromStorage: parseUserFeedSubscription,
   });
 
   const userFeedSubscriptionsService = new ServerUserFeedSubscriptionsService({
     userFeedSubscriptionsCollectionService,
   });
 
-  const feedItemFirestoreConverter = makeFirestoreDataConverter(toStorageFeedItem, parseFeedItem);
-
-  const feedItemsCollectionService = new ServerFirestoreCollectionService({
+  const feedItemsCollectionService = makeServerFirestoreCollectionService({
     collectionPath: FEED_ITEMS_DB_COLLECTION,
-    converter: feedItemFirestoreConverter,
+    toStorage: toStorageFeedItem,
+    fromStorage: parseFeedItem,
     parseId: parseFeedItemId,
   });
 
   const firecrawlApp = new FirecrawlApp({apiKey: FIRECRAWL_API_KEY.value()});
   const firecrawlService = new ServerFirecrawlService(firecrawlApp);
 
-  const eventLogItemFirestoreConverter = makeFirestoreDataConverter(
-    toStorageEventLogItem,
-    parseEventLogItem
-  );
-
-  const eventLogCollectionService = new ServerFirestoreCollectionService({
+  const eventLogCollectionService = makeServerFirestoreCollectionService({
     collectionPath: EVENT_LOG_DB_COLLECTION,
-    converter: eventLogItemFirestoreConverter,
+    toStorage: toStorageEventLogItem,
+    fromStorage: parseEventLogItem,
     parseId: parseEventId,
   });
 
@@ -116,41 +99,23 @@ export function initServices(): Result<InitializedServices> {
     firecrawlService,
   });
 
-  const accountExperimentsFirestoreConverter = makeFirestoreDataConverter(
-    toStorageAccountExperimentsState,
-    parseAccountExperimentsState
-  );
-
-  const accountExperimentsCollectionService = new ServerFirestoreCollectionService({
+  const accountExperimentsCollectionService = makeServerFirestoreCollectionService({
     collectionPath: ACCOUNT_EXPERIMENTS_DB_COLLECTION,
-    converter: accountExperimentsFirestoreConverter,
     parseId: parseAccountId,
+    toStorage: toStorageAccountExperimentsState,
+    fromStorage: parseAccountExperimentsState,
   });
 
   const experimentsService = new ServerExperimentsService({
-    accountExperimentsCollectionService: accountExperimentsCollectionService,
+    accountExperimentsCollectionService,
   });
 
-  const accountSettingsFirestoreConverter = makeFirestoreDataConverter(
-    toStorageAccountSettings,
-    parseAccountSettings
-  );
+  const accountSettingsService = new ServerAccountSettingsService();
 
-  const accountSettingsCollectionService = new ServerFirestoreCollectionService({
-    collectionPath: ACCOUNT_SETTINGS_DB_COLLECTION,
-    converter: accountSettingsFirestoreConverter,
-    parseId: parseAccountId,
-  });
-
-  const accountSettingsService = new ServerAccountSettingsService({
-    accountSettingsCollectionService,
-  });
-
-  const accountFirestoreConverter = makeFirestoreDataConverter(toStorageAccount, parseAccount);
-
-  const accountsCollectionService = new ServerFirestoreCollectionService({
+  const accountsCollectionService = makeServerFirestoreCollectionService({
     collectionPath: ACCOUNTS_DB_COLLECTION,
-    converter: accountFirestoreConverter,
+    toStorage: toStorageAccount,
+    fromStorage: parseAccount,
     parseId: parseAccountId,
   });
 

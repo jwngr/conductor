@@ -230,3 +230,26 @@ export class ServerFirestoreCollectionService<
     return makeSuccessResult(undefined);
   }
 }
+
+export function makeServerFirestoreCollectionService<
+  ItemId extends string,
+  ItemData extends DocumentData,
+  ItemDataFromStorage extends DocumentData,
+>(args: {
+  readonly collectionPath: string;
+  readonly parseId: Func<string, Result<ItemId>>;
+  readonly toStorage: Func<ItemData, ItemDataFromStorage>;
+  readonly fromStorage: Func<ItemDataFromStorage, Result<ItemData>>;
+}): ServerFirestoreCollectionService<ItemId, ItemData, ItemDataFromStorage> {
+  const {collectionPath, parseId, toStorage, fromStorage} = args;
+
+  const firestoreConverter = makeFirestoreDataConverter(toStorage, fromStorage);
+
+  const collectionService = new ServerFirestoreCollectionService({
+    collectionPath,
+    parseId,
+    converter: firestoreConverter,
+  });
+
+  return collectionService;
+}
