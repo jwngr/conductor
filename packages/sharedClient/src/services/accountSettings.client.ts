@@ -15,11 +15,24 @@ import type {AsyncResult} from '@shared/types/results.types';
 import type {ThemePreference} from '@shared/types/theme.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
+import type {AccountSettingsFromStorage} from '@shared/schemas/accountSettings.schema';
+
 import type {ClientEventLogService} from '@sharedClient/services/eventLog.client';
-import {
-  ClientFirestoreCollectionService,
-  makeFirestoreDataConverter,
-} from '@sharedClient/services/firestore.client';
+import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+import {makeClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+
+type ClientAccountSettingsCollectionService = ClientFirestoreCollectionService<
+  AccountId,
+  AccountSettings,
+  AccountSettingsFromStorage
+>;
+
+export const clientAccountSettingsCollectionService = makeClientFirestoreCollectionService({
+  collectionPath: ACCOUNT_SETTINGS_DB_COLLECTION,
+  toStorage: toStorageAccountSettings,
+  fromStorage: parseAccountSettings,
+  parseId: parseAccountId,
+});
 
 export class ClientAccountSettingsService {
   private readonly accountId: AccountId;
@@ -72,19 +85,3 @@ export class ClientAccountSettingsService {
     return result;
   }
 }
-
-const accountSettingsFirestoreConverter = makeFirestoreDataConverter(
-  toStorageAccountSettings,
-  parseAccountSettings
-);
-
-type ClientAccountSettingsCollectionService = ClientFirestoreCollectionService<
-  AccountId,
-  AccountSettings
->;
-
-export const clientAccountSettingsCollectionService = new ClientFirestoreCollectionService({
-  collectionPath: ACCOUNT_SETTINGS_DB_COLLECTION,
-  converter: accountSettingsFirestoreConverter,
-  parseId: parseAccountId,
-});

@@ -15,8 +15,8 @@ import {DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
 import type {Result} from '@shared/types/results.types';
 
 import {
-  DeliveryScheduleFromStorageSchema,
-  DeliveryScheduleTypeFromStorageSchema,
+  DeliveryScheduleSchema,
+  DeliveryScheduleTypeSchema,
 } from '@shared/schemas/deliverySchedules.schema';
 import type {DeliveryScheduleFromStorage} from '@shared/schemas/deliverySchedules.schema';
 
@@ -25,7 +25,7 @@ import type {DeliveryScheduleFromStorage} from '@shared/schemas/deliverySchedule
  * value is not valid.
  */
 export function parseDeliverySchedule(maybeDeliverySchedule: unknown): Result<DeliverySchedule> {
-  const parsedResult = parseZodResult(DeliveryScheduleFromStorageSchema, maybeDeliverySchedule);
+  const parsedResult = parseZodResult(DeliveryScheduleSchema, maybeDeliverySchedule);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid delivery schedule');
   }
@@ -55,7 +55,7 @@ export function parseDeliverySchedule(maybeDeliverySchedule: unknown): Result<De
 export function parseDeliveryScheduleType(
   maybeDeliveryScheduleType: unknown
 ): Result<DeliveryScheduleType> {
-  return parseZodResult(DeliveryScheduleTypeFromStorageSchema, maybeDeliveryScheduleType);
+  return parseZodResult(DeliveryScheduleTypeSchema, maybeDeliveryScheduleType);
 }
 
 /**

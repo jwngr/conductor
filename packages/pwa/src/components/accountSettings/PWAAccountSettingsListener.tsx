@@ -10,11 +10,11 @@ import {
   clientAccountSettingsCollectionService,
   ClientAccountSettingsService,
 } from '@sharedClient/services/accountSettings.client';
-import {useEventLogService} from '@sharedClient/services/eventLog.client';
 
 import {toast} from '@sharedClient/lib/toasts.client';
 
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
+import {useEventLogService} from '@sharedClient/hooks/eventLog.hooks';
 
 export const PWAAccountSettingsListener: React.FC = () => {
   const loggedInAccount = useLoggedInAccount();

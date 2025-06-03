@@ -76,7 +76,7 @@ export function initServices(): Result<InitializedServices> {
     collectionService: userFeedSubscriptionsCollectionService,
   });
 
-  // Event log.
+  // Event log service.
   const eventLogCollectionService = makeServerFirestoreCollectionService({
     collectionPath: EVENT_LOG_DB_COLLECTION,
     toStorage: toStorageEventLogItem,
@@ -89,11 +89,11 @@ export function initServices(): Result<InitializedServices> {
     collectionService: eventLogCollectionService,
   });
 
-  // Firecrawl.
+  // Firecrawl service.
   const firecrawlApp = new FirecrawlApp({apiKey: FIRECRAWL_API_KEY.value()});
   const firecrawlService = new ServerFirecrawlService(firecrawlApp);
 
-  // Feed items.
+  // Feed items service.
   const feedItemsCollectionService = makeServerFirestoreCollectionService({
     collectionPath: FEED_ITEMS_DB_COLLECTION,
     toStorage: toStorageFeedItem,
@@ -108,7 +108,7 @@ export function initServices(): Result<InitializedServices> {
     firecrawlService,
   });
 
-  // Account experiments.
+  // Account experiments service.
   const accountExperimentsCollectionService = makeServerFirestoreCollectionService({
     collectionPath: ACCOUNT_EXPERIMENTS_DB_COLLECTION,
     parseId: parseAccountId,
@@ -120,7 +120,7 @@ export function initServices(): Result<InitializedServices> {
     collectionService: accountExperimentsCollectionService,
   });
 
-  // Account settings.
+  // Account settings service.
   const accountSettingsCollectionService = makeServerFirestoreCollectionService({
     collectionPath: ACCOUNT_SETTINGS_DB_COLLECTION,
     parseId: parseAccountId,
@@ -132,7 +132,7 @@ export function initServices(): Result<InitializedServices> {
     collectionService: accountSettingsCollectionService,
   });
 
-  // Accounts.
+  // Accounts service.
   const accountsCollectionService = makeServerFirestoreCollectionService({
     collectionPath: ACCOUNTS_DB_COLLECTION,
     toStorage: toStorageAccount,
@@ -146,14 +146,14 @@ export function initServices(): Result<InitializedServices> {
     experimentsService,
   });
 
-  // Wipeout.
+  // Wipeout service.
   const wipeoutService = new WipeoutService({
     accountsService,
     userFeedSubscriptionsService,
     feedItemsService,
   });
 
-  // RSS feed provider.
+  // RSS feed provider service.
   const rssFeedProviderResult = getRssFeedProvider();
   if (!rssFeedProviderResult.success) {
     return prefixErrorResult(rssFeedProviderResult, 'Failed to initialize RSS feed provider');

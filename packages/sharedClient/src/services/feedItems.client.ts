@@ -2,12 +2,18 @@ import {deleteField, where} from 'firebase/firestore';
 import type {StorageReference} from 'firebase/storage';
 import {getBlob, ref as storageRef} from 'firebase/storage';
 
-import {FEED_ITEM_FILE_LLM_CONTEXT, FEED_ITEM_FILE_TRANSCRIPT} from '@shared/lib/constants.shared';
+import {
+  FEED_ITEM_FILE_LLM_CONTEXT,
+  FEED_ITEM_FILE_TRANSCRIPT,
+  FEED_ITEMS_DB_COLLECTION,
+} from '@shared/lib/constants.shared';
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
 import {Views} from '@shared/lib/views.shared';
+
+import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 
 import type {AccountId, AuthStateChangedUnsubscribe} from '@shared/types/accounts.types';
 import {FeedItemActionType, TriageStatus} from '@shared/types/feedItems.types';
@@ -18,12 +24,26 @@ import {SystemTagId} from '@shared/types/tags.types';
 import type {Consumer} from '@shared/types/utils.types';
 import type {ViewType} from '@shared/types/views.types';
 
+import type {FeedItemFromStorage} from '@shared/schemas/feedItems.schema';
+
 import type {ClientEventLogService} from '@sharedClient/services/eventLog.client';
+import {makeClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
 import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
 
 import {toast, toastWithUndo} from '@sharedClient/lib/toasts.client';
 
-type FeedItemsCollectionService = ClientFirestoreCollectionService<FeedItemId, FeedItem>;
+type FeedItemsCollectionService = ClientFirestoreCollectionService<
+  FeedItemId,
+  FeedItem,
+  FeedItemFromStorage
+>;
+
+export const clientFeedItemsCollectionService = makeClientFirestoreCollectionService({
+  collectionPath: FEED_ITEMS_DB_COLLECTION,
+  toStorage: toStorageFeedItem,
+  fromStorage: parseFeedItem,
+  parseId: parseFeedItemId,
+});
 
 export class ClientFeedItemsService {
   private readonly feedItemsCollectionService: FeedItemsCollectionService;

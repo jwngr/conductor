@@ -25,7 +25,7 @@ import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/us
 import type {WipeoutService} from '@sharedServer/services/wipeout.server';
 
 import {FIREBASE_FUNCTIONS_REGION} from '@src/lib/env';
-import {initServices} from '@src/lib/initServices';
+import {initServices} from '@src/lib/initServices.func';
 import {validateUrlParam, verifyAuth} from '@src/lib/middleware';
 
 import {handleCreateAccount} from '@src/reqHandlers/handleCreateAccount';
@@ -48,17 +48,18 @@ let rssFeedProvider: RssFeedProvider;
 
 // Initialize services on startup.
 onInit(() => {
-  const initResult = initServices();
+  const initServicesResult = initServices();
 
   // Services failing to initialize is considered a fatal error, so log and throw.
-  if (!initResult.success) {
-    const fatalErr = prefixError(initResult.error, 'Fatal error while initializing services');
-    logger.error(fatalErr);
+  if (!initServicesResult.success) {
+    const message = 'Fatal error while initializing services';
+    const fatalErr = prefixError(initServicesResult.error, message);
+    logger.error(fatalErr, {message});
     // eslint-disable-next-line no-restricted-syntax
     throw fatalErr;
   }
 
-  const services = initResult.value;
+  const services = initServicesResult.value;
 
   userFeedSubscriptionsService = services.userFeedSubscriptionsService;
   accountsService = services.accountsService;

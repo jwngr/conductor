@@ -8,7 +8,7 @@ import {parseAccountId} from '@shared/parsers/accounts.parser';
 import type {AccountSettings} from '@shared/types/accountSettings.types';
 import type {Result} from '@shared/types/results.types';
 
-import {AccountSettingsFromStorageSchema} from '@shared/schemas/accountSettings.schema';
+import {AccountSettingsSchema} from '@shared/schemas/accountSettings.schema';
 import type {AccountSettingsFromStorage} from '@shared/schemas/accountSettings.schema';
 
 /**
@@ -16,7 +16,7 @@ import type {AccountSettingsFromStorage} from '@shared/schemas/accountSettings.s
  * valid.
  */
 export function parseAccountSettings(maybeAccountSettings: unknown): Result<AccountSettings> {
-  const parsedResult = parseZodResult(AccountSettingsFromStorageSchema, maybeAccountSettings);
+  const parsedResult = parseZodResult(AccountSettingsSchema, maybeAccountSettings);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid account settings');
   }

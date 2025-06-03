@@ -35,14 +35,14 @@ import type {
   XkcdFeedItemFromStorage,
 } from '@shared/schemas/feedItems.schema';
 import {
-  BaseFeedItemFromStorageSchema,
-  BaseFeedItemWithUrlFromStorageSchema,
+  BaseFeedItemSchema,
+  BaseFeedItemWithUrlSchema,
   CompletedFeedItemImportStateSchema,
   FailedFeedItemImportStateSchema,
   FeedItemIdSchema,
-  IntervalFeedItemFromStorageSchema,
+  IntervalFeedItemSchema,
   ProcessingFeedItemImportStateSchema,
-  XkcdFeedItemFromStorageSchema,
+  XkcdFeedItemSchema,
 } from '@shared/schemas/feedItems.schema';
 
 /**
@@ -152,7 +152,7 @@ function parseCompletedFeedItemImportState(
  */
 export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
   const parsedBaseFeedItemResult = parseZodResult<BaseFeedItemFromStorage>(
-    BaseFeedItemFromStorageSchema,
+    BaseFeedItemSchema,
     maybeFeedItem
   );
   if (!parsedBaseFeedItemResult.success) {
@@ -213,7 +213,7 @@ export function parseFeedItemWithUrl(args: {
 }): Result<FeedItem> {
   const {maybeFeedItem, feedItemType, feedItemId, accountId, importState} = args;
 
-  const parsedFeedItemResult = parseZodResult(BaseFeedItemWithUrlFromStorageSchema, maybeFeedItem);
+  const parsedFeedItemResult = parseZodResult(BaseFeedItemWithUrlSchema, maybeFeedItem);
   if (!parsedFeedItemResult.success) {
     return prefixErrorResult(parsedFeedItemResult, 'Invalid feed item with URL');
   }
@@ -251,7 +251,7 @@ export function parseXkcdFeedItem(args: {
 }): Result<XkcdFeedItem> {
   const {maybeFeedItem, feedItemId, accountId, importState} = args;
 
-  const parsedXkcdFeedItemResult = parseZodResult(XkcdFeedItemFromStorageSchema, maybeFeedItem);
+  const parsedXkcdFeedItemResult = parseZodResult(XkcdFeedItemSchema, maybeFeedItem);
   if (!parsedXkcdFeedItemResult.success) {
     return prefixErrorResult(parsedXkcdFeedItemResult, 'Invalid XKCD feed item');
   }
@@ -290,10 +290,7 @@ export function parseIntervalFeedItem(args: {
 }): Result<IntervalFeedItem> {
   const {maybeFeedItem, feedItemId, accountId, importState} = args;
 
-  const parsedIntervalFeedItemResult = parseZodResult(
-    IntervalFeedItemFromStorageSchema,
-    maybeFeedItem
-  );
+  const parsedIntervalFeedItemResult = parseZodResult(IntervalFeedItemSchema, maybeFeedItem);
   if (!parsedIntervalFeedItemResult.success) {
     return prefixErrorResult(parsedIntervalFeedItemResult, 'Invalid interval feed item');
   }

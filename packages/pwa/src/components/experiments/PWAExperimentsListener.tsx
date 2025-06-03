@@ -6,25 +6,24 @@ import {Environment} from '@shared/types/environment.types';
 
 import {useExperimentsStore} from '@sharedClient/stores/ExperimentsStore';
 
-import {useEventLogService} from '@sharedClient/services/eventLog.client';
 import {
+  clientAccountExperimentsCollectionService,
   ClientExperimentsService,
-  useAccountExperimentsCollectionService,
 } from '@sharedClient/services/experiments.client';
 
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
+import {useEventLogService} from '@sharedClient/hooks/eventLog.hooks';
 
 export const PWAExperimentsListener: React.FC = () => {
   const loggedInAccount = useLoggedInAccount();
   const eventLogService = useEventLogService();
-  const accountExperimentsCollectionService = useAccountExperimentsCollectionService();
   const {setExperiments, setExperimentsService, resetExperimentsStore} = useExperimentsStore();
 
   useEffect(() => {
     const pwaExperimentsService = new ClientExperimentsService({
       environment: Environment.PWA,
       accountId: loggedInAccount.accountId,
-      accountExperimentsCollectionService,
+      accountExperimentsCollectionService: clientAccountExperimentsCollectionService,
       isInternalAccount: isInternalAccount({email: loggedInAccount.email}),
       eventLogService,
     });
@@ -41,7 +40,6 @@ export const PWAExperimentsListener: React.FC = () => {
     setExperiments,
     setExperimentsService,
     resetExperimentsStore,
-    accountExperimentsCollectionService,
     eventLogService,
     loggedInAccount.accountId,
     loggedInAccount.email,

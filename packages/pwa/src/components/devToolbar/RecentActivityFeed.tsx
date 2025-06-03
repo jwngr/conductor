@@ -5,7 +5,7 @@ import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {EventLogItem} from '@shared/types/eventLog.types';
 import {IconName} from '@shared/types/icons.types';
 
-import {useEventLogItems} from '@sharedClient/services/eventLog.client';
+import {useEventLogItems} from '@sharedClient/hooks/eventLog.hooks';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {Popover, PopoverContent, PopoverTrigger} from '@src/components/atoms/Popover';

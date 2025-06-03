@@ -38,7 +38,7 @@ import type {
 import {
   EventIdSchema,
   EventLogItemDataSchema,
-  EventLogItemFromStorageSchema,
+  EventLogItemSchema,
 } from '@shared/schemas/eventLog.schema';
 
 /**
@@ -58,7 +58,7 @@ export function parseEventId(maybeEventId: string): Result<EventId> {
  * value is not valid.
  */
 export function parseEventLogItem(maybeEventLogItem: unknown): Result<EventLogItem> {
-  const parsedResult = parseZodResult(EventLogItemFromStorageSchema, maybeEventLogItem);
+  const parsedResult = parseZodResult(EventLogItemSchema, maybeEventLogItem);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid event log item');
   }
