@@ -23,11 +23,10 @@ import type {
   UserFeedSubscription,
 } from '@shared/types/userFeedSubscriptions.types';
 
-import {useEventLogService} from '@sharedClient/services/eventLog.client';
-
 import {toast} from '@sharedClient/lib/toasts.client';
 
 import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
+import {useEventLogService} from '@sharedClient/hooks/eventLog.hooks';
 import {useUserFeedSubscriptionsService} from '@sharedClient/hooks/userFeedSubscriptions.hooks';
 
 import {Button} from '@src/components/atoms/Button';

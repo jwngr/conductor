@@ -10,7 +10,6 @@ import {
   FEED_ITEM_FILE_LLM_CONTEXT,
   FEED_ITEM_FILE_TRANSCRIPT,
   FEED_ITEM_FILE_XKCD_EXPLAIN,
-  FEED_ITEMS_DB_COLLECTION,
   FEED_ITEMS_STORAGE_COLLECTION,
 } from '@shared/lib/constants.shared';
 import {isDeliveredAccordingToSchedule} from '@shared/lib/deliverySchedules.shared';
@@ -20,8 +19,6 @@ import {
 } from '@shared/lib/feedItems.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
-import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
-
 import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {AsyncState} from '@shared/types/asyncState.types';
 import type {FeedItem, FeedItemId, XkcdFeedItem} from '@shared/types/feedItems.types';
@@ -29,36 +26,27 @@ import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 import type {ViewType} from '@shared/types/views.types';
 
-import {useEventLogService} from '@sharedClient/services/eventLog.client';
-import {ClientFeedItemsService} from '@sharedClient/services/feedItems.client';
-import {firebaseService} from '@sharedClient/services/firebase.client';
 import {
-  ClientFirestoreCollectionService,
-  makeFirestoreDataConverter,
-} from '@sharedClient/services/firestore.client';
+  clientFeedItemsCollectionService,
+  ClientFeedItemsService,
+} from '@sharedClient/services/feedItems.client';
+import {firebaseService} from '@sharedClient/services/firebase.client';
 
 import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
+import {useEventLogService} from '@sharedClient/hooks/eventLog.hooks';
 import {useIsMounted} from '@sharedClient/hooks/lifecycle.hooks';
 import {useUserFeedSubscriptions} from '@sharedClient/hooks/userFeedSubscriptions.hooks';
 
 const feedItemsStorageRef = storageRef(firebaseService.storage, FEED_ITEMS_STORAGE_COLLECTION);
-
-const feedItemFirestoreConverter = makeFirestoreDataConverter(toStorageFeedItem, parseFeedItem);
 
 export function useFeedItemsService(): ClientFeedItemsService {
   const loggedInAccount = useLoggedInAccount();
   const eventLogService = useEventLogService();
 
   const feedItemsService = useMemo(() => {
-    const feedItemsCollectionService = new ClientFirestoreCollectionService({
-      collectionPath: FEED_ITEMS_DB_COLLECTION,
-      converter: feedItemFirestoreConverter,
-      parseId: parseFeedItemId,
-    });
-
     return new ClientFeedItemsService({
-      feedItemsCollectionService,
+      feedItemsCollectionService: clientFeedItemsCollectionService,
       feedItemsStorageRef,
       accountId: loggedInAccount.accountId,
       eventLogService,

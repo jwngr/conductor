@@ -1,5 +1,3 @@
-import {useMemo} from 'react';
-
 import {logger} from '@shared/services/logger.shared';
 
 import {ACCOUNT_EXPERIMENTS_DB_COLLECTION} from '@shared/lib/constants.shared';
@@ -27,11 +25,24 @@ import type {
 import type {AsyncResult} from '@shared/types/results.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
+import type {AccountExperimentsStateFromStorage} from '@shared/schemas/experiments.schema';
+
 import type {ClientEventLogService} from '@sharedClient/services/eventLog.client';
-import {
-  ClientFirestoreCollectionService,
-  makeFirestoreDataConverter,
-} from '@sharedClient/services/firestore.client';
+import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+import {makeClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+
+type ClientAccountExperimentsCollectionService = ClientFirestoreCollectionService<
+  AccountId,
+  AccountExperimentsState,
+  AccountExperimentsStateFromStorage
+>;
+
+export const clientAccountExperimentsCollectionService = makeClientFirestoreCollectionService({
+  collectionPath: ACCOUNT_EXPERIMENTS_DB_COLLECTION,
+  toStorage: toStorageAccountExperimentsState,
+  fromStorage: parseAccountExperimentsState,
+  parseId: parseAccountId,
+});
 
 export class ClientExperimentsService {
   private readonly environment: ClientEnvironment;
@@ -174,26 +185,4 @@ export class ClientExperimentsService {
 
     return updateResult;
   }
-}
-
-const accountExperimentsFirestoreConverter = makeFirestoreDataConverter(
-  toStorageAccountExperimentsState,
-  parseAccountExperimentsState
-);
-
-type ClientAccountExperimentsCollectionService = ClientFirestoreCollectionService<
-  AccountId,
-  AccountExperimentsState
->;
-
-export function useAccountExperimentsCollectionService(): ClientAccountExperimentsCollectionService {
-  const accountExperimentsCollectionService = useMemo(() => {
-    return new ClientFirestoreCollectionService({
-      collectionPath: ACCOUNT_EXPERIMENTS_DB_COLLECTION,
-      converter: accountExperimentsFirestoreConverter,
-      parseId: parseAccountId,
-    });
-  }, []);
-
-  return accountExperimentsCollectionService;
 }

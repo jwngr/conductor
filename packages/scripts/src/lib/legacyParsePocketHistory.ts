@@ -1,37 +1,21 @@
 import path from 'path';
 import {fileURLToPath} from 'url';
 
-import FirecrawlApp from '@mendable/firecrawl-js';
 import dotenv from 'dotenv';
 
 import {logger} from '@shared/services/logger.shared';
 
-import {
-  EVENT_LOG_DB_COLLECTION,
-  FEED_ITEMS_DB_COLLECTION,
-  FEED_ITEMS_STORAGE_COLLECTION,
-} from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 import {POCKET_EXPORT_FEED_SOURCE} from '@shared/lib/feedSources.shared';
 import {pluralizeWithCount} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
-import {
-  parseEventId,
-  parseEventLogItem,
-  toStorageEventLogItem,
-} from '@shared/parsers/eventLog.parser';
-import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 
-import {Environment} from '@shared/types/environment.types';
 import type {PocketImportItem} from '@shared/types/pocket.types';
 
-import {ServerEventLogService} from '@sharedServer/services/eventLog.server';
-import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
-import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
-import {makeServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
-
 import {ServerPocketService} from '@sharedServer/lib/pocket.server';
+
+import {initServices} from '@src/lib/initServices.scripts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -40,13 +24,6 @@ const __dirname = path.dirname(__filename);
 const envResult = dotenv.config({path: path.resolve(__dirname, '../../.env')});
 if (envResult.error) {
   logger.log(`Error loading .env file: ${envResult.error.message}`);
-  process.exit(1);
-}
-
-// Load Firecrawl API key from environment variable.
-const firecrawlApiKey = process.env.FIRECRAWL_API_KEY;
-if (!firecrawlApiKey) {
-  logger.error(new Error('FIRECRAWL_API_KEY environment variable is not defined'));
   process.exit(1);
 }
 
@@ -66,48 +43,23 @@ if (args.length === 0) {
 
 const POCKET_EXPORT_FILE_PATH = path.resolve(args[0]);
 
-const initServices = async (): Promise<{
-  readonly feedItemsService: ServerFeedItemsService;
-}> => {
-  // Event log.
-  const eventLogCollectionService = makeServerFirestoreCollectionService({
-    collectionPath: EVENT_LOG_DB_COLLECTION,
-    toStorage: toStorageEventLogItem,
-    fromStorage: parseEventLogItem,
-    parseId: parseEventId,
-  });
+/**
+ * Throws if the Firecrawl API key environment variable is not defined.
+ */
+function validateFirecrawlApiKey(): string {
+  const firecrawlApiKey = process.env.FIRECRAWL_API_KEY;
 
-  const eventLogService = new ServerEventLogService({
-    environment: Environment.Scripts,
-    collectionService: eventLogCollectionService,
-  });
+  if (!firecrawlApiKey) {
+    logger.error(new Error('FIRECRAWL_API_KEY environment variable is not defined'));
+    process.exit(1);
+  }
 
-  // Firecrawl.
-  const firecrawlApp = new FirecrawlApp({apiKey: firecrawlApiKey});
-  const firecrawlService = new ServerFirecrawlService(firecrawlApp);
-
-  // Feed items.
-  const feedItemsCollectionService = makeServerFirestoreCollectionService({
-    collectionPath: FEED_ITEMS_DB_COLLECTION,
-    toStorage: toStorageFeedItem,
-    fromStorage: parseFeedItem,
-    parseId: parseFeedItemId,
-  });
-
-  const feedItemsService = new ServerFeedItemsService({
-    collectionService: feedItemsCollectionService,
-    storageCollectionPath: FEED_ITEMS_STORAGE_COLLECTION,
-    firecrawlService,
-    eventLogService,
-  });
-
-  return {
-    feedItemsService,
-  };
-};
+  return firecrawlApiKey;
+}
 
 async function main(): Promise<void> {
-  const {feedItemsService} = await initServices();
+  const firecrawlApiKey = validateFirecrawlApiKey();
+  const {feedItemsService} = initServices({firecrawlApiKey});
 
   const pocketItemsResult = await ServerPocketService.parseHtmlExportFile(POCKET_EXPORT_FILE_PATH);
   if (!pocketItemsResult.success) {

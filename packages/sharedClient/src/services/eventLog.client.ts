@@ -1,5 +1,4 @@
 import {limit as firestoreLimit, orderBy, where} from 'firebase/firestore';
-import {useEffect, useMemo} from 'react';
 
 import {logger} from '@shared/services/logger.shared';
 
@@ -26,8 +25,7 @@ import {
 } from '@shared/parsers/eventLog.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import type {AsyncState} from '@shared/types/asyncState.types';
-import {Environment} from '@shared/types/environment.types';
+import type {Environment} from '@shared/types/environment.types';
 import type {EventId, EventLogItem, EventLogItemData} from '@shared/types/eventLog.types';
 import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
@@ -37,79 +35,23 @@ import type {ThemePreference} from '@shared/types/theme.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
-import {
-  ClientFirestoreCollectionService,
-  makeFirestoreDataConverter,
-} from '@sharedClient/services/firestore.client';
+import type {EventLogItemFromStorage} from '@shared/schemas/eventLog.schema';
 
-import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
-import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
+import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+import {makeClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
 
-// TODO: This is a somewhat arbitrary limit. Reconsider what the logic should be here.
-const EVENT_LOG_LIMIT = 100;
+type ClientEventLogCollectionService = ClientFirestoreCollectionService<
+  EventId,
+  EventLogItem,
+  EventLogItemFromStorage
+>;
 
-export const eventLogItemFirestoreConverter = makeFirestoreDataConverter(
-  toStorageEventLogItem,
-  parseEventLogItem
-);
-
-export const useEventLogService = (): ClientEventLogService => {
-  const loggedInAccount = useLoggedInAccount();
-
-  const eventLogService = useMemo(() => {
-    const eventLogCollectionService = new ClientFirestoreCollectionService({
-      collectionPath: EVENT_LOG_DB_COLLECTION,
-      converter: eventLogItemFirestoreConverter,
-      parseId: parseEventId,
-    });
-
-    return new ClientEventLogService({
-      environment: Environment.PWA,
-      eventLogCollectionService,
-      accountId: loggedInAccount.accountId,
-    });
-  }, [loggedInAccount.accountId]);
-
-  return eventLogService;
-};
-
-export function useEventLogItem(eventId: EventId): AsyncState<EventLogItem | null> {
-  const eventLogService = useEventLogService();
-
-  const {asyncState, setPending, setError, setSuccess} = useAsyncState<EventLogItem | null>();
-
-  useEffect(() => {
-    setPending();
-    const unsubscribe = eventLogService.watchById(
-      eventId,
-      (eventLogItem) => setSuccess(eventLogItem),
-      (error) => setError(error)
-    );
-    return () => unsubscribe();
-  }, [eventId, eventLogService, setPending, setError, setSuccess]);
-
-  return asyncState;
-}
-
-export function useEventLogItems(): AsyncState<EventLogItem[]> {
-  const eventLogService = useEventLogService();
-
-  const {asyncState, setPending, setError, setSuccess} = useAsyncState<EventLogItem[]>();
-
-  useEffect(() => {
-    setPending();
-    const unsubscribe = eventLogService.watchEventLog({
-      successCallback: (eventLogItems) => setSuccess(eventLogItems),
-      errorCallback: (error) => setError(error),
-      limit: EVENT_LOG_LIMIT,
-    });
-    return () => unsubscribe();
-  }, [eventLogService, setPending, setError, setSuccess]);
-
-  return asyncState;
-}
-
-type ClientEventLogCollectionService = ClientFirestoreCollectionService<EventId, EventLogItem>;
+export const clientEventLogCollectionService = makeClientFirestoreCollectionService({
+  collectionPath: EVENT_LOG_DB_COLLECTION,
+  toStorage: toStorageEventLogItem,
+  fromStorage: parseEventLogItem,
+  parseId: parseEventId,
+});
 
 export class ClientEventLogService {
   private readonly environment: Environment;

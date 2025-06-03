@@ -4,7 +4,10 @@ import {httpsCallable} from 'firebase/functions';
 
 import {logger} from '@shared/services/logger.shared';
 
-import {DEFAULT_FEED_TITLE} from '@shared/lib/constants.shared';
+import {
+  DEFAULT_FEED_TITLE,
+  USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
+} from '@shared/lib/constants.shared';
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {
@@ -14,6 +17,12 @@ import {
 } from '@shared/lib/userFeedSubscriptions.shared';
 import {isPositiveInteger} from '@shared/lib/utils.shared';
 import {getYouTubeChannelId} from '@shared/lib/youtube.shared';
+
+import {
+  parseUserFeedSubscription,
+  parseUserFeedSubscriptionId,
+  toStorageUserFeedSubscription,
+} from '@shared/parsers/userFeedSubscriptions.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
@@ -28,8 +37,11 @@ import type {
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 import type {YouTubeChannelId} from '@shared/types/youtube.types';
 
+import type {UserFeedSubscriptionFromStorage} from '@shared/schemas/userFeedSubscriptions.schema';
+
 import type {ClientEventLogService} from '@sharedClient/services/eventLog.client';
 import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+import {makeClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
 
 import {toast} from '@sharedClient/lib/toasts.client';
 
@@ -41,8 +53,16 @@ type CallSubscribeToRssFeedFn = HttpsCallable<SubscribeToRssFeedRequest, void>;
 
 type UserFeedSubscriptionsCollectionService = ClientFirestoreCollectionService<
   UserFeedSubscriptionId,
-  UserFeedSubscription
+  UserFeedSubscription,
+  UserFeedSubscriptionFromStorage
 >;
+
+export const clientUserFeedSubscriptionsCollectionService = makeClientFirestoreCollectionService({
+  collectionPath: USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
+  toStorage: toStorageUserFeedSubscription,
+  fromStorage: parseUserFeedSubscription,
+  parseId: parseUserFeedSubscriptionId,
+});
 
 export class ClientUserFeedSubscriptionsService {
   private readonly accountId: AccountId;

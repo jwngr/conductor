@@ -63,14 +63,15 @@ export function makeFirestoreDataConverter<ItemData, FirestoreItemData extends D
 export class ClientFirestoreCollectionService<
   ItemId extends string,
   ItemData extends DocumentData,
+  ItemDataFromStorage extends DocumentData,
 > {
   private readonly collectionPath: string;
-  private readonly converter: FirestoreDataConverter<ItemData>;
+  private readonly converter: FirestoreDataConverter<ItemData, ItemDataFromStorage>;
   private readonly parseId: Func<string, Result<ItemId>>;
 
   constructor(args: {
     collectionPath: string;
-    converter: FirestoreDataConverter<ItemData>;
+    converter: FirestoreDataConverter<ItemData, ItemDataFromStorage>;
     parseId: Func<string, Result<ItemId>>;
   }) {
     this.collectionPath = args.collectionPath;
@@ -272,4 +273,27 @@ export class ClientFirestoreCollectionService<
     const deleteResult = await asyncTry(async () => deleteDoc(docRef));
     return prefixResultIfError(deleteResult, 'Error deleting Firestore document');
   }
+}
+
+export function makeClientFirestoreCollectionService<
+  ItemId extends string,
+  ItemData extends DocumentData,
+  ItemDataFromStorage extends DocumentData,
+>(args: {
+  readonly collectionPath: string;
+  readonly parseId: Func<string, Result<ItemId>>;
+  readonly toStorage: Func<ItemData, ItemDataFromStorage>;
+  readonly fromStorage: Func<ItemDataFromStorage, Result<ItemData>>;
+}): ClientFirestoreCollectionService<ItemId, ItemData, ItemDataFromStorage> {
+  const {collectionPath, parseId, toStorage, fromStorage} = args;
+
+  const firestoreConverter = makeFirestoreDataConverter(toStorage, fromStorage);
+
+  const collectionService = new ClientFirestoreCollectionService({
+    collectionPath,
+    parseId,
+    converter: firestoreConverter,
+  });
+
+  return collectionService;
 }

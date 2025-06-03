@@ -48,17 +48,18 @@ let rssFeedProvider: RssFeedProvider;
 
 // Initialize services on startup.
 onInit(() => {
-  const initResult = initServices();
+  const initServicesResult = initServices();
 
   // Services failing to initialize is considered a fatal error, so log and throw.
-  if (!initResult.success) {
-    const fatalErr = prefixError(initResult.error, 'Fatal error while initializing services');
-    logger.error(fatalErr);
+  if (!initServicesResult.success) {
+    const message = 'Fatal error while initializing services';
+    const fatalErr = prefixError(initServicesResult.error, message);
+    logger.error(fatalErr, {message});
     // eslint-disable-next-line no-restricted-syntax
     throw fatalErr;
   }
 
-  const services = initResult.value;
+  const services = initServicesResult.value;
 
   userFeedSubscriptionsService = services.userFeedSubscriptionsService;
   accountsService = services.accountsService;
