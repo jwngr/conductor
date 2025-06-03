@@ -102,7 +102,7 @@ export class WipeoutService {
 
     logger.log('[WIPEOUT] Wiping out Firestore data for account...', logDetails);
     const deleteFirestoreResult = await asyncTryAll([
-      this.accountsService.deleteAccountDoc(accountId),
+      this.accountsService.deleteAccount(accountId),
       this.feedItemsService.deleteAllForAccount(accountId),
       this.userFeedSubscriptionsService.deleteAllForAccount(accountId),
     ]);

@@ -13,12 +13,14 @@ import type {
   FeedItemImportedEventLogItemData,
   StringExperimentValueChangedEventLogItemData,
   SubscribedToFeedSourceEventLogItemData,
+  ThemePreferenceChangedEventLogItemData,
   UnsubscribedFromFeedSourceEventLogItemData,
 } from '@shared/types/eventLog.types';
 import {EventType} from '@shared/types/eventLog.types';
 import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
 import type {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import type {ThemePreference} from '@shared/types/theme.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 
 /**
@@ -131,5 +133,15 @@ export function makeUnsubscribedFromFeedSourceEventLogItemData(args: {
     eventType: EventType.UnsubscribedFromFeedSource,
     feedSourceType,
     userFeedSubscriptionId,
+  };
+}
+
+export function makeThemePreferenceChangedEventLogItemData(args: {
+  readonly themePreference: ThemePreference;
+}): ThemePreferenceChangedEventLogItemData {
+  const {themePreference} = args;
+  return {
+    eventType: EventType.ThemePreferenceChanged,
+    themePreference,
   };
 }

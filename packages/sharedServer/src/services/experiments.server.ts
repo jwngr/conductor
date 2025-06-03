@@ -49,4 +49,8 @@ export class ServerExperimentsService {
     const {accountId, accountExperimentsState} = args;
     return this.accountExperimentsCollectionService.setDoc(accountId, accountExperimentsState);
   }
+
+  public async deleteForAccount(accountId: AccountId): AsyncResult<void> {
+    return this.accountExperimentsCollectionService.deleteDoc(accountId);
+  }
 }
