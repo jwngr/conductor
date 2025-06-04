@@ -9,6 +9,17 @@ import type {Result} from '@shared/types/results.types';
 import type {AccountFromStorage} from '@shared/schemas/accounts.schema';
 
 /**
+ * Converts an {@link Account} into an {@link AccountFromStorage}.
+ */
+export function toStorageAccount(account: Account): AccountFromStorage {
+  return {
+    accountId: account.accountId,
+    email: account.email,
+    displayName: account.displayName,
+  };
+}
+
+/**
  * Converts an {@link AccountFromStorage} into an {@link Account}.
  */
 export function fromStorageAccount(accountFromStorage: AccountFromStorage): Result<Account> {
@@ -23,15 +34,4 @@ export function fromStorageAccount(accountFromStorage: AccountFromStorage): Resu
     email: parsedEmailResult.value,
     displayName: accountFromStorage.displayName,
   });
-}
-
-/**
- * Converts an {@link Account} into an {@link AccountFromStorage}.
- */
-export function toStorageAccount(account: Account): AccountFromStorage {
-  return {
-    accountId: account.accountId,
-    email: account.email,
-    displayName: account.displayName,
-  };
 }

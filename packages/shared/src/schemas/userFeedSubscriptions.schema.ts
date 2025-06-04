@@ -27,21 +27,31 @@ const BaseUserFeedSubscriptionSchema = z.object({
   lastUpdatedTime: FirestoreTimestampSchema.or(z.date()).or(z.null()),
 });
 
-export const RssUserFeedSubscriptionSchema = BaseUserFeedSubscriptionSchema.extend({
+const RssUserFeedSubscriptionSchema = BaseUserFeedSubscriptionSchema.extend({
   feedSourceType: z.literal(FeedSourceType.RSS),
   url: z.string().url(),
   title: z.string(),
 });
 
-export const YouTubeChannelUserFeedSubscriptionSchema = BaseUserFeedSubscriptionSchema.extend({
+export type RssUserFeedSubscriptionFromStorage = z.infer<typeof RssUserFeedSubscriptionSchema>;
+
+const YouTubeChannelUserFeedSubscriptionSchema = BaseUserFeedSubscriptionSchema.extend({
   feedSourceType: z.literal(FeedSourceType.YouTubeChannel),
   channelId: YouTubeChannelIdSchema,
 });
 
-export const IntervalUserFeedSubscriptionSchema = BaseUserFeedSubscriptionSchema.extend({
+export type YouTubeChannelUserFeedSubscriptionFromStorage = z.infer<
+  typeof YouTubeChannelUserFeedSubscriptionSchema
+>;
+
+const IntervalUserFeedSubscriptionSchema = BaseUserFeedSubscriptionSchema.extend({
   feedSourceType: z.literal(FeedSourceType.Interval),
   intervalSeconds: z.number().positive().int(),
 });
+
+export type IntervalUserFeedSubscriptionFromStorage = z.infer<
+  typeof IntervalUserFeedSubscriptionSchema
+>;
 
 export const UserFeedSubscriptionSchema = z.discriminatedUnion('feedSourceType', [
   RssUserFeedSubscriptionSchema,

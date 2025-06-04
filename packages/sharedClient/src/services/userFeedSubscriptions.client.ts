@@ -21,7 +21,6 @@ import {getYouTubeChannelId} from '@shared/lib/youtube.shared';
 import {
   parseUserFeedSubscription,
   parseUserFeedSubscriptionId,
-  toStorageUserFeedSubscription,
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
@@ -38,6 +37,7 @@ import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 import type {YouTubeChannelId} from '@shared/types/youtube.types';
 
 import type {UserFeedSubscriptionFromStorage} from '@shared/schemas/userFeedSubscriptions.schema';
+import {toStorageUserFeedSubscription} from '@shared/storage/userFeedSubscriptions.storage';
 
 import type {ClientEventLogService} from '@sharedClient/services/eventLog.client';
 import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';

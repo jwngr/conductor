@@ -99,11 +99,11 @@ function fromStorageEventLogItemData(
     case EventType.FeedItemAction:
       return fromStorageFeedItemActionEventLogItemData(eventLogItemDataFromStorage);
     case EventType.FeedItemImported:
-      return parseFeedItemImportedEventLogItemData(eventLogItemDataFromStorage);
+      return FromStorageFeedItemImportedEventLogItemData(eventLogItemDataFromStorage);
     case EventType.SubscribedToFeedSource:
-      return parseSubscribedToFeedSourceEventLogItemData(eventLogItemDataFromStorage);
+      return fromStorageSubscribedToFeedSourceEventLogItemData(eventLogItemDataFromStorage);
     case EventType.UnsubscribedFromFeedSource:
-      return parseUnsubscribedFromFeedSourceEventLogItemData(eventLogItemDataFromStorage);
+      return fromStorageUnsubscribedFromFeedSourceEventLogItemData(eventLogItemDataFromStorage);
     default: {
       assertNever(eventLogItemDataFromStorage);
     }
@@ -123,7 +123,7 @@ function fromStorageFeedItemActionEventLogItemData(
   });
 }
 
-function parseFeedItemImportedEventLogItemData(
+function FromStorageFeedItemImportedEventLogItemData(
   eventLogItemFromStorage: FeedItemImportedEventLogItemDataFromStorage
 ): Result<FeedItemImportedEventLogItemData> {
   const parsedFeedItemIdResult = parseFeedItemId(eventLogItemFromStorage.feedItemId);
@@ -135,7 +135,7 @@ function parseFeedItemImportedEventLogItemData(
   });
 }
 
-function parseSubscribedToFeedSourceEventLogItemData(
+function fromStorageSubscribedToFeedSourceEventLogItemData(
   eventLogItemData: SubscribedToFeedSourceEventLogItemDataFromStorage
 ): Result<SubscribedToFeedSourceEventLogItemData> {
   const parsedSubIdResult = parseUserFeedSubscriptionId(eventLogItemData.userFeedSubscriptionId);
@@ -149,7 +149,7 @@ function parseSubscribedToFeedSourceEventLogItemData(
   });
 }
 
-function parseUnsubscribedFromFeedSourceEventLogItemData(
+function fromStorageUnsubscribedFromFeedSourceEventLogItemData(
   eventLogItemData: UnsubscribedFromFeedSourceEventLogItemDataFromStorage
 ): Result<UnsubscribedFromFeedSourceEventLogItemData> {
   const parsedSubIdResult = parseUserFeedSubscriptionId(eventLogItemData.userFeedSubscriptionId);

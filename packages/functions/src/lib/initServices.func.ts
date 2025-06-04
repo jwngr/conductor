@@ -21,7 +21,6 @@ import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers
 import {
   parseUserFeedSubscription,
   parseUserFeedSubscriptionId,
-  toStorageUserFeedSubscription,
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
 import {Environment} from '@shared/types/environment.types';
@@ -32,6 +31,7 @@ import {toStorageAccount} from '@shared/storage/accounts.storage';
 import {toStorageAccountSettings} from '@shared/storage/accountSettings.storage';
 import {toStorageEventLogItem} from '@shared/storage/eventLog.storage';
 import {toStorageAccountExperimentsState} from '@shared/storage/experiments.storage';
+import {toStorageUserFeedSubscription} from '@shared/storage/userFeedSubscriptions.storage';
 
 import {ServerAccountsService} from '@sharedServer/services/accounts.server';
 import {ServerAccountSettingsService} from '@sharedServer/services/accountSettings.server';

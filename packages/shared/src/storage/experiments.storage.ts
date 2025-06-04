@@ -13,39 +13,6 @@ import type {
 } from '@shared/schemas/experiments.schema';
 
 /**
- * Converts an {@link ExperimentDefinitionFromStorage} into an {@link ExperimentDefinition}.
- */
-export function fromStorageExperimentDefinition(
-  experimentDefinitionFromStorage: ExperimentDefinitionFromStorage
-): Result<ExperimentDefinition> {
-  switch (experimentDefinitionFromStorage.experimentType) {
-    case ExperimentType.Boolean:
-      return makeSuccessResult({
-        experimentType: ExperimentType.Boolean,
-        defaultIsEnabled: experimentDefinitionFromStorage.defaultIsEnabled,
-        experimentId: experimentDefinitionFromStorage.experimentId,
-        environments: experimentDefinitionFromStorage.environments,
-        visibility: experimentDefinitionFromStorage.visibility,
-        title: experimentDefinitionFromStorage.title,
-        description: experimentDefinitionFromStorage.description,
-      });
-    case ExperimentType.String:
-      return makeSuccessResult({
-        experimentType: ExperimentType.String,
-        defaultIsEnabled: experimentDefinitionFromStorage.defaultIsEnabled,
-        defaultValue: experimentDefinitionFromStorage.defaultValue,
-        experimentId: experimentDefinitionFromStorage.experimentId,
-        environments: experimentDefinitionFromStorage.environments,
-        visibility: experimentDefinitionFromStorage.visibility,
-        title: experimentDefinitionFromStorage.title,
-        description: experimentDefinitionFromStorage.description,
-      });
-    default:
-      assertNever(experimentDefinitionFromStorage);
-  }
-}
-
-/**
  * Converts an {@link ExperimentDefinition} into an {@link ExperimentDefinitionFromStorage}.
  */
 export function toStorageExperimentDefinition(
@@ -79,21 +46,36 @@ export function toStorageExperimentDefinition(
 }
 
 /**
- * Converts an {@link AccountExperimentsStateFromStorage} into an {@link AccountExperimentsState}.
+ * Converts an {@link ExperimentDefinitionFromStorage} into an {@link ExperimentDefinition}.
  */
-export function fromStorageAccountExperimentsState(
-  accountExperimentsStateFromStorage: AccountExperimentsStateFromStorage
-): Result<AccountExperimentsState> {
-  const parsedAccountId = parseAccountId(accountExperimentsStateFromStorage.accountId);
-  if (!parsedAccountId.success) return parsedAccountId;
-
-  return makeSuccessResult({
-    accountId: parsedAccountId.value,
-    accountVisibility: accountExperimentsStateFromStorage.accountVisibility,
-    experimentOverrides: accountExperimentsStateFromStorage.experimentOverrides,
-    createdTime: accountExperimentsStateFromStorage.createdTime,
-    lastUpdatedTime: accountExperimentsStateFromStorage.lastUpdatedTime,
-  });
+export function fromStorageExperimentDefinition(
+  experimentDefinitionFromStorage: ExperimentDefinitionFromStorage
+): Result<ExperimentDefinition> {
+  switch (experimentDefinitionFromStorage.experimentType) {
+    case ExperimentType.Boolean:
+      return makeSuccessResult({
+        experimentType: ExperimentType.Boolean,
+        defaultIsEnabled: experimentDefinitionFromStorage.defaultIsEnabled,
+        experimentId: experimentDefinitionFromStorage.experimentId,
+        environments: experimentDefinitionFromStorage.environments,
+        visibility: experimentDefinitionFromStorage.visibility,
+        title: experimentDefinitionFromStorage.title,
+        description: experimentDefinitionFromStorage.description,
+      });
+    case ExperimentType.String:
+      return makeSuccessResult({
+        experimentType: ExperimentType.String,
+        defaultIsEnabled: experimentDefinitionFromStorage.defaultIsEnabled,
+        defaultValue: experimentDefinitionFromStorage.defaultValue,
+        experimentId: experimentDefinitionFromStorage.experimentId,
+        environments: experimentDefinitionFromStorage.environments,
+        visibility: experimentDefinitionFromStorage.visibility,
+        title: experimentDefinitionFromStorage.title,
+        description: experimentDefinitionFromStorage.description,
+      });
+    default:
+      assertNever(experimentDefinitionFromStorage);
+  }
 }
 
 /**
@@ -109,4 +91,22 @@ export function toStorageAccountExperimentsState(
     createdTime: accountExperimentsState.createdTime,
     lastUpdatedTime: accountExperimentsState.lastUpdatedTime,
   };
+}
+
+/**
+ * Converts an {@link AccountExperimentsStateFromStorage} into an {@link AccountExperimentsState}.
+ */
+export function fromStorageAccountExperimentsState(
+  accountExperimentsStateFromStorage: AccountExperimentsStateFromStorage
+): Result<AccountExperimentsState> {
+  const parsedAccountId = parseAccountId(accountExperimentsStateFromStorage.accountId);
+  if (!parsedAccountId.success) return parsedAccountId;
+
+  return makeSuccessResult({
+    accountId: parsedAccountId.value,
+    accountVisibility: accountExperimentsStateFromStorage.accountVisibility,
+    experimentOverrides: accountExperimentsStateFromStorage.experimentOverrides,
+    createdTime: accountExperimentsStateFromStorage.createdTime,
+    lastUpdatedTime: accountExperimentsStateFromStorage.lastUpdatedTime,
+  });
 }
