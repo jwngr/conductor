@@ -41,7 +41,7 @@ import {firebaseService} from '@sharedClient/services/firebase.client';
 /**
  * Creates a strongly-typed converter between a Firestore data type and a client data type.
  */
-export function makeFirestoreDataConverter<ItemData, FirestoreItemData extends DocumentData>(
+function makeFirestoreDataConverter<ItemData, FirestoreItemData extends DocumentData>(
   toFirestore: Func<ItemData, FirestoreItemData>,
   fromFirestore: Func<FirestoreItemData, Result<ItemData>>
 ): FirestoreDataConverter<ItemData, FirestoreItemData> {

@@ -32,7 +32,7 @@ const BATCH_DELETE_SIZE = 500;
 /**
  * Creates a strongly-typed Firestore data converter.
  */
-export function makeFirestoreDataConverter<ItemData, FirestoreItemData extends DocumentData>(
+function makeFirestoreDataConverter<ItemData, FirestoreItemData extends DocumentData>(
   toFirestore: Func<ItemData, FirestoreItemData>,
   fromFirestore: Func<FirestoreItemData, Result<ItemData>>
 ): FirestoreDataConverter<ItemData, FirestoreItemData> {
