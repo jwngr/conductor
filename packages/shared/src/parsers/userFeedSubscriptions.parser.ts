@@ -1,7 +1,7 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
-import {omitUndefined, safeAssertNever} from '@shared/lib/utils.shared';
+import {safeAssertNever} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseDeliverySchedule} from '@shared/parsers/deliverySchedules.parser';
@@ -86,22 +86,20 @@ function parseRssUserFeedSubscription(
   const parsedDeliveryScheduleResult = parseDeliverySchedule(parsedResult.value.deliverySchedule);
   if (!parsedDeliveryScheduleResult.success) return parsedDeliveryScheduleResult;
 
-  return makeSuccessResult(
-    omitUndefined({
-      feedSourceType: FeedSourceType.RSS,
-      url: parsedResult.value.url,
-      title: parsedResult.value.title,
-      userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
-      accountId: parsedAccountIdResult.value,
-      isActive: parsedResult.value.isActive,
-      deliverySchedule: parsedDeliveryScheduleResult.value,
-      createdTime: parseStorageTimestamp(parsedResult.value.createdTime),
-      lastUpdatedTime: parseStorageTimestamp(parsedResult.value.lastUpdatedTime),
-      unsubscribedTime: parsedResult.value.unsubscribedTime
-        ? parseStorageTimestamp(parsedResult.value.unsubscribedTime)
-        : undefined,
-    })
-  );
+  return makeSuccessResult({
+    feedSourceType: FeedSourceType.RSS,
+    url: parsedResult.value.url,
+    title: parsedResult.value.title,
+    userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
+    accountId: parsedAccountIdResult.value,
+    isActive: parsedResult.value.isActive,
+    deliverySchedule: parsedDeliveryScheduleResult.value,
+    createdTime: parseStorageTimestamp(parsedResult.value.createdTime),
+    lastUpdatedTime: parseStorageTimestamp(parsedResult.value.lastUpdatedTime),
+    unsubscribedTime: parsedResult.value.unsubscribedTime
+      ? parseStorageTimestamp(parsedResult.value.unsubscribedTime)
+      : undefined,
+  });
 }
 
 function parseYouTubeChannelUserFeedSubscription(
@@ -129,21 +127,19 @@ function parseYouTubeChannelUserFeedSubscription(
   const parsedChannelIdResult = parseYouTubeChannelId(parsedResult.value.channelId);
   if (!parsedChannelIdResult.success) return parsedChannelIdResult;
 
-  return makeSuccessResult(
-    omitUndefined({
-      feedSourceType: FeedSourceType.YouTubeChannel,
-      channelId: parsedChannelIdResult.value,
-      userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
-      accountId: parsedAccountIdResult.value,
-      isActive: parsedResult.value.isActive,
-      deliverySchedule: parsedDeliveryScheduleResult.value,
-      createdTime: parseStorageTimestamp(parsedResult.value.createdTime),
-      lastUpdatedTime: parseStorageTimestamp(parsedResult.value.lastUpdatedTime),
-      unsubscribedTime: parsedResult.value.unsubscribedTime
-        ? parseStorageTimestamp(parsedResult.value.unsubscribedTime)
-        : undefined,
-    })
-  );
+  return makeSuccessResult({
+    feedSourceType: FeedSourceType.YouTubeChannel,
+    channelId: parsedChannelIdResult.value,
+    userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
+    accountId: parsedAccountIdResult.value,
+    isActive: parsedResult.value.isActive,
+    deliverySchedule: parsedDeliveryScheduleResult.value,
+    createdTime: parseStorageTimestamp(parsedResult.value.createdTime),
+    lastUpdatedTime: parseStorageTimestamp(parsedResult.value.lastUpdatedTime),
+    unsubscribedTime: parsedResult.value.unsubscribedTime
+      ? parseStorageTimestamp(parsedResult.value.unsubscribedTime)
+      : undefined,
+  });
 }
 
 function parseIntervalUserFeedSubscription(
@@ -168,21 +164,19 @@ function parseIntervalUserFeedSubscription(
   const parsedDeliveryScheduleResult = parseDeliverySchedule(parsedResult.value.deliverySchedule);
   if (!parsedDeliveryScheduleResult.success) return parsedDeliveryScheduleResult;
 
-  return makeSuccessResult(
-    omitUndefined({
-      feedSourceType: FeedSourceType.Interval,
-      intervalSeconds: parsedResult.value.intervalSeconds,
-      userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
-      accountId: parsedAccountIdResult.value,
-      isActive: parsedResult.value.isActive,
-      deliverySchedule: parsedDeliveryScheduleResult.value,
-      createdTime: parseStorageTimestamp(parsedResult.value.createdTime),
-      lastUpdatedTime: parseStorageTimestamp(parsedResult.value.lastUpdatedTime),
-      unsubscribedTime: parsedResult.value.unsubscribedTime
-        ? parseStorageTimestamp(parsedResult.value.unsubscribedTime)
-        : undefined,
-    })
-  );
+  return makeSuccessResult({
+    feedSourceType: FeedSourceType.Interval,
+    intervalSeconds: parsedResult.value.intervalSeconds,
+    userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
+    accountId: parsedAccountIdResult.value,
+    isActive: parsedResult.value.isActive,
+    deliverySchedule: parsedDeliveryScheduleResult.value,
+    createdTime: parseStorageTimestamp(parsedResult.value.createdTime),
+    lastUpdatedTime: parseStorageTimestamp(parsedResult.value.lastUpdatedTime),
+    unsubscribedTime: parsedResult.value.unsubscribedTime
+      ? parseStorageTimestamp(parsedResult.value.unsubscribedTime)
+      : undefined,
+  });
 }
 
 /**
@@ -209,7 +203,7 @@ export function toStorageUserFeedSubscription(
 function toStorageRssUserFeedSubscription(
   userFeedSubscription: RssUserFeedSubscription
 ): UserFeedSubscriptionFromStorage {
-  return omitUndefined({
+  return {
     feedSourceType: FeedSourceType.RSS,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     url: userFeedSubscription.url,
@@ -220,13 +214,13 @@ function toStorageRssUserFeedSubscription(
     createdTime: userFeedSubscription.createdTime,
     lastUpdatedTime: userFeedSubscription.lastUpdatedTime,
     deliverySchedule: toStorageDeliverySchedule(userFeedSubscription.deliverySchedule),
-  });
+  };
 }
 
 function toStorageYouTubeChannelUserFeedSubscription(
   userFeedSubscription: YouTubeChannelUserFeedSubscription
 ): UserFeedSubscriptionFromStorage {
-  return omitUndefined({
+  return {
     feedSourceType: FeedSourceType.YouTubeChannel,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
     channelId: userFeedSubscription.channelId,
@@ -236,13 +230,13 @@ function toStorageYouTubeChannelUserFeedSubscription(
     createdTime: userFeedSubscription.createdTime,
     lastUpdatedTime: userFeedSubscription.lastUpdatedTime,
     deliverySchedule: toStorageDeliverySchedule(userFeedSubscription.deliverySchedule),
-  });
+  };
 }
 
 function toStorageIntervalUserFeedSubscription(
   userFeedSubscription: IntervalUserFeedSubscription
 ): UserFeedSubscriptionFromStorage {
-  return omitUndefined({
+  return {
     feedSourceType: FeedSourceType.Interval,
     intervalSeconds: userFeedSubscription.intervalSeconds,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
@@ -252,5 +246,5 @@ function toStorageIntervalUserFeedSubscription(
     createdTime: userFeedSubscription.createdTime,
     lastUpdatedTime: userFeedSubscription.lastUpdatedTime,
     deliverySchedule: toStorageDeliverySchedule(userFeedSubscription.deliverySchedule),
-  });
+  };
 }

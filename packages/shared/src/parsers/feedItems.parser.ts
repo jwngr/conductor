@@ -3,7 +3,6 @@ import {logger} from '@shared/services/logger.shared';
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
-import {omitUndefined} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseFeedSource, parseIntervalFeedSource} from '@shared/parsers/feedSources.parser';
@@ -223,24 +222,22 @@ export function parseFeedItemWithUrl(args: {
   if (!parseFeedSourceResult.success) return parseFeedSourceResult;
   const parsedFeedSource = parseFeedSourceResult.value;
 
-  return makeSuccessResult(
-    omitUndefined({
-      feedItemType,
-      feedSource: parsedFeedSource,
-      accountId,
-      importState,
-      feedItemId,
-      url: storageBaseFeedItem.url,
-      title: storageBaseFeedItem.title,
-      description: storageBaseFeedItem.description,
-      outgoingLinks: storageBaseFeedItem.outgoingLinks,
-      summary: storageBaseFeedItem.summary,
-      triageStatus: storageBaseFeedItem.triageStatus,
-      tagIds: storageBaseFeedItem.tagIds,
-      createdTime: parseStorageTimestamp(storageBaseFeedItem.createdTime),
-      lastUpdatedTime: parseStorageTimestamp(storageBaseFeedItem.lastUpdatedTime),
-    })
-  );
+  return makeSuccessResult({
+    feedItemType,
+    feedSource: parsedFeedSource,
+    accountId,
+    importState,
+    feedItemId,
+    url: storageBaseFeedItem.url,
+    title: storageBaseFeedItem.title,
+    description: storageBaseFeedItem.description,
+    outgoingLinks: storageBaseFeedItem.outgoingLinks,
+    summary: storageBaseFeedItem.summary,
+    triageStatus: storageBaseFeedItem.triageStatus,
+    tagIds: storageBaseFeedItem.tagIds,
+    createdTime: parseStorageTimestamp(storageBaseFeedItem.createdTime),
+    lastUpdatedTime: parseStorageTimestamp(storageBaseFeedItem.lastUpdatedTime),
+  });
 }
 
 export function parseXkcdFeedItem(args: {
@@ -261,25 +258,23 @@ export function parseXkcdFeedItem(args: {
   if (!parsedFeedSourceResult.success) return parsedFeedSourceResult;
   const parsedFeedSource = parsedFeedSourceResult.value;
 
-  return makeSuccessResult(
-    omitUndefined({
-      feedItemType: FeedItemType.Xkcd,
-      xkcd: parsedXkcdFeedItemResult.value.xkcd,
-      feedSource: parsedFeedSource,
-      accountId,
-      importState,
-      feedItemId,
-      url: storageXkcdFeedItem.url,
-      title: storageXkcdFeedItem.title,
-      description: storageXkcdFeedItem.description,
-      outgoingLinks: storageXkcdFeedItem.outgoingLinks,
-      summary: storageXkcdFeedItem.summary,
-      triageStatus: storageXkcdFeedItem.triageStatus,
-      tagIds: storageXkcdFeedItem.tagIds,
-      createdTime: parseStorageTimestamp(storageXkcdFeedItem.createdTime),
-      lastUpdatedTime: parseStorageTimestamp(storageXkcdFeedItem.lastUpdatedTime),
-    })
-  );
+  return makeSuccessResult({
+    feedItemType: FeedItemType.Xkcd,
+    xkcd: parsedXkcdFeedItemResult.value.xkcd,
+    feedSource: parsedFeedSource,
+    accountId,
+    importState,
+    feedItemId,
+    url: storageXkcdFeedItem.url,
+    title: storageXkcdFeedItem.title,
+    description: storageXkcdFeedItem.description,
+    outgoingLinks: storageXkcdFeedItem.outgoingLinks,
+    summary: storageXkcdFeedItem.summary,
+    triageStatus: storageXkcdFeedItem.triageStatus,
+    tagIds: storageXkcdFeedItem.tagIds,
+    createdTime: parseStorageTimestamp(storageXkcdFeedItem.createdTime),
+    lastUpdatedTime: parseStorageTimestamp(storageXkcdFeedItem.lastUpdatedTime),
+  });
 }
 
 export function parseIntervalFeedItem(args: {
@@ -300,20 +295,18 @@ export function parseIntervalFeedItem(args: {
   if (!parsedFeedSourceResult.success) return parsedFeedSourceResult;
   const parsedFeedSource = parsedFeedSourceResult.value;
 
-  return makeSuccessResult(
-    omitUndefined({
-      feedItemType: FeedItemType.Interval,
-      feedSource: parsedFeedSource,
-      accountId,
-      importState,
-      feedItemId,
-      title: storageIntervalFeedItem.title,
-      triageStatus: storageIntervalFeedItem.triageStatus,
-      tagIds: storageIntervalFeedItem.tagIds,
-      createdTime: parseStorageTimestamp(storageIntervalFeedItem.createdTime),
-      lastUpdatedTime: parseStorageTimestamp(storageIntervalFeedItem.lastUpdatedTime),
-    })
-  );
+  return makeSuccessResult({
+    feedItemType: FeedItemType.Interval,
+    feedSource: parsedFeedSource,
+    accountId,
+    importState,
+    feedItemId,
+    title: storageIntervalFeedItem.title,
+    triageStatus: storageIntervalFeedItem.triageStatus,
+    tagIds: storageIntervalFeedItem.tagIds,
+    createdTime: parseStorageTimestamp(storageIntervalFeedItem.createdTime),
+    lastUpdatedTime: parseStorageTimestamp(storageIntervalFeedItem.lastUpdatedTime),
+  });
 }
 
 /**
@@ -345,7 +338,7 @@ export function toStorageFeedItem(feedItem: FeedItem): FeedItemFromStorage {
 function toStorageBaseFeedItem(
   feedItem: Exclude<FeedItem, XkcdFeedItem | IntervalFeedItem>
 ): BaseFeedItemWithUrlFromStorage {
-  return omitUndefined({
+  return {
     feedItemId: feedItem.feedItemId,
     feedItemType: feedItem.feedItemType,
     feedSource: feedItem.feedSource,
@@ -360,7 +353,7 @@ function toStorageBaseFeedItem(
     tagIds: feedItem.tagIds,
     createdTime: feedItem.createdTime,
     lastUpdatedTime: feedItem.lastUpdatedTime,
-  });
+  };
 }
 
 /**
@@ -368,7 +361,7 @@ function toStorageBaseFeedItem(
  * persisted to Firestore.
  */
 function toStorageXkcdFeedItem(feedItem: XkcdFeedItem): XkcdFeedItemFromStorage {
-  return omitUndefined({
+  return {
     feedItemId: feedItem.feedItemId,
     feedItemType: feedItem.feedItemType,
     feedSource: feedItem.feedSource,
@@ -384,7 +377,7 @@ function toStorageXkcdFeedItem(feedItem: XkcdFeedItem): XkcdFeedItemFromStorage 
     createdTime: feedItem.createdTime,
     lastUpdatedTime: feedItem.lastUpdatedTime,
     xkcd: feedItem.xkcd,
-  });
+  };
 }
 
 /**
@@ -392,7 +385,7 @@ function toStorageXkcdFeedItem(feedItem: XkcdFeedItem): XkcdFeedItemFromStorage 
  * persisted to Firestore.
  */
 function toStorageIntervalFeedItem(feedItem: IntervalFeedItem): IntervalFeedItemFromStorage {
-  return omitUndefined({
+  return {
     feedItemId: feedItem.feedItemId,
     feedItemType: feedItem.feedItemType,
     feedSource: feedItem.feedSource,
@@ -403,5 +396,5 @@ function toStorageIntervalFeedItem(feedItem: IntervalFeedItem): IntervalFeedItem
     tagIds: feedItem.tagIds,
     createdTime: feedItem.createdTime,
     lastUpdatedTime: feedItem.lastUpdatedTime,
-  });
+  };
 }

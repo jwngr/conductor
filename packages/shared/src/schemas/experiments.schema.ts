@@ -13,7 +13,7 @@ export const ExperimentVisibilitySchema = z.nativeEnum(ExperimentVisibility);
 /**
  * Zod schema for an {@link ExperimentDefinition} persisted to Firestore.
  */
-export const BaseExperimentDefinitionSchema = z.object({
+const BaseExperimentDefinitionSchema = z.object({
   experimentId: ExperimentIdSchema,
   experimentType: ExperimentTypeSchema,
   environments: z.array(EnvironmentSchema),
@@ -23,28 +23,27 @@ export const BaseExperimentDefinitionSchema = z.object({
   defaultIsEnabled: z.boolean(),
 });
 
-export type BaseExperimentDefinitionFromStorage = z.infer<typeof BaseExperimentDefinitionSchema>;
-
-export const BooleanExperimentDefinitionSchema = BaseExperimentDefinitionSchema.extend({
+const BooleanExperimentDefinitionSchema = BaseExperimentDefinitionSchema.extend({
   experimentType: z.literal(ExperimentType.Boolean),
 });
 
-export type BooleanExperimentDefinitionFromStorage = z.infer<
-  typeof BooleanExperimentDefinitionSchema
->;
+type BooleanExperimentDefinitionFromStorage = z.infer<typeof BooleanExperimentDefinitionSchema>;
 
-export const StringExperimentDefinitionSchema = BaseExperimentDefinitionSchema.extend({
+const StringExperimentDefinitionSchema = BaseExperimentDefinitionSchema.extend({
   experimentType: z.literal(ExperimentType.String),
   defaultValue: z.string(),
 });
 
-export type StringExperimentDefinitionFromStorage = z.infer<
-  typeof StringExperimentDefinitionSchema
->;
+type StringExperimentDefinitionFromStorage = z.infer<typeof StringExperimentDefinitionSchema>;
 
 export type ExperimentDefinitionFromStorage =
   | BooleanExperimentDefinitionFromStorage
   | StringExperimentDefinitionFromStorage;
+
+export const ExperimentDefinitionSchema = z.union([
+  BooleanExperimentDefinitionSchema,
+  StringExperimentDefinitionSchema,
+]);
 
 /**
  * Zod schema for an {@link ExperimentOverride} persisted to Firestore.
