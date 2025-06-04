@@ -12,8 +12,7 @@ import {
 } from '@shared/schemas/youtube.schema';
 
 /**
- * Parses a {@link YouTubeChannelId} from a plain string. Returns an `ErrorResult` if the string is
- * not valid.
+ * Attempts to parse a plain string into a {@link YouTubeChannelId}.
  */
 export function parseYouTubeChannelId(maybeYouTubeChannelId: string): Result<YouTubeChannelId> {
   const parsedResult = parseZodResult(YouTubeChannelIdSchema, maybeYouTubeChannelId);

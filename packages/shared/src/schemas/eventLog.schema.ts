@@ -13,7 +13,6 @@ import {FirestoreTimestampSchema} from '@shared/schemas/firebase.schema';
 import {ThemePreferenceSchema} from '@shared/schemas/theme.schema';
 import {UserFeedSubscriptionIdSchema} from '@shared/schemas/userFeedSubscriptions.schema';
 
-/** Zod schema for an {@link EventId}. */
 // TODO: Consider adding `brand()` and defining `EventId` based on this schema.
 export const EventIdSchema = z.string().uuid();
 
@@ -96,9 +95,9 @@ const EventLogItemDataSchema = z.discriminatedUnion('eventType', [
   ThemePreferenceChangedEventLogItemDataSchema,
 ]);
 
+/** Type for an {@link EventLogItemData} persisted to Firestore. */
 export type EventLogItemDataFromStorage = z.infer<typeof EventLogItemDataSchema>;
 
-/** Zod schema for an {@link EventLogItem} persisted to Firestore. */
 export const EventLogItemSchema = z.object({
   eventId: EventIdSchema,
   accountId: AccountIdSchema,

@@ -7,9 +7,6 @@ import {
   MoleculeComponentType,
 } from '@shared/types/stories.types';
 
-/**
- * Zod schema for a {@link StoriesSidebarItemId}. Used to parse a sidebar item ID from the URL.
- */
 export const StoriesSidebarItemIdSchema = z.union([
   z.nativeEnum(AtomicComponentType),
   z.nativeEnum(DesignSystemComponentType),

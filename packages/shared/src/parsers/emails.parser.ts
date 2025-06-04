@@ -8,7 +8,7 @@ import type {Result} from '@shared/types/results.types';
 import {EmailAddressSchema} from '@shared/schemas/emails.schema';
 
 /**
- * Attempts to parse an unknown value into an {@link EmailAddress}.
+ * Attempts to parse a plain string into an {@link EmailAddress}.
  */
 export function parseEmailAddress(maybeEmail: string): Result<EmailAddress> {
   const parsedResult = parseZodResult(EmailAddressSchema, maybeEmail);

@@ -9,7 +9,7 @@ import {AccountIdSchema, AccountSchema} from '@shared/schemas/accounts.schema';
 import {fromStorageAccount} from '@shared/storage/accounts.storage';
 
 /**
- * Attempts to parse an {@link AccountId} from a plain string.
+ * Attempts to parse a plain string into an {@link AccountId}.
  */
 export function parseAccountId(maybeAccountId: string): Result<AccountId> {
   const parsedResult = parseZodResult(AccountIdSchema, maybeAccountId);

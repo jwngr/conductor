@@ -1,13 +1,13 @@
+import {z} from 'zod';
+
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseZodResult} from '@shared/lib/parser.shared';
 
-import type {DeliverySchedule, DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
+import {DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
+import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
 import type {Result} from '@shared/types/results.types';
 
-import {
-  DeliveryScheduleSchema,
-  DeliveryScheduleTypeSchema,
-} from '@shared/schemas/deliverySchedules.schema';
+import {DeliveryScheduleSchema} from '@shared/schemas/deliverySchedules.schema';
 import {fromStorageDeliverySchedule} from '@shared/storage/deliverySchedules.storage';
 
 /**
@@ -29,5 +29,5 @@ export function parseDeliverySchedule(maybeDeliverySchedule: unknown): Result<De
 export function parseDeliveryScheduleType(
   maybeDeliveryScheduleType: unknown
 ): Result<DeliveryScheduleType> {
-  return parseZodResult(DeliveryScheduleTypeSchema, maybeDeliveryScheduleType);
+  return parseZodResult(z.nativeEnum(DeliveryScheduleType), maybeDeliveryScheduleType);
 }
