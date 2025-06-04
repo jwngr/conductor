@@ -8,7 +8,7 @@ import {ActorSchema} from '@shared/schemas/actors.schema';
 import {fromStorageActor} from '@shared/storage/actor.storage';
 
 /**
- * Parses an unknown value into an {@link Actor}.
+ * Attempts to parse an unknown value into an {@link Actor}.
  */
 export function parseActor(maybeActor: unknown): Result<Actor> {
   const parsedResult = parseZodResult(ActorSchema, maybeActor);
