@@ -13,9 +13,7 @@ import {fromStorageAccount} from '@shared/storage/accounts.storage';
  */
 export function parseAccountId(maybeAccountId: string): Result<AccountId> {
   const parsedResult = parseZodResult(AccountIdSchema, maybeAccountId);
-  if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid account ID');
-  }
+  if (!parsedResult.success) return prefixErrorResult(parsedResult, 'Invalid account ID');
   return makeSuccessResult(parsedResult.value as AccountId);
 }
 

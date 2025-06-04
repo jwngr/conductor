@@ -16,9 +16,7 @@ export async function handleCreateAccount(args: {
   const {firebaseUid, email, accountsService} = args;
 
   const parsedAccountIdResult = parseAccountId(firebaseUid);
-  if (!parsedAccountIdResult.success) {
-    return prefixErrorResult(parsedAccountIdResult, 'Invalid account ID');
-  }
+  if (!parsedAccountIdResult.success) return parsedAccountIdResult;
   const parsedAccountId = parsedAccountIdResult.value;
 
   if (!email) {

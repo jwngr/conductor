@@ -30,10 +30,10 @@ export function parseLoggedInAccount(firebaseLoggedInUser: FirebaseUser): Result
   }
 
   const emailResult = parseEmailAddress(firebaseLoggedInUser.email);
-  if (!emailResult.success) return makeErrorResult(emailResult.error);
+  if (!emailResult.success) return emailResult;
 
   const accountIdResult = parseAccountId(firebaseLoggedInUser.uid);
-  if (!accountIdResult.success) return makeErrorResult(accountIdResult.error);
+  if (!accountIdResult.success) return accountIdResult;
 
   return makeSuccessResult({
     accountId: accountIdResult.value,

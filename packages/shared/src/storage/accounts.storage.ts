@@ -1,4 +1,4 @@
-import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseEmailAddress} from '@shared/parsers/emails.parser';
@@ -13,10 +13,10 @@ import type {AccountFromStorage} from '@shared/schemas/accounts.schema';
  */
 export function fromStorageAccount(accountFromStorage: AccountFromStorage): Result<Account> {
   const parsedAccountIdResult = parseAccountId(accountFromStorage.accountId);
-  if (!parsedAccountIdResult.success) return makeErrorResult(parsedAccountIdResult.error);
+  if (!parsedAccountIdResult.success) return parsedAccountIdResult;
 
   const parsedEmailResult = parseEmailAddress(accountFromStorage.email);
-  if (!parsedEmailResult.success) return makeErrorResult(parsedEmailResult.error);
+  if (!parsedEmailResult.success) return parsedEmailResult;
 
   return makeSuccessResult({
     accountId: parsedAccountIdResult.value,

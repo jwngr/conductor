@@ -134,7 +134,7 @@ export class ClientFeedItemsService {
       feedItem.feedItemId,
       feedItem
     );
-    if (!addFeedItemResult.success) return makeErrorResult(addFeedItemResult.error);
+    if (!addFeedItemResult.success) return addFeedItemResult;
 
     // Return the feed item.
     return makeSuccessResult(feedItem);
