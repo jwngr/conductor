@@ -35,9 +35,7 @@ function parsePocketCsvRecordStatus(status: string): Result<PocketImportItemStat
 
 export function parsePocketCsvRecord(record: RawPocketCsvRecord): Result<PocketImportItem> {
   const statusResult = parsePocketCsvRecordStatus(record.status);
-  if (!statusResult.success) {
-    return makeErrorResult(statusResult.error);
-  }
+  if (!statusResult.success) return statusResult;
 
   let timeAddedMs = parseInt(record.time_added, 10) * 1000;
   if (isNaN(timeAddedMs)) {

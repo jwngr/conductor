@@ -8,13 +8,10 @@ import type {Result} from '@shared/types/results.types';
 import {EmailAddressSchema} from '@shared/schemas/emails.schema';
 
 /**
- * Parses an {@link EmailAddress} from a plain string. Returns an `ErrorResult` if the string is not
- * valid.
+ * Attempts to parse an unknown value into an {@link EmailAddress}.
  */
 export function parseEmailAddress(maybeEmail: string): Result<EmailAddress> {
   const parsedResult = parseZodResult(EmailAddressSchema, maybeEmail);
-  if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid email address');
-  }
+  if (!parsedResult.success) return prefixErrorResult(parsedResult, 'Invalid email address');
   return makeSuccessResult(parsedResult.value as EmailAddress);
 }

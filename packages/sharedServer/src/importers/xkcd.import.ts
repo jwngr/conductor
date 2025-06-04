@@ -1,6 +1,6 @@
 import {FEED_ITEM_FILE_XKCD_EXPLAIN} from '@shared/lib/constants.shared';
-import {asyncTryAll, prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {asyncTryAll, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 import {parseXkcdComicIdFromUrl} from '@shared/lib/xkcd.shared';
 
 import type {XkcdFeedItem} from '@shared/types/feedItems.types';
@@ -72,11 +72,11 @@ export class XkcdFeedItemImporter {
       this.fetchAndSaveXkcdComic({comicId, feedItem}),
       this.fetchAndSaveExplainXkcdContent({comicId, feedItem}),
     ]);
-    const fetchXkcdResultsError = fetchXkcdResults.success
-      ? fetchXkcdResults.value.results.find((result) => !result.success)?.error
-      : fetchXkcdResults.error;
-    if (fetchXkcdResultsError) {
-      return makeErrorResult(prefixError(fetchXkcdResultsError, 'Error fetching XKCD data'));
+    const fetchXkcdErrorResult = fetchXkcdResults.success
+      ? fetchXkcdResults.value.results.find((result) => !result.success)
+      : fetchXkcdResults;
+    if (fetchXkcdErrorResult) {
+      return prefixErrorResult(fetchXkcdErrorResult, 'Error fetching XKCD data');
     }
 
     return makeSuccessResult(undefined);

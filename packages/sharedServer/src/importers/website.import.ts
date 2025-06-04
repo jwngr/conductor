@@ -6,14 +6,9 @@ import {
   FEED_ITEM_FILE_HTML_MARKDOWN,
   FEED_ITEM_FILE_LLM_CONTEXT,
 } from '@shared/lib/constants.shared';
-import {
-  asyncTryAll,
-  prefixError,
-  prefixErrorResult,
-  prefixResultIfError,
-} from '@shared/lib/errorUtils.shared';
+import {asyncTryAll, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {requestGet} from '@shared/lib/requests.shared';
-import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {
@@ -142,13 +137,11 @@ export class WebsiteFeedItemImporter {
       }),
     ]);
 
-    if (!saveMainContentResult.success) {
-      return prefixErrorResult(saveMainContentResult, 'Error saving main content data');
-    }
-
-    const firstError = saveMainContentResult.value.results.find((r) => !r.success)?.error;
-    if (firstError) {
-      return makeErrorResult(prefixError(firstError, 'Error saving main content file'));
+    const saveMainContentErrorResult = saveMainContentResult.success
+      ? saveMainContentResult.value.results.find((r) => !r.success)
+      : saveMainContentResult;
+    if (saveMainContentErrorResult) {
+      return prefixErrorResult(saveMainContentErrorResult, 'Error saving main content data');
     }
 
     return makeSuccessResult(undefined);
@@ -188,13 +181,12 @@ export class WebsiteFeedItemImporter {
       }),
     ]);
 
-    const firecrawlDataResultError = firecrawlDataResult.success
-      ? firecrawlDataResult.value.results.find((result) => !result.success)?.error
-      : firecrawlDataResult.error;
-    if (firecrawlDataResultError) {
-      return makeErrorResult(
-        prefixError(firecrawlDataResultError, 'Error saving Firecrawl data for feed item')
-      );
+    const firecrawlDataErrorResult = firecrawlDataResult.success
+      ? firecrawlDataResult.value.results.find((result) => !result.success)
+      : firecrawlDataResult;
+    if (firecrawlDataErrorResult) {
+      const message = 'Error saving Firecrawl data for feed item';
+      return prefixErrorResult(firecrawlDataErrorResult, message);
     }
 
     return await this.generateAndSaveHierarchicalSummary({
@@ -242,7 +234,7 @@ export class WebsiteFeedItemImporter {
 
     // TODO: Make this multi-result error handling pattern simpler.
     if (!importAllDataResult.success) {
-      return makeErrorResult(prefixError(importAllDataResult.error, 'Error importing feed item'));
+      return prefixErrorResult(importAllDataResult, 'Error importing feed item');
     }
 
     const [sanitizedHtmlResult, firecrawlDataResult] = importAllDataResult.value.results;

@@ -1,5 +1,5 @@
 import {parseStorageTimestamp} from '@shared/lib/parser.shared';
-import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
@@ -53,7 +53,7 @@ export function fromStorageEventLogItem(
   if (!parsedAccountIdResult.success) return parsedAccountIdResult;
 
   const parsedActorResult = fromStorageActor(eventLogItemFromStorage.actor);
-  if (!parsedActorResult.success) return makeErrorResult(new Error('Invalid actor'));
+  if (!parsedActorResult.success) return parsedActorResult;
 
   const parsedEventIdResult = parseEventId(eventLogItemFromStorage.eventId);
   if (!parsedEventIdResult.success) return parsedEventIdResult;
