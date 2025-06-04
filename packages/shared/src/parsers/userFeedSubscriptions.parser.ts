@@ -1,35 +1,21 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
-import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
-import {safeAssertNever} from '@shared/lib/utils.shared';
+import {parseZodResult} from '@shared/lib/parser.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 
-import {parseAccountId} from '@shared/parsers/accounts.parser';
-import {parseDeliverySchedule} from '@shared/parsers/deliverySchedules.parser';
-import {parseYouTubeChannelId} from '@shared/parsers/youtube.parser';
-
-import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import type {Result} from '@shared/types/results.types';
 import type {
-  IntervalUserFeedSubscription,
-  RssUserFeedSubscription,
   UserFeedSubscription,
   UserFeedSubscriptionId,
-  YouTubeChannelUserFeedSubscription,
 } from '@shared/types/userFeedSubscriptions.types';
 
 import {
-  IntervalUserFeedSubscriptionSchema,
-  RssUserFeedSubscriptionSchema,
   UserFeedSubscriptionIdSchema,
   UserFeedSubscriptionSchema,
-  YouTubeChannelUserFeedSubscriptionSchema,
 } from '@shared/schemas/userFeedSubscriptions.schema';
-import type {UserFeedSubscriptionFromStorage} from '@shared/schemas/userFeedSubscriptions.schema';
-import {toStorageDeliverySchedule} from '@shared/storage/deliverySchedules.storage';
+import {fromStorageUserFeedSubscription} from '@shared/storage/userFeedSubscriptions.storage';
 
 /**
- * Parses a {@link UserFeedSubscriptionId} from a plain string. Returns an `ErrorResult` if the
- * string is not valid.
+ * Attempts to parse a plain string into a {@link UserFeedSubscriptionId}.
  */
 export function parseUserFeedSubscriptionId(
   maybeUserFeedSubscriptionId: string
@@ -42,8 +28,7 @@ export function parseUserFeedSubscriptionId(
 }
 
 /**
- * Parses a {@link UserFeedSubscription} from an unknown value. Returns an `ErrorResult` if the
- * value is not valid.
+ * Attempts to parse an unknown value into a {@link UserFeedSubscription}.
  */
 export function parseUserFeedSubscription(
   maybeUserFeedSubscription: unknown
@@ -52,199 +37,6 @@ export function parseUserFeedSubscription(
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid user feed subscription');
   }
-  const parsedFeedSubscription = parsedResult.value;
-
-  switch (parsedFeedSubscription.feedSourceType) {
-    case FeedSourceType.RSS:
-      return parseRssUserFeedSubscription(parsedResult.value);
-    case FeedSourceType.YouTubeChannel:
-      return parseYouTubeChannelUserFeedSubscription(parsedResult.value);
-    case FeedSourceType.Interval:
-      return parseIntervalUserFeedSubscription(parsedResult.value);
-    default:
-      safeAssertNever(parsedFeedSubscription);
-      return makeErrorResult(new Error('Unexpected feed source type'));
-  }
-}
-
-function parseRssUserFeedSubscription(
-  maybeUserFeedSubscription: unknown
-): Result<RssUserFeedSubscription> {
-  const parsedResult = parseZodResult(RssUserFeedSubscriptionSchema, maybeUserFeedSubscription);
-  if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid user feed subscription');
-  }
-
-  const parsedAccountIdResult = parseAccountId(parsedResult.value.accountId);
-  if (!parsedAccountIdResult.success) return parsedAccountIdResult;
-
-  const parsedUserFeedSubscriptionIdResult = parseUserFeedSubscriptionId(
-    parsedResult.value.userFeedSubscriptionId
-  );
-  if (!parsedUserFeedSubscriptionIdResult.success) return parsedUserFeedSubscriptionIdResult;
-
-  const parsedDeliveryScheduleResult = parseDeliverySchedule(parsedResult.value.deliverySchedule);
-  if (!parsedDeliveryScheduleResult.success) return parsedDeliveryScheduleResult;
-
-  return makeSuccessResult({
-    feedSourceType: FeedSourceType.RSS,
-    url: parsedResult.value.url,
-    title: parsedResult.value.title,
-    userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
-    accountId: parsedAccountIdResult.value,
-    isActive: parsedResult.value.isActive,
-    deliverySchedule: parsedDeliveryScheduleResult.value,
-    createdTime: parseStorageTimestamp(parsedResult.value.createdTime),
-    lastUpdatedTime: parseStorageTimestamp(parsedResult.value.lastUpdatedTime),
-    unsubscribedTime: parsedResult.value.unsubscribedTime
-      ? parseStorageTimestamp(parsedResult.value.unsubscribedTime)
-      : undefined,
-  });
-}
-
-function parseYouTubeChannelUserFeedSubscription(
-  maybeUserFeedSubscription: unknown
-): Result<YouTubeChannelUserFeedSubscription> {
-  const parsedResult = parseZodResult(
-    YouTubeChannelUserFeedSubscriptionSchema,
-    maybeUserFeedSubscription
-  );
-  if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid user feed subscription');
-  }
-
-  const parsedAccountIdResult = parseAccountId(parsedResult.value.accountId);
-  if (!parsedAccountIdResult.success) return parsedAccountIdResult;
-
-  const parsedUserFeedSubscriptionIdResult = parseUserFeedSubscriptionId(
-    parsedResult.value.userFeedSubscriptionId
-  );
-  if (!parsedUserFeedSubscriptionIdResult.success) return parsedUserFeedSubscriptionIdResult;
-
-  const parsedDeliveryScheduleResult = parseDeliverySchedule(parsedResult.value.deliverySchedule);
-  if (!parsedDeliveryScheduleResult.success) return parsedDeliveryScheduleResult;
-
-  const parsedChannelIdResult = parseYouTubeChannelId(parsedResult.value.channelId);
-  if (!parsedChannelIdResult.success) return parsedChannelIdResult;
-
-  return makeSuccessResult({
-    feedSourceType: FeedSourceType.YouTubeChannel,
-    channelId: parsedChannelIdResult.value,
-    userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
-    accountId: parsedAccountIdResult.value,
-    isActive: parsedResult.value.isActive,
-    deliverySchedule: parsedDeliveryScheduleResult.value,
-    createdTime: parseStorageTimestamp(parsedResult.value.createdTime),
-    lastUpdatedTime: parseStorageTimestamp(parsedResult.value.lastUpdatedTime),
-    unsubscribedTime: parsedResult.value.unsubscribedTime
-      ? parseStorageTimestamp(parsedResult.value.unsubscribedTime)
-      : undefined,
-  });
-}
-
-function parseIntervalUserFeedSubscription(
-  maybeUserFeedSubscription: unknown
-): Result<IntervalUserFeedSubscription> {
-  const parsedResult = parseZodResult(
-    IntervalUserFeedSubscriptionSchema,
-    maybeUserFeedSubscription
-  );
-  if (!parsedResult.success) {
-    return prefixErrorResult(parsedResult, 'Invalid user feed subscription');
-  }
-
-  const parsedAccountIdResult = parseAccountId(parsedResult.value.accountId);
-  if (!parsedAccountIdResult.success) return parsedAccountIdResult;
-
-  const parsedUserFeedSubscriptionIdResult = parseUserFeedSubscriptionId(
-    parsedResult.value.userFeedSubscriptionId
-  );
-  if (!parsedUserFeedSubscriptionIdResult.success) return parsedUserFeedSubscriptionIdResult;
-
-  const parsedDeliveryScheduleResult = parseDeliverySchedule(parsedResult.value.deliverySchedule);
-  if (!parsedDeliveryScheduleResult.success) return parsedDeliveryScheduleResult;
-
-  return makeSuccessResult({
-    feedSourceType: FeedSourceType.Interval,
-    intervalSeconds: parsedResult.value.intervalSeconds,
-    userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
-    accountId: parsedAccountIdResult.value,
-    isActive: parsedResult.value.isActive,
-    deliverySchedule: parsedDeliveryScheduleResult.value,
-    createdTime: parseStorageTimestamp(parsedResult.value.createdTime),
-    lastUpdatedTime: parseStorageTimestamp(parsedResult.value.lastUpdatedTime),
-    unsubscribedTime: parsedResult.value.unsubscribedTime
-      ? parseStorageTimestamp(parsedResult.value.unsubscribedTime)
-      : undefined,
-  });
-}
-
-/**
- * Converts a {@link UserFeedSubscription} to a {@link UserFeedSubscriptionFromStorage} object that
- * can be persisted to Firestore.
- */
-export function toStorageUserFeedSubscription(
-  userFeedSubscription: UserFeedSubscription
-): UserFeedSubscriptionFromStorage {
-  switch (userFeedSubscription.feedSourceType) {
-    case FeedSourceType.RSS:
-      return toStorageRssUserFeedSubscription(userFeedSubscription);
-    case FeedSourceType.YouTubeChannel:
-      return toStorageYouTubeChannelUserFeedSubscription(userFeedSubscription);
-    case FeedSourceType.Interval:
-      return toStorageIntervalUserFeedSubscription(userFeedSubscription);
-    default:
-      safeAssertNever(userFeedSubscription);
-      // TODO: More safely handle malformed user feed subscriptions.
-      return {} as UserFeedSubscriptionFromStorage;
-  }
-}
-
-function toStorageRssUserFeedSubscription(
-  userFeedSubscription: RssUserFeedSubscription
-): UserFeedSubscriptionFromStorage {
-  return {
-    feedSourceType: FeedSourceType.RSS,
-    userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
-    url: userFeedSubscription.url,
-    title: userFeedSubscription.title,
-    accountId: userFeedSubscription.accountId,
-    isActive: userFeedSubscription.isActive,
-    unsubscribedTime: userFeedSubscription.unsubscribedTime,
-    createdTime: userFeedSubscription.createdTime,
-    lastUpdatedTime: userFeedSubscription.lastUpdatedTime,
-    deliverySchedule: toStorageDeliverySchedule(userFeedSubscription.deliverySchedule),
-  };
-}
-
-function toStorageYouTubeChannelUserFeedSubscription(
-  userFeedSubscription: YouTubeChannelUserFeedSubscription
-): UserFeedSubscriptionFromStorage {
-  return {
-    feedSourceType: FeedSourceType.YouTubeChannel,
-    userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
-    channelId: userFeedSubscription.channelId,
-    accountId: userFeedSubscription.accountId,
-    isActive: userFeedSubscription.isActive,
-    unsubscribedTime: userFeedSubscription.unsubscribedTime,
-    createdTime: userFeedSubscription.createdTime,
-    lastUpdatedTime: userFeedSubscription.lastUpdatedTime,
-    deliverySchedule: toStorageDeliverySchedule(userFeedSubscription.deliverySchedule),
-  };
-}
-
-function toStorageIntervalUserFeedSubscription(
-  userFeedSubscription: IntervalUserFeedSubscription
-): UserFeedSubscriptionFromStorage {
-  return {
-    feedSourceType: FeedSourceType.Interval,
-    intervalSeconds: userFeedSubscription.intervalSeconds,
-    userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
-    accountId: userFeedSubscription.accountId,
-    isActive: userFeedSubscription.isActive,
-    unsubscribedTime: userFeedSubscription.unsubscribedTime,
-    createdTime: userFeedSubscription.createdTime,
-    lastUpdatedTime: userFeedSubscription.lastUpdatedTime,
-    deliverySchedule: toStorageDeliverySchedule(userFeedSubscription.deliverySchedule),
-  };
+  const userFeedSubscriptionFromStorage = parsedResult.value;
+  return fromStorageUserFeedSubscription(userFeedSubscriptionFromStorage);
 }

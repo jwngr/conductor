@@ -9,6 +9,20 @@ import type {Result} from '@shared/types/results.types';
 import type {AccountSettingsFromStorage} from '@shared/schemas/accountSettings.schema';
 
 /**
+ * Converts an {@link AccountSettings} into an {@link AccountSettingsFromStorage}.
+ */
+export function toStorageAccountSettings(
+  accountSettings: AccountSettings
+): AccountSettingsFromStorage {
+  return {
+    accountId: accountSettings.accountId,
+    themePreference: accountSettings.themePreference,
+    createdTime: accountSettings.createdTime,
+    lastUpdatedTime: accountSettings.lastUpdatedTime,
+  };
+}
+
+/**
  * Converts an {@link AccountSettingsFromStorage} into an {@link AccountSettings}.
  */
 export function fromStorageAccountSettings(
@@ -23,18 +37,4 @@ export function fromStorageAccountSettings(
     createdTime: parseStorageTimestamp(accountSettingsFromStorage.createdTime),
     lastUpdatedTime: parseStorageTimestamp(accountSettingsFromStorage.lastUpdatedTime),
   });
-}
-
-/**
- * Converts an {@link AccountSettings} into an {@link AccountSettingsFromStorage}.
- */
-export function toStorageAccountSettings(
-  accountSettings: AccountSettings
-): AccountSettingsFromStorage {
-  return {
-    accountId: accountSettings.accountId,
-    themePreference: accountSettings.themePreference,
-    createdTime: accountSettings.createdTime,
-    lastUpdatedTime: accountSettings.lastUpdatedTime,
-  };
 }

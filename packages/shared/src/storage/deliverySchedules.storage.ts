@@ -14,29 +14,6 @@ import type {Result} from '@shared/types/results.types';
 import type {DeliveryScheduleFromStorage} from '@shared/schemas/deliverySchedules.schema';
 
 /**
- * Converts a {@link DeliveryScheduleFromStorage} into a {@link DeliverySchedule}.
- */
-export function fromStorageDeliverySchedule(
-  deliveryScheduleFromStorage: DeliveryScheduleFromStorage
-): Result<DeliverySchedule> {
-  switch (deliveryScheduleFromStorage.scheduleType) {
-    case DeliveryScheduleType.Immediate:
-      return makeSuccessResult(IMMEDIATE_DELIVERY_SCHEDULE);
-    case DeliveryScheduleType.Never:
-      return makeSuccessResult(NEVER_DELIVERY_SCHEDULE);
-    case DeliveryScheduleType.DaysAndTimesOfWeek:
-      return makeDaysAndTimesOfWeekDeliverySchedule({
-        days: deliveryScheduleFromStorage.days,
-        times: deliveryScheduleFromStorage.times,
-      });
-    case DeliveryScheduleType.EveryNHours:
-      return makeEveryNHoursDeliverySchedule({hours: deliveryScheduleFromStorage.hours});
-    default:
-      assertNever(deliveryScheduleFromStorage);
-  }
-}
-
-/**
  * Converts a {@link DeliverySchedule} into a {@link DeliveryScheduleFromStorage}.
  */
 export function toStorageDeliverySchedule(
@@ -64,5 +41,28 @@ export function toStorageDeliverySchedule(
       };
     default:
       assertNever(deliverySchedule);
+  }
+}
+
+/**
+ * Converts a {@link DeliveryScheduleFromStorage} into a {@link DeliverySchedule}.
+ */
+export function fromStorageDeliverySchedule(
+  deliveryScheduleFromStorage: DeliveryScheduleFromStorage
+): Result<DeliverySchedule> {
+  switch (deliveryScheduleFromStorage.scheduleType) {
+    case DeliveryScheduleType.Immediate:
+      return makeSuccessResult(IMMEDIATE_DELIVERY_SCHEDULE);
+    case DeliveryScheduleType.Never:
+      return makeSuccessResult(NEVER_DELIVERY_SCHEDULE);
+    case DeliveryScheduleType.DaysAndTimesOfWeek:
+      return makeDaysAndTimesOfWeekDeliverySchedule({
+        days: deliveryScheduleFromStorage.days,
+        times: deliveryScheduleFromStorage.times,
+      });
+    case DeliveryScheduleType.EveryNHours:
+      return makeEveryNHoursDeliverySchedule({hours: deliveryScheduleFromStorage.hours});
+    default:
+      assertNever(deliveryScheduleFromStorage);
   }
 }

@@ -11,23 +11,6 @@ import type {Result} from '@shared/types/results.types';
 import type {ActorFromStorage} from '@shared/schemas/actors.schema';
 
 /**
- * Converts an {@link ActorFromStorage} into an {@link Actor}.
- */
-export function fromStorageActor(actorFromStorage: ActorFromStorage): Result<Actor> {
-  switch (actorFromStorage.actorType) {
-    case ActorType.User: {
-      const accountIdResult = parseAccountId(actorFromStorage.accountId);
-      if (!accountIdResult.success) return accountIdResult;
-      return makeSuccessResult(makeUserActor(accountIdResult.value));
-    }
-    case ActorType.System:
-      return makeSuccessResult(SYSTEM_ACTOR);
-    default:
-      assertNever(actorFromStorage);
-  }
-}
-
-/**
  * Converts an {@link Actor} into an {@link ActorFromStorage}.
  */
 export function toStorageActor(actor: Actor): ActorFromStorage {
@@ -41,5 +24,22 @@ export function toStorageActor(actor: Actor): ActorFromStorage {
       return SYSTEM_ACTOR;
     default:
       assertNever(actor);
+  }
+}
+
+/**
+ * Converts an {@link ActorFromStorage} into an {@link Actor}.
+ */
+export function fromStorageActor(actorFromStorage: ActorFromStorage): Result<Actor> {
+  switch (actorFromStorage.actorType) {
+    case ActorType.User: {
+      const accountIdResult = parseAccountId(actorFromStorage.accountId);
+      if (!accountIdResult.success) return accountIdResult;
+      return makeSuccessResult(makeUserActor(accountIdResult.value));
+    }
+    case ActorType.System:
+      return makeSuccessResult(SYSTEM_ACTOR);
+    default:
+      assertNever(actorFromStorage);
   }
 }
