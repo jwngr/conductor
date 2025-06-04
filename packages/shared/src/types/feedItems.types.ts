@@ -153,23 +153,14 @@ export interface NewFeedItemImportState extends BaseFeedItemImportState {
   readonly lastSuccessfulImportTime: null;
 }
 
-export function makeNewFeedItemImportState(): NewFeedItemImportState {
-  return {
-    status: FeedItemImportStatus.New,
-    shouldFetch: true,
-    lastImportRequestedTime: new Date(),
-    lastSuccessfulImportTime: null,
-  };
-}
-
-export interface ProcessingFeedItemImportState extends BaseFeedItemImportState {
+interface ProcessingFeedItemImportState extends BaseFeedItemImportState {
   readonly status: FeedItemImportStatus.Processing;
   readonly shouldFetch: false;
   readonly importStartedTime: Date;
   readonly lastSuccessfulImportTime: Date | null;
 }
 
-export interface FailedFeedItemImportState extends BaseFeedItemImportState {
+interface FailedFeedItemImportState extends BaseFeedItemImportState {
   readonly status: FeedItemImportStatus.Failed;
   readonly shouldFetch: boolean;
   readonly errorMessage: string;
@@ -177,7 +168,7 @@ export interface FailedFeedItemImportState extends BaseFeedItemImportState {
   readonly lastSuccessfulImportTime: Date | null;
 }
 
-export interface CompletedFeedItemImportState extends BaseFeedItemImportState {
+interface CompletedFeedItemImportState extends BaseFeedItemImportState {
   readonly status: FeedItemImportStatus.Completed;
   readonly shouldFetch: boolean;
   readonly lastSuccessfulImportTime: Date;

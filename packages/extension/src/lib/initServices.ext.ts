@@ -7,12 +7,13 @@ import {
 } from '@shared/lib/constants.shared';
 
 import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
-import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
+import {parseFeedItem, parseFeedItemId} from '@shared/parsers/feedItems.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import {Environment} from '@shared/types/environment.types';
 
 import {toStorageEventLogItem} from '@shared/storage/eventLog.storage';
+import {toStorageFeedItem} from '@shared/storage/feedItems.storage';
 
 import {ClientEventLogService} from '@sharedClient/services/eventLog.client';
 import {ClientFeedItemsService} from '@sharedClient/services/feedItems.client';

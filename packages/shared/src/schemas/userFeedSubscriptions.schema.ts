@@ -7,14 +7,8 @@ import {DeliveryScheduleSchema} from '@shared/schemas/deliverySchedules.schema';
 import {FirestoreTimestampSchema} from '@shared/schemas/firebase.schema';
 import {YouTubeChannelIdSchema} from '@shared/schemas/youtube.schema';
 
-/**
- * Zod schema for a {@link UserFeedSubscriptionId}.
- */
 export const UserFeedSubscriptionIdSchema = z.string().uuid();
 
-/**
- * Zod schema for a {@link UserFeedSubscription} persisted to Firestore.
- */
 const BaseUserFeedSubscriptionSchema = z.object({
   feedSourceType: z.enum(PERSISTED_FEED_SOURCE_TYPES),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,

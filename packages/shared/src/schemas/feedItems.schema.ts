@@ -3,15 +3,16 @@ import {z} from 'zod';
 import {FeedItemImportStatus, FeedItemType, TriageStatus} from '@shared/types/feedItems.types';
 
 import {AccountIdSchema} from '@shared/schemas/accounts.schema';
-import {FeedSourceSchema, FeedSourceWithUrlSchema} from '@shared/schemas/feedSources.schema';
+import {
+  FeedSourceSchema,
+  FeedSourceWithUrlSchema,
+  IntervalFeedSourceSchema,
+} from '@shared/schemas/feedSources.schema';
 import {FirestoreTimestampSchema} from '@shared/schemas/firebase.schema';
 
-/**
- * Zod schema for a {@link FeedItemId}.
- */
 export const FeedItemIdSchema = z.string().uuid();
 
-export const NewFeedItemImportStateSchema = z.object({
+const NewFeedItemImportStateSchema = z.object({
   status: z.literal(FeedItemImportStatus.New),
   shouldFetch: z.literal(true),
   lastSuccessfulImportTime: z.null(),
@@ -51,10 +52,7 @@ const FeedItemImportStateSchema = z.discriminatedUnion('status', [
 
 export type FeedItemImportStateFromStorage = z.infer<typeof FeedItemImportStateSchema>;
 
-/**
- * Zod schema for a {@link FeedItem} persisted to Firestore.
- */
-export const BaseFeedItemSchema = z.object({
+const BaseFeedItemSchema = z.object({
   feedItemType: z.nativeEnum(FeedItemType),
   feedSource: FeedSourceSchema,
   feedItemId: FeedItemIdSchema,
@@ -66,8 +64,6 @@ export const BaseFeedItemSchema = z.object({
   createdTime: FirestoreTimestampSchema.or(z.date()),
   lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
 });
-
-export type BaseFeedItemFromStorage = z.infer<typeof BaseFeedItemSchema>;
 
 export const BaseFeedItemWithUrlSchema = BaseFeedItemSchema.extend({
   url: z.string().url(),
@@ -94,11 +90,15 @@ export type XkcdFeedItemFromStorage = z.infer<typeof XkcdFeedItemSchema>;
 
 export const IntervalFeedItemSchema = BaseFeedItemSchema.extend({
   feedItemType: z.literal(FeedItemType.Interval),
+  feedSource: IntervalFeedSourceSchema,
 });
 
 export type IntervalFeedItemFromStorage = z.infer<typeof IntervalFeedItemSchema>;
 
-export type FeedItemFromStorage =
-  | BaseFeedItemWithUrlFromStorage
-  | XkcdFeedItemFromStorage
-  | IntervalFeedItemFromStorage;
+export const FeedItemSchema = z.discriminatedUnion('feedItemType', [
+  BaseFeedItemWithUrlSchema,
+  XkcdFeedItemSchema,
+  IntervalFeedItemSchema,
+]);
+
+export type FeedItemFromStorage = z.infer<typeof FeedItemSchema>;

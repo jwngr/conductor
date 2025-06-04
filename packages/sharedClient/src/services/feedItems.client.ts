@@ -13,7 +13,7 @@ import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
 import {Views} from '@shared/lib/views.shared';
 
-import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
+import {parseFeedItem, parseFeedItemId} from '@shared/parsers/feedItems.parser';
 
 import type {AccountId, AuthStateChangedUnsubscribe} from '@shared/types/accounts.types';
 import {FeedItemActionType, TriageStatus} from '@shared/types/feedItems.types';
@@ -25,6 +25,7 @@ import type {Consumer} from '@shared/types/utils.types';
 import type {ViewType} from '@shared/types/views.types';
 
 import type {FeedItemFromStorage} from '@shared/schemas/feedItems.schema';
+import {toStorageFeedItem} from '@shared/storage/feedItems.storage';
 
 import type {ClientEventLogService} from '@sharedClient/services/eventLog.client';
 import {makeClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';

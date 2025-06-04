@@ -10,8 +10,8 @@ import {isYouTubeVideoUrl} from '@shared/lib/youtube.shared';
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
 import {
   FeedItemActionType,
+  FeedItemImportStatus,
   FeedItemType,
-  makeNewFeedItemImportState,
   TriageStatus,
 } from '@shared/types/feedItems.types';
 import type {
@@ -19,6 +19,7 @@ import type {
   FeedItemAction,
   FeedItemId,
   IntervalFeedItem,
+  NewFeedItemImportState,
   XkcdFeedItem,
 } from '@shared/types/feedItems.types';
 import {IconName} from '@shared/types/icons.types';
@@ -294,4 +295,13 @@ export function getFeedItemTypeFromUrl(url: string): Exclude<FeedItemType, FeedI
 
   // Default to article.
   return FeedItemType.Article;
+}
+
+export function makeNewFeedItemImportState(): NewFeedItemImportState {
+  return {
+    status: FeedItemImportStatus.New,
+    shouldFetch: true,
+    lastImportRequestedTime: new Date(),
+    lastSuccessfulImportTime: null,
+  };
 }

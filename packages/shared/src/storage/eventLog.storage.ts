@@ -99,7 +99,7 @@ function fromStorageEventLogItemData(
     case EventType.FeedItemAction:
       return fromStorageFeedItemActionEventLogItemData(eventLogItemDataFromStorage);
     case EventType.FeedItemImported:
-      return FromStorageFeedItemImportedEventLogItemData(eventLogItemDataFromStorage);
+      return fromStorageFeedItemImportedEventLogItemData(eventLogItemDataFromStorage);
     case EventType.SubscribedToFeedSource:
       return fromStorageSubscribedToFeedSourceEventLogItemData(eventLogItemDataFromStorage);
     case EventType.UnsubscribedFromFeedSource:
@@ -123,7 +123,7 @@ function fromStorageFeedItemActionEventLogItemData(
   });
 }
 
-function FromStorageFeedItemImportedEventLogItemData(
+function fromStorageFeedItemImportedEventLogItemData(
   eventLogItemFromStorage: FeedItemImportedEventLogItemDataFromStorage
 ): Result<FeedItemImportedEventLogItemData> {
   const parsedFeedItemIdResult = parseFeedItemId(eventLogItemFromStorage.feedItemId);
