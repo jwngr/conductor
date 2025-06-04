@@ -6,7 +6,6 @@ import {
 } from '@shared/lib/feedSources.shared';
 import {parseZodResult} from '@shared/lib/parser.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
-import {omitUndefined} from '@shared/lib/utils.shared';
 
 import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions.parser';
 import {parseYouTubeChannelId} from '@shared/parsers/youtube.parser';
@@ -68,14 +67,12 @@ function parseRssFeedSource(maybeRssFeedSource: unknown): Result<RssFeedSource> 
   );
   if (!parsedFeedSubIdResult.success) return parsedFeedSubIdResult;
 
-  return makeSuccessResult(
-    omitUndefined({
-      feedSourceType: FeedSourceType.RSS,
-      userFeedSubscriptionId: parsedFeedSubIdResult.value,
-      url: parsedRssFeedSource.url,
-      title: parsedRssFeedSource.title,
-    })
-  );
+  return makeSuccessResult({
+    feedSourceType: FeedSourceType.RSS,
+    userFeedSubscriptionId: parsedFeedSubIdResult.value,
+    url: parsedRssFeedSource.url,
+    title: parsedRssFeedSource.title,
+  });
 }
 
 function parseYouTubeChannelFeedSource(
@@ -98,13 +95,11 @@ function parseYouTubeChannelFeedSource(
   const parsedChannelIdResult = parseYouTubeChannelId(parsedYouTubeChannelFeedSource.channelId);
   if (!parsedChannelIdResult.success) return parsedChannelIdResult;
 
-  return makeSuccessResult(
-    omitUndefined({
-      feedSourceType: FeedSourceType.YouTubeChannel,
-      userFeedSubscriptionId: parsedFeedSubIdResult.value,
-      channelId: parsedChannelIdResult.value,
-    })
-  );
+  return makeSuccessResult({
+    feedSourceType: FeedSourceType.YouTubeChannel,
+    userFeedSubscriptionId: parsedFeedSubIdResult.value,
+    channelId: parsedChannelIdResult.value,
+  });
 }
 
 export function parseIntervalFeedSource(
@@ -121,10 +116,8 @@ export function parseIntervalFeedSource(
   );
   if (!parsedFeedSubIdResult.success) return parsedFeedSubIdResult;
 
-  return makeSuccessResult(
-    omitUndefined({
-      feedSourceType: FeedSourceType.Interval,
-      userFeedSubscriptionId: parsedFeedSubIdResult.value,
-    })
-  );
+  return makeSuccessResult({
+    feedSourceType: FeedSourceType.Interval,
+    userFeedSubscriptionId: parsedFeedSubIdResult.value,
+  });
 }

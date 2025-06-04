@@ -2,7 +2,6 @@ import type {ZodSchema} from 'zod';
 
 import {isDate} from '@shared/lib/datetime.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
-import {omitUndefined} from '@shared/lib/utils.shared';
 
 import type {Result} from '@shared/types/results.types';
 import type {BaseStoreItem, Supplier} from '@shared/types/utils.types';
@@ -59,11 +58,11 @@ export function withFirestoreTimestamps<ItemData extends BaseStoreItem, Timestam
   createdTime: Timestamp;
   lastUpdatedTime: Timestamp;
 } {
-  return omitUndefined({
+  return {
     ...item,
     createdTime: timestampFactory(),
     lastUpdatedTime: timestampFactory(),
-  });
+  };
 }
 
 /**
@@ -82,10 +81,10 @@ export function withFirestoreTimestampsExtended<
   createdTime: Timestamp;
   lastUpdatedTime: Timestamp;
 } {
-  return omitUndefined({
+  return {
     ...item,
     createdTime: timestampFactory(),
     lastUpdatedTime: timestampFactory(),
     [additionalTimestampField]: timestampFactory(),
-  });
+  };
 }

@@ -10,10 +10,7 @@ import {
 } from '@shared/lib/experiments.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
-import {
-  parseAccountExperimentsState,
-  toStorageAccountExperimentsState,
-} from '@shared/parsers/experiments.parser';
+import {parseAccountExperimentsState} from '@shared/parsers/experiments.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {ClientEnvironment} from '@shared/types/environment.types';
@@ -26,6 +23,7 @@ import type {AsyncResult} from '@shared/types/results.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
 import type {AccountExperimentsStateFromStorage} from '@shared/schemas/experiments.schema';
+import {toStorageAccountExperimentsState} from '@shared/storage/experiments.storage';
 
 import type {ClientEventLogService} from '@sharedClient/services/eventLog.client';
 import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
