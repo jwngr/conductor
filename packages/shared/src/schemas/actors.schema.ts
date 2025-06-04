@@ -4,13 +4,19 @@ import {ActorType} from '@shared/types/actors.types';
 
 import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 
-export const UserActorSchema = z.object({
+const UserActorSchema = z.object({
   actorType: z.literal(ActorType.User),
   accountId: AccountIdSchema,
 });
 
-export const SystemActorSchema = z.object({
+type UserActorFromStorage = z.infer<typeof UserActorSchema>;
+
+const SystemActorSchema = z.object({
   actorType: z.literal(ActorType.System),
 });
 
+type SystemActorFromStorage = z.infer<typeof SystemActorSchema>;
+
 export const ActorSchema = z.discriminatedUnion('actorType', [UserActorSchema, SystemActorSchema]);
+
+export type ActorFromStorage = UserActorFromStorage | SystemActorFromStorage;

@@ -6,14 +6,12 @@ import {
   FEED_ITEMS_STORAGE_COLLECTION,
 } from '@shared/lib/constants.shared';
 
-import {
-  parseEventId,
-  parseEventLogItem,
-  toStorageEventLogItem,
-} from '@shared/parsers/eventLog.parser';
+import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
 import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 
 import {Environment} from '@shared/types/environment.types';
+
+import {toStorageEventLogItem} from '@shared/storage/eventLog.storage';
 
 import {ServerEventLogService} from '@sharedServer/services/eventLog.server';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';

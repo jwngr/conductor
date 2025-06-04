@@ -112,6 +112,8 @@ export const EventLogItemDataSchema = z.discriminatedUnion('eventType', [
   ThemePreferenceChangedEventLogItemDataSchema,
 ]);
 
+export type EventLogItemDataFromStorage = z.infer<typeof EventLogItemDataSchema>;
+
 /** Zod schema for an {@link EventLogItem} persisted to Firestore. */
 export const EventLogItemSchema = z.object({
   eventId: EventIdSchema,

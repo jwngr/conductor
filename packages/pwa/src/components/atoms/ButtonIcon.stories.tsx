@@ -8,7 +8,7 @@ import {StorySection} from '@src/components/stories/StorySection';
 
 export const ButtonIconStories: React.FC = () => {
   const handleButtonIconClick = (): void => {
-    toast.success('Button icon clicked');
+    toast('Button icon clicked');
   };
 
   return (
