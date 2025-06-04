@@ -9,6 +9,7 @@ import {
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseZodResult} from '@shared/lib/parser.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {safeAssertNever} from '@shared/lib/utils.shared';
 
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
 import {DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
@@ -45,6 +46,7 @@ export function parseDeliverySchedule(maybeDeliverySchedule: unknown): Result<De
     case DeliveryScheduleType.EveryNHours:
       return makeEveryNHoursDeliverySchedule({hours: parsedDeliverySchedule.hours});
     default: {
+      safeAssertNever(parsedDeliverySchedule);
       const error = new Error('Unknown delivery schedule type');
       logger.error(error, {parsedDeliverySchedule});
       return makeErrorResult(error);
@@ -86,6 +88,7 @@ export function toStorageDeliverySchedule(
         hours: deliverySchedule.hours,
       };
     default:
+      safeAssertNever(deliverySchedule);
       logger.error(new Error('Unknown delivery schedule type'), {deliverySchedule});
       // Fallback to an immediate delivery schedule to avoid missing items.
       return {

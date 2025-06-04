@@ -1,7 +1,7 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
-import {omitUndefined} from '@shared/lib/utils.shared';
+import {omitUndefined, safeAssertNever} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {
@@ -54,8 +54,9 @@ export function parseUserFeedSubscription(
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid user feed subscription');
   }
+  const parsedFeedSubscription = parsedResult.value;
 
-  switch (parsedResult.value.feedSourceType) {
+  switch (parsedFeedSubscription.feedSourceType) {
     case FeedSourceType.RSS:
       return parseRssUserFeedSubscription(parsedResult.value);
     case FeedSourceType.YouTubeChannel:
@@ -63,6 +64,7 @@ export function parseUserFeedSubscription(
     case FeedSourceType.Interval:
       return parseIntervalUserFeedSubscription(parsedResult.value);
     default:
+      safeAssertNever(parsedFeedSubscription);
       return makeErrorResult(new Error('Unexpected feed source type'));
   }
 }
@@ -200,6 +202,7 @@ export function toStorageUserFeedSubscription(
     case FeedSourceType.Interval:
       return toStorageIntervalUserFeedSubscription(userFeedSubscription);
     default:
+      safeAssertNever(userFeedSubscription);
       // TODO: More safely handle malformed user feed subscriptions.
       return {} as UserFeedSubscriptionFromStorage;
   }
