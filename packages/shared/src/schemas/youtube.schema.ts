@@ -1,8 +1,5 @@
 import {z} from 'zod';
 
-/**
- * A Zod schema for a {@link YouTubeChannelId}.
- */
 export const YouTubeChannelIdSchema = z
   .string()
   .length(24, {message: 'YouTube channel ID must be 24 characters long'})
@@ -10,9 +7,6 @@ export const YouTubeChannelIdSchema = z
     message: 'YouTube channel ID must start with "UC" followed by 22 letters, digits, "_" or "-"',
   });
 
-/**
- * A Zod schema for a {@link YouTubeHandle}.
- */
 export const YouTubeHandleSchema = z.string().min(1).max(128);
 
 export const YouTubeVideoIdSchema = z

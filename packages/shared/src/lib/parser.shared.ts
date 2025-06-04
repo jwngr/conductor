@@ -9,8 +9,7 @@ import type {BaseStoreItem, Supplier} from '@shared/types/utils.types';
 import type {FirestoreTimestamp} from '@shared/schemas/firebase.schema';
 
 /**
- * Parses a value using a Zod schema and returns a `SuccessResult` with the parsed value if
- * successful, or an `ErrorResult` if the value is invalid.
+ * Attempts to parse a value using a Zod schema. Returns an `ErrorResult` if parsing fails.
  */
 export function parseZodResult<T>(zodSchema: ZodSchema<T>, value: unknown): Result<T> {
   const zodResult = zodSchema.safeParse(value);

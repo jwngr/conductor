@@ -9,7 +9,7 @@ import {EventIdSchema, EventLogItemSchema} from '@shared/schemas/eventLog.schema
 import {fromStorageEventLogItem} from '@shared/storage/eventLog.storage';
 
 /**
- * Attempts to parse an {@link EventId} from a plain string.
+ * Attempts to parse a plain string into an {@link EventId}.
  */
 export function parseEventId(maybeEventId: string): Result<EventId> {
   const parsedResult = parseZodResult(EventIdSchema, maybeEventId);

@@ -10,9 +10,6 @@ export const ExperimentIdSchema = z.nativeEnum(ExperimentId);
 export const ExperimentTypeSchema = z.nativeEnum(ExperimentType);
 export const ExperimentVisibilitySchema = z.nativeEnum(ExperimentVisibility);
 
-/**
- * Zod schema for an {@link ExperimentDefinition} persisted to Firestore.
- */
 const BaseExperimentDefinitionSchema = z.object({
   experimentId: ExperimentIdSchema,
   experimentType: ExperimentTypeSchema,
@@ -40,14 +37,12 @@ export type ExperimentDefinitionFromStorage =
   | BooleanExperimentDefinitionFromStorage
   | StringExperimentDefinitionFromStorage;
 
+/** Type for an {@link ExperimentDefinition} persisted to Firestore. */
 export const ExperimentDefinitionSchema = z.union([
   BooleanExperimentDefinitionSchema,
   StringExperimentDefinitionSchema,
 ]);
 
-/**
- * Zod schema for an {@link ExperimentOverride} persisted to Firestore.
- */
 const BaseExperimentOverrideSchema = z.object({
   experimentId: ExperimentIdSchema,
   experimentType: ExperimentTypeSchema,
@@ -76,4 +71,5 @@ export const AccountExperimentsStateSchema = z.object({
   lastUpdatedTime: FirestoreTimestampSchema,
 });
 
+/** Type for an {@link AccountExperimentsState} persisted to Firestore. */
 export type AccountExperimentsStateFromStorage = z.infer<typeof AccountExperimentsStateSchema>;

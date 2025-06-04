@@ -28,9 +28,6 @@ const EveryNHoursDeliveryScheduleSchema = BaseDeliveryScheduleSchema.extend({
   hours: z.number().int().min(1).max(24),
 });
 
-/**
- * Zod schema for a {@link DeliverySchedule} persisted to Firestore.
- */
 export const DeliveryScheduleSchema = z.discriminatedUnion('scheduleType', [
   NeverDeliveryScheduleSchema,
   ImmediateDeliveryScheduleSchema,
@@ -38,17 +35,5 @@ export const DeliveryScheduleSchema = z.discriminatedUnion('scheduleType', [
   EveryNHoursDeliveryScheduleSchema,
 ]);
 
-/**
- * Type for a {@link DeliverySchedule} persisted to Firestore.
- */
+/** Type for a {@link DeliverySchedule} persisted to Firestore. */
 export type DeliveryScheduleFromStorage = z.infer<typeof DeliveryScheduleSchema>;
-
-/**
- * Zod schema for a {@link DeliveryScheduleType} persisted to Firestore.
- */
-export const DeliveryScheduleTypeSchema = z.nativeEnum(DeliveryScheduleType);
-
-/**
- * Type for a {@link DeliveryScheduleType} persisted to Firestore.
- */
-export type DeliveryScheduleTypeFromStorage = z.infer<typeof DeliveryScheduleTypeSchema>;
