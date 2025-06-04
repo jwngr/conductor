@@ -18,11 +18,7 @@ import {
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {filterNull} from '@shared/lib/utils.shared';
 
-import {
-  parseEventId,
-  parseEventLogItem,
-  toStorageEventLogItem,
-} from '@shared/parsers/eventLog.parser';
+import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {Environment} from '@shared/types/environment.types';
@@ -36,6 +32,7 @@ import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.t
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
 import type {EventLogItemFromStorage} from '@shared/schemas/eventLog.schema';
+import {toStorageEventLogItem} from '@shared/storage/eventLog.storage';
 
 import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
 import {makeClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';

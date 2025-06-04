@@ -8,12 +8,18 @@ import type {
   WithFieldValue,
 } from 'firebase-admin/firestore';
 
+import {logger} from '@shared/services/logger.shared';
+
 import {
   asyncTry,
   prefixError,
   prefixErrorResult,
   prefixResultIfError,
 } from '@shared/lib/errorUtils.shared';
+import {
+  FIRESTORE_PARSING_FAILURE_SENTINEL,
+  isParsingFailureSentinel,
+} from '@shared/lib/firestore.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AsyncResult, Result} from '@shared/types/results.types';
@@ -26,7 +32,7 @@ const BATCH_DELETE_SIZE = 500;
 /**
  * Creates a strongly-typed Firestore data converter.
  */
-export function makeFirestoreDataConverter<ItemData, FirestoreItemData extends DocumentData>(
+function makeFirestoreDataConverter<ItemData, FirestoreItemData extends DocumentData>(
   toFirestore: Func<ItemData, FirestoreItemData>,
   fromFirestore: Func<FirestoreItemData, Result<ItemData>>
 ): FirestoreDataConverter<ItemData, FirestoreItemData> {
@@ -35,18 +41,17 @@ export function makeFirestoreDataConverter<ItemData, FirestoreItemData extends D
     fromFirestore: (snapshot: QueryDocumentSnapshot): ItemData => {
       const data = snapshot.data() as FirestoreItemData;
 
-      const parseResult = fromFirestore(data);
-      if (!parseResult.success) {
-        // The error thrown here is caught by the global error handler. Throwing here is safer than
-        // trying to gracefully handle invalid state.
-        // eslint-disable-next-line no-restricted-syntax
-        throw prefixError(
-          parseResult.error,
-          `Error parsing Firestore document data with path ${snapshot.ref.path}`
-        );
+      const parseDataResult = fromFirestore(data);
+      if (!parseDataResult.success) {
+        const message = 'Failed to parse Firestore document data';
+        const betterError = prefixError(parseDataResult.error, message);
+        logger.error(betterError, {path: snapshot.ref.path});
+        // The return type of the Firestore data converter cannot be changed since it comes from the
+        // Firebase SDK. Hack the types to return a sentinel value to be filtered out later.
+        return FIRESTORE_PARSING_FAILURE_SENTINEL as unknown as ItemData;
       }
 
-      return parseResult.value;
+      return parseDataResult.value;
     },
   };
 }
@@ -100,7 +105,13 @@ export class ServerFirestoreCollectionService<
     const docDataResult = await asyncTry(async () => {
       const docSnap = await docRef.get();
       if (!docSnap.exists) return null;
-      return docSnap.data() ?? null;
+      const docData = docSnap.data();
+      if (isParsingFailureSentinel(docData)) {
+        // Allow throwing here since we are inside `asyncTry`.
+        // eslint-disable-next-line no-restricted-syntax
+        throw new Error('Firestore document data failed to parse');
+      }
+      return docData ?? null;
     });
     return prefixResultIfError(docDataResult, 'Error fetching Firestore document data');
   }
@@ -111,7 +122,12 @@ export class ServerFirestoreCollectionService<
   public async fetchQueryDocs(queryToFetch: Query<ItemData>): AsyncResult<ItemData[]> {
     const queryDataResult = await asyncTry(async () => {
       const querySnapshot = await queryToFetch.get();
-      return querySnapshot.docs.map((doc) => doc.data());
+      return (
+        querySnapshot.docs
+          .map((doc) => doc.data())
+          // Filter out parsing failures.
+          .filter((data) => !isParsingFailureSentinel(data))
+      );
     });
     return prefixResultIfError(queryDataResult, 'Error fetching Firestore query docs');
   }

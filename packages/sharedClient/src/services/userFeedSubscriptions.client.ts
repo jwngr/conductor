@@ -228,7 +228,7 @@ export class ClientUserFeedSubscriptionsService {
     }
 
     // Toast.
-    toast.success(toastMessage);
+    toast(toastMessage);
 
     // Log.
     void this.eventLogService.logSubscribedToFeedSourceEvent({

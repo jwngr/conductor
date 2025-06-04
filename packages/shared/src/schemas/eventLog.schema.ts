@@ -47,23 +47,11 @@ const ExperimentEnabledEventLogItemDataSchema = BaseEventLogItemDataSchema.exten
   value: z.string().optional(), // For string experiments, the value that was set
 });
 
-export type ExperimentEnabledEventLogItemDataFromStorage = z.infer<
-  typeof ExperimentEnabledEventLogItemDataSchema
->;
-
-export type ExperimentDisabledEventLogItemDataFromStorage = z.infer<
-  typeof ExperimentDisabledEventLogItemDataSchema
->;
-
 export const ExperimentDisabledEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
   eventType: z.literal(EventType.ExperimentDisabled),
   experimentId: ExperimentIdSchema,
   experimentType: ExperimentTypeSchema,
 });
-
-export type StringExperimentValueChangedEventLogItemDataFromStorage = z.infer<
-  typeof StringExperimentValueChangedEventLogItemDataSchema
->;
 
 const StringExperimentValueChangedEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
   eventType: z.literal(EventType.StringExperimentValueChanged),
@@ -92,16 +80,12 @@ export const UnsubscribedFromFeedSourceEventLogItemDataSchema = BaseEventLogItem
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
 });
 
-export type ThemePreferenceChangedEventLogItemDataFromStorage = z.infer<
-  typeof ThemePreferenceChangedEventLogItemDataSchema
->;
-
 const ThemePreferenceChangedEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
   eventType: z.literal(EventType.ThemePreferenceChanged),
   themePreference: ThemePreferenceSchema,
 });
 
-export const EventLogItemDataSchema = z.discriminatedUnion('eventType', [
+const EventLogItemDataSchema = z.discriminatedUnion('eventType', [
   FeedItemActionEventLogItemDataSchema,
   FeedItemImportedEventLogItemDataSchema,
   ExperimentEnabledEventLogItemDataSchema,
@@ -111,6 +95,8 @@ export const EventLogItemDataSchema = z.discriminatedUnion('eventType', [
   UnsubscribedFromFeedSourceEventLogItemDataSchema,
   ThemePreferenceChangedEventLogItemDataSchema,
 ]);
+
+export type EventLogItemDataFromStorage = z.infer<typeof EventLogItemDataSchema>;
 
 /** Zod schema for an {@link EventLogItem} persisted to Firestore. */
 export const EventLogItemSchema = z.object({

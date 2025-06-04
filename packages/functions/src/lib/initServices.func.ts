@@ -13,16 +13,12 @@ import {
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
-import {parseAccount, parseAccountId, toStorageAccount} from '@shared/parsers/accounts.parser';
+import {parseAccount, parseAccountId} from '@shared/parsers/accounts.parser';
 import {
   parseAccountSettings,
   toStorageAccountSettings,
 } from '@shared/parsers/accountSettings.parser';
-import {
-  parseEventId,
-  parseEventLogItem,
-  toStorageEventLogItem,
-} from '@shared/parsers/eventLog.parser';
+import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
 import {
   parseAccountExperimentsState,
   toStorageAccountExperimentsState,
@@ -37,6 +33,9 @@ import {
 import {Environment} from '@shared/types/environment.types';
 import type {Result} from '@shared/types/results.types';
 import type {RssFeedProvider} from '@shared/types/rss.types';
+
+import {toStorageAccount} from '@shared/storage/accounts.storage';
+import {toStorageEventLogItem} from '@shared/storage/eventLog.storage';
 
 import {ServerAccountsService} from '@sharedServer/services/accounts.server';
 import {ServerAccountSettingsService} from '@sharedServer/services/accountSettings.server';
