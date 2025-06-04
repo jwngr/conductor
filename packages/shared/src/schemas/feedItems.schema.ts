@@ -19,7 +19,7 @@ const NewFeedItemImportStateSchema = z.object({
   lastImportRequestedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
-export const ProcessingFeedItemImportStateSchema = z.object({
+const ProcessingFeedItemImportStateSchema = z.object({
   status: z.literal(FeedItemImportStatus.Processing),
   shouldFetch: z.literal(false),
   importStartedTime: FirestoreTimestampSchema.or(z.date()),
@@ -27,7 +27,7 @@ export const ProcessingFeedItemImportStateSchema = z.object({
   lastImportRequestedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
-export const FailedFeedItemImportStateSchema = z.object({
+const FailedFeedItemImportStateSchema = z.object({
   status: z.literal(FeedItemImportStatus.Failed),
   shouldFetch: z.boolean(),
   errorMessage: z.string(),
@@ -36,7 +36,7 @@ export const FailedFeedItemImportStateSchema = z.object({
   lastImportRequestedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
-export const CompletedFeedItemImportStateSchema = z.object({
+const CompletedFeedItemImportStateSchema = z.object({
   status: z.literal(FeedItemImportStatus.Completed),
   shouldFetch: z.boolean(),
   lastSuccessfulImportTime: FirestoreTimestampSchema.or(z.date()),
@@ -65,7 +65,7 @@ const BaseFeedItemSchema = z.object({
   lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
-export const BaseFeedItemWithUrlSchema = BaseFeedItemSchema.extend({
+const BaseFeedItemWithUrlSchema = BaseFeedItemSchema.extend({
   url: z.string().url(),
   description: z.string().nullable(),
   summary: z.string().nullable(),
@@ -95,8 +95,32 @@ export const IntervalFeedItemSchema = BaseFeedItemSchema.extend({
 
 export type IntervalFeedItemFromStorage = z.infer<typeof IntervalFeedItemSchema>;
 
+const ArticleFeedItemSchema = BaseFeedItemWithUrlSchema.extend({
+  feedItemType: z.literal(FeedItemType.Article),
+});
+
+const VideoFeedItemSchema = BaseFeedItemWithUrlSchema.extend({
+  feedItemType: z.literal(FeedItemType.Video),
+});
+
+const WebsiteFeedItemSchema = BaseFeedItemWithUrlSchema.extend({
+  feedItemType: z.literal(FeedItemType.Website),
+});
+
+const TweetFeedItemSchema = BaseFeedItemWithUrlSchema.extend({
+  feedItemType: z.literal(FeedItemType.Tweet),
+});
+
+const YouTubeFeedItemSchema = BaseFeedItemWithUrlSchema.extend({
+  feedItemType: z.literal(FeedItemType.YouTube),
+});
+
 export const FeedItemSchema = z.discriminatedUnion('feedItemType', [
-  BaseFeedItemWithUrlSchema,
+  ArticleFeedItemSchema,
+  VideoFeedItemSchema,
+  WebsiteFeedItemSchema,
+  TweetFeedItemSchema,
+  YouTubeFeedItemSchema,
   XkcdFeedItemSchema,
   IntervalFeedItemSchema,
 ]);
