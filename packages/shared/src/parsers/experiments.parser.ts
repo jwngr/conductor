@@ -3,7 +3,7 @@ import {logger} from '@shared/services/logger.shared';
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseZodResult} from '@shared/lib/parser.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
-import {omitUndefined} from '@shared/lib/utils.shared';
+import {omitUndefined, safeAssertNever} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 
@@ -37,22 +37,24 @@ import type {
 export function parseExperimentDefinition(
   maybeExperimentDefinition: unknown
 ): Result<ExperimentDefinition> {
-  const parsedExperimentResult = parseZodResult<BaseExperimentDefinitionFromStorage>(
+  const parsedExpDefinitionResult = parseZodResult<BaseExperimentDefinitionFromStorage>(
     BaseExperimentDefinitionSchema,
     maybeExperimentDefinition
   );
-  if (!parsedExperimentResult.success) {
-    return prefixErrorResult(parsedExperimentResult, 'Invalid experiment definition');
+  if (!parsedExpDefinitionResult.success) {
+    return prefixErrorResult(parsedExpDefinitionResult, 'Invalid experiment definition');
   }
 
-  switch (parsedExperimentResult.value.experimentType) {
+  const parsedExpDefinition = parsedExpDefinitionResult.value;
+  switch (parsedExpDefinition.experimentType) {
     case ExperimentType.Boolean:
       return parseBooleanExperimentDefinition({maybeExperimentDefinition});
     case ExperimentType.String:
       return parseStringExperimentDefinition({maybeExperimentDefinition});
     default:
+      safeAssertNever(parsedExpDefinition.experimentType);
       return makeErrorResult(
-        new Error(`Unknown experiment type: ${parsedExperimentResult.value.experimentType}`)
+        new Error(`Unknown experiment type: ${parsedExpDefinition.experimentType}`)
       );
   }
 }
@@ -117,16 +119,17 @@ function parseStringExperimentDefinition(args: {
  * that can be persisted to Firestore.
  */
 export function toStorageExperimentDefinition(
-  experiment: ExperimentDefinition
+  experimentDefinition: ExperimentDefinition
 ): ExperimentDefinitionFromStorage {
-  switch (experiment.experimentType) {
+  switch (experimentDefinition.experimentType) {
     case ExperimentType.Boolean:
-      return toStorageBooleanExperimentDefinition(experiment);
+      return toStorageBooleanExperimentDefinition(experimentDefinition);
     case ExperimentType.String:
-      return toStorageStringExperimentDefinition(experiment);
+      return toStorageStringExperimentDefinition(experimentDefinition);
     default:
-      logger.error(new Error('Unknown experiment type'), {experiment});
-      return toStorageBooleanExperimentDefinition(experiment);
+      safeAssertNever(experimentDefinition);
+      logger.error(new Error('Unknown experiment type'), {experimentDefinition});
+      return toStorageBooleanExperimentDefinition(experimentDefinition);
   }
 }
 
@@ -135,16 +138,16 @@ export function toStorageExperimentDefinition(
  * persisted to Firestore.
  */
 function toStorageBooleanExperimentDefinition(
-  experiment: BooleanExperimentDefinition
+  experimentDefinition: BooleanExperimentDefinition
 ): BooleanExperimentDefinitionFromStorage {
   return omitUndefined({
-    experimentId: experiment.experimentId,
+    experimentId: experimentDefinition.experimentId,
     experimentType: ExperimentType.Boolean,
-    defaultIsEnabled: experiment.defaultIsEnabled,
-    environments: [...experiment.environments],
-    visibility: experiment.visibility,
-    title: experiment.title,
-    description: experiment.description,
+    defaultIsEnabled: experimentDefinition.defaultIsEnabled,
+    environments: [...experimentDefinition.environments],
+    visibility: experimentDefinition.visibility,
+    title: experimentDefinition.title,
+    description: experimentDefinition.description,
   });
 }
 
