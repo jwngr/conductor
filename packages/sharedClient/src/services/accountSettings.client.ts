@@ -4,10 +4,7 @@ import {ACCOUNT_SETTINGS_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
-import {
-  parseAccountSettings,
-  toStorageAccountSettings,
-} from '@shared/parsers/accountSettings.parser';
+import {parseAccountSettings} from '@shared/parsers/accountSettings.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {AccountSettings} from '@shared/types/accountSettings.types';
@@ -16,6 +13,7 @@ import type {ThemePreference} from '@shared/types/theme.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
 import type {AccountSettingsFromStorage} from '@shared/schemas/accountSettings.schema';
+import {toStorageAccountSettings} from '@shared/storage/accountSettings.storage';
 
 import type {ClientEventLogService} from '@sharedClient/services/eventLog.client';
 import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';

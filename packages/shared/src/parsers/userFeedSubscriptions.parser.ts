@@ -4,10 +4,7 @@ import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {omitUndefined, safeAssertNever} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
-import {
-  parseDeliverySchedule,
-  toStorageDeliverySchedule,
-} from '@shared/parsers/deliverySchedules.parser';
+import {parseDeliverySchedule} from '@shared/parsers/deliverySchedules.parser';
 import {parseYouTubeChannelId} from '@shared/parsers/youtube.parser';
 
 import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
@@ -28,6 +25,7 @@ import {
   YouTubeChannelUserFeedSubscriptionSchema,
 } from '@shared/schemas/userFeedSubscriptions.schema';
 import type {UserFeedSubscriptionFromStorage} from '@shared/schemas/userFeedSubscriptions.schema';
+import {toStorageDeliverySchedule} from '@shared/storage/deliverySchedules.storage';
 
 /**
  * Parses a {@link UserFeedSubscriptionId} from a plain string. Returns an `ErrorResult` if the
