@@ -46,6 +46,8 @@ function makeFirestoreDataConverter<ItemData, FirestoreItemData extends Document
         const message = 'Failed to parse Firestore document data';
         const betterError = prefixError(parseDataResult.error, message);
         logger.error(betterError, {path: snapshot.ref.path});
+        // The return type of the Firestore data converter cannot be changed since it comes from the
+        // Firebase SDK. Hack the types to return a sentinel value to be filtered out later.
         return FIRESTORE_PARSING_FAILURE_SENTINEL as unknown as ItemData;
       }
 
