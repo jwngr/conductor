@@ -141,9 +141,9 @@ function useGroupedFeedItems(
 
     const groupedItems: Record<string, FeedItem[]> = {};
     switch (groupByField) {
-      case 'feedItemType':
+      case 'feedItemContentType':
         for (const item of feedItems) {
-          const groupKey = item.content.feedItemContentType;
+          const groupKey = item.feedItemContentType;
           if (!groupedItems[groupKey]) {
             groupedItems[groupKey] = [];
           }
@@ -241,7 +241,7 @@ const ViewListItem: React.FC<{
             <FeedItemImportStatusBadge importState={feedItem.importState} />
           </FlexRow>
           <Text as="p" light>
-            {feedItem.content.feedItemContentType === FeedItemContentType.Interval
+            {feedItem.feedItemContentType === FeedItemContentType.Interval
               ? 'Interval'
               : feedItem.content.url}
           </Text>

@@ -32,12 +32,10 @@ service cloud.firestore {
     function isValidFeedItemDoc(feedItemId) {
       return request.resource.data.keys().hasAll([
         'feedItemId',
-        'feedItemType',
+        'feedItemContentType',
+        'content',
         'feedSource',
         'importState',
-        'url',
-        'title',
-        'outgoingLinks',
         'triageStatus',
         'tagIds',
         'createdTime',
@@ -45,12 +43,10 @@ service cloud.firestore {
       ]) &&
       request.resource.data.feedItemId is string &&
       request.resource.data.feedItemId == feedItemId &&
-      request.resource.data.feedItemType in ['ARTICLE', 'VIDEO', 'WEBSITE', 'TWEET', 'XKCD', 'YOUTUBE'] &&
+      request.resource.data.feedItemContentType in ['ARTICLE', 'VIDEO', 'WEBSITE', 'TWEET', 'XKCD', 'YOUTUBE'] &&
+      request.resource.data.content is map &&
       request.resource.data.feedSource.keys().hasAll(['feedSourceType']) &&
       isValidFeedSourceType(request.resource.data.feedSource.feedSourceType) &&
-      request.resource.data.url is string &&
-      request.resource.data.title is string &&
-      request.resource.data.outgoingLinks is list &&
       request.resource.data.triageStatus in ['UNTRIAGED', 'SAVED', 'DONE', 'TRASHED'] &&
       request.resource.data.tagIds is map &&
       request.resource.data.createdTime is timestamp &&
