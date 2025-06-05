@@ -10,7 +10,7 @@ export const WebsiteFeedItemRenderer: React.FC<{readonly feedItem: WebsiteFeedIt
 }) => {
   return (
     <SimpleFeedItemRenderer feedItem={feedItem}>
-      <FeedItemSummary summary={feedItem.summary} />
+      <FeedItemSummary summary={feedItem.content.summary} />
       <FeedItemMarkdown feedItem={feedItem} />
     </SimpleFeedItemRenderer>
   );

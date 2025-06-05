@@ -69,7 +69,7 @@ export class XkcdFeedItemImporter {
   }
 
   public async import(feedItem: XkcdFeedItem): AsyncResult<void> {
-    const comicIdResult = parseXkcdComicIdFromUrl(feedItem.url);
+    const comicIdResult = parseXkcdComicIdFromUrl(feedItem.content.url);
     if (!comicIdResult.success) return comicIdResult;
 
     const comicId = comicIdResult.value;

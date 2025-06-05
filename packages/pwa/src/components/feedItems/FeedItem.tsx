@@ -23,7 +23,7 @@ const FeedItemHeaderTitle: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}
     </Text>
   );
 
-  switch (feedItem.content.feedItemContentType) {
+  switch (feedItem.feedItemContentType) {
     case FeedItemContentType.Interval:
       return titleContentWithoutLink;
     case FeedItemContentType.Article:
@@ -34,7 +34,7 @@ const FeedItemHeaderTitle: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}
     case FeedItemContentType.YouTube:
       return <ExternalLink href={feedItem.content.url}>{titleContentWithoutLink}</ExternalLink>;
     default:
-      assertNever(feedItem.content);
+      assertNever(feedItem);
   }
 };
 

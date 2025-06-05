@@ -66,20 +66,13 @@ const ExplainXkcdContent: React.FC<{readonly feedItem: XkcdFeedItem}> = ({feedIt
 };
 
 export const XkcdFeedItemRenderer: React.FC<{readonly feedItem: XkcdFeedItem}> = ({feedItem}) => {
-  let mainContent: React.ReactNode;
-  if (!feedItem.xkcd) {
-    mainContent = <Text as="p">No XKCD comic found</Text>;
-  } else {
-    mainContent = (
-      <>
-        <XkcdImageAndAltText
-          imageUrl={feedItem.xkcd.imageUrlLarge}
-          altText={feedItem.xkcd.altText}
-        />
-        <ExplainXkcdContent feedItem={feedItem} />
-      </>
-    );
-  }
-
-  return <SimpleFeedItemRenderer feedItem={feedItem}>{mainContent}</SimpleFeedItemRenderer>;
+  return (
+    <SimpleFeedItemRenderer feedItem={feedItem}>
+      <XkcdImageAndAltText
+        imageUrl={feedItem.content.imageUrlLarge}
+        altText={feedItem.content.altText}
+      />
+      <ExplainXkcdContent feedItem={feedItem} />
+    </SimpleFeedItemRenderer>
+  );
 };
