@@ -82,18 +82,23 @@ export async function handleSuperfeedrWebhookHelper(args: {
   const userFeedSubscriptions = fetchSubsResult.value;
 
   // Make a list of supplier methods that create feed items.
-  const createFeedItemResults: Array<Supplier<AsyncResult<FeedItemWithUrl>>> = [];
+  const createFeedItemResults: Array<Supplier<AsyncResult<FeedItem>>> = [];
   body.items.forEach((item) => {
     logger.log(`[SUPERFEEDR] Processing item ${item.id}`, {item});
 
     userFeedSubscriptions.forEach((userFeedSubscription) => {
-      const newFeedItemResult = async (): AsyncResult<FeedItemWithUrl> => {
+      const newFeedItemResult = async (): AsyncResult<FeedItem> => {
         return await feedItemsService.createFeedItemFromUrl({
           feedSource: makeRssFeedSource({userFeedSubscription}),
-          url: item.permalinkUrl,
+          content: {
+            url: item.permalinkUrl,
+            title: item.title,
+            description: item.summary,
+            // TODO: Set better initial values for these fields.
+            outgoingLinks: [],
+            summary: null,
+          },
           accountId: userFeedSubscription.accountId,
-          title: item.title,
-          description: item.summary,
         });
       };
       createFeedItemResults.push(newFeedItemResult);
@@ -109,10 +114,10 @@ export async function handleSuperfeedrWebhookHelper(args: {
 
   // Log successes and errors.
   const newFeedItemResults = batchResult.value;
-  const [newFeedItemSuccesses, newFeedItemErrors] = partition<
-    SuccessResult<FeedItemWithUrl>,
-    ErrorResult
-  >(newFeedItemResults, (result): result is SuccessResult<FeedItemWithUrl> => result.success);
+  const [newFeedItemSuccesses, newFeedItemErrors] = partition<SuccessResult<FeedItem>, ErrorResult>(
+    newFeedItemResults,
+    (result): result is SuccessResult<FeedItem> => result.success
+  );
   logger.log(
     `[SUPERFEEDR] Successfully created ${newFeedItemSuccesses.length} feed items, encountered ${newFeedItemErrors.length} errors`,
     {

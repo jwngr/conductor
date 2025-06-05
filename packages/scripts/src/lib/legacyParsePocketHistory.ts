@@ -86,9 +86,13 @@ async function main(): Promise<void> {
     const createFeedItemResult = await feedItemsService.createFeedItemFromUrl({
       feedSource: POCKET_EXPORT_FEED_SOURCE,
       accountId,
-      url: pocketItem.url,
-      title: pocketItem.title,
-      description: null,
+      content: {
+        url: pocketItem.url,
+        title: pocketItem.title,
+        description: null,
+        outgoingLinks: [],
+        summary: null,
+      },
     });
 
     if (!createFeedItemResult.success) {

@@ -38,8 +38,14 @@ const SaveCurrentUrlButton: React.FC = () => {
     const title = tab.title ?? 'TODO: Add title support';
     const addFeedItemResult = await feedItemsService.createFeedItemFromUrl({
       feedSource: EXTENSION_FEED_SOURCE,
-      url: tabUrl,
-      title,
+      content: {
+        url: tabUrl,
+        title,
+        // TODO: Set better initial values for these fields.
+        description: null,
+        outgoingLinks: [],
+        summary: null,
+      },
     });
 
     if (!addFeedItemResult.success) {
@@ -62,7 +68,9 @@ const SaveCurrentUrlButton: React.FC = () => {
       statusContent = <p style={{color: 'red'}}>Error saving URL: {asyncState.error.message}</p>;
       break;
     case AsyncStatus.Success:
-      statusContent = <p style={{color: 'green'}}>Feed item saved: {asyncState.value.title}</p>;
+      statusContent = (
+        <p style={{color: 'green'}}>Feed item saved: {asyncState.value.content.title}</p>
+      );
       break;
     default:
       assertNever(asyncState);

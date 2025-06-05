@@ -2,7 +2,7 @@ import {logger} from '@shared/services/logger.shared';
 
 import {prefixError, upgradeUnknownError} from '@shared/lib/errorUtils.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
-import {isValidUrl, parseUrl} from '@shared/lib/urls.shared';
+import {parseUrl} from '@shared/lib/urls.shared';
 import {assertNever, makeUuid} from '@shared/lib/utils.shared';
 import {isXkcdComicUrl} from '@shared/lib/xkcd.shared';
 import {isYouTubeVideoUrl} from '@shared/lib/youtube.shared';
@@ -19,15 +19,17 @@ import type {
   FeedItemAction,
   FeedItemId,
   FeedItemWithUrl,
+  FeedItemWithUrlContent,
   IntervalFeedItem,
+  IntervalFeedItemContent,
   NewFeedItemImportState,
   XkcdFeedItem,
+  XkcdFeedItemContent,
 } from '@shared/types/feedItems.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/results.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
-import type {TagId} from '@shared/types/tags.types';
 import type {
   UserFeedSubscription,
   UserFeedSubscriptionId,
@@ -63,106 +65,96 @@ export class SharedFeedItemHelpers {
     return feedItem?.tagIds[SystemTagId.Unread] === true;
   }
 
-  public static makeFeedItemFromUrl<T extends FeedItemWithUrl>(
-    args: Pick<T, 'feedSource' | 'accountId' | 'url' | 'title' | 'description'>
-  ): Result<T> {
-    const {feedSource, accountId, url, title, description} = args;
+  public static makeFeedItem(
+    args: Pick<FeedItem, 'feedItemContentType' | 'feedSource' | 'accountId' | 'content'>
+  ): FeedItem {
+    const {feedItemContentType, feedSource, accountId, content} = args;
 
-    const trimmedUrl = url.trim();
-    if (!isValidUrl(trimmedUrl)) {
-      return makeErrorResult(new Error(`Invalid URL provided for feed item: "${url}"`));
-    }
-
-    // Common fields across all feed item types.
-    const feedItemId = makeFeedItemId();
-    const feedItemType = getFeedItemTypeFromUrl(url);
-    const triageStatus = TriageStatus.Untriaged;
-    const importState = makeNewFeedItemImportState();
-    const tagIds: Partial<Record<TagId, true>> = {
-      [SystemTagId.Unread]: true,
-    };
-    const summary = null;
-    const outgoingLinks: string[] = [];
-
-    // Some feed item contain additional fields.
-    switch (feedItemType) {
+    switch (feedItemContentType) {
       case FeedItemContentType.Article:
       case FeedItemContentType.Video:
       case FeedItemContentType.Tweet:
       case FeedItemContentType.Website:
       case FeedItemContentType.YouTube:
-        return makeSuccessResult({
-          feedItemType,
+        return SharedFeedItemHelpers.makeFeedItemWithUrl({
+          feedItemContentType,
           feedSource,
-          url,
           accountId,
-          feedItemId,
-          importState,
-          title,
-          description,
-          summary,
-          outgoingLinks,
-          triageStatus,
-          tagIds,
-          // TODO(timestamps): Use server timestamps instead.
-          createdTime: new Date(),
-          lastUpdatedTime: new Date(),
+          content: content as FeedItemWithUrlContent,
         });
       case FeedItemContentType.Xkcd:
         return SharedFeedItemHelpers.makeXkcdFeedItem({
           feedSource,
           accountId,
-          url,
-          title,
-          description,
+          content: content as XkcdFeedItemContent,
+        });
+      case FeedItemContentType.Interval:
+        return SharedFeedItemHelpers.makeIntervalFeedItem({
+          feedSource,
+          accountId,
+          content: content as IntervalFeedItemContent,
         });
       default:
-        assertNever(feedItemType);
+        assertNever(feedItemContentType);
     }
   }
 
-  public static makeXkcdFeedItem(
-    args: Pick<XkcdFeedItem, 'feedSource' | 'accountId' | 'url' | 'title' | 'description'>
-  ): Result<XkcdFeedItem> {
-    const {feedSource, accountId, url, title, description} = args;
+  private static makeGenericFeedItem<T extends FeedItem>(
+    args: Pick<T, 'feedItemContentType' | 'feedSource' | 'accountId' | 'content'>
+  ): T {
+    const {feedItemContentType, feedSource, accountId, content} = args;
 
-    return makeSuccessResult<XkcdFeedItem>({
-      feedItemContentType: FeedItemContentType.Xkcd,
-      xkcd: null,
+    return {
+      feedItemContentType,
+      content,
+      feedSource,
+      accountId,
       feedItemId: makeFeedItemId(),
       importState: makeNewFeedItemImportState(),
       triageStatus: TriageStatus.Untriaged,
       tagIds: {[SystemTagId.Unread]: true},
-      summary: null,
-      outgoingLinks: [],
-      feedSource,
-      url,
-      accountId,
-      title: title,
-      description,
       // TODO(timestamps): Use server timestamps instead.
       createdTime: new Date(),
       lastUpdatedTime: new Date(),
+    } as T;
+  }
+
+  public static makeXkcdFeedItem(
+    args: Pick<XkcdFeedItem, 'feedSource' | 'accountId' | 'content'>
+  ): XkcdFeedItem {
+    const {feedSource, accountId, content} = args;
+
+    return SharedFeedItemHelpers.makeGenericFeedItem({
+      feedItemContentType: FeedItemContentType.Xkcd,
+      feedSource,
+      accountId,
+      content,
     });
   }
 
   public static makeIntervalFeedItem(
-    args: Pick<IntervalFeedItem, 'feedSource' | 'accountId' | 'title'>
-  ): Result<IntervalFeedItem> {
-    const {feedSource, accountId, title} = args;
+    args: Pick<IntervalFeedItem, 'feedSource' | 'accountId' | 'content'>
+  ): IntervalFeedItem {
+    const {feedSource, accountId, content} = args;
 
-    return makeSuccessResult<IntervalFeedItem>({
+    return SharedFeedItemHelpers.makeGenericFeedItem({
       feedItemContentType: FeedItemContentType.Interval,
-      feedItemId: makeFeedItemId(),
-      triageStatus: TriageStatus.Untriaged,
-      importState: makeNewFeedItemImportState(),
-      tagIds: {[SystemTagId.Unread]: true},
       feedSource,
       accountId,
-      title,
-      // TODO(timestamps): Use server timestamps instead.
-      createdTime: new Date(),
-      lastUpdatedTime: new Date(),
+      content,
+    });
+  }
+
+  public static makeFeedItemWithUrl(
+    args: Pick<FeedItemWithUrl, 'feedItemContentType' | 'feedSource' | 'accountId' | 'content'>
+  ): FeedItemWithUrl {
+    const {feedItemContentType, feedSource, accountId, content} = args;
+
+    return SharedFeedItemHelpers.makeGenericFeedItem({
+      feedItemContentType,
+      feedSource,
+      accountId,
+      content,
     });
   }
 

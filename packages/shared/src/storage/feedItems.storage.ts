@@ -10,10 +10,10 @@ import {parseFeedSource} from '@shared/parsers/feedSources.parser';
 import type {AccountId} from '@shared/types/accounts.types';
 import type {
   ArticleFeedItem,
-  BaseFeedItemContentWithUrl,
   FeedItem,
   FeedItemId,
   FeedItemImportState,
+  FeedItemWithUrlContent,
   IntervalFeedItem,
   IntervalFeedItemContent,
   TriageStatus,
@@ -427,7 +427,7 @@ function toStorageIntervalFeedItemContent(
 }
 
 function toStorageFeedItemWithUrlContent<T extends BaseFeedItemContentWithUrlFromStorage>(
-  feedItemContent: BaseFeedItemContentWithUrl
+  feedItemContent: FeedItemWithUrlContent
 ): T {
   return {
     title: feedItemContent.title,
@@ -466,7 +466,7 @@ function fromStorageIntervalFeedItemContent(
 
 function fromStorageFeedItemWithUrlContent(
   feedItemContentFromStorage: BaseFeedItemContentWithUrlFromStorage
-): Result<BaseFeedItemContentWithUrl> {
+): Result<FeedItemWithUrlContent> {
   return makeSuccessResult({
     title: feedItemContentFromStorage.title,
     url: feedItemContentFromStorage.url,

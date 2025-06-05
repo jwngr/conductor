@@ -102,8 +102,13 @@ export const ImportScreen: React.FC = () => {
 
     const createResult = await feedItemsService.createFeedItemFromUrl({
       feedSource: POCKET_EXPORT_FEED_SOURCE,
-      url: item.url,
-      title: item.title,
+      content: {
+        url: item.url,
+        title: item.title,
+        description: null,
+        outgoingLinks: [],
+        summary: null,
+      },
     });
 
     if (!createResult.success) {

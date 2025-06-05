@@ -45,8 +45,13 @@ const FeedItemImporter: React.FC = () => {
 
       const addFeedItemResult = await feedItemsService.createFeedItemFromUrl({
         feedSource: PWA_FEED_SOURCE,
-        url: trimmedUrl,
-        title: trimmedUrl,
+        content: {
+          url: trimmedUrl,
+          title: trimmedUrl,
+          description: null,
+          outgoingLinks: [],
+          summary: null,
+        },
       });
 
       if (!addFeedItemResult.success) {

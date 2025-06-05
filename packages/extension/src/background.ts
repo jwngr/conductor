@@ -1,5 +1,6 @@
 import {logger} from '@shared/services/logger.shared';
 
+import {DEFAULT_FEED_TITLE} from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 import {EXTENSION_FEED_SOURCE} from '@shared/lib/feedSources.shared';
 
@@ -26,8 +27,14 @@ chrome.action.onClicked.addListener(async (tab) => {
 
   const addFeedItemResult = await feedItemsService.createFeedItemFromUrl({
     feedSource: EXTENSION_FEED_SOURCE,
-    url: tabUrl,
-    title: 'TODO: Add title support',
+    content: {
+      url: tabUrl,
+      // TODO: Set better initial values for these fields.
+      title: DEFAULT_FEED_TITLE,
+      description: null,
+      outgoingLinks: [],
+      summary: null,
+    },
   });
 
   if (!addFeedItemResult.success) {

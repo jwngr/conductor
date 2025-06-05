@@ -61,27 +61,27 @@ interface BaseFeedItem extends BaseStoreItem {
 
 export type ArticleFeedItem = BaseFeedItem & {
   readonly feedItemContentType: FeedItemContentType.Article;
-  readonly content: BaseFeedItemContentWithUrl;
+  readonly content: FeedItemWithUrlContent;
 };
 
 export type VideoFeedItem = BaseFeedItem & {
   readonly feedItemContentType: FeedItemContentType.Video;
-  readonly content: BaseFeedItemContentWithUrl;
+  readonly content: FeedItemWithUrlContent;
 };
 
 export type WebsiteFeedItem = BaseFeedItem & {
   readonly feedItemContentType: FeedItemContentType.Website;
-  readonly content: BaseFeedItemContentWithUrl;
+  readonly content: FeedItemWithUrlContent;
 };
 
 export type TweetFeedItem = BaseFeedItem & {
   readonly feedItemContentType: FeedItemContentType.Tweet;
-  readonly content: BaseFeedItemContentWithUrl;
+  readonly content: FeedItemWithUrlContent;
 };
 
 export type YouTubeFeedItem = BaseFeedItem & {
   readonly feedItemContentType: FeedItemContentType.YouTube;
-  readonly content: BaseFeedItemContentWithUrl;
+  readonly content: FeedItemWithUrlContent;
 };
 
 export type XkcdFeedItem = BaseFeedItem & {
@@ -104,12 +104,20 @@ export type FeedItem =
   | XkcdFeedItem
   | IntervalFeedItem;
 
+export type FeedItemWithUrl =
+  | ArticleFeedItem
+  | VideoFeedItem
+  | WebsiteFeedItem
+  | TweetFeedItem
+  | YouTubeFeedItem
+  | XkcdFeedItem;
+
 interface BaseFeedItemContent {
   /** Title of the content provided by the source. */
   readonly title: string;
 }
 
-export interface BaseFeedItemContentWithUrl extends BaseFeedItemContent {
+export interface FeedItemWithUrlContent extends BaseFeedItemContent {
   /** URL of the source content. */
   readonly url: string;
   /** Description of the source content, provided by the source. */
@@ -120,7 +128,7 @@ export interface BaseFeedItemContentWithUrl extends BaseFeedItemContent {
   readonly summary: string | null;
 }
 
-export interface XkcdFeedItemContent extends BaseFeedItemContentWithUrl {
+export interface XkcdFeedItemContent extends FeedItemWithUrlContent {
   readonly altText: string;
   readonly imageUrlSmall: string;
   readonly imageUrlLarge: string;
@@ -131,7 +139,7 @@ export interface IntervalFeedItemContent extends BaseFeedItemContent {
 }
 
 export type FeedItemContent =
-  | BaseFeedItemContentWithUrl
+  | FeedItemWithUrlContent
   | XkcdFeedItemContent
   | IntervalFeedItemContent;
 
