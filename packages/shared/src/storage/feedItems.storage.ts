@@ -44,10 +44,9 @@ import type {
 } from '@shared/schemas/feedItems.schema';
 import {toStorageFeedSource} from '@shared/storage/feedSources.storage';
 
-//////////////////
-///  FEED ITEM  //
-//////////////////
-
+/////////////////
+//  FEED ITEM  //
+/////////////////
 /**
  * Converts a {@link FeedItem} into a {@link FeedItemFromStorage}.
  */
@@ -399,9 +398,9 @@ function fromStorageIntervalFeedItem(
   });
 }
 
-//////////////////////////
-///  FEED ITEM CONTENT  //
-//////////////////////////
+/////////////////////////
+//  FEED ITEM CONTENT  //
+/////////////////////////
 function toStorageXkcdFeedItemContent(
   feedItemContent: XkcdFeedItemContent
 ): XkcdFeedItemContentFromStorage {
@@ -476,9 +475,9 @@ function fromStorageFeedItemWithUrlContent(
   });
 }
 
-///////////////////////////////
-///  FEED ITEM IMPORT STATE  //
-///////////////////////////////
+//////////////////////////////
+//  FEED ITEM IMPORT STATE  //
+//////////////////////////////
 /**
  * Converts a {@link FeedItemImportStateFromStorage} into a {@link FeedItemImportState}.
  */
