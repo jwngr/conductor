@@ -101,35 +101,48 @@ const BaseFeedItemSchema = z.object({
   lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
-const ArticleFeedItemSchema = BaseFeedItemSchema.extend({
+const FeedItemWithUrlSchema = BaseFeedItemSchema.extend({
+  content: FeedItemWithUrlContentSchema,
+  feedItemContentType: z.union([
+    z.literal(FeedItemContentType.Article),
+    z.literal(FeedItemContentType.Video),
+    z.literal(FeedItemContentType.Website),
+    z.literal(FeedItemContentType.Tweet),
+    z.literal(FeedItemContentType.YouTube),
+  ]),
+});
+
+export type FeedItemWithUrlFromStorage = z.infer<typeof FeedItemWithUrlSchema>;
+
+const ArticleFeedItemSchema = FeedItemWithUrlSchema.extend({
   feedItemContentType: z.literal(FeedItemContentType.Article),
   content: FeedItemWithUrlContentSchema,
 });
 
 export type ArticleFeedItemFromStorage = z.infer<typeof ArticleFeedItemSchema>;
 
-const VideoFeedItemSchema = BaseFeedItemSchema.extend({
+const VideoFeedItemSchema = FeedItemWithUrlSchema.extend({
   feedItemContentType: z.literal(FeedItemContentType.Video),
   content: FeedItemWithUrlContentSchema,
 });
 
 export type VideoFeedItemFromStorage = z.infer<typeof VideoFeedItemSchema>;
 
-const WebsiteFeedItemSchema = BaseFeedItemSchema.extend({
+const WebsiteFeedItemSchema = FeedItemWithUrlSchema.extend({
   feedItemContentType: z.literal(FeedItemContentType.Website),
   content: FeedItemWithUrlContentSchema,
 });
 
 export type WebsiteFeedItemFromStorage = z.infer<typeof WebsiteFeedItemSchema>;
 
-const TweetFeedItemSchema = BaseFeedItemSchema.extend({
+const TweetFeedItemSchema = FeedItemWithUrlSchema.extend({
   feedItemContentType: z.literal(FeedItemContentType.Tweet),
   content: FeedItemWithUrlContentSchema,
 });
 
 export type TweetFeedItemFromStorage = z.infer<typeof TweetFeedItemSchema>;
 
-const YouTubeFeedItemSchema = BaseFeedItemSchema.extend({
+const YouTubeFeedItemSchema = FeedItemWithUrlSchema.extend({
   feedItemContentType: z.literal(FeedItemContentType.YouTube),
   content: FeedItemWithUrlContentSchema,
 });

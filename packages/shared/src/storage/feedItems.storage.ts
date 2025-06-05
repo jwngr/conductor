@@ -13,6 +13,7 @@ import type {
   FeedItem,
   FeedItemId,
   FeedItemImportState,
+  FeedItemWithUrl,
   FeedItemWithUrlContent,
   IntervalFeedItem,
   IntervalFeedItemContent,
@@ -33,6 +34,7 @@ import type {
   FeedItemFromStorage,
   FeedItemImportStateFromStorage,
   FeedItemWithUrlContentFromStorage,
+  FeedItemWithUrlFromStorage,
   IntervalFeedItemContentFromStorage,
   IntervalFeedItemFromStorage,
   TweetFeedItemFromStorage,
@@ -182,15 +184,11 @@ function toStorageIntervalFeedItem(feedItem: IntervalFeedItem): IntervalFeedItem
 export function fromStorageFeedItem(feedItemFromStorage: FeedItemFromStorage): Result<FeedItem> {
   switch (feedItemFromStorage.feedItemContentType) {
     case FeedItemContentType.Article:
-      return fromStorageArticleFeedItem(feedItemFromStorage);
     case FeedItemContentType.Video:
-      return fromStorageVideoFeedItem(feedItemFromStorage);
     case FeedItemContentType.Website:
-      return fromStorageWebsiteFeedItem(feedItemFromStorage);
     case FeedItemContentType.Tweet:
-      return fromStorageTweetFeedItem(feedItemFromStorage);
     case FeedItemContentType.YouTube:
-      return fromStorageYouTubeFeedItem(feedItemFromStorage);
+      return fromStorageFeedItemWithUrl(feedItemFromStorage);
     case FeedItemContentType.Xkcd:
       return fromStorageXkcdFeedItem(feedItemFromStorage);
     case FeedItemContentType.Interval:
@@ -230,9 +228,9 @@ function fromStorageFeedItemShared(feedItemFromStorage: FeedItemFromStorage): Re
   });
 }
 
-function fromStorageArticleFeedItem(
-  feedItemFromStorage: ArticleFeedItemFromStorage
-): Result<ArticleFeedItem> {
+function fromStorageFeedItemWithUrl(
+  feedItemFromStorage: FeedItemWithUrlFromStorage
+): Result<FeedItemWithUrl> {
   const parsedFeedItemSharedResult = fromStorageFeedItemShared(feedItemFromStorage);
   if (!parsedFeedItemSharedResult.success) return parsedFeedItemSharedResult;
   const {feedItemId, accountId, importState, feedSource} = parsedFeedItemSharedResult.value;
@@ -241,103 +239,7 @@ function fromStorageArticleFeedItem(
   if (!parsedContentResult.success) return parsedContentResult;
 
   return makeSuccessResult({
-    feedItemContentType: FeedItemContentType.Article,
-    feedItemId,
-    feedSource,
-    accountId,
-    importState,
-    content: parsedContentResult.value,
-    triageStatus: feedItemFromStorage.triageStatus,
-    tagIds: feedItemFromStorage.tagIds,
-    createdTime: feedItemFromStorage.createdTime,
-    lastUpdatedTime: feedItemFromStorage.lastUpdatedTime,
-  });
-}
-
-function fromStorageVideoFeedItem(
-  feedItemFromStorage: VideoFeedItemFromStorage
-): Result<VideoFeedItem> {
-  const parsedFeedItemSharedResult = fromStorageFeedItemShared(feedItemFromStorage);
-  if (!parsedFeedItemSharedResult.success) return parsedFeedItemSharedResult;
-  const {feedItemId, accountId, importState, feedSource} = parsedFeedItemSharedResult.value;
-
-  const parsedContentResult = fromStorageFeedItemWithUrlContent(feedItemFromStorage.content);
-  if (!parsedContentResult.success) return parsedContentResult;
-
-  return makeSuccessResult({
-    feedItemContentType: FeedItemContentType.Video,
-    feedItemId,
-    feedSource,
-    accountId,
-    importState,
-    content: parsedContentResult.value,
-    triageStatus: feedItemFromStorage.triageStatus,
-    tagIds: feedItemFromStorage.tagIds,
-    createdTime: feedItemFromStorage.createdTime,
-    lastUpdatedTime: feedItemFromStorage.lastUpdatedTime,
-  });
-}
-
-function fromStorageWebsiteFeedItem(
-  feedItemFromStorage: WebsiteFeedItemFromStorage
-): Result<WebsiteFeedItem> {
-  const parsedFeedItemSharedResult = fromStorageFeedItemShared(feedItemFromStorage);
-  if (!parsedFeedItemSharedResult.success) return parsedFeedItemSharedResult;
-  const {feedItemId, accountId, importState, feedSource} = parsedFeedItemSharedResult.value;
-
-  const parsedContentResult = fromStorageFeedItemWithUrlContent(feedItemFromStorage.content);
-  if (!parsedContentResult.success) return parsedContentResult;
-
-  return makeSuccessResult({
-    feedItemContentType: FeedItemContentType.Website,
-    feedItemId,
-    feedSource,
-    accountId,
-    importState,
-    content: parsedContentResult.value,
-    triageStatus: feedItemFromStorage.triageStatus,
-    tagIds: feedItemFromStorage.tagIds,
-    createdTime: feedItemFromStorage.createdTime,
-    lastUpdatedTime: feedItemFromStorage.lastUpdatedTime,
-  });
-}
-
-function fromStorageTweetFeedItem(
-  feedItemFromStorage: TweetFeedItemFromStorage
-): Result<TweetFeedItem> {
-  const parsedFeedItemSharedResult = fromStorageFeedItemShared(feedItemFromStorage);
-  if (!parsedFeedItemSharedResult.success) return parsedFeedItemSharedResult;
-  const {feedItemId, accountId, importState, feedSource} = parsedFeedItemSharedResult.value;
-
-  const parsedContentResult = fromStorageFeedItemWithUrlContent(feedItemFromStorage.content);
-  if (!parsedContentResult.success) return parsedContentResult;
-
-  return makeSuccessResult({
-    feedItemContentType: FeedItemContentType.Tweet,
-    feedItemId,
-    feedSource,
-    accountId,
-    importState,
-    content: parsedContentResult.value,
-    triageStatus: feedItemFromStorage.triageStatus,
-    tagIds: feedItemFromStorage.tagIds,
-    createdTime: feedItemFromStorage.createdTime,
-    lastUpdatedTime: feedItemFromStorage.lastUpdatedTime,
-  });
-}
-
-function fromStorageYouTubeFeedItem(
-  feedItemFromStorage: YouTubeFeedItemFromStorage
-): Result<YouTubeFeedItem> {
-  const parsedFeedItemSharedResult = fromStorageFeedItemShared(feedItemFromStorage);
-  if (!parsedFeedItemSharedResult.success) return parsedFeedItemSharedResult;
-  const {feedItemId, accountId, importState, feedSource} = parsedFeedItemSharedResult.value;
-
-  const parsedContentResult = fromStorageFeedItemWithUrlContent(feedItemFromStorage.content);
-  if (!parsedContentResult.success) return parsedContentResult;
-
-  return makeSuccessResult({
-    feedItemContentType: FeedItemContentType.YouTube,
+    feedItemContentType: feedItemFromStorage.feedItemContentType,
     feedItemId,
     feedSource,
     accountId,

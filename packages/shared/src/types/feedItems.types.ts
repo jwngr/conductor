@@ -104,6 +104,16 @@ export type FeedItem =
   | XkcdFeedItem
   | IntervalFeedItem;
 
+export type FeedItemWithUrl = FeedItem & {
+  readonly feedItemContentType:
+    | FeedItemContentType.Article
+    | FeedItemContentType.Video
+    | FeedItemContentType.Website
+    | FeedItemContentType.Tweet
+    | FeedItemContentType.YouTube;
+  readonly content: FeedItemWithUrlContent;
+};
+
 interface BaseFeedItemContent {
   /** Title of the content provided by the source. */
   readonly title: string;
