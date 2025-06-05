@@ -54,7 +54,6 @@ export type FeedItemImportStateFromStorage = z.infer<typeof FeedItemImportStateS
 
 // Content Data Schemas
 const BaseFeedItemContentSchema = z.object({
-  feedItemContentType: z.nativeEnum(FeedItemContentType),
   title: z.string(),
 });
 
