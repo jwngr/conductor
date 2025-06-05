@@ -88,7 +88,7 @@ const useMarkFeedItemRead = (args: {
   }, [feedItemId, isFeedItemNull, feedItemsService, hasFeedItemBeenImported]);
 };
 
-const LoadedFeedItemScreenMainContent: React.FC<{
+const LoadedFeedItemScreenContent: React.FC<{
   readonly feedItem: FeedItem;
 }> = ({feedItem}) => {
   useMarkFeedItemRead({feedItem, feedItemId: feedItem.feedItemId});
@@ -128,7 +128,7 @@ const LoadedFeedItemScreenMainContent: React.FC<{
   );
 };
 
-const FeedItemScreenMainContent: React.FC<{
+const FeedItemScreenContent: React.FC<{
   readonly feedItemId: FeedItemId;
 }> = ({feedItemId}) => {
   const feedItemState = useFeedItem(feedItemId);
@@ -153,7 +153,7 @@ const FeedItemScreenMainContent: React.FC<{
       if (!feedItemState.value) {
         return <NotFoundScreen title="Feed item not found" subtitle={undefined} />;
       }
-      return <LoadedFeedItemScreenMainContent feedItem={feedItemState.value} />;
+      return <LoadedFeedItemScreenContent feedItem={feedItemState.value} />;
     default:
       assertNever(feedItemState);
   }
@@ -173,7 +173,7 @@ export const FeedItemScreen: React.FC = () => {
 
   return (
     <Screen withHeader withLeftSidebar>
-      <FeedItemScreenMainContent feedItemId={feedItemId} />
+      <FeedItemScreenContent feedItemId={feedItemId} />
       <FeedItemScreenKeyboardHandler />
     </Screen>
   );
