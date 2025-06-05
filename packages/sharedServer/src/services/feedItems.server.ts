@@ -86,7 +86,9 @@ export class ServerFeedItemsService {
   }
 
   public async createIntervalFeedItem(args: {
+    /** The account that the feed item belongs to. */
     readonly accountId: AccountId;
+    /** The subscription that is creating the feed item. */
     readonly userFeedSubscription: IntervalUserFeedSubscription;
   }): AsyncResult<IntervalFeedItem> {
     const {userFeedSubscription, accountId} = args;
@@ -119,42 +121,42 @@ export class ServerFeedItemsService {
 
   public async updateXkcdFeedItemContent(
     feedItemId: FeedItemId,
-    updates: Partial<XkcdFeedItemContent>
+    content: Partial<XkcdFeedItemContent>
   ): AsyncResult<void> {
     const dataToWrite = {
-      [`content.title`]: updates.title,
-      [`content.url`]: updates.url,
-      [`content.description`]: updates.description,
-      [`content.outgoingLinks`]: updates.outgoingLinks,
-      [`content.summary`]: updates.summary,
-      [`content.altText`]: updates.altText,
-      [`content.imageUrlSmall`]: updates.imageUrlSmall,
-      [`content.imageUrlLarge`]: updates.imageUrlLarge,
+      [`content.title`]: content.title,
+      [`content.url`]: content.url,
+      [`content.description`]: content.description,
+      [`content.outgoingLinks`]: content.outgoingLinks,
+      [`content.summary`]: content.summary,
+      [`content.altText`]: content.altText,
+      [`content.imageUrlSmall`]: content.imageUrlSmall,
+      [`content.imageUrlLarge`]: content.imageUrlLarge,
     } as DocumentData;
     return await this.collectionService.updateDoc(feedItemId, dataToWrite);
   }
 
   public async updateIntervalFeedItemContent(
     feedItemId: FeedItemId,
-    updates: Partial<IntervalFeedItemContent>
+    content: Partial<IntervalFeedItemContent>
   ): AsyncResult<void> {
     const dataToWrite = {
-      [`content.title`]: updates.title,
-      [`content.intervalSeconds`]: updates.intervalSeconds,
+      [`content.title`]: content.title,
+      [`content.intervalSeconds`]: content.intervalSeconds,
     } as DocumentData;
     return await this.collectionService.updateDoc(feedItemId, dataToWrite);
   }
 
   public async updateFeedItemWithUrlContent(
     feedItemId: FeedItemId,
-    updates: Partial<FeedItemWithUrlContent>
+    content: Partial<FeedItemWithUrlContent>
   ): AsyncResult<void> {
     const dataToWrite = {
-      [`content.title`]: updates.title,
-      [`content.url`]: updates.url,
-      [`content.description`]: updates.description,
-      [`content.outgoingLinks`]: updates.outgoingLinks,
-      [`content.summary`]: updates.summary,
+      [`content.title`]: content.title,
+      [`content.url`]: content.url,
+      [`content.description`]: content.description,
+      [`content.outgoingLinks`]: content.outgoingLinks,
+      [`content.summary`]: content.summary,
     } as DocumentData;
     return await this.collectionService.updateDoc(feedItemId, dataToWrite);
   }

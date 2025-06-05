@@ -66,7 +66,7 @@ function toStorageYouTubeChannelFeedSource(
   };
 }
 
-export function toStorageIntervalFeedSource(
+function toStorageIntervalFeedSource(
   feedSource: IntervalFeedSource
 ): IntervalFeedSourceFromStorage {
   return {
@@ -99,7 +99,7 @@ export function fromStorageFeedSource(
   }
 }
 
-export function fromStorageRssFeedSource(
+function fromStorageRssFeedSource(
   feedSourceFromStorage: RssFeedSourceFromStorage
 ): Result<RssFeedSource> {
   const parsedFeedSubIdResult = parseUserFeedSubscriptionId(
@@ -115,7 +115,7 @@ export function fromStorageRssFeedSource(
   });
 }
 
-export function fromStorageYouTubeChannelFeedSource(
+function fromStorageYouTubeChannelFeedSource(
   feedSourceFromStorage: YouTubeChannelFeedSourceFromStorage
 ): Result<YouTubeChannelFeedSource> {
   const parsedFeedSubIdResult = parseUserFeedSubscriptionId(
@@ -133,7 +133,7 @@ export function fromStorageYouTubeChannelFeedSource(
   });
 }
 
-export function fromStorageIntervalFeedSource(
+function fromStorageIntervalFeedSource(
   feedSourceFromStorage: IntervalFeedSourceFromStorage
 ): Result<IntervalFeedSource> {
   const parsedFeedSubIdResult = parseUserFeedSubscriptionId(

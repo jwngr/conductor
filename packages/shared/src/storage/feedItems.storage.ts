@@ -30,9 +30,9 @@ import type {Result} from '@shared/types/results.types';
 
 import type {
   ArticleFeedItemFromStorage,
-  BaseFeedItemContentWithUrlFromStorage,
   FeedItemFromStorage,
   FeedItemImportStateFromStorage,
+  FeedItemWithUrlContentFromStorage,
   IntervalFeedItemContentFromStorage,
   IntervalFeedItemFromStorage,
   TweetFeedItemFromStorage,
@@ -426,7 +426,7 @@ function toStorageIntervalFeedItemContent(
   };
 }
 
-function toStorageFeedItemWithUrlContent<T extends BaseFeedItemContentWithUrlFromStorage>(
+function toStorageFeedItemWithUrlContent<T extends FeedItemWithUrlContentFromStorage>(
   feedItemContent: FeedItemWithUrlContent
 ): T {
   return {
@@ -465,7 +465,7 @@ function fromStorageIntervalFeedItemContent(
 }
 
 function fromStorageFeedItemWithUrlContent(
-  feedItemContentFromStorage: BaseFeedItemContentWithUrlFromStorage
+  feedItemContentFromStorage: FeedItemWithUrlContentFromStorage
 ): Result<FeedItemWithUrlContent> {
   return makeSuccessResult({
     title: feedItemContentFromStorage.title,
