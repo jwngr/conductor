@@ -2,7 +2,7 @@ import {limit as firestoreLimit, orderBy, where} from 'firebase/firestore';
 
 import {logger} from '@shared/services/logger.shared';
 
-import {makeUserActor} from '@shared/lib/actors.shared';
+import {makeAccountActor} from '@shared/lib/actors.shared';
 import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {
@@ -121,7 +121,7 @@ export class ClientEventLogService {
   private makeEventLogItem(data: EventLogItemData): EventLogItem {
     return makeEventLogItem({
       accountId: this.accountId,
-      actor: makeUserActor(this.accountId),
+      actor: makeAccountActor(this.accountId),
       environment: this.environment,
       data,
     });

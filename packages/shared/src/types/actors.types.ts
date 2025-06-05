@@ -1,7 +1,7 @@
 import type {AccountId} from '@shared/types/accounts.types';
 
 export enum ActorType {
-  User = 'USER',
+  Account = 'ACCOUNT',
   System = 'SYSTEM',
 }
 
@@ -9,9 +9,9 @@ export interface SystemActor {
   readonly actorType: ActorType.System;
 }
 
-export interface UserActor {
-  readonly actorType: ActorType.User;
+export interface AccountActor {
+  readonly actorType: ActorType.Account;
   readonly accountId: AccountId;
 }
 
-export type Actor = UserActor | SystemActor;
+export type Actor = AccountActor | SystemActor;
