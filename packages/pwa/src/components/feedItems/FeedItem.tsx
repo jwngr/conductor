@@ -2,7 +2,7 @@ import type React from 'react';
 
 import {assertNever} from '@shared/lib/utils.shared';
 
-import {FeedItemType} from '@shared/types/feedItems.types';
+import {FeedItemContentType} from '@shared/types/feedItems.types';
 import type {FeedItem, FeedItemWithUrl} from '@shared/types/feedItems.types';
 
 import {ExternalLink} from '@src/components/atoms/Link';
@@ -22,15 +22,15 @@ const FeedItemHeaderTitle: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}
     </Text>
   );
 
-  switch (feedItem.feedItemType) {
-    case FeedItemType.Interval:
+  switch (feedItem.feedItemContentType) {
+    case FeedItemContentType.Interval:
       return titleContentWithoutLink;
-    case FeedItemType.Article:
-    case FeedItemType.Tweet:
-    case FeedItemType.Video:
-    case FeedItemType.Website:
-    case FeedItemType.Xkcd:
-    case FeedItemType.YouTube:
+    case FeedItemContentType.Article:
+    case FeedItemContentType.Tweet:
+    case FeedItemContentType.Video:
+    case FeedItemContentType.Website:
+    case FeedItemContentType.Xkcd:
+    case FeedItemContentType.YouTube:
       return <ExternalLink href={feedItem.url}>{titleContentWithoutLink}</ExternalLink>;
     default:
       assertNever(feedItem);

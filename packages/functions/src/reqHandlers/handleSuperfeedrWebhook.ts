@@ -10,7 +10,7 @@ import {assertNever, batchAsyncResults, partition} from '@shared/lib/utils.share
 
 import {parseSuperfeedrWebhookRequestBody} from '@shared/parsers/superfeedr.parser';
 
-import type {FeedItemWithUrl} from '@shared/types/feedItems.types';
+import type {FeedItem} from '@shared/types/feedItems.types';
 import type {AsyncResult, ErrorResult, SuccessResult} from '@shared/types/results.types';
 import type {RssFeedProvider} from '@shared/types/rss.types';
 import {RssFeedProviderType} from '@shared/types/rss.types';

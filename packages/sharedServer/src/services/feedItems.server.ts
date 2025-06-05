@@ -8,8 +8,9 @@ import {isValidUrl} from '@shared/lib/urls.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import {FeedItemType} from '@shared/types/feedItems.types';
+import {FeedItemContentType} from '@shared/types/feedItems.types';
 import type {
+  ArticleFeedItem,
   FeedItem,
   FeedItemId,
   FeedItemWithUrl,
@@ -64,6 +65,36 @@ export class ServerFeedItemsService {
     const feedItemResult = SharedFeedItemHelpers.makeFeedItemFromUrl({
       feedSource,
       url: trimmedUrl,
+      accountId,
+      title,
+      description,
+    });
+    if (!feedItemResult.success) return feedItemResult;
+    const feedItem = feedItemResult.value;
+
+    const addFeedItemResult = await this.collectionService.setDoc(feedItem.feedItemId, feedItem);
+
+    if (!addFeedItemResult.success) {
+      return prefixErrorResult(addFeedItemResult, 'Error creating feed item in Firestore');
+    }
+
+    return makeSuccessResult(feedItem);
+  }
+
+  // | ArticleFeedItem
+  // | VideoFeedItem
+  // | WebsiteFeedItem
+  // | TweetFeedItem
+  // | YouTubeFeedItem
+
+  public async createArticleFeedItem(
+    args: Pick<ArticleFeedItem, 'feedSource' | 'url' | 'accountId' | 'title' | 'description'>
+  ): AsyncResult<ArticleFeedItem> {
+    const {feedSource, url, accountId, title, description} = args;
+
+    const feedItemResult = SharedFeedItemHelpers.makeFeedItemFromUrl({
+      feedSource,
+      url,
       accountId,
       title,
       description,
@@ -172,16 +203,16 @@ export class ServerFeedItemsService {
 
   public async importFeedItem(feedItem: FeedItem): AsyncResult<void> {
     let importResult: Result<void, Error>;
-    switch (feedItem.feedItemType) {
-      case FeedItemType.YouTube: {
+    switch (feedItem.feedItemContentType) {
+      case FeedItemContentType.YouTube: {
         const importer = new YouTubeFeedItemImporter({feedItemService: this});
         importResult = await importer.import(feedItem);
         break;
       }
-      case FeedItemType.Article:
-      case FeedItemType.Tweet:
-      case FeedItemType.Video:
-      case FeedItemType.Website: {
+      case FeedItemContentType.Article:
+      case FeedItemContentType.Tweet:
+      case FeedItemContentType.Video:
+      case FeedItemContentType.Website: {
         const importer = new WebsiteFeedItemImporter({
           feedItemService: this,
           firecrawlService: this.firecrawlService,
@@ -189,12 +220,12 @@ export class ServerFeedItemsService {
         importResult = await importer.import(feedItem);
         break;
       }
-      case FeedItemType.Xkcd: {
+      case FeedItemContentType.Xkcd: {
         const importer = new XkcdFeedItemImporter({feedItemService: this});
         importResult = await importer.import(feedItem);
         break;
       }
-      case FeedItemType.Interval: {
+      case FeedItemContentType.Interval: {
         return makeSuccessResult(undefined);
       }
       default:

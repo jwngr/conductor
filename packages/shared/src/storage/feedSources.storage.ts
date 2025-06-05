@@ -31,23 +31,11 @@ import type {
 export function toStorageFeedSource(feedSource: FeedSource): FeedSourceFromStorage {
   switch (feedSource.feedSourceType) {
     case FeedSourceType.RSS:
-      return {
-        feedSourceType: FeedSourceType.RSS,
-        userFeedSubscriptionId: feedSource.userFeedSubscriptionId,
-        url: feedSource.url,
-        title: feedSource.title,
-      };
+      return toStorageRssFeedSource(feedSource);
     case FeedSourceType.YouTubeChannel:
-      return {
-        feedSourceType: FeedSourceType.YouTubeChannel,
-        userFeedSubscriptionId: feedSource.userFeedSubscriptionId,
-        channelId: feedSource.channelId,
-      };
+      return toStorageYouTubeChannelFeedSource(feedSource);
     case FeedSourceType.Interval:
-      return {
-        feedSourceType: FeedSourceType.Interval,
-        userFeedSubscriptionId: feedSource.userFeedSubscriptionId,
-      };
+      return toStorageIntervalFeedSource(feedSource);
     case FeedSourceType.Extension:
       return EXTENSION_FEED_SOURCE;
     case FeedSourceType.PocketExport:
@@ -57,6 +45,34 @@ export function toStorageFeedSource(feedSource: FeedSource): FeedSourceFromStora
     default:
       assertNever(feedSource);
   }
+}
+
+function toStorageRssFeedSource(feedSource: RssFeedSource): RssFeedSourceFromStorage {
+  return {
+    feedSourceType: FeedSourceType.RSS,
+    userFeedSubscriptionId: feedSource.userFeedSubscriptionId,
+    url: feedSource.url,
+    title: feedSource.title,
+  };
+}
+
+function toStorageYouTubeChannelFeedSource(
+  feedSource: YouTubeChannelFeedSource
+): YouTubeChannelFeedSourceFromStorage {
+  return {
+    feedSourceType: FeedSourceType.YouTubeChannel,
+    userFeedSubscriptionId: feedSource.userFeedSubscriptionId,
+    channelId: feedSource.channelId,
+  };
+}
+
+export function toStorageIntervalFeedSource(
+  feedSource: IntervalFeedSource
+): IntervalFeedSourceFromStorage {
+  return {
+    feedSourceType: FeedSourceType.Interval,
+    userFeedSubscriptionId: feedSource.userFeedSubscriptionId,
+  };
 }
 
 /**

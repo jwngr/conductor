@@ -2,7 +2,7 @@ import {logger} from '@shared/services/logger.shared';
 
 import {prefixError, upgradeUnknownError} from '@shared/lib/errorUtils.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
-import {parseUrl} from '@shared/lib/urls.shared';
+import {isValidUrl, parseUrl} from '@shared/lib/urls.shared';
 import {assertNever, makeUuid} from '@shared/lib/utils.shared';
 import {isXkcdComicUrl} from '@shared/lib/xkcd.shared';
 import {isYouTubeVideoUrl} from '@shared/lib/youtube.shared';
@@ -10,14 +10,15 @@ import {isYouTubeVideoUrl} from '@shared/lib/youtube.shared';
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
 import {
   FeedItemActionType,
+  FeedItemContentType,
   FeedItemImportStatus,
-  FeedItemType,
   TriageStatus,
 } from '@shared/types/feedItems.types';
 import type {
   FeedItem,
   FeedItemAction,
   FeedItemId,
+  FeedItemWithUrl,
   IntervalFeedItem,
   NewFeedItemImportState,
   XkcdFeedItem,
@@ -62,13 +63,15 @@ export class SharedFeedItemHelpers {
     return feedItem?.tagIds[SystemTagId.Unread] === true;
   }
 
-  public static makeFeedItemFromUrl(
-    args: Pick<
-      Exclude<FeedItem, IntervalFeedItem>,
-      'feedSource' | 'accountId' | 'url' | 'title' | 'description'
-    >
-  ): Result<Exclude<FeedItem, IntervalFeedItem>> {
+  public static makeFeedItemFromUrl<T extends FeedItemWithUrl>(
+    args: Pick<T, 'feedSource' | 'accountId' | 'url' | 'title' | 'description'>
+  ): Result<T> {
     const {feedSource, accountId, url, title, description} = args;
+
+    const trimmedUrl = url.trim();
+    if (!isValidUrl(trimmedUrl)) {
+      return makeErrorResult(new Error(`Invalid URL provided for feed item: "${url}"`));
+    }
 
     // Common fields across all feed item types.
     const feedItemId = makeFeedItemId();
@@ -83,11 +86,11 @@ export class SharedFeedItemHelpers {
 
     // Some feed item contain additional fields.
     switch (feedItemType) {
-      case FeedItemType.Article:
-      case FeedItemType.Video:
-      case FeedItemType.Tweet:
-      case FeedItemType.Website:
-      case FeedItemType.YouTube:
+      case FeedItemContentType.Article:
+      case FeedItemContentType.Video:
+      case FeedItemContentType.Tweet:
+      case FeedItemContentType.Website:
+      case FeedItemContentType.YouTube:
         return makeSuccessResult({
           feedItemType,
           feedSource,
@@ -105,7 +108,7 @@ export class SharedFeedItemHelpers {
           createdTime: new Date(),
           lastUpdatedTime: new Date(),
         });
-      case FeedItemType.Xkcd:
+      case FeedItemContentType.Xkcd:
         return SharedFeedItemHelpers.makeXkcdFeedItem({
           feedSource,
           accountId,
@@ -124,7 +127,7 @@ export class SharedFeedItemHelpers {
     const {feedSource, accountId, url, title, description} = args;
 
     return makeSuccessResult<XkcdFeedItem>({
-      feedItemType: FeedItemType.Xkcd,
+      feedItemContentType: FeedItemContentType.Xkcd,
       xkcd: null,
       feedItemId: makeFeedItemId(),
       importState: makeNewFeedItemImportState(),
@@ -149,7 +152,7 @@ export class SharedFeedItemHelpers {
     const {feedSource, accountId, title} = args;
 
     return makeSuccessResult<IntervalFeedItem>({
-      feedItemType: FeedItemType.Interval,
+      feedItemContentType: FeedItemContentType.Interval,
       feedItemId: makeFeedItemId(),
       triageStatus: TriageStatus.Untriaged,
       importState: makeNewFeedItemImportState(),
@@ -266,10 +269,12 @@ export function findDeliveryScheduleForFeedSubscription(args: {
 }
 
 /**
- * Uses heuristics to determine what {@link FeedItemType} a URL is likely to be. This is used to
+ * Uses heuristics to determine what {@link FeedItemContentType} a URL is likely to be. This is used to
  * determine which renderer to use when rendering a feed item.
  */
-export function getFeedItemTypeFromUrl(url: string): Exclude<FeedItemType, FeedItemType.Interval> {
+export function getFeedItemTypeFromUrl(
+  url: string
+): Exclude<FeedItemContentType, FeedItemContentType.Interval> {
   // Parsing the URL may throw. If it does, ignore the error and just use a default value.
   let parsedUrl: URL;
   // eslint-disable-next-line no-restricted-syntax
@@ -278,7 +283,7 @@ export function getFeedItemTypeFromUrl(url: string): Exclude<FeedItemType, FeedI
   } catch (error) {
     const betterError = upgradeUnknownError(error);
     logger.error(prefixError(betterError, 'Error parsing feed item type from URL'), {error, url});
-    return FeedItemType.Website;
+    return FeedItemContentType.Website;
   }
 
   const hostname = parsedUrl.hostname.toLowerCase();
@@ -286,15 +291,15 @@ export function getFeedItemTypeFromUrl(url: string): Exclude<FeedItemType, FeedI
   // Check for exact matches against allowed hostnames.
   const twitterHosts = ['twitter.com', 'www.twitter.com', 'x.com', 'www.x.com'];
   if (isYouTubeVideoUrl(parsedUrl.href)) {
-    return FeedItemType.YouTube;
+    return FeedItemContentType.YouTube;
   } else if (isXkcdComicUrl(parsedUrl.href)) {
-    return FeedItemType.Xkcd;
+    return FeedItemContentType.Xkcd;
   } else if (twitterHosts.includes(hostname)) {
-    return FeedItemType.Tweet;
+    return FeedItemContentType.Tweet;
   }
 
   // Default to article.
-  return FeedItemType.Article;
+  return FeedItemContentType.Article;
 }
 
 export function makeNewFeedItemImportState(): NewFeedItemImportState {

@@ -48,10 +48,10 @@ const PocketExportFeedSourceSchema = BaseFeedSourceSchema.extend({
 export const FeedSourceSchema = z.discriminatedUnion('feedSourceType', [
   RssFeedSourceSchema,
   YouTubeChannelFeedSourceSchema,
-  IntervalFeedSourceSchema,
   PwaFeedSourceSchema,
   ExtensionFeedSourceSchema,
   PocketExportFeedSourceSchema,
+  IntervalFeedSourceSchema,
 ]);
 
 export type FeedSourceFromStorage = z.infer<typeof FeedSourceSchema>;

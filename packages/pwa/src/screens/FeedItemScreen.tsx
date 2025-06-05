@@ -10,7 +10,7 @@ import {assertNever} from '@shared/lib/utils.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
-import {FeedItemType} from '@shared/types/feedItems.types';
+import {FeedItemContentType} from '@shared/types/feedItems.types';
 import {SystemTagId} from '@shared/types/tags.types';
 
 import {
@@ -94,26 +94,26 @@ const LoadedFeedItemScreenMainContent: React.FC<{
   useMarkFeedItemRead({feedItem, feedItemId: feedItem.feedItemId});
 
   let feedItemContent: React.ReactNode;
-  switch (feedItem.feedItemType) {
-    case FeedItemType.Article:
+  switch (feedItem.feedItemContentType) {
+    case FeedItemContentType.Article:
       feedItemContent = <ArticleFeedItemRenderer feedItem={feedItem} />;
       break;
-    case FeedItemType.Video:
+    case FeedItemContentType.Video:
       feedItemContent = <VideoFeedItemRenderer feedItem={feedItem} />;
       break;
-    case FeedItemType.Website:
+    case FeedItemContentType.Website:
       feedItemContent = <WebsiteFeedItemRenderer feedItem={feedItem} />;
       break;
-    case FeedItemType.Tweet:
+    case FeedItemContentType.Tweet:
       feedItemContent = <TweetFeedItemRenderer feedItem={feedItem} />;
       break;
-    case FeedItemType.Xkcd:
+    case FeedItemContentType.Xkcd:
       feedItemContent = <XkcdFeedItemRenderer feedItem={feedItem} />;
       break;
-    case FeedItemType.YouTube:
+    case FeedItemContentType.YouTube:
       feedItemContent = <YouTubeFeedItemRenderer feedItem={feedItem} />;
       break;
-    case FeedItemType.Interval:
+    case FeedItemContentType.Interval:
       feedItemContent = <IntervalFeedItemRenderer feedItem={feedItem} />;
       break;
     default:

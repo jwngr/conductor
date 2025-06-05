@@ -3,7 +3,7 @@ import {EXTENSION_FEED_SOURCE} from '@shared/lib/feedSources.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
-import type {FeedItemWithUrl} from '@shared/types/feedItems.types';
+import type {FeedItem} from '@shared/types/feedItems.types';
 
 import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {useFeedItemsService} from '@sharedClient/hooks/feedItems.hooks';
@@ -13,7 +13,7 @@ import {useCurrentTab} from '@src/lib/tabs.ext';
 const SaveCurrentUrlButton: React.FC = () => {
   const feedItemsService = useFeedItemsService();
 
-  const {asyncState, setPending, setError, setSuccess} = useAsyncState<FeedItemWithUrl>();
+  const {asyncState, setPending, setError, setSuccess} = useAsyncState<FeedItem>();
 
   const handleClick = async (): Promise<void> => {
     setPending();

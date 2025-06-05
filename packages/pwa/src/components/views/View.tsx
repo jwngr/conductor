@@ -8,7 +8,7 @@ import {assertNever} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
-import {FeedItemType, type FeedItem} from '@shared/types/feedItems.types';
+import {FeedItemContentType, type FeedItem} from '@shared/types/feedItems.types';
 import {ViewType} from '@shared/types/views.types';
 import type {
   ViewGroupByField,
@@ -143,7 +143,7 @@ function useGroupedFeedItems(
     switch (groupByField) {
       case 'feedItemType':
         for (const item of feedItems) {
-          const groupKey = item.feedItemType;
+          const groupKey = item.feedItemContentType;
           if (!groupedItems[groupKey]) {
             groupedItems[groupKey] = [];
           }
@@ -241,7 +241,9 @@ const ViewListItem: React.FC<{
             <FeedItemImportStatusBadge importState={feedItem.importState} />
           </FlexRow>
           <Text as="p" light>
-            {feedItem.feedItemType === FeedItemType.Interval ? 'Interval' : feedItem.url}
+            {feedItem.feedItemContentType === FeedItemContentType.Interval
+              ? 'Interval'
+              : feedItem.url}
           </Text>
         </div>
         {shouldShowActions ? (
