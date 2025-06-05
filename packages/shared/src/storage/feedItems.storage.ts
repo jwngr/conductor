@@ -30,7 +30,6 @@ import type {FeedSource} from '@shared/types/feedSources.types';
 import type {Result} from '@shared/types/results.types';
 
 import type {
-  ArticleFeedItemContentFromStorage,
   ArticleFeedItemFromStorage,
   BaseFeedItemContentWithUrlFromStorage,
   FeedItemContentFromStorage,
@@ -38,15 +37,11 @@ import type {
   FeedItemImportStateFromStorage,
   IntervalFeedItemContentFromStorage,
   IntervalFeedItemFromStorage,
-  TweetFeedItemContentFromStorage,
   TweetFeedItemFromStorage,
-  VideoFeedItemContentFromStorage,
   VideoFeedItemFromStorage,
-  WebsiteFeedItemContentFromStorage,
   WebsiteFeedItemFromStorage,
   XkcdFeedItemContentFromStorage,
   XkcdFeedItemFromStorage,
-  YouTubeFeedItemContentFromStorage,
   YouTubeFeedItemFromStorage,
 } from '@shared/schemas/feedItems.schema';
 import {toStorageFeedSource} from '@shared/storage/feedSources.storage';
@@ -500,7 +495,6 @@ function fromStorageFeedItemWithUrlContent(
   feedItemContentFromStorage: BaseFeedItemContentWithUrlFromStorage
 ): Result<BaseFeedItemContentWithUrl> {
   return makeSuccessResult({
-    feedItemContentType: feedItemContentFromStorage.feedItemContentType,
     title: feedItemContentFromStorage.title,
     url: feedItemContentFromStorage.url,
     description: feedItemContentFromStorage.description,

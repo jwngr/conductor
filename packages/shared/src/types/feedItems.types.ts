@@ -61,27 +61,27 @@ interface BaseFeedItem extends BaseStoreItem {
 
 export type ArticleFeedItem = BaseFeedItem & {
   readonly feedItemContentType: FeedItemContentType.Article;
-  readonly content: ArticleFeedItemContent;
+  readonly content: BaseFeedItemContentWithUrl;
 };
 
 export type VideoFeedItem = BaseFeedItem & {
   readonly feedItemContentType: FeedItemContentType.Video;
-  readonly content: VideoFeedItemContent;
+  readonly content: BaseFeedItemContentWithUrl;
 };
 
 export type WebsiteFeedItem = BaseFeedItem & {
   readonly feedItemContentType: FeedItemContentType.Website;
-  readonly content: WebsiteFeedItemContent;
+  readonly content: BaseFeedItemContentWithUrl;
 };
 
 export type TweetFeedItem = BaseFeedItem & {
   readonly feedItemContentType: FeedItemContentType.Tweet;
-  readonly content: TweetFeedItemContent;
+  readonly content: BaseFeedItemContentWithUrl;
 };
 
 export type YouTubeFeedItem = BaseFeedItem & {
   readonly feedItemContentType: FeedItemContentType.YouTube;
-  readonly content: YouTubeFeedItemContent;
+  readonly content: BaseFeedItemContentWithUrl;
 };
 
 export type XkcdFeedItem = BaseFeedItem & {
@@ -105,8 +105,6 @@ export type FeedItem =
   | IntervalFeedItem;
 
 interface BaseFeedItemContent {
-  /** Type of feed item content (e.g. article, video, website). */
-  // readonly feedItemContentType: FeedItemContentType;
   /** Title of the content provided by the source. */
   readonly title: string;
 }
@@ -122,44 +120,18 @@ export interface BaseFeedItemContentWithUrl extends BaseFeedItemContent {
   readonly summary: string | null;
 }
 
-export interface ArticleFeedItemContent extends BaseFeedItemContentWithUrl {
-  // readonly feedItemContentType: FeedItemContentType.Article;
-}
-
-export interface VideoFeedItemContent extends BaseFeedItemContentWithUrl {
-  // readonly feedItemContentType: FeedItemContentType.Video;
-}
-
-export interface WebsiteFeedItemContent extends BaseFeedItemContentWithUrl {
-  // readonly feedItemContentType: FeedItemContentType.Website;
-}
-
-export interface TweetFeedItemContent extends BaseFeedItemContentWithUrl {
-  // readonly feedItemContentType: FeedItemContentType.Tweet;
-}
-
-export interface YouTubeFeedItemContent extends BaseFeedItemContentWithUrl {
-  // readonly feedItemContentType: FeedItemContentType.YouTube;
-}
-
 export interface XkcdFeedItemContent extends BaseFeedItemContentWithUrl {
-  // readonly feedItemContentType: FeedItemContentType.Xkcd;
   readonly altText: string;
   readonly imageUrlSmall: string;
   readonly imageUrlLarge: string;
 }
 
 export interface IntervalFeedItemContent extends BaseFeedItemContent {
-  // readonly feedItemContentType: FeedItemContentType.Interval;
   readonly intervalSeconds: number;
 }
 
 export type FeedItemContent =
-  | ArticleFeedItemContent
-  | VideoFeedItemContent
-  | WebsiteFeedItemContent
-  | TweetFeedItemContent
-  | YouTubeFeedItemContent
+  | BaseFeedItemContentWithUrl
   | XkcdFeedItemContent
   | IntervalFeedItemContent;
 
