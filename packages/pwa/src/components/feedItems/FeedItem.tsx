@@ -3,7 +3,7 @@ import type React from 'react';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
-import {FeedItemType} from '@shared/types/feedItems.types';
+import {FeedItemContentType} from '@shared/types/feedItems.types';
 import type {FeedItem} from '@shared/types/feedItems.types';
 
 import type {WithChildren} from '@sharedClient/types/utils.client.types';
@@ -19,20 +19,20 @@ import {Markdown} from '@src/components/Markdown';
 const FeedItemHeaderTitle: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
   const titleContentWithoutLink = (
     <Text as="h1" bold>
-      {feedItem.title}
+      {feedItem.content.title}
     </Text>
   );
 
-  switch (feedItem.feedItemType) {
-    case FeedItemType.Interval:
+  switch (feedItem.feedItemContentType) {
+    case FeedItemContentType.Interval:
       return titleContentWithoutLink;
-    case FeedItemType.Article:
-    case FeedItemType.Tweet:
-    case FeedItemType.Video:
-    case FeedItemType.Website:
-    case FeedItemType.Xkcd:
-    case FeedItemType.YouTube:
-      return <ExternalLink href={feedItem.url}>{titleContentWithoutLink}</ExternalLink>;
+    case FeedItemContentType.Article:
+    case FeedItemContentType.Tweet:
+    case FeedItemContentType.Video:
+    case FeedItemContentType.Website:
+    case FeedItemContentType.Xkcd:
+    case FeedItemContentType.YouTube:
+      return <ExternalLink href={feedItem.content.url}>{titleContentWithoutLink}</ExternalLink>;
     default:
       assertNever(feedItem);
   }

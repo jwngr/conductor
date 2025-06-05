@@ -28,10 +28,10 @@ export class XkcdFeedItemImporter {
 
     const {title, imageUrlSmall, imageUrlLarge, altText} = fetchXkcdComicResult.value;
 
-    const updateFeedItemResult = await this.feedItemService.updateFeedItem(feedItem.feedItemId, {
-      title,
-      xkcd: {imageUrlSmall, imageUrlLarge, altText},
-    });
+    const updateFeedItemResult = await this.feedItemService.updateXkcdFeedItemContent(
+      feedItem.feedItemId,
+      {title, imageUrlSmall, imageUrlLarge, altText}
+    );
     return prefixResultIfError(updateFeedItemResult, 'Error updating XKCD comic');
   }
 
@@ -64,7 +64,7 @@ export class XkcdFeedItemImporter {
   }
 
   public async import(feedItem: XkcdFeedItem): AsyncResult<void> {
-    const comicIdResult = parseXkcdComicIdFromUrl(feedItem.url);
+    const comicIdResult = parseXkcdComicIdFromUrl(feedItem.content.url);
     if (!comicIdResult.success) return comicIdResult;
 
     const comicId = comicIdResult.value;

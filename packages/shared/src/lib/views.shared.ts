@@ -185,7 +185,7 @@ export class Views {
 
 export function toViewGroupByOptionText(viewGroupByField: ViewGroupByField): string {
   switch (viewGroupByField) {
-    case 'feedItemType':
+    case 'feedItemContentType':
       return 'Type';
     case 'feedSourceType':
       return 'Source';

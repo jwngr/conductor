@@ -10,22 +10,25 @@ import {isYouTubeVideoUrl} from '@shared/lib/youtube.shared';
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
 import {
   FeedItemActionType,
-  FeedItemType,
-  makeNewFeedItemImportState,
+  FeedItemContentType,
+  FeedItemImportStatus,
   TriageStatus,
 } from '@shared/types/feedItems.types';
 import type {
   FeedItem,
   FeedItemAction,
   FeedItemId,
+  FeedItemWithUrlContent,
   IntervalFeedItem,
+  IntervalFeedItemContent,
+  NewFeedItemImportState,
   XkcdFeedItem,
+  XkcdFeedItemContent,
 } from '@shared/types/feedItems.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/results.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
-import type {TagId} from '@shared/types/tags.types';
 import type {
   UserFeedSubscription,
   UserFeedSubscriptionId,
@@ -61,104 +64,98 @@ export class SharedFeedItemHelpers {
     return feedItem?.tagIds[SystemTagId.Unread] === true;
   }
 
-  public static makeFeedItemFromUrl(
-    args: Pick<
-      Exclude<FeedItem, IntervalFeedItem>,
-      'feedSource' | 'accountId' | 'url' | 'title' | 'description'
-    >
-  ): Result<Exclude<FeedItem, IntervalFeedItem>> {
-    const {feedSource, accountId, url, title, description} = args;
+  public static makeFeedItem(
+    args: Pick<FeedItem, 'feedItemContentType' | 'feedSource' | 'accountId' | 'content'>
+  ): FeedItem {
+    const {feedItemContentType, feedSource, accountId, content} = args;
 
-    // Common fields across all feed item types.
-    const feedItemId = makeFeedItemId();
-    const feedItemType = getFeedItemTypeFromUrl(url);
-    const triageStatus = TriageStatus.Untriaged;
-    const importState = makeNewFeedItemImportState();
-    const tagIds: Partial<Record<TagId, true>> = {
-      [SystemTagId.Unread]: true,
-    };
-    const summary = null;
-    const outgoingLinks: string[] = [];
-
-    // Some feed item contain additional fields.
-    switch (feedItemType) {
-      case FeedItemType.Article:
-      case FeedItemType.Video:
-      case FeedItemType.Tweet:
-      case FeedItemType.Website:
-      case FeedItemType.YouTube:
-        return makeSuccessResult({
-          feedItemType,
+    switch (feedItemContentType) {
+      case FeedItemContentType.Article:
+      case FeedItemContentType.Video:
+      case FeedItemContentType.Tweet:
+      case FeedItemContentType.Website:
+      case FeedItemContentType.YouTube:
+        return SharedFeedItemHelpers.makeFeedItemWithUrl({
+          feedItemContentType,
           feedSource,
-          url,
           accountId,
-          feedItemId,
-          importState,
-          title,
-          description,
-          summary,
-          outgoingLinks,
-          triageStatus,
-          tagIds,
-          // TODO(timestamps): Use server timestamps instead.
-          createdTime: new Date(),
-          lastUpdatedTime: new Date(),
+          content: content as FeedItemWithUrlContent,
         });
-      case FeedItemType.Xkcd:
+      case FeedItemContentType.Xkcd:
         return SharedFeedItemHelpers.makeXkcdFeedItem({
           feedSource,
           accountId,
-          url,
-          title,
-          description,
+          content: content as XkcdFeedItemContent,
+        });
+      case FeedItemContentType.Interval:
+        return SharedFeedItemHelpers.makeIntervalFeedItem({
+          feedSource,
+          accountId,
+          content: content as IntervalFeedItemContent,
         });
       default:
-        assertNever(feedItemType);
+        assertNever(feedItemContentType);
     }
   }
 
-  public static makeXkcdFeedItem(
-    args: Pick<XkcdFeedItem, 'feedSource' | 'accountId' | 'url' | 'title' | 'description'>
-  ): Result<XkcdFeedItem> {
-    const {feedSource, accountId, url, title, description} = args;
+  private static makeGenericFeedItem<T extends FeedItem>(
+    args: Pick<T, 'feedItemContentType' | 'feedSource' | 'accountId' | 'content'>
+  ): T {
+    const {feedItemContentType, feedSource, accountId, content} = args;
 
-    return makeSuccessResult<XkcdFeedItem>({
-      feedItemType: FeedItemType.Xkcd,
-      xkcd: null,
+    return {
+      feedItemContentType,
+      content,
+      feedSource,
+      accountId,
       feedItemId: makeFeedItemId(),
       importState: makeNewFeedItemImportState(),
       triageStatus: TriageStatus.Untriaged,
       tagIds: {[SystemTagId.Unread]: true},
-      summary: null,
-      outgoingLinks: [],
-      feedSource,
-      url,
-      accountId,
-      title: title,
-      description,
       // TODO(timestamps): Use server timestamps instead.
       createdTime: new Date(),
       lastUpdatedTime: new Date(),
+    } as T;
+  }
+
+  public static makeXkcdFeedItem(
+    args: Pick<XkcdFeedItem, 'feedSource' | 'accountId' | 'content'>
+  ): XkcdFeedItem {
+    const {feedSource, accountId, content} = args;
+
+    return SharedFeedItemHelpers.makeGenericFeedItem({
+      feedItemContentType: FeedItemContentType.Xkcd,
+      feedSource,
+      accountId,
+      content,
     });
   }
 
   public static makeIntervalFeedItem(
-    args: Pick<IntervalFeedItem, 'feedSource' | 'accountId' | 'title'>
-  ): Result<IntervalFeedItem> {
-    const {feedSource, accountId, title} = args;
+    args: Pick<IntervalFeedItem, 'feedSource' | 'accountId' | 'content'>
+  ): IntervalFeedItem {
+    const {feedSource, accountId, content} = args;
 
-    return makeSuccessResult<IntervalFeedItem>({
-      feedItemType: FeedItemType.Interval,
-      feedItemId: makeFeedItemId(),
-      triageStatus: TriageStatus.Untriaged,
-      importState: makeNewFeedItemImportState(),
-      tagIds: {[SystemTagId.Unread]: true},
+    return SharedFeedItemHelpers.makeGenericFeedItem({
+      feedItemContentType: FeedItemContentType.Interval,
       feedSource,
       accountId,
-      title,
-      // TODO(timestamps): Use server timestamps instead.
-      createdTime: new Date(),
-      lastUpdatedTime: new Date(),
+      content,
+    });
+  }
+
+  public static makeFeedItemWithUrl(
+    args: Pick<FeedItem, 'feedItemContentType' | 'feedSource' | 'accountId'> & {
+      content: FeedItemWithUrlContent;
+    }
+  ): FeedItem {
+    const {feedItemContentType, feedSource, accountId, content} = args;
+
+    return SharedFeedItemHelpers.makeGenericFeedItem({
+      feedItemContentType,
+      feedSource,
+      accountId,
+      content,
     });
   }
 
@@ -265,10 +262,12 @@ export function findDeliveryScheduleForFeedSubscription(args: {
 }
 
 /**
- * Uses heuristics to determine what {@link FeedItemType} a URL is likely to be. This is used to
+ * Uses heuristics to determine what {@link FeedItemContentType} a URL is likely to be. This is used to
  * determine which renderer to use when rendering a feed item.
  */
-export function getFeedItemTypeFromUrl(url: string): Exclude<FeedItemType, FeedItemType.Interval> {
+export function getFeedItemTypeFromUrl(
+  url: string
+): Exclude<FeedItemContentType, FeedItemContentType.Interval> {
   // Parsing the URL may throw. If it does, ignore the error and just use a default value.
   let parsedUrl: URL;
   // eslint-disable-next-line no-restricted-syntax
@@ -277,7 +276,7 @@ export function getFeedItemTypeFromUrl(url: string): Exclude<FeedItemType, FeedI
   } catch (error) {
     const betterError = upgradeUnknownError(error);
     logger.error(prefixError(betterError, 'Error parsing feed item type from URL'), {error, url});
-    return FeedItemType.Website;
+    return FeedItemContentType.Website;
   }
 
   const hostname = parsedUrl.hostname.toLowerCase();
@@ -285,13 +284,22 @@ export function getFeedItemTypeFromUrl(url: string): Exclude<FeedItemType, FeedI
   // Check for exact matches against allowed hostnames.
   const twitterHosts = ['twitter.com', 'www.twitter.com', 'x.com', 'www.x.com'];
   if (isYouTubeVideoUrl(parsedUrl.href)) {
-    return FeedItemType.YouTube;
+    return FeedItemContentType.YouTube;
   } else if (isXkcdComicUrl(parsedUrl.href)) {
-    return FeedItemType.Xkcd;
+    return FeedItemContentType.Xkcd;
   } else if (twitterHosts.includes(hostname)) {
-    return FeedItemType.Tweet;
+    return FeedItemContentType.Tweet;
   }
 
   // Default to article.
-  return FeedItemType.Article;
+  return FeedItemContentType.Article;
+}
+
+export function makeNewFeedItemImportState(): NewFeedItemImportState {
+  return {
+    status: FeedItemImportStatus.New,
+    shouldFetch: true,
+    lastImportRequestedTime: new Date(),
+    lastSuccessfulImportTime: null,
+  };
 }

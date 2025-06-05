@@ -1,20 +1,26 @@
 import type {FeedItemFromStorage} from '@conductor/shared/src/schemas/feedItems.schema';
+import type {DocumentData} from 'firebase-admin/firestore';
 
-import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
+import {asyncTry, prefixErrorResult} from '@shared/lib/errorUtils.shared';
+import {getFeedItemTypeFromUrl, SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {makeIntervalFeedSource} from '@shared/lib/feedSources.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import {FeedItemType} from '@shared/types/feedItems.types';
+import {FeedItemContentType} from '@shared/types/feedItems.types';
 import type {
   FeedItem,
+  FeedItemContent,
   FeedItemId,
-  FeedItemWithUrl,
+  FeedItemImportState,
+  FeedItemWithUrlContent,
   IntervalFeedItem,
+  IntervalFeedItemContent,
+  XkcdFeedItemContent,
 } from '@shared/types/feedItems.types';
+import type {FeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult, Result} from '@shared/types/results.types';
 import type {IntervalUserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
@@ -26,6 +32,19 @@ import type {ServerFirestoreCollectionService} from '@sharedServer/services/fire
 import {WebsiteFeedItemImporter} from '@sharedServer/importers/website.import';
 import {XkcdFeedItemImporter} from '@sharedServer/importers/xkcd.import';
 import {YouTubeFeedItemImporter} from '@sharedServer/importers/youtube.import';
+
+function makeFeedItemContentUpdates<T extends FeedItemContent>(
+  content: Partial<T>,
+  fieldNames: Array<string & keyof T>
+): DocumentData {
+  const dataToWrite: DocumentData = {};
+  for (const fieldName of fieldNames) {
+    if (fieldName in content) {
+      dataToWrite[`content.${fieldName}`] = content[fieldName];
+    }
+  }
+  return dataToWrite;
+}
 
 type FeedItemCollectionService = ServerFirestoreCollectionService<
   FeedItemId,
@@ -51,25 +70,25 @@ export class ServerFeedItemsService {
     this.collectionService = args.collectionService;
   }
 
-  public async createFeedItemFromUrl(
-    args: Pick<FeedItemWithUrl, 'feedSource' | 'url' | 'accountId' | 'title' | 'description'>
-  ): AsyncResult<FeedItemWithUrl> {
-    const {feedSource, url, accountId, title, description} = args;
+  public async createFeedItemFromUrl(args: {
+    readonly feedSource: FeedSource;
+    readonly content: FeedItemWithUrlContent;
+    readonly accountId: AccountId;
+  }): AsyncResult<FeedItem> {
+    const {feedSource, content, accountId} = args;
 
-    const trimmedUrl = url.trim();
+    const trimmedUrl = content.url.trim();
     if (!isValidUrl(trimmedUrl)) {
-      return makeErrorResult(new Error(`Invalid URL provided for feed item: "${url}"`));
+      return makeErrorResult(new Error(`Invalid URL provided for feed item: "${content.url}"`));
     }
 
-    const feedItemResult = SharedFeedItemHelpers.makeFeedItemFromUrl({
+    const feedItemContentType = getFeedItemTypeFromUrl(content.url);
+    const feedItem = SharedFeedItemHelpers.makeFeedItem({
+      feedItemContentType,
       feedSource,
-      url: trimmedUrl,
+      content,
       accountId,
-      title,
-      description,
     });
-    if (!feedItemResult.success) return feedItemResult;
-    const feedItem = feedItemResult.value;
 
     const addFeedItemResult = await this.collectionService.setDoc(feedItem.feedItemId, feedItem);
 
@@ -81,18 +100,21 @@ export class ServerFeedItemsService {
   }
 
   public async createIntervalFeedItem(args: {
+    /** The account that the feed item belongs to. */
     readonly accountId: AccountId;
+    /** The subscription that is creating the feed item. */
     readonly userFeedSubscription: IntervalUserFeedSubscription;
   }): AsyncResult<IntervalFeedItem> {
     const {userFeedSubscription, accountId} = args;
 
-    const feedItemResult = SharedFeedItemHelpers.makeIntervalFeedItem({
+    const feedItem = SharedFeedItemHelpers.makeIntervalFeedItem({
       feedSource: makeIntervalFeedSource({userFeedSubscription}),
       accountId,
-      title: `Interval feed item for ${new Date().toISOString()}`,
+      content: {
+        title: `Interval feed item for ${new Date().toISOString()}`,
+        intervalSeconds: userFeedSubscription.intervalSeconds,
+      },
     });
-    if (!feedItemResult.success) return feedItemResult;
-    const feedItem = feedItemResult.value;
 
     const addFeedItemResult = await this.collectionService.setDoc(feedItem.feedItemId, feedItem);
 
@@ -103,15 +125,51 @@ export class ServerFeedItemsService {
     return makeSuccessResult(feedItem);
   }
 
-  /**
-   * Updates a feed item in Firestore.
-   */
-  public async updateFeedItem(
+  public async updateFeedItemImportState(
     feedItemId: FeedItemId,
-    updates: Partial<FeedItem>
+    importState: FeedItemImportState
   ): AsyncResult<void> {
-    const updateResult = await this.collectionService.updateDoc(feedItemId, updates);
-    return prefixResultIfError(updateResult, 'Error updating imported feed item in Firestore');
+    const dataToWrite: Partial<FeedItem> = {importState};
+    return await this.collectionService.updateDoc(feedItemId, dataToWrite);
+  }
+
+  public async updateXkcdFeedItemContent(
+    feedItemId: FeedItemId,
+    content: Partial<XkcdFeedItemContent>
+  ): AsyncResult<void> {
+    const dataToWrite: DocumentData = makeFeedItemContentUpdates(content, [
+      'title',
+      'url',
+      'description',
+      'outgoingLinks',
+      'summary',
+      'altText',
+      'imageUrlSmall',
+      'imageUrlLarge',
+    ]);
+    return await this.collectionService.updateDoc(feedItemId, dataToWrite);
+  }
+
+  public async updateIntervalFeedItemContent(
+    feedItemId: FeedItemId,
+    content: Partial<IntervalFeedItemContent>
+  ): AsyncResult<void> {
+    const dataToWrite = makeFeedItemContentUpdates(content, ['title', 'intervalSeconds']);
+    return await this.collectionService.updateDoc(feedItemId, dataToWrite);
+  }
+
+  public async updateFeedItemWithUrlContent(
+    feedItemId: FeedItemId,
+    content: Partial<FeedItemWithUrlContent>
+  ): AsyncResult<void> {
+    const dataToWrite = makeFeedItemContentUpdates(content, [
+      'title',
+      'url',
+      'description',
+      'outgoingLinks',
+      'summary',
+    ]);
+    return await this.collectionService.updateDoc(feedItemId, dataToWrite);
   }
 
   /**
@@ -172,29 +230,33 @@ export class ServerFeedItemsService {
 
   public async importFeedItem(feedItem: FeedItem): AsyncResult<void> {
     let importResult: Result<void, Error>;
-    switch (feedItem.feedItemType) {
-      case FeedItemType.YouTube: {
+    switch (feedItem.feedItemContentType) {
+      case FeedItemContentType.YouTube: {
         const importer = new YouTubeFeedItemImporter({feedItemService: this});
         importResult = await importer.import(feedItem);
         break;
       }
-      case FeedItemType.Article:
-      case FeedItemType.Tweet:
-      case FeedItemType.Video:
-      case FeedItemType.Website: {
+      case FeedItemContentType.Article:
+      case FeedItemContentType.Tweet:
+      case FeedItemContentType.Video:
+      case FeedItemContentType.Website: {
         const importer = new WebsiteFeedItemImporter({
           feedItemService: this,
           firecrawlService: this.firecrawlService,
         });
-        importResult = await importer.import(feedItem);
+        importResult = await importer.import({
+          feedItemId: feedItem.feedItemId,
+          accountId: feedItem.accountId,
+          content: feedItem.content,
+        });
         break;
       }
-      case FeedItemType.Xkcd: {
+      case FeedItemContentType.Xkcd: {
         const importer = new XkcdFeedItemImporter({feedItemService: this});
         importResult = await importer.import(feedItem);
         break;
       }
-      case FeedItemType.Interval: {
+      case FeedItemContentType.Interval: {
         return makeSuccessResult(undefined);
       }
       default:

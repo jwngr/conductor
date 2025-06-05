@@ -2,13 +2,15 @@ import React, {useEffect, useMemo, useRef, useState} from 'react';
 
 import {logger} from '@shared/services/logger.shared';
 
+import {isDate} from '@shared/lib/datetime.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
-import {FeedItemType, type FeedItem} from '@shared/types/feedItems.types';
+import {FeedItemContentType, type FeedItem} from '@shared/types/feedItems.types';
+import type {Supplier} from '@shared/types/utils.types';
 import {ViewType} from '@shared/types/views.types';
 import type {
   ViewGroupByField,
@@ -62,8 +64,8 @@ function compareFeedItems(args: {
       valB = b.lastUpdatedTime;
       break;
     case 'title':
-      valA = a.title;
-      valB = b.title;
+      valA = a.content.title;
+      valB = b.content.title;
       break;
     default:
       assertNever(field);
@@ -118,10 +120,17 @@ function useSortedFeedItems(
   return sortedItems;
 }
 
-const getDateGroupKey = (date: Date | string): string => {
-  const d = typeof date === 'string' ? new Date(date) : date;
+const getDateGroupKey = (rawDate: Date | string | {toDate: Supplier<Date>}): string => {
+  let date: Date;
+  if (isDate(rawDate)) {
+    date = rawDate;
+  } else if (typeof rawDate === 'string') {
+    date = new Date(rawDate);
+  } else {
+    date = rawDate.toDate();
+  }
   // TODO: Use better names for group keys.
-  return d.toISOString().split('T')[0]; // YYYY-MM-DD format
+  return date.toISOString().split('T')[0]; // YYYY-MM-DD format
 };
 
 /**
@@ -141,9 +150,9 @@ function useGroupedFeedItems(
 
     const groupedItems: Record<string, FeedItem[]> = {};
     switch (groupByField) {
-      case 'feedItemType':
+      case 'feedItemContentType':
         for (const item of feedItems) {
-          const groupKey = item.feedItemType;
+          const groupKey = item.feedItemContentType;
           if (!groupedItems[groupKey]) {
             groupedItems[groupKey] = [];
           }
@@ -236,12 +245,14 @@ const ViewListItem: React.FC<{
         <div>
           <FlexRow gap={3}>
             <Text as="p" bold={isUnread}>
-              {feedItem.title || 'No title'}
+              {feedItem.content.title || 'No title'}
             </Text>
             <FeedItemImportStatusBadge importState={feedItem.importState} />
           </FlexRow>
           <Text as="p" light>
-            {feedItem.feedItemType === FeedItemType.Interval ? 'Interval' : feedItem.url}
+            {feedItem.feedItemContentType === FeedItemContentType.Interval
+              ? 'Interval'
+              : feedItem.content.url}
           </Text>
         </div>
         {shouldShowActions ? (

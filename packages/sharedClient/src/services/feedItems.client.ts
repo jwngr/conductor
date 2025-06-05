@@ -8,16 +8,17 @@ import {
   FEED_ITEMS_DB_COLLECTION,
 } from '@shared/lib/constants.shared';
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
+import {getFeedItemTypeFromUrl, SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
 import {Views} from '@shared/lib/views.shared';
 
-import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
+import {parseFeedItem, parseFeedItemId} from '@shared/parsers/feedItems.parser';
 
 import type {AccountId, AuthStateChangedUnsubscribe} from '@shared/types/accounts.types';
+import type {FeedItem, FeedItemId, FeedItemWithUrlContent} from '@shared/types/feedItems.types';
 import {FeedItemActionType, TriageStatus} from '@shared/types/feedItems.types';
-import type {FeedItem, FeedItemId, FeedItemWithUrl} from '@shared/types/feedItems.types';
+import type {FeedSource} from '@shared/types/feedSources.types';
 import {fromQueryFilterOp} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import {SystemTagId} from '@shared/types/tags.types';
@@ -25,6 +26,7 @@ import type {Consumer} from '@shared/types/utils.types';
 import type {ViewType} from '@shared/types/views.types';
 
 import type {FeedItemFromStorage} from '@shared/schemas/feedItems.schema';
+import {toStorageFeedItem} from '@shared/storage/feedItems.storage';
 
 import type {ClientEventLogService} from '@sharedClient/services/eventLog.client';
 import {makeClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
@@ -107,36 +109,31 @@ export class ClientFeedItemsService {
     return () => unsubscribe();
   }
 
-  public async createFeedItemFromUrl(
-    args: Pick<FeedItemWithUrl, 'feedSource' | 'url' | 'title'>
-  ): AsyncResult<FeedItemWithUrl> {
-    const {feedSource, url, title} = args;
+  public async createFeedItemFromUrl(args: {
+    readonly feedSource: FeedSource;
+    readonly content: FeedItemWithUrlContent;
+  }): AsyncResult<FeedItem> {
+    const {feedSource, content} = args;
 
-    const trimmedUrl = url.trim();
+    const trimmedUrl = content.url.trim();
     if (!isValidUrl(trimmedUrl)) {
-      return makeErrorResult(new Error(`Invalid URL provided for feed item: "${url}"`));
+      return makeErrorResult(new Error(`Invalid URL provided for feed item: "${content.url}"`));
     }
 
-    // Create a new feed item object locally.
-
-    const feedItemResult = SharedFeedItemHelpers.makeFeedItemFromUrl({
+    const feedItemContentType = getFeedItemTypeFromUrl(content.url);
+    const feedItem = SharedFeedItemHelpers.makeFeedItem({
+      feedItemContentType,
       feedSource,
-      url: trimmedUrl,
+      content,
       accountId: this.accountId,
-      title,
-      description: null,
     });
-    if (!feedItemResult.success) return feedItemResult;
-    const feedItem = feedItemResult.value;
 
-    // Save the feed item to Firestore.
     const addFeedItemResult = await this.feedItemsCollectionService.setDoc(
       feedItem.feedItemId,
       feedItem
     );
     if (!addFeedItemResult.success) return addFeedItemResult;
 
-    // Return the feed item.
     return makeSuccessResult(feedItem);
   }
 

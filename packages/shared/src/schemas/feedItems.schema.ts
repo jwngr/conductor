@@ -1,24 +1,28 @@
 import {z} from 'zod';
 
-import {FeedItemImportStatus, FeedItemType, TriageStatus} from '@shared/types/feedItems.types';
+import {
+  FeedItemContentType,
+  FeedItemImportStatus,
+  TriageStatus,
+} from '@shared/types/feedItems.types';
 
 import {AccountIdSchema} from '@shared/schemas/accounts.schema';
-import {FeedSourceSchema, FeedSourceWithUrlSchema} from '@shared/schemas/feedSources.schema';
+import {FeedSourceSchema} from '@shared/schemas/feedSources.schema';
 import {FirestoreTimestampSchema} from '@shared/schemas/firebase.schema';
 
-/**
- * Zod schema for a {@link FeedItemId}.
- */
 export const FeedItemIdSchema = z.string().uuid();
 
-export const NewFeedItemImportStateSchema = z.object({
+//////////////////////////////
+//  FEED ITEM IMPORT STATE  //
+//////////////////////////////
+const NewFeedItemImportStateSchema = z.object({
   status: z.literal(FeedItemImportStatus.New),
   shouldFetch: z.literal(true),
   lastSuccessfulImportTime: z.null(),
   lastImportRequestedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
-export const ProcessingFeedItemImportStateSchema = z.object({
+const ProcessingFeedItemImportStateSchema = z.object({
   status: z.literal(FeedItemImportStatus.Processing),
   shouldFetch: z.literal(false),
   importStartedTime: FirestoreTimestampSchema.or(z.date()),
@@ -26,7 +30,7 @@ export const ProcessingFeedItemImportStateSchema = z.object({
   lastImportRequestedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
-export const FailedFeedItemImportStateSchema = z.object({
+const FailedFeedItemImportStateSchema = z.object({
   status: z.literal(FeedItemImportStatus.Failed),
   shouldFetch: z.boolean(),
   errorMessage: z.string(),
@@ -35,7 +39,7 @@ export const FailedFeedItemImportStateSchema = z.object({
   lastImportRequestedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
-export const CompletedFeedItemImportStateSchema = z.object({
+const CompletedFeedItemImportStateSchema = z.object({
   status: z.literal(FeedItemImportStatus.Completed),
   shouldFetch: z.boolean(),
   lastSuccessfulImportTime: FirestoreTimestampSchema.or(z.date()),
@@ -51,54 +55,112 @@ const FeedItemImportStateSchema = z.discriminatedUnion('status', [
 
 export type FeedItemImportStateFromStorage = z.infer<typeof FeedItemImportStateSchema>;
 
-/**
- * Zod schema for a {@link FeedItem} persisted to Firestore.
- */
-export const BaseFeedItemSchema = z.object({
-  feedItemType: z.nativeEnum(FeedItemType),
+/////////////////////////
+//  FEED ITEM CONTENT  //
+/////////////////////////
+const BaseFeedItemContentSchema = z.object({
+  title: z.string(),
+});
+
+const FeedItemWithUrlContentSchema = BaseFeedItemContentSchema.extend({
+  url: z.string().url(),
+  description: z.string().nullable(),
+  summary: z.string().nullable(),
+  outgoingLinks: z.array(z.string().url()),
+});
+
+export type FeedItemWithUrlContentFromStorage = z.infer<typeof FeedItemWithUrlContentSchema>;
+
+const XkcdFeedItemContentSchema = FeedItemWithUrlContentSchema.extend({
+  altText: z.string(),
+  imageUrlSmall: z.string().url(),
+  imageUrlLarge: z.string().url(),
+});
+
+export type XkcdFeedItemContentFromStorage = z.infer<typeof XkcdFeedItemContentSchema>;
+
+const IntervalFeedItemContentSchema = BaseFeedItemContentSchema.extend({
+  intervalSeconds: z.number(),
+});
+
+export type IntervalFeedItemContentFromStorage = z.infer<typeof IntervalFeedItemContentSchema>;
+
+/////////////////
+//  FEED ITEM  //
+/////////////////
+const BaseFeedItemSchema = z.object({
   feedSource: FeedSourceSchema,
   feedItemId: FeedItemIdSchema,
+  feedItemContentType: z.nativeEnum(FeedItemContentType),
   accountId: AccountIdSchema,
   importState: FeedItemImportStateSchema,
   triageStatus: z.nativeEnum(TriageStatus),
-  title: z.string(),
+  content: BaseFeedItemContentSchema,
   tagIds: z.record(z.string(), z.literal(true).optional()),
   createdTime: FirestoreTimestampSchema.or(z.date()),
   lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
-export type BaseFeedItemFromStorage = z.infer<typeof BaseFeedItemSchema>;
-
-export const BaseFeedItemWithUrlSchema = BaseFeedItemSchema.extend({
-  url: z.string().url(),
-  description: z.string().nullable(),
-  summary: z.string().nullable(),
-  outgoingLinks: z.array(z.string().url()),
-  feedSource: FeedSourceWithUrlSchema,
+const FeedItemWithUrlSchema = BaseFeedItemSchema.extend({
+  content: FeedItemWithUrlContentSchema,
+  feedItemContentType: z.union([
+    z.literal(FeedItemContentType.Article),
+    z.literal(FeedItemContentType.Video),
+    z.literal(FeedItemContentType.Website),
+    z.literal(FeedItemContentType.Tweet),
+    z.literal(FeedItemContentType.YouTube),
+  ]),
 });
 
-export type BaseFeedItemWithUrlFromStorage = z.infer<typeof BaseFeedItemWithUrlSchema>;
+export type FeedItemWithUrlFromStorage = z.infer<typeof FeedItemWithUrlSchema>;
 
-export const XkcdFeedItemSchema = BaseFeedItemWithUrlSchema.extend({
-  feedItemType: z.literal(FeedItemType.Xkcd),
-  xkcd: z
-    .object({
-      altText: z.string(),
-      imageUrlSmall: z.string().url(),
-      imageUrlLarge: z.string().url(),
-    })
-    .nullable(),
+const ArticleFeedItemSchema = FeedItemWithUrlSchema.extend({
+  feedItemContentType: z.literal(FeedItemContentType.Article),
+  content: FeedItemWithUrlContentSchema,
+});
+
+const VideoFeedItemSchema = FeedItemWithUrlSchema.extend({
+  feedItemContentType: z.literal(FeedItemContentType.Video),
+  content: FeedItemWithUrlContentSchema,
+});
+
+const WebsiteFeedItemSchema = FeedItemWithUrlSchema.extend({
+  feedItemContentType: z.literal(FeedItemContentType.Website),
+  content: FeedItemWithUrlContentSchema,
+});
+
+const TweetFeedItemSchema = FeedItemWithUrlSchema.extend({
+  feedItemContentType: z.literal(FeedItemContentType.Tweet),
+  content: FeedItemWithUrlContentSchema,
+});
+
+const YouTubeFeedItemSchema = FeedItemWithUrlSchema.extend({
+  feedItemContentType: z.literal(FeedItemContentType.YouTube),
+  content: FeedItemWithUrlContentSchema,
+});
+
+const XkcdFeedItemSchema = BaseFeedItemSchema.extend({
+  feedItemContentType: z.literal(FeedItemContentType.Xkcd),
+  content: XkcdFeedItemContentSchema,
 });
 
 export type XkcdFeedItemFromStorage = z.infer<typeof XkcdFeedItemSchema>;
 
-export const IntervalFeedItemSchema = BaseFeedItemSchema.extend({
-  feedItemType: z.literal(FeedItemType.Interval),
+const IntervalFeedItemSchema = BaseFeedItemSchema.extend({
+  feedItemContentType: z.literal(FeedItemContentType.Interval),
+  content: IntervalFeedItemContentSchema,
 });
 
 export type IntervalFeedItemFromStorage = z.infer<typeof IntervalFeedItemSchema>;
 
-export type FeedItemFromStorage =
-  | BaseFeedItemWithUrlFromStorage
-  | XkcdFeedItemFromStorage
-  | IntervalFeedItemFromStorage;
+export const FeedItemSchema = z.union([
+  ArticleFeedItemSchema,
+  VideoFeedItemSchema,
+  WebsiteFeedItemSchema,
+  TweetFeedItemSchema,
+  YouTubeFeedItemSchema,
+  XkcdFeedItemSchema,
+  IntervalFeedItemSchema,
+]);
+
+export type FeedItemFromStorage = z.infer<typeof FeedItemSchema>;

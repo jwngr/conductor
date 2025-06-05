@@ -11,12 +11,7 @@ import {requestGet} from '@shared/lib/requests.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import type {
-  FeedItemId,
-  FeedItemWithUrl,
-  XkcdFeedItem,
-  YouTubeFeedItem,
-} from '@shared/types/feedItems.types';
+import type {FeedItemId, FeedItemWithUrlContent} from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
@@ -174,7 +169,7 @@ export class WebsiteFeedItemImporter {
         content: firecrawlData.markdown,
         contentType: 'text/markdown',
       }),
-      this.feedItemService.updateFeedItem(feedItemId, {
+      this.feedItemService.updateFeedItemWithUrlContent(feedItemId, {
         outgoingLinks: firecrawlData.links,
         title: firecrawlData.title,
         description: firecrawlData.description,
@@ -207,29 +202,23 @@ export class WebsiteFeedItemImporter {
     const summaryResult = await generateHierarchicalSummary(markdown);
     if (!summaryResult.success) return summaryResult;
 
-    const saveSummaryResult = await this.feedItemService.updateFeedItem(feedItemId, {
+    const saveSummaryResult = await this.feedItemService.updateFeedItemWithUrlContent(feedItemId, {
       summary: summaryResult.value,
     });
 
     return prefixResultIfError(saveSummaryResult, 'Error saving hierarchical summary');
   }
 
-  public async import(
-    feedItem: Exclude<FeedItemWithUrl, YouTubeFeedItem | XkcdFeedItem>
-  ): AsyncResult<void> {
-    const {url, feedItemId, accountId} = feedItem;
+  public async import(args: {
+    readonly feedItemId: FeedItemId;
+    readonly accountId: AccountId;
+    readonly content: FeedItemWithUrlContent;
+  }): AsyncResult<void> {
+    const {feedItemId, accountId, content} = args;
 
     const importAllDataResult = await asyncTryAll([
-      this.fetchAndSaveSanitizedHtml({
-        url: feedItem.url,
-        feedItemId: feedItem.feedItemId,
-        accountId: feedItem.accountId,
-      }),
-      this.fetchAndSaveFirecrawlData({
-        url: feedItem.url,
-        feedItemId: feedItem.feedItemId,
-        accountId: feedItem.accountId,
-      }),
+      this.fetchAndSaveSanitizedHtml({url: content.url, feedItemId, accountId}),
+      this.fetchAndSaveFirecrawlData({url: content.url, feedItemId, accountId}),
     ]);
 
     // TODO: Make this multi-result error handling pattern simpler.
@@ -250,7 +239,7 @@ export class WebsiteFeedItemImporter {
     const sanitizedHtml = sanitizedHtmlResult.value;
 
     const saveMainContentResult = await this.saveMainContentHtmlAndMarkdown({
-      url,
+      url: content.url,
       html: sanitizedHtml,
       feedItemId,
       accountId,

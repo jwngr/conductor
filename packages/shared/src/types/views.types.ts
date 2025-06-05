@@ -29,7 +29,7 @@ interface ViewFilter<T> {
 
 export type ViewGroupByField =
   | 'feedSourceType'
-  | keyof Pick<FeedItem, 'feedItemType' | 'importState' | 'createdTime' | 'lastUpdatedTime'>;
+  | keyof Pick<FeedItem, 'feedItemContentType' | 'importState' | 'createdTime' | 'lastUpdatedTime'>;
 
 export interface ViewGroupByOption {
   readonly field: ViewGroupByField;

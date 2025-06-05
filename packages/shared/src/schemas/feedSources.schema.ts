@@ -9,23 +9,29 @@ const BaseFeedSourceSchema = z.object({
   feedSourceType: z.nativeEnum(FeedSourceType),
 });
 
-export const RssFeedSourceSchema = BaseFeedSourceSchema.extend({
+const RssFeedSourceSchema = BaseFeedSourceSchema.extend({
   feedSourceType: z.literal(FeedSourceType.RSS),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
   url: z.string().url(),
   title: z.string(),
 });
 
-export const YouTubeChannelFeedSourceSchema = BaseFeedSourceSchema.extend({
+export type RssFeedSourceFromStorage = z.infer<typeof RssFeedSourceSchema>;
+
+const YouTubeChannelFeedSourceSchema = BaseFeedSourceSchema.extend({
   feedSourceType: z.literal(FeedSourceType.YouTubeChannel),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
   channelId: YouTubeChannelIdSchema,
 });
 
-export const IntervalFeedSourceSchema = BaseFeedSourceSchema.extend({
+export type YouTubeChannelFeedSourceFromStorage = z.infer<typeof YouTubeChannelFeedSourceSchema>;
+
+const IntervalFeedSourceSchema = BaseFeedSourceSchema.extend({
   feedSourceType: z.literal(FeedSourceType.Interval),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
 });
+
+export type IntervalFeedSourceFromStorage = z.infer<typeof IntervalFeedSourceSchema>;
 
 const PwaFeedSourceSchema = BaseFeedSourceSchema.extend({
   feedSourceType: z.literal(FeedSourceType.PWA),
@@ -42,16 +48,10 @@ const PocketExportFeedSourceSchema = BaseFeedSourceSchema.extend({
 export const FeedSourceSchema = z.discriminatedUnion('feedSourceType', [
   RssFeedSourceSchema,
   YouTubeChannelFeedSourceSchema,
-  IntervalFeedSourceSchema,
   PwaFeedSourceSchema,
   ExtensionFeedSourceSchema,
   PocketExportFeedSourceSchema,
+  IntervalFeedSourceSchema,
 ]);
 
-export const FeedSourceWithUrlSchema = z.discriminatedUnion('feedSourceType', [
-  RssFeedSourceSchema,
-  YouTubeChannelFeedSourceSchema,
-  PwaFeedSourceSchema,
-  ExtensionFeedSourceSchema,
-  PocketExportFeedSourceSchema,
-]);
+export type FeedSourceFromStorage = z.infer<typeof FeedSourceSchema>;
