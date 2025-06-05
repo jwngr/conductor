@@ -77,6 +77,11 @@ service cloud.firestore {
         isValidEventType(maybeEventLogItemData.eventType);
     }
 
+    // Returns true if the document is new or all readonly fields have not changed.
+    function validateReadonly(resource, haveFieldsChanged) { 
+      return !resource.data || !haveFieldsChanged;
+    }
+
     //////////////////////
     //  DOC VALIDATORS  //
     //////////////////////
@@ -90,7 +95,13 @@ service cloud.firestore {
       request.resource.data.accountId == accountId &&
       request.resource.data.email is string &&
       request.resource.data.createdTime is timestamp &&
-      request.resource.data.lastUpdatedTime is timestamp;
+      request.resource.data.lastUpdatedTime is timestamp &&
+      validateReadonly(
+        resource,
+        request.resource.data.accountId == resource.data.accountId &&
+          request.resource.data.email == resource.data.email &&
+          request.resource.data.createdTime == resource.data.createdTime
+      );
     }
 
     function isValidAccountExperimentsDoc(accountId) {
@@ -105,7 +116,12 @@ service cloud.firestore {
       request.resource.data.accountVisibility in ['PUBLIC', 'INTERNAL'] &&
       request.resource.data.experimentOverrides is map &&
       request.resource.data.createdTime is timestamp &&
-      request.resource.data.lastUpdatedTime is timestamp;
+      request.resource.data.lastUpdatedTime is timestamp &&
+      validateReadonly(
+        resource,
+        request.resource.data.accountVisibility == resource.data.accountVisibility &&
+          request.resource.data.createdTime == resource.data.createdTime
+      );
     }
 
     function isValidAccountSettingsDoc(accountId) {
@@ -118,7 +134,11 @@ service cloud.firestore {
       request.resource.data.accountId == accountId &&
       isValidThemePreference(request.resource.data.themePreference) &&
       request.resource.data.createdTime is timestamp &&
-      request.resource.data.lastUpdatedTime is timestamp;
+      request.resource.data.lastUpdatedTime is timestamp &&
+      validateReadonly(
+        resource,
+        request.resource.data.createdTime == resource.data.createdTime
+      );
     }
 
     function isValidFeedItemDoc(feedItemId) {
@@ -139,7 +159,14 @@ service cloud.firestore {
       isValidTriageStatus(request.resource.data.triageStatus) &&
       request.resource.data.tagIds is map &&
       request.resource.data.createdTime is timestamp &&
-      request.resource.data.lastUpdatedTime is timestamp;
+      request.resource.data.lastUpdatedTime is timestamp &&
+      validateReadonly(
+        resource,
+        request.resource.data.feedItemId == resource.data.feedItemId &&
+          request.resource.data.feedItemContentType == resource.data.feedItemContentType &&
+          request.resource.data.feedSource.feedSourceType == resource.data.feedSource.feedSourceType &&
+          request.resource.data.createdTime == resource.data.createdTime
+      );
     }
 
     function isValidUserFeedSubscriptionDoc(userFeedSubscriptionId) {
@@ -158,7 +185,14 @@ service cloud.firestore {
       request.resource.data.isActive is bool &&
       isValidDeliverySchedule(request.resource.data.deliverySchedule) &&
       request.resource.data.createdTime is timestamp &&
-      request.resource.data.lastUpdatedTime is timestamp;
+      request.resource.data.lastUpdatedTime is timestamp &&
+      validateReadonly(
+        resource,
+        request.resource.data.userFeedSubscriptionId == resource.data.userFeedSubscriptionId &&
+          request.resource.data.feedSourceType == resource.data.feedSourceType &&
+          request.resource.data.accountId == resource.data.accountId &&
+          request.resource.data.createdTime == resource.data.createdTime
+      );
     }
 
     function isValidEventLogItemDoc(eventId) {
@@ -176,14 +210,14 @@ service cloud.firestore {
       isValidEnvironment(request.resource.data.environment) &&
       isValidEventLogItemData(request.resource.data.data) &&
       request.resource.data.createdTime is timestamp &&
-      request.resource.data.lastUpdatedTime is timestamp;
+      request.resource.data.lastUpdatedTime is timestamp &&
+      // Only allow creation, not updates. Also enforced via an explicit `update` rule.
+      validateReadonly(resource, false);
     }
 
     /////////////
     //  RULES  //
     /////////////
-    // TODO: For all resources, lock down fields which should be readonly on create / update.
-
     match /accounts/{accountId} {
       // Allow accounts to read their own account data.
       allow read: if isRequestActor(accountId) && isResourceOwner();
