@@ -68,28 +68,7 @@ export type BaseFeedItemContentWithUrlFromStorage = z.infer<
   typeof BaseFeedItemContentWithUrlSchema
 >;
 
-const ArticleFeedItemContentSchema = BaseFeedItemContentWithUrlSchema.extend({
-  feedItemContentType: z.literal(FeedItemContentType.Article),
-});
-
-const VideoFeedItemContentSchema = BaseFeedItemContentWithUrlSchema.extend({
-  feedItemContentType: z.literal(FeedItemContentType.Video),
-});
-
-const WebsiteFeedItemContentSchema = BaseFeedItemContentWithUrlSchema.extend({
-  feedItemContentType: z.literal(FeedItemContentType.Website),
-});
-
-const TweetFeedItemContentSchema = BaseFeedItemContentWithUrlSchema.extend({
-  feedItemContentType: z.literal(FeedItemContentType.Tweet),
-});
-
-const YouTubeFeedItemContentSchema = BaseFeedItemContentWithUrlSchema.extend({
-  feedItemContentType: z.literal(FeedItemContentType.YouTube),
-});
-
 const XkcdFeedItemContentSchema = BaseFeedItemContentWithUrlSchema.extend({
-  feedItemContentType: z.literal(FeedItemContentType.Xkcd),
   altText: z.string(),
   imageUrlSmall: z.string().url(),
   imageUrlLarge: z.string().url(),
@@ -98,18 +77,13 @@ const XkcdFeedItemContentSchema = BaseFeedItemContentWithUrlSchema.extend({
 export type XkcdFeedItemContentFromStorage = z.infer<typeof XkcdFeedItemContentSchema>;
 
 const IntervalFeedItemContentSchema = BaseFeedItemContentSchema.extend({
-  feedItemContentType: z.literal(FeedItemContentType.Interval),
   intervalSeconds: z.number(),
 });
 
 export type IntervalFeedItemContentFromStorage = z.infer<typeof IntervalFeedItemContentSchema>;
 
-export const FeedItemContentSchema = z.discriminatedUnion('feedItemContentType', [
-  ArticleFeedItemContentSchema,
-  VideoFeedItemContentSchema,
-  WebsiteFeedItemContentSchema,
-  TweetFeedItemContentSchema,
-  YouTubeFeedItemContentSchema,
+export const FeedItemContentSchema = z.union([
+  BaseFeedItemContentSchema,
   XkcdFeedItemContentSchema,
   IntervalFeedItemContentSchema,
 ]);
@@ -131,35 +105,35 @@ const BaseFeedItemSchema = z.object({
 
 const ArticleFeedItemSchema = BaseFeedItemSchema.extend({
   feedItemContentType: z.literal(FeedItemContentType.Article),
-  content: ArticleFeedItemContentSchema,
+  content: BaseFeedItemContentWithUrlSchema,
 });
 
 export type ArticleFeedItemFromStorage = z.infer<typeof ArticleFeedItemSchema>;
 
 const VideoFeedItemSchema = BaseFeedItemSchema.extend({
   feedItemContentType: z.literal(FeedItemContentType.Video),
-  content: VideoFeedItemContentSchema,
+  content: BaseFeedItemContentWithUrlSchema,
 });
 
 export type VideoFeedItemFromStorage = z.infer<typeof VideoFeedItemSchema>;
 
 const WebsiteFeedItemSchema = BaseFeedItemSchema.extend({
   feedItemContentType: z.literal(FeedItemContentType.Website),
-  content: WebsiteFeedItemContentSchema,
+  content: BaseFeedItemContentWithUrlSchema,
 });
 
 export type WebsiteFeedItemFromStorage = z.infer<typeof WebsiteFeedItemSchema>;
 
 const TweetFeedItemSchema = BaseFeedItemSchema.extend({
   feedItemContentType: z.literal(FeedItemContentType.Tweet),
-  content: TweetFeedItemContentSchema,
+  content: BaseFeedItemContentWithUrlSchema,
 });
 
 export type TweetFeedItemFromStorage = z.infer<typeof TweetFeedItemSchema>;
 
 const YouTubeFeedItemSchema = BaseFeedItemSchema.extend({
   feedItemContentType: z.literal(FeedItemContentType.YouTube),
-  content: YouTubeFeedItemContentSchema,
+  content: BaseFeedItemContentWithUrlSchema,
 });
 
 export type YouTubeFeedItemFromStorage = z.infer<typeof YouTubeFeedItemSchema>;
