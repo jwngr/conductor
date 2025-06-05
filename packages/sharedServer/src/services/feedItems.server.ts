@@ -12,6 +12,7 @@ import type {AccountId} from '@shared/types/accounts.types';
 import {FeedItemContentType} from '@shared/types/feedItems.types';
 import type {
   FeedItem,
+  FeedItemContent,
   FeedItemId,
   FeedItemImportState,
   FeedItemWithUrlContent,
@@ -31,6 +32,19 @@ import type {ServerFirestoreCollectionService} from '@sharedServer/services/fire
 import {WebsiteFeedItemImporter} from '@sharedServer/importers/website.import';
 import {XkcdFeedItemImporter} from '@sharedServer/importers/xkcd.import';
 import {YouTubeFeedItemImporter} from '@sharedServer/importers/youtube.import';
+
+function makeFeedItemContentUpdates<T extends FeedItemContent>(
+  content: Partial<T>,
+  fieldNames: Array<string & keyof T>
+): DocumentData {
+  const dataToWrite: DocumentData = {};
+  for (const fieldName of fieldNames) {
+    if (fieldName in content) {
+      dataToWrite[`content.${fieldName}`] = content[fieldName];
+    }
+  }
+  return dataToWrite;
+}
 
 type FeedItemCollectionService = ServerFirestoreCollectionService<
   FeedItemId,
@@ -123,16 +137,16 @@ export class ServerFeedItemsService {
     feedItemId: FeedItemId,
     content: Partial<XkcdFeedItemContent>
   ): AsyncResult<void> {
-    const dataToWrite = {
-      [`content.title`]: content.title,
-      [`content.url`]: content.url,
-      [`content.description`]: content.description,
-      [`content.outgoingLinks`]: content.outgoingLinks,
-      [`content.summary`]: content.summary,
-      [`content.altText`]: content.altText,
-      [`content.imageUrlSmall`]: content.imageUrlSmall,
-      [`content.imageUrlLarge`]: content.imageUrlLarge,
-    } as DocumentData;
+    const dataToWrite: DocumentData = makeFeedItemContentUpdates(content, [
+      'title',
+      'url',
+      'description',
+      'outgoingLinks',
+      'summary',
+      'altText',
+      'imageUrlSmall',
+      'imageUrlLarge',
+    ]);
     return await this.collectionService.updateDoc(feedItemId, dataToWrite);
   }
 
@@ -140,10 +154,7 @@ export class ServerFeedItemsService {
     feedItemId: FeedItemId,
     content: Partial<IntervalFeedItemContent>
   ): AsyncResult<void> {
-    const dataToWrite = {
-      [`content.title`]: content.title,
-      [`content.intervalSeconds`]: content.intervalSeconds,
-    } as DocumentData;
+    const dataToWrite = makeFeedItemContentUpdates(content, ['title', 'intervalSeconds']);
     return await this.collectionService.updateDoc(feedItemId, dataToWrite);
   }
 
@@ -151,13 +162,13 @@ export class ServerFeedItemsService {
     feedItemId: FeedItemId,
     content: Partial<FeedItemWithUrlContent>
   ): AsyncResult<void> {
-    const dataToWrite = {
-      [`content.title`]: content.title,
-      [`content.url`]: content.url,
-      [`content.description`]: content.description,
-      [`content.outgoingLinks`]: content.outgoingLinks,
-      [`content.summary`]: content.summary,
-    } as DocumentData;
+    const dataToWrite = makeFeedItemContentUpdates(content, [
+      'title',
+      'url',
+      'description',
+      'outgoingLinks',
+      'summary',
+    ]);
     return await this.collectionService.updateDoc(feedItemId, dataToWrite);
   }
 

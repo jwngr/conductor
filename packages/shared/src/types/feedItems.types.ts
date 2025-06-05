@@ -130,7 +130,10 @@ export interface IntervalFeedItemContent extends BaseFeedItemContent {
   readonly intervalSeconds: number;
 }
 
-type FeedItemContent = FeedItemWithUrlContent | XkcdFeedItemContent | IntervalFeedItemContent;
+export type FeedItemContent =
+  | FeedItemWithUrlContent
+  | XkcdFeedItemContent
+  | IntervalFeedItemContent;
 
 export enum TriageStatus {
   Untriaged = 'UNTRIAGED',
