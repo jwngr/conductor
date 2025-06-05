@@ -9,7 +9,6 @@ import {parseFeedSource} from '@shared/parsers/feedSources.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {
-  ArticleFeedItem,
   FeedItem,
   FeedItemId,
   FeedItemImportState,
@@ -18,31 +17,22 @@ import type {
   IntervalFeedItem,
   IntervalFeedItemContent,
   TriageStatus,
-  TweetFeedItem,
-  VideoFeedItem,
-  WebsiteFeedItem,
   XkcdFeedItem,
   XkcdFeedItemContent,
-  YouTubeFeedItem,
 } from '@shared/types/feedItems.types';
 import {FeedItemContentType, FeedItemImportStatus} from '@shared/types/feedItems.types';
 import type {FeedSource} from '@shared/types/feedSources.types';
 import type {Result} from '@shared/types/results.types';
 
 import type {
-  ArticleFeedItemFromStorage,
   FeedItemFromStorage,
   FeedItemImportStateFromStorage,
   FeedItemWithUrlContentFromStorage,
   FeedItemWithUrlFromStorage,
   IntervalFeedItemContentFromStorage,
   IntervalFeedItemFromStorage,
-  TweetFeedItemFromStorage,
-  VideoFeedItemFromStorage,
-  WebsiteFeedItemFromStorage,
   XkcdFeedItemContentFromStorage,
   XkcdFeedItemFromStorage,
-  YouTubeFeedItemFromStorage,
 } from '@shared/schemas/feedItems.schema';
 import {toStorageFeedSource} from '@shared/storage/feedSources.storage';
 
@@ -55,15 +45,11 @@ import {toStorageFeedSource} from '@shared/storage/feedSources.storage';
 export function toStorageFeedItem(feedItem: FeedItem): FeedItemFromStorage {
   switch (feedItem.feedItemContentType) {
     case FeedItemContentType.Article:
-      return toStorageArticleFeedItem(feedItem);
     case FeedItemContentType.Video:
-      return toStorageVideoFeedItem(feedItem);
     case FeedItemContentType.Website:
-      return toStorageWebsiteFeedItem(feedItem);
     case FeedItemContentType.Tweet:
-      return toStorageTweetFeedItem(feedItem);
     case FeedItemContentType.YouTube:
-      return toStorageYouTubeFeedItem(feedItem);
+      return toStorageFeedItemWithUrl(feedItem);
     case FeedItemContentType.Xkcd:
       return toStorageXkcdFeedItem(feedItem);
     case FeedItemContentType.Interval:
@@ -73,70 +59,10 @@ export function toStorageFeedItem(feedItem: FeedItem): FeedItemFromStorage {
   }
 }
 
-function toStorageArticleFeedItem(feedItem: ArticleFeedItem): ArticleFeedItemFromStorage {
+function toStorageFeedItemWithUrl(feedItem: FeedItemWithUrl): FeedItemWithUrlFromStorage {
   return {
     feedItemId: feedItem.feedItemId,
-    feedItemContentType: FeedItemContentType.Article,
-    content: toStorageFeedItemWithUrlContent(feedItem.content),
-    feedSource: toStorageFeedSource(feedItem.feedSource),
-    accountId: feedItem.accountId,
-    importState: feedItem.importState,
-    triageStatus: feedItem.triageStatus,
-    tagIds: feedItem.tagIds,
-    createdTime: feedItem.createdTime,
-    lastUpdatedTime: feedItem.lastUpdatedTime,
-  };
-}
-
-function toStorageVideoFeedItem(feedItem: VideoFeedItem): VideoFeedItemFromStorage {
-  return {
-    feedItemId: feedItem.feedItemId,
-    feedItemContentType: FeedItemContentType.Video,
-    content: toStorageFeedItemWithUrlContent(feedItem.content),
-    feedSource: toStorageFeedSource(feedItem.feedSource),
-    accountId: feedItem.accountId,
-    importState: feedItem.importState,
-    triageStatus: feedItem.triageStatus,
-    tagIds: feedItem.tagIds,
-    createdTime: feedItem.createdTime,
-    lastUpdatedTime: feedItem.lastUpdatedTime,
-  };
-}
-
-function toStorageWebsiteFeedItem(feedItem: WebsiteFeedItem): WebsiteFeedItemFromStorage {
-  return {
-    feedItemId: feedItem.feedItemId,
-    feedItemContentType: FeedItemContentType.Website,
-    content: toStorageFeedItemWithUrlContent(feedItem.content),
-    feedSource: toStorageFeedSource(feedItem.feedSource),
-    accountId: feedItem.accountId,
-    importState: feedItem.importState,
-    triageStatus: feedItem.triageStatus,
-    tagIds: feedItem.tagIds,
-    createdTime: feedItem.createdTime,
-    lastUpdatedTime: feedItem.lastUpdatedTime,
-  };
-}
-
-function toStorageTweetFeedItem(feedItem: TweetFeedItem): TweetFeedItemFromStorage {
-  return {
-    feedItemId: feedItem.feedItemId,
-    feedItemContentType: FeedItemContentType.Tweet,
-    content: toStorageFeedItemWithUrlContent(feedItem.content),
-    feedSource: toStorageFeedSource(feedItem.feedSource),
-    accountId: feedItem.accountId,
-    importState: feedItem.importState,
-    triageStatus: feedItem.triageStatus,
-    tagIds: feedItem.tagIds,
-    createdTime: feedItem.createdTime,
-    lastUpdatedTime: feedItem.lastUpdatedTime,
-  };
-}
-
-function toStorageYouTubeFeedItem(feedItem: YouTubeFeedItem): YouTubeFeedItemFromStorage {
-  return {
-    feedItemId: feedItem.feedItemId,
-    feedItemContentType: FeedItemContentType.YouTube,
+    feedItemContentType: feedItem.feedItemContentType,
     content: toStorageFeedItemWithUrlContent(feedItem.content),
     feedSource: toStorageFeedSource(feedItem.feedSource),
     accountId: feedItem.accountId,
