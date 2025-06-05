@@ -174,7 +174,7 @@ export class WebsiteFeedItemImporter {
         content: firecrawlData.markdown,
         contentType: 'text/markdown',
       }),
-      this.feedItemService.updateFeedItem(feedItemId, {
+      this.feedItemService.updateFeedItemWithUrlContent(feedItemId, {
         outgoingLinks: firecrawlData.links,
         title: firecrawlData.title,
         description: firecrawlData.description,
@@ -207,7 +207,7 @@ export class WebsiteFeedItemImporter {
     const summaryResult = await generateHierarchicalSummary(markdown);
     if (!summaryResult.success) return summaryResult;
 
-    const saveSummaryResult = await this.feedItemService.updateFeedItem(feedItemId, {
+    const saveSummaryResult = await this.feedItemService.updateFeedItemWithUrlContent(feedItemId, {
       summary: summaryResult.value,
     });
 
@@ -217,19 +217,11 @@ export class WebsiteFeedItemImporter {
   public async import(
     feedItem: Exclude<FeedItemWithUrl, YouTubeFeedItem | XkcdFeedItem>
   ): AsyncResult<void> {
-    const {url, feedItemId, accountId} = feedItem;
+    const {feedItemId, accountId, content} = feedItem;
 
     const importAllDataResult = await asyncTryAll([
-      this.fetchAndSaveSanitizedHtml({
-        url: feedItem.url,
-        feedItemId: feedItem.feedItemId,
-        accountId: feedItem.accountId,
-      }),
-      this.fetchAndSaveFirecrawlData({
-        url: feedItem.url,
-        feedItemId: feedItem.feedItemId,
-        accountId: feedItem.accountId,
-      }),
+      this.fetchAndSaveSanitizedHtml({url: content.url, feedItemId, accountId}),
+      this.fetchAndSaveFirecrawlData({url: content.url, feedItemId, accountId}),
     ]);
 
     // TODO: Make this multi-result error handling pattern simpler.
@@ -250,7 +242,7 @@ export class WebsiteFeedItemImporter {
     const sanitizedHtml = sanitizedHtmlResult.value;
 
     const saveMainContentResult = await this.saveMainContentHtmlAndMarkdown({
-      url,
+      url: content.url,
       html: sanitizedHtml,
       feedItemId,
       accountId,

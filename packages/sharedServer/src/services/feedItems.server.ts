@@ -1,7 +1,7 @@
 import type {FeedItemFromStorage} from '@conductor/shared/src/schemas/feedItems.schema';
 import type {DocumentData} from 'firebase-admin/firestore';
 
-import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {asyncTry, prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {getFeedItemTypeFromUrl, SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {makeIntervalFeedSource} from '@shared/lib/feedSources.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
@@ -13,6 +13,7 @@ import {FeedItemContentType} from '@shared/types/feedItems.types';
 import type {
   FeedItem,
   FeedItemId,
+  FeedItemImportState,
   FeedItemWithUrlContent,
   IntervalFeedItem,
   IntervalFeedItemContent,
@@ -108,15 +109,12 @@ export class ServerFeedItemsService {
     return makeSuccessResult(feedItem);
   }
 
-  /**
-   * Updates a feed item in Firestore.
-   */
-  public async updateFeedItem(
+  public async updateFeedItemImportState(
     feedItemId: FeedItemId,
-    updates: Partial<FeedItem>
+    importState: FeedItemImportState
   ): AsyncResult<void> {
-    const updateResult = await this.collectionService.updateDoc(feedItemId, updates);
-    return prefixResultIfError(updateResult, 'Error updating imported feed item in Firestore');
+    const dataToWrite: Partial<FeedItem> = {importState};
+    return await this.collectionService.updateDoc(feedItemId, dataToWrite);
   }
 
   public async updateXkcdFeedItemContent(
@@ -133,8 +131,7 @@ export class ServerFeedItemsService {
       [`content.imageUrlSmall`]: updates.imageUrlSmall,
       [`content.imageUrlLarge`]: updates.imageUrlLarge,
     } as DocumentData;
-    const updateResult = await this.collectionService.updateDoc(feedItemId, dataToWrite);
-    return prefixResultIfError(updateResult, 'Error updating imported feed item in Firestore');
+    return await this.collectionService.updateDoc(feedItemId, dataToWrite);
   }
 
   public async updateIntervalFeedItemContent(
@@ -145,9 +142,9 @@ export class ServerFeedItemsService {
       [`content.title`]: updates.title,
       [`content.intervalSeconds`]: updates.intervalSeconds,
     } as DocumentData;
-    const updateResult = await this.collectionService.updateDoc(feedItemId, dataToWrite);
-    return prefixResultIfError(updateResult, 'Error updating imported feed item in Firestore');
+    return await this.collectionService.updateDoc(feedItemId, dataToWrite);
   }
+
   public async updateFeedItemWithUrlContent(
     feedItemId: FeedItemId,
     updates: Partial<FeedItemWithUrlContent>
@@ -159,8 +156,7 @@ export class ServerFeedItemsService {
       [`content.outgoingLinks`]: updates.outgoingLinks,
       [`content.summary`]: updates.summary,
     } as DocumentData;
-    const updateResult = await this.collectionService.updateDoc(feedItemId, dataToWrite);
-    return prefixResultIfError(updateResult, 'Error updating feed item in Firestore');
+    return await this.collectionService.updateDoc(feedItemId, dataToWrite);
   }
 
   /**
