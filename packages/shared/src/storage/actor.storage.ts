@@ -1,4 +1,4 @@
-import {makeUserActor, SYSTEM_ACTOR} from '@shared/lib/actors.shared';
+import {makeAccountActor, SYSTEM_ACTOR} from '@shared/lib/actors.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
@@ -35,7 +35,7 @@ export function fromStorageActor(actorFromStorage: ActorFromStorage): Result<Act
     case ActorType.User: {
       const accountIdResult = parseAccountId(actorFromStorage.accountId);
       if (!accountIdResult.success) return accountIdResult;
-      return makeSuccessResult(makeUserActor(accountIdResult.value));
+      return makeSuccessResult(makeAccountActor(accountIdResult.value));
     }
     case ActorType.System:
       return makeSuccessResult(SYSTEM_ACTOR);

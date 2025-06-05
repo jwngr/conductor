@@ -26,8 +26,9 @@ const DEFAULT_ASSERT_NEVER_OPTIONS: AssertNeverOptions = {
 };
 
 /**
- * Throws an error if the provided value is not of type `never`. This is useful for exhaustive
- * switch statements.
+ * Throws an error and throws if the provided value is not of type `never`. This is useful for
+ * exhaustive switch statements. In rare scenarios where input is untrusted and throwing is unsafe
+ * (e.g. parsers), use {@link safeAssertNever} instead.
  */
 export function assertNever(
   val: never,
@@ -43,7 +44,7 @@ export function assertNever(
 
 /**
  * Logs an error if the provided value is not of type `never`. This is useful for exhaustive
- * switch statements.
+ * switch statements. In most cases, use {@link assertNever} instead.
  */
 export function safeAssertNever(val: never): void {
   logger.error(new Error('safeAssertNever received non-empty value'), {val});

@@ -2,31 +2,123 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    ////////////////////////
-    //  Helper functions  //
-    ////////////////////////
+    ///////////////////////
+    //  AUTH VALIDATORS  //
+    ///////////////////////
+
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    function isOwner(accountId) {
+    function isRequestActor(accountId) {
       return isAuthenticated() && request.auth.uid == accountId;
     }
 
     function isResourceOwner() {
-      return isOwner(resource.data.accountId);
+      return isAuthenticated() && request.auth.uid == resource.data.accountId;
     }
 
     function isNewResourceOwner() {
-      return isOwner(request.resource.data.accountId);
+      return isAuthenticated() && request.auth.uid == request.resource.data.accountId;
     }
 
+    ///////////////////////
+    //  ENUM VALIDATORS  //
+    ///////////////////////
     function isValidFeedSourceType(maybeFeedSourceType) {
       return maybeFeedSourceType in ['RSS', 'YOUTUBE_CHANNEL', 'INTERVAL', 'PWA', 'EXTENSION', 'POCKET_EXPORT'];
     }
 
     function isValidDeliveryScheduleType(maybeDeliveryScheduleType) {
       return maybeDeliveryScheduleType in ['IMMEDIATE', 'NEVER', 'DAYS_AND_TIMES_OF_WEEK', 'EVERY_N_HOURS'];
+    }
+
+    function isValidThemePreference(maybeThemePreference) {
+      return maybeThemePreference in ['SYSTEM', 'LIGHT', 'DARK'];
+    }
+
+    function isValidTriageStatus(maybeTriageStatus) {
+      return maybeTriageStatus in ['UNTRIAGED', 'SAVED', 'DONE', 'TRASHED'];
+    }
+
+    function isValidEnvironment(maybeEnvironment) {
+      return maybeEnvironment in ['PWA', 'EXTENSION', 'FIREBASE_FUNCTIONS', 'SCRIPTS'];
+    }
+
+    ///////////////////////
+    //  TYPE VALIDATORS  //
+    ///////////////////////
+    function isValidFeedSource(maybeFeedSource) {
+      return maybeFeedSource.keys().hasAll(['feedSourceType']) &&
+        isValidFeedSourceType(maybeFeedSource.feedSourceType);
+    }
+
+    function isValidDeliverySchedule(maybeDeliverySchedule) {
+      return maybeDeliverySchedule.keys().hasAll(['scheduleType']) &&
+        isValidDeliveryScheduleType(maybeDeliverySchedule.scheduleType);
+    }
+
+    function isValidSystemActor(maybeActor) {
+      return maybeActor.keys().hasAll(['actorType']) && maybeActor.actorType == 'SYSTEM';
+    }
+
+    function isValidAccountActor(maybeActor) {
+      return maybeActor.keys().hasAll(['actorType', 'accountId']) &&
+        maybeActor.actorType == 'ACCOUNT' &&
+        isRequestActor(maybeActor.accountId);
+    }
+
+    function isValidActor(maybeActor) {
+      return isValidSystemActor(maybeActor) || isValidAccountActor(maybeActor);
+    }
+
+    function isValidEventLogItemData(maybeEventLogItemData) {
+      return maybeEventLogItemData.keys().hasAll(['eventType']) &&
+        isValidEventType(maybeEventLogItemData.eventType);
+    }
+
+    //////////////////////
+    //  DOC VALIDATORS  //
+    //////////////////////
+    function isValidAccountsDoc(accountId) {
+      return request.resource.data.keys().hasAll([
+        'accountId',
+        'email',
+        'createdTime',
+        'lastUpdatedTime'
+      ]) &&
+      request.resource.data.accountId == accountId &&
+      request.resource.data.email is string &&
+      request.resource.data.createdTime is timestamp &&
+      request.resource.data.lastUpdatedTime is timestamp;
+    }
+
+    function isValidAccountExperimentsDoc(accountId) {
+      return request.resource.data.keys().hasAll([
+        'accountId',
+        'accountVisibility',
+        'experimentOverrides',
+        'createdTime',
+        'lastUpdatedTime'
+      ]) &&
+      request.resource.data.accountId == accountId &&
+      request.resource.data.accountVisibility in ['PUBLIC', 'INTERNAL'] &&
+      request.resource.data.experimentOverrides is map &&
+      request.resource.data.createdTime is timestamp &&
+      request.resource.data.lastUpdatedTime is timestamp;
+    }
+
+    function isValidAccountSettingsDoc(accountId) {
+      return request.resource.data.keys().hasAll([ 
+        'accountId',
+        'themePreference',
+        'createdTime',
+        'lastUpdatedTime',
+      ]) &&
+      request.resource.data.accountId == accountId &&
+      isValidThemePreference(request.resource.data.themePreference) &&
+      request.resource.data.createdTime is timestamp &&
+      request.resource.data.lastUpdatedTime is timestamp;
     }
 
     function isValidFeedItemDoc(feedItemId) {
@@ -41,13 +133,10 @@ service cloud.firestore {
         'createdTime',
         'lastUpdatedTime'
       ]) &&
-      request.resource.data.feedItemId is string &&
       request.resource.data.feedItemId == feedItemId &&
       request.resource.data.feedItemContentType in ['ARTICLE', 'VIDEO', 'WEBSITE', 'TWEET', 'XKCD', 'YOUTUBE'] &&
       request.resource.data.content is map &&
-      request.resource.data.feedSource.keys().hasAll(['feedSourceType']) &&
-      isValidFeedSourceType(request.resource.data.feedSource.feedSourceType) &&
-      request.resource.data.triageStatus in ['UNTRIAGED', 'SAVED', 'DONE', 'TRASHED'] &&
+      isValidTriageStatus(request.resource.data.triageStatus) &&
       request.resource.data.tagIds is map &&
       request.resource.data.createdTime is timestamp &&
       request.resource.data.lastUpdatedTime is timestamp;
@@ -63,13 +152,11 @@ service cloud.firestore {
         'createdTime',
         'lastUpdatedTime'
       ]) &&
-      request.resource.data.userFeedSubscriptionId is string &&
       request.resource.data.userFeedSubscriptionId == userFeedSubscriptionId &&
       isValidFeedSourceType(request.resource.data.feedSourceType) &&
       request.resource.data.accountId is string &&
       request.resource.data.isActive is bool &&
-      request.resource.data.deliverySchedule.keys().hasAll(['scheduleType']) &&
-      isValidDeliveryScheduleType(request.resource.data.deliverySchedule.scheduleType) &&
+      isValidDeliverySchedule(request.resource.data.deliverySchedule) &&
       request.resource.data.createdTime is timestamp &&
       request.resource.data.lastUpdatedTime is timestamp;
     }
@@ -84,107 +171,78 @@ service cloud.firestore {
         'createdTime',
         'lastUpdatedTime'
       ]) &&
-      request.resource.data.eventId is string &&
       request.resource.data.eventId == eventId &&
-      request.resource.data.actor is map &&
-      request.resource.data.actor.keys().hasAll(['accountId']) &&
-      request.resource.data.actor.accountId == request.auth.uid &&
-      request.resource.data.environment is string &&
+      isValidActor(request.resource.data.actor) &&
+      isValidEnvironment(request.resource.data.environment) &&
+      isValidEventLogItemData(request.resource.data.data) &&
       request.resource.data.createdTime is timestamp &&
-      request.resource.data.lastUpdatedTime is timestamp &&
-      request.resource.data.data is map &&
-      request.resource.data.data.keys().hasAll(['eventType']) &&
-      request.resource.data.data.eventType is string;
-    }
-
-    function isValidAccountExperimentsDoc(accountId) {
-      return request.resource.data.keys().hasAll([
-        'accountId',
-        'accountVisibility',
-        'experimentOverrides',
-      ]) &&
-      request.resource.data.accountId == accountId &&
-      request.resource.data.accountVisibility is string &&
-      request.resource.data.accountVisibility in ['PUBLIC', 'INTERNAL'] &&
-      request.resource.data.experimentOverrides is map;
-    }
-
-    function isValidThemePreference(maybeThemePreference) {
-      return maybeThemePreference is string && maybeThemePreference in ['SYSTEM', 'LIGHT', 'DARK'];
-    } 
-
-    function isValidAccountSettingsDoc(accountId) {
-      return request.resource.data.keys().hasAll([ 
-        'accountId',
-        'themePreference',
-        'createdTime',
-        'lastUpdatedTime'
-      ]) &&
-      request.resource.data.accountId is string &&
-      request.resource.data.accountId == accountId &&
-      isValidThemePreference(request.resource.data.themePreference);
+      request.resource.data.lastUpdatedTime is timestamp;
     }
 
     /////////////
-    //  Rules  //
+    //  RULES  //
     /////////////
+    // TODO: For all resources, lock down fields which should be readonly on create / update.
+
     match /accounts/{accountId} {
-      // Allow accounts to manage their own data.
-      // TODO: Some fields should not be user-editable.
-      allow read: if isOwner(accountId) && isResourceOwner();
-      allow create: if isNewResourceOwner();
-      allow update: if isResourceOwner() && isNewResourceOwner();
-
+      // Allow accounts to read their own account data.
+      allow read: if isRequestActor(accountId) && isResourceOwner();
+      // Allow accounts to manage their own account data.
+      allow create: if isRequestActor(accountId) && isNewResourceOwner() && isValidAccountsDoc(accountId);
+      allow update: if isRequestActor(accountId) && isResourceOwner() && isNewResourceOwner() && isValidAccountsDoc(accountId);
       // Only allow deletes via the admin SDK.
       allow delete: if false;
     }
 
     match /accountExperiments/{accountId} {
-      allow read: if isOwner(accountId) && isResourceOwner();
-      allow create: if isNewResourceOwner() && isValidAccountExperimentsDoc(accountId);
-      allow update: if isResourceOwner() && isNewResourceOwner() && isValidAccountExperimentsDoc(accountId);
-      
+      // Allow accounts to read their own experiments.
+      allow read: if isRequestActor(accountId) && isResourceOwner();
+      // Allow accounts to manage their own experiments.
+      allow create: if isRequestActor(accountId) && isNewResourceOwner() && isValidAccountExperimentsDoc(accountId);
+      allow update: if isRequestActor(accountId) && isResourceOwner() && isNewResourceOwner() && isValidAccountExperimentsDoc(accountId);
       // Only allow deletes via the admin SDK.
       allow delete: if false;
     }
 
     match /accountSettings/{accountId} {
+      // Allow accounts to read their own settings.
+      allow read: if isRequestActor(accountId) && isResourceOwner();
       // Allow accounts to manage their own settings.
-      allow read: if isResourceOwner();
-      allow create: if isNewResourceOwner() && isValidAccountSettingsDoc(accountId);
-      allow update: if isResourceOwner() && isNewResourceOwner() && isValidAccountSettingsDoc(accountId);
-      
+      allow create: if isRequestActor(accountId) && isNewResourceOwner() && isValidAccountSettingsDoc(accountId);
+      allow update: if isRequestActor(accountId) && isResourceOwner() && isNewResourceOwner() && isValidAccountSettingsDoc(accountId);
       // Only allow deletes via the admin SDK.
       allow delete: if false;
     }
 
     match /feedItems/{feedItemId} {
-      // Allow accounts to manage their own feed items.
-      // TODO: Some fields should not be user-editable.
+      // Allow accounts to read their own feed items.
       allow read: if isResourceOwner();
+      // Allow accounts to manage their own feed items.
       allow create: if isNewResourceOwner() && isValidFeedItemDoc(feedItemId);
-      allow update: if isResourceOwner() && isNewResourceOwner();
+      allow update: if isResourceOwner() && isNewResourceOwner() && isValidFeedItemDoc(feedItemId);
+      // Allow accounts to delete their own feed items.
       allow delete: if isResourceOwner();
     }
 
     match /userFeedSubscriptions/{userFeedSubscriptionId} {
       // Allow accounts to manage their own feed subscriptions.
-      // TODO: Some fields should not be user-editable.
       allow read: if isResourceOwner();
+      // Allow accounts to manage their own feed subscriptions.
       allow create: if isNewResourceOwner() && isValidUserFeedSubscriptionDoc(userFeedSubscriptionId);
       allow update: if isResourceOwner() && isNewResourceOwner() && isValidUserFeedSubscriptionDoc(userFeedSubscriptionId);
+      // Allow accounts to delete their own feed subscriptions.
       allow delete: if isResourceOwner();
     }
 
     match /eventLog/{eventId} {
       // Allow accounts to read their own events.
       allow read: if isResourceOwner();
-
-      // Allow creation and deletion if the current account owns the new document.
+      // Allow accounts to create event log items.
       allow create: if isNewResourceOwner() && isValidEventLogItemDoc(eventId);
-
-      // Event log items cannot be updated or deleted, only created.
-      allow update, delete: if false;
+      // Event log items are only ever written once.
+      allow update: if false;
+      // Only allow deletes via the admin SDK.
+      allow delete: if false;
     }
   }
 }
