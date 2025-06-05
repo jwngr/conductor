@@ -426,16 +426,16 @@ function toStorageIntervalFeedItemContent(
   };
 }
 
-function toStorageFeedItemWithUrlContent<T extends FeedItemWithUrlContentFromStorage>(
+function toStorageFeedItemWithUrlContent(
   feedItemContent: FeedItemWithUrlContent
-): T {
+): FeedItemWithUrlContentFromStorage {
   return {
     title: feedItemContent.title,
     url: feedItemContent.url,
     description: feedItemContent.description,
     summary: feedItemContent.summary,
     outgoingLinks: feedItemContent.outgoingLinks,
-  } as T;
+  };
 }
 
 function fromStorageXkcdFeedItemContent(
