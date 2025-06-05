@@ -1,6 +1,5 @@
 import type React from 'react';
 
-import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
@@ -16,8 +15,7 @@ import {useExplainXkcdMarkdown} from '@sharedClient/hooks/feedItems.hooks';
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Text} from '@src/components/atoms/Text';
 import {ErrorArea} from '@src/components/errors/ErrorArea';
-import {FeedItemHeader, FeedItemWrapper} from '@src/components/feedItems/FeedItem';
-import {ImportingFeedItem} from '@src/components/feedItems/ImportingFeedItem';
+import {SimpleFeedItemRenderer} from '@src/components/feedItems/FeedItem';
 import {LoadingArea} from '@src/components/loading/LoadingArea';
 import {Markdown} from '@src/components/Markdown';
 
@@ -68,12 +66,8 @@ const ExplainXkcdContent: React.FC<{readonly feedItem: XkcdFeedItem}> = ({feedIt
 };
 
 export const XkcdFeedItemRenderer: React.FC<{readonly feedItem: XkcdFeedItem}> = ({feedItem}) => {
-  const hasFeedItemEverBeenImported = SharedFeedItemHelpers.hasEverBeenImported(feedItem);
-
   let mainContent: React.ReactNode;
-  if (!hasFeedItemEverBeenImported) {
-    mainContent = <ImportingFeedItem feedItem={feedItem} />;
-  } else if (!feedItem.xkcd) {
+  if (!feedItem.xkcd) {
     mainContent = <Text as="p">No XKCD comic found</Text>;
   } else {
     mainContent = (
@@ -87,10 +81,5 @@ export const XkcdFeedItemRenderer: React.FC<{readonly feedItem: XkcdFeedItem}> =
     );
   }
 
-  return (
-    <FeedItemWrapper>
-      <FeedItemHeader feedItem={feedItem} />
-      {mainContent}
-    </FeedItemWrapper>
-  );
+  return <SimpleFeedItemRenderer feedItem={feedItem}>{mainContent}</SimpleFeedItemRenderer>;
 };
