@@ -1,0 +1,7 @@
+notes.txt
+
+Git of Theseus
+https://github.com/erikbern/git-of-theseus
+pip install git-of-theseus
+git-of-theseus-analyze . --cohortfm "%Y-%m"
+git-of-theseus-survival-plot survival.json
