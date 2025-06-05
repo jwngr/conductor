@@ -15,7 +15,7 @@ import type {ActorFromStorage} from '@shared/schemas/actors.schema';
  */
 export function toStorageActor(actor: Actor): ActorFromStorage {
   switch (actor.actorType) {
-    case ActorType.User:
+    case ActorType.Account:
       return {
         actorType: actor.actorType,
         accountId: actor.accountId,
@@ -32,7 +32,7 @@ export function toStorageActor(actor: Actor): ActorFromStorage {
  */
 export function fromStorageActor(actorFromStorage: ActorFromStorage): Result<Actor> {
   switch (actorFromStorage.actorType) {
-    case ActorType.User: {
+    case ActorType.Account: {
       const accountIdResult = parseAccountId(actorFromStorage.accountId);
       if (!accountIdResult.success) return accountIdResult;
       return makeSuccessResult(makeAccountActor(accountIdResult.value));
