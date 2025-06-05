@@ -30,12 +30,7 @@ export class XkcdFeedItemImporter {
 
     const updateFeedItemResult = await this.feedItemService.updateXkcdFeedItemContent(
       feedItem.feedItemId,
-      {
-        title,
-        imageUrlSmall,
-        imageUrlLarge,
-        altText,
-      }
+      {title, imageUrlSmall, imageUrlLarge, altText}
     );
     return prefixResultIfError(updateFeedItemResult, 'Error updating XKCD comic');
   }

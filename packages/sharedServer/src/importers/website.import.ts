@@ -11,12 +11,7 @@ import {requestGet} from '@shared/lib/requests.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import type {
-  FeedItemId,
-  FeedItemWithUrl,
-  XkcdFeedItem,
-  YouTubeFeedItem,
-} from '@shared/types/feedItems.types';
+import type {FeedItemId, FeedItemWithUrlContent} from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
@@ -214,10 +209,12 @@ export class WebsiteFeedItemImporter {
     return prefixResultIfError(saveSummaryResult, 'Error saving hierarchical summary');
   }
 
-  public async import(
-    feedItem: Exclude<FeedItemWithUrl, YouTubeFeedItem | XkcdFeedItem>
-  ): AsyncResult<void> {
-    const {feedItemId, accountId, content} = feedItem;
+  public async import(args: {
+    readonly feedItemId: FeedItemId;
+    readonly accountId: AccountId;
+    readonly content: FeedItemWithUrlContent;
+  }): AsyncResult<void> {
+    const {feedItemId, accountId, content} = args;
 
     const importAllDataResult = await asyncTryAll([
       this.fetchAndSaveSanitizedHtml({url: content.url, feedItemId, accountId}),

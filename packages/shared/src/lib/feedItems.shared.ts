@@ -18,7 +18,6 @@ import type {
   FeedItem,
   FeedItemAction,
   FeedItemId,
-  FeedItemWithUrl,
   FeedItemWithUrlContent,
   IntervalFeedItem,
   IntervalFeedItemContent,
@@ -146,8 +145,10 @@ export class SharedFeedItemHelpers {
   }
 
   public static makeFeedItemWithUrl(
-    args: Pick<FeedItemWithUrl, 'feedItemContentType' | 'feedSource' | 'accountId' | 'content'>
-  ): FeedItemWithUrl {
+    args: Pick<FeedItem, 'feedItemContentType' | 'feedSource' | 'accountId'> & {
+      content: FeedItemWithUrlContent;
+    }
+  ): FeedItem {
     const {feedItemContentType, feedSource, accountId, content} = args;
 
     return SharedFeedItemHelpers.makeGenericFeedItem({

@@ -231,7 +231,11 @@ export class ServerFeedItemsService {
           feedItemService: this,
           firecrawlService: this.firecrawlService,
         });
-        importResult = await importer.import(feedItem);
+        importResult = await importer.import({
+          feedItemId: feedItem.feedItemId,
+          accountId: feedItem.accountId,
+          content: feedItem.content,
+        });
         break;
       }
       case FeedItemContentType.Xkcd: {

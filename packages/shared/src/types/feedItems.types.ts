@@ -104,14 +104,6 @@ export type FeedItem =
   | XkcdFeedItem
   | IntervalFeedItem;
 
-export type FeedItemWithUrl =
-  | ArticleFeedItem
-  | VideoFeedItem
-  | WebsiteFeedItem
-  | TweetFeedItem
-  | YouTubeFeedItem
-  | XkcdFeedItem;
-
 interface BaseFeedItemContent {
   /** Title of the content provided by the source. */
   readonly title: string;
