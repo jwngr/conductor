@@ -72,8 +72,7 @@ service cloud.firestore {
     }
 
     function isValidEventLogItemData(maybeEventLogItemData) {
-      return maybeEventLogItemData.keys().hasAll(['eventType']) &&
-        isValidEventType(maybeEventLogItemData.eventType);
+      return maybeEventLogItemData.keys().hasAll(['eventType']);
     }
 
     //////////////////////
