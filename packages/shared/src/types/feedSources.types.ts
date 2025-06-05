@@ -43,10 +43,3 @@ export type FeedSource =
   | ExtensionFeedSource
   | PocketExportFeedSource
   | IntervalFeedSource;
-
-export type FeedSourceWithUrl =
-  | RssFeedSource
-  | YouTubeChannelFeedSource
-  | PwaFeedSource
-  | ExtensionFeedSource
-  | PocketExportFeedSource;

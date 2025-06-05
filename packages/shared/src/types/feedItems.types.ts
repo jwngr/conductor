@@ -1,9 +1,5 @@
 import type {AccountId} from '@shared/types/accounts.types';
-import type {
-  FeedSource,
-  FeedSourceWithUrl,
-  IntervalFeedSource,
-} from '@shared/types/feedSources.types';
+import type {FeedSource} from '@shared/types/feedSources.types';
 import type {IconName} from '@shared/types/icons.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import type {TagId} from '@shared/types/tags.types';
@@ -38,6 +34,8 @@ interface BaseFeedItem extends BaseStoreItem {
   readonly feedItemId: FeedItemId;
   /** Source of the feed item (e.g. RSS feed, YouTube channel, extension, ). */
   readonly feedSource: FeedSource;
+  /** Type of feed item content (e.g. article, video, website). */
+  readonly feedItemContentType: FeedItemContentType;
   /** ID of the account that owns the feed item. */
   readonly accountId: AccountId;
   /** State of the feed item's import process. */
@@ -61,39 +59,40 @@ interface BaseFeedItem extends BaseStoreItem {
   readonly tagIds: Partial<Record<TagId, true>>;
 }
 
-type ArticleFeedItem = BaseFeedItem & {
+export type ArticleFeedItem = BaseFeedItem & {
+  readonly feedItemContentType: FeedItemContentType.Article;
   readonly content: ArticleFeedItemContent;
-  readonly feedSource: FeedSourceWithUrl;
 };
 
-type VideoFeedItem = BaseFeedItem & {
+export type VideoFeedItem = BaseFeedItem & {
+  readonly feedItemContentType: FeedItemContentType.Video;
   readonly content: VideoFeedItemContent;
-  readonly feedSource: FeedSourceWithUrl;
 };
 
-type WebsiteFeedItem = BaseFeedItem & {
+export type WebsiteFeedItem = BaseFeedItem & {
+  readonly feedItemContentType: FeedItemContentType.Website;
   readonly content: WebsiteFeedItemContent;
-  readonly feedSource: FeedSourceWithUrl;
 };
 
-type TweetFeedItem = BaseFeedItem & {
+export type TweetFeedItem = BaseFeedItem & {
+  readonly feedItemContentType: FeedItemContentType.Tweet;
   readonly content: TweetFeedItemContent;
-  readonly feedSource: FeedSourceWithUrl;
 };
 
-type YouTubeFeedItem = BaseFeedItem & {
+export type YouTubeFeedItem = BaseFeedItem & {
+  readonly feedItemContentType: FeedItemContentType.YouTube;
   readonly content: YouTubeFeedItemContent;
-  readonly feedSource: FeedSourceWithUrl;
 };
 
 export type XkcdFeedItem = BaseFeedItem & {
+  readonly feedItemContentType: FeedItemContentType.Xkcd;
   readonly content: XkcdFeedItemContent;
-  readonly feedSource: FeedSourceWithUrl;
 };
 
 export type IntervalFeedItem = BaseFeedItem & {
+  readonly feedItemContentType: FeedItemContentType.Interval;
   readonly content: IntervalFeedItemContent;
-  readonly feedSource: IntervalFeedSource;
+  // TODO: Enforce `feedSource` is an `IntervalFeedSource`.
 };
 
 export type FeedItem =
@@ -107,7 +106,7 @@ export type FeedItem =
 
 interface BaseFeedItemContent {
   /** Type of feed item content (e.g. article, video, website). */
-  readonly feedItemContentType: FeedItemContentType;
+  // readonly feedItemContentType: FeedItemContentType;
   /** Title of the content provided by the source. */
   readonly title: string;
 }
@@ -123,35 +122,35 @@ export interface BaseFeedItemContentWithUrl extends BaseFeedItemContent {
   readonly summary: string | null;
 }
 
-interface ArticleFeedItemContent extends BaseFeedItemContentWithUrl {
-  readonly feedItemContentType: FeedItemContentType.Article;
+export interface ArticleFeedItemContent extends BaseFeedItemContentWithUrl {
+  // readonly feedItemContentType: FeedItemContentType.Article;
 }
 
-interface VideoFeedItemContent extends BaseFeedItemContentWithUrl {
-  readonly feedItemContentType: FeedItemContentType.Video;
+export interface VideoFeedItemContent extends BaseFeedItemContentWithUrl {
+  // readonly feedItemContentType: FeedItemContentType.Video;
 }
 
-interface WebsiteFeedItemContent extends BaseFeedItemContentWithUrl {
-  readonly feedItemContentType: FeedItemContentType.Website;
+export interface WebsiteFeedItemContent extends BaseFeedItemContentWithUrl {
+  // readonly feedItemContentType: FeedItemContentType.Website;
 }
 
-interface TweetFeedItemContent extends BaseFeedItemContentWithUrl {
-  readonly feedItemContentType: FeedItemContentType.Tweet;
+export interface TweetFeedItemContent extends BaseFeedItemContentWithUrl {
+  // readonly feedItemContentType: FeedItemContentType.Tweet;
 }
 
-interface YouTubeFeedItemContent extends BaseFeedItemContentWithUrl {
-  readonly feedItemContentType: FeedItemContentType.YouTube;
+export interface YouTubeFeedItemContent extends BaseFeedItemContentWithUrl {
+  // readonly feedItemContentType: FeedItemContentType.YouTube;
 }
 
 export interface XkcdFeedItemContent extends BaseFeedItemContentWithUrl {
-  readonly feedItemContentType: FeedItemContentType.Xkcd;
+  // readonly feedItemContentType: FeedItemContentType.Xkcd;
   readonly altText: string;
   readonly imageUrlSmall: string;
   readonly imageUrlLarge: string;
 }
 
 export interface IntervalFeedItemContent extends BaseFeedItemContent {
-  readonly feedItemContentType: FeedItemContentType.Interval;
+  // readonly feedItemContentType: FeedItemContentType.Interval;
   readonly intervalSeconds: number;
 }
 

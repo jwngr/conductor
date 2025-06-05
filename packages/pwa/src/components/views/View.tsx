@@ -62,8 +62,8 @@ function compareFeedItems(args: {
       valB = b.lastUpdatedTime;
       break;
     case 'title':
-      valA = a.title;
-      valB = b.title;
+      valA = a.content.title;
+      valB = b.content.title;
       break;
     default:
       assertNever(field);
@@ -143,7 +143,7 @@ function useGroupedFeedItems(
     switch (groupByField) {
       case 'feedItemType':
         for (const item of feedItems) {
-          const groupKey = item.feedItemContentType;
+          const groupKey = item.content.feedItemContentType;
           if (!groupedItems[groupKey]) {
             groupedItems[groupKey] = [];
           }
@@ -236,14 +236,14 @@ const ViewListItem: React.FC<{
         <div>
           <FlexRow gap={3}>
             <Text as="p" bold={isUnread}>
-              {feedItem.title || 'No title'}
+              {feedItem.content.title || 'No title'}
             </Text>
             <FeedItemImportStatusBadge importState={feedItem.importState} />
           </FlexRow>
           <Text as="p" light>
-            {feedItem.feedItemContentType === FeedItemContentType.Interval
+            {feedItem.content.feedItemContentType === FeedItemContentType.Interval
               ? 'Interval'
-              : feedItem.url}
+              : feedItem.content.url}
           </Text>
         </div>
         {shouldShowActions ? (
