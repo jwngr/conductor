@@ -12,7 +12,6 @@ import type {
   ArticleFeedItem,
   BaseFeedItemContentWithUrl,
   FeedItem,
-  FeedItemContent,
   FeedItemId,
   FeedItemImportState,
   IntervalFeedItem,
@@ -32,7 +31,6 @@ import type {Result} from '@shared/types/results.types';
 import type {
   ArticleFeedItemFromStorage,
   BaseFeedItemContentWithUrlFromStorage,
-  FeedItemContentFromStorage,
   FeedItemFromStorage,
   FeedItemImportStateFromStorage,
   IntervalFeedItemContentFromStorage,
@@ -229,7 +227,6 @@ function fromStorageFeedItemShared(feedItemFromStorage: FeedItemFromStorage): Re
     importState: parsedImportStateResult.value,
     feedSource: parsedFeedSourceResult.value,
     feedItemContentType: feedItemFromStorage.feedItemContentType,
-    content: fromStorageFeedItemContent(feedItemFromStorage.content),
     triageStatus: feedItemFromStorage.triageStatus,
   });
 }
@@ -409,7 +406,6 @@ function toStorageXkcdFeedItemContent(
   feedItemContent: XkcdFeedItemContent
 ): XkcdFeedItemContentFromStorage {
   return {
-    feedItemContentType: FeedItemContentType.Xkcd,
     title: feedItemContent.title,
     url: feedItemContent.url,
     description: feedItemContent.description,
@@ -425,7 +421,6 @@ function toStorageIntervalFeedItemContent(
   feedItemContent: IntervalFeedItemContent
 ): IntervalFeedItemContentFromStorage {
   return {
-    feedItemContentType: FeedItemContentType.Interval,
     title: feedItemContent.title,
     intervalSeconds: feedItemContent.intervalSeconds,
   };
@@ -441,28 +436,6 @@ function toStorageFeedItemWithUrlContent<T extends BaseFeedItemContentWithUrlFro
     summary: feedItemContent.summary,
     outgoingLinks: feedItemContent.outgoingLinks,
   } as T;
-}
-
-/**
- * Converts a {@link FeedItemContentFromStorage} into a {@link FeedItemContent}.
- */
-export function fromStorageFeedItemContent(
-  feedItemContentFromStorage: FeedItemContentFromStorage
-): Result<FeedItemContent> {
-  switch (feedItemContentFromStorage.feedItemContentType) {
-    case FeedItemContentType.Article:
-    case FeedItemContentType.Video:
-    case FeedItemContentType.Website:
-    case FeedItemContentType.Tweet:
-    case FeedItemContentType.YouTube:
-      return fromStorageFeedItemWithUrlContent(feedItemContentFromStorage);
-    case FeedItemContentType.Xkcd:
-      return fromStorageXkcdFeedItemContent(feedItemContentFromStorage);
-    case FeedItemContentType.Interval:
-      return fromStorageIntervalFeedItemContent(feedItemContentFromStorage);
-    default:
-      assertNever(feedItemContentFromStorage);
-  }
 }
 
 function fromStorageXkcdFeedItemContent(
