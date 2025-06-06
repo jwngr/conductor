@@ -1,7 +1,7 @@
 import type React from 'react';
 
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
-import {Text} from '@src/components/atoms/Text';
+import {H4, P} from '@src/components/atoms/Text';
 import {StorySection} from '@src/components/stories/StorySection';
 
 import {cn} from '@src/lib/utils.pwa';
@@ -78,7 +78,7 @@ const ColorSwatch: React.FC<{
   return (
     <FlexColumn gap={1} align="center">
       <div className={cn('border-border size-16 rounded border', className)} />
-      <Text className={cn('text-xs', 'text-text-default')}>{name}</Text>
+      <P light>{name}</P>
     </FlexColumn>
   );
 };
@@ -89,8 +89,8 @@ const TextColorDisplay: React.FC<{
 }> = ({name, className}) => {
   return (
     <FlexColumn gap={1} align="start">
-      <Text className={cn('text-lg', className)}>Text sample</Text>
-      <Text className="text-xs">{name}</Text>
+      <P className={className}>Text sample</P>
+      <P light>{name}</P>
     </FlexColumn>
   );
 };
@@ -118,7 +118,7 @@ export const ColorsStories: React.FC = () => {
       </StorySection>
 
       <StorySection title="Semantic colors">
-        <Text className="mb-2">General</Text>
+        <H4>General</H4>
         <FlexRow gap={2} align="end" wrap>
           {semanticColorNames.map((name) => {
             const bgClass = `bg-${name}`;
@@ -126,7 +126,7 @@ export const ColorsStories: React.FC = () => {
           })}
         </FlexRow>
 
-        <Text className="mb-2">Text</Text>
+        <H4>Text</H4>
         <FlexRow gap={2} align="end" wrap>
           {textColorNames.map((name) => {
             const textClass = name; // Class name is the variable name itself
@@ -134,7 +134,7 @@ export const ColorsStories: React.FC = () => {
           })}
         </FlexRow>
 
-        <Text className="mb-2">Neutral scale</Text>
+        <H4>Neutral scale</H4>
         <FlexRow gap={2} align="end" wrap>
           {neutralColorNames.map((name) => {
             const bgClass = `bg-${name}`;
@@ -142,7 +142,7 @@ export const ColorsStories: React.FC = () => {
           })}
         </FlexRow>
 
-        <Text className="mb-2">Level 1 colors</Text>
+        <H4>Level 1 colors</H4>
         <FlexRow gap={2} align="end" wrap>
           {level1ColorNames.map((name) => {
             const bgClass = `bg-${name}`;
@@ -150,7 +150,7 @@ export const ColorsStories: React.FC = () => {
           })}
         </FlexRow>
 
-        <Text className="mb-2">Level 2 colors</Text>
+        <H4>Level 2 colors</H4>
         <FlexRow gap={2} align="end" wrap>
           {level2ColorNames.map((name) => {
             const bgClass = `bg-${name}`;

@@ -6,7 +6,7 @@ import * as styles from '@src/components/AppHeader.css';
 import {FlexRow} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
 import {Spacer} from '@src/components/atoms/Spacer';
-import {Text} from '@src/components/atoms/Text';
+import {P} from '@src/components/atoms/Text';
 import {RecentActivityFeed} from '@src/components/devToolbar/RecentActivityFeed';
 import {ConductorLogo} from '@src/components/logos/ConductorLogo';
 
@@ -21,12 +21,10 @@ export const AppHeader: React.FC = () => {
       <Spacer x={12} />
       <RecentActivityFeed />
       <Spacer flex />
-      <Text light>{loggedInAccount.email}</Text>
+      <P light>{loggedInAccount.email}</P>
       <Spacer x={12} />
       <Link to={signOutRoute.fullPath} replace>
-        <Text as="p" underline="hover">
-          Sign out
-        </Text>
+        <P underline="hover">Sign out</P>
       </Link>
     </FlexRow>
   );

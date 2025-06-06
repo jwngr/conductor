@@ -14,7 +14,7 @@ import {useBooleanAccountExperiment} from '@sharedClient/hooks/experiments.hooks
 
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
-import {Text} from '@src/components/atoms/Text';
+import {H4, P} from '@src/components/atoms/Text';
 import {RequireLoggedInAccount} from '@src/components/auth/RequireLoggedInAccount';
 
 import {storiesRedirectRoute} from '@src/routes';
@@ -46,13 +46,9 @@ const DevToolbarContent: React.FC<{
         )
       )}
       <FlexColumn>
-        <Text as="h4" bold>
-          Links
-        </Text>
+        <H4 bold>Links</H4>
         <Link to={storiesRedirectRoute.fullPath} onClick={onClose}>
-          <Text as="p" underline="hover">
-            Design system & stories
-          </Text>
+          <P underline="hover">Design system & stories</P>
         </Link>
       </FlexColumn>
     </FlexColumn>
@@ -64,9 +60,7 @@ const DevToolbarSectionComponent: React.FC<{
 }> = ({section}) => {
   return (
     <FlexColumn gap={1}>
-      <Text as="h4" bold>
-        {section.title}
-      </Text>
+      <H4 bold>{section.title}</H4>
       <FlexColumn gap={2}>{section.renderSection()}</FlexColumn>
     </FlexColumn>
   );

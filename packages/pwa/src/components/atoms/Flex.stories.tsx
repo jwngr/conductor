@@ -1,6 +1,6 @@
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import type {FlexProps} from '@src/components/atoms/Flex';
-import {Text} from '@src/components/atoms/Text';
+import {P} from '@src/components/atoms/Text';
 import {StorySection} from '@src/components/stories/StorySection';
 
 import {vars} from '@src/lib/theme.css';
@@ -20,7 +20,7 @@ const Box: React.FC<{readonly children: React.ReactNode}> = ({children}) => (
 
 const TextBox: React.FC<{readonly children: React.ReactNode}> = ({children}) => (
   <Box>
-    <Text>{children}</Text>
+    <P>{children}</P>
   </Box>
 );
 
@@ -48,7 +48,7 @@ const StackedTextBox: React.FC<{readonly count: number}> = ({count}) => {
   return (
     <Box>
       {Array.from({length: count}).map((_, index) => (
-        <Text key={`stacked-text-${index}`}>{`Row ${index + 1}`}</Text>
+        <P key={`stacked-text-${index}`}>{`Row ${index + 1}`}</P>
       ))}
     </Box>
   );

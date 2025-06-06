@@ -1,7 +1,7 @@
 import type React from 'react';
 
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
-import {Text} from '@src/components/atoms/Text';
+import {H4, P} from '@src/components/atoms/Text';
 import {StorySection} from '@src/components/stories/StorySection';
 
 import {vars} from '@src/lib/theme.css';
@@ -92,7 +92,7 @@ const ColorSwatch: React.FC<ColorSwatchProps> = ({label, colorValue}) => {
           borderRadius: vars.radii.md,
         }}
       />
-      <Text style={{fontSize: '12px', color: vars.colors.text}}>{label}</Text>
+      <P>{label}</P>
     </div>
   );
 };
@@ -105,8 +105,8 @@ interface TextColorDisplayProps {
 const TextColorDisplay: React.FC<TextColorDisplayProps> = ({name, colorValue}) => {
   return (
     <FlexColumn align="start" gap={1}>
-      <Text style={{fontSize: '16px', color: colorValue}}>Text sample</Text>
-      <Text style={{fontSize: '12px'}}>{name}</Text>
+      <P style={{fontSize: '16px', color: colorValue}}>Text sample</P>
+      <P style={{fontSize: '12px'}}>{name}</P>
     </FlexColumn>
   );
 };
@@ -126,7 +126,7 @@ export const ColorsVanillaStories: React.FC = () => {
                 gap: vars.spacing[3],
               }}
             >
-              <Text style={{width: '100px', textAlign: 'right', flexShrink: 0}}>{colorName}:</Text>
+              <P style={{width: '100px', textAlign: 'right', flexShrink: 0}}>{colorName}:</P>
               <div
                 style={{
                   display: 'flex',
@@ -156,7 +156,9 @@ export const ColorsVanillaStories: React.FC = () => {
               gap: vars.spacing[3],
             }}
           >
-            <Text style={{width: '100px', textAlign: 'right', flexShrink: 0}}>Special:</Text>
+            <P align="right" className="w-full shrink-0">
+              Special:
+            </P>
             <div
               style={{
                 display: 'flex',
@@ -173,9 +175,7 @@ export const ColorsVanillaStories: React.FC = () => {
       </StorySection>
 
       <StorySection title="Semantic colors (Vanilla Extract)">
-        <Text bold className="mb-2">
-          General
-        </Text>
+        <H4 bold>General</H4>
         <FlexRow wrap gap={2} align="end">
           {semanticColorNames.map((name) => {
             const colorValue = vars.colors[name as SemanticColorName];
@@ -183,9 +183,7 @@ export const ColorsVanillaStories: React.FC = () => {
           })}
         </FlexRow>
 
-        <Text bold className="mb-2">
-          Text
-        </Text>
+        <H4 bold>Text</H4>
         <div
           style={{
             display: 'grid',
@@ -201,9 +199,7 @@ export const ColorsVanillaStories: React.FC = () => {
           })}
         </div>
 
-        <Text bold className="mb-2">
-          Neutral scale
-        </Text>
+        <H4 bold>Neutral scale</H4>
         <FlexRow wrap gap={2} align="end">
           {neutralLevels.map((level) => {
             const name = `neutral-${level}`;
@@ -212,9 +208,7 @@ export const ColorsVanillaStories: React.FC = () => {
           })}
         </FlexRow>
 
-        <Text bold className="mb-2">
-          Level 1 & 2 Colors
-        </Text>
+        <H4 bold>Level 1 & 2 Colors</H4>
         <FlexColumn gap={4}>
           {semanticGroupNames.map((groupName) => (
             <FlexRow key={groupName} wrap gap={2} align="end">

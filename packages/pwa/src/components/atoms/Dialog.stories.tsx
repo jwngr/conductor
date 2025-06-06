@@ -1,7 +1,7 @@
 import {useState} from 'react';
 
 import {Dialog, DialogContent, DialogTrigger} from '@src/components/atoms/Dialog';
-import {Text} from '@src/components/atoms/Text';
+import {H2, P} from '@src/components/atoms/Text';
 import {StorySection} from '@src/components/stories/StorySection';
 
 export const DialogStories: React.FC = () => {
@@ -12,14 +12,12 @@ export const DialogStories: React.FC = () => {
       <StorySection title="Basic dialog">
         <Dialog>
           <DialogTrigger asChild>
-            <Text style={{cursor: 'pointer'}}>Click to open dialog</Text>
+            <P style={{cursor: 'pointer'}}>Click to open dialog</P>
           </DialogTrigger>
           <DialogContent>
             <div className="flex flex-col gap-4">
-              <Text as="h2" bold>
-                Dialog Title
-              </Text>
-              <Text>This is the dialog content.</Text>
+              <H2 bold>Dialog Title</H2>
+              <P>This is the dialog content.</P>
             </div>
           </DialogContent>
         </Dialog>
@@ -28,16 +26,14 @@ export const DialogStories: React.FC = () => {
       <StorySection title="Controlled dialog">
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
-            <Text style={{cursor: 'pointer'}}>
+            <P style={{cursor: 'pointer'}}>
               Click to open controlled dialog (currently {isOpen ? 'open' : 'closed'})
-            </Text>
+            </P>
           </DialogTrigger>
           <DialogContent>
             <div className="flex flex-col gap-4">
-              <Text as="h2" bold>
-                Controlled Dialog
-              </Text>
-              <Text>State is controlled externally for this dialog.</Text>
+              <H2 bold>Controlled Dialog</H2>
+              <P>State is controlled externally for this dialog.</P>
             </div>
           </DialogContent>
         </Dialog>
