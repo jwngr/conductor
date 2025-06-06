@@ -4,7 +4,7 @@ import React, {useEffect} from 'react';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import type {Supplier} from '@shared/types/utils.types';
 
-import {Text} from '@src/components/atoms/Text';
+import {P, Span} from '@src/components/atoms/Text';
 
 import {keyboardShortcutsService} from '@src/lib/shortcuts.pwa';
 
@@ -57,20 +57,16 @@ export const Tooltip: React.FC<TooltipProps> = ({
 
   let tooltipContent: React.ReactNode;
   if (typeof content === 'string') {
-    tooltipContent = <Text as="p">{content}</Text>;
+    tooltipContent = <P>{content}</P>;
   } else if ('text' in content) {
-    tooltipContent = <Text as="p">{content.text}</Text>;
+    tooltipContent = <P>{content.text}</P>;
   } else {
     tooltipContent = content;
   }
 
   let shortcutKeysContent: React.ReactNode;
   if (shortcut) {
-    shortcutKeysContent = shortcut.displayKeys.map((key) => (
-      <Text as="span" key={key}>
-        {key}
-      </Text>
-    ));
+    shortcutKeysContent = shortcut.displayKeys.map((key) => <Span key={key}>{key}</Span>);
   }
 
   return (

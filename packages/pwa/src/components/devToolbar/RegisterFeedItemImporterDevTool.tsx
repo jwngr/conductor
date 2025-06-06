@@ -14,17 +14,13 @@ import {useFeedItemsService} from '@sharedClient/hooks/feedItems.hooks';
 
 import {Button} from '@src/components/atoms/Button';
 import {Input} from '@src/components/atoms/Input';
-import {Text} from '@src/components/atoms/Text';
+import {P} from '@src/components/atoms/Text';
 
 const StatusText: React.FC<{
   readonly isError?: boolean;
   readonly children: React.ReactNode;
 }> = ({isError, children}) => {
-  return (
-    <Text as="p" className={`text-xs ${isError ? 'text-error' : 'text-success'}`}>
-      {children}
-    </Text>
-  );
+  return <P className={isError ? 'text-error' : 'text-success'}>{children}</P>;
 };
 
 const FeedItemImporter: React.FC = () => {

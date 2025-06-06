@@ -3,7 +3,7 @@ import type React from 'react';
 import type {HeroAction} from '@sharedClient/types/heroActions.client.types';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
-import {Text} from '@src/components/atoms/Text';
+import {H2, P} from '@src/components/atoms/Text';
 import {HeroActionButtons} from '@src/components/hero/HeroActionButton';
 
 export const HeroArea: React.FC<{
@@ -13,15 +13,15 @@ export const HeroArea: React.FC<{
   readonly bottomContent?: React.ReactElement;
 }> = ({title, subtitle, actions, bottomContent}) => {
   const titleContent = (
-    <Text as="h2" bold align="center">
+    <H2 bold align="center">
       {title}
-    </Text>
+    </H2>
   );
 
   const subtitleContent = (
-    <Text as="p" light align="center">
+    <P light align="center">
       {subtitle}
-    </Text>
+    </P>
   );
 
   return (

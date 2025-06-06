@@ -11,17 +11,13 @@ import type {WithChildren} from '@sharedClient/types/utils.client.types';
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {ExternalLink} from '@src/components/atoms/Link';
 import {Spacer} from '@src/components/atoms/Spacer';
-import {Text} from '@src/components/atoms/Text';
+import {H1, P} from '@src/components/atoms/Text';
 import {FeedItemActions} from '@src/components/feedItems/FeedItemActions';
 import {ImportingFeedItem} from '@src/components/feedItems/ImportingFeedItem';
 import {Markdown} from '@src/components/Markdown';
 
 const FeedItemHeaderTitle: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
-  const titleContentWithoutLink = (
-    <Text as="h1" bold>
-      {feedItem.content.title}
-    </Text>
-  );
+  const titleContentWithoutLink = <H1 bold>{feedItem.content.title}</H1>;
 
   switch (feedItem.feedItemContentType) {
     case FeedItemContentType.Interval:
@@ -50,11 +46,11 @@ const FeedItemHeader: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => 
 
 export const FeedItemSummary: React.FC<{readonly summary: string | null}> = ({summary}) => {
   if (summary === null) {
-    return <Text as="p">No summary generated</Text>;
+    return <P>No summary generated</P>;
   }
 
   if (summary.length === 0) {
-    return <Text as="p">Summary empty</Text>;
+    return <P>Summary empty</P>;
   }
 
   return <Markdown content={summary.replace(/•/g, '*')} />;

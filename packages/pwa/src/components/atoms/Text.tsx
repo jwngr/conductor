@@ -103,7 +103,7 @@ interface TextProps extends HTMLAttributes<HTMLParagraphElement> {
   readonly children: React.ReactNode;
 }
 
-export const Text: React.FC<TextProps> = ({
+const Text: React.FC<TextProps> = ({
   as: Component = 'p',
   align,
   bold,
@@ -135,3 +135,14 @@ export const Text: React.FC<TextProps> = ({
     </Component>
   );
 };
+
+type TextPropsWithoutAs = Omit<TextProps, 'as'>;
+
+export const P: React.FC<TextPropsWithoutAs> = ({...props}) => <Text as="p" {...props} />;
+export const Span: React.FC<TextPropsWithoutAs> = ({...props}) => <Text as="span" {...props} />;
+export const H1: React.FC<TextPropsWithoutAs> = ({...props}) => <Text as="h1" {...props} />;
+export const H2: React.FC<TextPropsWithoutAs> = ({...props}) => <Text as="h2" {...props} />;
+export const H3: React.FC<TextPropsWithoutAs> = ({...props}) => <Text as="h3" {...props} />;
+export const H4: React.FC<TextPropsWithoutAs> = ({...props}) => <Text as="h4" {...props} />;
+export const H5: React.FC<TextPropsWithoutAs> = ({...props}) => <Text as="h5" {...props} />;
+export const H6: React.FC<TextPropsWithoutAs> = ({...props}) => <Text as="h6" {...props} />;

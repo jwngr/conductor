@@ -1,7 +1,7 @@
 import type React from 'react';
 import {useState} from 'react';
 
-import {Text} from '@src/components/atoms/Text';
+import {Span} from '@src/components/atoms/Text';
 
 import {cn} from '@src/lib/utils.pwa';
 
@@ -29,14 +29,11 @@ export const ErrorDetailsToggle: React.FC<{
         aria-controls="error-details-content"
       >
         <span
-          className={cn(
-            'inline-block text-xs transition-transform duration-200',
-            isOpen && 'rotate-90'
-          )}
+          className={cn('inline-block transition-transform duration-200', isOpen && 'rotate-90')}
         >
           ▶
         </span>
-        <Text as="span">Show technical details</Text>
+        <Span>Show technical details</Span>
       </button>
 
       <div

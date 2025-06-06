@@ -1,6 +1,6 @@
 import type {IntervalFeedItem} from '@shared/types/feedItems.types';
 
-import {Text} from '@src/components/atoms/Text';
+import {P} from '@src/components/atoms/Text';
 import {SimpleFeedItemRenderer} from '@src/components/feedItems/FeedItem';
 
 export const IntervalFeedItemRenderer: React.FC<{readonly feedItem: IntervalFeedItem}> = ({
@@ -8,7 +8,7 @@ export const IntervalFeedItemRenderer: React.FC<{readonly feedItem: IntervalFeed
 }) => {
   return (
     <SimpleFeedItemRenderer feedItem={feedItem}>
-      <Text as="p">Interval feed item</Text>
+      <P>Interval feed item</P>
       <pre>{JSON.stringify(feedItem, null, 2)}</pre>
     </SimpleFeedItemRenderer>
   );

@@ -23,7 +23,7 @@ import {
 import {Button} from '@src/components/atoms/Button';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Input} from '@src/components/atoms/Input';
-import {Text} from '@src/components/atoms/Text';
+import {H3, H4, P} from '@src/components/atoms/Text';
 import {ErrorArea} from '@src/components/errors/ErrorArea';
 import {FeedSubscriptionSettingsButton} from '@src/components/feedSubscriptions/FeedSubscriptionSettings';
 import {LoadingArea} from '@src/components/loading/LoadingArea';
@@ -111,9 +111,7 @@ const FeedAdder: React.FC = () => {
 
   return (
     <FlexColumn flex={1} gap={3}>
-      <Text as="h3" bold>
-        Add new feed
-      </Text>
+      <H3 bold>Add new feed</H3>
 
       <FlexRow gap={3} flex={1}>
         <Input
@@ -129,15 +127,15 @@ const FeedAdder: React.FC = () => {
       </FlexRow>
 
       {asyncState.status === AsyncStatus.Error ? (
-        <Text className="text-error">{asyncState.error.message}</Text>
+        <P className="text-error">{asyncState.error.message}</P>
       ) : asyncState.status === AsyncStatus.Pending ? (
-        <Text light>Subscribing to feed...</Text>
+        <P light>Subscribing to feed...</P>
       ) : asyncState.status === AsyncStatus.Success ? (
-        <Text className="text-success">Successfully subscribed to feed source</Text>
+        <P className="text-success">Successfully subscribed to feed source</P>
       ) : null}
 
       <FlexColumn gap={3}>
-        <Text bold>Quick add feeds</Text>
+        <H4 bold>Quick add feeds</H4>
         <FlexRow gap={3}>
           <Button
             variant="default"
@@ -200,14 +198,10 @@ const FeedSubscriptionItem: React.FC<{
   return (
     <FlexRow gap={3} padding={3} className="rounded-lg border border-gray-200">
       <FlexColumn flex={1} gap={1}>
-        <Text bold className={subscription.isActive ? undefined : 'text-error'}>
+        <P bold className={subscription.isActive ? undefined : 'text-error'}>
           {primaryRowText}
-        </Text>
-        {secondaryRowText ? (
-          <Text as="p" light>
-            {secondaryRowText}
-          </Text>
-        ) : null}
+        </P>
+        {secondaryRowText ? <P light>{secondaryRowText}</P> : null}
       </FlexColumn>
       <FeedSubscriptionSettingsButton userFeedSubscription={subscription} />
     </FlexRow>
@@ -219,11 +213,7 @@ const LoadedFeedSubscriptionsListMainContent: React.FC<{
 }> = ({subscriptions}) => {
   if (subscriptions.length === 0) {
     // TODO: Add better empty state.
-    return (
-      <Text as="p" light>
-        None
-      </Text>
-    );
+    return <P light>None</P>;
   }
 
   return (
@@ -268,9 +258,7 @@ const FeedSubscriptionsList: React.FC = () => {
 
   return (
     <FlexColumn gap={3} style={{width: 360}}>
-      <Text as="h3" bold>
-        Active subscriptions
-      </Text>
+      <H3 bold>Active subscriptions</H3>
       {renderMainContent()}
     </FlexColumn>
   );

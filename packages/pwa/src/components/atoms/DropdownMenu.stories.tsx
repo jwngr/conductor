@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from '@src/components/atoms/DropdownMenu';
 import {FlexColumn} from '@src/components/atoms/Flex';
-import {Text} from '@src/components/atoms/Text';
+import {P} from '@src/components/atoms/Text';
 import {StorySection} from '@src/components/stories/StorySection';
 
 export const DropdownMenuStories: React.FC = () => {
@@ -95,7 +95,7 @@ export const DropdownMenuStories: React.FC = () => {
           <DropdownMenuContent>
             <DropdownMenuItem>
               <FlexColumn gap={2} padding={2}>
-                <Text>Custom dropdown content</Text>
+                <P>Custom dropdown content</P>
                 <Button>Custom Button</Button>
               </FlexColumn>
             </DropdownMenuItem>
