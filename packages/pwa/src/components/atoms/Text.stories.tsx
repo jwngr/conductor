@@ -70,10 +70,10 @@ export const TextStories: React.FC = () => {
           <P flex={1} className="bg-cyan-1 p-2">
             flex=1
           </P>
-          <P flex="auto" className="bg-cyan-2 p-2">
+          <P flex="auto" className="bg-green-1 p-2">
             flex=auto
           </P>
-          <P flex="initial" className="bg-cyan-3 p-2">
+          <P flex="initial" className="bg-blue-1 p-2">
             flex=initial
           </P>
         </FlexRow>

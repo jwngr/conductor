@@ -14,13 +14,13 @@ import {useFeedItemsService} from '@sharedClient/hooks/feedItems.hooks';
 
 import {Button} from '@src/components/atoms/Button';
 import {Input} from '@src/components/atoms/Input';
-import {H6} from '@src/components/atoms/Text';
+import {P} from '@src/components/atoms/Text';
 
 const StatusText: React.FC<{
   readonly isError?: boolean;
   readonly children: React.ReactNode;
 }> = ({isError, children}) => {
-  return <H6 className={` ${isError ? 'text-error' : 'text-success'}`}>{children}</H6>;
+  return <P className={isError ? 'text-error' : 'text-success'}>{children}</P>;
 };
 
 const FeedItemImporter: React.FC = () => {
