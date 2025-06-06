@@ -127,11 +127,11 @@ const FeedAdder: React.FC = () => {
       </FlexRow>
 
       {asyncState.status === AsyncStatus.Error ? (
-        <P className="text-error">{asyncState.error.message}</P>
+        <P error>{asyncState.error.message}</P>
       ) : asyncState.status === AsyncStatus.Pending ? (
         <P light>Subscribing to feed...</P>
       ) : asyncState.status === AsyncStatus.Success ? (
-        <P className="text-success">Successfully subscribed to feed source</P>
+        <P success>Successfully subscribed to feed source</P>
       ) : null}
 
       <FlexColumn gap={3}>
@@ -198,7 +198,7 @@ const FeedSubscriptionItem: React.FC<{
   return (
     <FlexRow gap={3} padding={3} className="rounded-lg border border-gray-200">
       <FlexColumn flex={1} gap={1}>
-        <P bold className={subscription.isActive ? undefined : 'text-error'}>
+        <P bold error={!subscription.isActive}>
           {primaryRowText}
         </P>
         {secondaryRowText ? <P light>{secondaryRowText}</P> : null}

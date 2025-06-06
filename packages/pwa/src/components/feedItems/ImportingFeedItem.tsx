@@ -21,7 +21,7 @@ export const ImportingFeedItem: React.FC<{readonly feedItem: FeedItem}> = ({feed
 
   switch (feedItem.importState.status) {
     case FeedItemImportStatus.Failed:
-      return <P className="text-error">Import failed: {feedItem.importState.errorMessage}</P>;
+      return <P error>Import failed: {feedItem.importState.errorMessage}</P>;
 
     case FeedItemImportStatus.Processing: {
       const msSinceImportRequested =

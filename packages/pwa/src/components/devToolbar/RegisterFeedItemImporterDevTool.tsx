@@ -20,7 +20,11 @@ const StatusText: React.FC<{
   readonly isError?: boolean;
   readonly children: React.ReactNode;
 }> = ({isError, children}) => {
-  return <P className={isError ? 'text-error' : 'text-success'}>{children}</P>;
+  return (
+    <P error={isError} success={!isError}>
+      {children}
+    </P>
+  );
 };
 
 const FeedItemImporter: React.FC = () => {
