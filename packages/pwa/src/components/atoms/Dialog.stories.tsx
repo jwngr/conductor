@@ -1,6 +1,7 @@
 import {useState} from 'react';
 
 import {Dialog, DialogContent, DialogTrigger} from '@src/components/atoms/Dialog';
+import {FlexColumn} from '@src/components/atoms/Flex';
 import {H2, P} from '@src/components/atoms/Text';
 import {StorySection} from '@src/components/stories/StorySection';
 
@@ -15,10 +16,10 @@ export const DialogStories: React.FC = () => {
             <P style={{cursor: 'pointer'}}>Click to open dialog</P>
           </DialogTrigger>
           <DialogContent>
-            <div className="flex flex-col gap-4">
+            <FlexColumn gap={4}>
               <H2 bold>Dialog Title</H2>
               <P>This is the dialog content.</P>
-            </div>
+            </FlexColumn>
           </DialogContent>
         </Dialog>
       </StorySection>
@@ -31,10 +32,10 @@ export const DialogStories: React.FC = () => {
             </P>
           </DialogTrigger>
           <DialogContent>
-            <div className="flex flex-col gap-4">
+            <FlexColumn gap={4}>
               <H2 bold>Controlled Dialog</H2>
               <P>State is controlled externally for this dialog.</P>
-            </div>
+            </FlexColumn>
           </DialogContent>
         </Dialog>
       </StorySection>

@@ -17,6 +17,8 @@ import {Link} from '@src/components/atoms/Link';
 import {H4, P} from '@src/components/atoms/Text';
 import {RequireLoggedInAccount} from '@src/components/auth/RequireLoggedInAccount';
 
+import {cn} from '@src/lib/utils.pwa';
+
 import {storiesRedirectRoute} from '@src/routes';
 
 const BugEmoji: React.FC = () => {
@@ -112,11 +114,12 @@ export const DevToolbar: React.FC = () => {
     <div
       ref={toolbarRef}
       onClick={handleToolbarClick}
-      className={`border-border fixed right-4 bottom-4 border-2 border-solid shadow-md ${
+      className={cn(
+        'border-border fixed right-4 bottom-4 border-2 border-solid shadow-md',
         isOpen
           ? 'bg-neutral-1 h-auto w-[300px] cursor-default rounded-xl p-4'
           : 'bg-neutral-1 h-8 w-8 cursor-pointer rounded-full p-0'
-      }`}
+      )}
     >
       {isOpen ? <DevToolbarContent onClose={() => setIsOpen(false)} /> : <BugEmoji />}
     </div>

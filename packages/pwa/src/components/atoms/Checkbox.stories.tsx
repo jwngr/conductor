@@ -1,7 +1,7 @@
 import {useState} from 'react';
 
 import {Checkbox} from '@src/components/atoms/Checkbox';
-import {FlexColumn} from '@src/components/atoms/Flex';
+import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Label} from '@src/components/atoms/Label';
 import {P} from '@src/components/atoms/Text';
 import {StorySection} from '@src/components/stories/StorySection';
@@ -27,12 +27,10 @@ export const CheckboxStories: React.FC = () => {
       </StorySection>
 
       <StorySection title="Checkbox with label">
-        <FlexColumn gap={2}>
-          <div className="flex items-center gap-2">
-            <Checkbox id="terms" />
-            <Label htmlFor="terms">Accept terms and conditions</Label>
-          </div>
-        </FlexColumn>
+        <FlexRow gap={3}>
+          <Checkbox id="terms" />
+          <Label htmlFor="terms">Accept terms and conditions</Label>
+        </FlexRow>
       </StorySection>
     </>
   );

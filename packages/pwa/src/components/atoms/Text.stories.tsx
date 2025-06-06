@@ -43,11 +43,11 @@ export const TextStories: React.FC = () => {
           <P>
             123 <Span error>THIS SPAN SHOULD BE RED</Span> 789
           </P>
-          <P className="text-purple-500">
+          <P className="text-purple-2">
             123 <Span error>THIS SPAN SHOULD BE RED</Span> 789
           </P>
-          <P className="text-purple-500">
-            123 <Span>THIS SPAN SHOULD BE GREEN</Span> 789
+          <P className="text-purple-2">
+            123 <Span success>THIS SPAN SHOULD BE GREEN</Span> 789
           </P>
           <P light>
             123 <Span>THIS SPAN SHOULD BE LIGHT</Span> 789

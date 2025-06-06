@@ -41,6 +41,8 @@ import {LoadingArea} from '@src/components/loading/LoadingArea';
 import {ViewKeyboardShortcutHandler} from '@src/components/views/ViewKeyboardShortcutHandler';
 import {ViewOptionsDialog} from '@src/components/views/ViewOptionsDialog';
 
+import {cn} from '@src/lib/utils.pwa';
+
 import {feedItemRoute} from '@src/routes';
 
 function compareFeedItems(args: {
@@ -233,9 +235,10 @@ const ViewListItem: React.FC<{
     <Link to={feedItemRoute.fullPath} params={{feedItemId: feedItem.feedItemId}}>
       <div
         ref={itemRef}
-        className={`hover:bg-neutral-1 focus-visible:bg-neutral-1 relative -m-2 flex cursor-pointer flex-col justify-center gap-1 rounded p-2 outline-none ${
-          isFocused ? `bg-neutral-1 outline-2 outline-stone-500` : ''
-        }`}
+        className={cn(
+          'hover:bg-neutral-1 focus-visible:bg-neutral-1 relative -m-2 flex cursor-pointer flex-col justify-center gap-1 rounded p-2 outline-none',
+          isFocused && 'bg-neutral-1 outline-neutral-3 outline-2'
+        )}
         tabIndex={0}
         onFocus={() => setFocusedFeedItemId(feedItem.feedItemId)}
         onBlur={() => setFocusedFeedItemId(null)}

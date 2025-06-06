@@ -15,6 +15,8 @@ import {TextIcon} from '@src/components/atoms/TextIcon';
 import * as styles from '@src/components/nav/LeftSidebar.css';
 import {NavItemLink} from '@src/components/nav/NavItemLink';
 
+import {cn} from '@src/lib/utils.pwa';
+
 const LeftSidebarItemAvatar: React.FC<{
   readonly icon: CustomIcon;
 }> = ({icon}) => {
@@ -44,7 +46,7 @@ const LeftSidebarSection: React.FC<{
             key={`${i}-${navItem.id}`}
             navItemId={navItem.id}
             onClick={() => setFocusedNavItemId(navItem.id)}
-            className={`${styles.sidebarItemLink} ${focusedNavItemId === navItem.id ? 'active' : ''}`.trim()}
+            className={cn(styles.sidebarItemLink, focusedNavItemId === navItem.id && 'active')}
           >
             <FlexRow gap={2}>
               <LeftSidebarItemAvatar icon={navItem.icon} />

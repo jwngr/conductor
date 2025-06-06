@@ -16,6 +16,7 @@ import {useFeedItemsService} from '@sharedClient/hooks/feedItems.hooks';
 import type {MouseEvent} from '@sharedClient/types/utils.client.types';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
+import {FlexRow} from '@src/components/atoms/Flex';
 
 interface GenericFeedItemActionIconProps {
   readonly icon: IconName;
@@ -161,13 +162,13 @@ export const FeedItemActions: React.FC<{
   readonly feedItem: FeedItem;
 }> = ({feedItem}) => {
   return (
-    <div className="flex flex-row items-center gap-3">
+    <FlexRow gap={3}>
       <RetryImportActionIcon feedItem={feedItem} />
       <StarFeedItemActionIcon feedItem={feedItem} />
       <MarkUnreadFeedItemActionIcon feedItem={feedItem} />
       <SaveFeedItemActionIcon feedItem={feedItem} />
       <MarkDoneFeedItemActionIcon feedItem={feedItem} />
-    </div>
+    </FlexRow>
   );
 };
 
@@ -175,11 +176,11 @@ export const HoverFeedItemActions: React.FC<{
   readonly feedItem: FeedItem;
 }> = ({feedItem}) => {
   return (
-    <div className="flex flex-row items-center gap-3">
+    <FlexRow gap={3}>
       <StarFeedItemActionIcon feedItem={feedItem} />
       <MarkUnreadFeedItemActionIcon feedItem={feedItem} />
       <SaveFeedItemActionIcon feedItem={feedItem} />
       <MarkDoneFeedItemActionIcon feedItem={feedItem} />
-    </div>
+    </FlexRow>
   );
 };
