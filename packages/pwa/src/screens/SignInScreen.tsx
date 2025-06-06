@@ -17,7 +17,7 @@ import {useMaybeLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 import {Button} from '@src/components/atoms/Button';
 import {Input} from '@src/components/atoms/Input';
 import {Spacer} from '@src/components/atoms/Spacer';
-import {Text} from '@src/components/atoms/Text';
+import {H1, H3, P, Span} from '@src/components/atoms/Text';
 
 import type {OnClick} from '@src/types/utils.pwa.types';
 
@@ -124,13 +124,13 @@ export const SignInScreen: React.FC = () => {
 
   return (
     <Screen align="center" justify="center" gap={4} maxWidth={480}>
-      <Text as="h1" bold align="center">
+      <H1 bold align="center">
         Conductor
-      </Text>
+      </H1>
       <Spacer y={8} />
-      <Text as="h3" bold align="center">
+      <H3 bold align="center">
         Enter email for a passwordless sign in link
-      </Text>
+      </H3>
       <Input
         type="email"
         value={state.emailInputVal}
@@ -153,14 +153,14 @@ export const SignInScreen: React.FC = () => {
         : null}
 
       {state.successfulSignInLinkSentTo ? (
-        <Text align="center">
+        <P align="center">
           Check <b>{state.successfulSignInLinkSentTo}</b> for the sign in link.
-        </Text>
+        </P>
       ) : null}
       {state.signInLinkError ? (
-        <Text className="text-error" align="center">
-          <Text bold>Error signing in:</Text> {state.signInLinkError.message}
-        </Text>
+        <P className="text-error" align="center">
+          <Span bold>Error signing in:</Span> {state.signInLinkError.message}
+        </P>
       ) : null}
     </Screen>
   );

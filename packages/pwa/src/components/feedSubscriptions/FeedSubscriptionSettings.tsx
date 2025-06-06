@@ -34,7 +34,7 @@ import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Label} from '@src/components/atoms/Label';
 import {Popover, PopoverContent, PopoverTrigger} from '@src/components/atoms/Popover';
-import {Text} from '@src/components/atoms/Text';
+import {P} from '@src/components/atoms/Text';
 
 const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
   readonly userFeedSubscription: UserFeedSubscription;
@@ -108,11 +108,7 @@ const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
       footer = null;
       break;
     case AsyncStatus.Error:
-      footer = (
-        <Text as="p" className="text-error">
-          {asyncState.error.message}
-        </Text>
-      );
+      footer = <P className="text-error">{asyncState.error.message}</P>;
       break;
     default:
       assertNever(asyncState);
@@ -207,11 +203,7 @@ const FeedSubscriptionUnsubscribeButton: React.FC<{
       footer = null;
       break;
     case AsyncStatus.Error:
-      footer = (
-        <Text as="p" className="text-error">
-          {asyncState.error.message}
-        </Text>
-      );
+      footer = <P className="text-error">{asyncState.error.message}</P>;
       break;
     default:
       assertNever(asyncState);

@@ -33,7 +33,7 @@ import {
 
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
-import {Text} from '@src/components/atoms/Text';
+import {H2, H3, P} from '@src/components/atoms/Text';
 import {ErrorArea} from '@src/components/errors/ErrorArea';
 import {HoverFeedItemActions} from '@src/components/feedItems/FeedItemActions';
 import {FeedItemImportStatusBadge} from '@src/components/feedItems/FeedItemImportStatusBadge';
@@ -244,16 +244,14 @@ const ViewListItem: React.FC<{
       >
         <div>
           <FlexRow gap={3}>
-            <Text as="p" bold={isUnread}>
-              {feedItem.content.title || 'No title'}
-            </Text>
+            <P bold={isUnread}>{feedItem.content.title || 'No title'}</P>
             <FeedItemImportStatusBadge importState={feedItem.importState} />
           </FlexRow>
-          <Text as="p" light>
+          <P light>
             {feedItem.feedItemContentType === FeedItemContentType.Interval
               ? 'Interval'
               : feedItem.content.url}
-          </Text>
+          </P>
         </div>
         {shouldShowActions ? (
           <div className="absolute top-1/2 right-2 -translate-y-1/2 transform">
@@ -295,7 +293,7 @@ const LoadedViewList: React.FC<{
       <FlexColumn gap={4}>
         {Object.entries(groupedItems).map(([groupKey, items]) => (
           <React.Fragment key={`${viewType}-${groupKey}`}>
-            <Text as="h3">{groupKey}</Text>
+            <H3>{groupKey}</H3>
             <ul>
               {items.map((feedItem) => (
                 <ViewListItem key={feedItem.feedItemId} feedItem={feedItem} viewType={viewType} />
@@ -435,9 +433,7 @@ const ViewHeader: React.FC<{
 }> = ({name, sortBy, groupBy, onSortByChange, onGroupByChange}) => {
   return (
     <FlexRow justify="between">
-      <Text as="h2" bold>
-        {name}
-      </Text>
+      <H2 bold>{name}</H2>
       <FlexRow gap={2}>
         <ViewOptionsDialog
           sortBy={sortBy}
