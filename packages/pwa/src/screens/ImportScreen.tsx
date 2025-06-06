@@ -162,7 +162,7 @@ export const ImportScreen: React.FC = () => {
 
   return (
     <Screen withHeader withLeftSidebar>
-      <FlexColumn flex={1} gap={6} padding={5} overflow="auto">
+      <FlexColumn flex gap={6} padding={5} overflow="auto">
         <H2 bold>Import</H2>
 
         <FlexColumn gap={2}>
@@ -211,7 +211,7 @@ const IndividualImportItem: React.FC<WithChildren<IndividualImportItemProps>> = 
 
   return (
     <FlexRow gap={3} padding={3} className="border-neutral-2 rounded-lg border">
-      <FlexColumn flex={1} gap={1}>
+      <FlexColumn flex gap={1}>
         <FlexRow gap={2}>
           <P bold>{item.title}</P>
           {children}

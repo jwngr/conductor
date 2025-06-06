@@ -49,7 +49,7 @@ _Italic paragraph text_
             <H6 light>Normal Typography</H6>
             <P>Regular paragraph text</P>
             <P bold>Bold paragraph text</P>
-            <P className="italic">Italic paragraph text</P>
+            <P italic>Italic paragraph text</P>
           </FlexColumn>
 
           <FlexColumn gap={2}>

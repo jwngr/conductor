@@ -41,16 +41,16 @@ export const TextStories: React.FC = () => {
           <P success>Success color</P>
           <P error>Error color</P>
           <P>
-            123 <Span error>THIS SPAN SHOULD BE RED</Span> 789
+            DEFAULT <Span error>RED</Span> DEFAULT
           </P>
           <P className="text-purple-2">
-            123 <Span error>THIS SPAN SHOULD BE RED</Span> 789
+            PURPLE <Span error>RED</Span> PURPLE
           </P>
           <P className="text-purple-2">
-            123 <Span success>THIS SPAN SHOULD BE GREEN</Span> 789
+            PURPLE <Span success>GREEN</Span> PURPLE
           </P>
           <P light>
-            123 <Span>THIS SPAN SHOULD BE LIGHT</Span> 789
+            LIGHT <Span>LIGHT</Span> LIGHT
           </P>
         </FlexColumn>
       </StorySection>
@@ -67,14 +67,17 @@ export const TextStories: React.FC = () => {
 
       <StorySection title="Text with flex">
         <FlexRow gap={2}>
-          <P flex={1} className="bg-cyan-1 p-2">
-            flex=1
+          <P flex className="bg-cyan-1 p-2">
+            {`flex={true}`}
+          </P>
+          <P flex={false} className="bg-purple-1 p-2">
+            {`flex={false}`}
           </P>
           <P flex="auto" className="bg-green-1 p-2">
-            flex=auto
+            {`flex="auto"`}
           </P>
           <P flex="initial" className="bg-blue-1 p-2">
-            flex=initial
+            {`flex="initial"`}
           </P>
         </FlexRow>
       </StorySection>

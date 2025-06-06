@@ -13,7 +13,7 @@ const ExperimentsScreenMainContent: React.FC = () => {
   const accountExperiments = useExperimentsStore((state) => state.experiments);
 
   return (
-    <FlexColumn flex={1} gap={6} padding={5} overflow="auto">
+    <FlexColumn flex gap={6} padding={5} overflow="auto">
       <H2 bold>Experiments</H2>
 
       <FlexColumn gap={2}>
