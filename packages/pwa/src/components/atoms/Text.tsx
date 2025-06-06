@@ -103,7 +103,7 @@ interface TextProps extends HTMLAttributes<HTMLParagraphElement> {
   readonly children: React.ReactNode;
 }
 
-export const Text: React.FC<TextProps> = ({
+const Text: React.FC<TextProps> = ({
   as: Component = 'p',
   align,
   bold,
