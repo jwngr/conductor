@@ -42,13 +42,20 @@ function getTextAlignClasses(args: {readonly align?: 'left' | 'center' | 'right'
  *
  * TODO: Add back a proper `color` attribute that is semantically cleaner.
  */
-function getColorClasses(args: {readonly light?: boolean}): string {
-  const {light} = args;
+function getColorClasses(args: {
+  readonly light?: boolean;
+  readonly error?: boolean;
+  readonly success?: boolean;
+}): string {
+  const {light, error, success} = args;
+
+  if (error) return 'text-error';
+  if (success) return 'text-success';
+  if (light) return DEFAULT_TEXT_LIGHT_COLOR;
   // TODO: Move this default somewhere else so that every text component doesn't need to set it. It
   // also overrides color of any text component it is inside, which breaks the `span` use case.
-  return light ? DEFAULT_TEXT_LIGHT_COLOR : DEFAULT_TEXT_COLOR;
+  return DEFAULT_TEXT_COLOR;
 }
-
 function getUnderlineClasses(args: {readonly underline?: 'always' | 'hover' | 'never'}): string {
   const {underline} = args;
 
@@ -91,7 +98,7 @@ function getTruncateClasses(args: {readonly truncate?: boolean}): string {
 type TextElement = 'p' | 'span' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 
 interface TextProps extends HTMLAttributes<HTMLParagraphElement> {
-  readonly as?: TextElement;
+  readonly as: TextElement;
   readonly align?: 'left' | 'center' | 'right';
   readonly bold?: boolean;
   readonly weight?: FontWeight;
@@ -99,18 +106,22 @@ interface TextProps extends HTMLAttributes<HTMLParagraphElement> {
   readonly truncate?: boolean;
   readonly monospace?: boolean;
   readonly light?: boolean;
+  readonly error?: boolean;
+  readonly success?: boolean;
   readonly underline?: 'always' | 'hover' | 'never';
   readonly children: React.ReactNode;
 }
 
 const Text: React.FC<TextProps> = ({
-  as: Component = 'p',
+  as: Component,
   align,
   bold,
   weight,
   flex,
   children,
   light,
+  error,
+  success,
   monospace,
   truncate,
   underline,
@@ -119,7 +130,7 @@ const Text: React.FC<TextProps> = ({
   ...rest
 }) => {
   const classes = cn(
-    getColorClasses({light}),
+    getColorClasses({light, error, success}),
     getUnderlineClasses({underline}),
     getFontWeightClasses({bold, weight}),
     getFontFamilyClasses({monospace}),

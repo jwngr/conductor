@@ -64,14 +64,14 @@ export const ButtonIconStories: React.FC = () => {
           <ButtonIcon
             name={IconName.Star}
             size={32}
-            className="text-error"
+            className="text-red-2"
             tooltip="Red"
             onClick={handleButtonIconClick}
           />
           <ButtonIcon
             name={IconName.Star}
             size={32}
-            className="text-success"
+            className="text-green-2"
             tooltip="Green"
             onClick={handleButtonIconClick}
           />

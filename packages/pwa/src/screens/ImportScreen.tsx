@@ -178,7 +178,7 @@ export const ImportScreen: React.FC = () => {
             onChange={handleFileChange}
             className="max-w-sm"
           />
-          {state.fileError ? <P className="text-error">{state.fileError.message}</P> : null}
+          {state.fileError ? <P error>{state.fileError.message}</P> : null}
         </FlexColumn>
 
         {renderParsedItems()}
@@ -217,7 +217,7 @@ const IndividualImportItem: React.FC<WithChildren<IndividualImportItemProps>> = 
           {children}
         </FlexRow>
         <P light>{item.url}</P>
-        {isError ? <P className="text-error">{status.error.message}</P> : null}
+        {isError ? <P error>{status.error.message}</P> : null}
       </FlexColumn>
       <Button onClick={onImport} disabled={isImporting || isImported} size="sm">
         {buttonText}

@@ -108,7 +108,7 @@ const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
       footer = null;
       break;
     case AsyncStatus.Error:
-      footer = <P className="text-error">{asyncState.error.message}</P>;
+      footer = <P error>{asyncState.error.message}</P>;
       break;
     default:
       assertNever(asyncState);
@@ -203,7 +203,7 @@ const FeedSubscriptionUnsubscribeButton: React.FC<{
       footer = null;
       break;
     case AsyncStatus.Error:
-      footer = <P className="text-error">{asyncState.error.message}</P>;
+      footer = <P error>{asyncState.error.message}</P>;
       break;
     default:
       assertNever(asyncState);

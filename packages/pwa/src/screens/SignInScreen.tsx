@@ -158,7 +158,7 @@ export const SignInScreen: React.FC = () => {
         </P>
       ) : null}
       {state.signInLinkError ? (
-        <P className="text-error" align="center">
+        <P error align="center">
           <Span bold>Error signing in:</Span> {state.signInLinkError.message}
         </P>
       ) : null}

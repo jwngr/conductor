@@ -38,13 +38,13 @@ export const TextStories: React.FC = () => {
         <FlexColumn gap={2}>
           <P>Default color</P>
           <P light>Light color</P>
-          <P className="text-success">Success color</P>
-          <P className="text-error">Error color</P>
+          <P success>Success color</P>
+          <P error>Error color</P>
           <P>
-            123 <Span className="text-error">THIS SPAN SHOULD BE RED</Span> 789
+            123 <Span error>THIS SPAN SHOULD BE RED</Span> 789
           </P>
           <P className="text-purple-500">
-            123 <Span className="text-error">THIS SPAN SHOULD BE RED</Span> 789
+            123 <Span error>THIS SPAN SHOULD BE RED</Span> 789
           </P>
           <P className="text-purple-500">
             123 <Span>THIS SPAN SHOULD BE GREEN</Span> 789
