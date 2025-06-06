@@ -39,8 +39,7 @@ const ErrorScreenAuthFooter: React.FC = () => {
         </H5>
         <Divider y={24} x={1} />
         <Link to={signOutRoute.fullPath} replace>
-          {/* TODO: Add `nowrap` as a prop to `Text`. */}
-          <H5 underline="always" light className="text-nowrap">
+          <H5 underline="always" light nowrap>
             Sign out
           </H5>
         </Link>
