@@ -55,12 +55,14 @@ export function makeEventLogItem(args: {
 export function makeFeedItemActionEventLogItemData(args: {
   readonly feedItemId: FeedItemId;
   readonly feedItemActionType: FeedItemActionType;
+  readonly isUndo: boolean;
 }): FeedItemActionEventLogItemData {
-  const {feedItemId, feedItemActionType} = args;
+  const {feedItemId, feedItemActionType, isUndo} = args;
   return {
     eventType: EventType.FeedItemAction,
     feedItemId,
     feedItemActionType,
+    isUndo,
   };
 }
 
@@ -113,14 +115,14 @@ export function makeStringExperimentValueChangedEventLogItemData(args: {
 export function makeSubscribedToFeedSourceEventLogItemData(args: {
   readonly feedSourceType: FeedSourceType;
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-  readonly isResubscribe: boolean;
+  readonly isNewSubscription: boolean;
 }): SubscribedToFeedSourceEventLogItemData {
-  const {feedSourceType, userFeedSubscriptionId, isResubscribe} = args;
+  const {feedSourceType, userFeedSubscriptionId, isNewSubscription} = args;
   return {
     eventType: EventType.SubscribedToFeedSource,
     feedSourceType,
     userFeedSubscriptionId,
-    isResubscribe,
+    isNewSubscription,
   };
 }
 

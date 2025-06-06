@@ -90,14 +90,6 @@ export class ServerFirestoreCollectionService<
   }
 
   /**
-   * Constructs a Firestore query from the given filters.
-   */
-  // TODO: Implement this.
-  // public query(filters: QueryConstraint[]): Query<ItemData> {
-  //   return this.getCollectionRef().where(filters);
-  // }
-
-  /**
    * Fetches data from the single Firestore document with the given ID.
    */
   public async fetchById(id: ItemId): AsyncResult<ItemData | null> {

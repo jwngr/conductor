@@ -146,9 +146,14 @@ export class ClientEventLogService {
   public async logFeedItemActionEvent(args: {
     readonly feedItemId: FeedItemId;
     readonly feedItemActionType: FeedItemActionType;
+    readonly isUndo: boolean;
   }): AsyncResult<EventLogItem> {
-    const {feedItemId, feedItemActionType} = args;
-    const eventLogItemData = makeFeedItemActionEventLogItemData({feedItemId, feedItemActionType});
+    const {feedItemId, feedItemActionType, isUndo} = args;
+    const eventLogItemData = makeFeedItemActionEventLogItemData({
+      feedItemId,
+      feedItemActionType,
+      isUndo,
+    });
     const eventLogItem = this.makeEventLogItem(eventLogItemData);
     return this.logEvent(eventLogItem);
   }
@@ -189,13 +194,13 @@ export class ClientEventLogService {
   public async logSubscribedToFeedSourceEvent(args: {
     readonly feedSourceType: FeedSourceType;
     readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-    readonly isResubscribe: boolean;
+    readonly isNewSubscription: boolean;
   }): AsyncResult<EventLogItem> {
-    const {feedSourceType, userFeedSubscriptionId, isResubscribe} = args;
+    const {feedSourceType, userFeedSubscriptionId, isNewSubscription} = args;
     const eventLogItemData = makeSubscribedToFeedSourceEventLogItemData({
       feedSourceType,
       userFeedSubscriptionId,
-      isResubscribe,
+      isNewSubscription,
     });
     const eventLogItem = this.makeEventLogItem(eventLogItemData);
     return this.logEvent(eventLogItem);

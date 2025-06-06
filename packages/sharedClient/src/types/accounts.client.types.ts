@@ -17,7 +17,6 @@ export interface LoggedInAccount {
   readonly email: EmailAddress;
   readonly displayName?: string;
   // TODO: Add photo URL.
-  // readonly photoUrl: string;
 }
 
 /**
