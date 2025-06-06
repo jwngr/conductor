@@ -24,6 +24,7 @@ const FeedItemActionEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
   eventType: z.literal(EventType.FeedItemAction),
   feedItemId: FeedItemIdSchema,
   feedItemActionType: z.nativeEnum(FeedItemActionType),
+  isUndo: z.boolean(),
 });
 
 export type FeedItemActionEventLogItemDataFromStorage = z.infer<
@@ -66,7 +67,7 @@ const SubscribedToFeedSourceEventLogItemDataSchema = BaseEventLogItemDataSchema.
   eventType: z.literal(EventType.SubscribedToFeedSource),
   feedSourceType: z.nativeEnum(FeedSourceType),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
-  isResubscribe: z.boolean(),
+  isNewSubscription: z.boolean(),
 });
 
 export type UnsubscribedFromFeedSourceEventLogItemDataFromStorage = z.infer<

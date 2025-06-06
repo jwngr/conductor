@@ -179,7 +179,7 @@ const FeedSubscriptionUnsubscribeButton: React.FC<{
       void eventLogService.logSubscribedToFeedSourceEvent({
         feedSourceType: userFeedSubscription.feedSourceType,
         userFeedSubscriptionId: userFeedSubscriptionId,
-        isResubscribe: true,
+        isNewSubscription: false,
       });
     }
 

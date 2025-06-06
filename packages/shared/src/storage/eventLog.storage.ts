@@ -78,7 +78,7 @@ export function fromStorageEventLogItem(
 function toStorageEventLogItemData(
   eventLogItemData: EventLogItemData
 ): EventLogItemDataFromStorage {
-  // The types are compatible and require no additional transformation before storage.
+  // TODO(types): Figure out why this doesn't result in any type errors.
   return eventLogItemData;
 }
 
@@ -120,6 +120,7 @@ function fromStorageFeedItemActionEventLogItemData(
     eventType: EventType.FeedItemAction,
     feedItemId: parsedFeedItemIdResult.value,
     feedItemActionType: eventLogItemFromStorage.feedItemActionType,
+    isUndo: eventLogItemFromStorage.isUndo,
   });
 }
 
@@ -145,7 +146,7 @@ function fromStorageSubscribedToFeedSourceEventLogItemData(
     eventType: EventType.SubscribedToFeedSource,
     feedSourceType: eventLogItemData.feedSourceType,
     userFeedSubscriptionId: parsedSubIdResult.value,
-    isResubscribe: eventLogItemData.isResubscribe,
+    isNewSubscription: eventLogItemData.isNewSubscription,
   });
 }
 

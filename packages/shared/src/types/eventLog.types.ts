@@ -25,13 +25,17 @@ export enum EventType {
 }
 
 interface BaseEventLogItemData extends Record<string, unknown> {
+  /** The type of event being logged. */
   readonly eventType: EventType;
 }
 
 export interface FeedItemActionEventLogItemData extends BaseEventLogItemData {
   readonly eventType: EventType.FeedItemAction;
   readonly feedItemId: FeedItemId;
+  /** The type of action that was performed. Refers to the undone action if `isUndo` is true. */
   readonly feedItemActionType: FeedItemActionType;
+  /** Whether the action was an undo. If `true`, `feedItemActionType` refers to the undone action. */
+  readonly isUndo: boolean;
 }
 
 export interface FeedItemImportedEventLogItemData extends BaseEventLogItemData {
@@ -61,7 +65,8 @@ export interface SubscribedToFeedSourceEventLogItemData extends BaseEventLogItem
   readonly eventType: EventType.SubscribedToFeedSource;
   readonly feedSourceType: FeedSourceType;
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-  readonly isResubscribe: boolean;
+  /** Whether this is a new subscription or resubscribing to an inactive one. */
+  readonly isNewSubscription: boolean;
 }
 
 export interface UnsubscribedFromFeedSourceEventLogItemData extends BaseEventLogItemData {

@@ -234,9 +234,7 @@ export class ClientUserFeedSubscriptionsService {
     void this.eventLogService.logSubscribedToFeedSourceEvent({
       feedSourceType,
       userFeedSubscriptionId,
-      // TODO: Technically this may sometimes be a resubscribe since we don't check, but it's not
-      // via the main UI entry point for resubscribing.
-      isResubscribe: false,
+      isNewSubscription: true,
     });
 
     return makeSuccessResult(userFeedSubscription);
@@ -257,11 +255,6 @@ export class ClientUserFeedSubscriptionsService {
     );
     return prefixResultIfError(updateResult, 'Error updating user feed subscription');
   }
-
-  // TODO: Implement this.
-  // public async unsubscribeFromFeedUrl(url: string): AsyncResult<void> {
-  //   return makeSuccessResult(undefined);
-  // }
 
   /**
    * Watches updates for an individual user feed subscription.

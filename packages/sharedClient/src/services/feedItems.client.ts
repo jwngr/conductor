@@ -334,7 +334,11 @@ export class ClientFeedItemsService {
       return updateResult;
     }
 
-    void this.eventLogService.logFeedItemActionEvent({feedItemId, feedItemActionType});
+    void this.eventLogService.logFeedItemActionEvent({
+      feedItemId,
+      feedItemActionType,
+      isUndo: false,
+    });
 
     // Show a toast with an undo button.
     toastWithUndo({
@@ -347,8 +351,8 @@ export class ClientFeedItemsService {
 
         void this.eventLogService.logFeedItemActionEvent({
           feedItemId,
-          feedItemActionType: FeedItemActionType.Undo,
-          // TODO: Log the original action type as additional details.
+          feedItemActionType,
+          isUndo: true,
         });
 
         return undoResult;
