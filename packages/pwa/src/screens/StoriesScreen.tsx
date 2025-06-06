@@ -173,7 +173,7 @@ const StoriesLeftSidebar: React.FC<{
           </P>
         </NavItemLink>
       </div>
-      <FlexColumn flex={1} gap={6} padding={4}>
+      <FlexColumn flex gap={6} padding={4}>
         <SidebarSection
           title="Design system"
           items={getDesignSystemSidebarItems()}
@@ -229,7 +229,7 @@ const StoriesScreenMainContent: React.FC<{
 
   return (
     <FlexColumn
-      flex={1}
+      flex
       gap={8}
       padding={4}
       overflow="auto"

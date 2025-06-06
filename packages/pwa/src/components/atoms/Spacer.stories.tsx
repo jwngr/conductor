@@ -33,7 +33,7 @@ export const SpacerStories: React.FC = () => {
       <StorySection title="Flex spacer">
         <FlexRow className="border-cyan-2 border-3">
           <P>Left</P>
-          <Spacer flex={1} className="bg-orange-2" />
+          <Spacer flex className="bg-orange-2" />
           <P>Right (pushed to end)</P>
         </FlexRow>
       </StorySection>

@@ -468,7 +468,7 @@ export const ViewRenderer: React.FC<{
   });
 
   return (
-    <FlexColumn flex={1} gap={2} padding={4} overflow="auto">
+    <FlexColumn flex gap={2} padding={4} overflow="auto">
       <ViewHeader
         name={defaultViewConfig.name}
         sortBy={viewOptions.sortBy}

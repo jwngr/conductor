@@ -110,10 +110,10 @@ const FeedAdder: React.FC = () => {
   }, [handleError, setPending, setSuccess, userFeedSubscriptionsService]);
 
   return (
-    <FlexColumn flex={1} gap={3}>
+    <FlexColumn flex gap={3}>
       <H3 bold>Add new feed</H3>
 
-      <FlexRow gap={3} flex={1}>
+      <FlexRow gap={3} flex>
         <Input
           type="text"
           value={urlInputValue}
@@ -197,7 +197,7 @@ const FeedSubscriptionItem: React.FC<{
 
   return (
     <FlexRow gap={3} padding={3} className="border-neutral-2 rounded-lg border">
-      <FlexColumn flex={1} gap={1}>
+      <FlexColumn flex gap={1}>
         <P bold error={!subscription.isActive}>
           {primaryRowText}
         </P>
@@ -217,7 +217,7 @@ const LoadedFeedSubscriptionsListMainContent: React.FC<{
   }
 
   return (
-    <FlexColumn flex={1}>
+    <FlexColumn flex>
       {subscriptions.map((subscription) => (
         <FeedSubscriptionItem
           key={subscription.userFeedSubscriptionId}
@@ -267,7 +267,7 @@ const FeedSubscriptionsList: React.FC = () => {
 export const FeedSubscriptionsScreen: React.FC = () => {
   return (
     <Screen withHeader withLeftSidebar>
-      <FlexRow flex={1} align="start" gap={8} padding={4} overflow="auto">
+      <FlexRow flex align="start" gap={8} padding={4} overflow="auto">
         <FeedAdder />
         <FeedSubscriptionsList />
       </FlexRow>

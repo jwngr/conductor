@@ -8,10 +8,10 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
-  * {
+  html,
+  body {
     color: var(--color-text-default);
     font-family: var(--font-sans);
-    font-weight: normal;
   }
 
   p {

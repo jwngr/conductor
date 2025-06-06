@@ -135,7 +135,7 @@ export const ExperimentRow: React.FC<{
 }> = ({accountExperiment}) => {
   return (
     <FlexRow gap={4} padding={4} className="rounded-lg border border-gray-200">
-      <FlexColumn flex={1} gap={2}>
+      <FlexColumn flex gap={2}>
         <H4 bold>{accountExperiment.definition.title}</H4>
         <P light>{accountExperiment.definition.description}</P>
         <P light>
