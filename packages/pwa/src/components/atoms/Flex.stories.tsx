@@ -29,7 +29,7 @@ const FlexRowTest: React.FC<{readonly children: React.ReactNode} & FlexProps> = 
   className,
   ...props
 }) => (
-  <FlexRow gap={2} className={cn('border-4 border-cyan-500', className)} {...props}>
+  <FlexRow gap={2} className={cn('border-cyan-2 border-4', className)} {...props}>
     {children}
   </FlexRow>
 );
@@ -39,7 +39,7 @@ const FlexColumnTest: React.FC<{readonly children: React.ReactNode} & FlexProps>
   className,
   ...props
 }) => (
-  <FlexColumn gap={2} className={cn('border-4 border-purple-500', className)} {...props}>
+  <FlexColumn gap={2} className={cn('border-purple-2 border-4', className)} {...props}>
     {children}
   </FlexColumn>
 );

@@ -196,7 +196,7 @@ const FeedSubscriptionItem: React.FC<{
   }
 
   return (
-    <FlexRow gap={3} padding={3} className="rounded-lg border border-gray-200">
+    <FlexRow gap={3} padding={3} className="border-neutral-2 rounded-lg border">
       <FlexColumn flex={1} gap={1}>
         <P bold error={!subscription.isActive}>
           {primaryRowText}

@@ -17,6 +17,7 @@ import {
 } from '@sharedClient/hooks/feedItems.hooks';
 
 import {Button} from '@src/components/atoms/Button';
+import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {ErrorArea} from '@src/components/errors/ErrorArea';
 import {LoadingArea} from '@src/components/loading/LoadingArea';
 import {Markdown} from '@src/components/Markdown';
@@ -75,8 +76,8 @@ export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedI
   const [renderStrategy, setRenderStrategy] = useState<RenderStrategy>('firecrawl');
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex gap-2">
+    <FlexColumn gap={3}>
+      <FlexRow gap={2}>
         <Button
           variant={renderStrategy === 'firecrawl' ? 'default' : 'outline'}
           size="sm"
@@ -91,13 +92,13 @@ export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedI
         >
           Defuddle
         </Button>
-      </div>
+      </FlexRow>
 
       {renderStrategy === 'firecrawl' ? (
         <FirecrawlMarkdownRenderer feedItem={feedItem} />
       ) : (
         <DefuddleMarkdownRenderer feedItem={feedItem} />
       )}
-    </div>
+    </FlexColumn>
   );
 };

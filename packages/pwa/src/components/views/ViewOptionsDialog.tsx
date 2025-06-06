@@ -88,12 +88,12 @@ export const ViewOptionsDialog: React.FC<{
           </FlexRow>
           <FlexRow gap={2} justify="between">
             <Label htmlFor="sortField">Sort by</Label>
-            <div className="flex items-center gap-1">
+            <FlexRow gap={2}>
               <select
                 id="sortField"
                 value={firstSortByOption.field}
                 onChange={handleSortFieldChange}
-                className="rounded border border-stone-300 p-1 text-sm"
+                className="border-neutral-2 rounded border p-1 text-sm"
               >
                 <option value="createdTime">{toViewSortByOptionText('createdTime')}</option>
                 <option value="lastUpdatedTime">{toViewSortByOptionText('lastUpdatedTime')}</option>
@@ -106,7 +106,7 @@ export const ViewOptionsDialog: React.FC<{
                 onClick={handleSortDirectionToggle}
                 aria-label="Toggle sort direction"
               />
-            </div>
+            </FlexRow>
           </FlexRow>
         </FlexColumn>
       </PopoverContent>

@@ -8,7 +8,7 @@ import type {FeedItem} from '@shared/types/feedItems.types';
 
 import type {WithChildren} from '@sharedClient/types/utils.client.types';
 
-import {FlexColumn} from '@src/components/atoms/Flex';
+import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {ExternalLink} from '@src/components/atoms/Link';
 import {Spacer} from '@src/components/atoms/Spacer';
 import {H1, P} from '@src/components/atoms/Text';
@@ -36,11 +36,11 @@ const FeedItemHeaderTitle: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}
 
 const FeedItemHeader: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
   return (
-    <div className="flex">
+    <FlexRow>
       <FeedItemHeaderTitle feedItem={feedItem} />
       <Spacer flex />
       <FeedItemActions feedItem={feedItem} />
-    </div>
+    </FlexRow>
   );
 };
 
@@ -74,7 +74,7 @@ export const SimpleFeedItemRenderer: React.FC<SimpleFeedItemRendererProps> = ({
   }
 
   return (
-    <FlexColumn flex gap={3} className="overflow-auto p-5">
+    <FlexColumn flex gap={3} overflow="auto" className="p-5">
       <FeedItemHeader feedItem={feedItem} />
       {mainContent}
     </FlexColumn>

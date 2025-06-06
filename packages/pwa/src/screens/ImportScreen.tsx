@@ -210,7 +210,7 @@ const IndividualImportItem: React.FC<WithChildren<IndividualImportItemProps>> = 
   if (isError) buttonText = 'Retry';
 
   return (
-    <FlexRow gap={3} padding={3} className="rounded-lg border border-gray-200">
+    <FlexRow gap={3} padding={3} className="border-neutral-2 rounded-lg border">
       <FlexColumn flex={1} gap={1}>
         <FlexRow gap={2}>
           <P bold>{item.title}</P>
