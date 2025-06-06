@@ -60,7 +60,7 @@ export const FlexColumn: React.FC<WithChildren<Partial<FlexProps>>> = (props) =>
           direction: 'column',
           align: align ?? 'stretch',
           justify: justify ?? 'start',
-          flexValue: getFlexValue(flex),
+          flexValue: flex,
           gap,
           wrap,
           overflow,
