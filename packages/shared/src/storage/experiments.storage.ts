@@ -1,15 +1,25 @@
+import {ALL_EXPERIMENT_DEFINITIONS} from '@shared/lib/experimentDefinitions.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
-import {assertNever} from '@shared/lib/utils.shared';
+import {assertNever, mapObjectValues} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 
-import type {AccountExperimentsState, ExperimentDefinition} from '@shared/types/experiments.types';
 import {ExperimentType} from '@shared/types/experiments.types';
+import type {
+  AccountExperimentsState,
+  BooleanExperimentOverride,
+  ExperimentDefinition,
+  ExperimentOverride,
+  StringExperimentOverride,
+} from '@shared/types/experiments.types';
 import type {Result} from '@shared/types/results.types';
 
 import type {
   AccountExperimentsStateFromStorage,
+  BooleanExperimentOverrideFromStorage,
   ExperimentDefinitionFromStorage,
+  ExperimentOverrideFromStorage,
+  StringExperimentOverrideFromStorage,
 } from '@shared/schemas/experiments.schema';
 
 /**
@@ -84,12 +94,51 @@ export function fromStorageExperimentDefinition(
 export function toStorageAccountExperimentsState(
   accountExperimentsState: AccountExperimentsState
 ): AccountExperimentsStateFromStorage {
+  const experimentOverridesFromStorage = mapObjectValues(
+    accountExperimentsState.experimentOverrides,
+    toStorageExperimentOverride
+  );
+
   return {
     accountId: accountExperimentsState.accountId,
     accountVisibility: accountExperimentsState.accountVisibility,
-    experimentOverrides: accountExperimentsState.experimentOverrides,
+    experimentOverrides: experimentOverridesFromStorage,
     createdTime: accountExperimentsState.createdTime,
     lastUpdatedTime: accountExperimentsState.lastUpdatedTime,
+  };
+}
+
+function toStorageExperimentOverride(
+  experimentOverride: ExperimentOverride
+): ExperimentOverrideFromStorage {
+  switch (experimentOverride.experimentType) {
+    case ExperimentType.Boolean:
+      return toStorageBooleanExperimentOverride(experimentOverride);
+    case ExperimentType.String:
+      return toStorageStringExperimentOverride(experimentOverride);
+    default:
+      assertNever(experimentOverride);
+  }
+}
+
+function toStorageBooleanExperimentOverride(
+  experimentOverride: BooleanExperimentOverride
+): BooleanExperimentOverrideFromStorage {
+  return {
+    experimentId: experimentOverride.experimentId,
+    experimentType: ExperimentType.Boolean,
+    isEnabled: experimentOverride.isEnabled,
+  };
+}
+
+function toStorageStringExperimentOverride(
+  experimentOverride: StringExperimentOverride
+): StringExperimentOverrideFromStorage {
+  return {
+    experimentId: experimentOverride.experimentId,
+    experimentType: ExperimentType.String,
+    value: experimentOverride.value,
+    isEnabled: experimentOverride.isEnabled,
   };
 }
 
@@ -102,11 +151,51 @@ export function fromStorageAccountExperimentsState(
   const parsedAccountId = parseAccountId(accountExperimentsStateFromStorage.accountId);
   if (!parsedAccountId.success) return parsedAccountId;
 
+  const experimentOverrides = mapObjectValues(
+    accountExperimentsStateFromStorage.experimentOverrides,
+    fromStorageExperimentOverride,
+    (key) => key in ALL_EXPERIMENT_DEFINITIONS
+  );
+
   return makeSuccessResult({
     accountId: parsedAccountId.value,
     accountVisibility: accountExperimentsStateFromStorage.accountVisibility,
-    experimentOverrides: accountExperimentsStateFromStorage.experimentOverrides,
+    experimentOverrides,
     createdTime: accountExperimentsStateFromStorage.createdTime,
     lastUpdatedTime: accountExperimentsStateFromStorage.lastUpdatedTime,
+  });
+}
+
+function fromStorageExperimentOverride(
+  experimentOverrideFromStorage: ExperimentOverrideFromStorage
+): Result<ExperimentOverride> {
+  switch (experimentOverrideFromStorage.experimentType) {
+    case ExperimentType.Boolean:
+      return fromStorageBooleanExperimentOverride(experimentOverrideFromStorage);
+    case ExperimentType.String:
+      return fromStorageStringExperimentOverride(experimentOverrideFromStorage);
+    default:
+      assertNever(experimentOverrideFromStorage);
+  }
+}
+
+function fromStorageBooleanExperimentOverride(
+  experimentOverrideFromStorage: BooleanExperimentOverrideFromStorage
+): Result<BooleanExperimentOverride> {
+  return makeSuccessResult({
+    experimentType: ExperimentType.Boolean,
+    experimentId: experimentOverrideFromStorage.experimentId,
+    isEnabled: experimentOverrideFromStorage.isEnabled,
+  });
+}
+
+function fromStorageStringExperimentOverride(
+  experimentOverrideFromStorage: StringExperimentOverrideFromStorage
+): Result<StringExperimentOverride> {
+  return makeSuccessResult({
+    experimentType: ExperimentType.String,
+    experimentId: experimentOverrideFromStorage.experimentId,
+    value: experimentOverrideFromStorage.value,
+    isEnabled: experimentOverrideFromStorage.isEnabled,
   });
 }
