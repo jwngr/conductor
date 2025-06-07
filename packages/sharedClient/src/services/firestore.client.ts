@@ -4,6 +4,7 @@ import type {
   DocumentReference,
   DocumentSnapshot,
   FirestoreDataConverter,
+  PartialWithFieldValue,
   Query,
   QueryConstraint,
   QueryDocumentSnapshot,
@@ -34,21 +35,27 @@ import {
 } from '@shared/lib/firestore.shared';
 
 import type {AsyncResult, Result} from '@shared/types/results.types';
-import type {Consumer, Func, Unsubscribe} from '@shared/types/utils.types';
+import type {BaseStoreItem, Consumer, Func, Unsubscribe} from '@shared/types/utils.types';
 
-import {firebaseService} from '@sharedClient/services/firebase.client';
+import {clientTimestampSupplier, firebaseService} from '@sharedClient/services/firebase.client';
 
 /**
  * Creates a strongly-typed converter between a Firestore data type and a client data type.
  */
-function makeFirestoreDataConverter<ItemData, FirestoreItemData extends DocumentData>(
-  toFirestore: Func<ItemData, FirestoreItemData>,
-  fromFirestore: Func<FirestoreItemData, Result<ItemData>>
-): FirestoreDataConverter<ItemData, FirestoreItemData> {
+function makeFirestoreDataConverter<
+  ItemData extends BaseStoreItem,
+  ItemDataFromStorage extends DocumentData,
+>(
+  toFirestore: Func<ItemData, ItemDataFromStorage>,
+  fromFirestore: Func<ItemDataFromStorage, Result<ItemData>>
+): FirestoreDataConverter<ItemData, ItemDataFromStorage> {
   return {
     toFirestore,
-    fromFirestore: (snapshot: QueryDocumentSnapshot, options: SnapshotOptions): ItemData => {
-      const data = snapshot.data(options) as FirestoreItemData;
+    fromFirestore: (
+      snapshot: QueryDocumentSnapshot<DocumentData, DocumentData>,
+      options: SnapshotOptions
+    ): ItemData => {
+      const data = snapshot.data(options) as ItemDataFromStorage;
 
       const parseDataResult = fromFirestore(data);
       if (!parseDataResult.success) {
@@ -67,7 +74,7 @@ function makeFirestoreDataConverter<ItemData, FirestoreItemData extends Document
 
 export class ClientFirestoreCollectionService<
   ItemId extends string,
-  ItemData extends DocumentData,
+  ItemData extends BaseStoreItem,
   ItemDataFromStorage extends DocumentData,
 > {
   private readonly collectionPath: string;
@@ -87,21 +94,22 @@ export class ClientFirestoreCollectionService<
   /**
    * Returns the underlying Firestore collection reference.
    */
-  public getCollectionRef(): CollectionReference<ItemData> {
-    return collection(firebaseService.firestore, this.collectionPath).withConverter(this.converter);
+  public getCollectionRef(): CollectionReference<ItemData, ItemDataFromStorage> {
+    const collectionRef = collection(firebaseService.firestore, this.collectionPath);
+    return collectionRef.withConverter(this.converter);
   }
 
   /**
    * Returns a Firestore document reference for the given child ID.
    */
-  public getDocRef(docId: ItemId): DocumentReference<ItemData> {
+  public getDocRef(docId: ItemId): DocumentReference<ItemData, ItemDataFromStorage> {
     return doc(this.getCollectionRef(), docId);
   }
 
   /**
    * Constructs a Firestore query from the given filters.
    */
-  public query(filters: QueryConstraint[]): Query<ItemData> {
+  public query(filters: QueryConstraint[]): Query<ItemData, ItemDataFromStorage> {
     return query(this.getCollectionRef(), ...filters);
   }
 
@@ -127,7 +135,9 @@ export class ClientFirestoreCollectionService<
   /**
    * Fetches all documents matching the Firestore query.
    */
-  public async fetchQueryDocs(queryToFetch: Query<ItemData>): AsyncResult<ItemData[]> {
+  public async fetchQueryDocs(
+    queryToFetch: Query<ItemData, ItemDataFromStorage>
+  ): AsyncResult<ItemData[]> {
     const queryDataResult = await asyncTry(async () => {
       const querySnapshot = await getDocs(queryToFetch);
       return (
@@ -160,7 +170,9 @@ export class ClientFirestoreCollectionService<
   /**
    * Fetches the IDs of all documents matching the Firestore query.
    */
-  public async fetchQueryIds(queryToFetch: Query<ItemData>): AsyncResult<ItemId[]> {
+  public async fetchQueryIds(
+    queryToFetch: Query<ItemData, ItemDataFromStorage>
+  ): AsyncResult<ItemId[]> {
     const queryIdsResult = await asyncTry(async () => {
       const querySnapshot = await getDocs(queryToFetch);
       return querySnapshot.docs.map((doc) => {
@@ -183,7 +195,7 @@ export class ClientFirestoreCollectionService<
     onData: Consumer<ItemData | null>,
     onError: Consumer<Error>
   ): Unsubscribe {
-    const handleSnapshot: Consumer<DocumentSnapshot<ItemData>> = (docSnap) => {
+    const handleSnapshot: Consumer<DocumentSnapshot<ItemData, ItemDataFromStorage>> = (docSnap) => {
       if (!docSnap.exists()) {
         onData(null);
         return;
@@ -210,11 +222,11 @@ export class ClientFirestoreCollectionService<
    * Subscribes to changes to the given Firestore document.
    */
   public watchDocs(
-    query: Query<ItemData>,
+    query: Query<ItemData, ItemDataFromStorage>,
     onData: Consumer<ItemData[]>,
     onError: Consumer<Error>
   ): Unsubscribe {
-    const handleSnapshot: Consumer<QuerySnapshot<ItemData>> = (querySnap) => {
+    const handleSnapshot: Consumer<QuerySnapshot<ItemData, ItemDataFromStorage>> = (querySnap) => {
       const parsedDataResult = syncTry(() =>
         // Filter out parsing failures.
         querySnap.docs.map((doc) => doc.data()).filter((data) => !isParsingFailureSentinel(data))
@@ -248,44 +260,42 @@ export class ClientFirestoreCollectionService<
   }
 
   /**
-   * Updates a Firestore document using setDoc() with the `merge` option. This is useful for
-   * updating a doc that may or may not exist without having to first fetch it.
+   * Partially updates or creates a Firestore document. This is useful for updating a doc that may
+   * or may not exist without having to first fetch it.
    */
-  public async setDocWithMerge(
-    docId: ItemId,
-    data: Partial<WithFieldValue<ItemData>>
-  ): AsyncResult<void> {
-    const setResult = await asyncTry(async () =>
-      setDoc(
-        this.getDocRef(docId),
-        // The Firestore data converter does not allow for partial writes via `setDoc` at the type
-        // level. However, the entire point of `merge: true` is to allow for partial updates.
-        {
-          ...data,
-          // TODO(timestamps): Use server timestamps instead.
-          lastUpdatedTime: new Date(),
-        } as WithFieldValue<ItemData>,
-        {merge: true}
-      )
-    );
+  public async setDocWithMerge(docId: ItemId, data: Partial<ItemData>): AsyncResult<void> {
+    const setResult = await asyncTry(async () => {
+      const dataToWrite: PartialWithFieldValue<ItemData> = {
+        ...data,
+        lastUpdatedTime: clientTimestampSupplier(),
+      };
+
+      await setDoc(this.getDocRef(docId), dataToWrite, {merge: true});
+    });
     return prefixResultIfError(setResult, 'Error setting Firestore document with merge');
   }
 
   /**
-   * Updates a Firestore document. Updates are merged with the existing document.
+   * Updates an existing Firestore document, merging with the existing document. Throws if the
+   * document does not already exist.
    */
   public async updateDoc(
     docId: ItemId,
-    updates: Partial<WithFieldValue<Omit<ItemData, 'lastUpdatedTime'>>>
+    updates: Partial<WithFieldValue<ItemData>>
   ): AsyncResult<void> {
     const docRef = this.getDocRef(docId);
-    const updateResult = await asyncTry(async () =>
-      updateDoc(docRef, {
+    const updateResult = await asyncTry(async () => {
+      // Firestore's `updateDoc` method takes an `ItemDataFromStorage`, but there is no method to
+      // transform a partial `ItemData` into a partial `ItemDataFromStorage`. The real solution
+      // may be a custom
+      // See the Firestore data converter docs TypeScript types for the best docs and examples.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const dataToUpdate: any = {
         ...updates,
-        // TODO(timestamps): Use server timestamps instead.
-        lastUpdatedTime: new Date(),
-      })
-    );
+        lastUpdatedTime: clientTimestampSupplier(),
+      };
+      await updateDoc(docRef, dataToUpdate);
+    });
     return prefixResultIfError(updateResult, 'Error updating Firestore document');
   }
 
@@ -301,7 +311,7 @@ export class ClientFirestoreCollectionService<
 
 export function makeClientFirestoreCollectionService<
   ItemId extends string,
-  ItemData extends DocumentData,
+  ItemData extends BaseStoreItem,
   ItemDataFromStorage extends DocumentData,
 >(args: {
   readonly collectionPath: string;
