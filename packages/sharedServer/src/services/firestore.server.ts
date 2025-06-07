@@ -25,7 +25,7 @@ import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import type {AsyncResult, Result} from '@shared/types/results.types';
 import type {Func} from '@shared/types/utils.types';
 
-import {firestore} from '@sharedServer/services/firebase.server';
+import {firestore, serverTimestampSupplier} from '@sharedServer/services/firebase.server';
 
 const BATCH_DELETE_SIZE = 500;
 
@@ -181,8 +181,7 @@ export class ServerFirestoreCollectionService<
     const updateResult = await asyncTry(async () =>
       docRef.update({
         ...updates,
-        // TODO(timestamps): Use server timestamps instead.
-        lastUpdatedTime: new Date(),
+        lastUpdatedTime: serverTimestampSupplier(),
       })
     );
     if (!updateResult.success) {

@@ -36,7 +36,7 @@ import {
 import type {AsyncResult, Result} from '@shared/types/results.types';
 import type {Consumer, Func, Unsubscribe} from '@shared/types/utils.types';
 
-import {firebaseService} from '@sharedClient/services/firebase.client';
+import {clientTimestampSupplier, firebaseService} from '@sharedClient/services/firebase.client';
 
 /**
  * Creates a strongly-typed converter between a Firestore data type and a client data type.
@@ -262,8 +262,7 @@ export class ClientFirestoreCollectionService<
         // level. However, the entire point of `merge: true` is to allow for partial updates.
         {
           ...data,
-          // TODO(timestamps): Use server timestamps instead.
-          lastUpdatedTime: new Date(),
+          lastUpdatedTime: clientTimestampSupplier(),
         } as WithFieldValue<ItemData>,
         {merge: true}
       )
@@ -282,8 +281,7 @@ export class ClientFirestoreCollectionService<
     const updateResult = await asyncTry(async () =>
       updateDoc(docRef, {
         ...updates,
-        // TODO(timestamps): Use server timestamps instead.
-        lastUpdatedTime: new Date(),
+        lastUpdatedTime: clientTimestampSupplier(),
       })
     );
     return prefixResultIfError(updateResult, 'Error updating Firestore document');

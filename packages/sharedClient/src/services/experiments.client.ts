@@ -97,7 +97,6 @@ export class ClientExperimentsService {
           accountId: this.accountId,
           accountVisibility: accountExperimentsState.accountVisibility,
           experimentOverrides: accountExperimentsState.experimentOverrides,
-          // TODO(timestamps): Use server timestamps instead.
           createdTime: accountExperimentsState.createdTime,
           lastUpdatedTime: accountExperimentsState.lastUpdatedTime,
         });

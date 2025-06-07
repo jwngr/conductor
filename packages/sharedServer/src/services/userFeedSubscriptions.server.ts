@@ -15,6 +15,7 @@ import type {
 
 import type {UserFeedSubscriptionFromStorage} from '@shared/schemas/userFeedSubscriptions.schema';
 
+import {serverTimestampSupplier} from '@sharedServer/services/firebase.server';
 import type {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
 type UserFeedSubscriptionsCollectionService = ServerFirestoreCollectionService<
@@ -77,8 +78,7 @@ export class ServerUserFeedSubscriptionsService {
   ): AsyncResult<void> {
     return this.update(userFeedSubscriptionId, {
       isActive: false,
-      // TODO(timestamps): Use server timestamps instead.
-      unsubscribedTime: new Date(),
+      unsubscribedTime: serverTimestampSupplier(),
     });
   }
 
