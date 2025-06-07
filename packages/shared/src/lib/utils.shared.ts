@@ -224,3 +224,32 @@ export function isInteger(value: number): boolean {
 export function isPositiveInteger(value: number): boolean {
   return isInteger(value) && value > 0;
 }
+
+/**
+ * Returns a new typed array with the same length, but each value having been filtered by `filter`.
+ */
+export function filterArray<T>(arr: T[], filter: Func<T, boolean>): T[] {
+  return arr.filter(filter);
+}
+
+/**
+ * Returns a new typed array with the same length, but each value having been transformed by
+ * `mapper`.
+ */
+export function mapArray<Start, End>(arr: Start[], mapper: Func<Start, End>): End[] {
+  return arr.map(mapper);
+}
+
+/**
+ * Returns a new typed object with the same keys, but each value having been transformed by
+ * `mapper`.
+ */
+export function mapObjectValues<Key extends string, Start, End>(
+  obj: Partial<Record<Key, Start>>,
+  mapper: Func<Start, End>,
+  filter?: Func<Key, boolean>
+): Record<Key, End> {
+  const entries = Object.entries(obj).map(([key, value]) => [key as Key, mapper(value as Start)]);
+  const filteredEntries = filter ? filterArray(entries, ([key]) => filter(key as Key)) : entries;
+  return Object.fromEntries(filteredEntries);
+}
