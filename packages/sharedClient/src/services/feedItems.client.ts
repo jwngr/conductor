@@ -6,6 +6,7 @@ import {
   FEED_ITEM_FILE_LLM_CONTEXT,
   FEED_ITEM_FILE_TRANSCRIPT,
   FEED_ITEMS_DB_COLLECTION,
+  FEED_ITEMS_STORAGE_COLLECTION,
 } from '@shared/lib/constants.shared';
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {makeFeedItem, makeFeedItemContentFromUrl} from '@shared/lib/feedItems.shared';
@@ -24,22 +25,15 @@ import {SystemTagId} from '@shared/types/tags.types';
 import type {Consumer} from '@shared/types/utils.types';
 import type {ViewType} from '@shared/types/views.types';
 
-import type {FeedItemFromStorage} from '@shared/schemas/feedItems.schema';
 import {toStorageFeedItem} from '@shared/storage/feedItems.storage';
 
 import type {ClientEventLogService} from '@sharedClient/services/eventLog.client';
+import type {ClientFirebaseService} from '@sharedClient/services/firebase.client';
 import {makeClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
-import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
 
 import {toast, toastWithUndo} from '@sharedClient/lib/toasts.client';
 
-type FeedItemsCollectionService = ClientFirestoreCollectionService<
-  FeedItemId,
-  FeedItem,
-  FeedItemFromStorage
->;
-
-export const clientFeedItemsCollectionService = makeClientFirestoreCollectionService({
+const clientFeedItemsCollectionService = makeClientFirestoreCollectionService({
   collectionPath: FEED_ITEMS_DB_COLLECTION,
   toStorage: toStorageFeedItem,
   fromStorage: parseFeedItem,
@@ -47,25 +41,24 @@ export const clientFeedItemsCollectionService = makeClientFirestoreCollectionSer
 });
 
 export class ClientFeedItemsService {
-  private readonly feedItemsCollectionService: FeedItemsCollectionService;
-  private readonly feedItemsStorageRef: StorageReference;
   private readonly accountId: AccountId;
   private readonly eventLogService: ClientEventLogService;
+  private readonly feedItemsStorageRef: StorageReference;
 
   constructor(args: {
-    readonly feedItemsCollectionService: FeedItemsCollectionService;
-    readonly feedItemsStorageRef: StorageReference;
     readonly accountId: AccountId;
     readonly eventLogService: ClientEventLogService;
+    readonly firebaseService: ClientFirebaseService;
   }) {
-    this.feedItemsCollectionService = args.feedItemsCollectionService;
-    this.feedItemsStorageRef = args.feedItemsStorageRef;
     this.accountId = args.accountId;
     this.eventLogService = args.eventLogService;
+
+    const storage = args.firebaseService.storage;
+    this.feedItemsStorageRef = storageRef(storage, FEED_ITEMS_STORAGE_COLLECTION);
   }
 
   public async fetchById(feedItemId: FeedItemId): AsyncResult<FeedItem | null, Error> {
-    return this.feedItemsCollectionService.fetchById(feedItemId);
+    return clientFeedItemsCollectionService.fetchById(feedItemId);
   }
 
   public watchFeedItem(
@@ -73,7 +66,7 @@ export class ClientFeedItemsService {
     successCallback: Consumer<FeedItem | null>, // null means feed item does not exist.
     errorCallback: Consumer<Error>
   ): AuthStateChangedUnsubscribe {
-    const unsubscribe = this.feedItemsCollectionService.watchDoc(
+    const unsubscribe = clientFeedItemsCollectionService.watchDoc(
       feedItemId,
       successCallback,
       errorCallback
@@ -98,9 +91,9 @@ export class ClientFeedItemsService {
       // TODO: Order by created time to ensure a consistent order.
       // orderBy(viewConfig.sort.field, viewConfig.sort.direction),
     ];
-    const itemsQuery = this.feedItemsCollectionService.query(whereClauses);
+    const itemsQuery = clientFeedItemsCollectionService.query(whereClauses);
 
-    const unsubscribe = this.feedItemsCollectionService.watchDocs(
+    const unsubscribe = clientFeedItemsCollectionService.watchDocs(
       itemsQuery,
       successCallback,
       errorCallback
@@ -122,7 +115,7 @@ export class ClientFeedItemsService {
     const content = makeFeedItemContentFromUrl({url, title, description, outgoingLinks, summary});
     const feedItem = makeFeedItem({feedSource, content, accountId});
 
-    const saveResult = await this.feedItemsCollectionService.setDoc(feedItem.feedItemId, feedItem);
+    const saveResult = await clientFeedItemsCollectionService.setDoc(feedItem.feedItemId, feedItem);
     if (!saveResult.success) return saveResult;
 
     return makeSuccessResult(feedItem);
@@ -132,12 +125,12 @@ export class ClientFeedItemsService {
     feedItemId: FeedItemId,
     updates: Partial<FeedItem>
   ): AsyncResult<void, Error> {
-    const updateResult = await this.feedItemsCollectionService.updateDoc(feedItemId, updates);
+    const updateResult = await clientFeedItemsCollectionService.updateDoc(feedItemId, updates);
     return prefixResultIfError(updateResult, 'Error updating feed item');
   }
 
   public async deleteFeedItem(feedItemId: FeedItemId): AsyncResult<void, Error> {
-    const deleteResult = await this.feedItemsCollectionService.deleteDoc(feedItemId);
+    const deleteResult = await clientFeedItemsCollectionService.deleteDoc(feedItemId);
     return prefixResultIfError(deleteResult, 'Error deleting feed item');
   }
 

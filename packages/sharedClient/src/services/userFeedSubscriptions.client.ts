@@ -1,5 +1,5 @@
 import {limit, orderBy, where} from 'firebase/firestore';
-import type {Functions, HttpsCallable} from 'firebase/functions';
+import type {HttpsCallable} from 'firebase/functions';
 import {httpsCallable} from 'firebase/functions';
 
 import {logger} from '@shared/services/logger.shared';
@@ -36,11 +36,10 @@ import type {
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 import type {YouTubeChannelId} from '@shared/types/youtube.types';
 
-import type {UserFeedSubscriptionFromStorage} from '@shared/schemas/userFeedSubscriptions.schema';
 import {toStorageUserFeedSubscription} from '@shared/storage/userFeedSubscriptions.storage';
 
 import type {ClientEventLogService} from '@sharedClient/services/eventLog.client';
-import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+import type {ClientFirebaseService} from '@sharedClient/services/firebase.client';
 import {makeClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
 
 import {toast} from '@sharedClient/lib/toasts.client';
@@ -51,13 +50,7 @@ interface SubscribeToRssFeedRequest {
 
 type CallSubscribeToRssFeedFn = HttpsCallable<SubscribeToRssFeedRequest, void>;
 
-type UserFeedSubscriptionsCollectionService = ClientFirestoreCollectionService<
-  UserFeedSubscriptionId,
-  UserFeedSubscription,
-  UserFeedSubscriptionFromStorage
->;
-
-export const clientUserFeedSubscriptionsCollectionService = makeClientFirestoreCollectionService({
+const clientUserFeedSubscriptionsCollectionService = makeClientFirestoreCollectionService({
   collectionPath: USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
   toStorage: toStorageUserFeedSubscription,
   fromStorage: parseUserFeedSubscription,
@@ -66,20 +59,17 @@ export const clientUserFeedSubscriptionsCollectionService = makeClientFirestoreC
 
 export class ClientUserFeedSubscriptionsService {
   private readonly accountId: AccountId;
-  private readonly functions: Functions;
+  private readonly firebaseService: ClientFirebaseService;
   private readonly eventLogService: ClientEventLogService;
-  private readonly userFeedSubscriptionsCollectionService: UserFeedSubscriptionsCollectionService;
 
   constructor(args: {
     readonly accountId: AccountId;
-    readonly functions: Functions;
+    readonly firebaseService: ClientFirebaseService;
     readonly eventLogService: ClientEventLogService;
-    readonly userFeedSubscriptionsCollectionService: UserFeedSubscriptionsCollectionService;
   }) {
     this.accountId = args.accountId;
-    this.functions = args.functions;
+    this.firebaseService = args.firebaseService;
     this.eventLogService = args.eventLogService;
-    this.userFeedSubscriptionsCollectionService = args.userFeedSubscriptionsCollectionService;
   }
 
   /**
@@ -97,8 +87,9 @@ export class ClientUserFeedSubscriptionsService {
     const existingSubscription = existingSubResult.value;
     if (existingSubscription) return makeErrorResult(new Error('Already subscribed to RSS feed'));
 
+    // TODO: Add typesafe method on `ClientFirebaseService` for this.
     const callSubscribeToRssFeed: CallSubscribeToRssFeedFn = httpsCallable(
-      this.functions,
+      this.firebaseService.functions,
       'subscribeToRssFeedOnCall'
     );
 
@@ -161,7 +152,7 @@ export class ClientUserFeedSubscriptionsService {
   private async fetchExistingRssFeedSubscription(
     url: URL
   ): AsyncResult<RssUserFeedSubscription | null, Error> {
-    const result = await this.userFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
+    const result = await clientUserFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
       where('accountId', '==', this.accountId),
       where('feedSourceType', '==', FeedSourceType.RSS),
       where('url', '==', url.href),
@@ -175,7 +166,7 @@ export class ClientUserFeedSubscriptionsService {
   private async fetchExistingYouTubeChannelSubscription(
     channelId: YouTubeChannelId
   ): AsyncResult<YouTubeChannelUserFeedSubscription | null, Error> {
-    const result = await this.userFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
+    const result = await clientUserFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
       where('accountId', '==', this.accountId),
       where('feedSourceType', '==', FeedSourceType.YouTubeChannel),
       where('channelId', '==', channelId),
@@ -217,7 +208,7 @@ export class ClientUserFeedSubscriptionsService {
     const {accountId, feedSourceType, userFeedSubscriptionId} = userFeedSubscription;
 
     // Save to Firestore.
-    const saveResult = await this.userFeedSubscriptionsCollectionService.setDoc(
+    const saveResult = await clientUserFeedSubscriptionsCollectionService.setDoc(
       userFeedSubscriptionId,
       userFeedSubscription
     );
@@ -249,7 +240,7 @@ export class ClientUserFeedSubscriptionsService {
       Pick<UserFeedSubscription, 'isActive' | 'unsubscribedTime' | 'deliverySchedule'>
     >
   ): AsyncResult<void, Error> {
-    const updateResult = await this.userFeedSubscriptionsCollectionService.updateDoc(
+    const updateResult = await clientUserFeedSubscriptionsCollectionService.updateDoc(
       userFeedSubscriptionId,
       update
     );
@@ -266,7 +257,7 @@ export class ClientUserFeedSubscriptionsService {
   }): Unsubscribe {
     const {userFeedSubscriptionId, successCallback, errorCallback} = args;
 
-    const unsubscribe = this.userFeedSubscriptionsCollectionService.watchDoc(
+    const unsubscribe = clientUserFeedSubscriptionsCollectionService.watchDoc(
       userFeedSubscriptionId,
       successCallback,
       errorCallback
@@ -283,13 +274,13 @@ export class ClientUserFeedSubscriptionsService {
   }): Unsubscribe {
     const {successCallback, errorCallback} = args;
 
-    const itemsQuery = this.userFeedSubscriptionsCollectionService.query([
+    const itemsQuery = clientUserFeedSubscriptionsCollectionService.query([
       where('accountId', '==', this.accountId),
       orderBy('createdTime', 'desc'),
       limit(100),
     ]);
 
-    const unsubscribe = this.userFeedSubscriptionsCollectionService.watchDocs(
+    const unsubscribe = clientUserFeedSubscriptionsCollectionService.watchDocs(
       itemsQuery,
       successCallback,
       errorCallback

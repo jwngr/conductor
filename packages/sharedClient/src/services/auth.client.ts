@@ -18,8 +18,6 @@ import type {EmailAddress} from '@shared/types/emails.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {Consumer, Task} from '@shared/types/utils.types';
 
-import {firebaseService} from '@sharedClient/services/firebase.client';
-
 import {parseLoggedInAccount} from '@sharedClient/types/accounts.client.types';
 import type {LoggedInAccount} from '@sharedClient/types/accounts.client.types';
 
@@ -32,7 +30,7 @@ interface AuthServiceSubscriptionCallbacks {
  * Service for interacting with authentication state. It contains limited profile information about
  * the currently logged in account.
  */
-class ClientAuthService {
+export class ClientAuthService {
   private currentAccount: LoggedInAccount | null = null;
   private subscribers = new Set<AuthServiceSubscriptionCallbacks>();
 
@@ -120,5 +118,3 @@ class ClientAuthService {
     return await asyncTry(async () => signOutFirebase(this.auth));
   }
 }
-
-export const authService = new ClientAuthService(firebaseService.auth);

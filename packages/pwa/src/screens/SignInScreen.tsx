@@ -8,10 +8,6 @@ import {parseEmailAddress} from '@shared/parsers/emails.parser';
 
 import type {Consumer} from '@shared/types/utils.types';
 
-import {authService} from '@sharedClient/services/auth.client';
-
-import {IS_DEVELOPMENT} from '@sharedClient/lib/environment.client';
-
 import {useMaybeLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
 import {Button} from '@src/components/atoms/Button';
@@ -19,13 +15,16 @@ import {Input} from '@src/components/atoms/Input';
 import {Spacer} from '@src/components/atoms/Spacer';
 import {H1, H3, P, Span} from '@src/components/atoms/Text';
 
+import {authService} from '@src/lib/auth.pwa';
+import {env, IS_DEVELOPMENT} from '@src/lib/environment.pwa';
+
 import type {OnClick} from '@src/types/utils.pwa.types';
 
 import {rootRoute} from '@src/routes/__root';
 import {Screen} from '@src/screens/Screen';
 
 const PASSWORDLESS_AUTH_ACTION_CODE_SETTINGS: ActionCodeSettings = {
-  url: import.meta.env.VITE_CONDUCTOR_URL, // URL to redirect back to.
+  url: env.CONDUCTOR_URL, // URL to redirect back to.
   handleCodeInApp: true, // Must be true for this flow.
 };
 

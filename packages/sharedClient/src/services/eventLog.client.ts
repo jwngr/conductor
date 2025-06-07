@@ -31,19 +31,11 @@ import type {ThemePreference} from '@shared/types/theme.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
-import type {EventLogItemFromStorage} from '@shared/schemas/eventLog.schema';
 import {toStorageEventLogItem} from '@shared/storage/eventLog.storage';
 
-import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
 import {makeClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
 
-type ClientEventLogCollectionService = ClientFirestoreCollectionService<
-  EventId,
-  EventLogItem,
-  EventLogItemFromStorage
->;
-
-export const clientEventLogCollectionService = makeClientFirestoreCollectionService({
+const clientEventLogCollectionService = makeClientFirestoreCollectionService({
   collectionPath: EVENT_LOG_DB_COLLECTION,
   toStorage: toStorageEventLogItem,
   fromStorage: parseEventLogItem,
@@ -51,22 +43,16 @@ export const clientEventLogCollectionService = makeClientFirestoreCollectionServ
 });
 
 export class ClientEventLogService {
-  private readonly environment: Environment;
-  private readonly eventLogCollectionService: ClientEventLogCollectionService;
   private readonly accountId: AccountId;
+  private readonly environment: Environment;
 
-  constructor(args: {
-    readonly environment: Environment;
-    readonly eventLogCollectionService: ClientEventLogCollectionService;
-    readonly accountId: AccountId;
-  }) {
-    this.environment = args.environment;
-    this.eventLogCollectionService = args.eventLogCollectionService;
+  constructor(args: {readonly environment: Environment; readonly accountId: AccountId}) {
     this.accountId = args.accountId;
+    this.environment = args.environment;
   }
 
   public async fetchById(eventId: EventId): AsyncResult<EventLogItem | null, Error> {
-    return this.eventLogCollectionService.fetchById(eventId);
+    return clientEventLogCollectionService.fetchById(eventId);
   }
 
   public watchById(
@@ -74,7 +60,7 @@ export class ClientEventLogService {
     successCallback: Consumer<EventLogItem | null>, // null means event log item does not exist.
     errorCallback: Consumer<Error>
   ): Unsubscribe {
-    const unsubscribe = this.eventLogCollectionService.watchDoc(
+    const unsubscribe = clientEventLogCollectionService.watchDoc(
       eventId,
       successCallback,
       errorCallback
@@ -89,7 +75,7 @@ export class ClientEventLogService {
   }): Unsubscribe {
     const {successCallback, errorCallback, limit} = args;
 
-    const itemsQuery = this.eventLogCollectionService.query(
+    const itemsQuery = clientEventLogCollectionService.query(
       filterNull([
         where('accountId', '==', this.accountId),
         limit ? firestoreLimit(limit) : null,
@@ -97,7 +83,7 @@ export class ClientEventLogService {
       ])
     );
 
-    const unsubscribe = this.eventLogCollectionService.watchDocs(
+    const unsubscribe = clientEventLogCollectionService.watchDocs(
       itemsQuery,
       successCallback,
       errorCallback
@@ -108,7 +94,7 @@ export class ClientEventLogService {
   private async logEvent(eventLogItem: EventLogItem): AsyncResult<EventLogItem, Error> {
     const {eventId} = eventLogItem;
 
-    const createResult = await this.eventLogCollectionService.setDoc(eventId, eventLogItem);
+    const createResult = await clientEventLogCollectionService.setDoc(eventId, eventLogItem);
 
     if (!createResult.success) {
       logger.error(prefixError(createResult.error, 'Failed to log event'), {eventLogItem});
@@ -131,12 +117,12 @@ export class ClientEventLogService {
     eventId: EventId,
     item: Partial<Pick<EventLogItem, 'data'>>
   ): AsyncResult<void, Error> {
-    const updateResult = await this.eventLogCollectionService.updateDoc(eventId, item);
+    const updateResult = await clientEventLogCollectionService.updateDoc(eventId, item);
     return prefixResultIfError(updateResult, 'Error updating event log item');
   }
 
   public async deleteEventLogItem(eventId: EventId): AsyncResult<void, Error> {
-    const deleteResult = await this.eventLogCollectionService.deleteDoc(eventId);
+    const deleteResult = await clientEventLogCollectionService.deleteDoc(eventId);
     return prefixResultIfError(deleteResult, 'Error deleting event log item');
   }
 

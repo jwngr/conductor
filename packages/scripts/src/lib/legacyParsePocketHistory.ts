@@ -15,6 +15,7 @@ import type {PocketImportItem} from '@shared/types/pocket.types';
 
 import {ServerPocketService} from '@sharedServer/lib/pocket.server';
 
+import {env} from '@src/lib/environment.scripts';
 import {initServices} from '@src/lib/initServices.scripts';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -27,7 +28,7 @@ if (envResult.error) {
   process.exit(1);
 }
 
-const accountIdResult = parseAccountId(process.env.FIREBASE_USER_ID || '');
+const accountIdResult = parseAccountId(env.FIREBASE_USER_ID);
 if (!accountIdResult.success) {
   logger.error(prefixError(accountIdResult.error, 'Invalid FIREBASE_USER_ID environment variable'));
   process.exit(1);
@@ -47,7 +48,7 @@ const POCKET_EXPORT_FILE_PATH = path.resolve(args[0]);
  * Throws if the Firecrawl API key environment variable is not defined.
  */
 function validateFirecrawlApiKey(): string {
-  const firecrawlApiKey = process.env.FIRECRAWL_API_KEY;
+  const firecrawlApiKey = env.FIRECRAWL_API_KEY;
 
   if (!firecrawlApiKey) {
     logger.error(new Error('FIRECRAWL_API_KEY environment variable is not defined'));

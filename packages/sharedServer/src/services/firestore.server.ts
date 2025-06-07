@@ -19,7 +19,7 @@ import {
 import {
   FIRESTORE_PARSING_FAILURE_SENTINEL,
   isParsingFailureSentinel,
-} from '@shared/lib/firestore.shared';
+} from '@shared/lib/firebase.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AsyncResult, Result} from '@shared/types/results.types';

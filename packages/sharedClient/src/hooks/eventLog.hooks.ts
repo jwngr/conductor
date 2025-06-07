@@ -4,10 +4,7 @@ import type {AsyncState} from '@shared/types/asyncState.types';
 import {Environment} from '@shared/types/environment.types';
 import type {EventLogItem} from '@shared/types/eventLog.types';
 
-import {
-  clientEventLogCollectionService,
-  ClientEventLogService,
-} from '@sharedClient/services/eventLog.client';
+import {ClientEventLogService} from '@sharedClient/services/eventLog.client';
 
 import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
@@ -21,7 +18,6 @@ export function useEventLogService(): ClientEventLogService {
   const eventLogService = useMemo(() => {
     return new ClientEventLogService({
       environment: Environment.PWA,
-      eventLogCollectionService: clientEventLogCollectionService,
       accountId: loggedInAccount.accountId,
     });
   }, [loggedInAccount.accountId]);

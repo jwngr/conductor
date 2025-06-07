@@ -3,8 +3,6 @@ import {TanStackRouterDevtools} from '@tanstack/react-router-devtools';
 
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
-import {IS_DEVELOPMENT} from '@sharedClient/lib/environment.client';
-
 import {useMaybeLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
 import {PWAAccountSettingsListener} from '@src/components/accountSettings/PWAAccountSettingsListener';
@@ -18,6 +16,8 @@ import {RegisterFeedItemImporterDevToolbarSection} from '@src/components/devTool
 import {ErrorBoundary} from '@src/components/errors/ErrorBoundary';
 import {PWAExperimentsListener} from '@src/components/experiments/PWAExperimentsListener';
 import {ThemeProvider} from '@src/components/ThemeProvider';
+
+import {IS_DEVELOPMENT} from '@src/lib/environment.pwa';
 
 import {DefaultErrorScreen} from '@src/screens/ErrorScreen';
 

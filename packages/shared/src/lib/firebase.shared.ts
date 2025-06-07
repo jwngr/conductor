@@ -6,3 +6,12 @@ export const FIRESTORE_PARSING_FAILURE_SENTINEL = 'FIRESTORE_PARSING_FAILURE';
 export function isParsingFailureSentinel<T>(data: T): boolean {
   return data === FIRESTORE_PARSING_FAILURE_SENTINEL;
 }
+
+export function getIsFirebaseEmulatorEnabled(args: {
+  readonly isDevelopment: boolean;
+  readonly isEmulatorEnabledEnvVar: boolean;
+}): boolean {
+  const {isDevelopment, isEmulatorEnabledEnvVar} = args;
+  // Only enable emulator in dev mode.
+  return isEmulatorEnabledEnvVar && !isDevelopment;
+}

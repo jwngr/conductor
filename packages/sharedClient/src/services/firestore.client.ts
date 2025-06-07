@@ -31,12 +31,13 @@ import {asyncTry, prefixError, prefixResultIfError, syncTry} from '@shared/lib/e
 import {
   FIRESTORE_PARSING_FAILURE_SENTINEL,
   isParsingFailureSentinel,
-} from '@shared/lib/firestore.shared';
+} from '@shared/lib/firebase.shared';
 
 import type {AsyncResult, Result} from '@shared/types/results.types';
 import type {Consumer, Func, Unsubscribe} from '@shared/types/utils.types';
 
-import {clientTimestampSupplier, firebaseService} from '@sharedClient/services/firebase.client';
+import {clientTimestampSupplier} from '@sharedClient/services/firebase.client';
+import type {ClientFirebaseService} from '@sharedClient/services/firebase.client';
 
 /**
  * Creates a strongly-typed converter between a Firestore data type and a client data type.
@@ -70,15 +71,18 @@ export class ClientFirestoreCollectionService<
   ItemData extends DocumentData,
   ItemDataFromStorage extends DocumentData,
 > {
+  private readonly firebaseService: ClientFirebaseService;
   private readonly collectionPath: string;
   private readonly converter: FirestoreDataConverter<ItemData, ItemDataFromStorage>;
   private readonly parseId: Func<string, Result<ItemId, Error>>;
 
   constructor(args: {
+    firebaseService: ClientFirebaseService;
     collectionPath: string;
     converter: FirestoreDataConverter<ItemData, ItemDataFromStorage>;
     parseId: Func<string, Result<ItemId, Error>>;
   }) {
+    this.firebaseService = args.firebaseService;
     this.collectionPath = args.collectionPath;
     this.converter = args.converter;
     this.parseId = args.parseId;
@@ -88,7 +92,9 @@ export class ClientFirestoreCollectionService<
    * Returns the underlying Firestore collection reference.
    */
   public getCollectionRef(): CollectionReference<ItemData> {
-    return collection(firebaseService.firestore, this.collectionPath).withConverter(this.converter);
+    return collection(this.firebaseService.firestore, this.collectionPath).withConverter(
+      this.converter
+    );
   }
 
   /**
