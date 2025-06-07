@@ -45,13 +45,12 @@ const FeedItemImporter: React.FC = () => {
 
       const addFeedItemResult = await feedItemsService.createFeedItemFromUrl({
         feedSource: PWA_FEED_SOURCE,
-        content: {
-          url: trimmedUrl,
-          title: trimmedUrl,
-          description: null,
-          outgoingLinks: [],
-          summary: null,
-        },
+        url: trimmedUrl,
+        title: trimmedUrl,
+        // These values are not provided in the dev toolbar importer.
+        description: null,
+        outgoingLinks: [],
+        summary: null,
       });
 
       if (!addFeedItemResult.success) {
