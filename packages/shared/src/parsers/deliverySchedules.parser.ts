@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import {z} from 'zod/v4';
 
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseZodResult} from '@shared/lib/parser.shared';
@@ -29,5 +29,5 @@ export function parseDeliverySchedule(maybeDeliverySchedule: unknown): Result<De
 export function parseDeliveryScheduleType(
   maybeDeliveryScheduleType: unknown
 ): Result<DeliveryScheduleType> {
-  return parseZodResult(z.nativeEnum(DeliveryScheduleType), maybeDeliveryScheduleType);
+  return parseZodResult(z.enum(DeliveryScheduleType), maybeDeliveryScheduleType);
 }

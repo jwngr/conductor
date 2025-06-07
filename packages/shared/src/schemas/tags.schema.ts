@@ -1,12 +1,12 @@
-import {z} from 'zod';
+import {z} from 'zod/v4';
 
 import {SystemTagId} from '@shared/types/tags.types';
 
 import {BaseStoreItemSchema} from '@shared/schemas/utils.schema';
 
-export const UserTagIdSchema = z.string().uuid();
+export const UserTagIdSchema = z.uuid();
 
-export const SystemTagIdSchema = z.nativeEnum(SystemTagId);
+export const SystemTagIdSchema = z.enum(SystemTagId);
 
 export const UserTagSchema = BaseStoreItemSchema.extend({
   tagId: UserTagIdSchema,

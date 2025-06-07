@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import {z} from 'zod/v4';
 
 import {
   FeedItemContentType,
@@ -11,7 +11,7 @@ import {FeedSourceSchema} from '@shared/schemas/feedSources.schema';
 import {FirestoreTimestampSchema} from '@shared/schemas/firebase.schema';
 import {BaseStoreItemSchema} from '@shared/schemas/utils.schema';
 
-export const FeedItemIdSchema = z.string().uuid();
+export const FeedItemIdSchema = z.uuid();
 
 //////////////////////////////
 //  FEED ITEM IMPORT STATE  //
@@ -60,7 +60,7 @@ export type FeedItemImportStateFromStorage = z.infer<typeof FeedItemImportStateS
 //  FEED ITEM CONTENT  //
 /////////////////////////
 const BaseFeedItemContentSchema = z.object({
-  feedItemContentType: z.nativeEnum(FeedItemContentType),
+  feedItemContentType: z.enum(FeedItemContentType),
   title: z.string(),
 });
 
@@ -72,10 +72,10 @@ const BaseFeedItemContentWithUrlSchema = BaseFeedItemContentSchema.extend({
     z.literal(FeedItemContentType.Tweet),
     z.literal(FeedItemContentType.YouTube),
   ]),
-  url: z.string().url(),
+  url: z.url(),
   description: z.string().nullable(),
   summary: z.string().nullable(),
-  outgoingLinks: z.array(z.string().url()),
+  outgoingLinks: z.array(z.url()),
 });
 
 const ArticleFeedItemContentSchema = BaseFeedItemContentWithUrlSchema.extend({
@@ -110,11 +110,11 @@ export type YouTubeFeedItemContentFromStorage = z.infer<typeof YouTubeFeedItemCo
 
 const XkcdFeedItemContentSchema = BaseFeedItemContentSchema.extend({
   feedItemContentType: z.literal(FeedItemContentType.Xkcd),
-  url: z.string().url(),
+  url: z.url(),
   summary: z.string().nullable(),
   altText: z.string(),
-  imageUrlSmall: z.string().url(),
-  imageUrlLarge: z.string().url(),
+  imageUrlSmall: z.url(),
+  imageUrlLarge: z.url(),
 });
 
 export type XkcdFeedItemContentFromStorage = z.infer<typeof XkcdFeedItemContentSchema>;
@@ -132,10 +132,10 @@ export type IntervalFeedItemContentFromStorage = z.infer<typeof IntervalFeedItem
 const BaseFeedItemSchema = BaseStoreItemSchema.extend({
   feedSource: FeedSourceSchema,
   feedItemId: FeedItemIdSchema,
-  feedItemContentType: z.nativeEnum(FeedItemContentType),
+  feedItemContentType: z.enum(FeedItemContentType),
   accountId: AccountIdSchema,
   importState: FeedItemImportStateSchema,
-  triageStatus: z.nativeEnum(TriageStatus),
+  triageStatus: z.enum(TriageStatus),
   content: BaseFeedItemContentSchema,
   tagIds: z.record(z.string(), z.literal(true).optional()),
 });
