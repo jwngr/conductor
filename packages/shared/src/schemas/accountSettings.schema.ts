@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import {z} from 'zod/v4';
 
 import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 import {FirestoreTimestampSchema} from '@shared/schemas/firebase.schema';

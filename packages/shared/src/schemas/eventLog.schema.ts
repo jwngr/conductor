@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import {z} from 'zod/v4';
 
 import {Environment} from '@shared/types/environment.types';
 import {EventType} from '@shared/types/eventLog.types';
@@ -14,16 +14,16 @@ import {ThemePreferenceSchema} from '@shared/schemas/theme.schema';
 import {UserFeedSubscriptionIdSchema} from '@shared/schemas/userFeedSubscriptions.schema';
 
 // TODO: Consider adding `brand()` and defining `EventId` based on this schema.
-export const EventIdSchema = z.string().uuid();
+export const EventIdSchema = z.uuid();
 
 const BaseEventLogItemDataSchema = z.object({
-  eventType: z.nativeEnum(EventType),
+  eventType: z.enum(EventType),
 });
 
 const FeedItemActionEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
   eventType: z.literal(EventType.FeedItemAction),
   feedItemId: FeedItemIdSchema,
-  feedItemActionType: z.nativeEnum(FeedItemActionType),
+  feedItemActionType: z.enum(FeedItemActionType),
   isUndo: z.boolean(),
 });
 
@@ -65,7 +65,7 @@ export type SubscribedToFeedSourceEventLogItemDataFromStorage = z.infer<
 
 const SubscribedToFeedSourceEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
   eventType: z.literal(EventType.SubscribedToFeedSource),
-  feedSourceType: z.nativeEnum(FeedSourceType),
+  feedSourceType: z.enum(FeedSourceType),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
   isNewSubscription: z.boolean(),
 });
@@ -76,7 +76,7 @@ export type UnsubscribedFromFeedSourceEventLogItemDataFromStorage = z.infer<
 
 export const UnsubscribedFromFeedSourceEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
   eventType: z.literal(EventType.UnsubscribedFromFeedSource),
-  feedSourceType: z.nativeEnum(FeedSourceType),
+  feedSourceType: z.enum(FeedSourceType),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
 });
 
@@ -103,7 +103,7 @@ export const EventLogItemSchema = z.object({
   eventId: EventIdSchema,
   accountId: AccountIdSchema,
   actor: ActorSchema,
-  environment: z.nativeEnum(Environment),
+  environment: z.enum(Environment),
   data: EventLogItemDataSchema,
   createdTime: FirestoreTimestampSchema.or(z.date()),
   lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),

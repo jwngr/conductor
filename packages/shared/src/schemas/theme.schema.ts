@@ -1,5 +1,5 @@
-import {z} from 'zod';
+import {z} from 'zod/v4';
 
 import {ThemePreference} from '@shared/types/theme.types';
 
-export const ThemePreferenceSchema = z.nativeEnum(ThemePreference);
+export const ThemePreferenceSchema = z.enum(ThemePreference);

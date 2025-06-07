@@ -131,9 +131,9 @@ export interface FeedItemWithUrlContent extends BaseFeedItemContent {
 }
 
 export interface XkcdFeedItemContent extends FeedItemWithUrlContent {
-  readonly altText: string;
-  readonly imageUrlSmall: string;
-  readonly imageUrlLarge: string;
+  readonly altText: string | null;
+  readonly imageUrlSmall: string | null;
+  readonly imageUrlLarge: string | null;
 }
 
 export interface IntervalFeedItemContent extends BaseFeedItemContent {

@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import {z} from 'zod/v4';
 
 import {
   FeedItemContentType,
@@ -10,7 +10,7 @@ import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 import {FeedSourceSchema} from '@shared/schemas/feedSources.schema';
 import {FirestoreTimestampSchema} from '@shared/schemas/firebase.schema';
 
-export const FeedItemIdSchema = z.string().uuid();
+export const FeedItemIdSchema = z.uuid();
 
 //////////////////////////////
 //  FEED ITEM IMPORT STATE  //
@@ -63,18 +63,18 @@ const BaseFeedItemContentSchema = z.object({
 });
 
 const FeedItemWithUrlContentSchema = BaseFeedItemContentSchema.extend({
-  url: z.string().url(),
+  url: z.url(),
   description: z.string().nullable(),
   summary: z.string().nullable(),
-  outgoingLinks: z.array(z.string().url()),
+  outgoingLinks: z.array(z.url()),
 });
 
 export type FeedItemWithUrlContentFromStorage = z.infer<typeof FeedItemWithUrlContentSchema>;
 
 const XkcdFeedItemContentSchema = FeedItemWithUrlContentSchema.extend({
-  altText: z.string(),
-  imageUrlSmall: z.string().url(),
-  imageUrlLarge: z.string().url(),
+  altText: z.string().nullable(),
+  imageUrlSmall: z.url().nullable(),
+  imageUrlLarge: z.url().nullable(),
 });
 
 export type XkcdFeedItemContentFromStorage = z.infer<typeof XkcdFeedItemContentSchema>;
@@ -91,10 +91,10 @@ export type IntervalFeedItemContentFromStorage = z.infer<typeof IntervalFeedItem
 const BaseFeedItemSchema = z.object({
   feedSource: FeedSourceSchema,
   feedItemId: FeedItemIdSchema,
-  feedItemContentType: z.nativeEnum(FeedItemContentType),
+  feedItemContentType: z.enum(FeedItemContentType),
   accountId: AccountIdSchema,
   importState: FeedItemImportStateSchema,
-  triageStatus: z.nativeEnum(TriageStatus),
+  triageStatus: z.enum(TriageStatus),
   content: BaseFeedItemContentSchema,
   tagIds: z.record(z.string(), z.literal(true).optional()),
   createdTime: FirestoreTimestampSchema.or(z.date()),

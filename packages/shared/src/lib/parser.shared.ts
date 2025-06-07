@@ -1,4 +1,4 @@
-import type {ZodSchema} from 'zod';
+import type {ZodSchema} from 'zod/v4';
 
 import {isDate} from '@shared/lib/datetime.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
