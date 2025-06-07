@@ -53,12 +53,12 @@ describe('partitionResults', () => {
     expect(successes).toHaveLength(3);
     expect(errors).toHaveLength(2);
 
-    expect(successes[0].value).toBe(1);
-    expect(successes[1].value).toBe(2);
-    expect(successes[2].value).toBe(3);
+    expectSuccessResult(successes[0], 1);
+    expectSuccessResult(successes[1], 2);
+    expectSuccessResult(successes[2], 3);
 
-    expect(errors[0].error).toBe('error1');
-    expect(errors[1].error).toBe('error2');
+    expectErrorResult(errors[0], 'error1');
+    expectErrorResult(errors[1], 'error2');
   });
 
   it('handles all success results', () => {
@@ -73,9 +73,9 @@ describe('partitionResults', () => {
     expect(successes).toHaveLength(3);
     expect(errors).toHaveLength(0);
 
-    expect(successes[0].value).toBe('a');
-    expect(successes[1].value).toBe('b');
-    expect(successes[2].value).toBe('c');
+    expectSuccessResult(successes[0], 'a');
+    expectSuccessResult(successes[1], 'b');
+    expectSuccessResult(successes[2], 'c');
   });
 
   it('handles all error results', () => {
@@ -89,8 +89,8 @@ describe('partitionResults', () => {
     expect(successes).toHaveLength(0);
     expect(errors).toHaveLength(2);
 
-    expect(errors[0].error.message).toBe('error1');
-    expect(errors[1].error.message).toBe('error2');
+    expectErrorResult(errors[0], 'error1');
+    expectErrorResult(errors[1], 'error2');
   });
 
   it('handles empty array', () => {
@@ -135,7 +135,7 @@ describe('partitionResults', () => {
 
     const {successes, errors} = partitionResults(results);
 
-    expect(successes[0].value).toEqual(complexData);
+    expectSuccessResult(successes[0], complexData);
     expect(errors[0].error).toEqual(customError);
   });
 });
