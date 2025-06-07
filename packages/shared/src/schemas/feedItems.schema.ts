@@ -72,50 +72,30 @@ const BaseFeedItemContentWithUrlSchema = BaseFeedItemContentSchema.extend({
 
 const ArticleFeedItemContentSchema = BaseFeedItemContentWithUrlSchema.extend({
   feedItemContentType: z.literal(FeedItemContentType.Article),
-  url: z.string().url(),
-  description: z.string().nullable(),
-  summary: z.string().nullable(),
-  outgoingLinks: z.array(z.string().url()),
 });
 
 export type ArticleFeedItemContentFromStorage = z.infer<typeof ArticleFeedItemContentSchema>;
 
 const VideoFeedItemContentSchema = BaseFeedItemContentWithUrlSchema.extend({
   feedItemContentType: z.literal(FeedItemContentType.Video),
-  url: z.string().url(),
-  description: z.string().nullable(),
-  summary: z.string().nullable(),
-  outgoingLinks: z.array(z.string().url()),
 });
 
 export type VideoFeedItemContentFromStorage = z.infer<typeof VideoFeedItemContentSchema>;
 
 const WebsiteFeedItemContentSchema = BaseFeedItemContentWithUrlSchema.extend({
   feedItemContentType: z.literal(FeedItemContentType.Website),
-  url: z.string().url(),
-  description: z.string().nullable(),
-  summary: z.string().nullable(),
-  outgoingLinks: z.array(z.string().url()),
 });
 
 export type WebsiteFeedItemContentFromStorage = z.infer<typeof WebsiteFeedItemContentSchema>;
 
 const TweetFeedItemContentSchema = BaseFeedItemContentWithUrlSchema.extend({
   feedItemContentType: z.literal(FeedItemContentType.Tweet),
-  url: z.string().url(),
-  description: z.string().nullable(),
-  summary: z.string().nullable(),
-  outgoingLinks: z.array(z.string().url()),
 });
 
 export type TweetFeedItemContentFromStorage = z.infer<typeof TweetFeedItemContentSchema>;
 
 const YouTubeFeedItemContentSchema = BaseFeedItemContentWithUrlSchema.extend({
   feedItemContentType: z.literal(FeedItemContentType.YouTube),
-  url: z.string().url(),
-  description: z.string().nullable(),
-  summary: z.string().nullable(),
-  outgoingLinks: z.array(z.string().url()),
 });
 
 export type YouTubeFeedItemContentFromStorage = z.infer<typeof YouTubeFeedItemContentSchema>;
