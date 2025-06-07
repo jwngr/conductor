@@ -9,6 +9,7 @@ import {
 import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 import {FeedSourceSchema} from '@shared/schemas/feedSources.schema';
 import {FirestoreTimestampSchema} from '@shared/schemas/firebase.schema';
+import {BaseStoreItemSchema} from '@shared/schemas/utils.schema';
 
 export const FeedItemIdSchema = z.string().uuid();
 
@@ -128,7 +129,7 @@ export type IntervalFeedItemContentFromStorage = z.infer<typeof IntervalFeedItem
 /////////////////
 //  FEED ITEM  //
 /////////////////
-const BaseFeedItemSchema = z.object({
+const BaseFeedItemSchema = BaseStoreItemSchema.extend({
   feedSource: FeedSourceSchema,
   feedItemId: FeedItemIdSchema,
   feedItemContentType: z.nativeEnum(FeedItemContentType),
@@ -137,8 +138,6 @@ const BaseFeedItemSchema = z.object({
   triageStatus: z.nativeEnum(TriageStatus),
   content: BaseFeedItemContentSchema,
   tagIds: z.record(z.string(), z.literal(true).optional()),
-  createdTime: FirestoreTimestampSchema.or(z.date()),
-  lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
 const ArticleFeedItemSchema = BaseFeedItemSchema.extend({
