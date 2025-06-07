@@ -13,7 +13,9 @@ import {fromStorageDeliverySchedule} from '@shared/storage/deliverySchedules.sto
 /**
  * Attempts to parse an unknown value into an {@link DeliverySchedule}.
  */
-export function parseDeliverySchedule(maybeDeliverySchedule: unknown): Result<DeliverySchedule> {
+export function parseDeliverySchedule(
+  maybeDeliverySchedule: unknown
+): Result<DeliverySchedule, Error> {
   const parsedResult = parseZodResult(DeliveryScheduleSchema, maybeDeliverySchedule);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid delivery schedule');
@@ -28,6 +30,6 @@ export function parseDeliverySchedule(maybeDeliverySchedule: unknown): Result<De
  */
 export function parseDeliveryScheduleType(
   maybeDeliveryScheduleType: unknown
-): Result<DeliveryScheduleType> {
+): Result<DeliveryScheduleType, Error> {
   return parseZodResult(z.enum(DeliveryScheduleType), maybeDeliveryScheduleType);
 }

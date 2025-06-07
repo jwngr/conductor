@@ -22,7 +22,7 @@ interface GenericFeedItemActionIconProps {
   readonly icon: IconName;
   readonly tooltip: string;
   readonly shortcutId: KeyboardShortcutId | undefined;
-  readonly performAction: Supplier<AsyncResult<void>>;
+  readonly performAction: Supplier<AsyncResult<void, Error>>;
   readonly disabled?: boolean;
 }
 
@@ -34,7 +34,7 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
   disabled,
 }) => {
   const handleAction = useCallback(
-    async (event?: MouseEvent<HTMLDivElement>): AsyncResult<void> => {
+    async (event?: MouseEvent<HTMLDivElement>): AsyncResult<void, Error> => {
       if (disabled) return makeSuccessResult(undefined);
 
       event?.stopPropagation();

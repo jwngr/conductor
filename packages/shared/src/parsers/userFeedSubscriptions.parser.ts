@@ -19,7 +19,7 @@ import {fromStorageUserFeedSubscription} from '@shared/storage/userFeedSubscript
  */
 export function parseUserFeedSubscriptionId(
   maybeUserFeedSubscriptionId: string
-): Result<UserFeedSubscriptionId> {
+): Result<UserFeedSubscriptionId, Error> {
   const parsedResult = parseZodResult(UserFeedSubscriptionIdSchema, maybeUserFeedSubscriptionId);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid user feed subscription ID');
@@ -32,7 +32,7 @@ export function parseUserFeedSubscriptionId(
  */
 export function parseUserFeedSubscription(
   maybeUserFeedSubscription: unknown
-): Result<UserFeedSubscription> {
+): Result<UserFeedSubscription, Error> {
   const parsedResult = parseZodResult(UserFeedSubscriptionSchema, maybeUserFeedSubscription);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid user feed subscription');

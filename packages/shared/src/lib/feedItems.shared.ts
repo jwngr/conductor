@@ -120,7 +120,7 @@ export class SharedFeedItemHelpers {
     };
   }
 
-  public static validateUrl(url: string): Result<void> {
+  public static validateUrl(url: string): Result<void, Error> {
     const parsedUrl = parseUrl(url);
     if (!parsedUrl) {
       return makeErrorResult(new Error('Invalid URL'));

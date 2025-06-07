@@ -59,7 +59,7 @@ interface InitializedServices {
   readonly rssFeedProvider: RssFeedProvider;
 }
 
-export function initServices(): Result<InitializedServices> {
+export function initServices(): Result<InitializedServices, Error> {
   // User feed subscriptions.
   const userFeedSubscriptionsCollectionService = makeServerFirestoreCollectionService({
     collectionPath: USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,

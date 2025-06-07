@@ -5,14 +5,13 @@ import {makeSuccessResult} from '@shared/lib/results.shared';
 import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
 import type {Result} from '@shared/types/results.types';
 
-import type {FeedItemFromStorage} from '@shared/schemas/feedItems.schema';
 import {FeedItemIdSchema, FeedItemSchema} from '@shared/schemas/feedItems.schema';
 import {fromStorageFeedItem} from '@shared/storage/feedItems.storage';
 
 /**
  * Attempts to parse a plain string into a {@link FeedItemId}.
  */
-export function parseFeedItemId(maybeFeedItemId: string): Result<FeedItemId> {
+export function parseFeedItemId(maybeFeedItemId: string): Result<FeedItemId, Error> {
   const parsedResult = parseZodResult(FeedItemIdSchema, maybeFeedItemId);
   if (!parsedResult.success) return prefixErrorResult(parsedResult, 'Invalid feed item ID');
   return makeSuccessResult(parsedResult.value as FeedItemId);
@@ -21,11 +20,8 @@ export function parseFeedItemId(maybeFeedItemId: string): Result<FeedItemId> {
 /**
  * Attempts to parse an unknown value into a {@link FeedItem}.
  */
-export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem> {
-  const parsedBaseFeedItemResult = parseZodResult<FeedItemFromStorage>(
-    FeedItemSchema,
-    maybeFeedItem
-  );
+export function parseFeedItem(maybeFeedItem: unknown): Result<FeedItem, Error> {
+  const parsedBaseFeedItemResult = parseZodResult(FeedItemSchema, maybeFeedItem);
   if (!parsedBaseFeedItemResult.success) {
     return prefixErrorResult(parsedBaseFeedItemResult, 'Invalid feed item');
   }

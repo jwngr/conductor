@@ -7,7 +7,7 @@ import type {WipeoutService} from '@sharedServer/services/wipeout.server';
 export async function handleWipeoutAccount(args: {
   readonly firebaseUid: string;
   readonly wipeoutService: WipeoutService;
-}): AsyncResult<void> {
+}): AsyncResult<void, Error> {
   const {firebaseUid, wipeoutService} = args;
 
   const accountIdResult = parseAccountId(firebaseUid);

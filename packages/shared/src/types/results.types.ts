@@ -7,7 +7,7 @@ export interface SuccessResult<T> extends BaseResult {
   readonly value: T;
 }
 
-export interface ErrorResult<E = Error> extends BaseResult {
+export interface ErrorResult<E> extends BaseResult {
   readonly success: false;
   readonly error: E;
 }
@@ -18,6 +18,6 @@ export interface ErrorResult<E = Error> extends BaseResult {
  *
  * Always prefer `Result` over throwing errors.
  */
-export type Result<T, E = Error> = SuccessResult<T> | ErrorResult<E>;
+export type Result<T, E> = SuccessResult<T> | ErrorResult<E>;
 
-export type AsyncResult<T, E = Error> = Promise<Result<T, E>>;
+export type AsyncResult<T, E> = Promise<Result<T, E>>;

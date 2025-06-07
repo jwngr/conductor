@@ -22,7 +22,7 @@ export class ServerRssFeedService {
     this.userFeedSubscriptionsService = args.userFeedSubscriptionsService;
   }
 
-  async subscribeToUrl(url: string): AsyncResult<void> {
+  async subscribeToUrl(url: string): AsyncResult<void, Error> {
     // Fetch and parse the RSS feed.
     const rssFeedResult = await parseRssFeed(url);
     if (!rssFeedResult.success) return prefixErrorResult(rssFeedResult, 'Error parsing RSS feed');
@@ -37,7 +37,7 @@ export class ServerRssFeedService {
   /**
    * Unsubscribes from an RSS feed by URL in the feed provider.
    */
-  async unsubscribeFromUrl(url: string): AsyncResult<void> {
+  async unsubscribeFromUrl(url: string): AsyncResult<void, Error> {
     // Fetch all active subscriptions for the feed source.
     const fetchSubsResult = await this.userFeedSubscriptionsService.fetchForRssFeedSourceByUrl(url);
     if (!fetchSubsResult.success) {

@@ -41,7 +41,7 @@ export function isXkcdComicUrl(url: string): boolean {
 /**
  * Extracts the comic ID from an XKCD URL. XKCD URLs look like https://xkcd.com/1234/.
  */
-export function parseXkcdComicIdFromUrl(url: string): Result<number> {
+export function parseXkcdComicIdFromUrl(url: string): Result<number, Error> {
   // eslint-disable-next-line no-restricted-syntax
   try {
     const parsedUrl = parseUrl(url);

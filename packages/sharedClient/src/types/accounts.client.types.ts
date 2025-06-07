@@ -23,7 +23,9 @@ export interface LoggedInAccount {
  * Parses a generic {@link LoggedInAccount} from a Firebase-specific {@link FirebaseUser}. Returns
  * an `ErrorResult` if the user is not authenticated.
  */
-export function parseLoggedInAccount(firebaseLoggedInUser: FirebaseUser): Result<LoggedInAccount> {
+export function parseLoggedInAccount(
+  firebaseLoggedInUser: FirebaseUser
+): Result<LoggedInAccount, Error> {
   if (!firebaseLoggedInUser.email) {
     return makeErrorResult(new Error('No email address associated with Firebase user'));
   }
