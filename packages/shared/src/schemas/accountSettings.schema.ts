@@ -1,3 +1,5 @@
+import type {z} from 'zod';
+
 import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 import {ThemePreferenceSchema} from '@shared/schemas/theme.schema';
 import {BaseStoreItemSchema} from '@shared/schemas/utils.schema';
