@@ -64,6 +64,13 @@ const BaseFeedItemContentSchema = z.object({
 });
 
 const BaseFeedItemContentWithUrlSchema = BaseFeedItemContentSchema.extend({
+  feedItemContentType: z.union([
+    z.literal(FeedItemContentType.Article),
+    z.literal(FeedItemContentType.Video),
+    z.literal(FeedItemContentType.Website),
+    z.literal(FeedItemContentType.Tweet),
+    z.literal(FeedItemContentType.YouTube),
+  ]),
   url: z.string().url(),
   description: z.string().nullable(),
   summary: z.string().nullable(),
