@@ -63,7 +63,7 @@ export function isYouTubeVideoUrl(url: string): boolean {
  *
  * If no channel ID found, returns `null`.
  */
-export function getYouTubeChannelId(url: string): Result<YouTubeChannelId | null> {
+export function getYouTubeChannelId(url: string): Result<YouTubeChannelId | null, Error> {
   const parsedUrl = parseUrl(url);
   if (!parsedUrl) return makeSuccessResult(null);
 
@@ -84,7 +84,7 @@ export function getYouTubeChannelId(url: string): Result<YouTubeChannelId | null
  *
  * If no channel handle found, returns `null`.
  */
-export function getYouTubeChannelHandle(url: string): Result<YouTubeHandle | null> {
+export function getYouTubeChannelHandle(url: string): Result<YouTubeHandle | null, Error> {
   const parsedUrl = parseUrl(url);
   if (!parsedUrl) return makeSuccessResult(null);
 

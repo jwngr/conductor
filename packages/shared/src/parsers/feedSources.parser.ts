@@ -10,7 +10,7 @@ import {fromStorageFeedSource} from '@shared/storage/feedSources.storage';
 /**
  * Attempts to parse an unknown value into a {@link FeedSource}.
  */
-export function parseFeedSource(maybeFeedSource: unknown): Result<FeedSource> {
+export function parseFeedSource(maybeFeedSource: unknown): Result<FeedSource, Error> {
   const parsedFeedSourceResult = parseZodResult(FeedSourceSchema, maybeFeedSource);
   if (!parsedFeedSourceResult.success) {
     return prefixErrorResult(parsedFeedSourceResult, 'Invalid feed source');

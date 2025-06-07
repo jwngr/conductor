@@ -80,7 +80,7 @@ function toStorageIntervalFeedSource(
  */
 export function fromStorageFeedSource(
   feedSourceFromStorage: FeedSourceFromStorage
-): Result<FeedSource> {
+): Result<FeedSource, Error> {
   switch (feedSourceFromStorage.feedSourceType) {
     case FeedSourceType.RSS:
       return fromStorageRssFeedSource(feedSourceFromStorage);
@@ -101,7 +101,7 @@ export function fromStorageFeedSource(
 
 function fromStorageRssFeedSource(
   feedSourceFromStorage: RssFeedSourceFromStorage
-): Result<RssFeedSource> {
+): Result<RssFeedSource, Error> {
   const parsedFeedSubIdResult = parseUserFeedSubscriptionId(
     feedSourceFromStorage.userFeedSubscriptionId
   );
@@ -117,7 +117,7 @@ function fromStorageRssFeedSource(
 
 function fromStorageYouTubeChannelFeedSource(
   feedSourceFromStorage: YouTubeChannelFeedSourceFromStorage
-): Result<YouTubeChannelFeedSource> {
+): Result<YouTubeChannelFeedSource, Error> {
   const parsedFeedSubIdResult = parseUserFeedSubscriptionId(
     feedSourceFromStorage.userFeedSubscriptionId
   );
@@ -135,7 +135,7 @@ function fromStorageYouTubeChannelFeedSource(
 
 function fromStorageIntervalFeedSource(
   feedSourceFromStorage: IntervalFeedSourceFromStorage
-): Result<IntervalFeedSource> {
+): Result<IntervalFeedSource, Error> {
   const parsedFeedSubIdResult = parseUserFeedSubscriptionId(
     feedSourceFromStorage.userFeedSubscriptionId
   );

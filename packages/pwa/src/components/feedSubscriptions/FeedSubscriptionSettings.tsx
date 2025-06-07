@@ -53,7 +53,7 @@ const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
       return;
     }
 
-    let makeDeliveryScheduleResult: Result<DeliverySchedule>;
+    let makeDeliveryScheduleResult: Result<DeliverySchedule, Error>;
     switch (deliveryScheduleTypeResult.value) {
       case DeliveryScheduleType.Immediate:
         makeDeliveryScheduleResult = makeSuccessResult(IMMEDIATE_DELIVERY_SCHEDULE);

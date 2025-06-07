@@ -77,19 +77,19 @@ export function omitUndefined<T extends object>(obj: T): T {
  * function is called.
  */
 export function batchSyncResults<T>(
-  syncResultSuppliers: Array<Supplier<Result<T>>>,
+  syncResultSuppliers: Array<Supplier<Result<T, Error>>>,
   batchSize: number
-): Result<Array<Result<T>>> {
+): Result<Array<Result<T, Error>>, Error> {
   if (batchSize < 1) {
     return makeErrorResult(new Error(`Batch size must be at least 1: ${batchSize}`));
   }
 
-  const resultsPerBatch: Array<Array<Supplier<Result<T>>>> = [];
+  const resultsPerBatch: Array<Array<Supplier<Result<T, Error>>>> = [];
   for (let i = 0; i < syncResultSuppliers.length; i += batchSize) {
     resultsPerBatch.push(syncResultSuppliers.slice(i, i + batchSize));
   }
 
-  const allResults: Array<Result<T>> = [];
+  const allResults: Array<Result<T, Error>> = [];
   for (const currentSuppliers of resultsPerBatch) {
     const currentResults = currentSuppliers.map((supplier) => supplier());
     allResults.push(...currentResults);
@@ -103,19 +103,19 @@ export function batchSyncResults<T>(
  * function is called.
  */
 export async function batchAsyncResults<T>(
-  asyncResultSuppliers: Array<Supplier<AsyncResult<T>>>,
+  asyncResultSuppliers: Array<Supplier<AsyncResult<T, Error>>>,
   batchSize: number
-): AsyncResult<Array<Result<T>>> {
+): AsyncResult<Array<Result<T, Error>>, Error> {
   if (batchSize < 1) {
     return makeErrorResult(new Error(`Batch size must be at least 1: ${batchSize}`));
   }
 
-  const resultsPerBatch: Array<Array<Supplier<AsyncResult<T>>>> = [];
+  const resultsPerBatch: Array<Array<Supplier<AsyncResult<T, Error>>>> = [];
   for (let i = 0; i < asyncResultSuppliers.length; i += batchSize) {
     resultsPerBatch.push(asyncResultSuppliers.slice(i, i + batchSize));
   }
 
-  const allResults: Array<Result<T>> = [];
+  const allResults: Array<Result<T, Error>> = [];
   for (const currentSuppliers of resultsPerBatch) {
     const currentResults = await Promise.all(currentSuppliers.map(async (supplier) => supplier()));
     allResults.push(...currentResults);

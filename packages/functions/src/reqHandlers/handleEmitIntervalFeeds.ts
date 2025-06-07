@@ -15,11 +15,14 @@ export const INTERVAL_FEED_EMISSION_INTERVAL_MINUTES = 5;
 export async function handleEmitIntervalFeeds(args: {
   feedItemsService: ServerFeedItemsService;
   userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
-}): AsyncResult<{
-  readonly totalCount: number;
-  readonly successCount: number;
-  readonly failureCount: number;
-}> {
+}): AsyncResult<
+  {
+    readonly totalCount: number;
+    readonly successCount: number;
+    readonly failureCount: number;
+  },
+  Error
+> {
   const {feedItemsService, userFeedSubscriptionsService} = args;
 
   const innerLog = (message: string, details: Record<string, unknown> = {}): void => {
@@ -51,7 +54,7 @@ export async function handleEmitIntervalFeeds(args: {
     INTERVAL_FEED_EMISSION_INTERVAL_MINUTES;
 
   // Loop through each interval subscription and emit a new feed item if the time has come.
-  const feedItemEmitAsyncResults: Array<AsyncResult<IntervalFeedItem>> = [];
+  const feedItemEmitAsyncResults: Array<AsyncResult<IntervalFeedItem, Error>> = [];
   for (const currentIntervalSub of intervalSubscriptions) {
     const {intervalSeconds, accountId, userFeedSubscriptionId} = currentIntervalSub;
 

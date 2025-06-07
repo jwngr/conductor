@@ -22,7 +22,7 @@ export function toStorageAccount(account: Account): AccountFromStorage {
 /**
  * Converts an {@link AccountFromStorage} into an {@link Account}.
  */
-export function fromStorageAccount(accountFromStorage: AccountFromStorage): Result<Account> {
+export function fromStorageAccount(accountFromStorage: AccountFromStorage): Result<Account, Error> {
   const parsedAccountIdResult = parseAccountId(accountFromStorage.accountId);
   if (!parsedAccountIdResult.success) return parsedAccountIdResult;
 

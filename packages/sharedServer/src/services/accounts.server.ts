@@ -35,7 +35,7 @@ export class ServerAccountsService {
   private async createAccountsDoc(args: {
     readonly accountId: AccountId;
     readonly email: EmailAddress;
-  }): AsyncResult<void> {
+  }): AsyncResult<void, Error> {
     const {accountId, email} = args;
 
     const account = {
@@ -51,7 +51,7 @@ export class ServerAccountsService {
   public async createAccount(args: {
     readonly accountId: AccountId;
     readonly email: EmailAddress;
-  }): AsyncResult<void> {
+  }): AsyncResult<void, Error> {
     const {accountId, email} = args;
 
     const createAccountResult = await asyncTryAll([
@@ -75,7 +75,7 @@ export class ServerAccountsService {
   /**
    * Permanently deletes all account-related documents from Firestore.
    */
-  public async deleteAccount(accountId: AccountId): AsyncResult<void> {
+  public async deleteAccount(accountId: AccountId): AsyncResult<void, Error> {
     const deleteResult = await asyncTryAll([
       this.deleteAccountDoc(accountId),
       this.accountSettingsService.deleteForAccount(accountId),
@@ -97,7 +97,7 @@ export class ServerAccountsService {
   /**
    * Permanently deletes the `/accounts/$accountId` document from Firestore.
    */
-  private async deleteAccountDoc(accountId: AccountId): AsyncResult<void> {
+  private async deleteAccountDoc(accountId: AccountId): AsyncResult<void, Error> {
     return this.collectionService.deleteDoc(accountId);
   }
 }

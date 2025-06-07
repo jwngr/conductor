@@ -22,7 +22,9 @@ export class ServerAccountSettingsService {
     this.collectionService = args.collectionService;
   }
 
-  public async initializeForAccount(args: {readonly accountId: AccountId}): AsyncResult<void> {
+  public async initializeForAccount(args: {
+    readonly accountId: AccountId;
+  }): AsyncResult<void, Error> {
     const {accountId} = args;
     const defaultAccountSettings = makeDefaultAccountSettings({accountId});
     return this.collectionService.setDoc(accountId, defaultAccountSettings);
@@ -31,7 +33,7 @@ export class ServerAccountSettingsService {
   private async updateForAccount(args: {
     readonly accountId: AccountId;
     readonly updates: Partial<AccountSettings>;
-  }): AsyncResult<void> {
+  }): AsyncResult<void, Error> {
     const {accountId, updates} = args;
     return this.collectionService.updateDoc(accountId, updates);
   }
@@ -39,7 +41,7 @@ export class ServerAccountSettingsService {
   public async updateThemePreference(args: {
     readonly accountId: AccountId;
     readonly themePreference: ThemePreference;
-  }): AsyncResult<void> {
+  }): AsyncResult<void, Error> {
     const {accountId, themePreference} = args;
     return this.updateForAccount({accountId, updates: {themePreference}});
   }
@@ -47,7 +49,7 @@ export class ServerAccountSettingsService {
   /**
    * Permanently deletes all account settings documents associated with an account.
    */
-  public async deleteForAccount(accountId: AccountId): AsyncResult<void> {
+  public async deleteForAccount(accountId: AccountId): AsyncResult<void, Error> {
     return await this.collectionService.deleteDoc(accountId);
   }
 }

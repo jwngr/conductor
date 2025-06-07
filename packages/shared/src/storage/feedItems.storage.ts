@@ -187,7 +187,9 @@ function toStorageIntervalFeedItem(feedItem: IntervalFeedItem): IntervalFeedItem
 /**
  * Converts a {@link FeedItemFromStorage} into a {@link FeedItem}.
  */
-export function fromStorageFeedItem(feedItemFromStorage: FeedItemFromStorage): Result<FeedItem> {
+export function fromStorageFeedItem(
+  feedItemFromStorage: FeedItemFromStorage
+): Result<FeedItem, Error> {
   switch (feedItemFromStorage.feedItemContentType) {
     case FeedItemContentType.Article:
       return fromStorageArticleFeedItem(feedItemFromStorage);
@@ -208,14 +210,17 @@ export function fromStorageFeedItem(feedItemFromStorage: FeedItemFromStorage): R
   }
 }
 
-function fromStorageFeedItemShared(feedItemFromStorage: FeedItemFromStorage): Result<{
-  readonly feedItemId: FeedItemId;
-  readonly accountId: AccountId;
-  readonly importState: FeedItemImportState;
-  readonly feedSource: FeedSource;
-  readonly feedItemContentType: FeedItemContentType;
-  readonly triageStatus: TriageStatus;
-}> {
+function fromStorageFeedItemShared(feedItemFromStorage: FeedItemFromStorage): Result<
+  {
+    readonly feedItemId: FeedItemId;
+    readonly accountId: AccountId;
+    readonly importState: FeedItemImportState;
+    readonly feedSource: FeedSource;
+    readonly feedItemContentType: FeedItemContentType;
+    readonly triageStatus: TriageStatus;
+  },
+  Error
+> {
   const parsedFeedItemIdResult = parseFeedItemId(feedItemFromStorage.feedItemId);
   if (!parsedFeedItemIdResult.success) return parsedFeedItemIdResult;
 
@@ -240,7 +245,7 @@ function fromStorageFeedItemShared(feedItemFromStorage: FeedItemFromStorage): Re
 
 function fromStorageArticleFeedItem(
   feedItemFromStorage: ArticleFeedItemFromStorage
-): Result<ArticleFeedItem> {
+): Result<ArticleFeedItem, Error> {
   const parsedFeedItemSharedResult = fromStorageFeedItemShared(feedItemFromStorage);
   if (!parsedFeedItemSharedResult.success) return parsedFeedItemSharedResult;
   const {feedItemId, accountId, importState, feedSource} = parsedFeedItemSharedResult.value;
@@ -264,7 +269,7 @@ function fromStorageArticleFeedItem(
 
 function fromStorageVideoFeedItem(
   feedItemFromStorage: VideoFeedItemFromStorage
-): Result<VideoFeedItem> {
+): Result<VideoFeedItem, Error> {
   const parsedFeedItemSharedResult = fromStorageFeedItemShared(feedItemFromStorage);
   if (!parsedFeedItemSharedResult.success) return parsedFeedItemSharedResult;
   const {feedItemId, accountId, importState, feedSource} = parsedFeedItemSharedResult.value;
@@ -288,7 +293,7 @@ function fromStorageVideoFeedItem(
 
 function fromStorageWebsiteFeedItem(
   feedItemFromStorage: WebsiteFeedItemFromStorage
-): Result<WebsiteFeedItem> {
+): Result<WebsiteFeedItem, Error> {
   const parsedFeedItemSharedResult = fromStorageFeedItemShared(feedItemFromStorage);
   if (!parsedFeedItemSharedResult.success) return parsedFeedItemSharedResult;
   const {feedItemId, accountId, importState, feedSource} = parsedFeedItemSharedResult.value;
@@ -312,7 +317,7 @@ function fromStorageWebsiteFeedItem(
 
 function fromStorageTweetFeedItem(
   feedItemFromStorage: TweetFeedItemFromStorage
-): Result<TweetFeedItem> {
+): Result<TweetFeedItem, Error> {
   const parsedFeedItemSharedResult = fromStorageFeedItemShared(feedItemFromStorage);
   if (!parsedFeedItemSharedResult.success) return parsedFeedItemSharedResult;
   const {feedItemId, accountId, importState, feedSource} = parsedFeedItemSharedResult.value;
@@ -336,7 +341,7 @@ function fromStorageTweetFeedItem(
 
 function fromStorageYouTubeFeedItem(
   feedItemFromStorage: YouTubeFeedItemFromStorage
-): Result<YouTubeFeedItem> {
+): Result<YouTubeFeedItem, Error> {
   const parsedFeedItemSharedResult = fromStorageFeedItemShared(feedItemFromStorage);
   if (!parsedFeedItemSharedResult.success) return parsedFeedItemSharedResult;
   const {feedItemId, accountId, importState, feedSource} = parsedFeedItemSharedResult.value;
@@ -360,7 +365,7 @@ function fromStorageYouTubeFeedItem(
 
 function fromStorageXkcdFeedItem(
   feedItemFromStorage: XkcdFeedItemFromStorage
-): Result<XkcdFeedItem> {
+): Result<XkcdFeedItem, Error> {
   const parsedFeedItemSharedResult = fromStorageFeedItemShared(feedItemFromStorage);
   if (!parsedFeedItemSharedResult.success) return parsedFeedItemSharedResult;
   const {feedItemId, accountId, importState, feedSource} = parsedFeedItemSharedResult.value;
@@ -384,7 +389,7 @@ function fromStorageXkcdFeedItem(
 
 function fromStorageIntervalFeedItem(
   feedItemFromStorage: IntervalFeedItemFromStorage
-): Result<IntervalFeedItem> {
+): Result<IntervalFeedItem, Error> {
   const parsedFeedItemSharedResult = fromStorageFeedItemShared(feedItemFromStorage);
   if (!parsedFeedItemSharedResult.success) return parsedFeedItemSharedResult;
   const {feedItemId, accountId, importState, feedSource} = parsedFeedItemSharedResult.value;
@@ -500,7 +505,7 @@ function toStorageIntervalFeedItemContent(
 
 function fromStorageArticleFeedItemContent(
   feedItemContentFromStorage: ArticleFeedItemContentFromStorage
-): Result<ArticleFeedItemContent> {
+): Result<ArticleFeedItemContent, Error> {
   return makeSuccessResult({
     feedItemContentType: FeedItemContentType.Article,
     title: feedItemContentFromStorage.title,
@@ -513,7 +518,7 @@ function fromStorageArticleFeedItemContent(
 
 function fromStorageVideoFeedItemContent(
   feedItemContentFromStorage: VideoFeedItemContentFromStorage
-): Result<VideoFeedItemContent> {
+): Result<VideoFeedItemContent, Error> {
   return makeSuccessResult({
     feedItemContentType: FeedItemContentType.Video,
     title: feedItemContentFromStorage.title,
@@ -526,7 +531,7 @@ function fromStorageVideoFeedItemContent(
 
 function fromStorageWebsiteFeedItemContent(
   feedItemContentFromStorage: WebsiteFeedItemContentFromStorage
-): Result<WebsiteFeedItemContent> {
+): Result<WebsiteFeedItemContent, Error> {
   return makeSuccessResult({
     feedItemContentType: FeedItemContentType.Website,
     title: feedItemContentFromStorage.title,
@@ -539,7 +544,7 @@ function fromStorageWebsiteFeedItemContent(
 
 function fromStorageTweetFeedItemContent(
   feedItemContentFromStorage: TweetFeedItemContentFromStorage
-): Result<TweetFeedItemContent> {
+): Result<TweetFeedItemContent, Error> {
   return makeSuccessResult({
     feedItemContentType: FeedItemContentType.Tweet,
     title: feedItemContentFromStorage.title,
@@ -552,7 +557,7 @@ function fromStorageTweetFeedItemContent(
 
 function fromStorageYouTubeFeedItemContent(
   feedItemContentFromStorage: YouTubeFeedItemContentFromStorage
-): Result<YouTubeFeedItemContent> {
+): Result<YouTubeFeedItemContent, Error> {
   return makeSuccessResult({
     feedItemContentType: FeedItemContentType.YouTube,
     title: feedItemContentFromStorage.title,
@@ -565,7 +570,7 @@ function fromStorageYouTubeFeedItemContent(
 
 function fromStorageXkcdFeedItemContent(
   feedItemContentFromStorage: XkcdFeedItemContentFromStorage
-): Result<XkcdFeedItemContent> {
+): Result<XkcdFeedItemContent, Error> {
   return makeSuccessResult({
     feedItemContentType: FeedItemContentType.Xkcd,
     title: feedItemContentFromStorage.title,
@@ -579,7 +584,7 @@ function fromStorageXkcdFeedItemContent(
 
 function fromStorageIntervalFeedItemContent(
   feedItemContentFromStorage: IntervalFeedItemContentFromStorage
-): Result<IntervalFeedItemContent> {
+): Result<IntervalFeedItemContent, Error> {
   return makeSuccessResult({
     feedItemContentType: FeedItemContentType.Interval,
     title: feedItemContentFromStorage.title,
@@ -595,7 +600,7 @@ function fromStorageIntervalFeedItemContent(
  */
 function fromStorageFeedItemImportState(
   feedItemImportState: FeedItemImportStateFromStorage
-): Result<FeedItemImportState> {
+): Result<FeedItemImportState, Error> {
   const status = feedItemImportState.status;
   switch (status) {
     case FeedItemImportStatus.New:

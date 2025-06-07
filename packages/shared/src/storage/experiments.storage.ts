@@ -60,7 +60,7 @@ export function toStorageExperimentDefinition(
  */
 export function fromStorageExperimentDefinition(
   experimentDefinitionFromStorage: ExperimentDefinitionFromStorage
-): Result<ExperimentDefinition> {
+): Result<ExperimentDefinition, Error> {
   switch (experimentDefinitionFromStorage.experimentType) {
     case ExperimentType.Boolean:
       return makeSuccessResult({
@@ -147,7 +147,7 @@ function toStorageStringExperimentOverride(
  */
 export function fromStorageAccountExperimentsState(
   accountExperimentsStateFromStorage: AccountExperimentsStateFromStorage
-): Result<AccountExperimentsState> {
+): Result<AccountExperimentsState, Error> {
   const parsedAccountId = parseAccountId(accountExperimentsStateFromStorage.accountId);
   if (!parsedAccountId.success) return parsedAccountId;
 

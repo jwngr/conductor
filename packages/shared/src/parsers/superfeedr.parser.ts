@@ -11,7 +11,7 @@ import type {SuperfeedrWebhookRequestBody} from '@shared/schemas/superfeedr.sche
  */
 export function parseSuperfeedrWebhookRequestBody(
   maybeBody: unknown
-): Result<SuperfeedrWebhookRequestBody> {
+): Result<SuperfeedrWebhookRequestBody, Error> {
   const parsedResult = parseZodResult(SuperfeedrWebhookRequestBodySchema, maybeBody);
   return prefixResultIfError(parsedResult, 'Unexpected Superfeedr webhook request');
 }
