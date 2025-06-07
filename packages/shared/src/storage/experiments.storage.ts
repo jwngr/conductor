@@ -168,7 +168,7 @@ export function fromStorageAccountExperimentsState(
 
 function fromStorageExperimentOverride(
   experimentOverrideFromStorage: ExperimentOverrideFromStorage
-): Result<ExperimentOverride> {
+): ExperimentOverride {
   switch (experimentOverrideFromStorage.experimentType) {
     case ExperimentType.Boolean:
       return fromStorageBooleanExperimentOverride(experimentOverrideFromStorage);
@@ -181,21 +181,21 @@ function fromStorageExperimentOverride(
 
 function fromStorageBooleanExperimentOverride(
   experimentOverrideFromStorage: BooleanExperimentOverrideFromStorage
-): Result<BooleanExperimentOverride> {
-  return makeSuccessResult({
+): BooleanExperimentOverride {
+  return {
     experimentType: ExperimentType.Boolean,
     experimentId: experimentOverrideFromStorage.experimentId,
     isEnabled: experimentOverrideFromStorage.isEnabled,
-  });
+  };
 }
 
 function fromStorageStringExperimentOverride(
   experimentOverrideFromStorage: StringExperimentOverrideFromStorage
-): Result<StringExperimentOverride> {
-  return makeSuccessResult({
+): StringExperimentOverride {
+  return {
     experimentType: ExperimentType.String,
     experimentId: experimentOverrideFromStorage.experimentId,
     value: experimentOverrideFromStorage.value,
     isEnabled: experimentOverrideFromStorage.isEnabled,
-  });
+  };
 }
