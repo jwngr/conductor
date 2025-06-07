@@ -23,7 +23,7 @@ The project is organized into several TypeScript packages managed via Yarn works
 - `/rssServer` - In-memory RSS feed provider implementation for local development
 
 ### Key Technologies
-- **Frontend**: React 19, TypeScript, Tailwind v4, Radix UI, Zod
+- **Frontend**: React 19, TypeScript, Tailwind v4, Radix UI, Zod v4
 - **Backend**: Firebase (Firestore, Functions, Storage, Auth)
 - **Build Tools**: Vite, Yarn 4
 - **External Services**: 
@@ -52,10 +52,10 @@ The project is organized into several TypeScript packages managed via Yarn works
    - Modern UI with Radix components
 
 ### Data Models
-Key data collections in Firestore:
-- `feed_sources` - RSS feed sources and configurations
-- `feed_items` - Individual feed entries
-- `user_feed_subscriptions` - User subscriptions to feeds
+Firestore collections: [firestore.rules](mdc:firestore.rules)
+Major types in: packages/shared/src/types
+Zod schemas in: packages/shared/src/schemas
+Conversion methods in: packages/shared/src/storage and packages/shared/src/parasers
 
 ### Development Workflow
 - Local development using Firebase emulators

@@ -72,7 +72,7 @@ const BaseFeedItemContentWithUrlSchema = BaseFeedItemContentSchema.extend({
     z.literal(FeedItemContentType.Tweet),
     z.literal(FeedItemContentType.YouTube),
   ]),
-  url: z.string().url(),
+  url: z.url(),
   description: z.string().nullable(),
   summary: z.string().nullable(),
   outgoingLinks: z.array(z.url()),
@@ -110,11 +110,11 @@ export type YouTubeFeedItemContentFromStorage = z.infer<typeof YouTubeFeedItemCo
 
 const XkcdFeedItemContentSchema = BaseFeedItemContentSchema.extend({
   feedItemContentType: z.literal(FeedItemContentType.Xkcd),
-  url: z.string().url(),
+  url: z.url(),
   summary: z.string().nullable(),
   altText: z.string(),
-  imageUrlSmall: z.string().url(),
-  imageUrlLarge: z.string().url(),
+  imageUrlSmall: z.url(),
+  imageUrlLarge: z.url(),
 });
 
 export type XkcdFeedItemContentFromStorage = z.infer<typeof XkcdFeedItemContentSchema>;
