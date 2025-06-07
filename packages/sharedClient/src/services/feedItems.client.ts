@@ -8,15 +8,14 @@ import {
   FEED_ITEMS_DB_COLLECTION,
 } from '@shared/lib/constants.shared';
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {getFeedItemTypeFromUrl, SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
-import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
-import {isValidUrl} from '@shared/lib/urls.shared';
+import {makeFeedItem, makeFeedItemContentFromUrl} from '@shared/lib/feedItems.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 import {Views} from '@shared/lib/views.shared';
 
 import {parseFeedItem, parseFeedItemId} from '@shared/parsers/feedItems.parser';
 
 import type {AccountId, AuthStateChangedUnsubscribe} from '@shared/types/accounts.types';
-import type {FeedItem, FeedItemId, FeedItemWithUrlContent} from '@shared/types/feedItems.types';
+import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
 import {FeedItemActionType, TriageStatus} from '@shared/types/feedItems.types';
 import type {FeedSource} from '@shared/types/feedSources.types';
 import {fromQueryFilterOp} from '@shared/types/query.types';
@@ -111,28 +110,20 @@ export class ClientFeedItemsService {
 
   public async createFeedItemFromUrl(args: {
     readonly feedSource: FeedSource;
-    readonly content: FeedItemWithUrlContent;
+    readonly url: string;
+    readonly title: string;
+    readonly description: string | null;
+    readonly outgoingLinks: string[];
+    readonly summary: string | null;
   }): AsyncResult<FeedItem> {
-    const {feedSource, content} = args;
+    const {feedSource, url, title, description, outgoingLinks, summary} = args;
+    const accountId = this.accountId;
 
-    const trimmedUrl = content.url.trim();
-    if (!isValidUrl(trimmedUrl)) {
-      return makeErrorResult(new Error(`Invalid URL provided for feed item: "${content.url}"`));
-    }
+    const content = makeFeedItemContentFromUrl({url, title, description, outgoingLinks, summary});
+    const feedItem = makeFeedItem({feedSource, content, accountId});
 
-    const feedItemContentType = getFeedItemTypeFromUrl(content.url);
-    const feedItem = SharedFeedItemHelpers.makeFeedItem({
-      feedItemContentType,
-      feedSource,
-      content,
-      accountId: this.accountId,
-    });
-
-    const addFeedItemResult = await this.feedItemsCollectionService.setDoc(
-      feedItem.feedItemId,
-      feedItem
-    );
-    if (!addFeedItemResult.success) return addFeedItemResult;
+    const saveResult = await this.feedItemsCollectionService.setDoc(feedItem.feedItemId, feedItem);
+    if (!saveResult.success) return saveResult;
 
     return makeSuccessResult(feedItem);
   }

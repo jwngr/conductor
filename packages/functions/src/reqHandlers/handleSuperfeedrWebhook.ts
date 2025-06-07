@@ -90,14 +90,12 @@ export async function handleSuperfeedrWebhookHelper(args: {
       const newFeedItemResult = async (): AsyncResult<FeedItem> => {
         return await feedItemsService.createFeedItemFromUrl({
           feedSource: makeRssFeedSource({userFeedSubscription}),
-          content: {
-            url: item.permalinkUrl,
-            title: item.title,
-            description: item.summary,
-            // TODO: Set better initial values for these fields.
-            outgoingLinks: [],
-            summary: null,
-          },
+          url: item.permalinkUrl,
+          title: item.title,
+          description: item.summary,
+          // TODO: Set better initial values for these fields.
+          outgoingLinks: [],
+          summary: null,
           accountId: userFeedSubscription.accountId,
         });
       };

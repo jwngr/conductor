@@ -9,9 +9,9 @@ import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 import {ActorSchema} from '@shared/schemas/actors.schema';
 import {ExperimentIdSchema, ExperimentTypeSchema} from '@shared/schemas/experiments.schema';
 import {FeedItemIdSchema} from '@shared/schemas/feedItems.schema';
-import {FirestoreTimestampSchema} from '@shared/schemas/firebase.schema';
 import {ThemePreferenceSchema} from '@shared/schemas/theme.schema';
 import {UserFeedSubscriptionIdSchema} from '@shared/schemas/userFeedSubscriptions.schema';
+import {BaseStoreItemSchema} from '@shared/schemas/utils.schema';
 
 // TODO: Consider adding `brand()` and defining `EventId` based on this schema.
 export const EventIdSchema = z.uuid();
@@ -99,14 +99,12 @@ const EventLogItemDataSchema = z.discriminatedUnion('eventType', [
 /** Type for an {@link EventLogItemData} persisted to Firestore. */
 export type EventLogItemDataFromStorage = z.infer<typeof EventLogItemDataSchema>;
 
-export const EventLogItemSchema = z.object({
+export const EventLogItemSchema = BaseStoreItemSchema.extend({
   eventId: EventIdSchema,
   accountId: AccountIdSchema,
   actor: ActorSchema,
   environment: z.enum(Environment),
   data: EventLogItemDataSchema,
-  createdTime: FirestoreTimestampSchema.or(z.date()),
-  lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
 /** Type for an {@link EventLogItem} persisted to Firestore. */

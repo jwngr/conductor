@@ -2,23 +2,26 @@ import type {FeedItemFromStorage} from '@conductor/shared/src/schemas/feedItems.
 import type {DocumentData} from 'firebase-admin/firestore';
 
 import {asyncTry, prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {getFeedItemTypeFromUrl, SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
+import {makeFeedItem, makeFeedItemContentFromUrl} from '@shared/lib/feedItems.shared';
 import {makeIntervalFeedSource} from '@shared/lib/feedSources.shared';
-import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
-import {isValidUrl} from '@shared/lib/urls.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import {FeedItemContentType} from '@shared/types/feedItems.types';
 import type {
+  ArticleFeedItemContent,
   FeedItem,
   FeedItemContent,
   FeedItemId,
   FeedItemImportState,
-  FeedItemWithUrlContent,
   IntervalFeedItem,
   IntervalFeedItemContent,
+  TweetFeedItemContent,
+  VideoFeedItemContent,
+  WebsiteFeedItemContent,
   XkcdFeedItemContent,
+  YouTubeFeedItemContent,
 } from '@shared/types/feedItems.types';
 import type {FeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult, Result} from '@shared/types/results.types';
@@ -72,29 +75,20 @@ export class ServerFeedItemsService {
 
   public async createFeedItemFromUrl(args: {
     readonly feedSource: FeedSource;
-    readonly content: FeedItemWithUrlContent;
     readonly accountId: AccountId;
+    readonly url: string;
+    readonly title: string;
+    readonly description: string | null;
+    readonly outgoingLinks: string[];
+    readonly summary: string | null;
   }): AsyncResult<FeedItem> {
-    const {feedSource, content, accountId} = args;
+    const {feedSource, accountId, url, title, description, outgoingLinks, summary} = args;
 
-    const trimmedUrl = content.url.trim();
-    if (!isValidUrl(trimmedUrl)) {
-      return makeErrorResult(new Error(`Invalid URL provided for feed item: "${content.url}"`));
-    }
+    const content = makeFeedItemContentFromUrl({url, title, description, outgoingLinks, summary});
+    const feedItem = makeFeedItem({feedSource, content, accountId});
 
-    const feedItemContentType = getFeedItemTypeFromUrl(content.url);
-    const feedItem = SharedFeedItemHelpers.makeFeedItem({
-      feedItemContentType,
-      feedSource,
-      content,
-      accountId,
-    });
-
-    const addFeedItemResult = await this.collectionService.setDoc(feedItem.feedItemId, feedItem);
-
-    if (!addFeedItemResult.success) {
-      return prefixErrorResult(addFeedItemResult, 'Error creating feed item in Firestore');
-    }
+    const saveResult = await this.collectionService.setDoc(feedItem.feedItemId, feedItem);
+    if (!saveResult.success) return saveResult;
 
     return makeSuccessResult(feedItem);
   }
@@ -107,10 +101,11 @@ export class ServerFeedItemsService {
   }): AsyncResult<IntervalFeedItem> {
     const {userFeedSubscription, accountId} = args;
 
-    const feedItem = SharedFeedItemHelpers.makeIntervalFeedItem({
+    const feedItem = makeFeedItem({
       feedSource: makeIntervalFeedSource({userFeedSubscription}),
       accountId,
       content: {
+        feedItemContentType: FeedItemContentType.Interval,
         title: `Interval feed item for ${new Date().toISOString()}`,
         intervalSeconds: userFeedSubscription.intervalSeconds,
       },
@@ -122,7 +117,7 @@ export class ServerFeedItemsService {
       return prefixErrorResult(addFeedItemResult, 'Error creating feed item in Firestore');
     }
 
-    return makeSuccessResult(feedItem);
+    return makeSuccessResult(feedItem as IntervalFeedItem);
   }
 
   public async updateFeedItemImportState(
@@ -140,8 +135,6 @@ export class ServerFeedItemsService {
     const dataToWrite: DocumentData = makeFeedItemContentUpdates(content, [
       'title',
       'url',
-      'description',
-      'outgoingLinks',
       'summary',
       'altText',
       'imageUrlSmall',
@@ -160,7 +153,13 @@ export class ServerFeedItemsService {
 
   public async updateFeedItemWithUrlContent(
     feedItemId: FeedItemId,
-    content: Partial<FeedItemWithUrlContent>
+    content: Partial<
+      | ArticleFeedItemContent
+      | VideoFeedItemContent
+      | WebsiteFeedItemContent
+      | TweetFeedItemContent
+      | YouTubeFeedItemContent
+    >
   ): AsyncResult<void> {
     const dataToWrite = makeFeedItemContentUpdates(content, [
       'title',
@@ -247,7 +246,7 @@ export class ServerFeedItemsService {
         importResult = await importer.import({
           feedItemId: feedItem.feedItemId,
           accountId: feedItem.accountId,
-          content: feedItem.content,
+          url: feedItem.content.url,
         });
         break;
       }

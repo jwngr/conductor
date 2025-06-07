@@ -8,10 +8,11 @@ import {
 } from '@shared/lib/constants.shared';
 import {asyncTryAll, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {requestGet} from '@shared/lib/requests.shared';
-import {makeSuccessResult} from '@shared/lib/results.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {isValidUrl} from '@shared/lib/urls.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import type {FeedItemId, FeedItemWithUrlContent} from '@shared/types/feedItems.types';
+import type {FeedItemId} from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
@@ -212,13 +213,18 @@ export class WebsiteFeedItemImporter {
   public async import(args: {
     readonly feedItemId: FeedItemId;
     readonly accountId: AccountId;
-    readonly content: FeedItemWithUrlContent;
+    readonly url: string;
   }): AsyncResult<void> {
-    const {feedItemId, accountId, content} = args;
+    const {feedItemId, accountId, url} = args;
+
+    const trimmedUrl = url.trim();
+    if (!isValidUrl(trimmedUrl)) {
+      return makeErrorResult(new Error(`Invalid URL provided for feed item: "${url}"`));
+    }
 
     const importAllDataResult = await asyncTryAll([
-      this.fetchAndSaveSanitizedHtml({url: content.url, feedItemId, accountId}),
-      this.fetchAndSaveFirecrawlData({url: content.url, feedItemId, accountId}),
+      this.fetchAndSaveSanitizedHtml({url, feedItemId, accountId}),
+      this.fetchAndSaveFirecrawlData({url, feedItemId, accountId}),
     ]);
 
     // TODO: Make this multi-result error handling pattern simpler.
@@ -239,7 +245,7 @@ export class WebsiteFeedItemImporter {
     const sanitizedHtml = sanitizedHtmlResult.value;
 
     const saveMainContentResult = await this.saveMainContentHtmlAndMarkdown({
-      url: content.url,
+      url,
       html: sanitizedHtml,
       feedItemId,
       accountId,
