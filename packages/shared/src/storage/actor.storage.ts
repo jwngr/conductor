@@ -30,7 +30,7 @@ export function toStorageActor(actor: Actor): ActorFromStorage {
 /**
  * Converts an {@link ActorFromStorage} into an {@link Actor}.
  */
-export function fromStorageActor(actorFromStorage: ActorFromStorage): Result<Actor> {
+export function fromStorageActor(actorFromStorage: ActorFromStorage): Result<Actor, Error> {
   switch (actorFromStorage.actorType) {
     case ActorType.Account: {
       const accountIdResult = parseAccountId(actorFromStorage.accountId);

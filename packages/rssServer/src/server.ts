@@ -11,7 +11,7 @@ import {getRssServerPortFromEnv} from '@src/lib/env';
 import {InMemoryRssFeedManager} from '@src/lib/feedManager';
 import {setupRoutes} from '@src/lib/routes';
 
-async function main(): AsyncResult<void> {
+async function main(): AsyncResult<void, Error> {
   const feedManager = new InMemoryRssFeedManager();
   const app = setupRoutes(feedManager);
   const port = getRssServerPortFromEnv();

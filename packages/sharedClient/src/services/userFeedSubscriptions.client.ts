@@ -88,7 +88,7 @@ export class ClientUserFeedSubscriptionsService {
    * This is done via Firebase Functions since a privileged server is needed to contact the RSS feed
    * provider (e.g. Superfeedr), which is responsible for managing RSS feed subscriptions.
    */
-  public async subscribeToRssFeed(url: URL): AsyncResult<RssUserFeedSubscription> {
+  public async subscribeToRssFeed(url: URL): AsyncResult<RssUserFeedSubscription, Error> {
     // Check if the user is already subscribed to this RSS feed.
     const existingSubResult = await this.fetchExistingRssFeedSubscription(url);
     if (!existingSubResult.success) return existingSubResult;
@@ -129,7 +129,7 @@ export class ClientUserFeedSubscriptionsService {
    */
   public async subscribeToYouTubeChannel(
     maybeYouTubeUrl: string
-  ): AsyncResult<YouTubeChannelUserFeedSubscription> {
+  ): AsyncResult<YouTubeChannelUserFeedSubscription, Error> {
     // Parse the channel ID from the URL.
     // TODO: Also support channel handles.
     const channelIdResult = getYouTubeChannelId(maybeYouTubeUrl);
@@ -160,7 +160,7 @@ export class ClientUserFeedSubscriptionsService {
 
   private async fetchExistingRssFeedSubscription(
     url: URL
-  ): AsyncResult<RssUserFeedSubscription | null> {
+  ): AsyncResult<RssUserFeedSubscription | null, Error> {
     const result = await this.userFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
       where('accountId', '==', this.accountId),
       where('feedSourceType', '==', FeedSourceType.RSS),
@@ -174,7 +174,7 @@ export class ClientUserFeedSubscriptionsService {
 
   private async fetchExistingYouTubeChannelSubscription(
     channelId: YouTubeChannelId
-  ): AsyncResult<YouTubeChannelUserFeedSubscription | null> {
+  ): AsyncResult<YouTubeChannelUserFeedSubscription | null, Error> {
     const result = await this.userFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
       where('accountId', '==', this.accountId),
       where('feedSourceType', '==', FeedSourceType.YouTubeChannel),
@@ -188,7 +188,7 @@ export class ClientUserFeedSubscriptionsService {
 
   public async subscribeToIntervalFeed(args: {
     intervalSeconds: number;
-  }): AsyncResult<IntervalUserFeedSubscription> {
+  }): AsyncResult<IntervalUserFeedSubscription, Error> {
     const {intervalSeconds} = args;
 
     if (!isPositiveInteger(intervalSeconds)) {
@@ -212,7 +212,7 @@ export class ClientUserFeedSubscriptionsService {
   private async saveSubscription<T extends UserFeedSubscription>(args: {
     readonly userFeedSubscription: T;
     readonly toastMessage: string;
-  }): AsyncResult<T> {
+  }): AsyncResult<T, Error> {
     const {userFeedSubscription, toastMessage} = args;
     const {accountId, feedSourceType, userFeedSubscriptionId} = userFeedSubscription;
 
@@ -248,7 +248,7 @@ export class ClientUserFeedSubscriptionsService {
     update: Partial<
       Pick<UserFeedSubscription, 'isActive' | 'unsubscribedTime' | 'deliverySchedule'>
     >
-  ): AsyncResult<void> {
+  ): AsyncResult<void, Error> {
     const updateResult = await this.userFeedSubscriptionsCollectionService.updateDoc(
       userFeedSubscriptionId,
       update

@@ -78,7 +78,7 @@ export function toStorageUserFeedSubscription(
  */
 export function fromStorageUserFeedSubscription(
   userFeedSubscriptionFromStorage: UserFeedSubscriptionFromStorage
-): Result<UserFeedSubscription> {
+): Result<UserFeedSubscription, Error> {
   switch (userFeedSubscriptionFromStorage.feedSourceType) {
     case FeedSourceType.RSS:
       return fromStorageRssUserFeedSubscription(userFeedSubscriptionFromStorage);
@@ -93,7 +93,7 @@ export function fromStorageUserFeedSubscription(
 
 function fromStorageRssUserFeedSubscription(
   userFeedSubscriptionFromStorage: RssUserFeedSubscriptionFromStorage
-): Result<RssUserFeedSubscription> {
+): Result<RssUserFeedSubscription, Error> {
   const parsedAccountIdResult = parseAccountId(userFeedSubscriptionFromStorage.accountId);
   if (!parsedAccountIdResult.success) return parsedAccountIdResult;
 
@@ -125,7 +125,7 @@ function fromStorageRssUserFeedSubscription(
 
 function fromStorageYouTubeChannelUserFeedSubscription(
   userFeedSubscriptionFromStorage: YouTubeChannelUserFeedSubscriptionFromStorage
-): Result<YouTubeChannelUserFeedSubscription> {
+): Result<YouTubeChannelUserFeedSubscription, Error> {
   const parsedAccountIdResult = parseAccountId(userFeedSubscriptionFromStorage.accountId);
   if (!parsedAccountIdResult.success) return parsedAccountIdResult;
 
@@ -159,7 +159,7 @@ function fromStorageYouTubeChannelUserFeedSubscription(
 
 function fromStorageIntervalUserFeedSubscription(
   userFeedSubscriptionFromStorage: IntervalUserFeedSubscriptionFromStorage
-): Result<IntervalUserFeedSubscription> {
+): Result<IntervalUserFeedSubscription, Error> {
   const parsedAccountIdResult = parseAccountId(userFeedSubscriptionFromStorage.accountId);
   if (!parsedAccountIdResult.success) return parsedAccountIdResult;
 

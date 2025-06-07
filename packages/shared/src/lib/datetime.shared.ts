@@ -14,7 +14,7 @@ export function isDate(value: unknown): value is Date {
   return value instanceof Date;
 }
 
-export function makeTimeOfDay(timeOfDay: TimeOfDay): Result<TimeOfDay> {
+export function makeTimeOfDay(timeOfDay: TimeOfDay): Result<TimeOfDay, Error> {
   const hourResult = validateHour(timeOfDay.hour);
   if (!hourResult.success) return hourResult;
 
@@ -24,7 +24,7 @@ export function makeTimeOfDay(timeOfDay: TimeOfDay): Result<TimeOfDay> {
   return makeSuccessResult(timeOfDay);
 }
 
-export function validateHour(hour: number): Result<number> {
+export function validateHour(hour: number): Result<number, Error> {
   if (hour < 0 || hour > 23) {
     return makeErrorResult(new Error('Hour must be between 0 and 23'));
   }
@@ -36,7 +36,7 @@ export function validateHour(hour: number): Result<number> {
   return makeSuccessResult(hour);
 }
 
-export function validateMinute(minute: number): Result<number> {
+export function validateMinute(minute: number): Result<number, Error> {
   if (minute < 0 || minute > 59) {
     return makeErrorResult(new Error('Minute must be between 0 and 59'));
   }

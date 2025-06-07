@@ -131,7 +131,7 @@ export class ClientExperimentsService {
   public async setIsExperimentEnabled(args: {
     readonly experimentId: ExperimentId;
     readonly isEnabled: boolean;
-  }): AsyncResult<void> {
+  }): AsyncResult<void, Error> {
     const {experimentId, isEnabled} = args;
 
     const pathToUpdate = `experimentOverrides.${experimentId}`;
@@ -161,7 +161,7 @@ export class ClientExperimentsService {
   public async setStringExperimentValue(args: {
     readonly accountExperiment: AccountExperiment;
     readonly value: string;
-  }): AsyncResult<void> {
+  }): AsyncResult<void, Error> {
     const {accountExperiment, value} = args;
     const {experimentId} = accountExperiment.definition;
 

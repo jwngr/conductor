@@ -5,7 +5,7 @@ import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AsyncResult} from '@shared/types/results.types';
 
-export async function fetchYouTubeTranscript(url: string): AsyncResult<string> {
+export async function fetchYouTubeTranscript(url: string): AsyncResult<string, Error> {
   const fetchTranscriptResult = await asyncTry(async () =>
     YoutubeTranscript.fetchTranscript(url, {
       lang: 'en',

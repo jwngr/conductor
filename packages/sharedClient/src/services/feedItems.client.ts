@@ -64,7 +64,7 @@ export class ClientFeedItemsService {
     this.eventLogService = args.eventLogService;
   }
 
-  public async fetchById(feedItemId: FeedItemId): AsyncResult<FeedItem | null> {
+  public async fetchById(feedItemId: FeedItemId): AsyncResult<FeedItem | null, Error> {
     return this.feedItemsCollectionService.fetchById(feedItemId);
   }
 
@@ -115,7 +115,7 @@ export class ClientFeedItemsService {
     readonly description: string | null;
     readonly outgoingLinks: string[];
     readonly summary: string | null;
-  }): AsyncResult<FeedItem> {
+  }): AsyncResult<FeedItem, Error> {
     const {feedSource, url, title, description, outgoingLinks, summary} = args;
     const accountId = this.accountId;
 
@@ -131,12 +131,12 @@ export class ClientFeedItemsService {
   public async updateFeedItem(
     feedItemId: FeedItemId,
     updates: Partial<FeedItem>
-  ): AsyncResult<void> {
+  ): AsyncResult<void, Error> {
     const updateResult = await this.feedItemsCollectionService.updateDoc(feedItemId, updates);
     return prefixResultIfError(updateResult, 'Error updating feed item');
   }
 
-  public async deleteFeedItem(feedItemId: FeedItemId): AsyncResult<void> {
+  public async deleteFeedItem(feedItemId: FeedItemId): AsyncResult<void, Error> {
     const deleteResult = await this.feedItemsCollectionService.deleteDoc(feedItemId);
     return prefixResultIfError(deleteResult, 'Error deleting feed item');
   }
@@ -155,7 +155,7 @@ export class ClientFeedItemsService {
   public async getFileFromStorage(args: {
     readonly feedItemId: FeedItemId;
     readonly filename: string;
-  }): AsyncResult<string> {
+  }): AsyncResult<string, Error> {
     const {feedItemId, filename} = args;
 
     const filePath = this.getFilePath({feedItemId, filename});
@@ -173,15 +173,15 @@ export class ClientFeedItemsService {
     return prefixResultIfError(parseBlobResult, 'Error parsing downloaded file blob');
   }
 
-  public async getFeedItemMarkdown(feedItemId: FeedItemId): AsyncResult<string> {
+  public async getFeedItemMarkdown(feedItemId: FeedItemId): AsyncResult<string, Error> {
     return this.getFileFromStorage({feedItemId, filename: FEED_ITEM_FILE_LLM_CONTEXT});
   }
 
-  public async getFeedItemTranscript(feedItemId: FeedItemId): AsyncResult<string> {
+  public async getFeedItemTranscript(feedItemId: FeedItemId): AsyncResult<string, Error> {
     return this.getFileFromStorage({feedItemId, filename: FEED_ITEM_FILE_TRANSCRIPT});
   }
 
-  public async markFeedItemAsDone(feedItemId: FeedItemId): AsyncResult<void> {
+  public async markFeedItemAsDone(feedItemId: FeedItemId): AsyncResult<void, Error> {
     return this.performFeedItemActionWithUndo({
       feedItemId,
       targetState: {triageStatus: TriageStatus.Done},
@@ -194,7 +194,7 @@ export class ClientFeedItemsService {
     });
   }
 
-  public async markFeedItemAsUndone(feedItemId: FeedItemId): AsyncResult<void> {
+  public async markFeedItemAsUndone(feedItemId: FeedItemId): AsyncResult<void, Error> {
     return this.performFeedItemActionWithUndo({
       feedItemId,
       targetState: {triageStatus: TriageStatus.Untriaged},
@@ -207,7 +207,7 @@ export class ClientFeedItemsService {
     });
   }
 
-  public async markFeedItemAsRead(feedItemId: FeedItemId): AsyncResult<void> {
+  public async markFeedItemAsRead(feedItemId: FeedItemId): AsyncResult<void, Error> {
     return this.performFeedItemActionWithUndo({
       feedItemId,
       targetState: {[`tagIds.${SystemTagId.Unread}`]: deleteField()} as Partial<FeedItem>,
@@ -220,7 +220,7 @@ export class ClientFeedItemsService {
     });
   }
 
-  public async markFeedItemAsUnread(feedItemId: FeedItemId): AsyncResult<void> {
+  public async markFeedItemAsUnread(feedItemId: FeedItemId): AsyncResult<void, Error> {
     return this.performFeedItemActionWithUndo({
       feedItemId,
       targetState: {[`tagIds.${SystemTagId.Unread}`]: true} as Partial<FeedItem>,
@@ -233,7 +233,7 @@ export class ClientFeedItemsService {
     });
   }
 
-  public async starFeedItem(feedItemId: FeedItemId): AsyncResult<void> {
+  public async starFeedItem(feedItemId: FeedItemId): AsyncResult<void, Error> {
     return this.performFeedItemActionWithUndo({
       feedItemId,
       targetState: {[`tagIds.${SystemTagId.Starred}`]: true} as Partial<FeedItem>,
@@ -246,7 +246,7 @@ export class ClientFeedItemsService {
     });
   }
 
-  public async unstarFeedItem(feedItemId: FeedItemId): AsyncResult<void> {
+  public async unstarFeedItem(feedItemId: FeedItemId): AsyncResult<void, Error> {
     return this.performFeedItemActionWithUndo({
       feedItemId,
       targetState: {[`tagIds.${SystemTagId.Starred}`]: deleteField()} as Partial<FeedItem>,
@@ -259,7 +259,7 @@ export class ClientFeedItemsService {
     });
   }
 
-  public async saveFeedItem(feedItemId: FeedItemId): AsyncResult<void> {
+  public async saveFeedItem(feedItemId: FeedItemId): AsyncResult<void, Error> {
     return this.performFeedItemActionWithUndo({
       feedItemId,
       targetState: {triageStatus: TriageStatus.Saved},
@@ -272,7 +272,7 @@ export class ClientFeedItemsService {
     });
   }
 
-  public async unsaveFeedItem(feedItemId: FeedItemId): AsyncResult<void> {
+  public async unsaveFeedItem(feedItemId: FeedItemId): AsyncResult<void, Error> {
     return this.performFeedItemActionWithUndo({
       feedItemId,
       targetState: {triageStatus: TriageStatus.Untriaged},
@@ -285,7 +285,7 @@ export class ClientFeedItemsService {
     });
   }
 
-  public async retryImport(feedItem: FeedItem): AsyncResult<void> {
+  public async retryImport(feedItem: FeedItem): AsyncResult<void, Error> {
     return this.performFeedItemActionWithUndo({
       feedItemId: feedItem.feedItemId,
       targetState: {
@@ -315,7 +315,7 @@ export class ClientFeedItemsService {
     readonly feedItemActionType: FeedItemActionType;
     readonly toastMessage: string | React.ReactNode;
     readonly errorToastMessage: string | React.ReactNode;
-  }): AsyncResult<void> {
+  }): AsyncResult<void, Error> {
     const {feedItemId, targetState, undoState, undoMessage, undoFailureMessage} = args;
     const {feedItemActionType, toastMessage, errorToastMessage} = args;
 

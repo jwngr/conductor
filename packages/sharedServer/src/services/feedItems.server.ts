@@ -81,7 +81,7 @@ export class ServerFeedItemsService {
     readonly description: string | null;
     readonly outgoingLinks: string[];
     readonly summary: string | null;
-  }): AsyncResult<FeedItem> {
+  }): AsyncResult<FeedItem, Error> {
     const {feedSource, accountId, url, title, description, outgoingLinks, summary} = args;
 
     const content = makeFeedItemContentFromUrl({url, title, description, outgoingLinks, summary});
@@ -98,7 +98,7 @@ export class ServerFeedItemsService {
     readonly accountId: AccountId;
     /** The subscription that is creating the feed item. */
     readonly userFeedSubscription: IntervalUserFeedSubscription;
-  }): AsyncResult<IntervalFeedItem> {
+  }): AsyncResult<IntervalFeedItem, Error> {
     const {userFeedSubscription, accountId} = args;
 
     const feedItem = makeFeedItem({
@@ -123,7 +123,7 @@ export class ServerFeedItemsService {
   public async updateFeedItemImportState(
     feedItemId: FeedItemId,
     importState: FeedItemImportState
-  ): AsyncResult<void> {
+  ): AsyncResult<void, Error> {
     const dataToWrite: Partial<FeedItem> = {importState};
     return await this.collectionService.updateDoc(feedItemId, dataToWrite);
   }
@@ -131,7 +131,7 @@ export class ServerFeedItemsService {
   public async updateXkcdFeedItemContent(
     feedItemId: FeedItemId,
     content: Partial<XkcdFeedItemContent>
-  ): AsyncResult<void> {
+  ): AsyncResult<void, Error> {
     const dataToWrite: DocumentData = makeFeedItemContentUpdates(content, [
       'title',
       'url',
@@ -146,7 +146,7 @@ export class ServerFeedItemsService {
   public async updateIntervalFeedItemContent(
     feedItemId: FeedItemId,
     content: Partial<IntervalFeedItemContent>
-  ): AsyncResult<void> {
+  ): AsyncResult<void, Error> {
     const dataToWrite = makeFeedItemContentUpdates(content, ['title', 'intervalSeconds']);
     return await this.collectionService.updateDoc(feedItemId, dataToWrite);
   }
@@ -160,7 +160,7 @@ export class ServerFeedItemsService {
       | TweetFeedItemContent
       | YouTubeFeedItemContent
     >
-  ): AsyncResult<void> {
+  ): AsyncResult<void, Error> {
     const dataToWrite = makeFeedItemContentUpdates(content, [
       'title',
       'url',
@@ -178,7 +178,7 @@ export class ServerFeedItemsService {
     readonly storagePath: string;
     readonly content: string;
     readonly contentType: string;
-  }): AsyncResult<void> {
+  }): AsyncResult<void, Error> {
     const {storagePath, content, contentType} = args;
     return await asyncTry(async () => {
       const file = storage.bucket().file(storagePath);
@@ -189,7 +189,7 @@ export class ServerFeedItemsService {
   /**
    * Permanently deletes all feed items associated with an account.
    */
-  public async deleteAllForAccount(accountId: AccountId): AsyncResult<void> {
+  public async deleteAllForAccount(accountId: AccountId): AsyncResult<void, Error> {
     // Fetch the IDs for all of the account's feed items.
     const query = this.collectionService.getCollectionRef().where('accountId', '==', accountId);
     const queryResult = await this.collectionService.fetchQueryIds(query);
@@ -205,7 +205,7 @@ export class ServerFeedItemsService {
   /**
    * Permanently deletes all storage files associated with an account.
    */
-  public async deleteStorageFilesForAccount(accountId: AccountId): AsyncResult<void> {
+  public async deleteStorageFilesForAccount(accountId: AccountId): AsyncResult<void, Error> {
     return await asyncTry(async () =>
       storage.bucket().deleteFiles({
         prefix: this.getStoragePathForAccount(accountId),
@@ -227,7 +227,7 @@ export class ServerFeedItemsService {
     return `${accountPath}${feedItemId}/${filename}`;
   }
 
-  public async importFeedItem(feedItem: FeedItem): AsyncResult<void> {
+  public async importFeedItem(feedItem: FeedItem): AsyncResult<void, Error> {
     let importResult: Result<void, Error>;
     switch (feedItem.feedItemContentType) {
       case FeedItemContentType.YouTube: {

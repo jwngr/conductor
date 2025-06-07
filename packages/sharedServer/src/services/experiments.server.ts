@@ -26,7 +26,7 @@ export class ServerExperimentsService {
   public async initializeForAccount(args: {
     readonly accountId: AccountId;
     readonly email: EmailAddress;
-  }): AsyncResult<void> {
+  }): AsyncResult<void, Error> {
     const {accountId, email} = args;
 
     const defaultAccountExperimentsState = makeDefaultAccountExperimentsState({
@@ -43,12 +43,12 @@ export class ServerExperimentsService {
   public async setAccountExperimentsState(args: {
     readonly accountId: AccountId;
     readonly accountExperimentsState: AccountExperimentsState;
-  }): AsyncResult<void> {
+  }): AsyncResult<void, Error> {
     const {accountId, accountExperimentsState} = args;
     return this.collectionService.setDoc(accountId, accountExperimentsState);
   }
 
-  public async deleteForAccount(accountId: AccountId): AsyncResult<void> {
+  public async deleteForAccount(accountId: AccountId): AsyncResult<void, Error> {
     return this.collectionService.deleteDoc(accountId);
   }
 }

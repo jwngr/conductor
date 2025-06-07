@@ -11,7 +11,7 @@ import type {ExplainXkcdContent, XkcdComic} from '@shared/types/xkcd.types';
 
 import {htmlToMarkdown} from '@sharedServer/lib/markdown.server';
 
-export async function fetchXkcdComic(comicId: number): AsyncResult<XkcdComic> {
+export async function fetchXkcdComic(comicId: number): AsyncResult<XkcdComic, Error> {
   const url = `https://xkcd.com/${comicId}`;
 
   const fetchDataResult = await requestGet<string>(url, {
@@ -44,7 +44,9 @@ export async function fetchXkcdComic(comicId: number): AsyncResult<XkcdComic> {
   });
 }
 
-export async function fetchExplainXkcdContent(comicId: number): AsyncResult<ExplainXkcdContent> {
+export async function fetchExplainXkcdContent(
+  comicId: number
+): AsyncResult<ExplainXkcdContent, Error> {
   const url = makeExplainXkcdUrl(comicId);
 
   const fetchDataResult = await requestGet<string>(url, {

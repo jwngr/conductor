@@ -12,7 +12,7 @@ export async function handleFeedUnsubscribe(args: {
   readonly beforeData: unknown;
   readonly afterData: unknown;
   readonly rssFeedService: ServerRssFeedService;
-}): AsyncResult<void> {
+}): AsyncResult<void, Error> {
   const {beforeData, afterData, rssFeedService} = args;
 
   // Parse the before and after data.

@@ -11,7 +11,7 @@ import {fromStorageAccount} from '@shared/storage/accounts.storage';
 /**
  * Attempts to parse a plain string into an {@link AccountId}.
  */
-export function parseAccountId(maybeAccountId: string): Result<AccountId> {
+export function parseAccountId(maybeAccountId: string): Result<AccountId, Error> {
   const parsedResult = parseZodResult(AccountIdSchema, maybeAccountId);
   if (!parsedResult.success) return prefixErrorResult(parsedResult, 'Invalid account ID');
   return makeSuccessResult(parsedResult.value as AccountId);
@@ -20,7 +20,7 @@ export function parseAccountId(maybeAccountId: string): Result<AccountId> {
 /**
  * Attempts to parse an unknown value into an {@link Account}.
  */
-export function parseAccount(maybeAccount: unknown): Result<Account> {
+export function parseAccount(maybeAccount: unknown): Result<Account, Error> {
   const parsedResult = parseZodResult(AccountSchema, maybeAccount);
   if (!parsedResult.success) return prefixErrorResult(parsedResult, 'Failed to parse account');
 

@@ -48,7 +48,7 @@ export function toStorageEventLogItem(eventLogItem: EventLogItem): EventLogItemF
  */
 export function fromStorageEventLogItem(
   eventLogItemFromStorage: EventLogItemFromStorage
-): Result<EventLogItem> {
+): Result<EventLogItem, Error> {
   const parsedAccountIdResult = parseAccountId(eventLogItemFromStorage.accountId);
   if (!parsedAccountIdResult.success) return parsedAccountIdResult;
 
@@ -87,7 +87,7 @@ function toStorageEventLogItemData(
  */
 function fromStorageEventLogItemData(
   eventLogItemDataFromStorage: EventLogItemDataFromStorage
-): Result<EventLogItemData> {
+): Result<EventLogItemData, Error> {
   switch (eventLogItemDataFromStorage.eventType) {
     // Some events contain simple types which need no parsing.
     case EventType.ExperimentEnabled:
@@ -112,7 +112,7 @@ function fromStorageEventLogItemData(
 
 function fromStorageFeedItemActionEventLogItemData(
   eventLogItemFromStorage: FeedItemActionEventLogItemDataFromStorage
-): Result<FeedItemActionEventLogItemData> {
+): Result<FeedItemActionEventLogItemData, Error> {
   const parsedFeedItemIdResult = parseFeedItemId(eventLogItemFromStorage.feedItemId);
   if (!parsedFeedItemIdResult.success) return parsedFeedItemIdResult;
 
@@ -126,7 +126,7 @@ function fromStorageFeedItemActionEventLogItemData(
 
 function fromStorageFeedItemImportedEventLogItemData(
   eventLogItemFromStorage: FeedItemImportedEventLogItemDataFromStorage
-): Result<FeedItemImportedEventLogItemData> {
+): Result<FeedItemImportedEventLogItemData, Error> {
   const parsedFeedItemIdResult = parseFeedItemId(eventLogItemFromStorage.feedItemId);
   if (!parsedFeedItemIdResult.success) return parsedFeedItemIdResult;
 
@@ -138,7 +138,7 @@ function fromStorageFeedItemImportedEventLogItemData(
 
 function fromStorageSubscribedToFeedSourceEventLogItemData(
   eventLogItemData: SubscribedToFeedSourceEventLogItemDataFromStorage
-): Result<SubscribedToFeedSourceEventLogItemData> {
+): Result<SubscribedToFeedSourceEventLogItemData, Error> {
   const parsedSubIdResult = parseUserFeedSubscriptionId(eventLogItemData.userFeedSubscriptionId);
   if (!parsedSubIdResult.success) return parsedSubIdResult;
 
@@ -152,7 +152,7 @@ function fromStorageSubscribedToFeedSourceEventLogItemData(
 
 function fromStorageUnsubscribedFromFeedSourceEventLogItemData(
   eventLogItemData: UnsubscribedFromFeedSourceEventLogItemDataFromStorage
-): Result<UnsubscribedFromFeedSourceEventLogItemData> {
+): Result<UnsubscribedFromFeedSourceEventLogItemData, Error> {
   const parsedSubIdResult = parseUserFeedSubscriptionId(eventLogItemData.userFeedSubscriptionId);
   if (!parsedSubIdResult.success) return parsedSubIdResult;
 

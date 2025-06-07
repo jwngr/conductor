@@ -11,7 +11,7 @@ import {StoriesSidebarItemIdSchema} from '@shared/schemas/stories.schema';
  */
 export function parseStoriesSidebarItemId(
   maybeStoriesSidebarItemId: string
-): Result<StoriesSidebarItemId> {
+): Result<StoriesSidebarItemId, Error> {
   const parsedResult = parseZodResult(StoriesSidebarItemIdSchema, maybeStoriesSidebarItemId);
   return prefixResultIfError(parsedResult, 'Invalid stories sidebar item ID');
 }

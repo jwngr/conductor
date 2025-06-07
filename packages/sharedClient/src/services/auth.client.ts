@@ -103,20 +103,20 @@ class ClientAuthService {
   public async signInWithEmailLink(
     email: EmailAddress,
     emailLink: string
-  ): AsyncResult<FirebaseUserCredential> {
+  ): AsyncResult<FirebaseUserCredential, Error> {
     return await asyncTry(async () => signInWithEmailLinkFirebase(this.auth, email, emailLink));
   }
 
   public async sendSignInLinkToEmail(
     email: EmailAddress,
     actionCodeSettings: ActionCodeSettings
-  ): AsyncResult<void> {
+  ): AsyncResult<void, Error> {
     return await asyncTry(async () =>
       sendSignInLinkToEmailFirebase(this.auth, email, actionCodeSettings)
     );
   }
 
-  public async signOut(): AsyncResult<void> {
+  public async signOut(): AsyncResult<void, Error> {
     return await asyncTry(async () => signOutFirebase(this.auth));
   }
 }

@@ -17,7 +17,7 @@ import {
  * Parses a {@link UserTagId} from a plain string. Returns an `ErrorResult` if the string is not
  * valid.
  */
-export function parseUserTagId(maybeUserTagId: string): Result<UserTagId> {
+export function parseUserTagId(maybeUserTagId: string): Result<UserTagId, Error> {
   const parsedTagIdResult = parseZodResult(UserTagIdSchema, maybeUserTagId);
   if (!parsedTagIdResult.success) {
     return prefixErrorResult(parsedTagIdResult, 'Invalid user tag ID');
@@ -29,7 +29,7 @@ export function parseUserTagId(maybeUserTagId: string): Result<UserTagId> {
  * Parses a {@link UserTag} from an unknown value. Returns an `ErrorResult` if the value is not
  * valid.
  */
-export function parseUserTag(maybeUserTag: unknown): Result<UserTag> {
+export function parseUserTag(maybeUserTag: unknown): Result<UserTag, Error> {
   const parsedTagResult = parseZodResult(UserTagSchema, maybeUserTag);
   if (!parsedTagResult.success) {
     return prefixErrorResult(parsedTagResult, 'Invalid user tag');
@@ -51,7 +51,7 @@ export function parseUserTag(maybeUserTag: unknown): Result<UserTag> {
  * Parses a {@link SystemTagId} from a plain string. Returns an `ErrorResult` if the string is not
  * valid.
  */
-export function parseSystemTagId(maybeSystemTagId: string): Result<SystemTagId> {
+export function parseSystemTagId(maybeSystemTagId: string): Result<SystemTagId, Error> {
   const parsedTagIdResult = parseZodResult(SystemTagIdSchema, maybeSystemTagId);
   if (!parsedTagIdResult.success) {
     return prefixErrorResult(parsedTagIdResult, 'Invalid system tag ID');
@@ -63,7 +63,7 @@ export function parseSystemTagId(maybeSystemTagId: string): Result<SystemTagId> 
  * Parses a {@link SystemTag} from an unknown value. Returns an `ErrorResult` if the value is not
  * valid.
  */
-export function parseSystemTag(maybeSystemTag: unknown): Result<SystemTag> {
+export function parseSystemTag(maybeSystemTag: unknown): Result<SystemTag, Error> {
   const parsedTagResult = parseZodResult(SystemTagSchema, maybeSystemTag);
   if (!parsedTagResult.success) {
     return prefixErrorResult(parsedTagResult, 'Invalid system tag');

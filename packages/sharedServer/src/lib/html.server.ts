@@ -26,7 +26,7 @@ const DEFUDDLE_OPTIONS: DefuddleOptions = {
 /**
  * Sanitizes HTML content by removing potentially dangerous elements and attributes.
  */
-export function sanitizeHtml(html: string): Result<string> {
+export function sanitizeHtml(html: string): Result<string, Error> {
   return syncTry(() => domPurify.sanitize(html, DOMPURIFY_SANITIZE_CONFIG));
 }
 
@@ -36,7 +36,7 @@ export function sanitizeHtml(html: string): Result<string> {
 export async function extractMainContent(args: {
   readonly html: string;
   readonly url: string;
-}): AsyncResult<DefuddleResponse> {
+}): AsyncResult<DefuddleResponse, Error> {
   const {html, url} = args;
   return await asyncTry(async () => Defuddle(html, url, {...DEFUDDLE_OPTIONS, url}));
 }

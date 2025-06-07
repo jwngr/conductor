@@ -72,7 +72,7 @@ export class ClientAccountSettingsService {
     );
   }
 
-  public async updateThemePreference(themePreference: ThemePreference): AsyncResult<void> {
+  public async updateThemePreference(themePreference: ThemePreference): AsyncResult<void, Error> {
     const result = await this.accountSettingsCollectionService.updateDoc(this.accountId, {
       themePreference,
     });

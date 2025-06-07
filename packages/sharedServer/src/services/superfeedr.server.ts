@@ -49,7 +49,7 @@ export class SuperfeedrService implements RssFeedProvider {
     return `${this.callbackUrl}/handleSuperfeedrWebhook`;
   }
 
-  public async subscribeToUrl(feedUrl: string): AsyncResult<void> {
+  public async subscribeToUrl(feedUrl: string): AsyncResult<void, Error> {
     const result = await requestPost<string>(
       SUPERFEEDR_BASE_URL,
       {
@@ -73,7 +73,7 @@ export class SuperfeedrService implements RssFeedProvider {
     return makeSuccessResult(undefined);
   }
 
-  public async unsubscribeFromUrl(feedUrl: string): AsyncResult<void> {
+  public async unsubscribeFromUrl(feedUrl: string): AsyncResult<void, Error> {
     const result = await requestPost<undefined>(SUPERFEEDR_BASE_URL, {
       headers: {
         Authorization: this.getSuperfeedrAuthHeader(),
@@ -99,7 +99,7 @@ export function validateSuperfeedrWebhookSignature(args: {
   readonly webhookSecret: string;
   readonly headers: IncomingHttpHeaders;
   readonly body: SuperfeedrWebhookRequestBody;
-}): Result<void> {
+}): Result<void, Error> {
   const {webhookSecret, headers, body} = args;
 
   // Validate the expected signature header is present.

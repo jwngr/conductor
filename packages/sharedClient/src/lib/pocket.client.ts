@@ -12,7 +12,9 @@ import {parseCsv} from '@sharedClient/lib/csv.client';
  * Parses CSV content string containing Pocket export data.
  * Expected format: title,url,time_added,tags,status
  */
-export function parsePocketCsvContent(csvString: string): Result<readonly PocketImportItem[]> {
+export function parsePocketCsvContent(
+  csvString: string
+): Result<readonly PocketImportItem[], Error> {
   const rawCsvRecordsResult = parseCsv<RawPocketCsvRecord>(csvString);
   if (!rawCsvRecordsResult.success) return rawCsvRecordsResult;
 

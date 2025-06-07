@@ -65,7 +65,7 @@ export class ClientEventLogService {
     this.accountId = args.accountId;
   }
 
-  public async fetchById(eventId: EventId): AsyncResult<EventLogItem | null> {
+  public async fetchById(eventId: EventId): AsyncResult<EventLogItem | null, Error> {
     return this.eventLogCollectionService.fetchById(eventId);
   }
 
@@ -105,7 +105,7 @@ export class ClientEventLogService {
     return () => unsubscribe();
   }
 
-  private async logEvent(eventLogItem: EventLogItem): AsyncResult<EventLogItem> {
+  private async logEvent(eventLogItem: EventLogItem): AsyncResult<EventLogItem, Error> {
     const {eventId} = eventLogItem;
 
     const createResult = await this.eventLogCollectionService.setDoc(eventId, eventLogItem);
@@ -130,12 +130,12 @@ export class ClientEventLogService {
   public async updateEventLogItem(
     eventId: EventId,
     item: Partial<Pick<EventLogItem, 'data'>>
-  ): AsyncResult<void> {
+  ): AsyncResult<void, Error> {
     const updateResult = await this.eventLogCollectionService.updateDoc(eventId, item);
     return prefixResultIfError(updateResult, 'Error updating event log item');
   }
 
-  public async deleteEventLogItem(eventId: EventId): AsyncResult<void> {
+  public async deleteEventLogItem(eventId: EventId): AsyncResult<void, Error> {
     const deleteResult = await this.eventLogCollectionService.deleteDoc(eventId);
     return prefixResultIfError(deleteResult, 'Error deleting event log item');
   }
@@ -147,7 +147,7 @@ export class ClientEventLogService {
     readonly feedItemId: FeedItemId;
     readonly feedItemActionType: FeedItemActionType;
     readonly isUndo: boolean;
-  }): AsyncResult<EventLogItem> {
+  }): AsyncResult<EventLogItem, Error> {
     const {feedItemId, feedItemActionType, isUndo} = args;
     const eventLogItemData = makeFeedItemActionEventLogItemData({
       feedItemId,
@@ -161,7 +161,7 @@ export class ClientEventLogService {
   public async logExperimentEnabledEvent(args: {
     readonly experimentId: ExperimentId;
     readonly experimentType: ExperimentType;
-  }): AsyncResult<EventLogItem> {
+  }): AsyncResult<EventLogItem, Error> {
     const {experimentId, experimentType} = args;
     const eventLogItemData = makeExperimentEnabledEventLogItemData({experimentId, experimentType});
     const eventLogItem = this.makeEventLogItem(eventLogItemData);
@@ -171,7 +171,7 @@ export class ClientEventLogService {
   public async logExperimentDisabledEvent(args: {
     readonly experimentId: ExperimentId;
     readonly experimentType: ExperimentType;
-  }): AsyncResult<EventLogItem> {
+  }): AsyncResult<EventLogItem, Error> {
     const {experimentId, experimentType} = args;
     const eventLogItemData = makeExperimentDisabledEventLogItemData({experimentId, experimentType});
     const eventLogItem = this.makeEventLogItem(eventLogItemData);
@@ -181,7 +181,7 @@ export class ClientEventLogService {
   public async logStringExperimentValueChangedEvent(args: {
     readonly experimentId: ExperimentId;
     readonly value: string;
-  }): AsyncResult<EventLogItem> {
+  }): AsyncResult<EventLogItem, Error> {
     const {experimentId, value} = args;
     const eventLogItemData = makeStringExperimentValueChangedEventLogItemData({
       experimentId,
@@ -195,7 +195,7 @@ export class ClientEventLogService {
     readonly feedSourceType: FeedSourceType;
     readonly userFeedSubscriptionId: UserFeedSubscriptionId;
     readonly isNewSubscription: boolean;
-  }): AsyncResult<EventLogItem> {
+  }): AsyncResult<EventLogItem, Error> {
     const {feedSourceType, userFeedSubscriptionId, isNewSubscription} = args;
     const eventLogItemData = makeSubscribedToFeedSourceEventLogItemData({
       feedSourceType,
@@ -209,7 +209,7 @@ export class ClientEventLogService {
   public async logUnsubscribedFromFeedSourceEvent(args: {
     readonly feedSourceType: FeedSourceType;
     readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-  }): AsyncResult<EventLogItem> {
+  }): AsyncResult<EventLogItem, Error> {
     const {feedSourceType, userFeedSubscriptionId} = args;
     const eventLogItemData = makeUnsubscribedFromFeedSourceEventLogItemData({
       feedSourceType,
@@ -221,7 +221,7 @@ export class ClientEventLogService {
 
   public async logThemePreferenceChangedEvent(args: {
     readonly themePreference: ThemePreference;
-  }): AsyncResult<EventLogItem> {
+  }): AsyncResult<EventLogItem, Error> {
     const {themePreference} = args;
     const eventLogItemData = makeThemePreferenceChangedEventLogItemData({themePreference});
     const eventLogItem = this.makeEventLogItem(eventLogItemData);

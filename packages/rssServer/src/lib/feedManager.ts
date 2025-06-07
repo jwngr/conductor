@@ -26,13 +26,13 @@ export class InMemoryRssFeedManager implements RssFeedManager {
     return this.feeds.get(feedId) ?? null;
   }
 
-  public addFeed(args: {feed: RssFeed}): Result<void> {
+  public addFeed(args: {feed: RssFeed}): Result<void, Error> {
     const {feed} = args;
     this.feeds.set(feed.id, feed);
     return makeSuccessResult(undefined);
   }
 
-  public async updateFeed(args: {feedId: string; items: RssFeedItem[]}): AsyncResult<void> {
+  public async updateFeed(args: {feedId: string; items: RssFeedItem[]}): AsyncResult<void, Error> {
     const {feedId, items} = args;
     const feed = this.feeds.get(feedId);
     if (!feed) {

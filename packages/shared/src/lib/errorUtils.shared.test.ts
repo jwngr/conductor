@@ -93,7 +93,7 @@ describe('syncTryAll', () => {
   });
 
   it('should handle empty array input', () => {
-    const results: Array<Result<unknown>> = [];
+    const results: Array<Result<unknown, Error>> = [];
 
     const combinedResult = syncTryAll(results);
 
@@ -101,7 +101,7 @@ describe('syncTryAll', () => {
   });
 
   it('should handle various result types', () => {
-    const results: Array<Result<unknown>> = [
+    const results: Array<Result<unknown, Error>> = [
       makeSuccessResult('string'),
       makeSuccessResult(123),
       makeSuccessResult({id: 'test'}),
@@ -125,7 +125,7 @@ describe('syncTryAll', () => {
 
     // Call syncTryAll with the custom array that will throw during execution
     // Using 'unknown' as a type assertion first before asserting as Array to fix TS error
-    const combinedResult = syncTryAll(errorArray as unknown as Array<Result<unknown>>);
+    const combinedResult = syncTryAll(errorArray as unknown as Array<Result<unknown, Error>>);
 
     expectErrorResult(combinedResult, 'arr.reduce is not a function');
   });
@@ -270,7 +270,7 @@ describe('asyncTryAll', () => {
     (circular as any).self = circular;
 
     const mockPromise = Promise.reject(circular);
-    const asyncResults = [mockPromise] as unknown as readonly [AsyncResult<unknown>];
+    const asyncResults = [mockPromise] as unknown as readonly [AsyncResult<unknown, Error>];
 
     const result = await asyncTryAll(asyncResults);
 

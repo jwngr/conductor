@@ -10,7 +10,7 @@ import {fromStorageActor} from '@shared/storage/actor.storage';
 /**
  * Attempts to parse an unknown value into an {@link Actor}.
  */
-export function parseActor(maybeActor: unknown): Result<Actor> {
+export function parseActor(maybeActor: unknown): Result<Actor, Error> {
   const parsedResult = parseZodResult(ActorSchema, maybeActor);
   if (!parsedResult.success) return prefixErrorResult(parsedResult, 'Invalid actor');
 

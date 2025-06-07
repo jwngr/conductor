@@ -39,7 +39,7 @@ const generateHierarchicalSummaryFlow = ai.defineFlow(
   }
 );
 
-export async function generateHierarchicalSummary(content: string): AsyncResult<string> {
+export async function generateHierarchicalSummary(content: string): AsyncResult<string, Error> {
   const summaryResult = await asyncTry(async () => generateHierarchicalSummaryFlow(content));
   return prefixResultIfError(summaryResult, 'Error generating hierarchical summary');
 }

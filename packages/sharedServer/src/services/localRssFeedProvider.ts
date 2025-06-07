@@ -44,7 +44,7 @@ export class LocalRssFeedProvider implements RssFeedProvider {
     return `http://localhost:${this.port}`;
   }
 
-  public async subscribeToUrl(feedUrl: string): AsyncResult<void> {
+  public async subscribeToUrl(feedUrl: string): AsyncResult<void, Error> {
     const result = await requestPost<undefined>(`${this.getApiBaseUrl()}/subscribe`, {
       feedUrl,
       callbackUrl: this.callbackUrl,
@@ -60,7 +60,7 @@ export class LocalRssFeedProvider implements RssFeedProvider {
     return makeSuccessResult(result.value);
   }
 
-  public async unsubscribeFromUrl(feedUrl: string): AsyncResult<void> {
+  public async unsubscribeFromUrl(feedUrl: string): AsyncResult<void, Error> {
     return await requestPost<undefined>(`${this.getApiBaseUrl()}/unsubscribe`, {feedUrl});
   }
 }

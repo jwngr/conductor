@@ -13,7 +13,7 @@ import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.serv
 export async function handleFeedItemImport(args: {
   readonly feedItem: FeedItem;
   readonly feedItemsService: ServerFeedItemsService;
-}): AsyncResult<void> {
+}): AsyncResult<void, Error> {
   const {feedItem, feedItemsService} = args;
   const feedItemId = feedItem.feedItemId;
 

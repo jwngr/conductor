@@ -12,14 +12,14 @@ export function makeSuccessResult<T>(value: T): SuccessResult<T> {
 /**
  * Creates an error result.
  */
-export function makeErrorResult<E = Error>(error: E): ErrorResult<E> {
+export function makeErrorResult<E>(error: E): ErrorResult<E> {
   return {success: false, error};
 }
 
 /**
  * Partitions an array of results into successful and errored results.
  */
-export function partitionResults<T, E = Error>(
+export function partitionResults<T, E>(
   results: ReadonlyArray<Result<T, E>>
 ): {
   readonly successes: ReadonlyArray<SuccessResult<T>>;

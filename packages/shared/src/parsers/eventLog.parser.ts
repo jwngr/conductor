@@ -11,7 +11,7 @@ import {fromStorageEventLogItem} from '@shared/storage/eventLog.storage';
 /**
  * Attempts to parse a plain string into an {@link EventId}.
  */
-export function parseEventId(maybeEventId: string): Result<EventId> {
+export function parseEventId(maybeEventId: string): Result<EventId, Error> {
   const parsedResult = parseZodResult(EventIdSchema, maybeEventId);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid event ID');
@@ -22,7 +22,7 @@ export function parseEventId(maybeEventId: string): Result<EventId> {
 /**
  * Attempts to parse an unknown value into an {@link EventLogItem}.
  */
-export function parseEventLogItem(maybeEventLogItem: unknown): Result<EventLogItem> {
+export function parseEventLogItem(maybeEventLogItem: unknown): Result<EventLogItem, Error> {
   const parsedResult = parseZodResult(EventLogItemSchema, maybeEventLogItem);
   if (!parsedResult.success) return prefixErrorResult(parsedResult, 'Invalid event log item');
 

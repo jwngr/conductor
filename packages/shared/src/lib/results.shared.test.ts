@@ -40,11 +40,11 @@ describe('makeErrorResult', () => {
 
 describe('partitionResults', () => {
   it('partitions mixed results correctly', () => {
-    const results: Array<Result<number, string>> = [
+    const results: Array<Result<number, Error>> = [
       makeSuccessResult(1),
-      makeErrorResult('error1'),
+      makeErrorResult(new Error('error1')),
       makeSuccessResult(2),
-      makeErrorResult('error2'),
+      makeErrorResult(new Error('error2')),
       makeSuccessResult(3),
     ];
 
@@ -62,7 +62,7 @@ describe('partitionResults', () => {
   });
 
   it('handles all success results', () => {
-    const results: Array<Result<string>> = [
+    const results: Array<Result<string, Error>> = [
       makeSuccessResult('a'),
       makeSuccessResult('b'),
       makeSuccessResult('c'),
@@ -94,7 +94,7 @@ describe('partitionResults', () => {
   });
 
   it('handles empty array', () => {
-    const results: Array<Result<unknown>> = [];
+    const results: Array<Result<unknown, Error>> = [];
 
     const {successes, errors} = partitionResults(results);
 
@@ -103,7 +103,7 @@ describe('partitionResults', () => {
   });
 
   it('preserves readonly arrays', () => {
-    const results: ReadonlyArray<Result<number>> = [
+    const results: ReadonlyArray<Result<number, Error>> = [
       makeSuccessResult(1),
       makeErrorResult(new Error('test')),
     ];

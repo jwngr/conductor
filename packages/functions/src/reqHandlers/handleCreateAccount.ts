@@ -12,7 +12,7 @@ export async function handleCreateAccount(args: {
   readonly firebaseUid: string;
   readonly email: string | undefined;
   readonly accountsService: ServerAccountsService;
-}): AsyncResult<void> {
+}): AsyncResult<void, Error> {
   const {firebaseUid, email, accountsService} = args;
 
   const parsedAccountIdResult = parseAccountId(firebaseUid);

@@ -35,11 +35,11 @@ export class ServerEventLogService {
     this.collectionService = args.collectionService;
   }
 
-  public async fetchById(eventId: EventId): AsyncResult<EventLogItem | null> {
+  public async fetchById(eventId: EventId): AsyncResult<EventLogItem | null, Error> {
     return this.collectionService.fetchById(eventId);
   }
 
-  private async logEvent(eventLogItem: EventLogItem): AsyncResult<EventLogItem> {
+  private async logEvent(eventLogItem: EventLogItem): AsyncResult<EventLogItem, Error> {
     const {eventId} = eventLogItem;
 
     const createResult = await this.collectionService.setDoc(eventId, eventLogItem);
@@ -68,12 +68,12 @@ export class ServerEventLogService {
   public async updateEventLogItem(
     eventId: EventId,
     item: Partial<WithFieldValue<Pick<EventLogItem, 'data'>>>
-  ): AsyncResult<void> {
+  ): AsyncResult<void, Error> {
     const updateResult = await this.collectionService.updateDoc(eventId, item);
     return prefixResultIfError(updateResult, 'Error updating event log item');
   }
 
-  public async deleteEventLogItem(eventId: EventId): AsyncResult<void> {
+  public async deleteEventLogItem(eventId: EventId): AsyncResult<void, Error> {
     const deleteResult = await this.collectionService.deleteDoc(eventId);
     return prefixResultIfError(deleteResult, 'Error deleting event log item');
   }
@@ -84,7 +84,7 @@ export class ServerEventLogService {
   public async logFeedItemImportedEvent(args: {
     readonly accountId: AccountId;
     readonly feedItemId: FeedItemId;
-  }): AsyncResult<EventLogItem> {
+  }): AsyncResult<EventLogItem, Error> {
     const {accountId, feedItemId} = args;
     const eventLogItemData = makeFeedItemImportedEventLogItemData({feedItemId});
     const eventLogItem = this.makeEventLogItem({accountId, data: eventLogItemData});

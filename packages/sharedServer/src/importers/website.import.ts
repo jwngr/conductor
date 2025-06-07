@@ -41,7 +41,7 @@ export class WebsiteFeedItemImporter {
     readonly url: string;
     readonly feedItemId: FeedItemId;
     readonly accountId: AccountId;
-  }): AsyncResult<string> {
+  }): AsyncResult<string, Error> {
     const {url, feedItemId, accountId} = args;
 
     // TODO: Extend the import functionality here:
@@ -89,7 +89,7 @@ export class WebsiteFeedItemImporter {
     readonly html: string;
     readonly feedItemId: FeedItemId;
     readonly accountId: AccountId;
-  }): AsyncResult<void> {
+  }): AsyncResult<void, Error> {
     const {url, html, feedItemId, accountId} = args;
 
     const mainContentResult = await extractMainContent({html, url});
@@ -150,7 +150,7 @@ export class WebsiteFeedItemImporter {
     readonly url: string;
     readonly feedItemId: FeedItemId;
     readonly accountId: AccountId;
-  }): AsyncResult<void> {
+  }): AsyncResult<void, Error> {
     const {url, feedItemId, accountId} = args;
 
     const fetchDataResult = await this.firecrawlService.fetchUrl(url);
@@ -197,7 +197,7 @@ export class WebsiteFeedItemImporter {
   private async generateAndSaveHierarchicalSummary(args: {
     readonly markdown: string;
     readonly feedItemId: FeedItemId;
-  }): AsyncResult<void> {
+  }): AsyncResult<void, Error> {
     const {markdown, feedItemId} = args;
 
     const summaryResult = await generateHierarchicalSummary(markdown);
@@ -214,7 +214,7 @@ export class WebsiteFeedItemImporter {
     readonly feedItemId: FeedItemId;
     readonly accountId: AccountId;
     readonly url: string;
-  }): AsyncResult<void> {
+  }): AsyncResult<void, Error> {
     const {feedItemId, accountId, url} = args;
 
     const trimmedUrl = url.trim();

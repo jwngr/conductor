@@ -27,7 +27,7 @@ export function toStorageAccountSettings(
  */
 export function fromStorageAccountSettings(
   accountSettingsFromStorage: AccountSettingsFromStorage
-): Result<AccountSettings> {
+): Result<AccountSettings, Error> {
   const parsedAccountIdResult = parseAccountId(accountSettingsFromStorage.accountId);
   if (!parsedAccountIdResult.success) return makeErrorResult(parsedAccountIdResult.error);
 

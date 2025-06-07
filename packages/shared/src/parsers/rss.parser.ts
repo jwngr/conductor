@@ -11,7 +11,7 @@ import {RssFeedProviderTypeSchema} from '@shared/schemas/rss.schema';
  */
 export function parseRssFeedProviderType(
   maybeRssFeedProviderType: string
-): Result<RssFeedProviderType> {
+): Result<RssFeedProviderType, Error> {
   const parsedResult = parseZodResult(RssFeedProviderTypeSchema, maybeRssFeedProviderType);
   return prefixResultIfError(parsedResult, 'Invalid RSS feed provider type');
 }

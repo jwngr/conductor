@@ -258,7 +258,7 @@ describe('batchSyncResults', () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.value.length).toBe(5);
-      result.value.forEach((res: Result<number>, i: number) => {
+      result.value.forEach((res: Result<number, Error>, i: number) => {
         expectSuccessResult(res, i + 1);
       });
     }
@@ -312,7 +312,7 @@ describe('batchAsyncResults', () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.value.length).toBe(5);
-      result.value.forEach((res: Result<number>, i: number) => {
+      result.value.forEach((res: Result<number, Error>, i: number) => {
         expectSuccessResult(res, i + 1);
       });
     }

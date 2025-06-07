@@ -4,7 +4,7 @@ import {syncTry} from '@shared/lib/errorUtils.shared';
 
 import type {Result} from '@shared/types/results.types';
 
-export function parseCsv<T>(csvString: string): Result<readonly T[]> {
+export function parseCsv<T>(csvString: string): Result<readonly T[], Error> {
   const rawCsvRecordsResult = syncTry(
     () =>
       parseCsvFromLib(csvString, {

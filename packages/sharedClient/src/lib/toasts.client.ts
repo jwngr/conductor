@@ -14,7 +14,7 @@ const DEFAULT_UNDO_TIMEOUT_MS = 5_000;
 
 export function toastWithUndo(args: {
   readonly message: string | React.ReactNode;
-  readonly undoAction: Supplier<AsyncResult<void>>;
+  readonly undoAction: Supplier<AsyncResult<void, Error>>;
   readonly undoMessage: string | React.ReactNode;
   readonly undoFailureMessage: string | React.ReactNode;
   readonly options?: ExternalToast;
