@@ -17,6 +17,7 @@ export function initServices(args: {readonly accountId: AccountId}): Initialized
   const eventLogService = new ClientEventLogService({
     accountId,
     environment: Environment.Extension,
+    firebaseService,
   });
 
   // Feed items service.

@@ -12,28 +12,40 @@ import type {AsyncResult} from '@shared/types/results.types';
 import type {ThemePreference} from '@shared/types/theme.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
+import type {AccountSettingsFromStorage} from '@shared/schemas/accountSettings.schema';
 import {toStorageAccountSettings} from '@shared/storage/accountSettings.storage';
 
 import type {ClientEventLogService} from '@sharedClient/services/eventLog.client';
+import type {ClientFirebaseService} from '@sharedClient/services/firebase.client';
+import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
 import {makeClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
 
-const clientAccountSettingsCollectionService = makeClientFirestoreCollectionService({
-  collectionPath: ACCOUNT_SETTINGS_DB_COLLECTION,
-  toStorage: toStorageAccountSettings,
-  fromStorage: parseAccountSettings,
-  parseId: parseAccountId,
-});
+type ClientAccountSettingsCollectionService = ClientFirestoreCollectionService<
+  AccountId,
+  AccountSettings,
+  AccountSettingsFromStorage
+>;
 
 export class ClientAccountSettingsService {
   private readonly accountId: AccountId;
   private readonly eventLogService: ClientEventLogService;
+  private readonly accountSettingsCollectionService: ClientAccountSettingsCollectionService;
 
   constructor(args: {
     readonly accountId: AccountId;
     readonly eventLogService: ClientEventLogService;
+    readonly firebaseService: ClientFirebaseService;
   }) {
     this.accountId = args.accountId;
     this.eventLogService = args.eventLogService;
+
+    this.accountSettingsCollectionService = makeClientFirestoreCollectionService({
+      firebaseService: args.firebaseService,
+      collectionPath: ACCOUNT_SETTINGS_DB_COLLECTION,
+      toStorage: toStorageAccountSettings,
+      fromStorage: parseAccountSettings,
+      parseId: parseAccountId,
+    });
   }
 
   public watchAccountSettings(
@@ -54,7 +66,7 @@ export class ClientAccountSettingsService {
       onError(betterError);
     };
 
-    return clientAccountSettingsCollectionService.watchDoc(
+    return this.accountSettingsCollectionService.watchDoc(
       this.accountId,
       handleOnData,
       handleOnError
@@ -62,7 +74,7 @@ export class ClientAccountSettingsService {
   }
 
   public async updateThemePreference(themePreference: ThemePreference): AsyncResult<void, Error> {
-    const result = await clientAccountSettingsCollectionService.updateDoc(this.accountId, {
+    const result = await this.accountSettingsCollectionService.updateDoc(this.accountId, {
       themePreference,
     });
     if (result.success) {

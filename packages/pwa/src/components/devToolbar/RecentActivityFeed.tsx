@@ -14,6 +14,8 @@ import {H4, P} from '@src/components/atoms/Text';
 import {ErrorArea} from '@src/components/errors/ErrorArea';
 import {LoadingArea} from '@src/components/loading/LoadingArea';
 
+import {firebaseService} from '@src/lib/firebase.pwa';
+
 const RecentActivityFeedItem: React.FC<{
   readonly eventLogItem: EventLogItem;
 }> = ({eventLogItem}) => {
@@ -67,7 +69,7 @@ const LoadedRecentActivityFeed: React.FC<{
 };
 
 export const RecentActivityFeed: React.FC = () => {
-  const eventLogItemsState = useEventLogItems();
+  const eventLogItemsState = useEventLogItems({firebaseService});
 
   switch (eventLogItemsState.status) {
     case AsyncStatus.Idle:

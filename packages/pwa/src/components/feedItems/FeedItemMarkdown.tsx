@@ -22,6 +22,8 @@ import {ErrorArea} from '@src/components/errors/ErrorArea';
 import {LoadingArea} from '@src/components/loading/LoadingArea';
 import {Markdown} from '@src/components/Markdown';
 
+import {firebaseService} from '@src/lib/firebase.pwa';
+
 type RenderStrategy = 'firecrawl' | 'defuddle';
 
 const MarkdownErrorArea: React.FC<{readonly error: Error; readonly title: string}> = (args) => {
@@ -37,7 +39,7 @@ const MarkdownErrorArea: React.FC<{readonly error: Error; readonly title: string
 };
 
 const FirecrawlMarkdownRenderer: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
-  const markdownState = useFeedItemMarkdown(feedItem);
+  const markdownState = useFeedItemMarkdown({feedItem, firebaseService});
 
   switch (markdownState.status) {
     case AsyncStatus.Idle:
@@ -55,7 +57,7 @@ const FirecrawlMarkdownRenderer: React.FC<{readonly feedItem: FeedItem}> = ({fee
 };
 
 const DefuddleMarkdownRenderer: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
-  const markdownState = useFeedItemDefuddleMarkdown(feedItem);
+  const markdownState = useFeedItemDefuddleMarkdown({feedItem, firebaseService});
 
   switch (markdownState.status) {
     case AsyncStatus.Idle:

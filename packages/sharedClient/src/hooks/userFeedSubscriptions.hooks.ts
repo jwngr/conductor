@@ -6,36 +6,39 @@ import type {
   UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
 
-import {firebaseService} from '@sharedClient/services/firebase.client';
-import {
-  clientUserFeedSubscriptionsCollectionService,
-  ClientUserFeedSubscriptionsService,
-} from '@sharedClient/services/userFeedSubscriptions.client';
+import type {ClientFirebaseService} from '@sharedClient/services/firebase.client';
+import {ClientUserFeedSubscriptionsService} from '@sharedClient/services/userFeedSubscriptions.client';
 
 import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 import {useEventLogService} from '@sharedClient/hooks/eventLog.hooks';
 
-export function useUserFeedSubscriptionsService(): ClientUserFeedSubscriptionsService {
+export function useUserFeedSubscriptionsService(args: {
+  readonly firebaseService: ClientFirebaseService;
+}): ClientUserFeedSubscriptionsService {
+  const {firebaseService} = args;
+
   const loggedInAccount = useLoggedInAccount();
-  const eventLogService = useEventLogService();
+  const eventLogService = useEventLogService({firebaseService});
 
   const userFeedSubscriptionsService = useMemo(() => {
     return new ClientUserFeedSubscriptionsService({
       accountId: loggedInAccount.accountId,
-      functions: firebaseService.functions,
-      eventLogService: eventLogService,
-      userFeedSubscriptionsCollectionService: clientUserFeedSubscriptionsCollectionService,
+      firebaseService,
+      eventLogService,
     });
-  }, [loggedInAccount.accountId, eventLogService]);
+  }, [loggedInAccount.accountId, eventLogService, firebaseService]);
 
   return userFeedSubscriptionsService;
 }
 
-export function useUserFeedSubscription(
-  userFeedSubscriptionId: UserFeedSubscriptionId
-): AsyncState<UserFeedSubscription | null> {
-  const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
+export function useUserFeedSubscription(args: {
+  readonly firebaseService: ClientFirebaseService;
+  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+}): AsyncState<UserFeedSubscription | null> {
+  const {firebaseService, userFeedSubscriptionId} = args;
+
+  const userFeedSubscriptionsService = useUserFeedSubscriptionsService({firebaseService});
 
   const {asyncState, setPending, setError, setSuccess} =
     useAsyncState<UserFeedSubscription | null>();
@@ -54,8 +57,12 @@ export function useUserFeedSubscription(
   return asyncState;
 }
 
-export function useUserFeedSubscriptions(): AsyncState<UserFeedSubscription[]> {
-  const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
+export function useUserFeedSubscriptions(args: {
+  readonly firebaseService: ClientFirebaseService;
+}): AsyncState<UserFeedSubscription[]> {
+  const {firebaseService} = args;
+
+  const userFeedSubscriptionsService = useUserFeedSubscriptionsService({firebaseService});
 
   const {asyncState, setPending, setError, setSuccess} = useAsyncState<UserFeedSubscription[]>();
 

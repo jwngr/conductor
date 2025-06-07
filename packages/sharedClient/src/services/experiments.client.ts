@@ -22,17 +22,19 @@ import type {
 import type {AsyncResult} from '@shared/types/results.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
+import type {AccountExperimentsStateFromStorage} from '@shared/schemas/experiments.schema';
 import {toStorageAccountExperimentsState} from '@shared/storage/experiments.storage';
 
 import type {ClientEventLogService} from '@sharedClient/services/eventLog.client';
+import type {ClientFirebaseService} from '@sharedClient/services/firebase.client';
 import {makeClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
 
-const clientAccountExperimentsCollectionService = makeClientFirestoreCollectionService({
-  collectionPath: ACCOUNT_EXPERIMENTS_DB_COLLECTION,
-  toStorage: toStorageAccountExperimentsState,
-  fromStorage: parseAccountExperimentsState,
-  parseId: parseAccountId,
-});
+type ClientAccountExperimentsCollectionService = ClientFirestoreCollectionService<
+  AccountId,
+  AccountExperimentsState,
+  AccountExperimentsStateFromStorage
+>;
 
 export class ClientExperimentsService {
   private readonly environment: ClientEnvironment;
@@ -41,17 +43,27 @@ export class ClientExperimentsService {
   private readonly isInternalAccount: boolean;
   private readonly eventLogService: ClientEventLogService;
   private accountExperimentsState: AccountExperimentsState | null = null;
+  private readonly accountExperimentsCollectionService: ClientAccountExperimentsCollectionService;
 
   constructor(args: {
     readonly accountId: AccountId;
     readonly isInternalAccount: boolean;
     readonly environment: ClientEnvironment;
     readonly eventLogService: ClientEventLogService;
+    readonly firebaseService: ClientFirebaseService;
   }) {
     this.accountId = args.accountId;
     this.isInternalAccount = args.isInternalAccount;
     this.environment = args.environment;
     this.eventLogService = args.eventLogService;
+
+    this.accountExperimentsCollectionService = makeClientFirestoreCollectionService({
+      firebaseService: args.firebaseService,
+      collectionPath: ACCOUNT_EXPERIMENTS_DB_COLLECTION,
+      toStorage: toStorageAccountExperimentsState,
+      fromStorage: parseAccountExperimentsState,
+      parseId: parseAccountId,
+    });
 
     this.unsubscribeWatcher = this.watchAccountExperimentsState((accountExperimentsState) => {
       this.accountExperimentsState = accountExperimentsState;
@@ -68,7 +80,7 @@ export class ClientExperimentsService {
       callback(this.accountExperimentsState);
     }
 
-    return clientAccountExperimentsCollectionService.watchDoc(
+    return this.accountExperimentsCollectionService.watchDoc(
       this.accountId,
       (accountExperimentsState) => {
         if (!accountExperimentsState) {
@@ -126,7 +138,7 @@ export class ClientExperimentsService {
     const pathToUpdate = `experimentOverrides.${experimentId}`;
     const experimentOverride = makeBooleanExperimentOverride({experimentId, isEnabled});
 
-    const updateResult = await clientAccountExperimentsCollectionService.updateDoc(this.accountId, {
+    const updateResult = await this.accountExperimentsCollectionService.updateDoc(this.accountId, {
       [pathToUpdate]: experimentOverride,
     });
 
@@ -161,7 +173,7 @@ export class ClientExperimentsService {
       value,
     });
 
-    const updateResult = await clientAccountExperimentsCollectionService.updateDoc(this.accountId, {
+    const updateResult = await this.accountExperimentsCollectionService.updateDoc(this.accountId, {
       [pathToUpdate]: experimentOverride,
     });
 

@@ -36,11 +36,13 @@ import type {
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 import type {YouTubeChannelId} from '@shared/types/youtube.types';
 
+import type {UserFeedSubscriptionFromStorage} from '@shared/schemas/userFeedSubscriptions.schema';
 import {toStorageUserFeedSubscription} from '@shared/storage/userFeedSubscriptions.storage';
 
 import type {ClientEventLogService} from '@sharedClient/services/eventLog.client';
 import type {ClientFirebaseService} from '@sharedClient/services/firebase.client';
 import {makeClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
 
 import {toast} from '@sharedClient/lib/toasts.client';
 
@@ -50,17 +52,17 @@ interface SubscribeToRssFeedRequest {
 
 type CallSubscribeToRssFeedFn = HttpsCallable<SubscribeToRssFeedRequest, void>;
 
-const clientUserFeedSubscriptionsCollectionService = makeClientFirestoreCollectionService({
-  collectionPath: USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
-  toStorage: toStorageUserFeedSubscription,
-  fromStorage: parseUserFeedSubscription,
-  parseId: parseUserFeedSubscriptionId,
-});
+type UserFeedSubscriptionsCollectionService = ClientFirestoreCollectionService<
+  UserFeedSubscriptionId,
+  UserFeedSubscription,
+  UserFeedSubscriptionFromStorage
+>;
 
 export class ClientUserFeedSubscriptionsService {
   private readonly accountId: AccountId;
   private readonly firebaseService: ClientFirebaseService;
   private readonly eventLogService: ClientEventLogService;
+  private readonly userFeedSubscriptionsCollectionService: UserFeedSubscriptionsCollectionService;
 
   constructor(args: {
     readonly accountId: AccountId;
@@ -70,6 +72,14 @@ export class ClientUserFeedSubscriptionsService {
     this.accountId = args.accountId;
     this.firebaseService = args.firebaseService;
     this.eventLogService = args.eventLogService;
+
+    this.userFeedSubscriptionsCollectionService = makeClientFirestoreCollectionService({
+      firebaseService: args.firebaseService,
+      collectionPath: USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
+      toStorage: toStorageUserFeedSubscription,
+      fromStorage: parseUserFeedSubscription,
+      parseId: parseUserFeedSubscriptionId,
+    });
   }
 
   /**
@@ -152,7 +162,7 @@ export class ClientUserFeedSubscriptionsService {
   private async fetchExistingRssFeedSubscription(
     url: URL
   ): AsyncResult<RssUserFeedSubscription | null, Error> {
-    const result = await clientUserFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
+    const result = await this.userFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
       where('accountId', '==', this.accountId),
       where('feedSourceType', '==', FeedSourceType.RSS),
       where('url', '==', url.href),
@@ -166,7 +176,7 @@ export class ClientUserFeedSubscriptionsService {
   private async fetchExistingYouTubeChannelSubscription(
     channelId: YouTubeChannelId
   ): AsyncResult<YouTubeChannelUserFeedSubscription | null, Error> {
-    const result = await clientUserFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
+    const result = await this.userFeedSubscriptionsCollectionService.fetchFirstQueryDoc([
       where('accountId', '==', this.accountId),
       where('feedSourceType', '==', FeedSourceType.YouTubeChannel),
       where('channelId', '==', channelId),
@@ -208,7 +218,7 @@ export class ClientUserFeedSubscriptionsService {
     const {accountId, feedSourceType, userFeedSubscriptionId} = userFeedSubscription;
 
     // Save to Firestore.
-    const saveResult = await clientUserFeedSubscriptionsCollectionService.setDoc(
+    const saveResult = await this.userFeedSubscriptionsCollectionService.setDoc(
       userFeedSubscriptionId,
       userFeedSubscription
     );
@@ -240,7 +250,7 @@ export class ClientUserFeedSubscriptionsService {
       Pick<UserFeedSubscription, 'isActive' | 'unsubscribedTime' | 'deliverySchedule'>
     >
   ): AsyncResult<void, Error> {
-    const updateResult = await clientUserFeedSubscriptionsCollectionService.updateDoc(
+    const updateResult = await this.userFeedSubscriptionsCollectionService.updateDoc(
       userFeedSubscriptionId,
       update
     );
@@ -257,7 +267,7 @@ export class ClientUserFeedSubscriptionsService {
   }): Unsubscribe {
     const {userFeedSubscriptionId, successCallback, errorCallback} = args;
 
-    const unsubscribe = clientUserFeedSubscriptionsCollectionService.watchDoc(
+    const unsubscribe = this.userFeedSubscriptionsCollectionService.watchDoc(
       userFeedSubscriptionId,
       successCallback,
       errorCallback
@@ -274,13 +284,13 @@ export class ClientUserFeedSubscriptionsService {
   }): Unsubscribe {
     const {successCallback, errorCallback} = args;
 
-    const itemsQuery = clientUserFeedSubscriptionsCollectionService.query([
+    const itemsQuery = this.userFeedSubscriptionsCollectionService.query([
       where('accountId', '==', this.accountId),
       orderBy('createdTime', 'desc'),
       limit(100),
     ]);
 
-    const unsubscribe = clientUserFeedSubscriptionsCollectionService.watchDocs(
+    const unsubscribe = this.userFeedSubscriptionsCollectionService.watchDocs(
       itemsQuery,
       successCallback,
       errorCallback

@@ -11,9 +11,11 @@ import {ClientExperimentsService} from '@sharedClient/services/experiments.clien
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 import {useEventLogService} from '@sharedClient/hooks/eventLog.hooks';
 
+import {firebaseService} from '@src/lib/firebase.pwa';
+
 export const PWAExperimentsListener: React.FC = () => {
   const loggedInAccount = useLoggedInAccount();
-  const eventLogService = useEventLogService();
+  const eventLogService = useEventLogService({firebaseService});
   const {setExperiments, setExperimentsService, resetExperimentsStore} = useExperimentsStore();
 
   useEffect(() => {
@@ -22,6 +24,7 @@ export const PWAExperimentsListener: React.FC = () => {
       accountId: loggedInAccount.accountId,
       isInternalAccount: isInternalAccount({email: loggedInAccount.email}),
       eventLogService,
+      firebaseService,
     });
 
     setExperimentsService(pwaExperimentsService);

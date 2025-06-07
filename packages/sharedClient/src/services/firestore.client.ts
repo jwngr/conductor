@@ -308,16 +308,18 @@ export function makeClientFirestoreCollectionService<
   ItemData extends DocumentData,
   ItemDataFromStorage extends DocumentData,
 >(args: {
+  readonly firebaseService: ClientFirebaseService;
   readonly collectionPath: string;
   readonly parseId: Func<string, Result<ItemId, Error>>;
   readonly toStorage: Func<ItemData, ItemDataFromStorage>;
   readonly fromStorage: Func<ItemDataFromStorage, Result<ItemData, Error>>;
 }): ClientFirestoreCollectionService<ItemId, ItemData, ItemDataFromStorage> {
-  const {collectionPath, parseId, toStorage, fromStorage} = args;
+  const {firebaseService, collectionPath, parseId, toStorage, fromStorage} = args;
 
   const firestoreConverter = makeFirestoreDataConverter(toStorage, fromStorage);
 
   const collectionService = new ClientFirestoreCollectionService({
+    firebaseService,
     collectionPath,
     parseId,
     converter: firestoreConverter,
