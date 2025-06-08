@@ -8,15 +8,18 @@ import {logger} from '@shared/services/logger.shared';
 
 import {asyncTry} from '@shared/lib/errorUtils.shared';
 
+import type {AsyncResult} from '@shared/types/results.types';
+
 export const serverTimestampSupplier = (): FieldValue => FieldValue.serverTimestamp();
 
-const enableTelemetryResult = await asyncTry(async () =>
-  enableFirebaseTelemetry({forceDevExport: false})
-);
-
-if (!enableTelemetryResult.success) {
-  const message = 'Failed to enable Firebase telemetry. Continuing without telemetry.';
-  logger.warn(message, {error: enableTelemetryResult.error});
+async function enableTelemetry(): AsyncResult<void, Error> {
+  const enableTelemetryResult = await asyncTry(async () =>
+    enableFirebaseTelemetry({forceDevExport: false})
+  );
+  if (!enableTelemetryResult.success) {
+    const message = 'Failed to enable Firebase telemetry. Continuing without telemetry.';
+    logger.warn(message, {error: enableTelemetryResult.error});
+  }
 }
 
 export class ServerFirebaseService {
@@ -34,6 +37,9 @@ export class ServerFirebaseService {
     }
 
     admin.initializeApp();
+
+    // Enable telemetry, ignoring errors.
+    void enableTelemetry();
 
     this.storageInstance = admin.storage();
 
