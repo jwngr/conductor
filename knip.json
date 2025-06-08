@@ -1,10 +1,25 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "workspaces": {
+    "packages/shared": {
+      "entry": [],
+      "project": "src/**/*.{ts,js}",
+      "ignoreDependencies": []
+    },
+    "packages/sharedClient": {
+      "entry": [],
+      "project": "src/**/*.{ts,tsx,js,jsx}",
+      "ignoreDependencies": []
+    },
+    "packages/sharedServer": {
+      "entry": [],
+      "project": "src/**/*.{ts,js}",
+      "ignoreDependencies": []
+    },
     "packages/pwa": {
       "entry": ["src/index.tsx", "index.html"],
       "project": "src/**/*.{ts,tsx,js,jsx}",
-      "ignoreDependencies": []
+      "ignoreDependencies": ["tailwindcss"]
     },
     "packages/extension": {
       "entry": ["src/index.tsx", "src/background.ts"],
