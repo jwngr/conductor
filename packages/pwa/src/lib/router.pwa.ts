@@ -1,4 +1,4 @@
-import {ToPathOption} from '@tanstack/react-router';
+import type {ToPathOption} from '@tanstack/react-router';
 import {toast} from 'sonner';
 
 import {findStoriesSidebarItemById} from '@shared/lib/stories.shared';
