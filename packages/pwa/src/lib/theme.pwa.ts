@@ -28,7 +28,7 @@ export function toPrefersColorScheme(themeType: ThemePreference): BrowserPrefers
 /**
  * Returns the system theme from the browser's "prefers color scheme" setting.
  */
-export function getSystemThemeFromWindow(): BrowserPrefersColorScheme {
+function getSystemThemeFromWindow(): BrowserPrefersColorScheme {
   const matchesDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
   return matchesDarkMode ? 'dark' : 'light';
 }

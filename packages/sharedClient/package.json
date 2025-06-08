@@ -10,10 +10,6 @@
     "react": "^19.1.0",
     "zustand": "^5.0.5"
   },
-  "devDependencies": {
-    "@types/react": "^19.1.6",
-    "jest-environment-jsdom": "^29.7.0"
-  },
   "scripts": {
     "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",
     "validate:lint": "eslint src",
