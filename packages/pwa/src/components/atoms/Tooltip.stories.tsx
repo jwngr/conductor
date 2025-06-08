@@ -3,7 +3,8 @@ import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {toast} from '@sharedClient/lib/toasts.client';
 
 import {Button} from '@src/components/atoms/Button';
-import {Text} from '@src/components/atoms/Text';
+import {FlexRow} from '@src/components/atoms/Flex';
+import {P} from '@src/components/atoms/Text';
 import {Tooltip} from '@src/components/atoms/Tooltip';
 import {StorySection} from '@src/components/stories/StorySection';
 
@@ -11,18 +12,18 @@ export const TooltipStories: React.FC = () => {
   return (
     <>
       <StorySection title="Basic tooltips">
-        <div className="flex flex-row items-center gap-2">
+        <FlexRow gap={4}>
           <Tooltip content="This is a tooltip" trigger={<Button>Hover me</Button>} />
           <Tooltip
             trigger={<Button>Hover for custom content</Button>}
             content={
-              <div className="flex flex-row items-center gap-2">
-                <Text>Custom content</Text>
-                <Text bold>with formatting</Text>
-              </div>
+              <FlexRow gap={4}>
+                <P>Custom content</P>
+                <P bold>with formatting</P>
+              </FlexRow>
             }
           />
-        </div>
+        </FlexRow>
       </StorySection>
 
       <StorySection title="Tooltip with keyboard shortcut">

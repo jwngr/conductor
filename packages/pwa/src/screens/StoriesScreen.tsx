@@ -34,7 +34,7 @@ import {IconStories} from '@src/components/atoms/Icon.stories';
 import {InputStories} from '@src/components/atoms/Input.stories';
 import {LinkStories} from '@src/components/atoms/Link.stories';
 import {SpacerStories} from '@src/components/atoms/Spacer.stories';
-import {Text} from '@src/components/atoms/Text';
+import {H1, H6, P} from '@src/components/atoms/Text';
 import {TextStories} from '@src/components/atoms/Text.stories';
 import {TextIconStories} from '@src/components/atoms/TextIcon.stories';
 import {ToastStories} from '@src/components/atoms/Toast.stories';
@@ -142,12 +142,10 @@ const SidebarSection: React.FC<{
 }> = ({title, items, activeSidebarItem, onItemClick}) => {
   return (
     <FlexColumn gap={2}>
-      <Text as="h6" light>
-        {title}
-      </Text>
+      <H6 light>{title}</H6>
       <FlexColumn>
         {items.map((item) => (
-          <Text
+          <P
             key={item.title}
             className={styles.storyGroupSidebarItem({
               isActive: activeSidebarItem.sidebarItemId === item.sidebarItemId,
@@ -155,7 +153,7 @@ const SidebarSection: React.FC<{
             onClick={() => onItemClick(item)}
           >
             {item.title}
-          </Text>
+          </P>
         ))}
       </FlexColumn>
     </FlexColumn>
@@ -170,12 +168,12 @@ const StoriesLeftSidebar: React.FC<{
     <FlexColumn overflow="auto" className={styles.storiesLeftSidebar}>
       <div className="pt-4 pl-4">
         <NavItemLink navItemId={DEFAULT_NAV_ITEM.id}>
-          <Text as="p" underline="hover" light>
+          <P underline="hover" light>
             ← Back to app
-          </Text>
+          </P>
         </NavItemLink>
       </div>
-      <FlexColumn flex={1} gap={6} padding={4}>
+      <FlexColumn flex gap={6} padding={4}>
         <SidebarSection
           title="Design system"
           items={getDesignSystemSidebarItems()}
@@ -231,15 +229,13 @@ const StoriesScreenMainContent: React.FC<{
 
   return (
     <FlexColumn
-      flex={1}
+      flex
       gap={8}
       padding={4}
       overflow="auto"
       className={styles.storiesScreenMainContent}
     >
-      <Text as="h1" bold>
-        {activeSidebarItem.title}
-      </Text>
+      <H1 bold>{activeSidebarItem.title}</H1>
       {mainContent}
     </FlexColumn>
   );

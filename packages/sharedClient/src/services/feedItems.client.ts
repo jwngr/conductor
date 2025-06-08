@@ -6,17 +6,17 @@ import {
   FEED_ITEM_FILE_LLM_CONTEXT,
   FEED_ITEM_FILE_TRANSCRIPT,
   FEED_ITEMS_DB_COLLECTION,
+  FEED_ITEMS_STORAGE_COLLECTION,
 } from '@shared/lib/constants.shared';
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {getFeedItemTypeFromUrl, SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
-import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
-import {isValidUrl} from '@shared/lib/urls.shared';
+import {makeFeedItem, makeFeedItemContentFromUrl} from '@shared/lib/feedItems.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 import {Views} from '@shared/lib/views.shared';
 
 import {parseFeedItem, parseFeedItemId} from '@shared/parsers/feedItems.parser';
 
 import type {AccountId, AuthStateChangedUnsubscribe} from '@shared/types/accounts.types';
-import type {FeedItem, FeedItemId, FeedItemWithUrlContent} from '@shared/types/feedItems.types';
+import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
 import {FeedItemActionType, TriageStatus} from '@shared/types/feedItems.types';
 import type {FeedSource} from '@shared/types/feedSources.types';
 import {fromQueryFilterOp} from '@shared/types/query.types';
@@ -29,8 +29,9 @@ import type {FeedItemFromStorage} from '@shared/schemas/feedItems.schema';
 import {toStorageFeedItem} from '@shared/storage/feedItems.storage';
 
 import type {ClientEventLogService} from '@sharedClient/services/eventLog.client';
-import {makeClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+import type {ClientFirebaseService} from '@sharedClient/services/firebase.client';
 import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+import {makeClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
 
 import {toast, toastWithUndo} from '@sharedClient/lib/toasts.client';
 
@@ -40,33 +41,34 @@ type FeedItemsCollectionService = ClientFirestoreCollectionService<
   FeedItemFromStorage
 >;
 
-export const clientFeedItemsCollectionService = makeClientFirestoreCollectionService({
-  collectionPath: FEED_ITEMS_DB_COLLECTION,
-  toStorage: toStorageFeedItem,
-  fromStorage: parseFeedItem,
-  parseId: parseFeedItemId,
-});
-
 export class ClientFeedItemsService {
-  private readonly feedItemsCollectionService: FeedItemsCollectionService;
-  private readonly feedItemsStorageRef: StorageReference;
   private readonly accountId: AccountId;
   private readonly eventLogService: ClientEventLogService;
+  private readonly feedItemsStorageRef: StorageReference;
+  private readonly collectionService: FeedItemsCollectionService;
 
   constructor(args: {
-    readonly feedItemsCollectionService: FeedItemsCollectionService;
-    readonly feedItemsStorageRef: StorageReference;
     readonly accountId: AccountId;
     readonly eventLogService: ClientEventLogService;
+    readonly firebaseService: ClientFirebaseService;
   }) {
-    this.feedItemsCollectionService = args.feedItemsCollectionService;
-    this.feedItemsStorageRef = args.feedItemsStorageRef;
     this.accountId = args.accountId;
     this.eventLogService = args.eventLogService;
+
+    const storage = args.firebaseService.storage;
+    this.feedItemsStorageRef = storageRef(storage, FEED_ITEMS_STORAGE_COLLECTION);
+
+    this.collectionService = makeClientFirestoreCollectionService({
+      firebaseService: args.firebaseService,
+      collectionPath: FEED_ITEMS_DB_COLLECTION,
+      toStorage: toStorageFeedItem,
+      fromStorage: parseFeedItem,
+      parseId: parseFeedItemId,
+    });
   }
 
-  public async fetchById(feedItemId: FeedItemId): AsyncResult<FeedItem | null> {
-    return this.feedItemsCollectionService.fetchById(feedItemId);
+  public async fetchById(feedItemId: FeedItemId): AsyncResult<FeedItem | null, Error> {
+    return this.collectionService.fetchById(feedItemId);
   }
 
   public watchFeedItem(
@@ -74,11 +76,7 @@ export class ClientFeedItemsService {
     successCallback: Consumer<FeedItem | null>, // null means feed item does not exist.
     errorCallback: Consumer<Error>
   ): AuthStateChangedUnsubscribe {
-    const unsubscribe = this.feedItemsCollectionService.watchDoc(
-      feedItemId,
-      successCallback,
-      errorCallback
-    );
+    const unsubscribe = this.collectionService.watchDoc(feedItemId, successCallback, errorCallback);
     return () => unsubscribe();
   }
 
@@ -99,9 +97,9 @@ export class ClientFeedItemsService {
       // TODO: Order by created time to ensure a consistent order.
       // orderBy(viewConfig.sort.field, viewConfig.sort.direction),
     ];
-    const itemsQuery = this.feedItemsCollectionService.query(whereClauses);
+    const itemsQuery = this.collectionService.query(whereClauses);
 
-    const unsubscribe = this.feedItemsCollectionService.watchDocs(
+    const unsubscribe = this.collectionService.watchDocs(
       itemsQuery,
       successCallback,
       errorCallback
@@ -111,28 +109,20 @@ export class ClientFeedItemsService {
 
   public async createFeedItemFromUrl(args: {
     readonly feedSource: FeedSource;
-    readonly content: FeedItemWithUrlContent;
-  }): AsyncResult<FeedItem> {
-    const {feedSource, content} = args;
+    readonly url: string;
+    readonly title: string;
+    readonly description: string | null;
+    readonly outgoingLinks: string[];
+    readonly summary: string | null;
+  }): AsyncResult<FeedItem, Error> {
+    const {feedSource, url, title, description, outgoingLinks, summary} = args;
+    const accountId = this.accountId;
 
-    const trimmedUrl = content.url.trim();
-    if (!isValidUrl(trimmedUrl)) {
-      return makeErrorResult(new Error(`Invalid URL provided for feed item: "${content.url}"`));
-    }
+    const content = makeFeedItemContentFromUrl({url, title, description, outgoingLinks, summary});
+    const feedItem = makeFeedItem({feedSource, content, accountId});
 
-    const feedItemContentType = getFeedItemTypeFromUrl(content.url);
-    const feedItem = SharedFeedItemHelpers.makeFeedItem({
-      feedItemContentType,
-      feedSource,
-      content,
-      accountId: this.accountId,
-    });
-
-    const addFeedItemResult = await this.feedItemsCollectionService.setDoc(
-      feedItem.feedItemId,
-      feedItem
-    );
-    if (!addFeedItemResult.success) return addFeedItemResult;
+    const saveResult = await this.collectionService.setDoc(feedItem.feedItemId, feedItem);
+    if (!saveResult.success) return saveResult;
 
     return makeSuccessResult(feedItem);
   }
@@ -140,13 +130,13 @@ export class ClientFeedItemsService {
   public async updateFeedItem(
     feedItemId: FeedItemId,
     updates: Partial<FeedItem>
-  ): AsyncResult<void> {
-    const updateResult = await this.feedItemsCollectionService.updateDoc(feedItemId, updates);
+  ): AsyncResult<void, Error> {
+    const updateResult = await this.collectionService.updateDoc(feedItemId, updates);
     return prefixResultIfError(updateResult, 'Error updating feed item');
   }
 
-  public async deleteFeedItem(feedItemId: FeedItemId): AsyncResult<void> {
-    const deleteResult = await this.feedItemsCollectionService.deleteDoc(feedItemId);
+  public async deleteFeedItem(feedItemId: FeedItemId): AsyncResult<void, Error> {
+    const deleteResult = await this.collectionService.deleteDoc(feedItemId);
     return prefixResultIfError(deleteResult, 'Error deleting feed item');
   }
 
@@ -164,7 +154,7 @@ export class ClientFeedItemsService {
   public async getFileFromStorage(args: {
     readonly feedItemId: FeedItemId;
     readonly filename: string;
-  }): AsyncResult<string> {
+  }): AsyncResult<string, Error> {
     const {feedItemId, filename} = args;
 
     const filePath = this.getFilePath({feedItemId, filename});
@@ -182,15 +172,15 @@ export class ClientFeedItemsService {
     return prefixResultIfError(parseBlobResult, 'Error parsing downloaded file blob');
   }
 
-  public async getFeedItemMarkdown(feedItemId: FeedItemId): AsyncResult<string> {
+  public async getFeedItemMarkdown(feedItemId: FeedItemId): AsyncResult<string, Error> {
     return this.getFileFromStorage({feedItemId, filename: FEED_ITEM_FILE_LLM_CONTEXT});
   }
 
-  public async getFeedItemTranscript(feedItemId: FeedItemId): AsyncResult<string> {
+  public async getFeedItemTranscript(feedItemId: FeedItemId): AsyncResult<string, Error> {
     return this.getFileFromStorage({feedItemId, filename: FEED_ITEM_FILE_TRANSCRIPT});
   }
 
-  public async markFeedItemAsDone(feedItemId: FeedItemId): AsyncResult<void> {
+  public async markFeedItemAsDone(feedItemId: FeedItemId): AsyncResult<void, Error> {
     return this.performFeedItemActionWithUndo({
       feedItemId,
       targetState: {triageStatus: TriageStatus.Done},
@@ -203,7 +193,7 @@ export class ClientFeedItemsService {
     });
   }
 
-  public async markFeedItemAsUndone(feedItemId: FeedItemId): AsyncResult<void> {
+  public async markFeedItemAsUndone(feedItemId: FeedItemId): AsyncResult<void, Error> {
     return this.performFeedItemActionWithUndo({
       feedItemId,
       targetState: {triageStatus: TriageStatus.Untriaged},
@@ -216,7 +206,7 @@ export class ClientFeedItemsService {
     });
   }
 
-  public async markFeedItemAsRead(feedItemId: FeedItemId): AsyncResult<void> {
+  public async markFeedItemAsRead(feedItemId: FeedItemId): AsyncResult<void, Error> {
     return this.performFeedItemActionWithUndo({
       feedItemId,
       targetState: {[`tagIds.${SystemTagId.Unread}`]: deleteField()} as Partial<FeedItem>,
@@ -229,7 +219,7 @@ export class ClientFeedItemsService {
     });
   }
 
-  public async markFeedItemAsUnread(feedItemId: FeedItemId): AsyncResult<void> {
+  public async markFeedItemAsUnread(feedItemId: FeedItemId): AsyncResult<void, Error> {
     return this.performFeedItemActionWithUndo({
       feedItemId,
       targetState: {[`tagIds.${SystemTagId.Unread}`]: true} as Partial<FeedItem>,
@@ -242,7 +232,7 @@ export class ClientFeedItemsService {
     });
   }
 
-  public async starFeedItem(feedItemId: FeedItemId): AsyncResult<void> {
+  public async starFeedItem(feedItemId: FeedItemId): AsyncResult<void, Error> {
     return this.performFeedItemActionWithUndo({
       feedItemId,
       targetState: {[`tagIds.${SystemTagId.Starred}`]: true} as Partial<FeedItem>,
@@ -255,7 +245,7 @@ export class ClientFeedItemsService {
     });
   }
 
-  public async unstarFeedItem(feedItemId: FeedItemId): AsyncResult<void> {
+  public async unstarFeedItem(feedItemId: FeedItemId): AsyncResult<void, Error> {
     return this.performFeedItemActionWithUndo({
       feedItemId,
       targetState: {[`tagIds.${SystemTagId.Starred}`]: deleteField()} as Partial<FeedItem>,
@@ -268,7 +258,7 @@ export class ClientFeedItemsService {
     });
   }
 
-  public async saveFeedItem(feedItemId: FeedItemId): AsyncResult<void> {
+  public async saveFeedItem(feedItemId: FeedItemId): AsyncResult<void, Error> {
     return this.performFeedItemActionWithUndo({
       feedItemId,
       targetState: {triageStatus: TriageStatus.Saved},
@@ -281,7 +271,7 @@ export class ClientFeedItemsService {
     });
   }
 
-  public async unsaveFeedItem(feedItemId: FeedItemId): AsyncResult<void> {
+  public async unsaveFeedItem(feedItemId: FeedItemId): AsyncResult<void, Error> {
     return this.performFeedItemActionWithUndo({
       feedItemId,
       targetState: {triageStatus: TriageStatus.Untriaged},
@@ -294,7 +284,7 @@ export class ClientFeedItemsService {
     });
   }
 
-  public async retryImport(feedItem: FeedItem): AsyncResult<void> {
+  public async retryImport(feedItem: FeedItem): AsyncResult<void, Error> {
     return this.performFeedItemActionWithUndo({
       feedItemId: feedItem.feedItemId,
       targetState: {
@@ -324,7 +314,7 @@ export class ClientFeedItemsService {
     readonly feedItemActionType: FeedItemActionType;
     readonly toastMessage: string | React.ReactNode;
     readonly errorToastMessage: string | React.ReactNode;
-  }): AsyncResult<void> {
+  }): AsyncResult<void, Error> {
     const {feedItemId, targetState, undoState, undoMessage, undoFailureMessage} = args;
     const {feedItemActionType, toastMessage, errorToastMessage} = args;
 
@@ -334,7 +324,11 @@ export class ClientFeedItemsService {
       return updateResult;
     }
 
-    void this.eventLogService.logFeedItemActionEvent({feedItemId, feedItemActionType});
+    void this.eventLogService.logFeedItemActionEvent({
+      feedItemId,
+      feedItemActionType,
+      isUndo: false,
+    });
 
     // Show a toast with an undo button.
     toastWithUndo({
@@ -347,8 +341,8 @@ export class ClientFeedItemsService {
 
         void this.eventLogService.logFeedItemActionEvent({
           feedItemId,
-          feedItemActionType: FeedItemActionType.Undo,
-          // TODO: Log the original action type as additional details.
+          feedItemActionType,
+          isUndo: true,
         });
 
         return undoResult;

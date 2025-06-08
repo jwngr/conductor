@@ -262,7 +262,10 @@ export const handleFeedUnsubscribeOnUpdate = onDocumentUpdated(
   }
 );
 
-const logErrorAndReturn = (errorResult: ErrorResult, logDetails: Record<string, unknown>): void => {
+const logErrorAndReturn = (
+  errorResult: ErrorResult<Error>,
+  logDetails: Record<string, unknown>
+): void => {
   logger.error(errorResult.error, logDetails);
   return;
 };

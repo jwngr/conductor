@@ -26,8 +26,9 @@ const DEFAULT_ASSERT_NEVER_OPTIONS: AssertNeverOptions = {
 };
 
 /**
- * Throws an error if the provided value is not of type `never`. This is useful for exhaustive
- * switch statements.
+ * Throws an error and throws if the provided value is not of type `never`. This is useful for
+ * exhaustive switch statements. In rare scenarios where input is untrusted and throwing is unsafe
+ * (e.g. parsers), use {@link safeAssertNever} instead.
  */
 export function assertNever(
   val: never,
@@ -43,7 +44,7 @@ export function assertNever(
 
 /**
  * Logs an error if the provided value is not of type `never`. This is useful for exhaustive
- * switch statements.
+ * switch statements. In most cases, use {@link assertNever} instead.
  */
 export function safeAssertNever(val: never): void {
   logger.error(new Error('safeAssertNever received non-empty value'), {val});
@@ -76,19 +77,19 @@ export function omitUndefined<T extends object>(obj: T): T {
  * function is called.
  */
 export function batchSyncResults<T>(
-  syncResultSuppliers: Array<Supplier<Result<T>>>,
+  syncResultSuppliers: Array<Supplier<Result<T, Error>>>,
   batchSize: number
-): Result<Array<Result<T>>> {
+): Result<Array<Result<T, Error>>, Error> {
   if (batchSize < 1) {
     return makeErrorResult(new Error(`Batch size must be at least 1: ${batchSize}`));
   }
 
-  const resultsPerBatch: Array<Array<Supplier<Result<T>>>> = [];
+  const resultsPerBatch: Array<Array<Supplier<Result<T, Error>>>> = [];
   for (let i = 0; i < syncResultSuppliers.length; i += batchSize) {
     resultsPerBatch.push(syncResultSuppliers.slice(i, i + batchSize));
   }
 
-  const allResults: Array<Result<T>> = [];
+  const allResults: Array<Result<T, Error>> = [];
   for (const currentSuppliers of resultsPerBatch) {
     const currentResults = currentSuppliers.map((supplier) => supplier());
     allResults.push(...currentResults);
@@ -102,19 +103,19 @@ export function batchSyncResults<T>(
  * function is called.
  */
 export async function batchAsyncResults<T>(
-  asyncResultSuppliers: Array<Supplier<AsyncResult<T>>>,
+  asyncResultSuppliers: Array<Supplier<AsyncResult<T, Error>>>,
   batchSize: number
-): AsyncResult<Array<Result<T>>> {
+): AsyncResult<Array<Result<T, Error>>, Error> {
   if (batchSize < 1) {
     return makeErrorResult(new Error(`Batch size must be at least 1: ${batchSize}`));
   }
 
-  const resultsPerBatch: Array<Array<Supplier<AsyncResult<T>>>> = [];
+  const resultsPerBatch: Array<Array<Supplier<AsyncResult<T, Error>>>> = [];
   for (let i = 0; i < asyncResultSuppliers.length; i += batchSize) {
     resultsPerBatch.push(asyncResultSuppliers.slice(i, i + batchSize));
   }
 
-  const allResults: Array<Result<T>> = [];
+  const allResults: Array<Result<T, Error>> = [];
   for (const currentSuppliers of resultsPerBatch) {
     const currentResults = await Promise.all(currentSuppliers.map(async (supplier) => supplier()));
     allResults.push(...currentResults);
@@ -222,4 +223,33 @@ export function isInteger(value: number): boolean {
  */
 export function isPositiveInteger(value: number): boolean {
   return isInteger(value) && value > 0;
+}
+
+/**
+ * Returns a new typed array with the same length, but each value having been filtered by `filter`.
+ */
+export function filterArray<T>(arr: T[], filter: Func<T, boolean>): T[] {
+  return arr.filter(filter);
+}
+
+/**
+ * Returns a new typed array with the same length, but each value having been transformed by
+ * `mapper`.
+ */
+export function mapArray<Start, End>(arr: Start[], mapper: Func<Start, End>): End[] {
+  return arr.map(mapper);
+}
+
+/**
+ * Returns a new typed object with the same keys, but each value having been transformed by
+ * `mapper`.
+ */
+export function mapObjectValues<Key extends string, Start, End>(
+  obj: Partial<Record<Key, Start>>,
+  mapper: Func<Start, End>,
+  filter?: Func<Key, boolean>
+): Record<Key, End> {
+  const entries = Object.entries(obj).map(([key, value]) => [key as Key, mapper(value as Start)]);
+  const filteredEntries = filter ? filterArray(entries, ([key]) => filter(key as Key)) : entries;
+  return Object.fromEntries(filteredEntries);
 }

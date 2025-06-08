@@ -16,12 +16,15 @@ import {useFeedItemsService} from '@sharedClient/hooks/feedItems.hooks';
 import type {MouseEvent} from '@sharedClient/types/utils.client.types';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
+import {FlexRow} from '@src/components/atoms/Flex';
+
+import {firebaseService} from '@src/lib/firebase.pwa';
 
 interface GenericFeedItemActionIconProps {
   readonly icon: IconName;
   readonly tooltip: string;
   readonly shortcutId: KeyboardShortcutId | undefined;
-  readonly performAction: Supplier<AsyncResult<void>>;
+  readonly performAction: Supplier<AsyncResult<void, Error>>;
   readonly disabled?: boolean;
 }
 
@@ -33,7 +36,7 @@ const GenericFeedItemActionIcon: React.FC<GenericFeedItemActionIconProps> = ({
   disabled,
 }) => {
   const handleAction = useCallback(
-    async (event?: MouseEvent<HTMLDivElement>): AsyncResult<void> => {
+    async (event?: MouseEvent<HTMLDivElement>): AsyncResult<void, Error> => {
       if (disabled) return makeSuccessResult(undefined);
 
       event?.stopPropagation();
@@ -61,7 +64,7 @@ const MarkDoneFeedItemActionIcon: React.FC<{
 }> = ({feedItem}) => {
   const actionInfo = SharedFeedItemHelpers.getMarkDoneFeedItemActionInfo(feedItem);
   const isDone = SharedFeedItemHelpers.isMarkedDone(feedItem);
-  const feedItemsService = useFeedItemsService();
+  const feedItemsService = useFeedItemsService({firebaseService});
 
   return (
     <GenericFeedItemActionIcon
@@ -82,7 +85,7 @@ const SaveFeedItemActionIcon: React.FC<{
 }> = ({feedItem}) => {
   const actionInfo = SharedFeedItemHelpers.getSaveFeedItemActionInfo(feedItem);
   const isSaved = SharedFeedItemHelpers.isSaved(feedItem);
-  const feedItemsService = useFeedItemsService();
+  const feedItemsService = useFeedItemsService({firebaseService});
 
   return (
     <GenericFeedItemActionIcon
@@ -103,7 +106,7 @@ const MarkUnreadFeedItemActionIcon: React.FC<{
 }> = ({feedItem}) => {
   const actionInfo = SharedFeedItemHelpers.getMarkUnreadFeedItemActionInfo(feedItem);
   const isUnread = SharedFeedItemHelpers.isUnread(feedItem);
-  const feedItemsService = useFeedItemsService();
+  const feedItemsService = useFeedItemsService({firebaseService});
 
   return (
     <GenericFeedItemActionIcon
@@ -124,7 +127,7 @@ const StarFeedItemActionIcon: React.FC<{
 }> = ({feedItem}) => {
   const actionInfo = SharedFeedItemHelpers.getStarFeedItemActionInfo(feedItem);
   const isStarred = SharedFeedItemHelpers.isStarred(feedItem);
-  const feedItemsService = useFeedItemsService();
+  const feedItemsService = useFeedItemsService({firebaseService});
 
   return (
     <GenericFeedItemActionIcon
@@ -144,7 +147,7 @@ const RetryImportActionIcon: React.FC<{
   readonly feedItem: FeedItem;
 }> = ({feedItem}) => {
   const actionInfo = SharedFeedItemHelpers.getRetryImportFeedItemActionInfo();
-  const feedItemsService = useFeedItemsService();
+  const feedItemsService = useFeedItemsService({firebaseService});
 
   return (
     <GenericFeedItemActionIcon
@@ -161,13 +164,13 @@ export const FeedItemActions: React.FC<{
   readonly feedItem: FeedItem;
 }> = ({feedItem}) => {
   return (
-    <div className="flex flex-row items-center gap-3">
+    <FlexRow gap={3}>
       <RetryImportActionIcon feedItem={feedItem} />
       <StarFeedItemActionIcon feedItem={feedItem} />
       <MarkUnreadFeedItemActionIcon feedItem={feedItem} />
       <SaveFeedItemActionIcon feedItem={feedItem} />
       <MarkDoneFeedItemActionIcon feedItem={feedItem} />
-    </div>
+    </FlexRow>
   );
 };
 
@@ -175,11 +178,11 @@ export const HoverFeedItemActions: React.FC<{
   readonly feedItem: FeedItem;
 }> = ({feedItem}) => {
   return (
-    <div className="flex flex-row items-center gap-3">
+    <FlexRow gap={3}>
       <StarFeedItemActionIcon feedItem={feedItem} />
       <MarkUnreadFeedItemActionIcon feedItem={feedItem} />
       <SaveFeedItemActionIcon feedItem={feedItem} />
       <MarkDoneFeedItemActionIcon feedItem={feedItem} />
-    </div>
+    </FlexRow>
   );
 };

@@ -4,9 +4,11 @@ import React, {useEffect} from 'react';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import type {Supplier} from '@shared/types/utils.types';
 
-import {Text} from '@src/components/atoms/Text';
+import {FlexRow} from '@src/components/atoms/Flex';
+import {P, Span} from '@src/components/atoms/Text';
 
 import {keyboardShortcutsService} from '@src/lib/shortcuts.pwa';
+import {cn} from '@src/lib/utils.pwa';
 
 export const TooltipProvider = TooltipPrimitive.Provider;
 
@@ -21,7 +23,10 @@ const TooltipContentComponent = React.forwardRef<
   <TooltipPrimitive.Content
     ref={ref}
     sideOffset={sideOffset}
-    className={`border-neutral-3 bg-neutral-5 text-neutral-1 z-50 overflow-hidden rounded border px-2 py-1 ${className ?? ''}`}
+    className={cn(
+      'border-neutral-3 bg-neutral-5 text-neutral-1 z-50 overflow-hidden rounded border px-2 py-1',
+      className
+    )}
     {...props}
   />
 ));
@@ -57,30 +62,26 @@ export const Tooltip: React.FC<TooltipProps> = ({
 
   let tooltipContent: React.ReactNode;
   if (typeof content === 'string') {
-    tooltipContent = <Text as="p">{content}</Text>;
+    tooltipContent = <P>{content}</P>;
   } else if ('text' in content) {
-    tooltipContent = <Text as="p">{content.text}</Text>;
+    tooltipContent = <P>{content.text}</P>;
   } else {
     tooltipContent = content;
   }
 
   let shortcutKeysContent: React.ReactNode;
   if (shortcut) {
-    shortcutKeysContent = shortcut.displayKeys.map((key) => (
-      <Text as="span" key={key}>
-        {key}
-      </Text>
-    ));
+    shortcutKeysContent = shortcut.displayKeys.map((key) => <Span key={key}>{key}</Span>);
   }
 
   return (
     <TooltipRootComponent {...tooltipProps}>
       <TooltipTriggerComponent>{trigger}</TooltipTriggerComponent>
       <TooltipContentComponent>
-        <div className="flex flex-row items-center gap-2">
+        <FlexRow gap={4}>
           {tooltipContent}
           {shortcutKeysContent}
-        </div>
+        </FlexRow>
       </TooltipContentComponent>
     </TooltipRootComponent>
   );

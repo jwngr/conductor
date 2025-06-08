@@ -17,8 +17,10 @@ import {SimpleFeedItemRenderer} from '@src/components/feedItems/FeedItem';
 import {LoadingArea} from '@src/components/loading/LoadingArea';
 import {Markdown} from '@src/components/Markdown';
 
+import {firebaseService} from '@src/lib/firebase.pwa';
+
 const YouTubeFeedItemTranscript: React.FC<{readonly feedItem: YouTubeFeedItem}> = ({feedItem}) => {
-  const transcriptState = useYouTubeFeedItemTranscript(feedItem);
+  const transcriptState = useYouTubeFeedItemTranscript({feedItem, firebaseService});
 
   switch (transcriptState.status) {
     case AsyncStatus.Idle:

@@ -1,23 +1,14 @@
 import FirecrawlApp from '@mendable/firecrawl-js';
 
-import {
-  EVENT_LOG_DB_COLLECTION,
-  FEED_ITEMS_DB_COLLECTION,
-  FEED_ITEMS_STORAGE_COLLECTION,
-} from '@shared/lib/constants.shared';
-
-import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
-import {parseFeedItem, parseFeedItemId} from '@shared/parsers/feedItems.parser';
+import {FEED_ITEMS_STORAGE_COLLECTION} from '@shared/lib/constants.shared';
 
 import {Environment} from '@shared/types/environment.types';
-
-import {toStorageEventLogItem} from '@shared/storage/eventLog.storage';
-import {toStorageFeedItem} from '@shared/storage/feedItems.storage';
 
 import {ServerEventLogService} from '@sharedServer/services/eventLog.server';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
-import {makeServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
+
+import {firebaseService} from '@src/lib/firebase.scripts';
 
 interface InitializedServices {
   readonly feedItemsService: ServerFeedItemsService;
@@ -27,32 +18,18 @@ export const initServices = (args: {readonly firecrawlApiKey: string}): Initiali
   const {firecrawlApiKey} = args;
 
   // Event log service.
-  const eventLogCollectionService = makeServerFirestoreCollectionService({
-    collectionPath: EVENT_LOG_DB_COLLECTION,
-    toStorage: toStorageEventLogItem,
-    fromStorage: parseEventLogItem,
-    parseId: parseEventId,
-  });
-
   const eventLogService = new ServerEventLogService({
+    firebaseService,
     environment: Environment.Scripts,
-    collectionService: eventLogCollectionService,
   });
 
   // Firecrawl service.
   const firecrawlApp = new FirecrawlApp({apiKey: firecrawlApiKey});
-  const firecrawlService = new ServerFirecrawlService(firecrawlApp);
+  const firecrawlService = new ServerFirecrawlService({firecrawlApp});
 
   // Feed items service .
-  const feedItemsCollectionService = makeServerFirestoreCollectionService({
-    collectionPath: FEED_ITEMS_DB_COLLECTION,
-    toStorage: toStorageFeedItem,
-    fromStorage: parseFeedItem,
-    parseId: parseFeedItemId,
-  });
-
   const feedItemsService = new ServerFeedItemsService({
-    collectionService: feedItemsCollectionService,
+    firebaseService,
     storageCollectionPath: FEED_ITEMS_STORAGE_COLLECTION,
     firecrawlService,
     eventLogService,

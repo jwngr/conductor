@@ -5,15 +5,15 @@ import {
 
 import type {HeroAction} from '@sharedClient/types/heroActions.client.types';
 
-import {Text} from '@src/components/atoms/Text';
+import {P} from '@src/components/atoms/Text';
 import {HeroArea} from '@src/components/hero/HeroArea';
 import {StorySection} from '@src/components/stories/StorySection';
 
 const HERO_AREA_STORY_BOTTOM_CONTENT = (
-  <Text as="p">
+  <P>
     This is some bottom content, which is long enough to test the layout of the hero area when the
     bottom content is present. It is now long enough to have tested that.
-  </Text>
+  </P>
 );
 
 const HeroAreaStory: React.FC<{

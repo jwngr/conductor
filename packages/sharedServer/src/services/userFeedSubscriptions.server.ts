@@ -1,7 +1,13 @@
 import type {WithFieldValue} from 'firebase-admin/firestore';
 
+import {USER_FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
+
+import {
+  parseUserFeedSubscription,
+  parseUserFeedSubscriptionId,
+} from '@shared/parsers/userFeedSubscriptions.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
@@ -14,8 +20,14 @@ import type {
 } from '@shared/types/userFeedSubscriptions.types';
 
 import type {UserFeedSubscriptionFromStorage} from '@shared/schemas/userFeedSubscriptions.schema';
+import {toStorageUserFeedSubscription} from '@shared/storage/userFeedSubscriptions.storage';
 
-import type {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
+import {serverTimestampSupplier} from '@sharedServer/services/firebase.server';
+import type {ServerFirebaseService} from '@sharedServer/services/firebase.server';
+import {
+  makeServerFirestoreCollectionService,
+  type ServerFirestoreCollectionService,
+} from '@sharedServer/services/firestore.server';
 
 type UserFeedSubscriptionsCollectionService = ServerFirestoreCollectionService<
   UserFeedSubscriptionId,
@@ -26,14 +38,22 @@ type UserFeedSubscriptionsCollectionService = ServerFirestoreCollectionService<
 export class ServerUserFeedSubscriptionsService {
   private readonly collectionService: UserFeedSubscriptionsCollectionService;
 
-  constructor(args: {readonly collectionService: UserFeedSubscriptionsCollectionService}) {
-    this.collectionService = args.collectionService;
+  constructor(args: {readonly firebaseService: ServerFirebaseService}) {
+    this.collectionService = makeServerFirestoreCollectionService({
+      firebaseService: args.firebaseService,
+      collectionPath: USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
+      parseId: parseUserFeedSubscriptionId,
+      toStorage: toStorageUserFeedSubscription,
+      fromStorage: parseUserFeedSubscription,
+    });
   }
 
   /**
    * Fetches all user feed subscription documents for an individual account from Firestore.
    */
-  public async fetchAllForAccount(accountId: AccountId): AsyncResult<UserFeedSubscription[]> {
+  public async fetchAllForAccount(
+    accountId: AccountId
+  ): AsyncResult<UserFeedSubscription[], Error> {
     const query = this.collectionService.getCollectionRef().where('accountId', '==', accountId);
     const queryResult = await this.collectionService.fetchQueryDocs(query);
     return prefixResultIfError(queryResult, 'Error fetching feed subscriptions for account');
@@ -42,7 +62,10 @@ export class ServerUserFeedSubscriptionsService {
   /**
    * Fetches all user feed subscription documents for an individual account from Firestore.
    */
-  public async fetchActiveIntervalSubscriptions(): AsyncResult<IntervalUserFeedSubscription[]> {
+  public async fetchActiveIntervalSubscriptions(): AsyncResult<
+    IntervalUserFeedSubscription[],
+    Error
+  > {
     const query = this.collectionService
       .getCollectionRef()
       .where('feedSourceType', '==', FeedSourceType.Interval)
@@ -52,7 +75,9 @@ export class ServerUserFeedSubscriptionsService {
     return makeSuccessResult(queryResult.value as IntervalUserFeedSubscription[]);
   }
 
-  public async fetchForRssFeedSourceByUrl(url: string): AsyncResult<RssUserFeedSubscription[]> {
+  public async fetchForRssFeedSourceByUrl(
+    url: string
+  ): AsyncResult<RssUserFeedSubscription[], Error> {
     const query = this.collectionService
       .getCollectionRef()
       .where('feedSourceType', '==', FeedSourceType.RSS)
@@ -74,11 +99,10 @@ export class ServerUserFeedSubscriptionsService {
    */
   public async deactivateFeedSubscription(
     userFeedSubscriptionId: UserFeedSubscriptionId
-  ): AsyncResult<void> {
+  ): AsyncResult<void, Error> {
     return this.update(userFeedSubscriptionId, {
       isActive: false,
-      // TODO(timestamps): Use server timestamps instead.
-      unsubscribedTime: new Date(),
+      unsubscribedTime: serverTimestampSupplier(),
     });
   }
 
@@ -88,7 +112,7 @@ export class ServerUserFeedSubscriptionsService {
   public async update(
     userFeedSubscriptionId: UserFeedSubscriptionId,
     update: Partial<WithFieldValue<Pick<UserFeedSubscription, 'isActive' | 'unsubscribedTime'>>>
-  ): AsyncResult<void> {
+  ): AsyncResult<void, Error> {
     const updateResult = await this.collectionService.updateDoc(userFeedSubscriptionId, update);
     return prefixResultIfError(updateResult, 'Error updating user feed subscription in Firestore');
   }
@@ -96,7 +120,7 @@ export class ServerUserFeedSubscriptionsService {
   /**
    * Permanently deletes a feed subscription document from Firestore.
    */
-  public async delete(userFeedSubscriptionId: UserFeedSubscriptionId): AsyncResult<void> {
+  public async delete(userFeedSubscriptionId: UserFeedSubscriptionId): AsyncResult<void, Error> {
     const deleteResult = await this.collectionService.deleteDoc(userFeedSubscriptionId);
     return prefixResultIfError(deleteResult, 'Error deleting user feed subscription in Firestore');
   }
@@ -104,7 +128,7 @@ export class ServerUserFeedSubscriptionsService {
   /**
    * Permanently deletes all user feed subscription Firestore documents associated with an account.
    */
-  public async deleteAllForAccount(accountId: AccountId): AsyncResult<void> {
+  public async deleteAllForAccount(accountId: AccountId): AsyncResult<void, Error> {
     // Fetch the IDs for all of the account's feed subscriptions.
     const query = this.collectionService.getCollectionRef().where('accountId', '==', accountId);
     const queryResult = await this.collectionService.fetchQueryIds(query);

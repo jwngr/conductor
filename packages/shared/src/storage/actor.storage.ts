@@ -1,4 +1,4 @@
-import {makeUserActor, SYSTEM_ACTOR} from '@shared/lib/actors.shared';
+import {makeAccountActor, SYSTEM_ACTOR} from '@shared/lib/actors.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
@@ -15,7 +15,7 @@ import type {ActorFromStorage} from '@shared/schemas/actors.schema';
  */
 export function toStorageActor(actor: Actor): ActorFromStorage {
   switch (actor.actorType) {
-    case ActorType.User:
+    case ActorType.Account:
       return {
         actorType: actor.actorType,
         accountId: actor.accountId,
@@ -30,12 +30,12 @@ export function toStorageActor(actor: Actor): ActorFromStorage {
 /**
  * Converts an {@link ActorFromStorage} into an {@link Actor}.
  */
-export function fromStorageActor(actorFromStorage: ActorFromStorage): Result<Actor> {
+export function fromStorageActor(actorFromStorage: ActorFromStorage): Result<Actor, Error> {
   switch (actorFromStorage.actorType) {
-    case ActorType.User: {
+    case ActorType.Account: {
       const accountIdResult = parseAccountId(actorFromStorage.accountId);
       if (!accountIdResult.success) return accountIdResult;
-      return makeSuccessResult(makeUserActor(accountIdResult.value));
+      return makeSuccessResult(makeAccountActor(accountIdResult.value));
     }
     case ActorType.System:
       return makeSuccessResult(SYSTEM_ACTOR);

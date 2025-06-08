@@ -9,8 +9,8 @@ export enum RssFeedProviderType {
 export interface RssFeedProvider {
   readonly type: RssFeedProviderType;
   readonly webhookSecret: string;
-  subscribeToUrl(feedUrl: string): AsyncResult<void>;
-  unsubscribeFromUrl(feedUrl: string): AsyncResult<void>;
+  subscribeToUrl(feedUrl: string): AsyncResult<void, Error>;
+  unsubscribeFromUrl(feedUrl: string): AsyncResult<void, Error>;
 }
 
 export interface RssFeed {
@@ -37,8 +37,8 @@ export interface RssFeedSubscription {
 
 export interface RssFeedManager {
   getFeed(args: {feedId: string}): RssFeed | null;
-  addFeed(args: {feed: RssFeed}): Result<void>;
-  updateFeed(args: {feedId: string; items: RssFeedItem[]}): AsyncResult<void>;
+  addFeed(args: {feed: RssFeed}): Result<void, Error>;
+  updateFeed(args: {feedId: string; items: RssFeedItem[]}): AsyncResult<void, Error>;
   subscribe(args: {feedUrl: string; callbackUrl: string}): void;
   unsubscribe(args: {feedUrl: string}): void;
   getSubscriptions(args: {feedUrl: string}): Set<RssFeedSubscription> | null;

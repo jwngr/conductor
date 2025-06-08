@@ -32,6 +32,7 @@ import {XkcdFeedItemRenderer} from '@src/components/feedItems/renderers/XkcdFeed
 import {YouTubeFeedItemRenderer} from '@src/components/feedItems/renderers/YouTubeFeedItemRenderer';
 import {LoadingArea} from '@src/components/loading/LoadingArea';
 
+import {firebaseService} from '@src/lib/firebase.pwa';
 import {useFeedItemIdFromUrl} from '@src/lib/router.pwa';
 
 import {NotFoundScreen} from '@src/screens/404';
@@ -43,7 +44,7 @@ const useMarkFeedItemRead = (args: {
 }): void => {
   const {feedItemId, feedItem} = args;
 
-  const feedItemsService = useFeedItemsService();
+  const feedItemsService = useFeedItemsService({firebaseService});
 
   const wasAlreadyMarkedReadAtMount = useRef(
     feedItem ? !SharedFeedItemHelpers.isUnread(feedItem) : false
@@ -131,7 +132,7 @@ const LoadedFeedItemScreenContent: React.FC<{
 const FeedItemScreenContent: React.FC<{
   readonly feedItemId: FeedItemId;
 }> = ({feedItemId}) => {
-  const feedItemState = useFeedItem(feedItemId);
+  const feedItemState = useFeedItem({feedItemId, firebaseService});
 
   switch (feedItemState.status) {
     case AsyncStatus.Idle:

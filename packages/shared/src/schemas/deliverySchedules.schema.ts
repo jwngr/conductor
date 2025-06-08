@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import {z} from 'zod/v4';
 
 import {DayOfWeek} from '@shared/types/datetime.types';
 import {DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
@@ -6,7 +6,7 @@ import {DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
 import {TimeOfDaySchema} from '@shared/schemas/datetime.schema';
 
 const BaseDeliveryScheduleSchema = z.object({
-  scheduleType: z.nativeEnum(DeliveryScheduleType),
+  scheduleType: z.enum(DeliveryScheduleType),
 });
 
 const ImmediateDeliveryScheduleSchema = BaseDeliveryScheduleSchema.extend({
@@ -19,7 +19,7 @@ const NeverDeliveryScheduleSchema = BaseDeliveryScheduleSchema.extend({
 
 const DaysAndTimesOfWeekDeliveryScheduleSchema = BaseDeliveryScheduleSchema.extend({
   scheduleType: z.literal(DeliveryScheduleType.DaysAndTimesOfWeek),
-  days: z.array(z.nativeEnum(DayOfWeek)),
+  days: z.array(z.enum(DayOfWeek)),
   times: z.array(TimeOfDaySchema),
 });
 

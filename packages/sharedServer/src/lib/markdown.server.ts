@@ -6,6 +6,6 @@ import type {Result} from '@shared/types/results.types';
 
 const turndownService = new TurndownService();
 
-export function htmlToMarkdown(html: string): Result<string> {
+export function htmlToMarkdown(html: string): Result<string, Error> {
   return syncTry(() => turndownService.turndown(html).trim());
 }

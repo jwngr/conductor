@@ -10,7 +10,9 @@ import {fromStorageAccountSettings} from '@shared/storage/accountSettings.storag
 /**
  * Attempts to parse an unknown value into an {@link AccountSettings}.
  */
-export function parseAccountSettings(maybeAccountSettings: unknown): Result<AccountSettings> {
+export function parseAccountSettings(
+  maybeAccountSettings: unknown
+): Result<AccountSettings, Error> {
   const parsedResult = parseZodResult(AccountSettingsSchema, maybeAccountSettings);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid account settings');

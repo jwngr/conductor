@@ -6,26 +6,25 @@ import {prefixError} from '@shared/lib/errorUtils.shared';
 
 import {useAccountSettingsStore} from '@sharedClient/stores/AccountSettingsStore';
 
-import {
-  clientAccountSettingsCollectionService,
-  ClientAccountSettingsService,
-} from '@sharedClient/services/accountSettings.client';
+import {ClientAccountSettingsService} from '@sharedClient/services/accountSettings.client';
 
 import {toast} from '@sharedClient/lib/toasts.client';
 
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 import {useEventLogService} from '@sharedClient/hooks/eventLog.hooks';
 
+import {firebaseService} from '@src/lib/firebase.pwa';
+
 export const PWAAccountSettingsListener: React.FC = () => {
   const loggedInAccount = useLoggedInAccount();
-  const eventLogService = useEventLogService();
+  const eventLogService = useEventLogService({firebaseService});
   const {setAccountSettings, setAccountSettingsService, resetAccountSettingsStore} =
     useAccountSettingsStore();
 
   useEffect(() => {
     const pwaAccountSettingsService = new ClientAccountSettingsService({
       accountId: loggedInAccount.accountId,
-      accountSettingsCollectionService: clientAccountSettingsCollectionService,
+      firebaseService,
       eventLogService,
     });
 

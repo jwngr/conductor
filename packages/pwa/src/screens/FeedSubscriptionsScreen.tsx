@@ -23,15 +23,17 @@ import {
 import {Button} from '@src/components/atoms/Button';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Input} from '@src/components/atoms/Input';
-import {Text} from '@src/components/atoms/Text';
+import {H3, H4, P} from '@src/components/atoms/Text';
 import {ErrorArea} from '@src/components/errors/ErrorArea';
 import {FeedSubscriptionSettingsButton} from '@src/components/feedSubscriptions/FeedSubscriptionSettings';
 import {LoadingArea} from '@src/components/loading/LoadingArea';
 
+import {firebaseService} from '@src/lib/firebase.pwa';
+
 import {Screen} from '@src/screens/Screen';
 
 const FeedAdder: React.FC = () => {
-  const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
+  const userFeedSubscriptionsService = useUserFeedSubscriptionsService({firebaseService});
 
   const [urlInputValue, setUrlInputValue] = useState('');
   const {asyncState, setPending, setError, setSuccess} = useAsyncState<undefined>();
@@ -110,12 +112,10 @@ const FeedAdder: React.FC = () => {
   }, [handleError, setPending, setSuccess, userFeedSubscriptionsService]);
 
   return (
-    <FlexColumn flex={1} gap={3}>
-      <Text as="h3" bold>
-        Add new feed
-      </Text>
+    <FlexColumn flex gap={3}>
+      <H3 bold>Add new feed</H3>
 
-      <FlexRow gap={3} flex={1}>
+      <FlexRow gap={3} flex>
         <Input
           type="text"
           value={urlInputValue}
@@ -129,15 +129,15 @@ const FeedAdder: React.FC = () => {
       </FlexRow>
 
       {asyncState.status === AsyncStatus.Error ? (
-        <Text className="text-error">{asyncState.error.message}</Text>
+        <P error>{asyncState.error.message}</P>
       ) : asyncState.status === AsyncStatus.Pending ? (
-        <Text light>Subscribing to feed...</Text>
+        <P light>Subscribing to feed...</P>
       ) : asyncState.status === AsyncStatus.Success ? (
-        <Text className="text-success">Successfully subscribed to feed source</Text>
+        <P success>Successfully subscribed to feed source</P>
       ) : null}
 
       <FlexColumn gap={3}>
-        <Text bold>Quick add feeds</Text>
+        <H4 bold>Quick add feeds</H4>
         <FlexRow gap={3}>
           <Button
             variant="default"
@@ -198,16 +198,12 @@ const FeedSubscriptionItem: React.FC<{
   }
 
   return (
-    <FlexRow gap={3} padding={3} className="rounded-lg border border-gray-200">
-      <FlexColumn flex={1} gap={1}>
-        <Text bold className={subscription.isActive ? undefined : 'text-error'}>
+    <FlexRow gap={3} padding={3} className="border-neutral-2 rounded-lg border">
+      <FlexColumn flex gap={1}>
+        <P bold error={!subscription.isActive}>
           {primaryRowText}
-        </Text>
-        {secondaryRowText ? (
-          <Text as="p" light>
-            {secondaryRowText}
-          </Text>
-        ) : null}
+        </P>
+        {secondaryRowText ? <P light>{secondaryRowText}</P> : null}
       </FlexColumn>
       <FeedSubscriptionSettingsButton userFeedSubscription={subscription} />
     </FlexRow>
@@ -219,15 +215,11 @@ const LoadedFeedSubscriptionsListMainContent: React.FC<{
 }> = ({subscriptions}) => {
   if (subscriptions.length === 0) {
     // TODO: Add better empty state.
-    return (
-      <Text as="p" light>
-        None
-      </Text>
-    );
+    return <P light>None</P>;
   }
 
   return (
-    <FlexColumn flex={1}>
+    <FlexColumn flex>
       {subscriptions.map((subscription) => (
         <FeedSubscriptionItem
           key={subscription.userFeedSubscriptionId}
@@ -239,7 +231,7 @@ const LoadedFeedSubscriptionsListMainContent: React.FC<{
 };
 
 const FeedSubscriptionsList: React.FC = () => {
-  const userFeedSubscriptionsState = useUserFeedSubscriptions();
+  const userFeedSubscriptionsState = useUserFeedSubscriptions({firebaseService});
 
   const renderMainContent = (): React.ReactNode => {
     switch (userFeedSubscriptionsState.status) {
@@ -268,9 +260,7 @@ const FeedSubscriptionsList: React.FC = () => {
 
   return (
     <FlexColumn gap={3} style={{width: 360}}>
-      <Text as="h3" bold>
-        Active subscriptions
-      </Text>
+      <H3 bold>Active subscriptions</H3>
       {renderMainContent()}
     </FlexColumn>
   );
@@ -279,7 +269,7 @@ const FeedSubscriptionsList: React.FC = () => {
 export const FeedSubscriptionsScreen: React.FC = () => {
   return (
     <Screen withHeader withLeftSidebar>
-      <FlexRow flex={1} align="start" gap={8} padding={4} overflow="auto">
+      <FlexRow flex align="start" gap={8} padding={4} overflow="auto">
         <FeedAdder />
         <FeedSubscriptionsList />
       </FlexRow>

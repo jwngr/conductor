@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import {z} from 'zod/v4';
 
 import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 
@@ -6,13 +6,13 @@ import {UserFeedSubscriptionIdSchema} from '@shared/schemas/userFeedSubscription
 import {YouTubeChannelIdSchema} from '@shared/schemas/youtube.schema';
 
 const BaseFeedSourceSchema = z.object({
-  feedSourceType: z.nativeEnum(FeedSourceType),
+  feedSourceType: z.enum(FeedSourceType),
 });
 
 const RssFeedSourceSchema = BaseFeedSourceSchema.extend({
   feedSourceType: z.literal(FeedSourceType.RSS),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
-  url: z.string().url(),
+  url: z.url(),
   title: z.string(),
 });
 

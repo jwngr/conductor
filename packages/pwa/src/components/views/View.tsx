@@ -33,13 +33,16 @@ import {
 
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
-import {Text} from '@src/components/atoms/Text';
+import {H2, H3, P} from '@src/components/atoms/Text';
 import {ErrorArea} from '@src/components/errors/ErrorArea';
 import {HoverFeedItemActions} from '@src/components/feedItems/FeedItemActions';
 import {FeedItemImportStatusBadge} from '@src/components/feedItems/FeedItemImportStatusBadge';
 import {LoadingArea} from '@src/components/loading/LoadingArea';
 import {ViewKeyboardShortcutHandler} from '@src/components/views/ViewKeyboardShortcutHandler';
 import {ViewOptionsDialog} from '@src/components/views/ViewOptionsDialog';
+
+import {firebaseService} from '@src/lib/firebase.pwa';
+import {cn} from '@src/lib/utils.pwa';
 
 import {feedItemRoute} from '@src/routes';
 
@@ -233,9 +236,10 @@ const ViewListItem: React.FC<{
     <Link to={feedItemRoute.fullPath} params={{feedItemId: feedItem.feedItemId}}>
       <div
         ref={itemRef}
-        className={`hover:bg-neutral-1 focus-visible:bg-neutral-1 relative -m-2 flex cursor-pointer flex-col justify-center gap-1 rounded p-2 outline-none ${
-          isFocused ? `bg-neutral-1 outline-2 outline-stone-500` : ''
-        }`}
+        className={cn(
+          'hover:bg-neutral-1 focus-visible:bg-neutral-1 relative -m-2 flex cursor-pointer flex-col justify-center gap-1 rounded p-2 outline-none',
+          isFocused && 'bg-neutral-1 outline-neutral-3 outline-2'
+        )}
         tabIndex={0}
         onFocus={() => setFocusedFeedItemId(feedItem.feedItemId)}
         onBlur={() => setFocusedFeedItemId(null)}
@@ -244,16 +248,14 @@ const ViewListItem: React.FC<{
       >
         <div>
           <FlexRow gap={3}>
-            <Text as="p" bold={isUnread}>
-              {feedItem.content.title || 'No title'}
-            </Text>
+            <P bold={isUnread}>{feedItem.content.title || 'No title'}</P>
             <FeedItemImportStatusBadge importState={feedItem.importState} />
           </FlexRow>
-          <Text as="p" light>
+          <P light>
             {feedItem.feedItemContentType === FeedItemContentType.Interval
               ? 'Interval'
               : feedItem.content.url}
-          </Text>
+          </P>
         </div>
         {shouldShowActions ? (
           <div className="absolute top-1/2 right-2 -translate-y-1/2 transform">
@@ -295,7 +297,7 @@ const LoadedViewList: React.FC<{
       <FlexColumn gap={4}>
         {Object.entries(groupedItems).map(([groupKey, items]) => (
           <React.Fragment key={`${viewType}-${groupKey}`}>
-            <Text as="h3">{groupKey}</Text>
+            <H3>{groupKey}</H3>
             <ul>
               {items.map((feedItem) => (
                 <ViewListItem key={feedItem.feedItemId} feedItem={feedItem} viewType={viewType} />
@@ -360,7 +362,7 @@ const ViewListIgnoringDelivery: React.FC<{
   readonly sortBy: readonly ViewSortByOption[];
   readonly groupBy: readonly ViewGroupByOption[];
 }> = ({viewType, sortBy, groupBy}) => {
-  const feedItemsState = useFeedItemsIgnoringDelivery({viewType});
+  const feedItemsState = useFeedItemsIgnoringDelivery({viewType, firebaseService});
 
   switch (feedItemsState.status) {
     case AsyncStatus.Idle:
@@ -397,7 +399,7 @@ const ViewListRespectingDelivery: React.FC<{
   readonly sortBy: readonly ViewSortByOption[];
   readonly groupBy: readonly ViewGroupByOption[];
 }> = ({viewType, sortBy, groupBy}) => {
-  const feedItemsState = useFeedItemsRespectingDelivery({viewType});
+  const feedItemsState = useFeedItemsRespectingDelivery({viewType, firebaseService});
 
   switch (feedItemsState.status) {
     case AsyncStatus.Idle:
@@ -435,9 +437,7 @@ const ViewHeader: React.FC<{
 }> = ({name, sortBy, groupBy, onSortByChange, onGroupByChange}) => {
   return (
     <FlexRow justify="between">
-      <Text as="h2" bold>
-        {name}
-      </Text>
+      <H2 bold>{name}</H2>
       <FlexRow gap={2}>
         <ViewOptionsDialog
           sortBy={sortBy}
@@ -469,7 +469,7 @@ export const ViewRenderer: React.FC<{
   });
 
   return (
-    <FlexColumn flex={1} gap={2} padding={4} overflow="auto">
+    <FlexColumn flex gap={2} padding={4} overflow="auto">
       <ViewHeader
         name={defaultViewConfig.name}
         sortBy={viewOptions.sortBy}

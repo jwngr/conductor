@@ -1,5 +1,5 @@
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
-import {Text} from '@src/components/atoms/Text';
+import {H1, H2, H3, H4, H5, H6, P} from '@src/components/atoms/Text';
 import {Markdown} from '@src/components/Markdown';
 import {StorySection} from '@src/components/stories/StorySection';
 
@@ -27,21 +27,17 @@ _Italic paragraph text_
       <StorySection title="Headings">
         <FlexRow gap={8} align="start">
           <FlexColumn gap={2}>
-            <Text as="h6" light>
-              Normal Typography
-            </Text>
-            <Text as="h1">Heading 1</Text>
-            <Text as="h2">Heading 2</Text>
-            <Text as="h3">Heading 3</Text>
-            <Text as="h4">Heading 4</Text>
-            <Text as="h5">Heading 5</Text>
-            <Text as="h6">Heading 6</Text>
+            <H6 light>Normal Typography</H6>
+            <H1>Heading 1</H1>
+            <H2>Heading 2</H2>
+            <H3>Heading 3</H3>
+            <H4>Heading 4</H4>
+            <H5>Heading 5</H5>
+            <H6>Heading 6</H6>
           </FlexColumn>
 
           <FlexColumn gap={2}>
-            <Text as="h6" light>
-              Markdown Typography
-            </Text>
+            <H6 light>Markdown Typography</H6>
             <Markdown content={headingsMarkdown} />
           </FlexColumn>
         </FlexRow>
@@ -50,18 +46,14 @@ _Italic paragraph text_
       <StorySection title="Paragraphs">
         <FlexRow gap={8} align="start">
           <FlexColumn gap={2}>
-            <Text as="h6" light>
-              Normal Typography
-            </Text>
-            <Text>Regular paragraph text</Text>
-            <Text bold>Bold paragraph text</Text>
-            <Text className="italic">Italic paragraph text</Text>
+            <H6 light>Normal Typography</H6>
+            <P>Regular paragraph text</P>
+            <P bold>Bold paragraph text</P>
+            <P italic>Italic paragraph text</P>
           </FlexColumn>
 
           <FlexColumn gap={2}>
-            <Text as="h6" light>
-              Markdown Typography
-            </Text>
+            <H6 light>Markdown Typography</H6>
             <Markdown content={paragraphsMarkdown} />
           </FlexColumn>
         </FlexRow>

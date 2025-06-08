@@ -10,10 +10,12 @@ import type {NavItem} from '@shared/types/urls.types';
 import {useFocusStore} from '@sharedClient/stores/FocusStore';
 
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
-import {Text} from '@src/components/atoms/Text';
+import {H5, P} from '@src/components/atoms/Text';
 import {TextIcon} from '@src/components/atoms/TextIcon';
 import * as styles from '@src/components/nav/LeftSidebar.css';
 import {NavItemLink} from '@src/components/nav/NavItemLink';
+
+import {cn} from '@src/lib/utils.pwa';
 
 const LeftSidebarItemAvatar: React.FC<{
   readonly icon: CustomIcon;
@@ -37,20 +39,18 @@ const LeftSidebarSection: React.FC<{
   const {focusedNavItemId, setFocusedNavItemId} = useFocusStore();
   return (
     <FlexColumn gap={3}>
-      <Text as="h5" light>
-        {title}
-      </Text>
+      <H5 light>{title}</H5>
       <FlexColumn>
         {navItems.map((navItem, i) => (
           <NavItemLink
             key={`${i}-${navItem.id}`}
             navItemId={navItem.id}
             onClick={() => setFocusedNavItemId(navItem.id)}
-            className={`${styles.sidebarItemLink} ${focusedNavItemId === navItem.id ? 'active' : ''}`.trim()}
+            className={cn(styles.sidebarItemLink, focusedNavItemId === navItem.id && 'active')}
           >
             <FlexRow gap={2}>
               <LeftSidebarItemAvatar icon={navItem.icon} />
-              <Text as="p">{navItem.title}</Text>
+              <P>{navItem.title}</P>
             </FlexRow>
           </NavItemLink>
         ))}

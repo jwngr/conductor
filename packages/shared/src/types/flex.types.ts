@@ -1,6 +1,6 @@
 import type {ThemeSpacing} from '@shared/types/theme.types';
 
-export type FlexValue = 1 | 'auto' | 'initial' | 'none';
+export type FlexValue = true | false | 'auto' | 'initial';
 
 export type FlexAlign = 'start' | 'end' | 'center' | 'stretch' | 'baseline';
 

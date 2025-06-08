@@ -1,3 +1,5 @@
+import {IconName} from '@shared/types/icons.types';
+
 import {Button} from '@src/components/atoms/Button';
 import {
   DropdownMenu,
@@ -9,7 +11,8 @@ import {
   DropdownMenuTrigger,
 } from '@src/components/atoms/DropdownMenu';
 import {FlexColumn} from '@src/components/atoms/Flex';
-import {Text} from '@src/components/atoms/Text';
+import {P} from '@src/components/atoms/Text';
+import {TextIcon} from '@src/components/atoms/TextIcon';
 import {StorySection} from '@src/components/stories/StorySection';
 
 export const DropdownMenuStories: React.FC = () => {
@@ -35,15 +38,15 @@ export const DropdownMenuStories: React.FC = () => {
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuItem>
-              <span className="i-lucide-pencil" />
+              <TextIcon name={IconName.Inbox} size={16} />
               Edit
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <span className="i-lucide-trash" />
+              <TextIcon name={IconName.MarkUnread} size={16} />
               Delete
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <span className="i-lucide-share" />
+              <TextIcon name={IconName.MarkDone} size={16} />
               Share
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -95,7 +98,7 @@ export const DropdownMenuStories: React.FC = () => {
           <DropdownMenuContent>
             <DropdownMenuItem>
               <FlexColumn gap={2} padding={2}>
-                <Text>Custom dropdown content</Text>
+                <P>Custom dropdown content</P>
                 <Button>Custom Button</Button>
               </FlexColumn>
             </DropdownMenuItem>

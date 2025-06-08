@@ -29,10 +29,10 @@ export const Screen: React.FC<ScreenProps> = ({
   return (
     <FlexColumn className={styles.screenWrapper}>
       {withHeader ? <AppHeader /> : null}
-      <FlexRow flex={1} align="stretch" overflow="auto">
+      <FlexRow flex align="stretch" overflow="auto">
         {withLeftSidebar ? <LeftSidebar /> : null}
         <FlexColumn
-          flex={1}
+          flex
           overflow="auto"
           gap={gap}
           align={align}

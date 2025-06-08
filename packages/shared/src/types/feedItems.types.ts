@@ -61,27 +61,27 @@ interface BaseFeedItem extends BaseStoreItem {
 
 export type ArticleFeedItem = BaseFeedItem & {
   readonly feedItemContentType: FeedItemContentType.Article;
-  readonly content: FeedItemWithUrlContent;
+  readonly content: ArticleFeedItemContent;
 };
 
 export type VideoFeedItem = BaseFeedItem & {
   readonly feedItemContentType: FeedItemContentType.Video;
-  readonly content: FeedItemWithUrlContent;
+  readonly content: VideoFeedItemContent;
 };
 
 export type WebsiteFeedItem = BaseFeedItem & {
   readonly feedItemContentType: FeedItemContentType.Website;
-  readonly content: FeedItemWithUrlContent;
+  readonly content: WebsiteFeedItemContent;
 };
 
 export type TweetFeedItem = BaseFeedItem & {
   readonly feedItemContentType: FeedItemContentType.Tweet;
-  readonly content: FeedItemWithUrlContent;
+  readonly content: TweetFeedItemContent;
 };
 
 export type YouTubeFeedItem = BaseFeedItem & {
   readonly feedItemContentType: FeedItemContentType.YouTube;
-  readonly content: FeedItemWithUrlContent;
+  readonly content: YouTubeFeedItemContent;
 };
 
 export type XkcdFeedItem = BaseFeedItem & {
@@ -104,44 +104,66 @@ export type FeedItem =
   | XkcdFeedItem
   | IntervalFeedItem;
 
-export type FeedItemWithUrl = FeedItem & {
-  readonly feedItemContentType:
-    | FeedItemContentType.Article
-    | FeedItemContentType.Video
-    | FeedItemContentType.Website
-    | FeedItemContentType.Tweet
-    | FeedItemContentType.YouTube;
-  readonly content: FeedItemWithUrlContent;
-};
-
 interface BaseFeedItemContent {
+  readonly feedItemContentType: FeedItemContentType;
   /** Title of the content provided by the source. */
   readonly title: string;
 }
 
-export interface FeedItemWithUrlContent extends BaseFeedItemContent {
-  /** URL of the source content. */
+interface BaseFeedItemContentWithUrl extends BaseFeedItemContent {
   readonly url: string;
-  /** Description of the source content, provided by the source. */
+  /** Description of the content provided by the source. */
   readonly description: string | null;
-  /** Links found in the source content. */
+  /** Outgoing links found in the content. */
   readonly outgoingLinks: string[];
-  /** AI-generated summary of the source content. */
+  /** AI-generated summary of the content. */
   readonly summary: string | null;
 }
 
-export interface XkcdFeedItemContent extends FeedItemWithUrlContent {
+export interface ArticleFeedItemContent extends BaseFeedItemContentWithUrl {
+  readonly feedItemContentType: FeedItemContentType.Article;
+}
+
+export interface VideoFeedItemContent extends BaseFeedItemContentWithUrl {
+  readonly feedItemContentType: FeedItemContentType.Video;
+}
+
+export interface WebsiteFeedItemContent extends BaseFeedItemContentWithUrl {
+  readonly feedItemContentType: FeedItemContentType.Website;
+}
+
+export interface TweetFeedItemContent extends BaseFeedItemContentWithUrl {
+  readonly feedItemContentType: FeedItemContentType.Tweet;
+}
+
+export interface YouTubeFeedItemContent extends BaseFeedItemContentWithUrl {
+  readonly feedItemContentType: FeedItemContentType.YouTube;
+}
+
+export interface XkcdFeedItemContent extends BaseFeedItemContent {
+  readonly feedItemContentType: FeedItemContentType.Xkcd;
+  readonly url: string;
+  /** AI-generated summary of the XKCD comic. */
+  readonly summary: string | null;
+  /** Alt text for the comic image. */
   readonly altText: string;
+  /** URL of the small version of the comic image. */
   readonly imageUrlSmall: string;
+  /** URL of the large version of the comic image. */
   readonly imageUrlLarge: string;
 }
 
 export interface IntervalFeedItemContent extends BaseFeedItemContent {
+  readonly feedItemContentType: FeedItemContentType.Interval;
   readonly intervalSeconds: number;
 }
 
 export type FeedItemContent =
-  | FeedItemWithUrlContent
+  | ArticleFeedItemContent
+  | VideoFeedItemContent
+  | WebsiteFeedItemContent
+  | TweetFeedItemContent
+  | YouTubeFeedItemContent
   | XkcdFeedItemContent
   | IntervalFeedItemContent;
 

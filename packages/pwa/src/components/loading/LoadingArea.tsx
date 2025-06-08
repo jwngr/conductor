@@ -3,7 +3,7 @@ import type React from 'react';
 import {useDelayedVisibility} from '@sharedClient/hooks/utils.hook';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
-import {Text} from '@src/components/atoms/Text';
+import {H2} from '@src/components/atoms/Text';
 
 export const LoadingArea: React.FC<{
   readonly text: string | React.ReactElement;
@@ -21,9 +21,9 @@ export const LoadingArea: React.FC<{
       className="animate-in fade-in h-full w-full duration-300"
     >
       <FlexColumn align="center" gap={6} className="w-full max-w-[720px]">
-        <Text as="h2" bold align="center">
+        <H2 bold align="center">
           {text}
-        </Text>
+        </H2>
       </FlexColumn>
     </FlexColumn>
   );

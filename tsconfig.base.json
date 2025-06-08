@@ -8,8 +8,7 @@
     // Enable strict type checking.
     "strict": true,
 
-    // TODO: Ideally this would not be set, or could be replaced with an allow-list of offending
-    // packages.
+    // Skip type checking for external libraries. Just too much maintenance.
     "skipLibCheck": true,
 
     // Default to Node compatibility and override in each sub-package as needed.

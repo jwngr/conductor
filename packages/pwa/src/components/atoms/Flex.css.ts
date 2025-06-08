@@ -44,10 +44,10 @@ export const flex = recipe({
       false: {flexWrap: 'nowrap'},
     },
     flexValue: {
-      1: {flex: 1},
+      true: {flex: 1},
+      false: {flex: 'none'},
       auto: {flex: 'auto'},
       initial: {flex: 'initial'},
-      none: {flex: 'none'},
     },
     overflow: {
       auto: {overflow: 'auto'},

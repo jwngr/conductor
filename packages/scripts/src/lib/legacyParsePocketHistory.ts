@@ -1,8 +1,6 @@
 import path from 'path';
 import {fileURLToPath} from 'url';
 
-import dotenv from 'dotenv';
-
 import {logger} from '@shared/services/logger.shared';
 
 import {prefixError} from '@shared/lib/errorUtils.shared';
@@ -15,19 +13,13 @@ import type {PocketImportItem} from '@shared/types/pocket.types';
 
 import {ServerPocketService} from '@sharedServer/lib/pocket.server';
 
+import {env} from '@src/lib/environment.scripts';
 import {initServices} from '@src/lib/initServices.scripts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load environment variables from packages/scripts/.env file
-const envResult = dotenv.config({path: path.resolve(__dirname, '../../.env')});
-if (envResult.error) {
-  logger.log(`Error loading .env file: ${envResult.error.message}`);
-  process.exit(1);
-}
-
-const accountIdResult = parseAccountId(process.env.FIREBASE_USER_ID || '');
+const accountIdResult = parseAccountId(env.firebaseUserId);
 if (!accountIdResult.success) {
   logger.error(prefixError(accountIdResult.error, 'Invalid FIREBASE_USER_ID environment variable'));
   process.exit(1);
@@ -47,7 +39,7 @@ const POCKET_EXPORT_FILE_PATH = path.resolve(args[0]);
  * Throws if the Firecrawl API key environment variable is not defined.
  */
 function validateFirecrawlApiKey(): string {
-  const firecrawlApiKey = process.env.FIRECRAWL_API_KEY;
+  const firecrawlApiKey = env.firecrawlApiKey;
 
   if (!firecrawlApiKey) {
     logger.error(new Error('FIRECRAWL_API_KEY environment variable is not defined'));
@@ -86,13 +78,12 @@ async function main(): Promise<void> {
     const createFeedItemResult = await feedItemsService.createFeedItemFromUrl({
       feedSource: POCKET_EXPORT_FEED_SOURCE,
       accountId,
-      content: {
-        url: pocketItem.url,
-        title: pocketItem.title,
-        description: null,
-        outgoingLinks: [],
-        summary: null,
-      },
+      url: pocketItem.url,
+      title: pocketItem.title,
+      // These values are not provided in the Pocket export.
+      description: null,
+      outgoingLinks: [],
+      summary: null,
     });
 
     if (!createFeedItemResult.success) {

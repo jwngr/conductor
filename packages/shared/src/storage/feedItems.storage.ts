@@ -9,30 +9,46 @@ import {parseFeedSource} from '@shared/parsers/feedSources.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {
+  ArticleFeedItem,
+  ArticleFeedItemContent,
   FeedItem,
   FeedItemId,
   FeedItemImportState,
-  FeedItemWithUrl,
-  FeedItemWithUrlContent,
   IntervalFeedItem,
   IntervalFeedItemContent,
   TriageStatus,
+  TweetFeedItem,
+  TweetFeedItemContent,
+  VideoFeedItem,
+  VideoFeedItemContent,
+  WebsiteFeedItem,
+  WebsiteFeedItemContent,
   XkcdFeedItem,
   XkcdFeedItemContent,
+  YouTubeFeedItem,
+  YouTubeFeedItemContent,
 } from '@shared/types/feedItems.types';
 import {FeedItemContentType, FeedItemImportStatus} from '@shared/types/feedItems.types';
 import type {FeedSource} from '@shared/types/feedSources.types';
 import type {Result} from '@shared/types/results.types';
 
 import type {
+  ArticleFeedItemContentFromStorage,
+  ArticleFeedItemFromStorage,
   FeedItemFromStorage,
   FeedItemImportStateFromStorage,
-  FeedItemWithUrlContentFromStorage,
-  FeedItemWithUrlFromStorage,
   IntervalFeedItemContentFromStorage,
   IntervalFeedItemFromStorage,
+  TweetFeedItemContentFromStorage,
+  TweetFeedItemFromStorage,
+  VideoFeedItemContentFromStorage,
+  VideoFeedItemFromStorage,
+  WebsiteFeedItemContentFromStorage,
+  WebsiteFeedItemFromStorage,
   XkcdFeedItemContentFromStorage,
   XkcdFeedItemFromStorage,
+  YouTubeFeedItemContentFromStorage,
+  YouTubeFeedItemFromStorage,
 } from '@shared/schemas/feedItems.schema';
 import {toStorageFeedSource} from '@shared/storage/feedSources.storage';
 
@@ -45,11 +61,15 @@ import {toStorageFeedSource} from '@shared/storage/feedSources.storage';
 export function toStorageFeedItem(feedItem: FeedItem): FeedItemFromStorage {
   switch (feedItem.feedItemContentType) {
     case FeedItemContentType.Article:
+      return toStorageArticleFeedItem(feedItem);
     case FeedItemContentType.Video:
+      return toStorageVideoFeedItem(feedItem);
     case FeedItemContentType.Website:
+      return toStorageWebsiteFeedItem(feedItem);
     case FeedItemContentType.Tweet:
+      return toStorageTweetFeedItem(feedItem);
     case FeedItemContentType.YouTube:
-      return toStorageFeedItemWithUrl(feedItem);
+      return toStorageYouTubeFeedItem(feedItem);
     case FeedItemContentType.Xkcd:
       return toStorageXkcdFeedItem(feedItem);
     case FeedItemContentType.Interval:
@@ -59,14 +79,74 @@ export function toStorageFeedItem(feedItem: FeedItem): FeedItemFromStorage {
   }
 }
 
-function toStorageFeedItemWithUrl(feedItem: FeedItemWithUrl): FeedItemWithUrlFromStorage {
+function toStorageArticleFeedItem(feedItem: ArticleFeedItem): ArticleFeedItemFromStorage {
   return {
+    feedItemContentType: FeedItemContentType.Article,
     feedItemId: feedItem.feedItemId,
-    feedItemContentType: feedItem.feedItemContentType,
-    content: toStorageFeedItemWithUrlContent(feedItem.content),
     feedSource: toStorageFeedSource(feedItem.feedSource),
     accountId: feedItem.accountId,
     importState: feedItem.importState,
+    content: toStorageArticleFeedItemContent(feedItem.content),
+    triageStatus: feedItem.triageStatus,
+    tagIds: feedItem.tagIds,
+    createdTime: feedItem.createdTime,
+    lastUpdatedTime: feedItem.lastUpdatedTime,
+  };
+}
+
+function toStorageVideoFeedItem(feedItem: VideoFeedItem): VideoFeedItemFromStorage {
+  return {
+    feedItemContentType: FeedItemContentType.Video,
+    feedItemId: feedItem.feedItemId,
+    feedSource: toStorageFeedSource(feedItem.feedSource),
+    accountId: feedItem.accountId,
+    importState: feedItem.importState,
+    content: toStorageVideoFeedItemContent(feedItem.content),
+    triageStatus: feedItem.triageStatus,
+    tagIds: feedItem.tagIds,
+    createdTime: feedItem.createdTime,
+    lastUpdatedTime: feedItem.lastUpdatedTime,
+  };
+}
+
+function toStorageWebsiteFeedItem(feedItem: WebsiteFeedItem): WebsiteFeedItemFromStorage {
+  return {
+    feedItemContentType: FeedItemContentType.Website,
+    feedItemId: feedItem.feedItemId,
+    feedSource: toStorageFeedSource(feedItem.feedSource),
+    accountId: feedItem.accountId,
+    importState: feedItem.importState,
+    content: toStorageWebsiteFeedItemContent(feedItem.content),
+    triageStatus: feedItem.triageStatus,
+    tagIds: feedItem.tagIds,
+    createdTime: feedItem.createdTime,
+    lastUpdatedTime: feedItem.lastUpdatedTime,
+  };
+}
+
+function toStorageTweetFeedItem(feedItem: TweetFeedItem): TweetFeedItemFromStorage {
+  return {
+    feedItemContentType: FeedItemContentType.Tweet,
+    feedItemId: feedItem.feedItemId,
+    feedSource: toStorageFeedSource(feedItem.feedSource),
+    accountId: feedItem.accountId,
+    importState: feedItem.importState,
+    content: toStorageTweetFeedItemContent(feedItem.content),
+    triageStatus: feedItem.triageStatus,
+    tagIds: feedItem.tagIds,
+    createdTime: feedItem.createdTime,
+    lastUpdatedTime: feedItem.lastUpdatedTime,
+  };
+}
+
+function toStorageYouTubeFeedItem(feedItem: YouTubeFeedItem): YouTubeFeedItemFromStorage {
+  return {
+    feedItemContentType: FeedItemContentType.YouTube,
+    feedItemId: feedItem.feedItemId,
+    feedSource: toStorageFeedSource(feedItem.feedSource),
+    accountId: feedItem.accountId,
+    importState: feedItem.importState,
+    content: toStorageYouTubeFeedItemContent(feedItem.content),
     triageStatus: feedItem.triageStatus,
     tagIds: feedItem.tagIds,
     createdTime: feedItem.createdTime,
@@ -76,8 +156,8 @@ function toStorageFeedItemWithUrl(feedItem: FeedItemWithUrl): FeedItemWithUrlFro
 
 function toStorageXkcdFeedItem(feedItem: XkcdFeedItem): XkcdFeedItemFromStorage {
   return {
-    feedItemId: feedItem.feedItemId,
     feedItemContentType: FeedItemContentType.Xkcd,
+    feedItemId: feedItem.feedItemId,
     feedSource: toStorageFeedSource(feedItem.feedSource),
     accountId: feedItem.accountId,
     importState: feedItem.importState,
@@ -91,12 +171,12 @@ function toStorageXkcdFeedItem(feedItem: XkcdFeedItem): XkcdFeedItemFromStorage 
 
 function toStorageIntervalFeedItem(feedItem: IntervalFeedItem): IntervalFeedItemFromStorage {
   return {
-    feedItemId: feedItem.feedItemId,
     feedItemContentType: FeedItemContentType.Interval,
-    content: toStorageIntervalFeedItemContent(feedItem.content),
+    feedItemId: feedItem.feedItemId,
     feedSource: toStorageFeedSource(feedItem.feedSource),
     accountId: feedItem.accountId,
     importState: feedItem.importState,
+    content: toStorageIntervalFeedItemContent(feedItem.content),
     triageStatus: feedItem.triageStatus,
     tagIds: feedItem.tagIds,
     createdTime: feedItem.createdTime,
@@ -107,14 +187,20 @@ function toStorageIntervalFeedItem(feedItem: IntervalFeedItem): IntervalFeedItem
 /**
  * Converts a {@link FeedItemFromStorage} into a {@link FeedItem}.
  */
-export function fromStorageFeedItem(feedItemFromStorage: FeedItemFromStorage): Result<FeedItem> {
+export function fromStorageFeedItem(
+  feedItemFromStorage: FeedItemFromStorage
+): Result<FeedItem, Error> {
   switch (feedItemFromStorage.feedItemContentType) {
     case FeedItemContentType.Article:
+      return fromStorageArticleFeedItem(feedItemFromStorage);
     case FeedItemContentType.Video:
+      return fromStorageVideoFeedItem(feedItemFromStorage);
     case FeedItemContentType.Website:
+      return fromStorageWebsiteFeedItem(feedItemFromStorage);
     case FeedItemContentType.Tweet:
+      return fromStorageTweetFeedItem(feedItemFromStorage);
     case FeedItemContentType.YouTube:
-      return fromStorageFeedItemWithUrl(feedItemFromStorage);
+      return fromStorageYouTubeFeedItem(feedItemFromStorage);
     case FeedItemContentType.Xkcd:
       return fromStorageXkcdFeedItem(feedItemFromStorage);
     case FeedItemContentType.Interval:
@@ -124,14 +210,17 @@ export function fromStorageFeedItem(feedItemFromStorage: FeedItemFromStorage): R
   }
 }
 
-function fromStorageFeedItemShared(feedItemFromStorage: FeedItemFromStorage): Result<{
-  readonly feedItemId: FeedItemId;
-  readonly accountId: AccountId;
-  readonly importState: FeedItemImportState;
-  readonly feedSource: FeedSource;
-  readonly feedItemContentType: FeedItemContentType;
-  readonly triageStatus: TriageStatus;
-}> {
+function fromStorageFeedItemShared(feedItemFromStorage: FeedItemFromStorage): Result<
+  {
+    readonly feedItemId: FeedItemId;
+    readonly accountId: AccountId;
+    readonly importState: FeedItemImportState;
+    readonly feedSource: FeedSource;
+    readonly feedItemContentType: FeedItemContentType;
+    readonly triageStatus: TriageStatus;
+  },
+  Error
+> {
   const parsedFeedItemIdResult = parseFeedItemId(feedItemFromStorage.feedItemId);
   if (!parsedFeedItemIdResult.success) return parsedFeedItemIdResult;
 
@@ -154,14 +243,110 @@ function fromStorageFeedItemShared(feedItemFromStorage: FeedItemFromStorage): Re
   });
 }
 
-function fromStorageFeedItemWithUrl(
-  feedItemFromStorage: FeedItemWithUrlFromStorage
-): Result<FeedItemWithUrl> {
+function fromStorageArticleFeedItem(
+  feedItemFromStorage: ArticleFeedItemFromStorage
+): Result<ArticleFeedItem, Error> {
   const parsedFeedItemSharedResult = fromStorageFeedItemShared(feedItemFromStorage);
   if (!parsedFeedItemSharedResult.success) return parsedFeedItemSharedResult;
   const {feedItemId, accountId, importState, feedSource} = parsedFeedItemSharedResult.value;
 
-  const parsedContentResult = fromStorageFeedItemWithUrlContent(feedItemFromStorage.content);
+  const parsedContentResult = fromStorageArticleFeedItemContent(feedItemFromStorage.content);
+  if (!parsedContentResult.success) return parsedContentResult;
+
+  return makeSuccessResult({
+    feedItemContentType: feedItemFromStorage.feedItemContentType,
+    feedItemId,
+    feedSource,
+    accountId,
+    importState,
+    content: parsedContentResult.value,
+    triageStatus: feedItemFromStorage.triageStatus,
+    tagIds: feedItemFromStorage.tagIds,
+    createdTime: feedItemFromStorage.createdTime,
+    lastUpdatedTime: feedItemFromStorage.lastUpdatedTime,
+  });
+}
+
+function fromStorageVideoFeedItem(
+  feedItemFromStorage: VideoFeedItemFromStorage
+): Result<VideoFeedItem, Error> {
+  const parsedFeedItemSharedResult = fromStorageFeedItemShared(feedItemFromStorage);
+  if (!parsedFeedItemSharedResult.success) return parsedFeedItemSharedResult;
+  const {feedItemId, accountId, importState, feedSource} = parsedFeedItemSharedResult.value;
+
+  const parsedContentResult = fromStorageVideoFeedItemContent(feedItemFromStorage.content);
+  if (!parsedContentResult.success) return parsedContentResult;
+
+  return makeSuccessResult({
+    feedItemContentType: feedItemFromStorage.feedItemContentType,
+    feedItemId,
+    feedSource,
+    accountId,
+    importState,
+    content: parsedContentResult.value,
+    triageStatus: feedItemFromStorage.triageStatus,
+    tagIds: feedItemFromStorage.tagIds,
+    createdTime: feedItemFromStorage.createdTime,
+    lastUpdatedTime: feedItemFromStorage.lastUpdatedTime,
+  });
+}
+
+function fromStorageWebsiteFeedItem(
+  feedItemFromStorage: WebsiteFeedItemFromStorage
+): Result<WebsiteFeedItem, Error> {
+  const parsedFeedItemSharedResult = fromStorageFeedItemShared(feedItemFromStorage);
+  if (!parsedFeedItemSharedResult.success) return parsedFeedItemSharedResult;
+  const {feedItemId, accountId, importState, feedSource} = parsedFeedItemSharedResult.value;
+
+  const parsedContentResult = fromStorageWebsiteFeedItemContent(feedItemFromStorage.content);
+  if (!parsedContentResult.success) return parsedContentResult;
+
+  return makeSuccessResult({
+    feedItemContentType: feedItemFromStorage.feedItemContentType,
+    feedItemId,
+    feedSource,
+    accountId,
+    importState,
+    content: parsedContentResult.value,
+    triageStatus: feedItemFromStorage.triageStatus,
+    tagIds: feedItemFromStorage.tagIds,
+    createdTime: feedItemFromStorage.createdTime,
+    lastUpdatedTime: feedItemFromStorage.lastUpdatedTime,
+  });
+}
+
+function fromStorageTweetFeedItem(
+  feedItemFromStorage: TweetFeedItemFromStorage
+): Result<TweetFeedItem, Error> {
+  const parsedFeedItemSharedResult = fromStorageFeedItemShared(feedItemFromStorage);
+  if (!parsedFeedItemSharedResult.success) return parsedFeedItemSharedResult;
+  const {feedItemId, accountId, importState, feedSource} = parsedFeedItemSharedResult.value;
+
+  const parsedContentResult = fromStorageTweetFeedItemContent(feedItemFromStorage.content);
+  if (!parsedContentResult.success) return parsedContentResult;
+
+  return makeSuccessResult({
+    feedItemContentType: feedItemFromStorage.feedItemContentType,
+    feedItemId,
+    feedSource,
+    accountId,
+    importState,
+    content: parsedContentResult.value,
+    triageStatus: feedItemFromStorage.triageStatus,
+    tagIds: feedItemFromStorage.tagIds,
+    createdTime: feedItemFromStorage.createdTime,
+    lastUpdatedTime: feedItemFromStorage.lastUpdatedTime,
+  });
+}
+
+function fromStorageYouTubeFeedItem(
+  feedItemFromStorage: YouTubeFeedItemFromStorage
+): Result<YouTubeFeedItem, Error> {
+  const parsedFeedItemSharedResult = fromStorageFeedItemShared(feedItemFromStorage);
+  if (!parsedFeedItemSharedResult.success) return parsedFeedItemSharedResult;
+  const {feedItemId, accountId, importState, feedSource} = parsedFeedItemSharedResult.value;
+
+  const parsedContentResult = fromStorageYouTubeFeedItemContent(feedItemFromStorage.content);
   if (!parsedContentResult.success) return parsedContentResult;
 
   return makeSuccessResult({
@@ -180,7 +365,7 @@ function fromStorageFeedItemWithUrl(
 
 function fromStorageXkcdFeedItem(
   feedItemFromStorage: XkcdFeedItemFromStorage
-): Result<XkcdFeedItem> {
+): Result<XkcdFeedItem, Error> {
   const parsedFeedItemSharedResult = fromStorageFeedItemShared(feedItemFromStorage);
   if (!parsedFeedItemSharedResult.success) return parsedFeedItemSharedResult;
   const {feedItemId, accountId, importState, feedSource} = parsedFeedItemSharedResult.value;
@@ -204,7 +389,7 @@ function fromStorageXkcdFeedItem(
 
 function fromStorageIntervalFeedItem(
   feedItemFromStorage: IntervalFeedItemFromStorage
-): Result<IntervalFeedItem> {
+): Result<IntervalFeedItem, Error> {
   const parsedFeedItemSharedResult = fromStorageFeedItemShared(feedItemFromStorage);
   if (!parsedFeedItemSharedResult.success) return parsedFeedItemSharedResult;
   const {feedItemId, accountId, importState, feedSource} = parsedFeedItemSharedResult.value;
@@ -229,15 +414,79 @@ function fromStorageIntervalFeedItem(
 /////////////////////////
 //  FEED ITEM CONTENT  //
 /////////////////////////
-function toStorageXkcdFeedItemContent(
-  feedItemContent: XkcdFeedItemContent
-): XkcdFeedItemContentFromStorage {
+function toStorageArticleFeedItemContent(
+  feedItemContent: ArticleFeedItemContent
+): ArticleFeedItemContentFromStorage {
   return {
+    feedItemContentType: FeedItemContentType.Article,
     title: feedItemContent.title,
     url: feedItemContent.url,
     description: feedItemContent.description,
     summary: feedItemContent.summary,
     outgoingLinks: feedItemContent.outgoingLinks,
+  };
+}
+
+function toStorageVideoFeedItemContent(
+  feedItemContent: VideoFeedItemContent
+): VideoFeedItemContentFromStorage {
+  return {
+    feedItemContentType: FeedItemContentType.Video,
+    title: feedItemContent.title,
+    url: feedItemContent.url,
+    description: feedItemContent.description,
+    summary: feedItemContent.summary,
+    outgoingLinks: feedItemContent.outgoingLinks,
+  };
+}
+
+function toStorageWebsiteFeedItemContent(
+  feedItemContent: WebsiteFeedItemContent
+): WebsiteFeedItemContentFromStorage {
+  return {
+    feedItemContentType: FeedItemContentType.Website,
+    title: feedItemContent.title,
+    url: feedItemContent.url,
+    description: feedItemContent.description,
+    summary: feedItemContent.summary,
+    outgoingLinks: feedItemContent.outgoingLinks,
+  };
+}
+
+function toStorageTweetFeedItemContent(
+  feedItemContent: TweetFeedItemContent
+): TweetFeedItemContentFromStorage {
+  return {
+    feedItemContentType: FeedItemContentType.Tweet,
+    title: feedItemContent.title,
+    url: feedItemContent.url,
+    description: feedItemContent.description,
+    summary: feedItemContent.summary,
+    outgoingLinks: feedItemContent.outgoingLinks,
+  };
+}
+
+function toStorageYouTubeFeedItemContent(
+  feedItemContent: YouTubeFeedItemContent
+): YouTubeFeedItemContentFromStorage {
+  return {
+    feedItemContentType: FeedItemContentType.YouTube,
+    title: feedItemContent.title,
+    url: feedItemContent.url,
+    description: feedItemContent.description,
+    summary: feedItemContent.summary,
+    outgoingLinks: feedItemContent.outgoingLinks,
+  };
+}
+
+function toStorageXkcdFeedItemContent(
+  feedItemContent: XkcdFeedItemContent
+): XkcdFeedItemContentFromStorage {
+  return {
+    feedItemContentType: FeedItemContentType.Xkcd,
+    title: feedItemContent.title,
+    url: feedItemContent.url,
+    summary: feedItemContent.summary,
     altText: feedItemContent.altText,
     imageUrlSmall: feedItemContent.imageUrlSmall,
     imageUrlLarge: feedItemContent.imageUrlLarge,
@@ -248,33 +497,85 @@ function toStorageIntervalFeedItemContent(
   feedItemContent: IntervalFeedItemContent
 ): IntervalFeedItemContentFromStorage {
   return {
+    feedItemContentType: FeedItemContentType.Interval,
     title: feedItemContent.title,
     intervalSeconds: feedItemContent.intervalSeconds,
   };
 }
 
-function toStorageFeedItemWithUrlContent(
-  feedItemContent: FeedItemWithUrlContent
-): FeedItemWithUrlContentFromStorage {
-  return {
-    title: feedItemContent.title,
-    url: feedItemContent.url,
-    description: feedItemContent.description,
-    summary: feedItemContent.summary,
-    outgoingLinks: feedItemContent.outgoingLinks,
-  };
-}
-
-function fromStorageXkcdFeedItemContent(
-  feedItemContentFromStorage: XkcdFeedItemContentFromStorage
-): Result<XkcdFeedItemContent> {
+function fromStorageArticleFeedItemContent(
+  feedItemContentFromStorage: ArticleFeedItemContentFromStorage
+): Result<ArticleFeedItemContent, Error> {
   return makeSuccessResult({
-    feedItemContentType: FeedItemContentType.Xkcd,
+    feedItemContentType: FeedItemContentType.Article,
     title: feedItemContentFromStorage.title,
     url: feedItemContentFromStorage.url,
     description: feedItemContentFromStorage.description,
     summary: feedItemContentFromStorage.summary,
     outgoingLinks: feedItemContentFromStorage.outgoingLinks,
+  });
+}
+
+function fromStorageVideoFeedItemContent(
+  feedItemContentFromStorage: VideoFeedItemContentFromStorage
+): Result<VideoFeedItemContent, Error> {
+  return makeSuccessResult({
+    feedItemContentType: FeedItemContentType.Video,
+    title: feedItemContentFromStorage.title,
+    url: feedItemContentFromStorage.url,
+    description: feedItemContentFromStorage.description,
+    summary: feedItemContentFromStorage.summary,
+    outgoingLinks: feedItemContentFromStorage.outgoingLinks,
+  });
+}
+
+function fromStorageWebsiteFeedItemContent(
+  feedItemContentFromStorage: WebsiteFeedItemContentFromStorage
+): Result<WebsiteFeedItemContent, Error> {
+  return makeSuccessResult({
+    feedItemContentType: FeedItemContentType.Website,
+    title: feedItemContentFromStorage.title,
+    url: feedItemContentFromStorage.url,
+    description: feedItemContentFromStorage.description,
+    summary: feedItemContentFromStorage.summary,
+    outgoingLinks: feedItemContentFromStorage.outgoingLinks,
+  });
+}
+
+function fromStorageTweetFeedItemContent(
+  feedItemContentFromStorage: TweetFeedItemContentFromStorage
+): Result<TweetFeedItemContent, Error> {
+  return makeSuccessResult({
+    feedItemContentType: FeedItemContentType.Tweet,
+    title: feedItemContentFromStorage.title,
+    url: feedItemContentFromStorage.url,
+    description: feedItemContentFromStorage.description,
+    summary: feedItemContentFromStorage.summary,
+    outgoingLinks: feedItemContentFromStorage.outgoingLinks,
+  });
+}
+
+function fromStorageYouTubeFeedItemContent(
+  feedItemContentFromStorage: YouTubeFeedItemContentFromStorage
+): Result<YouTubeFeedItemContent, Error> {
+  return makeSuccessResult({
+    feedItemContentType: FeedItemContentType.YouTube,
+    title: feedItemContentFromStorage.title,
+    url: feedItemContentFromStorage.url,
+    description: feedItemContentFromStorage.description,
+    summary: feedItemContentFromStorage.summary,
+    outgoingLinks: feedItemContentFromStorage.outgoingLinks,
+  });
+}
+
+function fromStorageXkcdFeedItemContent(
+  feedItemContentFromStorage: XkcdFeedItemContentFromStorage
+): Result<XkcdFeedItemContent, Error> {
+  return makeSuccessResult({
+    feedItemContentType: FeedItemContentType.Xkcd,
+    title: feedItemContentFromStorage.title,
+    url: feedItemContentFromStorage.url,
+    summary: feedItemContentFromStorage.summary,
     altText: feedItemContentFromStorage.altText,
     imageUrlSmall: feedItemContentFromStorage.imageUrlSmall,
     imageUrlLarge: feedItemContentFromStorage.imageUrlLarge,
@@ -283,23 +584,11 @@ function fromStorageXkcdFeedItemContent(
 
 function fromStorageIntervalFeedItemContent(
   feedItemContentFromStorage: IntervalFeedItemContentFromStorage
-): Result<IntervalFeedItemContent> {
+): Result<IntervalFeedItemContent, Error> {
   return makeSuccessResult({
     feedItemContentType: FeedItemContentType.Interval,
     title: feedItemContentFromStorage.title,
     intervalSeconds: feedItemContentFromStorage.intervalSeconds,
-  });
-}
-
-function fromStorageFeedItemWithUrlContent(
-  feedItemContentFromStorage: FeedItemWithUrlContentFromStorage
-): Result<FeedItemWithUrlContent> {
-  return makeSuccessResult({
-    title: feedItemContentFromStorage.title,
-    url: feedItemContentFromStorage.url,
-    description: feedItemContentFromStorage.description,
-    summary: feedItemContentFromStorage.summary,
-    outgoingLinks: feedItemContentFromStorage.outgoingLinks,
   });
 }
 
@@ -311,7 +600,7 @@ function fromStorageFeedItemWithUrlContent(
  */
 function fromStorageFeedItemImportState(
   feedItemImportState: FeedItemImportStateFromStorage
-): Result<FeedItemImportState> {
+): Result<FeedItemImportState, Error> {
   const status = feedItemImportState.status;
   switch (status) {
     case FeedItemImportStatus.New:

@@ -13,11 +13,13 @@ import {
 import {useExplainXkcdMarkdown} from '@sharedClient/hooks/feedItems.hooks';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
-import {Text} from '@src/components/atoms/Text';
+import {H5, P} from '@src/components/atoms/Text';
 import {ErrorArea} from '@src/components/errors/ErrorArea';
 import {SimpleFeedItemRenderer} from '@src/components/feedItems/FeedItem';
 import {LoadingArea} from '@src/components/loading/LoadingArea';
 import {Markdown} from '@src/components/Markdown';
+
+import {firebaseService} from '@src/lib/firebase.pwa';
 
 const XkcdImageAndAltText: React.FC<{
   readonly imageUrl: string;
@@ -29,16 +31,16 @@ const XkcdImageAndAltText: React.FC<{
   return (
     <FlexColumn gap={4} align="center">
       <img className="w-auto max-w-[960px]" src={imageUrl} alt={altText} />
-      <Text as="h5">Title text</Text>
-      <Text as="p" light className="max-w-prose italic">
+      <H5>Title text</H5>
+      <P light className="max-w-prose italic">
         {altText}
-      </Text>
+      </P>
     </FlexColumn>
   );
 };
 
 const ExplainXkcdContent: React.FC<{readonly feedItem: XkcdFeedItem}> = ({feedItem}) => {
-  const markdownState = useExplainXkcdMarkdown(feedItem);
+  const markdownState = useExplainXkcdMarkdown({feedItem, firebaseService});
 
   switch (markdownState.status) {
     case AsyncStatus.Idle:
@@ -56,7 +58,7 @@ const ExplainXkcdContent: React.FC<{readonly feedItem: XkcdFeedItem}> = ({feedIt
     case AsyncStatus.Success:
       return (
         <>
-          <Text as="h5">Explanation from Explain XKCD</Text>
+          <H5>Explanation from Explain XKCD</H5>
           <Markdown content={markdownState.value} />
         </>
       );

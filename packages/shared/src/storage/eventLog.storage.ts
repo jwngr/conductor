@@ -48,7 +48,7 @@ export function toStorageEventLogItem(eventLogItem: EventLogItem): EventLogItemF
  */
 export function fromStorageEventLogItem(
   eventLogItemFromStorage: EventLogItemFromStorage
-): Result<EventLogItem> {
+): Result<EventLogItem, Error> {
   const parsedAccountIdResult = parseAccountId(eventLogItemFromStorage.accountId);
   if (!parsedAccountIdResult.success) return parsedAccountIdResult;
 
@@ -78,7 +78,7 @@ export function fromStorageEventLogItem(
 function toStorageEventLogItemData(
   eventLogItemData: EventLogItemData
 ): EventLogItemDataFromStorage {
-  // The types are compatible and require no additional transformation before storage.
+  // TODO(types): Figure out why this doesn't result in any type errors.
   return eventLogItemData;
 }
 
@@ -87,7 +87,7 @@ function toStorageEventLogItemData(
  */
 function fromStorageEventLogItemData(
   eventLogItemDataFromStorage: EventLogItemDataFromStorage
-): Result<EventLogItemData> {
+): Result<EventLogItemData, Error> {
   switch (eventLogItemDataFromStorage.eventType) {
     // Some events contain simple types which need no parsing.
     case EventType.ExperimentEnabled:
@@ -112,7 +112,7 @@ function fromStorageEventLogItemData(
 
 function fromStorageFeedItemActionEventLogItemData(
   eventLogItemFromStorage: FeedItemActionEventLogItemDataFromStorage
-): Result<FeedItemActionEventLogItemData> {
+): Result<FeedItemActionEventLogItemData, Error> {
   const parsedFeedItemIdResult = parseFeedItemId(eventLogItemFromStorage.feedItemId);
   if (!parsedFeedItemIdResult.success) return parsedFeedItemIdResult;
 
@@ -120,12 +120,13 @@ function fromStorageFeedItemActionEventLogItemData(
     eventType: EventType.FeedItemAction,
     feedItemId: parsedFeedItemIdResult.value,
     feedItemActionType: eventLogItemFromStorage.feedItemActionType,
+    isUndo: eventLogItemFromStorage.isUndo,
   });
 }
 
 function fromStorageFeedItemImportedEventLogItemData(
   eventLogItemFromStorage: FeedItemImportedEventLogItemDataFromStorage
-): Result<FeedItemImportedEventLogItemData> {
+): Result<FeedItemImportedEventLogItemData, Error> {
   const parsedFeedItemIdResult = parseFeedItemId(eventLogItemFromStorage.feedItemId);
   if (!parsedFeedItemIdResult.success) return parsedFeedItemIdResult;
 
@@ -137,7 +138,7 @@ function fromStorageFeedItemImportedEventLogItemData(
 
 function fromStorageSubscribedToFeedSourceEventLogItemData(
   eventLogItemData: SubscribedToFeedSourceEventLogItemDataFromStorage
-): Result<SubscribedToFeedSourceEventLogItemData> {
+): Result<SubscribedToFeedSourceEventLogItemData, Error> {
   const parsedSubIdResult = parseUserFeedSubscriptionId(eventLogItemData.userFeedSubscriptionId);
   if (!parsedSubIdResult.success) return parsedSubIdResult;
 
@@ -145,13 +146,13 @@ function fromStorageSubscribedToFeedSourceEventLogItemData(
     eventType: EventType.SubscribedToFeedSource,
     feedSourceType: eventLogItemData.feedSourceType,
     userFeedSubscriptionId: parsedSubIdResult.value,
-    isResubscribe: eventLogItemData.isResubscribe,
+    isNewSubscription: eventLogItemData.isNewSubscription,
   });
 }
 
 function fromStorageUnsubscribedFromFeedSourceEventLogItemData(
   eventLogItemData: UnsubscribedFromFeedSourceEventLogItemDataFromStorage
-): Result<UnsubscribedFromFeedSourceEventLogItemData> {
+): Result<UnsubscribedFromFeedSourceEventLogItemData, Error> {
   const parsedSubIdResult = parseUserFeedSubscriptionId(eventLogItemData.userFeedSubscriptionId);
   if (!parsedSubIdResult.success) return parsedSubIdResult;
 

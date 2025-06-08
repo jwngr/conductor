@@ -17,9 +17,12 @@ import {
 } from '@sharedClient/hooks/feedItems.hooks';
 
 import {Button} from '@src/components/atoms/Button';
+import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {ErrorArea} from '@src/components/errors/ErrorArea';
 import {LoadingArea} from '@src/components/loading/LoadingArea';
 import {Markdown} from '@src/components/Markdown';
+
+import {firebaseService} from '@src/lib/firebase.pwa';
 
 type RenderStrategy = 'firecrawl' | 'defuddle';
 
@@ -36,7 +39,7 @@ const MarkdownErrorArea: React.FC<{readonly error: Error; readonly title: string
 };
 
 const FirecrawlMarkdownRenderer: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
-  const markdownState = useFeedItemMarkdown(feedItem);
+  const markdownState = useFeedItemMarkdown({feedItem, firebaseService});
 
   switch (markdownState.status) {
     case AsyncStatus.Idle:
@@ -54,7 +57,7 @@ const FirecrawlMarkdownRenderer: React.FC<{readonly feedItem: FeedItem}> = ({fee
 };
 
 const DefuddleMarkdownRenderer: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
-  const markdownState = useFeedItemDefuddleMarkdown(feedItem);
+  const markdownState = useFeedItemDefuddleMarkdown({feedItem, firebaseService});
 
   switch (markdownState.status) {
     case AsyncStatus.Idle:
@@ -75,8 +78,8 @@ export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedI
   const [renderStrategy, setRenderStrategy] = useState<RenderStrategy>('firecrawl');
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex gap-2">
+    <FlexColumn gap={3}>
+      <FlexRow gap={2}>
         <Button
           variant={renderStrategy === 'firecrawl' ? 'default' : 'outline'}
           size="sm"
@@ -91,13 +94,13 @@ export const FeedItemMarkdown: React.FC<{readonly feedItem: FeedItem}> = ({feedI
         >
           Defuddle
         </Button>
-      </div>
+      </FlexRow>
 
       {renderStrategy === 'firecrawl' ? (
         <FirecrawlMarkdownRenderer feedItem={feedItem} />
       ) : (
         <DefuddleMarkdownRenderer feedItem={feedItem} />
       )}
-    </div>
+    </FlexColumn>
   );
 };
