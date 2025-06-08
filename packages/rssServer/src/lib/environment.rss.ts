@@ -17,7 +17,9 @@ function getEnvironmentVariables(): Result<RssServerEnvironmentVariables, Error>
   if (!parsedEnvResult.success) {
     return makeErrorResult(new Error('Failed to parse environment variables'));
   }
-  return makeSuccessResult(parsedEnvResult.data as RssServerEnvironmentVariables);
+  return makeSuccessResult({
+    port: parsedEnvResult.data.LOCAL_RSS_FEED_PROVIDER_PORT,
+  });
 }
 
 const envResult = getEnvironmentVariables();
@@ -28,10 +30,10 @@ if (!envResult.success) {
 
 const env = envResult.value;
 
-if (!isValidPort(env.LOCAL_RSS_FEED_PROVIDER_PORT)) {
+if (!isValidPort(env.port)) {
   const message = 'LOCAL_RSS_FEED_PROVIDER_PORT environment variable must be a valid port number';
-  logger.error(new Error(message), {port: env.LOCAL_RSS_FEED_PROVIDER_PORT});
+  logger.error(new Error(message), {port: env.port});
   process.exit(1);
 }
 
-export const rssServerPort = env.LOCAL_RSS_FEED_PROVIDER_PORT;
+export const rssServerPort = env.port;

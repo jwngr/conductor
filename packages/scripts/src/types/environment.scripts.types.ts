@@ -5,4 +5,7 @@ export const ScriptsEnvironmentVariablesSchema = z.object({
   FIRECRAWL_API_KEY: z.string().min(1),
 });
 
-export type ScriptsEnvironmentVariables = z.infer<typeof ScriptsEnvironmentVariablesSchema>;
+export interface ScriptsEnvironmentVariables {
+  readonly firebaseUserId: string;
+  readonly firecrawlApiKey: string;
+}

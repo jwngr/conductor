@@ -16,7 +16,10 @@ function getEnvironmentVariables(): Result<ScriptsEnvironmentVariables, Error> {
   if (!parsedEnvResult.success) {
     return makeErrorResult(new Error('Failed to parse environment variables'));
   }
-  return makeSuccessResult(parsedEnvResult.data as ScriptsEnvironmentVariables);
+  return makeSuccessResult({
+    firebaseUserId: parsedEnvResult.data.FIREBASE_USER_ID,
+    firecrawlApiKey: parsedEnvResult.data.FIRECRAWL_API_KEY,
+  });
 }
 
 const envResult = getEnvironmentVariables();

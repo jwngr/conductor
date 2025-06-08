@@ -24,7 +24,7 @@ import {rootRoute} from '@src/routes/__root';
 import {Screen} from '@src/screens/Screen';
 
 const PASSWORDLESS_AUTH_ACTION_CODE_SETTINGS: ActionCodeSettings = {
-  url: env.CONDUCTOR_URL, // URL to redirect back to.
+  url: env.conductorUrl, // URL to redirect back to.
   handleCodeInApp: true, // Must be true for this flow.
 };
 

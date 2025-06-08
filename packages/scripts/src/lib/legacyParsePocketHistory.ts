@@ -28,7 +28,7 @@ if (envResult.error) {
   process.exit(1);
 }
 
-const accountIdResult = parseAccountId(env.FIREBASE_USER_ID);
+const accountIdResult = parseAccountId(env.firebaseUserId);
 if (!accountIdResult.success) {
   logger.error(prefixError(accountIdResult.error, 'Invalid FIREBASE_USER_ID environment variable'));
   process.exit(1);
@@ -48,7 +48,7 @@ const POCKET_EXPORT_FILE_PATH = path.resolve(args[0]);
  * Throws if the Firecrawl API key environment variable is not defined.
  */
 function validateFirecrawlApiKey(): string {
-  const firecrawlApiKey = env.FIRECRAWL_API_KEY;
+  const firecrawlApiKey = env.firecrawlApiKey;
 
   if (!firecrawlApiKey) {
     logger.error(new Error('FIRECRAWL_API_KEY environment variable is not defined'));

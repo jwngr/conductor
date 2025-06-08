@@ -1,3 +1,5 @@
+import {prettifyError} from 'zod/v4';
+
 import {logger} from '@shared/services/logger.shared';
 
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
@@ -10,9 +12,21 @@ import {PWAEnvironmentVariablesSchema} from '@src/types/environment.pwa.types';
 function getEnvironmentVariables(): Result<PWAEnvironmentVariables, Error> {
   const parsedEnvResult = PWAEnvironmentVariablesSchema.safeParse(import.meta.env);
   if (!parsedEnvResult.success) {
-    return makeErrorResult(new Error('Failed to parse environment variables'));
+    const zodErrorMessage = prettifyError(parsedEnvResult.error);
+    return makeErrorResult(new Error(`Failed to parse environment variables: ${zodErrorMessage}`));
   }
-  return makeSuccessResult(parsedEnvResult.data as PWAEnvironmentVariables);
+  return makeSuccessResult({
+    mode: parsedEnvResult.data.MODE,
+    conductorUrl: parsedEnvResult.data.VITE_CONDUCTOR_URL,
+    firebaseApiKey: parsedEnvResult.data.VITE_FIREBASE_API_KEY,
+    firebaseAuthDomain: parsedEnvResult.data.VITE_FIREBASE_AUTH_DOMAIN,
+    firebaseProjectId: parsedEnvResult.data.VITE_FIREBASE_PROJECT_ID,
+    firebaseStorageBucket: parsedEnvResult.data.VITE_FIREBASE_STORAGE_BUCKET,
+    firebaseMessagingSenderId: parsedEnvResult.data.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    firebaseAppId: parsedEnvResult.data.VITE_FIREBASE_APP_ID,
+    firebaseMeasurementId: parsedEnvResult.data.VITE_FIREBASE_MEASUREMENT_ID ?? null,
+    firebaseUseEmulator: parsedEnvResult.data.VITE_FIREBASE_USE_EMULATOR,
+  });
 }
 
 const envResult = getEnvironmentVariables();
@@ -24,4 +38,4 @@ if (!envResult.success) {
 }
 
 export const env = envResult.value;
-export const IS_DEVELOPMENT = env.DEV;
+export const IS_DEVELOPMENT = env.mode === 'development';

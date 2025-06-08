@@ -8,13 +8,13 @@ import {env, IS_DEVELOPMENT} from '@src/lib/environment.pwa';
 
 function getFirebaseConfig(): FirebaseConfig {
   return {
-    apiKey: env.API_KEY,
-    authDomain: env.AUTH_DOMAIN,
-    projectId: env.PROJECT_ID,
-    storageBucket: env.STORAGE_BUCKET,
-    messagingSenderId: env.MESSAGING_SENDER_ID,
-    appId: env.APP_ID,
-    measurementId: env.MEASUREMENT_ID,
+    apiKey: env.firebaseApiKey,
+    authDomain: env.firebaseAuthDomain,
+    projectId: env.firebaseProjectId,
+    storageBucket: env.firebaseStorageBucket,
+    messagingSenderId: env.firebaseMessagingSenderId,
+    appId: env.firebaseAppId,
+    measurementId: env.firebaseMeasurementId ?? undefined,
   };
 }
 
@@ -22,7 +22,7 @@ function getFirebaseConfig(): FirebaseConfig {
 const firebaseConfig = getFirebaseConfig();
 const isEmulatorEnabled = getIsFirebaseEmulatorEnabled({
   isDevelopment: IS_DEVELOPMENT,
-  isEmulatorEnabledEnvVar: env.FIREBASE_USE_EMULATOR,
+  isEmulatorEnabledEnvVar: env.firebaseUseEmulator,
 });
 export const firebaseService = new ClientFirebaseService({
   config: firebaseConfig,
