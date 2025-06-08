@@ -23,7 +23,7 @@ import {
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AsyncResult, Result} from '@shared/types/results.types';
-import type {Func} from '@shared/types/utils.types';
+import type {BaseStoreItem, Func} from '@shared/types/utils.types';
 
 import {serverTimestampSupplier} from '@sharedServer/services/firebase.server';
 import type {ServerFirebaseService} from '@sharedServer/services/firebase.server';
@@ -33,14 +33,17 @@ const BATCH_DELETE_SIZE = 500;
 /**
  * Creates a strongly-typed Firestore data converter.
  */
-function makeFirestoreDataConverter<ItemData, FirestoreItemData extends DocumentData>(
-  toFirestore: Func<ItemData, FirestoreItemData>,
-  fromFirestore: Func<FirestoreItemData, Result<ItemData, Error>>
-): FirestoreDataConverter<ItemData, FirestoreItemData> {
+function makeFirestoreDataConverter<
+  ItemData extends BaseStoreItem,
+  ItemDataFromStorage extends DocumentData,
+>(
+  toFirestore: Func<ItemData, ItemDataFromStorage>,
+  fromFirestore: Func<ItemDataFromStorage, Result<ItemData, Error>>
+): FirestoreDataConverter<ItemData, ItemDataFromStorage> {
   return {
     toFirestore,
     fromFirestore: (snapshot: QueryDocumentSnapshot): ItemData => {
-      const data = snapshot.data() as FirestoreItemData;
+      const data = snapshot.data() as ItemDataFromStorage;
 
       const parseDataResult = fromFirestore(data);
       if (!parseDataResult.success) {
@@ -59,18 +62,18 @@ function makeFirestoreDataConverter<ItemData, FirestoreItemData extends Document
 
 export class ServerFirestoreCollectionService<
   ItemId extends string,
-  ItemData,
-  ItemDataFromSchema extends DocumentData,
+  ItemData extends BaseStoreItem,
+  ItemDataFromStorage extends DocumentData,
 > {
   private readonly firebaseService: ServerFirebaseService;
   private readonly collectionPath: string;
-  private readonly converter: FirestoreDataConverter<ItemData, ItemDataFromSchema>;
+  private readonly converter: FirestoreDataConverter<ItemData, ItemDataFromStorage>;
   private readonly parseId: Func<string, Result<ItemId, Error>>;
 
   constructor(args: {
     firebaseService: ServerFirebaseService;
     collectionPath: string;
-    converter: FirestoreDataConverter<ItemData, ItemDataFromSchema>;
+    converter: FirestoreDataConverter<ItemData, ItemDataFromStorage>;
     parseId: Func<string, Result<ItemId, Error>>;
   }) {
     this.firebaseService = args.firebaseService;
@@ -82,7 +85,7 @@ export class ServerFirestoreCollectionService<
   /**
    * Returns the underlying Firestore collection reference.
    */
-  public getCollectionRef(): CollectionReference<ItemData> {
+  public getCollectionRef(): CollectionReference<ItemData, ItemDataFromStorage> {
     return this.firebaseService.firestore
       .collection(this.collectionPath)
       .withConverter(this.converter);
@@ -248,7 +251,7 @@ export class ServerFirestoreCollectionService<
 
 export function makeServerFirestoreCollectionService<
   ItemId extends string,
-  ItemData extends DocumentData,
+  ItemData extends BaseStoreItem,
   ItemDataFromStorage extends DocumentData,
 >(args: {
   readonly firebaseService: ServerFirebaseService;

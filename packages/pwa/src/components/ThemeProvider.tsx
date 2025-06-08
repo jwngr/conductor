@@ -1,9 +1,6 @@
 import type {ReactNode} from 'react';
-import {createContext, useContext, useEffect, useState} from 'react';
+import {createContext, useEffect, useState} from 'react';
 
-import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
-
-import type {Result} from '@shared/types/results.types';
 import {DEFAULT_THEME_PREFERENCE, ThemePreference} from '@shared/types/theme.types';
 import type {Consumer} from '@shared/types/utils.types';
 
@@ -81,12 +78,4 @@ export function ThemeProvider({children}: WithChildren): ReactNode {
       {children}
     </ThemeContext.Provider>
   );
-}
-
-export function useTheme(): Result<ThemeContextType, Error> {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    return makeErrorResult(new Error('useTheme must be used within a ThemeProvider'));
-  }
-  return makeSuccessResult(context);
 }

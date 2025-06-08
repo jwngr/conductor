@@ -15,14 +15,14 @@ import {Views} from '@shared/lib/views.shared';
 
 import {parseFeedItem, parseFeedItemId} from '@shared/parsers/feedItems.parser';
 
-import type {AccountId, AuthStateChangedUnsubscribe} from '@shared/types/accounts.types';
+import type {AccountId} from '@shared/types/accounts.types';
 import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
 import {FeedItemActionType, TriageStatus} from '@shared/types/feedItems.types';
 import type {FeedSource} from '@shared/types/feedSources.types';
 import {fromQueryFilterOp} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import {SystemTagId} from '@shared/types/tags.types';
-import type {Consumer} from '@shared/types/utils.types';
+import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 import type {ViewType} from '@shared/types/views.types';
 
 import type {FeedItemFromStorage} from '@shared/schemas/feedItems.schema';
@@ -75,7 +75,7 @@ export class ClientFeedItemsService {
     feedItemId: FeedItemId,
     successCallback: Consumer<FeedItem | null>, // null means feed item does not exist.
     errorCallback: Consumer<Error>
-  ): AuthStateChangedUnsubscribe {
+  ): Unsubscribe {
     const unsubscribe = this.collectionService.watchDoc(feedItemId, successCallback, errorCallback);
     return () => unsubscribe();
   }
@@ -84,7 +84,7 @@ export class ClientFeedItemsService {
     readonly viewType: ViewType;
     readonly successCallback: Consumer<FeedItem[]>;
     readonly errorCallback: Consumer<Error>;
-  }): AuthStateChangedUnsubscribe {
+  }): Unsubscribe {
     const {viewType, successCallback, errorCallback} = args;
 
     // Construct Firestore queries from the view config.

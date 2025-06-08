@@ -8,7 +8,7 @@ import type {Supplier} from '@shared/types/utils.types';
 export const DEFAULT_ERROR_TITLE = 'Something went wrong';
 
 /** Default error message when one cannot be parsed otherwise. */
-export const UNEXPECTED_ERROR_DEFAULT_MESSAGE = 'An unexpected error occurred';
+const UNKNOWN_ERROR_DEFAULT_MESSAGE = 'An unexpected error occurred';
 
 /**
  * Upgrades an unknown error into a proper `Error` object with the best message possible.
@@ -16,7 +16,7 @@ export const UNEXPECTED_ERROR_DEFAULT_MESSAGE = 'An unexpected error occurred';
 export function upgradeUnknownError(unknownError: unknown): Error {
   // Unknown error is already an `Error` object.
   if (unknownError instanceof Error) {
-    return new Error(unknownError.message || UNEXPECTED_ERROR_DEFAULT_MESSAGE, {
+    return new Error(unknownError.message || UNKNOWN_ERROR_DEFAULT_MESSAGE, {
       cause: unknownError.cause instanceof Error ? unknownError.cause : unknownError,
     });
   }
