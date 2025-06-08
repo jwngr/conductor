@@ -1,11 +1,14 @@
 import type {FeedItemFromStorage} from '@conductor/shared/src/schemas/feedItems.schema';
 import type {DocumentData} from 'firebase-admin/firestore';
 
+import {FEED_ITEMS_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {asyncTry, prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {makeFeedItem, makeFeedItemContentFromUrl} from '@shared/lib/feedItems.shared';
 import {makeIntervalFeedSource} from '@shared/lib/feedSources.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {assertNever} from '@shared/lib/utils.shared';
+
+import {parseFeedItem, parseFeedItemId} from '@shared/parsers/feedItems.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import {FeedItemContentType} from '@shared/types/feedItems.types';
@@ -27,10 +30,15 @@ import type {FeedSource} from '@shared/types/feedSources.types';
 import type {AsyncResult, Result} from '@shared/types/results.types';
 import type {IntervalUserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
+import {toStorageFeedItem} from '@shared/storage/feedItems.storage';
+
 import type {ServerEventLogService} from '@sharedServer/services/eventLog.server';
-import {storage} from '@sharedServer/services/firebase.server';
+import type {ServerFirebaseService} from '@sharedServer/services/firebase.server';
 import type {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
-import type {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
+import {
+  makeServerFirestoreCollectionService,
+  type ServerFirestoreCollectionService,
+} from '@sharedServer/services/firestore.server';
 
 import {WebsiteFeedItemImporter} from '@sharedServer/importers/website.import';
 import {XkcdFeedItemImporter} from '@sharedServer/importers/xkcd.import';
@@ -56,21 +64,29 @@ type FeedItemCollectionService = ServerFirestoreCollectionService<
 >;
 
 export class ServerFeedItemsService {
+  private readonly firebaseService: ServerFirebaseService;
   private readonly storageCollectionPath: string;
   private readonly firecrawlService: ServerFirecrawlService;
   private readonly eventLogService: ServerEventLogService;
   private readonly collectionService: FeedItemCollectionService;
 
   constructor(args: {
+    readonly firebaseService: ServerFirebaseService;
     readonly storageCollectionPath: string;
     readonly firecrawlService: ServerFirecrawlService;
     readonly eventLogService: ServerEventLogService;
-    readonly collectionService: FeedItemCollectionService;
   }) {
     this.storageCollectionPath = args.storageCollectionPath;
     this.firecrawlService = args.firecrawlService;
     this.eventLogService = args.eventLogService;
-    this.collectionService = args.collectionService;
+    this.firebaseService = args.firebaseService;
+    this.collectionService = makeServerFirestoreCollectionService({
+      firebaseService: this.firebaseService,
+      collectionPath: FEED_ITEMS_DB_COLLECTION,
+      toStorage: toStorageFeedItem,
+      fromStorage: parseFeedItem,
+      parseId: parseFeedItemId,
+    });
   }
 
   public async createFeedItemFromUrl(args: {
@@ -181,7 +197,7 @@ export class ServerFeedItemsService {
   }): AsyncResult<void, Error> {
     const {storagePath, content, contentType} = args;
     return await asyncTry(async () => {
-      const file = storage.bucket().file(storagePath);
+      const file = this.firebaseService.storage.bucket().file(storagePath);
       await file.save(content, {contentType});
     });
   }
@@ -207,7 +223,7 @@ export class ServerFeedItemsService {
    */
   public async deleteStorageFilesForAccount(accountId: AccountId): AsyncResult<void, Error> {
     return await asyncTry(async () =>
-      storage.bucket().deleteFiles({
+      this.firebaseService.storage.bucket().deleteFiles({
         prefix: this.getStoragePathForAccount(accountId),
       })
     );

@@ -45,7 +45,7 @@ export class ClientFeedItemsService {
   private readonly accountId: AccountId;
   private readonly eventLogService: ClientEventLogService;
   private readonly feedItemsStorageRef: StorageReference;
-  private readonly feedItemsCollectionService: FeedItemsCollectionService;
+  private readonly collectionService: FeedItemsCollectionService;
 
   constructor(args: {
     readonly accountId: AccountId;
@@ -58,7 +58,7 @@ export class ClientFeedItemsService {
     const storage = args.firebaseService.storage;
     this.feedItemsStorageRef = storageRef(storage, FEED_ITEMS_STORAGE_COLLECTION);
 
-    this.feedItemsCollectionService = makeClientFirestoreCollectionService({
+    this.collectionService = makeClientFirestoreCollectionService({
       firebaseService: args.firebaseService,
       collectionPath: FEED_ITEMS_DB_COLLECTION,
       toStorage: toStorageFeedItem,
@@ -68,7 +68,7 @@ export class ClientFeedItemsService {
   }
 
   public async fetchById(feedItemId: FeedItemId): AsyncResult<FeedItem | null, Error> {
-    return this.feedItemsCollectionService.fetchById(feedItemId);
+    return this.collectionService.fetchById(feedItemId);
   }
 
   public watchFeedItem(
@@ -76,11 +76,7 @@ export class ClientFeedItemsService {
     successCallback: Consumer<FeedItem | null>, // null means feed item does not exist.
     errorCallback: Consumer<Error>
   ): AuthStateChangedUnsubscribe {
-    const unsubscribe = this.feedItemsCollectionService.watchDoc(
-      feedItemId,
-      successCallback,
-      errorCallback
-    );
+    const unsubscribe = this.collectionService.watchDoc(feedItemId, successCallback, errorCallback);
     return () => unsubscribe();
   }
 
@@ -101,9 +97,9 @@ export class ClientFeedItemsService {
       // TODO: Order by created time to ensure a consistent order.
       // orderBy(viewConfig.sort.field, viewConfig.sort.direction),
     ];
-    const itemsQuery = this.feedItemsCollectionService.query(whereClauses);
+    const itemsQuery = this.collectionService.query(whereClauses);
 
-    const unsubscribe = this.feedItemsCollectionService.watchDocs(
+    const unsubscribe = this.collectionService.watchDocs(
       itemsQuery,
       successCallback,
       errorCallback
@@ -125,7 +121,7 @@ export class ClientFeedItemsService {
     const content = makeFeedItemContentFromUrl({url, title, description, outgoingLinks, summary});
     const feedItem = makeFeedItem({feedSource, content, accountId});
 
-    const saveResult = await this.feedItemsCollectionService.setDoc(feedItem.feedItemId, feedItem);
+    const saveResult = await this.collectionService.setDoc(feedItem.feedItemId, feedItem);
     if (!saveResult.success) return saveResult;
 
     return makeSuccessResult(feedItem);
@@ -135,12 +131,12 @@ export class ClientFeedItemsService {
     feedItemId: FeedItemId,
     updates: Partial<FeedItem>
   ): AsyncResult<void, Error> {
-    const updateResult = await this.feedItemsCollectionService.updateDoc(feedItemId, updates);
+    const updateResult = await this.collectionService.updateDoc(feedItemId, updates);
     return prefixResultIfError(updateResult, 'Error updating feed item');
   }
 
   public async deleteFeedItem(feedItemId: FeedItemId): AsyncResult<void, Error> {
-    const deleteResult = await this.feedItemsCollectionService.deleteDoc(feedItemId);
+    const deleteResult = await this.collectionService.deleteDoc(feedItemId);
     return prefixResultIfError(deleteResult, 'Error deleting feed item');
   }
 

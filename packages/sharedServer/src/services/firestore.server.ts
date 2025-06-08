@@ -25,7 +25,8 @@ import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import type {AsyncResult, Result} from '@shared/types/results.types';
 import type {Func} from '@shared/types/utils.types';
 
-import {firestore, serverTimestampSupplier} from '@sharedServer/services/firebase.server';
+import {serverTimestampSupplier} from '@sharedServer/services/firebase.server';
+import type {ServerFirebaseService} from '@sharedServer/services/firebase.server';
 
 const BATCH_DELETE_SIZE = 500;
 
@@ -61,15 +62,18 @@ export class ServerFirestoreCollectionService<
   ItemData,
   ItemDataFromSchema extends DocumentData,
 > {
+  private readonly firebaseService: ServerFirebaseService;
   private readonly collectionPath: string;
   private readonly converter: FirestoreDataConverter<ItemData, ItemDataFromSchema>;
   private readonly parseId: Func<string, Result<ItemId, Error>>;
 
   constructor(args: {
+    firebaseService: ServerFirebaseService;
     collectionPath: string;
     converter: FirestoreDataConverter<ItemData, ItemDataFromSchema>;
     parseId: Func<string, Result<ItemId, Error>>;
   }) {
+    this.firebaseService = args.firebaseService;
     this.collectionPath = args.collectionPath;
     this.converter = args.converter;
     this.parseId = args.parseId;
@@ -79,7 +83,9 @@ export class ServerFirestoreCollectionService<
    * Returns the underlying Firestore collection reference.
    */
   public getCollectionRef(): CollectionReference<ItemData> {
-    return firestore.collection(this.collectionPath).withConverter(this.converter);
+    return this.firebaseService.firestore
+      .collection(this.collectionPath)
+      .withConverter(this.converter);
   }
 
   /**
@@ -224,7 +230,7 @@ export class ServerFirestoreCollectionService<
     // Run one batch at a time.
     for (const currentIds of idsPerBatch) {
       const deleteBatchResult = await asyncTry(async () => {
-        const batch = firestore.batch();
+        const batch = this.firebaseService.firestore.batch();
         currentIds.forEach((id) => batch.delete(this.getDocRef(id)));
         await batch.commit();
       });
@@ -245,16 +251,18 @@ export function makeServerFirestoreCollectionService<
   ItemData extends DocumentData,
   ItemDataFromStorage extends DocumentData,
 >(args: {
+  readonly firebaseService: ServerFirebaseService;
   readonly collectionPath: string;
   readonly parseId: Func<string, Result<ItemId, Error>>;
   readonly toStorage: Func<ItemData, ItemDataFromStorage>;
   readonly fromStorage: Func<ItemDataFromStorage, Result<ItemData, Error>>;
 }): ServerFirestoreCollectionService<ItemId, ItemData, ItemDataFromStorage> {
-  const {collectionPath, parseId, toStorage, fromStorage} = args;
+  const {firebaseService, collectionPath, parseId, toStorage, fromStorage} = args;
 
   const firestoreConverter = makeFirestoreDataConverter(toStorage, fromStorage);
 
   const collectionService = new ServerFirestoreCollectionService({
+    firebaseService,
     collectionPath,
     parseId,
     converter: firestoreConverter,

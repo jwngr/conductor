@@ -43,7 +43,7 @@ export class ClientExperimentsService {
   private readonly isInternalAccount: boolean;
   private readonly eventLogService: ClientEventLogService;
   private accountExperimentsState: AccountExperimentsState | null = null;
-  private readonly accountExperimentsCollectionService: ClientAccountExperimentsCollectionService;
+  private readonly collectionService: ClientAccountExperimentsCollectionService;
 
   constructor(args: {
     readonly accountId: AccountId;
@@ -57,7 +57,7 @@ export class ClientExperimentsService {
     this.environment = args.environment;
     this.eventLogService = args.eventLogService;
 
-    this.accountExperimentsCollectionService = makeClientFirestoreCollectionService({
+    this.collectionService = makeClientFirestoreCollectionService({
       firebaseService: args.firebaseService,
       collectionPath: ACCOUNT_EXPERIMENTS_DB_COLLECTION,
       toStorage: toStorageAccountExperimentsState,
@@ -80,7 +80,7 @@ export class ClientExperimentsService {
       callback(this.accountExperimentsState);
     }
 
-    return this.accountExperimentsCollectionService.watchDoc(
+    return this.collectionService.watchDoc(
       this.accountId,
       (accountExperimentsState) => {
         if (!accountExperimentsState) {
@@ -138,7 +138,7 @@ export class ClientExperimentsService {
     const pathToUpdate = `experimentOverrides.${experimentId}`;
     const experimentOverride = makeBooleanExperimentOverride({experimentId, isEnabled});
 
-    const updateResult = await this.accountExperimentsCollectionService.updateDoc(this.accountId, {
+    const updateResult = await this.collectionService.updateDoc(this.accountId, {
       [pathToUpdate]: experimentOverride,
     });
 
@@ -173,7 +173,7 @@ export class ClientExperimentsService {
       value,
     });
 
-    const updateResult = await this.accountExperimentsCollectionService.updateDoc(this.accountId, {
+    const updateResult = await this.collectionService.updateDoc(this.accountId, {
       [pathToUpdate]: experimentOverride,
     });
 
