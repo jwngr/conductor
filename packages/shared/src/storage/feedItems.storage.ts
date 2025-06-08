@@ -262,8 +262,8 @@ function fromStorageArticleFeedItem(
     content: parsedContentResult.value,
     triageStatus: feedItemFromStorage.triageStatus,
     tagIds: feedItemFromStorage.tagIds,
-    createdTime: feedItemFromStorage.createdTime,
-    lastUpdatedTime: feedItemFromStorage.lastUpdatedTime,
+    createdTime: parseStorageTimestamp(feedItemFromStorage.createdTime),
+    lastUpdatedTime: parseStorageTimestamp(feedItemFromStorage.lastUpdatedTime),
   });
 }
 
@@ -286,8 +286,8 @@ function fromStorageVideoFeedItem(
     content: parsedContentResult.value,
     triageStatus: feedItemFromStorage.triageStatus,
     tagIds: feedItemFromStorage.tagIds,
-    createdTime: feedItemFromStorage.createdTime,
-    lastUpdatedTime: feedItemFromStorage.lastUpdatedTime,
+    createdTime: parseStorageTimestamp(feedItemFromStorage.createdTime),
+    lastUpdatedTime: parseStorageTimestamp(feedItemFromStorage.lastUpdatedTime),
   });
 }
 
@@ -310,8 +310,8 @@ function fromStorageWebsiteFeedItem(
     content: parsedContentResult.value,
     triageStatus: feedItemFromStorage.triageStatus,
     tagIds: feedItemFromStorage.tagIds,
-    createdTime: feedItemFromStorage.createdTime,
-    lastUpdatedTime: feedItemFromStorage.lastUpdatedTime,
+    createdTime: parseStorageTimestamp(feedItemFromStorage.createdTime),
+    lastUpdatedTime: parseStorageTimestamp(feedItemFromStorage.lastUpdatedTime),
   });
 }
 
@@ -334,8 +334,8 @@ function fromStorageTweetFeedItem(
     content: parsedContentResult.value,
     triageStatus: feedItemFromStorage.triageStatus,
     tagIds: feedItemFromStorage.tagIds,
-    createdTime: feedItemFromStorage.createdTime,
-    lastUpdatedTime: feedItemFromStorage.lastUpdatedTime,
+    createdTime: parseStorageTimestamp(feedItemFromStorage.createdTime),
+    lastUpdatedTime: parseStorageTimestamp(feedItemFromStorage.lastUpdatedTime),
   });
 }
 
@@ -358,8 +358,8 @@ function fromStorageYouTubeFeedItem(
     content: parsedContentResult.value,
     triageStatus: feedItemFromStorage.triageStatus,
     tagIds: feedItemFromStorage.tagIds,
-    createdTime: feedItemFromStorage.createdTime,
-    lastUpdatedTime: feedItemFromStorage.lastUpdatedTime,
+    createdTime: parseStorageTimestamp(feedItemFromStorage.createdTime),
+    lastUpdatedTime: parseStorageTimestamp(feedItemFromStorage.lastUpdatedTime),
   });
 }
 
@@ -382,8 +382,8 @@ function fromStorageXkcdFeedItem(
     content: parsedContentResult.value,
     triageStatus: feedItemFromStorage.triageStatus,
     tagIds: feedItemFromStorage.tagIds,
-    createdTime: feedItemFromStorage.createdTime,
-    lastUpdatedTime: feedItemFromStorage.lastUpdatedTime,
+    createdTime: parseStorageTimestamp(feedItemFromStorage.createdTime),
+    lastUpdatedTime: parseStorageTimestamp(feedItemFromStorage.lastUpdatedTime),
   });
 }
 
@@ -406,8 +406,8 @@ function fromStorageIntervalFeedItem(
     content: parsedContentResult.value,
     triageStatus: feedItemFromStorage.triageStatus,
     tagIds: feedItemFromStorage.tagIds,
-    createdTime: feedItemFromStorage.createdTime,
-    lastUpdatedTime: feedItemFromStorage.lastUpdatedTime,
+    createdTime: parseStorageTimestamp(feedItemFromStorage.createdTime),
+    lastUpdatedTime: parseStorageTimestamp(feedItemFromStorage.lastUpdatedTime),
   });
 }
 

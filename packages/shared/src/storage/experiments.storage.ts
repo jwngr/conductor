@@ -1,4 +1,5 @@
 import {ALL_EXPERIMENT_DEFINITIONS} from '@shared/lib/experimentDefinitions.shared';
+import {parseStorageTimestamp} from '@shared/lib/parser.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {assertNever, mapObjectValues} from '@shared/lib/utils.shared';
 
@@ -161,8 +162,8 @@ export function fromStorageAccountExperimentsState(
     accountId: parsedAccountId.value,
     accountVisibility: accountExperimentsStateFromStorage.accountVisibility,
     experimentOverrides,
-    createdTime: accountExperimentsStateFromStorage.createdTime,
-    lastUpdatedTime: accountExperimentsStateFromStorage.lastUpdatedTime,
+    createdTime: parseStorageTimestamp(accountExperimentsStateFromStorage.createdTime),
+    lastUpdatedTime: parseStorageTimestamp(accountExperimentsStateFromStorage.lastUpdatedTime),
   });
 }
 

@@ -16,6 +16,8 @@ export interface LoggedInAccount {
   readonly accountId: AccountId;
   readonly email: EmailAddress;
   readonly displayName?: string;
+  readonly createdTime: Date | undefined;
+  readonly lastSignInTime: Date | undefined;
   // TODO: Add photo URL.
 }
 
@@ -40,5 +42,11 @@ export function parseLoggedInAccount(
     accountId: accountIdResult.value,
     email: emailResult.value,
     displayName: firebaseLoggedInUser.displayName ?? undefined,
+    createdTime: firebaseLoggedInUser.metadata.creationTime
+      ? new Date(firebaseLoggedInUser.metadata.creationTime)
+      : undefined,
+    lastSignInTime: firebaseLoggedInUser.metadata.lastSignInTime
+      ? new Date(firebaseLoggedInUser.metadata.lastSignInTime)
+      : undefined,
   });
 }
