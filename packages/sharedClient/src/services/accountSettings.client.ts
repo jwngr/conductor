@@ -29,7 +29,7 @@ type ClientAccountSettingsCollectionService = ClientFirestoreCollectionService<
 export class ClientAccountSettingsService {
   private readonly accountId: AccountId;
   private readonly eventLogService: ClientEventLogService;
-  private readonly accountSettingsCollectionService: ClientAccountSettingsCollectionService;
+  private readonly collectionService: ClientAccountSettingsCollectionService;
 
   constructor(args: {
     readonly accountId: AccountId;
@@ -39,7 +39,7 @@ export class ClientAccountSettingsService {
     this.accountId = args.accountId;
     this.eventLogService = args.eventLogService;
 
-    this.accountSettingsCollectionService = makeClientFirestoreCollectionService({
+    this.collectionService = makeClientFirestoreCollectionService({
       firebaseService: args.firebaseService,
       collectionPath: ACCOUNT_SETTINGS_DB_COLLECTION,
       toStorage: toStorageAccountSettings,
@@ -66,15 +66,11 @@ export class ClientAccountSettingsService {
       onError(betterError);
     };
 
-    return this.accountSettingsCollectionService.watchDoc(
-      this.accountId,
-      handleOnData,
-      handleOnError
-    );
+    return this.collectionService.watchDoc(this.accountId, handleOnData, handleOnError);
   }
 
   public async updateThemePreference(themePreference: ThemePreference): AsyncResult<void, Error> {
-    const result = await this.accountSettingsCollectionService.updateDoc(this.accountId, {
+    const result = await this.collectionService.updateDoc(this.accountId, {
       themePreference,
     });
     if (result.success) {

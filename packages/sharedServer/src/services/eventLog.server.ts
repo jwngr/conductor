@@ -3,9 +3,12 @@ import type {WithFieldValue} from 'firebase-admin/firestore';
 import {logger} from '@shared/services/logger.shared';
 
 import {SYSTEM_ACTOR} from '@shared/lib/actors.shared';
+import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {makeEventLogItem, makeFeedItemImportedEventLogItemData} from '@shared/lib/eventLog.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
+
+import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {ServerEnvironment} from '@shared/types/environment.types';
@@ -14,8 +17,11 @@ import type {FeedItemId} from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {EventLogItemFromStorage} from '@shared/schemas/eventLog.schema';
+import {toStorageEventLogItem} from '@shared/storage/eventLog.storage';
 
+import type {ServerFirebaseService} from '@sharedServer/services/firebase.server';
 import type {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
+import {makeServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
 type ServerEventLogCollectionService = ServerFirestoreCollectionService<
   EventId,
@@ -29,10 +35,16 @@ export class ServerEventLogService {
 
   constructor(args: {
     readonly environment: ServerEnvironment;
-    readonly collectionService: ServerEventLogCollectionService;
+    readonly firebaseService: ServerFirebaseService;
   }) {
     this.environment = args.environment;
-    this.collectionService = args.collectionService;
+    this.collectionService = makeServerFirestoreCollectionService({
+      firebaseService: args.firebaseService,
+      collectionPath: EVENT_LOG_DB_COLLECTION,
+      toStorage: toStorageEventLogItem,
+      fromStorage: parseEventLogItem,
+      parseId: parseEventId,
+    });
   }
 
   public async fetchById(eventId: EventId): AsyncResult<EventLogItem | null, Error> {

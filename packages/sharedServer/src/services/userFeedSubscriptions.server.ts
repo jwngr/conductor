@@ -1,7 +1,13 @@
 import type {WithFieldValue} from 'firebase-admin/firestore';
 
+import {USER_FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
+
+import {
+  parseUserFeedSubscription,
+  parseUserFeedSubscriptionId,
+} from '@shared/parsers/userFeedSubscriptions.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
@@ -14,9 +20,14 @@ import type {
 } from '@shared/types/userFeedSubscriptions.types';
 
 import type {UserFeedSubscriptionFromStorage} from '@shared/schemas/userFeedSubscriptions.schema';
+import {toStorageUserFeedSubscription} from '@shared/storage/userFeedSubscriptions.storage';
 
 import {serverTimestampSupplier} from '@sharedServer/services/firebase.server';
-import type {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
+import type {ServerFirebaseService} from '@sharedServer/services/firebase.server';
+import {
+  makeServerFirestoreCollectionService,
+  type ServerFirestoreCollectionService,
+} from '@sharedServer/services/firestore.server';
 
 type UserFeedSubscriptionsCollectionService = ServerFirestoreCollectionService<
   UserFeedSubscriptionId,
@@ -27,8 +38,14 @@ type UserFeedSubscriptionsCollectionService = ServerFirestoreCollectionService<
 export class ServerUserFeedSubscriptionsService {
   private readonly collectionService: UserFeedSubscriptionsCollectionService;
 
-  constructor(args: {readonly collectionService: UserFeedSubscriptionsCollectionService}) {
-    this.collectionService = args.collectionService;
+  constructor(args: {readonly firebaseService: ServerFirebaseService}) {
+    this.collectionService = makeServerFirestoreCollectionService({
+      firebaseService: args.firebaseService,
+      collectionPath: USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
+      parseId: parseUserFeedSubscriptionId,
+      toStorage: toStorageUserFeedSubscription,
+      fromStorage: parseUserFeedSubscription,
+    });
   }
 
   /**
