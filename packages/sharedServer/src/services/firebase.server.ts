@@ -20,6 +20,7 @@ async function enableTelemetry(): AsyncResult<void, Error> {
     const message = 'Failed to enable Firebase telemetry. Continuing without telemetry.';
     logger.warn(message, {error: enableTelemetryResult.error});
   }
+  return enableTelemetryResult;
 }
 
 export class ServerFirebaseService {
