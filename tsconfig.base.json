@@ -8,6 +8,9 @@
     // Enable strict type checking.
     "strict": true,
 
+    // Skip type checking for external libraries. Just too much maintenance.
+    "skipLibCheck": true,
+
     // Default to Node compatibility and override in each sub-package as needed.
     "moduleResolution": "node",
     "esModuleInterop": true, // Allow importing CommonJS modules.

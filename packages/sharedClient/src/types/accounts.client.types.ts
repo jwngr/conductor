@@ -1,11 +1,13 @@
 import type {User as FirebaseUser} from 'firebase/auth';
 
-import {parseAccountId, parseEmailAddress} from '@shared/parsers/accounts.parser';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+
+import {parseAccountId} from '@shared/parsers/accounts.parser';
+import {parseEmailAddress} from '@shared/parsers/emails.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
-import type {Result} from '@shared/types/result.types';
-import type {EmailAddress} from '@shared/types/utils.types';
+import type {EmailAddress} from '@shared/types/emails.types';
+import type {Result} from '@shared/types/results.types';
 
 /**
  * A generic type representing the user who is currently logged in.
@@ -15,23 +17,24 @@ export interface LoggedInAccount {
   readonly email: EmailAddress;
   readonly displayName?: string;
   // TODO: Add photo URL.
-  // readonly photoUrl: string;
 }
 
 /**
  * Parses a generic {@link LoggedInAccount} from a Firebase-specific {@link FirebaseUser}. Returns
  * an `ErrorResult` if the user is not authenticated.
  */
-export function parseLoggedInAccount(firebaseLoggedInUser: FirebaseUser): Result<LoggedInAccount> {
+export function parseLoggedInAccount(
+  firebaseLoggedInUser: FirebaseUser
+): Result<LoggedInAccount, Error> {
   if (!firebaseLoggedInUser.email) {
     return makeErrorResult(new Error('No email address associated with Firebase user'));
   }
 
   const emailResult = parseEmailAddress(firebaseLoggedInUser.email);
-  if (!emailResult.success) return makeErrorResult(emailResult.error);
+  if (!emailResult.success) return emailResult;
 
   const accountIdResult = parseAccountId(firebaseLoggedInUser.uid);
-  if (!accountIdResult.success) return makeErrorResult(accountIdResult.error);
+  if (!accountIdResult.success) return accountIdResult;
 
   return makeSuccessResult({
     accountId: accountIdResult.value,

@@ -1,233 +1,278 @@
-import {useEffect, useState} from 'react';
-import styled from 'styled-components';
+import {useCallback, useState} from 'react';
 
-import {isValidUrl} from '@shared/lib/urls.shared';
+import {prefixError} from '@shared/lib/errorUtils.shared';
+import {parseUrl} from '@shared/lib/urls.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 
-import {ThemeColor} from '@shared/types/theme.types';
+import {AsyncStatus} from '@shared/types/asyncState.types';
+import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
-import {useUserFeedSubscriptionsService} from '@sharedClient/services/userFeedSubscriptions.client';
+import {
+  DEFAULT_ROUTE_HERO_PAGE_ACTION,
+  REFRESH_HERO_PAGE_ACTION,
+} from '@sharedClient/lib/heroActions.client';
+import {toast} from '@sharedClient/lib/toasts.client';
 
-import {AppHeader} from '@src/components/AppHeader';
-import {Button, ButtonVariant} from '@src/components/atoms/Button';
+import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
+import {
+  useUserFeedSubscriptions,
+  useUserFeedSubscriptionsService,
+} from '@sharedClient/hooks/userFeedSubscriptions.hooks';
+
+import {Button} from '@src/components/atoms/Button';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Input} from '@src/components/atoms/Input';
-import {Text} from '@src/components/atoms/Text';
-import {ScreenMainContentWrapper, ScreenWrapper} from '@src/components/layout/Screen';
-import {LeftSidebar} from '@src/components/LeftSidebar';
+import {H3, H4, P} from '@src/components/atoms/Text';
+import {ErrorArea} from '@src/components/errors/ErrorArea';
+import {FeedSubscriptionSettingsButton} from '@src/components/feedSubscriptions/FeedSubscriptionSettings';
+import {LoadingArea} from '@src/components/loading/LoadingArea';
 
-const FeedSubscriptionsScreenMainContentWrapper = styled(FlexColumn)`
-  flex: 1;
-  padding: 20px;
-  overflow: auto;
-  gap: 24px;
-`;
+import {firebaseService} from '@src/lib/firebase.pwa';
 
-const FeedSubscriptionsListWrapper = styled(FlexColumn)`
-  gap: 16px;
-`;
-
-const FeedSubscriptionItemsWrapper = styled(FlexColumn)`
-  gap: 12px;
-`;
-
-const FeedSubscriptionItem = styled(FlexRow)`
-  gap: 12px;
-  padding: 12px;
-  border: 1px solid ${({theme}) => theme.colors.border};
-  border-radius: 8px;
-  align-items: center;
-`;
-
-const FeedSubscriptionItemDetails = styled(FlexColumn)`
-  flex: 1;
-  gap: 4px;
-`;
-
-const StatusText = styled.div<{readonly $isError?: boolean}>`
-  font-size: 14px;
-  color: ${({theme, $isError}) => ($isError ? theme.colors.error : theme.colors.success)};
-`;
-
-const PreCannedFeedsWrapper = styled(FlexColumn)`
-  gap: 12px;
-`;
-
-const PreCannedFeedsButtonsWrapper = styled(FlexRow)`
-  gap: 12px;
-  flex-wrap: wrap;
-`;
-
-const FeedAdderWrapper = styled(FlexColumn)`
-  gap: 16px;
-`;
-
-const FeedAdderForm = styled(FlexRow)`
-  gap: 12px;
-  width: 100%;
-`;
+import {Screen} from '@src/screens/Screen';
 
 const FeedAdder: React.FC = () => {
-  const [url, setUrl] = useState('');
-  const [status, setStatus] = useState('');
-  const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
+  const userFeedSubscriptionsService = useUserFeedSubscriptionsService({firebaseService});
 
-  const handleSubscribeToFeedUrl = async (feedUrl: string): Promise<void> => {
-    setStatus('Subscribing to feed source...');
+  const [urlInputValue, setUrlInputValue] = useState('');
+  const {asyncState, setPending, setError, setSuccess} = useAsyncState<undefined>();
 
-    const trimmedUrl = feedUrl.trim();
-    if (!isValidUrl(trimmedUrl)) {
-      setStatus('URL is not valid');
-      return;
-    }
+  const handleError = useCallback(
+    (args: {readonly error: Error; readonly toastMessage: string}) => {
+      const {error, toastMessage} = args;
+      toast.error(toastMessage);
+      const betterError = prefixError(error, toastMessage);
+      setError(betterError);
+    },
+    [setError]
+  );
 
-    const subscribeResult = await userFeedSubscriptionsService.subscribeToUrl(trimmedUrl);
+  const handleSubscribeToRssFeedByUrl = useCallback(
+    async (rssFeedUrl: string): Promise<void> => {
+      const parsedUrl = parseUrl(rssFeedUrl.trim());
+      if (!parsedUrl) {
+        setError(new Error('URL is not valid'));
+        return;
+      }
+
+      setPending();
+
+      const subscribeResult = await userFeedSubscriptionsService.subscribeToRssFeed(parsedUrl);
+      if (!subscribeResult.success) {
+        handleError({
+          error: subscribeResult.error,
+          toastMessage: 'Failed to subscribe to RSS feed',
+        });
+        return;
+      }
+
+      setSuccess(undefined);
+      setUrlInputValue('');
+    },
+    [handleError, setError, setPending, setSuccess, userFeedSubscriptionsService]
+  );
+
+  const handleSubscribeToYouTubeChannel = useCallback(
+    async (youtubeChannelUrl: string): Promise<void> => {
+      setPending();
+
+      const subscribeResult =
+        await userFeedSubscriptionsService.subscribeToYouTubeChannel(youtubeChannelUrl);
+      if (!subscribeResult.success) {
+        handleError({
+          error: subscribeResult.error,
+          toastMessage: 'Failed to subscribe to YouTube channel',
+        });
+        return;
+      }
+
+      setSuccess(undefined);
+      setUrlInputValue('');
+    },
+    [handleError, setPending, setSuccess, userFeedSubscriptionsService]
+  );
+
+  const handleSubscribeToIntervalFeed = useCallback(async (): Promise<void> => {
+    setPending();
+
+    const subscribeResult = await userFeedSubscriptionsService.subscribeToIntervalFeed({
+      intervalSeconds: 60,
+    });
     if (!subscribeResult.success) {
-      setStatus(`Error subscribing to feed source: ${subscribeResult.error.message}`);
+      handleError({
+        error: subscribeResult.error,
+        toastMessage: 'Failed to subscribe to interval feed',
+      });
       return;
     }
 
-    setStatus(`Successfully subscribed to feed source`);
-    setUrl('');
-  };
+    setSuccess(undefined);
+    setUrlInputValue('');
+  }, [handleError, setPending, setSuccess, userFeedSubscriptionsService]);
 
   return (
-    <FeedAdderWrapper>
-      <Text as="h3" bold>
-        Add new feed
-      </Text>
+    <FlexColumn flex gap={3}>
+      <H3 bold>Add new feed</H3>
 
-      <FeedAdderForm>
+      <FlexRow gap={3} flex>
         <Input
           type="text"
-          value={url}
+          value={urlInputValue}
           placeholder="Enter RSS feed URL"
-          onChange={(e) => setUrl(e.target.value)}
-          style={{flex: 1}}
+          onChange={(e) => setUrlInputValue(e.target.value)}
+          className="flex-1"
         />
-        <Button
-          variant={ButtonVariant.Primary}
-          onClick={async () => void handleSubscribeToFeedUrl(url)}
-        >
+        <Button onClick={async () => void handleSubscribeToRssFeedByUrl(urlInputValue)}>
           Subscribe
         </Button>
-      </FeedAdderForm>
+      </FlexRow>
 
-      {status ? <StatusText $isError={status.includes('Error')}>{status}</StatusText> : null}
+      {asyncState.status === AsyncStatus.Error ? (
+        <P error>{asyncState.error.message}</P>
+      ) : asyncState.status === AsyncStatus.Pending ? (
+        <P light>Subscribing to feed...</P>
+      ) : asyncState.status === AsyncStatus.Success ? (
+        <P success>Successfully subscribed to feed source</P>
+      ) : null}
 
-      <PreCannedFeedsWrapper>
-        <Text bold>Quick add feeds</Text>
-        <PreCannedFeedsButtonsWrapper>
+      <FlexColumn gap={3}>
+        <H4 bold>Quick add feeds</H4>
+        <FlexRow gap={3}>
           <Button
-            variant={ButtonVariant.Secondary}
-            onClick={async () => void handleSubscribeToFeedUrl('https://jwn.gr/rss.xml')}
+            variant="default"
+            onClick={async () => void handleSubscribeToRssFeedByUrl('https://jwn.gr/rss.xml')}
           >
             Personal blog feed
           </Button>
           <Button
-            variant={ButtonVariant.Secondary}
+            variant="default"
             onClick={async () =>
-              void handleSubscribeToFeedUrl(
+              void handleSubscribeToRssFeedByUrl(
                 'https://lorem-rss.herokuapp.com/feed?unit=second&interval=30'
               )
             }
           >
-            Dummy feed w/ 30s updates
+            Lorem RSS feed w/ 30s updates
           </Button>
-        </PreCannedFeedsButtonsWrapper>
-      </PreCannedFeedsWrapper>
-    </FeedAdderWrapper>
+          <Button
+            variant="default"
+            onClick={async () =>
+              void handleSubscribeToYouTubeChannel(
+                'https://www.youtube.com/channel/UCndkjnoQawp7Tjy1uNj53yQ'
+              )
+            }
+          >
+            Personal YouTube channel
+          </Button>
+          <Button variant="default" onClick={async () => void handleSubscribeToIntervalFeed()}>
+            Interval feed
+          </Button>
+        </FlexRow>
+      </FlexColumn>
+    </FlexColumn>
+  );
+};
+
+const FeedSubscriptionItem: React.FC<{
+  subscription: UserFeedSubscription;
+}> = ({subscription}) => {
+  let primaryRowText: string;
+  let secondaryRowText: string | null;
+
+  switch (subscription.feedSourceType) {
+    case FeedSourceType.RSS:
+      primaryRowText = `RSS (${subscription.title ?? subscription.url})`;
+      secondaryRowText = subscription.title ?? null;
+      break;
+    case FeedSourceType.YouTubeChannel:
+      primaryRowText = 'YouTube';
+      secondaryRowText = subscription.channelId;
+      break;
+    case FeedSourceType.Interval:
+      primaryRowText = 'Interval';
+      secondaryRowText = null;
+      break;
+    default:
+      assertNever(subscription);
+  }
+
+  return (
+    <FlexRow gap={3} padding={3} className="border-neutral-2 rounded-lg border">
+      <FlexColumn flex gap={1}>
+        <P bold error={!subscription.isActive}>
+          {primaryRowText}
+        </P>
+        {secondaryRowText ? <P light>{secondaryRowText}</P> : null}
+      </FlexColumn>
+      <FeedSubscriptionSettingsButton userFeedSubscription={subscription} />
+    </FlexRow>
+  );
+};
+
+const LoadedFeedSubscriptionsListMainContent: React.FC<{
+  subscriptions: UserFeedSubscription[];
+}> = ({subscriptions}) => {
+  if (subscriptions.length === 0) {
+    // TODO: Add better empty state.
+    return <P light>None</P>;
+  }
+
+  return (
+    <FlexColumn flex>
+      {subscriptions.map((subscription) => (
+        <FeedSubscriptionItem
+          key={subscription.userFeedSubscriptionId}
+          subscription={subscription}
+        />
+      ))}
+    </FlexColumn>
   );
 };
 
 const FeedSubscriptionsList: React.FC = () => {
-  const [subscriptions, setSubscriptions] = useState<UserFeedSubscription[]>([]);
-  const [error, setError] = useState<string>('');
-  const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
-
-  useEffect(() => {
-    const unsubscribe = userFeedSubscriptionsService.watchAllSubscriptions({
-      successCallback: (updatedSubscriptions) => {
-        setSubscriptions(updatedSubscriptions);
-        setError('');
-      },
-      errorCallback: () => {
-        setError('Error loading feed subscriptions');
-      },
-    });
-
-    return () => unsubscribe();
-  }, [userFeedSubscriptionsService]);
-
-  const handleUnsubscribe = async (subscription: UserFeedSubscription): Promise<void> => {
-    const unsubscribeResult = await userFeedSubscriptionsService.updateSubscription(
-      subscription.userFeedSubscriptionId,
-      {
-        isActive: false,
-        unsubscribedTime: new Date(),
-      }
-    );
-
-    if (!unsubscribeResult.success) {
-      setError(`Error unsubscribing from feed: ${unsubscribeResult.error.message}`);
-      return;
-    }
-  };
+  const userFeedSubscriptionsState = useUserFeedSubscriptions({firebaseService});
 
   const renderMainContent = (): React.ReactNode => {
-    if (error) {
-      return <Text color={ThemeColor.Red500}>Error loading feed subscriptions</Text>;
+    switch (userFeedSubscriptionsState.status) {
+      case AsyncStatus.Idle:
+      case AsyncStatus.Pending:
+        return <LoadingArea text="Loading feed subscriptions..." />;
+      case AsyncStatus.Error:
+        return (
+          <ErrorArea
+            error={userFeedSubscriptionsState.error}
+            title="Error loading feed subscriptions"
+            subtitle="Refreshing may resolve the issue. If the problem persists, please contact support."
+            actions={[DEFAULT_ROUTE_HERO_PAGE_ACTION, REFRESH_HERO_PAGE_ACTION]}
+          />
+        );
+      case AsyncStatus.Success:
+        return (
+          <LoadedFeedSubscriptionsListMainContent
+            subscriptions={userFeedSubscriptionsState.value}
+          />
+        );
+      default:
+        assertNever(userFeedSubscriptionsState);
     }
-
-    if (subscriptions.length === 0) {
-      return <Text>No feed subscriptions yet. Add one above to get started!</Text>;
-    }
-
-    return (
-      <FeedSubscriptionItemsWrapper>
-        {subscriptions.map((subscription) => (
-          <FeedSubscriptionItem key={subscription.userFeedSubscriptionId}>
-            <FeedSubscriptionItemDetails>
-              <Text bold color={subscription.isActive ? undefined : ThemeColor.Red500}>
-                {subscription.title}
-              </Text>
-              <Text style={{fontSize: '14px'}}>{subscription.url}</Text>
-            </FeedSubscriptionItemDetails>
-            {subscription.isActive ? (
-              <Button
-                variant={ButtonVariant.Secondary}
-                onClick={async () => void handleUnsubscribe(subscription)}
-              >
-                Unsubscribe
-              </Button>
-            ) : null}
-          </FeedSubscriptionItem>
-        ))}
-      </FeedSubscriptionItemsWrapper>
-    );
   };
 
   return (
-    <FeedSubscriptionsListWrapper>
-      <Text as="h3" bold>
-        Active feed subscriptions
-      </Text>
+    <FlexColumn gap={3} style={{width: 360}}>
+      <H3 bold>Active subscriptions</H3>
       {renderMainContent()}
-    </FeedSubscriptionsListWrapper>
+    </FlexColumn>
   );
 };
 
 export const FeedSubscriptionsScreen: React.FC = () => {
   return (
-    <ScreenWrapper>
-      <AppHeader />
-      <ScreenMainContentWrapper>
-        <LeftSidebar />
-        <FeedSubscriptionsScreenMainContentWrapper>
-          <FeedAdder />
-          <FeedSubscriptionsList />
-        </FeedSubscriptionsScreenMainContentWrapper>
-      </ScreenMainContentWrapper>
-    </ScreenWrapper>
+    <Screen withHeader withLeftSidebar>
+      <FlexRow flex align="start" gap={8} padding={4} overflow="auto">
+        <FeedAdder />
+        <FeedSubscriptionsList />
+      </FlexRow>
+    </Screen>
   );
 };

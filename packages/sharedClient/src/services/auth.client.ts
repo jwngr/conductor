@@ -14,24 +14,23 @@ import {
 import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
 
 import type {AuthStateChangedCallback} from '@shared/types/accounts.types';
-import type {AsyncResult} from '@shared/types/result.types';
-import type {Consumer, EmailAddress} from '@shared/types/utils.types';
-
-import {firebaseService} from '@sharedClient/services/firebase.client';
+import type {EmailAddress} from '@shared/types/emails.types';
+import type {AsyncResult} from '@shared/types/results.types';
+import type {Consumer, Task} from '@shared/types/utils.types';
 
 import {parseLoggedInAccount} from '@sharedClient/types/accounts.client.types';
 import type {LoggedInAccount} from '@sharedClient/types/accounts.client.types';
 
 interface AuthServiceSubscriptionCallbacks {
-  successCallback: AuthStateChangedCallback;
-  errorCallback: Consumer<Error>;
+  readonly successCallback: AuthStateChangedCallback;
+  readonly errorCallback: Consumer<Error>;
 }
 
 /**
  * Service for interacting with authentication state. It contains limited profile information about
  * the currently logged in account.
  */
-class ClientAuthService {
+export class ClientAuthService {
   private currentAccount: LoggedInAccount | null = null;
   private subscribers = new Set<AuthServiceSubscriptionCallbacks>();
 
@@ -82,7 +81,7 @@ class ClientAuthService {
    * Registers a callback to be notified of future auth state changes. Fires immediately with
    * the currently logged in account. Fired with `null` if not logged in.
    */
-  public onAuthStateChanged(callbacks: AuthServiceSubscriptionCallbacks): () => void {
+  public onAuthStateChanged(callbacks: AuthServiceSubscriptionCallbacks): Task {
     // Immediately call with current account if available.
     if (this.currentAccount) {
       callbacks.successCallback(this.currentAccount);
@@ -102,22 +101,20 @@ class ClientAuthService {
   public async signInWithEmailLink(
     email: EmailAddress,
     emailLink: string
-  ): AsyncResult<FirebaseUserCredential> {
+  ): AsyncResult<FirebaseUserCredential, Error> {
     return await asyncTry(async () => signInWithEmailLinkFirebase(this.auth, email, emailLink));
   }
 
   public async sendSignInLinkToEmail(
     email: EmailAddress,
     actionCodeSettings: ActionCodeSettings
-  ): AsyncResult<void> {
+  ): AsyncResult<void, Error> {
     return await asyncTry(async () =>
       sendSignInLinkToEmailFirebase(this.auth, email, actionCodeSettings)
     );
   }
 
-  public async signOut(): AsyncResult<void> {
+  public async signOut(): AsyncResult<void, Error> {
     return await asyncTry(async () => signOutFirebase(this.auth));
   }
 }
-
-export const authService = new ClientAuthService(firebaseService.auth);

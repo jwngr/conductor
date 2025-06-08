@@ -1,4 +1,4 @@
-import type {Task} from '@shared/types/utils.types';
+import type {Supplier, Task} from '@shared/types/utils.types';
 
 /**
  * Unique identifier for a keyboard shortcut.
@@ -28,8 +28,6 @@ export enum ModifierKey {
 
 export type ShortcutKey = ModifierKey | string;
 
-export type ShortcutHandler = Task;
-
 export function isModifierKey(key: ShortcutKey): key is ModifierKey {
   return Object.values(ModifierKey).includes(key as ModifierKey);
 }
@@ -53,9 +51,8 @@ export interface KeyboardShortcut {
   readonly rawKeys: readonly ShortcutKey[];
 }
 
-/**
- * Internal type for tracking registered shortcuts.
- */
+export type ShortcutHandler = Supplier<Promise<void>>;
+
 export interface RegisteredShortcut {
   readonly shortcut: KeyboardShortcut;
   readonly handler: ShortcutHandler;

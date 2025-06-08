@@ -1,29 +1,32 @@
-import {isSignInWithEmailLink} from 'firebase/auth';
-import {useEffect} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate} from '@tanstack/react-router';
+import {useEffect, useRef} from 'react';
 
 import {logger} from '@shared/services/logger.shared';
 
 import {prefixError} from '@shared/lib/errorUtils.shared';
-import {Urls} from '@shared/lib/urls.shared';
 
-import {parseEmailAddress} from '@shared/parsers/accounts.parser';
+import {parseEmailAddress} from '@shared/parsers/emails.parser';
 
 import {useAuthStore} from '@sharedClient/stores/AuthStore';
 
-import {authService} from '@sharedClient/services/auth.client';
-import {firebaseService} from '@sharedClient/services/firebase.client';
+import {authService} from '@src/lib/auth.pwa';
 
+import {rootRoute} from '@src/routes/__root';
+
+/**
+ * Listener which updates the auth store when the user's authentication state changes in the auth
+ * service.
+ */
 const AuthServiceSubscription: React.FC = () => {
   const {setLoggedInAccount} = useAuthStore();
   useEffect(() => {
     const unsubscribe = authService.onAuthStateChanged({
       successCallback: (loggedInAccount) => {
-        logger.log('Auth service auth state changed', {loggedInAccount});
+        logger.log('Logged-in auth state changed', {loggedInAccount});
         setLoggedInAccount(loggedInAccount);
       },
       errorCallback: (error) => {
-        logger.error(prefixError(error, 'Auth service `onAuthStateChanged` listener errored'));
+        logger.error(prefixError(error, '`onAuthStateChanged` listener errored'));
       },
     });
     return () => unsubscribe();
@@ -31,14 +34,23 @@ const AuthServiceSubscription: React.FC = () => {
   return null;
 };
 
+/**
+ * Listener which signs in the user when they visit a passwordless email link.
+ */
 const PasswordlessAuthSubscription: React.FC = () => {
   const navigate = useNavigate();
-  const {setLoggedInAccount} = useAuthStore();
-  useEffect(() => {
-    const go = async (): Promise<void> => {
-      // Only do something if the current URL is a "sign-in with email" link.
-      if (!isSignInWithEmailLink(firebaseService.auth, window.location.href)) return;
 
+  const isFirstMount = useRef(true);
+
+  useEffect(() => {
+    // Only run this once on first mount.
+    if (!isFirstMount.current) return;
+    isFirstMount.current = false;
+
+    // Only do something if the current URL is a "sign-in with email" link.
+    if (!authService.isSignInWithEmailLink(window.location.href)) return;
+
+    const go = async (): Promise<void> => {
       // The sign in screen persisted the email to login in local storage. If the sign-in link was
       // opened using the same browser as the one used to sign in, this value will be present.
       let maybeEmail = window.localStorage.getItem('emailForSignIn');
@@ -77,15 +89,19 @@ const PasswordlessAuthSubscription: React.FC = () => {
         throw prefixError(authCredentialResult.error, `Error signing in with email link`);
       }
 
+      // Authentication successful. `AuthStore` will be updated via `AuthServiceSubscription`, but
+      // there is some other clean up to do.
+
       // Clear the email from local storage since we no longer need it.
       window.localStorage.removeItem('emailForSignIn');
 
-      // Redirect to the root path.
-      navigate(Urls.forRoot());
+      // Logic in `RequireLoggedInAccount` updates the UI when the logged-in state changes in
+      // `AuthStore`, but it does not update the URL. Update it to remove the used sign-in link.
+      await navigate({to: rootRoute.fullPath, replace: true});
     };
 
     void go();
-  }, [navigate, setLoggedInAccount]);
+  }, [navigate]);
   return null;
 };
 

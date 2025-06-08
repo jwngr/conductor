@@ -1,44 +1,39 @@
-import type {ZodSchema} from 'zod';
+import {prettifyError, type ZodType} from 'zod/v4';
 
-import {isDate, omitUndefined} from '@shared/lib/utils.shared';
+import {isDate} from '@shared/lib/datetime.shared';
+import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
-import type {FirestoreTimestamp} from '@shared/types/firebase.types';
-import type {Result} from '@shared/types/result.types';
-import {makeErrorResult, makeSuccessResult} from '@shared/types/result.types';
+import type {Result} from '@shared/types/results.types';
 import type {BaseStoreItem, Supplier} from '@shared/types/utils.types';
 
+import type {FirestoreTimestamp} from '@shared/schemas/firebase.schema';
+
 /**
- * Parses a value using a Zod schema and returns a `SuccessResult` with the parsed value if
- * successful, or an `ErrorResult` if the value is invalid.
+ * Attempts to parse a value using a Zod schema.
  */
-export function parseZodResult<T>(zodSchema: ZodSchema<T>, value: unknown): Result<T> {
+export function parseZodResult<T>(zodSchema: ZodType<T>, value: unknown): Result<T, Error> {
   const zodResult = zodSchema.safeParse(value);
 
   if (!zodResult.success) {
-    const formattedError = zodResult.error.format();
-    const errorMessage = Object.entries(formattedError)
-      .filter(([key]) => key !== '_errors')
-      .map(([key, value]) => {
-        if (value && '_errors' in value) {
-          const errors = value._errors.join(', ');
-          return `${key} (${errors})`;
-        }
-        return `${key} (${value})`;
-      })
-      .join(', ');
+    const errorMessage = prettifyError(zodResult.error);
     return makeErrorResult(
-      new Error(`Error parsing value with Zod: ${errorMessage}`, {cause: zodResult.error})
+      new Error(`Zod parsing failed: ${errorMessage}`, {cause: zodResult.error})
     );
   }
 
-  return makeSuccessResult(zodResult.data);
+  return makeSuccessResult(zodResult.data as T);
 }
 
 /**
  * Converts a Firestore `Timestamp` to a normal `Date`.
  */
 export function parseStorageTimestamp(firestoreDate: FirestoreTimestamp | Date): Date {
-  return isDate(firestoreDate) ? firestoreDate : firestoreDate.toDate();
+  // Firestore timestamp created locally are initialized to null. Consider them to be now.
+  if (firestoreDate === null) return new Date();
+
+  if (isDate(firestoreDate)) return firestoreDate;
+
+  return firestoreDate.toDate();
 }
 
 /**
@@ -52,11 +47,11 @@ export function withFirestoreTimestamps<ItemData extends BaseStoreItem, Timestam
   createdTime: Timestamp;
   lastUpdatedTime: Timestamp;
 } {
-  return omitUndefined({
+  return {
     ...item,
     createdTime: timestampFactory(),
     lastUpdatedTime: timestampFactory(),
-  });
+  };
 }
 
 /**
@@ -75,10 +70,10 @@ export function withFirestoreTimestampsExtended<
   createdTime: Timestamp;
   lastUpdatedTime: Timestamp;
 } {
-  return omitUndefined({
+  return {
     ...item,
     createdTime: timestampFactory(),
     lastUpdatedTime: timestampFactory(),
     [additionalTimestampField]: timestampFactory(),
-  });
+  };
 }

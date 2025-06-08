@@ -5,11 +5,9 @@
   "type": "module",
   "dependencies": {
     "@conductor/shared": "workspace:*",
-    "jsdom": "^26.0.0"
-  },
-  "devDependencies": {
-    "@types/jsdom": "^21.1.7",
-    "@types/node": "^22.12.0"
+    "@conductor/shared-server": "workspace:*",
+    "@mendable/firecrawl-js": "^1.25.2",
+    "dotenv": "^16.5.0"
   },
   "scripts": {
     "validate": "yarn run validate:lint && yarn run validate:types && yarn run validate:format",
@@ -21,6 +19,6 @@
     "ci": "rm -rf node_modules/ && yarn install",
     "build": "exit 0",
     "clean": "rm -rf dist/ distIgnore/",
-    "test": "echo 'TODO: Implement tests for scripts'"
+    "test": "echo 'No tests implemented'"
   }
 }

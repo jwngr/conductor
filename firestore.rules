@@ -2,169 +2,286 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    ////////////////////////
-    //  Helper functions  //
-    ////////////////////////
+    ///////////////////////
+    //  AUTH VALIDATORS  //
+    ///////////////////////
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    function isOwner(accountId) {
+    function isRequestActor(accountId) {
       return isAuthenticated() && request.auth.uid == accountId;
     }
 
     function isResourceOwner() {
-      return isOwner(resource.data.accountId);
+      return isAuthenticated() && request.auth.uid == resource.data.accountId;
     }
 
     function isNewResourceOwner() {
-      return isOwner(request.resource.data.accountId);
+      return isAuthenticated() && request.auth.uid == request.resource.data.accountId;
     }
 
-    function isValidFeedItemDoc(feedItemId) {
+    ///////////////////////
+    //  ENUM VALIDATORS  //
+    ///////////////////////
+    function isValidFeedSourceType(maybeFeedSourceType) {
+      return maybeFeedSourceType in ['RSS', 'YOUTUBE_CHANNEL', 'INTERVAL', 'PWA', 'EXTENSION', 'POCKET_EXPORT'];
+    }
+
+    function isValidDeliveryScheduleType(maybeDeliveryScheduleType) {
+      return maybeDeliveryScheduleType in ['IMMEDIATE', 'NEVER', 'DAYS_AND_TIMES_OF_WEEK', 'EVERY_N_HOURS'];
+    }
+
+    function isValidThemePreference(maybeThemePreference) {
+      return maybeThemePreference in ['SYSTEM', 'LIGHT', 'DARK'];
+    }
+
+    function isValidTriageStatus(maybeTriageStatus) {
+      return maybeTriageStatus in ['UNTRIAGED', 'SAVED', 'DONE', 'TRASHED'];
+    }
+
+    function isValidEnvironment(maybeEnvironment) {
+      return maybeEnvironment in ['PWA', 'EXTENSION', 'FIREBASE_FUNCTIONS', 'SCRIPTS'];
+    }
+
+    ///////////////////////
+    //  TYPE VALIDATORS  //
+    ///////////////////////
+    function isValidFeedSource(maybeFeedSource) {
+      return maybeFeedSource.keys().hasAll(['feedSourceType']) &&
+        isValidFeedSourceType(maybeFeedSource.feedSourceType);
+    }
+
+    function isValidDeliverySchedule(maybeDeliverySchedule) {
+      return maybeDeliverySchedule.keys().hasAll(['scheduleType']) &&
+        isValidDeliveryScheduleType(maybeDeliverySchedule.scheduleType);
+    }
+
+    function isValidSystemActor(maybeActor) {
+      return maybeActor.keys().hasAll(['actorType']) && maybeActor.actorType == 'SYSTEM';
+    }
+
+    function isValidAccountActor(maybeActor) {
+      return maybeActor.keys().hasAll(['actorType', 'accountId']) &&
+        maybeActor.actorType == 'ACCOUNT' &&
+        isRequestActor(maybeActor.accountId);
+    }
+
+    function isValidActor(maybeActor) {
+      return isValidSystemActor(maybeActor) || isValidAccountActor(maybeActor);
+    }
+
+    function isValidEventLogItemData(maybeEventLogItemData) {
+      return maybeEventLogItemData.keys().hasAll(['eventType']);
+    }
+
+    //////////////////////
+    //  DOC VALIDATORS  //
+    //////////////////////
+    function isValidAccountsDoc(accountId, isCreate) {
+      return request.resource.data.keys().hasAll([
+        'accountId',
+        'email',
+        'createdTime',
+        'lastUpdatedTime'
+      ]) &&
+      request.resource.data.accountId == accountId &&
+      request.resource.data.email is string &&
+      request.resource.data.createdTime is timestamp &&
+      request.resource.data.lastUpdatedTime is timestamp &&
+      // Validate readonly fields on update.
+      ( 
+        isCreate || (
+          request.resource.data.accountId == resource.data.accountId &&
+          request.resource.data.email == resource.data.email &&
+          request.resource.data.createdTime == resource.data.createdTime
+        )
+      );
+    }
+
+    function isValidAccountExperimentsDoc(accountId, isCreate) {
+      return request.resource.data.keys().hasAll([
+        'accountId',
+        'accountVisibility',
+        'experimentOverrides',
+        'createdTime',
+        'lastUpdatedTime'
+      ]) &&
+      request.resource.data.accountId == accountId &&
+      request.resource.data.accountVisibility in ['PUBLIC', 'INTERNAL'] &&
+      request.resource.data.experimentOverrides is map &&
+      request.resource.data.createdTime is timestamp &&
+      request.resource.data.lastUpdatedTime is timestamp &&
+      // Validate readonly fields on update.
+      ( 
+        isCreate || (
+          request.resource.data.accountId == resource.data.accountId &&
+          request.resource.data.accountVisibility == resource.data.accountVisibility &&
+          request.resource.data.createdTime == resource.data.createdTime
+        )
+      );
+    }
+
+    function isValidAccountSettingsDoc(accountId, isCreate) {
+      return request.resource.data.keys().hasAll([ 
+        'accountId',
+        'themePreference',
+        'createdTime',
+        'lastUpdatedTime',
+      ]) &&
+      request.resource.data.accountId == accountId &&
+      isValidThemePreference(request.resource.data.themePreference) &&
+      request.resource.data.createdTime is timestamp &&
+      request.resource.data.lastUpdatedTime is timestamp &&
+      // Validate readonly fields on update.
+      ( 
+        isCreate || (
+          request.resource.data.accountId == resource.data.accountId &&
+          request.resource.data.createdTime == resource.data.createdTime
+        )
+      );
+    }
+
+    function isValidFeedItemDoc(feedItemId, isCreate) {
       return request.resource.data.keys().hasAll([
         'feedItemId',
-        'type',
-        'feedItemSource',
-        'url',
-        'title',
-        'description',
-        'outgoingLinks',
-        'summary',
+        'feedItemContentType',
+        'content',
+        'feedSource',
+        'importState',
         'triageStatus',
         'tagIds',
         'createdTime',
         'lastUpdatedTime'
       ]) &&
-      request.resource.data.feedItemId is string &&
       request.resource.data.feedItemId == feedItemId &&
-      request.resource.data.type in ['ARTICLE', 'VIDEO', 'WEBSITE', 'TWEET', 'XKCD'] &&
-      request.resource.data.feedItemSource.type in ['APP', 'EXTENSION', 'RSS'] &&
-      request.resource.data.url is string &&
-      request.resource.data.title is string &&
-      request.resource.data.description is string &&
-      request.resource.data.summary is string &&
-      request.resource.data.outgoingLinks is list &&
-      request.resource.data.triageStatus in ['UNTRIAGED', 'SAVED', 'DONE', 'TRASHED'] &&
+      request.resource.data.feedItemContentType in ['ARTICLE', 'VIDEO', 'WEBSITE', 'TWEET', 'XKCD', 'YOUTUBE'] &&
+      request.resource.data.content is map &&
+      isValidTriageStatus(request.resource.data.triageStatus) &&
       request.resource.data.tagIds is map &&
       request.resource.data.createdTime is timestamp &&
-      request.resource.data.lastUpdatedTime is timestamp;
+      request.resource.data.lastUpdatedTime is timestamp &&
+      // Validate readonly fields on update.
+      ( 
+        isCreate || (
+          request.resource.data.feedItemId == resource.data.feedItemId &&
+          request.resource.data.feedItemContentType == resource.data.feedItemContentType &&
+          request.resource.data.feedSource.feedSourceType == resource.data.feedSource.feedSourceType &&
+          request.resource.data.createdTime == resource.data.createdTime
+        )
+      );
     }
 
-    function isValidUserFeedSubscriptionDoc(userFeedSubscriptionId) {
+    function isValidUserFeedSubscriptionDoc(userFeedSubscriptionId, isCreate) {
       return request.resource.data.keys().hasAll([
         'userFeedSubscriptionId',
+        'feedSourceType',
         'accountId',
-        'url',
-        'title',
         'isActive',
+        'deliverySchedule',
         'createdTime',
         'lastUpdatedTime'
       ]) &&
-      request.resource.data.userFeedSubscriptionId is string &&
       request.resource.data.userFeedSubscriptionId == userFeedSubscriptionId &&
-      request.resource.data.url is string &&
+      isValidFeedSourceType(request.resource.data.feedSourceType) &&
+      request.resource.data.accountId is string &&
+      request.resource.data.isActive is bool &&
+      isValidDeliverySchedule(request.resource.data.deliverySchedule) &&
       request.resource.data.createdTime is timestamp &&
-      request.resource.data.lastUpdatedTime is timestamp;
+      request.resource.data.lastUpdatedTime is timestamp &&
+      // Validate readonly fields on update.
+      ( 
+        isCreate || (
+          request.resource.data.userFeedSubscriptionId == resource.data.userFeedSubscriptionId &&
+          request.resource.data.feedSourceType == resource.data.feedSourceType &&
+          request.resource.data.accountId == resource.data.accountId &&
+          request.resource.data.createdTime == resource.data.createdTime
+        )
+      );
     }
 
-    function isValidImportQueueDoc(importQueueItemId) {
-      return request.resource.data.keys().hasAll([
-        'importQueueItemId',
-        'accountId',
-        'feedItemId', 
-        'url',
-        'createdTime',
-        'lastUpdatedTime'
-      ]) &&
-      request.resource.data.importQueueItemId is string &&
-      request.resource.data.importQueueItemId == importQueueItemId &&
-      request.resource.data.feedItemId is string &&
-      request.resource.data.url is string &&
-      request.resource.data.createdTime is timestamp &&
-      request.resource.data.lastUpdatedTime is timestamp;
-    }
-
-    function isValidEventLogItemDoc(eventId) {
+    function isValidEventLogItemDoc(eventId, isCreate) {
       return request.resource.data.keys().hasAll([
         'eventId',
-        'eventType',
         'accountId',
         'actor',
         'environment',
+        'data',
         'createdTime',
         'lastUpdatedTime'
       ]) &&
-      request.resource.data.eventId is string &&
       request.resource.data.eventId == eventId &&
-      request.resource.data.eventType is string &&
-      request.resource.data.actor is map &&
-      request.resource.data.actor.keys().hasAll(['accountId']) &&
-      request.resource.data.actor.accountId == request.auth.uid &&
-      request.resource.data.environment is string &&
+      isValidActor(request.resource.data.actor) &&
+      isValidEnvironment(request.resource.data.environment) &&
+      isValidEventLogItemData(request.resource.data.data) &&
       request.resource.data.createdTime is timestamp &&
-      request.resource.data.lastUpdatedTime is timestamp;
+      request.resource.data.lastUpdatedTime is timestamp &&
+      // Only allow creation, not updates. Also enforced via an explicit `update` rule.
+      isCreate;
     }
 
     /////////////
-    //  Rules  //
+    //  RULES  //
     /////////////
     match /accounts/{accountId} {
-      // Allow accounts to manage their own data.
-      // TODO: Some fields should not be user-editable.
-      allow read: if isOwner(accountId) && isResourceOwner();
-      allow create: if isNewResourceOwner();
-      allow update: if isResourceOwner() && isNewResourceOwner();
-
+      // Allow accounts to read their own account data.
+      allow read: if isRequestActor(accountId) && isResourceOwner();
+      // Allow accounts to manage their own account data.
+      allow create: if isRequestActor(accountId) && isNewResourceOwner() && isValidAccountsDoc(accountId, true);
+      allow update: if isRequestActor(accountId) && isResourceOwner() && isNewResourceOwner() && isValidAccountsDoc(accountId, false);
       // Only allow deletes via the admin SDK.
       allow delete: if false;
     }
 
-    match /feedSources/{feedSourceId} {
-      // Feed sources are publicly readable.
-      allow read: if true;
+    match /accountExperiments/{accountId} {
+      // Allow accounts to read their own experiments.
+      allow read: if isRequestActor(accountId) && isResourceOwner();
+      // Allow accounts to manage their own experiments.
+      allow create: if isRequestActor(accountId) && isNewResourceOwner() && isValidAccountExperimentsDoc(accountId, true);
+      allow update: if isRequestActor(accountId) && isResourceOwner() && isNewResourceOwner() && isValidAccountExperimentsDoc(accountId, false);
+      // Only allow deletes via the admin SDK.
+      allow delete: if false;
+    }
 
-      // Feed sources are only writable via the admin SDK.
-      allow create, update, delete: if false;
+    match /accountSettings/{accountId} {
+      // Allow accounts to read their own settings.
+      allow read: if isRequestActor(accountId) && isResourceOwner();
+      // Allow accounts to manage their own settings.
+      allow create: if isRequestActor(accountId) && isNewResourceOwner() && isValidAccountSettingsDoc(accountId, true);
+      allow update: if isRequestActor(accountId) && isResourceOwner() && isNewResourceOwner() && isValidAccountSettingsDoc(accountId, false);
+      // Only allow deletes via the admin SDK.
+      allow delete: if false;
     }
 
     match /feedItems/{feedItemId} {
-      // Allow accounts to manage their own feed items.
-      // TODO: Some fields should not be user-editable.
+      // Allow accounts to read their own feed items.
       allow read: if isResourceOwner();
-      allow create: if isNewResourceOwner() && isValidFeedItemDoc(feedItemId);
-      allow update: if isResourceOwner() && isNewResourceOwner();
+      // Allow accounts to manage their own feed items.
+      allow create: if isNewResourceOwner() && isValidFeedItemDoc(feedItemId, true);
+      allow update: if isResourceOwner() && isNewResourceOwner() && isValidFeedItemDoc(feedItemId, false);
+      // Allow accounts to delete their own feed items.
       allow delete: if isResourceOwner();
     }
 
     match /userFeedSubscriptions/{userFeedSubscriptionId} {
       // Allow accounts to manage their own feed subscriptions.
-      // TODO: Some fields should not be user-editable.
       allow read: if isResourceOwner();
-      allow create: if isNewResourceOwner() && isValidUserFeedSubscriptionDoc(userFeedSubscriptionId);
-      allow update: if isResourceOwner() && isNewResourceOwner() && isValidUserFeedSubscriptionDoc(userFeedSubscriptionId);
+      // Allow accounts to manage their own feed subscriptions.
+      allow create: if isNewResourceOwner() && isValidUserFeedSubscriptionDoc(userFeedSubscriptionId, true);
+      allow update: if isResourceOwner() && isNewResourceOwner() && isValidUserFeedSubscriptionDoc(userFeedSubscriptionId, false);
+      // Allow accounts to delete their own feed subscriptions.
       allow delete: if isResourceOwner();
-    }
-
-    match /importQueue/{importQueueItemId} {
-      // Allow creation if the current account owns the new document.
-      allow create: if isNewResourceOwner() && isValidImportQueueDoc(importQueueItemId);
-      allow update: if isNewResourceOwner() && isValidImportQueueDoc(importQueueItemId);
-
-      // Only allow reads or writes via the admin SDK - only the import queue server needs access.
-      allow read: if false
-      allow delete: if false
     }
 
     match /eventLog/{eventId} {
       // Allow accounts to read their own events.
       allow read: if isResourceOwner();
-
-      // Allow creation and deletion if the current account owns the new document.
-      allow create: if isNewResourceOwner() && isValidEventLogItemDoc(eventId);
-
-      // Event log items cannot be updated or deleted, only created.
-      allow update, delete: if false;
+      // Allow accounts to create event log items.
+      allow create: if isNewResourceOwner() && isValidEventLogItemDoc(eventId, true);
+      // Event log items are only ever written once.
+      allow update: if false;
+      // Only allow deletes via the admin SDK.
+      allow delete: if false;
     }
   }
 }

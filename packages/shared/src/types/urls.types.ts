@@ -1,12 +1,5 @@
 import type {CustomIcon} from '@shared/lib/customIcons.shared';
 
-import type {FeedItemId} from '@shared/types/feedItems.types';
-
-type Params<Key extends string = string> = Record<Key, string | undefined>;
-export interface FeedItemScreenParams extends Params {
-  readonly feedItemId: FeedItemId;
-}
-
 export enum NavItemId {
   Untriaged = 'UNTRIAGED',
   Saved = 'SAVED',
@@ -17,11 +10,17 @@ export enum NavItemId {
   Today = 'TODAY',
   Trashed = 'TRASHED',
   Feeds = 'FEEDS',
+  Import = 'IMPORT',
+  Experiments = 'EXPERIMENTS',
 }
+
+export type ViewNavItemId = Exclude<
+  NavItemId,
+  NavItemId.Feeds | NavItemId.Import | NavItemId.Experiments
+>;
 
 export interface NavItem {
   readonly id: NavItemId;
-  readonly url: string;
   readonly icon: CustomIcon;
   readonly title: string;
 }

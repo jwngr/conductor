@@ -3,8 +3,9 @@
   "bracketSpacing": false,
   "printWidth": 100,
   "singleQuote": true,
+  "objectWrap": "preserve",
   "trailingComma": "es5",
-  "plugins": ["@ianvs/prettier-plugin-sort-imports"],
+  "plugins": ["@ianvs/prettier-plugin-sort-imports", "prettier-plugin-tailwindcss"],
   "importOrder": [
     "<BUILT_IN_MODULES>",
     "",

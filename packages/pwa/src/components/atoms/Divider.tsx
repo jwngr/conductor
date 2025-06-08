@@ -1,44 +1,28 @@
-import styled, {css} from 'styled-components';
+import {type FC} from 'react';
 
-import {ThemeColor} from '@shared/types/theme.types';
+import * as styles from '@src/components/atoms/Divider.css';
 
 interface DividerProps {
   readonly x?: number;
   readonly y?: number;
 }
 
-export const Divider = styled.div<DividerProps>`
-  background-color: ${({theme}) => theme.colors[ThemeColor.Neutral400]};
+export const Divider: FC<DividerProps> = ({x, y}) => {
+  // If both `x` and `y` are provided, create a box.
+  if (x && y) {
+    return <div className={styles.divider} style={{width: `${x}px`, height: `${y}px`}} />;
+  }
 
-  ${({x, y}) => {
-    // If both `x` and `y` are provided, create a box.
-    if (x && y) {
-      return css`
-        width: ${x}px;
-        height: ${y}px;
-      `;
-    }
+  // If only `x` is provided, create a horizontal line.
+  if (x) {
+    return <div className={styles.divider} style={{width: `${x}px`, height: '1px'}} />;
+  }
 
-    // If only `x` is provided, create a horizontal line.
-    if (x) {
-      return css`
-        width: ${x}px;
-        height: 1px;
-      `;
-    }
+  // If only `y` is provided, create a vertical line.
+  if (y) {
+    return <div className={styles.divider} style={{height: `${y}px`, width: '1px'}} />;
+  }
 
-    // If only `y` is provided, create a vertical line.
-    if (y) {
-      return css`
-        width: 1px;
-        height: ${y}px;
-      `;
-    }
-
-    // Default to a full-width horizontal line.
-    return css`
-      width: 100%;
-      height: 1px;
-    `;
-  }}
-`;
+  // Default to a full-width horizontal line.
+  return <div className={styles.divider} style={{height: '1px', width: '100%'}} />;
+};

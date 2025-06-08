@@ -8,7 +8,7 @@ import type {
   ShortcutKey,
 } from '@shared/types/shortcuts.types';
 import {isModifierKey, KeyboardShortcutId, ModifierKey} from '@shared/types/shortcuts.types';
-import type {Task} from '@shared/types/utils.types';
+import type {Unsubscribe} from '@shared/types/utils.types';
 
 export class SharedKeyboardShortcutsService {
   private readonly isMac: boolean;
@@ -152,7 +152,7 @@ export class SharedKeyboardShortcutsService {
     };
   }
 
-  public registerShortcut(shortcut: KeyboardShortcut, handler: ShortcutHandler): Task {
+  public registerShortcut(shortcut: KeyboardShortcut, handler: ShortcutHandler): Unsubscribe {
     this.registeredShortcuts.set(shortcut.shortcutId, {shortcut, handler});
     return this.adapter.registerShortcut(shortcut, handler);
   }

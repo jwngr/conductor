@@ -1,22 +1,32 @@
-import {NavItems} from '@shared/lib/navItems.shared';
+import {DEFAULT_ROUTE_HERO_PAGE_ACTION} from '@sharedClient/lib/heroActions.client';
 
-import {NavItemId} from '@shared/types/urls.types';
+import {useMaybeLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
-import {FlexColumn} from '@src/components/atoms/Flex';
-import {Link} from '@src/components/atoms/Link';
-import {Text} from '@src/components/atoms/Text';
+import {HeroArea} from '@src/components/hero/HeroArea';
 
-export const NotFoundScreen: React.FC<{readonly message: string}> = ({message}) => {
-  const navItem = NavItems.fromId(NavItemId.Untriaged);
+import {Screen} from '@src/screens/Screen';
+
+const DEFAULT_NOT_FOUND_TITLE = 'Page not found';
+const DEFAULT_NOT_FOUND_SUBTITLE =
+  'You may not have access, or it might have been deleted. Check the URL and try again.';
+
+export const NotFoundScreen: React.FC<{
+  readonly title: string | undefined;
+  readonly subtitle: string | undefined;
+}> = ({title, subtitle}) => {
+  const {isLoading, loggedInAccount} = useMaybeLoggedInAccount();
+
+  if (isLoading) return null;
+
+  const isLoggedIn = loggedInAccount !== null;
+
   return (
-    <FlexColumn align="center" justify="center" style={{height: '100%', width: '100%'}} gap={8}>
-      <Text as="h1">404</Text>
-      <Text as="p">{message}</Text>
-      <Link to="/">
-        <Text as="p" underline="always">
-          Go to {navItem.title}
-        </Text>
-      </Link>
-    </FlexColumn>
+    <Screen withHeader={isLoggedIn} withLeftSidebar={isLoggedIn} align="center" justify="center">
+      <HeroArea
+        title={title ?? DEFAULT_NOT_FOUND_TITLE}
+        subtitle={subtitle ?? DEFAULT_NOT_FOUND_SUBTITLE}
+        actions={isLoggedIn ? [DEFAULT_ROUTE_HERO_PAGE_ACTION] : []}
+      />
+    </Screen>
   );
 };

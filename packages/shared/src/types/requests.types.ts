@@ -1,4 +1,4 @@
-import type {ErrorResult, SuccessResult} from '@shared/types/result.types';
+import type {ErrorResult, SuccessResult} from '@shared/types/results.types';
 
 type RequestHeaders = Record<string, string>;
 export type RequestBody = Record<
@@ -18,7 +18,7 @@ interface SuccessResponseResult<T> extends SuccessResult<T> {
   readonly statusCode: number;
 }
 
-interface ErrorResponseResult<E = Error> extends ErrorResult<E> {
+interface ErrorResponseResult<E> extends ErrorResult<E> {
   readonly statusCode: number;
 }
 
@@ -29,13 +29,16 @@ export function makeSuccessResponseResult<T>(
   return {success: true, value, statusCode};
 }
 
-export function makeErrorResponseResult(error: Error, statusCode: number): ErrorResponseResult {
+export function makeErrorResponseResult(
+  error: Error,
+  statusCode: number
+): ErrorResponseResult<Error> {
   return {success: false, error, statusCode};
 }
 
-type ResponseResult<T, E = Error> = SuccessResponseResult<T> | ErrorResponseResult<E>;
+type ResponseResult<T, E> = SuccessResponseResult<T> | ErrorResponseResult<E>;
 
-export type AsyncResponseResult<T, E = Error> = Promise<ResponseResult<T, E>>;
+export type AsyncResponseResult<T, E> = Promise<ResponseResult<T, E>>;
 
 export enum HttpMethod {
   GET = 'GET',

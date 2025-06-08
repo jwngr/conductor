@@ -1,29 +1,82 @@
 import type React from 'react';
-import styled from 'styled-components';
 
+import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
+import {assertNever} from '@shared/lib/utils.shared';
+
+import {FeedItemContentType} from '@shared/types/feedItems.types';
 import type {FeedItem} from '@shared/types/feedItems.types';
 
+import type {WithChildren} from '@sharedClient/types/utils.client.types';
+
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
+import {ExternalLink} from '@src/components/atoms/Link';
 import {Spacer} from '@src/components/atoms/Spacer';
-import {Text} from '@src/components/atoms/Text';
+import {H1, P} from '@src/components/atoms/Text';
 import {FeedItemActions} from '@src/components/feedItems/FeedItemActions';
+import {ImportingFeedItem} from '@src/components/feedItems/ImportingFeedItem';
+import {Markdown} from '@src/components/Markdown';
 
-export const FeedItemWrapper = styled(FlexColumn).attrs({gap: 12})`
-  flex: 1;
-  overflow: auto;
-  padding: 20px;
-`;
+const FeedItemHeaderTitle: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
+  const titleContentWithoutLink = <H1 bold>{feedItem.content.title}</H1>;
 
-const FeedItemHeaderWrapper = styled(FlexRow)``;
+  switch (feedItem.feedItemContentType) {
+    case FeedItemContentType.Interval:
+      return titleContentWithoutLink;
+    case FeedItemContentType.Article:
+    case FeedItemContentType.Tweet:
+    case FeedItemContentType.Video:
+    case FeedItemContentType.Website:
+    case FeedItemContentType.Xkcd:
+    case FeedItemContentType.YouTube:
+      return <ExternalLink href={feedItem.content.url}>{titleContentWithoutLink}</ExternalLink>;
+    default:
+      assertNever(feedItem);
+  }
+};
 
-export const FeedItemHeader: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
+const FeedItemHeader: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
   return (
-    <FeedItemHeaderWrapper>
-      <Text as="h1" bold>
-        {feedItem.title}
-      </Text>
+    <FlexRow>
+      <FeedItemHeaderTitle feedItem={feedItem} />
       <Spacer flex />
       <FeedItemActions feedItem={feedItem} />
-    </FeedItemHeaderWrapper>
+    </FlexRow>
+  );
+};
+
+export const FeedItemSummary: React.FC<{readonly summary: string | null}> = ({summary}) => {
+  if (summary === null) {
+    return <P>No summary generated</P>;
+  }
+
+  if (summary.length === 0) {
+    return <P>Summary empty</P>;
+  }
+
+  return <Markdown content={summary.replace(/•/g, '*')} />;
+};
+
+interface SimpleFeedItemRendererProps extends WithChildren {
+  readonly feedItem: FeedItem;
+}
+
+export const SimpleFeedItemRenderer: React.FC<SimpleFeedItemRendererProps> = ({
+  feedItem,
+  children,
+}) => {
+  const hasFeedItemEverBeenImported = SharedFeedItemHelpers.hasEverBeenImported(feedItem);
+
+  let mainContent: React.ReactNode;
+  if (!hasFeedItemEverBeenImported) {
+    mainContent = <ImportingFeedItem feedItem={feedItem} />;
+  } else {
+    mainContent = children;
+  }
+
+  return (
+    <FlexColumn flex gap={3} overflow="auto" className="p-5">
+      <FeedItemHeader feedItem={feedItem} />
+      {mainContent}
+    </FlexColumn>
   );
 };

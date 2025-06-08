@@ -1,12 +1,13 @@
+import {useNavigate} from '@tanstack/react-router';
 import {useEffect} from 'react';
-import {useNavigate} from 'react-router-dom';
 
 import {logger} from '@shared/services/logger.shared';
 
 import {prefixError} from '@shared/lib/errorUtils.shared';
-import {Urls} from '@shared/lib/urls.shared';
 
-import {authService} from '@sharedClient/services/auth.client';
+import {authService} from '@src/lib/auth.pwa';
+
+import {signInRoute} from '@src/routes';
 
 /**
  * Signs out the current account and redirects them to sign in page.
@@ -26,7 +27,7 @@ export const SignOutRedirect: React.FC = () => {
       }
 
       // Don't strand the user on a page they no longer have access to view.
-      navigate(Urls.forSignIn());
+      await navigate({to: signInRoute.fullPath, replace: true});
 
       // TODO: Clear other stuff from local storage.
     };
