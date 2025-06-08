@@ -6,21 +6,33 @@ import type {Storage} from 'firebase-admin/storage';
 
 import {logger} from '@shared/services/logger.shared';
 
-import {prefixError} from '@shared/lib/errorUtils.shared';
+import {asyncTry} from '@shared/lib/errorUtils.shared';
 
 export const serverTimestampSupplier = (): FieldValue => FieldValue.serverTimestamp();
 
-enableFirebaseTelemetry({
-  forceDevExport: false,
-}).catch((error) => {
-  logger.error(prefixError(error, 'Failed to enable Firebase telemetry'));
-});
+const enableTelemetryResult = await asyncTry(async () =>
+  enableFirebaseTelemetry({forceDevExport: false})
+);
+
+if (!enableTelemetryResult.success) {
+  const message = 'Failed to enable Firebase telemetry. Continuing without telemetry.';
+  logger.warn(message, {error: enableTelemetryResult.error});
+}
 
 export class ServerFirebaseService {
   private storageInstance: Storage;
   private firestoreInstance: Firestore;
 
   constructor() {
+    if (admin.apps.length !== 0) {
+      const message = 'Only a single `ServerFirebaseService` should be initialized on the server.';
+      const error = new Error(message);
+      logger.error(error);
+      // Consider it a fatal error if multiple `ServerFirebaseService`s are initialized.
+      // eslint-disable-next-line no-restricted-syntax
+      throw error;
+    }
+
     admin.initializeApp();
 
     this.storageInstance = admin.storage();
