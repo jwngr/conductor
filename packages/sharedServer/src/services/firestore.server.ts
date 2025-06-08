@@ -63,17 +63,17 @@ function makeFirestoreDataConverter<
 export class ServerFirestoreCollectionService<
   ItemId extends string,
   ItemData extends BaseStoreItem,
-  ItemDataFromSchema extends DocumentData,
+  ItemDataFromStorage extends DocumentData,
 > {
   private readonly firebaseService: ServerFirebaseService;
   private readonly collectionPath: string;
-  private readonly converter: FirestoreDataConverter<ItemData, ItemDataFromSchema>;
+  private readonly converter: FirestoreDataConverter<ItemData, ItemDataFromStorage>;
   private readonly parseId: Func<string, Result<ItemId, Error>>;
 
   constructor(args: {
     firebaseService: ServerFirebaseService;
     collectionPath: string;
-    converter: FirestoreDataConverter<ItemData, ItemDataFromSchema>;
+    converter: FirestoreDataConverter<ItemData, ItemDataFromStorage>;
     parseId: Func<string, Result<ItemId, Error>>;
   }) {
     this.firebaseService = args.firebaseService;
@@ -85,7 +85,7 @@ export class ServerFirestoreCollectionService<
   /**
    * Returns the underlying Firestore collection reference.
    */
-  public getCollectionRef(): CollectionReference<ItemData> {
+  public getCollectionRef(): CollectionReference<ItemData, ItemDataFromStorage> {
     return this.firebaseService.firestore
       .collection(this.collectionPath)
       .withConverter(this.converter);
