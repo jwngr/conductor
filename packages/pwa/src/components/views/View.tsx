@@ -41,6 +41,7 @@ import {LoadingArea} from '@src/components/loading/LoadingArea';
 import {ViewKeyboardShortcutHandler} from '@src/components/views/ViewKeyboardShortcutHandler';
 import {ViewOptionsDialog} from '@src/components/views/ViewOptionsDialog';
 
+import {firebaseService} from '@src/lib/firebase.pwa';
 import {cn} from '@src/lib/utils.pwa';
 
 import {feedItemRoute} from '@src/routes';
@@ -361,7 +362,7 @@ const ViewListIgnoringDelivery: React.FC<{
   readonly sortBy: readonly ViewSortByOption[];
   readonly groupBy: readonly ViewGroupByOption[];
 }> = ({viewType, sortBy, groupBy}) => {
-  const feedItemsState = useFeedItemsIgnoringDelivery({viewType});
+  const feedItemsState = useFeedItemsIgnoringDelivery({viewType, firebaseService});
 
   switch (feedItemsState.status) {
     case AsyncStatus.Idle:
@@ -398,7 +399,7 @@ const ViewListRespectingDelivery: React.FC<{
   readonly sortBy: readonly ViewSortByOption[];
   readonly groupBy: readonly ViewGroupByOption[];
 }> = ({viewType, sortBy, groupBy}) => {
-  const feedItemsState = useFeedItemsRespectingDelivery({viewType});
+  const feedItemsState = useFeedItemsRespectingDelivery({viewType, firebaseService});
 
   switch (feedItemsState.status) {
     case AsyncStatus.Idle:

@@ -21,4 +21,14 @@ export const FirestoreTimestampSchema = z.any().refine(
   {message: 'Invalid timestamp value'}
 );
 
+export const FirebaseConfigSchema = z.object({
+  apiKey: z.string(),
+  authDomain: z.string(),
+  projectId: z.string(),
+  storageBucket: z.string(),
+  messagingSenderId: z.string(),
+  appId: z.string(),
+  measurementId: z.string().optional(),
+});
+
 export type FirestoreTimestamp = z.infer<typeof FirestoreTimestampSchema>;

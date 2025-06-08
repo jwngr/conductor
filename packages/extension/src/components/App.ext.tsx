@@ -9,10 +9,11 @@ import type {FeedItem} from '@shared/types/feedItems.types';
 import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {useFeedItemsService} from '@sharedClient/hooks/feedItems.hooks';
 
+import {firebaseService} from '@src/lib/firebase.ext';
 import {useCurrentTab} from '@src/lib/tabs.ext';
 
 const SaveCurrentUrlButton: React.FC = () => {
-  const feedItemsService = useFeedItemsService();
+  const feedItemsService = useFeedItemsService({firebaseService});
 
   const {asyncState, setPending, setError, setSuccess} = useAsyncState<FeedItem>();
 

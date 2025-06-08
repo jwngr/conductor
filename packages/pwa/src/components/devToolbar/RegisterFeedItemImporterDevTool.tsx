@@ -16,6 +16,8 @@ import {Button} from '@src/components/atoms/Button';
 import {Input} from '@src/components/atoms/Input';
 import {P} from '@src/components/atoms/Text';
 
+import {firebaseService} from '@src/lib/firebase.pwa';
+
 const StatusText: React.FC<{
   readonly isError?: boolean;
   readonly children: React.ReactNode;
@@ -28,7 +30,7 @@ const StatusText: React.FC<{
 };
 
 const FeedItemImporter: React.FC = () => {
-  const feedItemsService = useFeedItemsService();
+  const feedItemsService = useFeedItemsService({firebaseService});
 
   const [urlInputValue, setUrlInputValue] = useState('');
   const {asyncState, setPending, setError, setSuccess} = useAsyncState<undefined>();

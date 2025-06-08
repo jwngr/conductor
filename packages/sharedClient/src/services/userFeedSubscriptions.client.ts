@@ -1,5 +1,5 @@
 import {limit, orderBy, where} from 'firebase/firestore';
-import type {Functions, HttpsCallable} from 'firebase/functions';
+import type {HttpsCallable} from 'firebase/functions';
 import {httpsCallable} from 'firebase/functions';
 
 import {logger} from '@shared/services/logger.shared';
@@ -40,8 +40,9 @@ import type {UserFeedSubscriptionFromStorage} from '@shared/schemas/userFeedSubs
 import {toStorageUserFeedSubscription} from '@shared/storage/userFeedSubscriptions.storage';
 
 import type {ClientEventLogService} from '@sharedClient/services/eventLog.client';
-import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+import type {ClientFirebaseService} from '@sharedClient/services/firebase.client';
 import {makeClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
 
 import {toast} from '@sharedClient/lib/toasts.client';
 
@@ -57,29 +58,28 @@ type UserFeedSubscriptionsCollectionService = ClientFirestoreCollectionService<
   UserFeedSubscriptionFromStorage
 >;
 
-export const clientUserFeedSubscriptionsCollectionService = makeClientFirestoreCollectionService({
-  collectionPath: USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
-  toStorage: toStorageUserFeedSubscription,
-  fromStorage: parseUserFeedSubscription,
-  parseId: parseUserFeedSubscriptionId,
-});
-
 export class ClientUserFeedSubscriptionsService {
   private readonly accountId: AccountId;
-  private readonly functions: Functions;
+  private readonly firebaseService: ClientFirebaseService;
   private readonly eventLogService: ClientEventLogService;
   private readonly userFeedSubscriptionsCollectionService: UserFeedSubscriptionsCollectionService;
 
   constructor(args: {
     readonly accountId: AccountId;
-    readonly functions: Functions;
+    readonly firebaseService: ClientFirebaseService;
     readonly eventLogService: ClientEventLogService;
-    readonly userFeedSubscriptionsCollectionService: UserFeedSubscriptionsCollectionService;
   }) {
     this.accountId = args.accountId;
-    this.functions = args.functions;
+    this.firebaseService = args.firebaseService;
     this.eventLogService = args.eventLogService;
-    this.userFeedSubscriptionsCollectionService = args.userFeedSubscriptionsCollectionService;
+
+    this.userFeedSubscriptionsCollectionService = makeClientFirestoreCollectionService({
+      firebaseService: args.firebaseService,
+      collectionPath: USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
+      toStorage: toStorageUserFeedSubscription,
+      fromStorage: parseUserFeedSubscription,
+      parseId: parseUserFeedSubscriptionId,
+    });
   }
 
   /**
@@ -97,8 +97,9 @@ export class ClientUserFeedSubscriptionsService {
     const existingSubscription = existingSubResult.value;
     if (existingSubscription) return makeErrorResult(new Error('Already subscribed to RSS feed'));
 
+    // TODO: Add typesafe method on `ClientFirebaseService` for this.
     const callSubscribeToRssFeed: CallSubscribeToRssFeedFn = httpsCallable(
-      this.functions,
+      this.firebaseService.functions,
       'subscribeToRssFeedOnCall'
     );
 

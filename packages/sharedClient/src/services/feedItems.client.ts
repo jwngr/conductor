@@ -6,6 +6,7 @@ import {
   FEED_ITEM_FILE_LLM_CONTEXT,
   FEED_ITEM_FILE_TRANSCRIPT,
   FEED_ITEMS_DB_COLLECTION,
+  FEED_ITEMS_STORAGE_COLLECTION,
 } from '@shared/lib/constants.shared';
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {makeFeedItem, makeFeedItemContentFromUrl} from '@shared/lib/feedItems.shared';
@@ -28,8 +29,9 @@ import type {FeedItemFromStorage} from '@shared/schemas/feedItems.schema';
 import {toStorageFeedItem} from '@shared/storage/feedItems.storage';
 
 import type {ClientEventLogService} from '@sharedClient/services/eventLog.client';
-import {makeClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+import type {ClientFirebaseService} from '@sharedClient/services/firebase.client';
 import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+import {makeClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
 
 import {toast, toastWithUndo} from '@sharedClient/lib/toasts.client';
 
@@ -39,29 +41,30 @@ type FeedItemsCollectionService = ClientFirestoreCollectionService<
   FeedItemFromStorage
 >;
 
-export const clientFeedItemsCollectionService = makeClientFirestoreCollectionService({
-  collectionPath: FEED_ITEMS_DB_COLLECTION,
-  toStorage: toStorageFeedItem,
-  fromStorage: parseFeedItem,
-  parseId: parseFeedItemId,
-});
-
 export class ClientFeedItemsService {
-  private readonly feedItemsCollectionService: FeedItemsCollectionService;
-  private readonly feedItemsStorageRef: StorageReference;
   private readonly accountId: AccountId;
   private readonly eventLogService: ClientEventLogService;
+  private readonly feedItemsStorageRef: StorageReference;
+  private readonly feedItemsCollectionService: FeedItemsCollectionService;
 
   constructor(args: {
-    readonly feedItemsCollectionService: FeedItemsCollectionService;
-    readonly feedItemsStorageRef: StorageReference;
     readonly accountId: AccountId;
     readonly eventLogService: ClientEventLogService;
+    readonly firebaseService: ClientFirebaseService;
   }) {
-    this.feedItemsCollectionService = args.feedItemsCollectionService;
-    this.feedItemsStorageRef = args.feedItemsStorageRef;
     this.accountId = args.accountId;
     this.eventLogService = args.eventLogService;
+
+    const storage = args.firebaseService.storage;
+    this.feedItemsStorageRef = storageRef(storage, FEED_ITEMS_STORAGE_COLLECTION);
+
+    this.feedItemsCollectionService = makeClientFirestoreCollectionService({
+      firebaseService: args.firebaseService,
+      collectionPath: FEED_ITEMS_DB_COLLECTION,
+      toStorage: toStorageFeedItem,
+      fromStorage: parseFeedItem,
+      parseId: parseFeedItemId,
+    });
   }
 
   public async fetchById(feedItemId: FeedItemId): AsyncResult<FeedItem | null, Error> {

@@ -18,6 +18,8 @@ import type {MouseEvent} from '@sharedClient/types/utils.client.types';
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {FlexRow} from '@src/components/atoms/Flex';
 
+import {firebaseService} from '@src/lib/firebase.pwa';
+
 interface GenericFeedItemActionIconProps {
   readonly icon: IconName;
   readonly tooltip: string;
@@ -62,7 +64,7 @@ const MarkDoneFeedItemActionIcon: React.FC<{
 }> = ({feedItem}) => {
   const actionInfo = SharedFeedItemHelpers.getMarkDoneFeedItemActionInfo(feedItem);
   const isDone = SharedFeedItemHelpers.isMarkedDone(feedItem);
-  const feedItemsService = useFeedItemsService();
+  const feedItemsService = useFeedItemsService({firebaseService});
 
   return (
     <GenericFeedItemActionIcon
@@ -83,7 +85,7 @@ const SaveFeedItemActionIcon: React.FC<{
 }> = ({feedItem}) => {
   const actionInfo = SharedFeedItemHelpers.getSaveFeedItemActionInfo(feedItem);
   const isSaved = SharedFeedItemHelpers.isSaved(feedItem);
-  const feedItemsService = useFeedItemsService();
+  const feedItemsService = useFeedItemsService({firebaseService});
 
   return (
     <GenericFeedItemActionIcon
@@ -104,7 +106,7 @@ const MarkUnreadFeedItemActionIcon: React.FC<{
 }> = ({feedItem}) => {
   const actionInfo = SharedFeedItemHelpers.getMarkUnreadFeedItemActionInfo(feedItem);
   const isUnread = SharedFeedItemHelpers.isUnread(feedItem);
-  const feedItemsService = useFeedItemsService();
+  const feedItemsService = useFeedItemsService({firebaseService});
 
   return (
     <GenericFeedItemActionIcon
@@ -125,7 +127,7 @@ const StarFeedItemActionIcon: React.FC<{
 }> = ({feedItem}) => {
   const actionInfo = SharedFeedItemHelpers.getStarFeedItemActionInfo(feedItem);
   const isStarred = SharedFeedItemHelpers.isStarred(feedItem);
-  const feedItemsService = useFeedItemsService();
+  const feedItemsService = useFeedItemsService({firebaseService});
 
   return (
     <GenericFeedItemActionIcon
@@ -145,7 +147,7 @@ const RetryImportActionIcon: React.FC<{
   readonly feedItem: FeedItem;
 }> = ({feedItem}) => {
   const actionInfo = SharedFeedItemHelpers.getRetryImportFeedItemActionInfo();
-  const feedItemsService = useFeedItemsService();
+  const feedItemsService = useFeedItemsService({firebaseService});
 
   return (
     <GenericFeedItemActionIcon

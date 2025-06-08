@@ -19,6 +19,8 @@ import {SimpleFeedItemRenderer} from '@src/components/feedItems/FeedItem';
 import {LoadingArea} from '@src/components/loading/LoadingArea';
 import {Markdown} from '@src/components/Markdown';
 
+import {firebaseService} from '@src/lib/firebase.pwa';
+
 const XkcdImageAndAltText: React.FC<{
   readonly imageUrl: string;
   readonly altText: string;
@@ -38,7 +40,7 @@ const XkcdImageAndAltText: React.FC<{
 };
 
 const ExplainXkcdContent: React.FC<{readonly feedItem: XkcdFeedItem}> = ({feedItem}) => {
-  const markdownState = useExplainXkcdMarkdown(feedItem);
+  const markdownState = useExplainXkcdMarkdown({feedItem, firebaseService});
 
   switch (markdownState.status) {
     case AsyncStatus.Idle:

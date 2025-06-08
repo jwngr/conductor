@@ -34,8 +34,9 @@ import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 import type {EventLogItemFromStorage} from '@shared/schemas/eventLog.schema';
 import {toStorageEventLogItem} from '@shared/storage/eventLog.storage';
 
-import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+import type {ClientFirebaseService} from '@sharedClient/services/firebase.client';
 import {makeClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
 
 type ClientEventLogCollectionService = ClientFirestoreCollectionService<
   EventId,
@@ -43,26 +44,26 @@ type ClientEventLogCollectionService = ClientFirestoreCollectionService<
   EventLogItemFromStorage
 >;
 
-export const clientEventLogCollectionService = makeClientFirestoreCollectionService({
-  collectionPath: EVENT_LOG_DB_COLLECTION,
-  toStorage: toStorageEventLogItem,
-  fromStorage: parseEventLogItem,
-  parseId: parseEventId,
-});
-
 export class ClientEventLogService {
+  private readonly accountId: AccountId;
   private readonly environment: Environment;
   private readonly eventLogCollectionService: ClientEventLogCollectionService;
-  private readonly accountId: AccountId;
 
   constructor(args: {
     readonly environment: Environment;
-    readonly eventLogCollectionService: ClientEventLogCollectionService;
     readonly accountId: AccountId;
+    readonly firebaseService: ClientFirebaseService;
   }) {
-    this.environment = args.environment;
-    this.eventLogCollectionService = args.eventLogCollectionService;
     this.accountId = args.accountId;
+    this.environment = args.environment;
+
+    this.eventLogCollectionService = makeClientFirestoreCollectionService({
+      firebaseService: args.firebaseService,
+      collectionPath: EVENT_LOG_DB_COLLECTION,
+      toStorage: toStorageEventLogItem,
+      fromStorage: parseEventLogItem,
+      parseId: parseEventId,
+    });
   }
 
   public async fetchById(eventId: EventId): AsyncResult<EventLogItem | null, Error> {

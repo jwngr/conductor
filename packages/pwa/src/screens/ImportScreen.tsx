@@ -27,6 +27,8 @@ import {ExternalLink} from '@src/components/atoms/Link';
 import {H2, P} from '@src/components/atoms/Text';
 import {FeedItemImportStatusBadge} from '@src/components/feedItems/FeedItemImportStatusBadge';
 
+import {firebaseService} from '@src/lib/firebase.pwa';
+
 import {Screen} from '@src/screens/Screen';
 
 interface ImportScreenState {
@@ -47,7 +49,7 @@ const INITIAL_IMPORT_SCREEN_STATE: ImportScreenState = {
 
 export const ImportScreen: React.FC = () => {
   const [state, setState] = useState<ImportScreenState>(INITIAL_IMPORT_SCREEN_STATE);
-  const feedItemsService = useFeedItemsService();
+  const feedItemsService = useFeedItemsService({firebaseService});
 
   const setFileError = (error: Error): void => {
     setState((prev) => ({...prev, fileError: error}));

@@ -1,4 +1,3 @@
-import {ref as storageRef} from 'firebase/storage';
 import {useEffect, useMemo} from 'react';
 
 import {logger} from '@shared/services/logger.shared';
@@ -10,7 +9,6 @@ import {
   FEED_ITEM_FILE_LLM_CONTEXT,
   FEED_ITEM_FILE_TRANSCRIPT,
   FEED_ITEM_FILE_XKCD_EXPLAIN,
-  FEED_ITEMS_STORAGE_COLLECTION,
 } from '@shared/lib/constants.shared';
 import {isDeliveredAccordingToSchedule} from '@shared/lib/deliverySchedules.shared';
 import {
@@ -26,11 +24,8 @@ import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 import type {ViewType} from '@shared/types/views.types';
 
-import {
-  clientFeedItemsCollectionService,
-  ClientFeedItemsService,
-} from '@sharedClient/services/feedItems.client';
-import {firebaseService} from '@sharedClient/services/firebase.client';
+import {ClientFeedItemsService} from '@sharedClient/services/feedItems.client';
+import type {ClientFirebaseService} from '@sharedClient/services/firebase.client';
 
 import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
@@ -38,26 +33,31 @@ import {useEventLogService} from '@sharedClient/hooks/eventLog.hooks';
 import {useIsMounted} from '@sharedClient/hooks/lifecycle.hooks';
 import {useUserFeedSubscriptions} from '@sharedClient/hooks/userFeedSubscriptions.hooks';
 
-const feedItemsStorageRef = storageRef(firebaseService.storage, FEED_ITEMS_STORAGE_COLLECTION);
-
-export function useFeedItemsService(): ClientFeedItemsService {
+export function useFeedItemsService(args: {
+  readonly firebaseService: ClientFirebaseService;
+}): ClientFeedItemsService {
+  const {firebaseService} = args;
   const loggedInAccount = useLoggedInAccount();
-  const eventLogService = useEventLogService();
+  const eventLogService = useEventLogService({firebaseService});
 
   const feedItemsService = useMemo(() => {
     return new ClientFeedItemsService({
-      feedItemsCollectionService: clientFeedItemsCollectionService,
-      feedItemsStorageRef,
       accountId: loggedInAccount.accountId,
       eventLogService,
+      firebaseService,
     });
-  }, [loggedInAccount.accountId, eventLogService]);
+  }, [loggedInAccount.accountId, eventLogService, firebaseService]);
 
   return feedItemsService;
 }
 
-export function useFeedItem(feedItemId: FeedItemId): AsyncState<FeedItem | null> {
-  const feedItemsService = useFeedItemsService();
+export function useFeedItem(args: {
+  readonly feedItemId: FeedItemId;
+  readonly firebaseService: ClientFirebaseService;
+}): AsyncState<FeedItem | null> {
+  const {feedItemId, firebaseService} = args;
+
+  const feedItemsService = useFeedItemsService({firebaseService});
 
   const {asyncState, setPending, setError, setSuccess} = useAsyncState<FeedItem | null>();
 
@@ -114,9 +114,12 @@ function filterFeedItemsByDeliverySchedules(args: {
  * Internal helper for fetching all feed items for a view, ignoring delivery schedules. Works for
  * all views.
  */
-function useFeedItemsInternal(args: {readonly viewType: ViewType}): AsyncState<FeedItem[]> {
-  const {viewType} = args;
-  const feedItemsService = useFeedItemsService();
+function useFeedItemsInternal(args: {
+  readonly firebaseService: ClientFirebaseService;
+  readonly viewType: ViewType;
+}): AsyncState<FeedItem[]> {
+  const {viewType, firebaseService} = args;
+  const feedItemsService = useFeedItemsService({firebaseService});
 
   const {asyncState, setPending, setError, setSuccess} = useAsyncState<FeedItem[]>();
 
@@ -141,8 +144,10 @@ function useFeedItemsInternal(args: {readonly viewType: ViewType}): AsyncState<F
  */
 export function useFeedItemsIgnoringDelivery(args: {
   readonly viewType: Exclude<ViewType, ViewType.Untriaged>;
+  readonly firebaseService: ClientFirebaseService;
 }): AsyncState<FeedItem[]> {
-  return useFeedItemsInternal({viewType: args.viewType});
+  const {viewType, firebaseService} = args;
+  return useFeedItemsInternal({viewType, firebaseService});
 }
 
 /**
@@ -154,11 +159,12 @@ export function useFeedItemsIgnoringDelivery(args: {
  */
 export function useFeedItemsRespectingDelivery(args: {
   readonly viewType: ViewType.Untriaged;
+  readonly firebaseService: ClientFirebaseService;
 }): AsyncState<FeedItem[]> {
-  const {viewType} = args;
+  const {viewType, firebaseService} = args;
 
-  const feedItemsState = useFeedItemsInternal({viewType});
-  const userFeedSubscriptionsState = useUserFeedSubscriptions();
+  const feedItemsState = useFeedItemsInternal({viewType, firebaseService});
+  const userFeedSubscriptionsState = useUserFeedSubscriptions({firebaseService});
 
   const filteredFeedItemsState: AsyncState<FeedItem[]> = useMemo(() => {
     // Do not consider loaded until both the feed items and the user feed subscriptions are loaded. filtering.
@@ -186,13 +192,14 @@ export function useFeedItemsRespectingDelivery(args: {
 function useFeedItemFile(args: {
   readonly feedItem: FeedItem;
   readonly filename: string;
+  readonly firebaseService: ClientFirebaseService;
 }): AsyncState<string> {
-  const {feedItem, filename} = args;
+  const {feedItem, filename, firebaseService} = args;
   const feedItemId = feedItem.feedItemId;
   const hasFeedItemEverBeenImported = SharedFeedItemHelpers.hasEverBeenImported(feedItem);
 
   const isMounted = useIsMounted();
-  const feedItemsService = useFeedItemsService();
+  const feedItemsService = useFeedItemsService({firebaseService});
 
   const {asyncState, setPending, setError, setSuccess} = useAsyncState<string>();
 
@@ -232,22 +239,42 @@ function useFeedItemFile(args: {
   return asyncState;
 }
 
-export function useFeedItemHtml(feedItem: FeedItem): AsyncState<string> {
-  return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_HTML});
+export function useFeedItemHtml(args: {
+  readonly feedItem: FeedItem;
+  readonly firebaseService: ClientFirebaseService;
+}): AsyncState<string> {
+  const {feedItem, firebaseService} = args;
+  return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_HTML, firebaseService});
 }
 
-export function useFeedItemMarkdown(feedItem: FeedItem): AsyncState<string> {
-  return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_LLM_CONTEXT});
+export function useFeedItemMarkdown(args: {
+  readonly feedItem: FeedItem;
+  readonly firebaseService: ClientFirebaseService;
+}): AsyncState<string> {
+  const {feedItem, firebaseService} = args;
+  return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_LLM_CONTEXT, firebaseService});
 }
 
-export function useFeedItemDefuddleMarkdown(feedItem: FeedItem): AsyncState<string> {
-  return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_HTML_MARKDOWN});
+export function useFeedItemDefuddleMarkdown(args: {
+  readonly feedItem: FeedItem;
+  readonly firebaseService: ClientFirebaseService;
+}): AsyncState<string> {
+  const {feedItem, firebaseService} = args;
+  return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_HTML_MARKDOWN, firebaseService});
 }
 
-export function useYouTubeFeedItemTranscript(feedItem: FeedItem): AsyncState<string> {
-  return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_TRANSCRIPT});
+export function useYouTubeFeedItemTranscript(args: {
+  readonly feedItem: FeedItem;
+  readonly firebaseService: ClientFirebaseService;
+}): AsyncState<string> {
+  const {feedItem, firebaseService} = args;
+  return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_TRANSCRIPT, firebaseService});
 }
 
-export function useExplainXkcdMarkdown(feedItem: XkcdFeedItem): AsyncState<string> {
-  return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_XKCD_EXPLAIN});
+export function useExplainXkcdMarkdown(args: {
+  readonly feedItem: XkcdFeedItem;
+  readonly firebaseService: ClientFirebaseService;
+}): AsyncState<string> {
+  const {feedItem, firebaseService} = args;
+  return useFeedItemFile({feedItem, filename: FEED_ITEM_FILE_XKCD_EXPLAIN, firebaseService});
 }
