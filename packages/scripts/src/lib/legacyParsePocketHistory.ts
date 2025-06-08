@@ -1,8 +1,6 @@
 import path from 'path';
 import {fileURLToPath} from 'url';
 
-import dotenv from 'dotenv';
-
 import {logger} from '@shared/services/logger.shared';
 
 import {prefixError} from '@shared/lib/errorUtils.shared';
@@ -20,13 +18,6 @@ import {initServices} from '@src/lib/initServices.scripts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// Load environment variables from packages/scripts/.env file
-const envResult = dotenv.config({path: path.resolve(__dirname, '../../.env')});
-if (envResult.error) {
-  logger.log(`Error loading .env file: ${envResult.error.message}`);
-  process.exit(1);
-}
 
 const accountIdResult = parseAccountId(env.firebaseUserId);
 if (!accountIdResult.success) {

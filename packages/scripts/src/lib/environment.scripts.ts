@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import {prettifyError} from 'zod/v4';
 
 import {logger} from '@shared/services/logger.shared';
 
@@ -12,9 +13,13 @@ import {ScriptsEnvironmentVariablesSchema} from '@src/types/environment.scripts.
 dotenv.config();
 
 function getEnvironmentVariables(): Result<ScriptsEnvironmentVariables, Error> {
-  const parsedEnvResult = ScriptsEnvironmentVariablesSchema.safeParse(process.env);
+  const parsedEnvResult = ScriptsEnvironmentVariablesSchema.safeParse({
+    FIREBASE_USER_ID: process.env.FIREBASE_USER_ID,
+    FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY,
+  });
   if (!parsedEnvResult.success) {
-    return makeErrorResult(new Error('Failed to parse environment variables'));
+    const zodErrorMessage = prettifyError(parsedEnvResult.error);
+    return makeErrorResult(new Error(`Failed to parse environment variables: ${zodErrorMessage}`));
   }
   return makeSuccessResult({
     firebaseUserId: parsedEnvResult.data.FIREBASE_USER_ID,

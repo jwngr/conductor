@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import {prettifyError} from 'zod/v4';
 
 import {logger} from '@shared/services/logger.shared';
 
@@ -13,9 +14,12 @@ import {RssServerEnvironmentVariablesSchema} from '@src/types/environment.rss.ty
 dotenv.config();
 
 function getEnvironmentVariables(): Result<RssServerEnvironmentVariables, Error> {
-  const parsedEnvResult = RssServerEnvironmentVariablesSchema.safeParse(process.env);
+  const parsedEnvResult = RssServerEnvironmentVariablesSchema.safeParse({
+    LOCAL_RSS_FEED_PROVIDER_PORT: Number(process.env.LOCAL_RSS_FEED_PROVIDER_PORT),
+  });
   if (!parsedEnvResult.success) {
-    return makeErrorResult(new Error('Failed to parse environment variables'));
+    const zodErrorMessage = prettifyError(parsedEnvResult.error);
+    return makeErrorResult(new Error(`Failed to parse environment variables: ${zodErrorMessage}`));
   }
   return makeSuccessResult({
     port: parsedEnvResult.data.LOCAL_RSS_FEED_PROVIDER_PORT,

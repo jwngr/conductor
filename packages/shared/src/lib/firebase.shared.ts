@@ -13,5 +13,5 @@ export function getIsFirebaseEmulatorEnabled(args: {
 }): boolean {
   const {isDevelopment, isEmulatorEnabledEnvVar} = args;
   // Only enable emulator in dev mode.
-  return isEmulatorEnabledEnvVar && !isDevelopment;
+  return isEmulatorEnabledEnvVar && isDevelopment;
 }
