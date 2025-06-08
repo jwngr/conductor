@@ -23,7 +23,7 @@ import {
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AsyncResult, Result} from '@shared/types/results.types';
-import type {Func} from '@shared/types/utils.types';
+import type {BaseStoreItem, Func} from '@shared/types/utils.types';
 
 import {serverTimestampSupplier} from '@sharedServer/services/firebase.server';
 import type {ServerFirebaseService} from '@sharedServer/services/firebase.server';
@@ -33,14 +33,17 @@ const BATCH_DELETE_SIZE = 500;
 /**
  * Creates a strongly-typed Firestore data converter.
  */
-function makeFirestoreDataConverter<ItemData, FirestoreItemData extends DocumentData>(
-  toFirestore: Func<ItemData, FirestoreItemData>,
-  fromFirestore: Func<FirestoreItemData, Result<ItemData, Error>>
-): FirestoreDataConverter<ItemData, FirestoreItemData> {
+function makeFirestoreDataConverter<
+  ItemData extends BaseStoreItem,
+  ItemDataFromStorage extends DocumentData,
+>(
+  toFirestore: Func<ItemData, ItemDataFromStorage>,
+  fromFirestore: Func<ItemDataFromStorage, Result<ItemData, Error>>
+): FirestoreDataConverter<ItemData, ItemDataFromStorage> {
   return {
     toFirestore,
     fromFirestore: (snapshot: QueryDocumentSnapshot): ItemData => {
-      const data = snapshot.data() as FirestoreItemData;
+      const data = snapshot.data() as ItemDataFromStorage;
 
       const parseDataResult = fromFirestore(data);
       if (!parseDataResult.success) {
@@ -59,7 +62,7 @@ function makeFirestoreDataConverter<ItemData, FirestoreItemData extends Document
 
 export class ServerFirestoreCollectionService<
   ItemId extends string,
-  ItemData,
+  ItemData extends BaseStoreItem,
   ItemDataFromSchema extends DocumentData,
 > {
   private readonly firebaseService: ServerFirebaseService;
@@ -248,7 +251,7 @@ export class ServerFirestoreCollectionService<
 
 export function makeServerFirestoreCollectionService<
   ItemId extends string,
-  ItemData extends DocumentData,
+  ItemData extends BaseStoreItem,
   ItemDataFromStorage extends DocumentData,
 >(args: {
   readonly firebaseService: ServerFirebaseService;
