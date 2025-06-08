@@ -13,18 +13,15 @@ import {
 
 import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
 
-import type {AuthStateChangedCallback} from '@shared/types/accounts.types';
 import type {EmailAddress} from '@shared/types/emails.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {Consumer, Task} from '@shared/types/utils.types';
-
-import {firebaseService} from '@sharedClient/services/firebase.client';
 
 import {parseLoggedInAccount} from '@sharedClient/types/accounts.client.types';
 import type {LoggedInAccount} from '@sharedClient/types/accounts.client.types';
 
 interface AuthServiceSubscriptionCallbacks {
-  readonly successCallback: AuthStateChangedCallback;
+  readonly successCallback: Consumer<LoggedInAccount | null>;
   readonly errorCallback: Consumer<Error>;
 }
 
@@ -32,7 +29,7 @@ interface AuthServiceSubscriptionCallbacks {
  * Service for interacting with authentication state. It contains limited profile information about
  * the currently logged in account.
  */
-class ClientAuthService {
+export class ClientAuthService {
   private currentAccount: LoggedInAccount | null = null;
   private subscribers = new Set<AuthServiceSubscriptionCallbacks>();
 
@@ -103,22 +100,20 @@ class ClientAuthService {
   public async signInWithEmailLink(
     email: EmailAddress,
     emailLink: string
-  ): AsyncResult<FirebaseUserCredential> {
+  ): AsyncResult<FirebaseUserCredential, Error> {
     return await asyncTry(async () => signInWithEmailLinkFirebase(this.auth, email, emailLink));
   }
 
   public async sendSignInLinkToEmail(
     email: EmailAddress,
     actionCodeSettings: ActionCodeSettings
-  ): AsyncResult<void> {
+  ): AsyncResult<void, Error> {
     return await asyncTry(async () =>
       sendSignInLinkToEmailFirebase(this.auth, email, actionCodeSettings)
     );
   }
 
-  public async signOut(): AsyncResult<void> {
+  public async signOut(): AsyncResult<void, Error> {
     return await asyncTry(async () => signOutFirebase(this.auth));
   }
 }
-
-export const authService = new ClientAuthService(firebaseService.auth);

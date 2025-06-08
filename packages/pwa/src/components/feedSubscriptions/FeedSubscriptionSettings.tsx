@@ -36,10 +36,12 @@ import {Label} from '@src/components/atoms/Label';
 import {Popover, PopoverContent, PopoverTrigger} from '@src/components/atoms/Popover';
 import {P} from '@src/components/atoms/Text';
 
+import {firebaseService} from '@src/lib/firebase.pwa';
+
 const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
   readonly userFeedSubscription: UserFeedSubscription;
 }> = ({userFeedSubscription}) => {
-  const feedSubscriptionsService = useUserFeedSubscriptionsService();
+  const feedSubscriptionsService = useUserFeedSubscriptionsService({firebaseService});
   const {asyncState, setPending, setError, setSuccess} = useAsyncState<undefined>();
 
   const handleDeliveryScheduleChange = async (
@@ -53,7 +55,7 @@ const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
       return;
     }
 
-    let makeDeliveryScheduleResult: Result<DeliverySchedule>;
+    let makeDeliveryScheduleResult: Result<DeliverySchedule, Error>;
     switch (deliveryScheduleTypeResult.value) {
       case DeliveryScheduleType.Immediate:
         makeDeliveryScheduleResult = makeSuccessResult(IMMEDIATE_DELIVERY_SCHEDULE);
@@ -136,8 +138,8 @@ const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
 const FeedSubscriptionUnsubscribeButton: React.FC<{
   readonly userFeedSubscription: UserFeedSubscription;
 }> = ({userFeedSubscription}) => {
-  const eventLogService = useEventLogService();
-  const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
+  const eventLogService = useEventLogService({firebaseService});
+  const userFeedSubscriptionsService = useUserFeedSubscriptionsService({firebaseService});
 
   const {userFeedSubscriptionId} = userFeedSubscription;
   const {asyncState, setPending, setError, setSuccess} = useAsyncState<undefined>();

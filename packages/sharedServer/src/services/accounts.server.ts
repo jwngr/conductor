@@ -1,15 +1,23 @@
+import {ACCOUNTS_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {asyncTryAll} from '@shared/lib/errorUtils.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
+
+import {parseAccount, parseAccountId} from '@shared/parsers/accounts.parser';
 
 import type {Account, AccountId} from '@shared/types/accounts.types';
 import type {EmailAddress} from '@shared/types/emails.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {AccountFromStorage} from '@shared/schemas/accounts.schema';
+import {toStorageAccount} from '@shared/storage/accounts.storage';
 
 import type {ServerAccountSettingsService} from '@sharedServer/services/accountSettings.server';
 import type {ServerExperimentsService} from '@sharedServer/services/experiments.server';
-import type {ServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
+import type {ServerFirebaseService} from '@sharedServer/services/firebase.server';
+import {
+  makeServerFirestoreCollectionService,
+  type ServerFirestoreCollectionService,
+} from '@sharedServer/services/firestore.server';
 
 type AccountsCollectionService = ServerFirestoreCollectionService<
   AccountId,
@@ -23,19 +31,25 @@ export class ServerAccountsService {
   private readonly experimentsService: ServerExperimentsService;
 
   constructor(args: {
-    readonly collectionService: AccountsCollectionService;
+    readonly firebaseService: ServerFirebaseService;
     readonly accountSettingsService: ServerAccountSettingsService;
     readonly experimentsService: ServerExperimentsService;
   }) {
-    this.collectionService = args.collectionService;
     this.accountSettingsService = args.accountSettingsService;
     this.experimentsService = args.experimentsService;
+    this.collectionService = makeServerFirestoreCollectionService({
+      firebaseService: args.firebaseService,
+      collectionPath: ACCOUNTS_DB_COLLECTION,
+      toStorage: toStorageAccount,
+      fromStorage: parseAccount,
+      parseId: parseAccountId,
+    });
   }
 
   private async createAccountsDoc(args: {
     readonly accountId: AccountId;
     readonly email: EmailAddress;
-  }): AsyncResult<void> {
+  }): AsyncResult<void, Error> {
     const {accountId, email} = args;
 
     const account = {
@@ -51,7 +65,7 @@ export class ServerAccountsService {
   public async createAccount(args: {
     readonly accountId: AccountId;
     readonly email: EmailAddress;
-  }): AsyncResult<void> {
+  }): AsyncResult<void, Error> {
     const {accountId, email} = args;
 
     const createAccountResult = await asyncTryAll([
@@ -75,7 +89,7 @@ export class ServerAccountsService {
   /**
    * Permanently deletes all account-related documents from Firestore.
    */
-  public async deleteAccount(accountId: AccountId): AsyncResult<void> {
+  public async deleteAccount(accountId: AccountId): AsyncResult<void, Error> {
     const deleteResult = await asyncTryAll([
       this.deleteAccountDoc(accountId),
       this.accountSettingsService.deleteForAccount(accountId),
@@ -97,7 +111,7 @@ export class ServerAccountsService {
   /**
    * Permanently deletes the `/accounts/$accountId` document from Firestore.
    */
-  private async deleteAccountDoc(accountId: AccountId): AsyncResult<void> {
+  private async deleteAccountDoc(accountId: AccountId): AsyncResult<void, Error> {
     return this.collectionService.deleteDoc(accountId);
   }
 }

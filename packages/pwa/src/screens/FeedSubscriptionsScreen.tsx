@@ -28,10 +28,12 @@ import {ErrorArea} from '@src/components/errors/ErrorArea';
 import {FeedSubscriptionSettingsButton} from '@src/components/feedSubscriptions/FeedSubscriptionSettings';
 import {LoadingArea} from '@src/components/loading/LoadingArea';
 
+import {firebaseService} from '@src/lib/firebase.pwa';
+
 import {Screen} from '@src/screens/Screen';
 
 const FeedAdder: React.FC = () => {
-  const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
+  const userFeedSubscriptionsService = useUserFeedSubscriptionsService({firebaseService});
 
   const [urlInputValue, setUrlInputValue] = useState('');
   const {asyncState, setPending, setError, setSuccess} = useAsyncState<undefined>();
@@ -229,7 +231,7 @@ const LoadedFeedSubscriptionsListMainContent: React.FC<{
 };
 
 const FeedSubscriptionsList: React.FC = () => {
-  const userFeedSubscriptionsState = useUserFeedSubscriptions();
+  const userFeedSubscriptionsState = useUserFeedSubscriptions({firebaseService});
 
   const renderMainContent = (): React.ReactNode => {
     switch (userFeedSubscriptionsState.status) {

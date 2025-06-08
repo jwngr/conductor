@@ -16,6 +16,8 @@ export interface LoggedInAccount {
   readonly accountId: AccountId;
   readonly email: EmailAddress;
   readonly displayName?: string;
+  readonly createdTime: Date | undefined;
+  readonly lastSignInTime: Date | undefined;
   // TODO: Add photo URL.
 }
 
@@ -23,7 +25,9 @@ export interface LoggedInAccount {
  * Parses a generic {@link LoggedInAccount} from a Firebase-specific {@link FirebaseUser}. Returns
  * an `ErrorResult` if the user is not authenticated.
  */
-export function parseLoggedInAccount(firebaseLoggedInUser: FirebaseUser): Result<LoggedInAccount> {
+export function parseLoggedInAccount(
+  firebaseLoggedInUser: FirebaseUser
+): Result<LoggedInAccount, Error> {
   if (!firebaseLoggedInUser.email) {
     return makeErrorResult(new Error('No email address associated with Firebase user'));
   }
@@ -38,5 +42,11 @@ export function parseLoggedInAccount(firebaseLoggedInUser: FirebaseUser): Result
     accountId: accountIdResult.value,
     email: emailResult.value,
     displayName: firebaseLoggedInUser.displayName ?? undefined,
+    createdTime: firebaseLoggedInUser.metadata.creationTime
+      ? new Date(firebaseLoggedInUser.metadata.creationTime)
+      : undefined,
+    lastSignInTime: firebaseLoggedInUser.metadata.lastSignInTime
+      ? new Date(firebaseLoggedInUser.metadata.lastSignInTime)
+      : undefined,
   });
 }

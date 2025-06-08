@@ -40,11 +40,11 @@ describe('makeErrorResult', () => {
 
 describe('partitionResults', () => {
   it('partitions mixed results correctly', () => {
-    const results: Array<Result<number, string>> = [
+    const results: Array<Result<number, Error>> = [
       makeSuccessResult(1),
-      makeErrorResult('error1'),
+      makeErrorResult(new Error('error1')),
       makeSuccessResult(2),
-      makeErrorResult('error2'),
+      makeErrorResult(new Error('error2')),
       makeSuccessResult(3),
     ];
 
@@ -53,16 +53,16 @@ describe('partitionResults', () => {
     expect(successes).toHaveLength(3);
     expect(errors).toHaveLength(2);
 
-    expect(successes[0].value).toBe(1);
-    expect(successes[1].value).toBe(2);
-    expect(successes[2].value).toBe(3);
+    expectSuccessResult(successes[0], 1);
+    expectSuccessResult(successes[1], 2);
+    expectSuccessResult(successes[2], 3);
 
-    expect(errors[0].error).toBe('error1');
-    expect(errors[1].error).toBe('error2');
+    expectErrorResult(errors[0], 'error1');
+    expectErrorResult(errors[1], 'error2');
   });
 
   it('handles all success results', () => {
-    const results: Array<Result<string>> = [
+    const results: Array<Result<string, Error>> = [
       makeSuccessResult('a'),
       makeSuccessResult('b'),
       makeSuccessResult('c'),
@@ -73,9 +73,9 @@ describe('partitionResults', () => {
     expect(successes).toHaveLength(3);
     expect(errors).toHaveLength(0);
 
-    expect(successes[0].value).toBe('a');
-    expect(successes[1].value).toBe('b');
-    expect(successes[2].value).toBe('c');
+    expectSuccessResult(successes[0], 'a');
+    expectSuccessResult(successes[1], 'b');
+    expectSuccessResult(successes[2], 'c');
   });
 
   it('handles all error results', () => {
@@ -89,12 +89,12 @@ describe('partitionResults', () => {
     expect(successes).toHaveLength(0);
     expect(errors).toHaveLength(2);
 
-    expect(errors[0].error.message).toBe('error1');
-    expect(errors[1].error.message).toBe('error2');
+    expectErrorResult(errors[0], 'error1');
+    expectErrorResult(errors[1], 'error2');
   });
 
   it('handles empty array', () => {
-    const results: Array<Result<unknown>> = [];
+    const results: Array<Result<unknown, Error>> = [];
 
     const {successes, errors} = partitionResults(results);
 
@@ -103,7 +103,7 @@ describe('partitionResults', () => {
   });
 
   it('preserves readonly arrays', () => {
-    const results: ReadonlyArray<Result<number>> = [
+    const results: ReadonlyArray<Result<number, Error>> = [
       makeSuccessResult(1),
       makeErrorResult(new Error('test')),
     ];
@@ -135,7 +135,7 @@ describe('partitionResults', () => {
 
     const {successes, errors} = partitionResults(results);
 
-    expect(successes[0].value).toEqual(complexData);
+    expectSuccessResult(successes[0], complexData);
     expect(errors[0].error).toEqual(customError);
   });
 });

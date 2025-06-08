@@ -4,10 +4,6 @@ import {parseZodResult} from '@shared/lib/parser.shared';
 import type {AccountExperimentsState, ExperimentDefinition} from '@shared/types/experiments.types';
 import type {Result} from '@shared/types/results.types';
 
-import type {
-  AccountExperimentsStateFromStorage,
-  ExperimentDefinitionFromStorage,
-} from '@shared/schemas/experiments.schema';
 import {
   AccountExperimentsStateSchema,
   ExperimentDefinitionSchema,
@@ -22,8 +18,8 @@ import {
  */
 export function parseExperimentDefinition(
   maybeExperimentDefinition: unknown
-): Result<ExperimentDefinition> {
-  const parsedExpDefinitionResult = parseZodResult<ExperimentDefinitionFromStorage>(
+): Result<ExperimentDefinition, Error> {
+  const parsedExpDefinitionResult = parseZodResult(
     ExperimentDefinitionSchema,
     maybeExperimentDefinition
   );
@@ -40,8 +36,8 @@ export function parseExperimentDefinition(
  */
 export function parseAccountExperimentsState(
   maybeAccountExperimentsState: unknown
-): Result<AccountExperimentsState> {
-  const parsedAccountExperimentsStateResult = parseZodResult<AccountExperimentsStateFromStorage>(
+): Result<AccountExperimentsState, Error> {
+  const parsedAccountExperimentsStateResult = parseZodResult(
     AccountExperimentsStateSchema,
     maybeAccountExperimentsState
   );

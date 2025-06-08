@@ -14,7 +14,9 @@ import {
 /**
  * Attempts to parse a plain string into a {@link YouTubeChannelId}.
  */
-export function parseYouTubeChannelId(maybeYouTubeChannelId: string): Result<YouTubeChannelId> {
+export function parseYouTubeChannelId(
+  maybeYouTubeChannelId: string
+): Result<YouTubeChannelId, Error> {
   const parsedResult = parseZodResult(YouTubeChannelIdSchema, maybeYouTubeChannelId);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid YouTube channel ID');
@@ -26,7 +28,7 @@ export function parseYouTubeChannelId(maybeYouTubeChannelId: string): Result<You
  * Parses a {@link YouTubeHandle} from a plain string. Returns an `ErrorResult` if the string is not
  * valid.
  */
-export function parseYouTubeHandle(maybeYouTubeHandle: string): Result<YouTubeHandle> {
+export function parseYouTubeHandle(maybeYouTubeHandle: string): Result<YouTubeHandle, Error> {
   const parsedResult = parseZodResult(YouTubeHandleSchema, maybeYouTubeHandle);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid YouTube handle');
@@ -38,7 +40,7 @@ export function parseYouTubeHandle(maybeYouTubeHandle: string): Result<YouTubeHa
  * Parses a {@link YouTubeVideoId} from a plain string. Returns an `ErrorResult` if the string is
  * not valid.
  */
-export function parseYouTubeVideoId(maybeYouTubeVideoId: string): Result<YouTubeVideoId> {
+export function parseYouTubeVideoId(maybeYouTubeVideoId: string): Result<YouTubeVideoId, Error> {
   const parsedResult = parseZodResult(YouTubeVideoIdSchema, maybeYouTubeVideoId);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid YouTube video ID');

@@ -8,8 +8,6 @@ import type {Task} from '@shared/types/utils.types';
 
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
-import {IS_DEVELOPMENT} from '@sharedClient/lib/environment.client';
-
 import {useBooleanAccountExperiment} from '@sharedClient/hooks/experiments.hooks';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
@@ -17,6 +15,7 @@ import {Link} from '@src/components/atoms/Link';
 import {H4, P} from '@src/components/atoms/Text';
 import {RequireLoggedInAccount} from '@src/components/auth/RequireLoggedInAccount';
 
+import {IS_DEVELOPMENT} from '@src/lib/environment.pwa';
 import {cn} from '@src/lib/utils.pwa';
 
 import {storiesRedirectRoute} from '@src/routes';

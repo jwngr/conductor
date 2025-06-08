@@ -1,19 +1,19 @@
 import {logger} from '@shared/services/logger.shared';
 
-import type {Account} from '@shared/types/accounts.types';
-
 import {useAuthStore} from '@sharedClient/stores/AuthStore';
+
+import type {LoggedInAccount} from '@sharedClient/types/accounts.client.types';
 
 export function useMaybeLoggedInAccount(): {
   readonly isLoading: boolean;
-  readonly loggedInAccount: Account | null;
+  readonly loggedInAccount: LoggedInAccount | null;
 } {
   const isLoading = useAuthStore((state) => state.isLoading);
   const loggedInAccount = useAuthStore((state) => state.loggedInAccount);
   return {isLoading, loggedInAccount};
 }
 
-export function useLoggedInAccount(): Account {
+export function useLoggedInAccount(): LoggedInAccount {
   const loggedInAccount = useAuthStore((state) => state.loggedInAccount);
   if (!loggedInAccount) {
     const error = new Error(

@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import {z} from 'zod/v4';
 
 import {FeedSourceType, PERSISTED_FEED_SOURCE_TYPES} from '@shared/types/feedSourceTypes.types';
 
@@ -7,7 +7,7 @@ import {DeliveryScheduleSchema} from '@shared/schemas/deliverySchedules.schema';
 import {FirestoreTimestampSchema} from '@shared/schemas/firebase.schema';
 import {YouTubeChannelIdSchema} from '@shared/schemas/youtube.schema';
 
-export const UserFeedSubscriptionIdSchema = z.string().uuid();
+export const UserFeedSubscriptionIdSchema = z.uuid();
 
 const BaseUserFeedSubscriptionSchema = z.object({
   feedSourceType: z.enum(PERSISTED_FEED_SOURCE_TYPES),
@@ -23,7 +23,7 @@ const BaseUserFeedSubscriptionSchema = z.object({
 
 const RssUserFeedSubscriptionSchema = BaseUserFeedSubscriptionSchema.extend({
   feedSourceType: z.literal(FeedSourceType.RSS),
-  url: z.string().url(),
+  url: z.url(),
   title: z.string(),
 });
 

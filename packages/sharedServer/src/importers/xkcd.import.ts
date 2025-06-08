@@ -20,7 +20,7 @@ export class XkcdFeedItemImporter {
   public async fetchAndSaveXkcdComic(args: {
     readonly comicId: number;
     readonly feedItem: XkcdFeedItem;
-  }): AsyncResult<void> {
+  }): AsyncResult<void, Error> {
     const {comicId, feedItem} = args;
 
     const fetchXkcdComicResult = await fetchXkcdComic(comicId);
@@ -38,7 +38,7 @@ export class XkcdFeedItemImporter {
   public async fetchAndSaveExplainXkcdContent(args: {
     readonly comicId: number;
     readonly feedItem: XkcdFeedItem;
-  }): AsyncResult<void> {
+  }): AsyncResult<void, Error> {
     const {comicId, feedItem} = args;
 
     const fetchExplainXkcdContentResult = await fetchExplainXkcdContent(comicId);
@@ -63,7 +63,7 @@ export class XkcdFeedItemImporter {
     return prefixResultIfError(saveExplainXkcdContentResult, 'Error saving XKCD explain content');
   }
 
-  public async import(feedItem: XkcdFeedItem): AsyncResult<void> {
+  public async import(feedItem: XkcdFeedItem): AsyncResult<void, Error> {
     const comicIdResult = parseXkcdComicIdFromUrl(feedItem.content.url);
     if (!comicIdResult.success) return comicIdResult;
 

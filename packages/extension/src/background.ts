@@ -27,14 +27,12 @@ chrome.action.onClicked.addListener(async (tab) => {
 
   const addFeedItemResult = await feedItemsService.createFeedItemFromUrl({
     feedSource: EXTENSION_FEED_SOURCE,
-    content: {
-      url: tabUrl,
-      // TODO: Set better initial values for these fields.
-      title: DEFAULT_FEED_TITLE,
-      description: null,
-      outgoingLinks: [],
-      summary: null,
-    },
+    url: tabUrl,
+    title: tab.title ?? DEFAULT_FEED_TITLE,
+    // TODO: Set better initial values for these fields.
+    description: null,
+    outgoingLinks: [],
+    summary: null,
   });
 
   if (!addFeedItemResult.success) {

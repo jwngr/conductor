@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import {z} from 'zod/v4';
 
 import {Environment} from '@shared/types/environment.types';
 import {EventType} from '@shared/types/eventLog.types';
@@ -9,21 +9,21 @@ import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 import {ActorSchema} from '@shared/schemas/actors.schema';
 import {ExperimentIdSchema, ExperimentTypeSchema} from '@shared/schemas/experiments.schema';
 import {FeedItemIdSchema} from '@shared/schemas/feedItems.schema';
-import {FirestoreTimestampSchema} from '@shared/schemas/firebase.schema';
 import {ThemePreferenceSchema} from '@shared/schemas/theme.schema';
 import {UserFeedSubscriptionIdSchema} from '@shared/schemas/userFeedSubscriptions.schema';
+import {BaseStoreItemSchema} from '@shared/schemas/utils.schema';
 
 // TODO: Consider adding `brand()` and defining `EventId` based on this schema.
-export const EventIdSchema = z.string().uuid();
+export const EventIdSchema = z.uuid();
 
 const BaseEventLogItemDataSchema = z.object({
-  eventType: z.nativeEnum(EventType),
+  eventType: z.enum(EventType),
 });
 
 const FeedItemActionEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
   eventType: z.literal(EventType.FeedItemAction),
   feedItemId: FeedItemIdSchema,
-  feedItemActionType: z.nativeEnum(FeedItemActionType),
+  feedItemActionType: z.enum(FeedItemActionType),
   isUndo: z.boolean(),
 });
 
@@ -65,7 +65,7 @@ export type SubscribedToFeedSourceEventLogItemDataFromStorage = z.infer<
 
 const SubscribedToFeedSourceEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
   eventType: z.literal(EventType.SubscribedToFeedSource),
-  feedSourceType: z.nativeEnum(FeedSourceType),
+  feedSourceType: z.enum(FeedSourceType),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
   isNewSubscription: z.boolean(),
 });
@@ -76,7 +76,7 @@ export type UnsubscribedFromFeedSourceEventLogItemDataFromStorage = z.infer<
 
 export const UnsubscribedFromFeedSourceEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
   eventType: z.literal(EventType.UnsubscribedFromFeedSource),
-  feedSourceType: z.nativeEnum(FeedSourceType),
+  feedSourceType: z.enum(FeedSourceType),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
 });
 
@@ -99,14 +99,12 @@ const EventLogItemDataSchema = z.discriminatedUnion('eventType', [
 /** Type for an {@link EventLogItemData} persisted to Firestore. */
 export type EventLogItemDataFromStorage = z.infer<typeof EventLogItemDataSchema>;
 
-export const EventLogItemSchema = z.object({
+export const EventLogItemSchema = BaseStoreItemSchema.extend({
   eventId: EventIdSchema,
   accountId: AccountIdSchema,
   actor: ActorSchema,
-  environment: z.nativeEnum(Environment),
+  environment: z.enum(Environment),
   data: EventLogItemDataSchema,
-  createdTime: FirestoreTimestampSchema.or(z.date()),
-  lastUpdatedTime: FirestoreTimestampSchema.or(z.date()),
 });
 
 /** Type for an {@link EventLogItem} persisted to Firestore. */

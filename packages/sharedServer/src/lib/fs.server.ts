@@ -13,14 +13,14 @@ const DEFAULT_ENCODING: BufferEncoding = 'utf-8';
 export async function readFile(
   filePath: string,
   encoding: BufferEncoding = DEFAULT_ENCODING
-): AsyncResult<string> {
+): AsyncResult<string, Error> {
   return await asyncTry(async () => fsReadFile(filePath, encoding));
 }
 
 /**
  * Helper function wrapping `fs.writeFile` in a result.
  */
-export async function writeFile(filePath: string, data: string): AsyncResult<void> {
+export async function writeFile(filePath: string, data: string): AsyncResult<void, Error> {
   return await asyncTry(async () => fsWriteFile(filePath, data));
 }
 
@@ -31,7 +31,7 @@ export async function writeJsonFile(
   filePath: string,
   data: unknown,
   options: {pretty?: boolean} = {pretty: true}
-): AsyncResult<void> {
+): AsyncResult<void, Error> {
   const pretty = options.pretty ?? true;
   const jsonStringResult = syncTry(() => JSON.stringify(data, null, pretty ? 2 : undefined));
   if (!jsonStringResult.success) return jsonStringResult;

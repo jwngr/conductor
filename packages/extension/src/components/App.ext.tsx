@@ -1,3 +1,4 @@
+import {DEFAULT_FEED_TITLE} from '@shared/lib/constants.shared';
 import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
 import {EXTENSION_FEED_SOURCE} from '@shared/lib/feedSources.shared';
 import {assertNever} from '@shared/lib/utils.shared';
@@ -8,10 +9,11 @@ import type {FeedItem} from '@shared/types/feedItems.types';
 import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {useFeedItemsService} from '@sharedClient/hooks/feedItems.hooks';
 
+import {firebaseService} from '@src/lib/firebase.ext';
 import {useCurrentTab} from '@src/lib/tabs.ext';
 
 const SaveCurrentUrlButton: React.FC = () => {
-  const feedItemsService = useFeedItemsService();
+  const feedItemsService = useFeedItemsService({firebaseService});
 
   const {asyncState, setPending, setError, setSuccess} = useAsyncState<FeedItem>();
 
@@ -35,17 +37,14 @@ const SaveCurrentUrlButton: React.FC = () => {
       return;
     }
 
-    const title = tab.title ?? 'TODO: Add title support';
     const addFeedItemResult = await feedItemsService.createFeedItemFromUrl({
       feedSource: EXTENSION_FEED_SOURCE,
-      content: {
-        url: tabUrl,
-        title,
-        // TODO: Set better initial values for these fields.
-        description: null,
-        outgoingLinks: [],
-        summary: null,
-      },
+      url: tabUrl,
+      title: tab.title ?? DEFAULT_FEED_TITLE,
+      // TODO: Set better initial values for these fields.
+      description: null,
+      outgoingLinks: [],
+      summary: null,
     });
 
     if (!addFeedItemResult.success) {

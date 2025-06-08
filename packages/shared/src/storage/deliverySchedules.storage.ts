@@ -49,7 +49,7 @@ export function toStorageDeliverySchedule(
  */
 export function fromStorageDeliverySchedule(
   deliveryScheduleFromStorage: DeliveryScheduleFromStorage
-): Result<DeliverySchedule> {
+): Result<DeliverySchedule, Error> {
   switch (deliveryScheduleFromStorage.scheduleType) {
     case DeliveryScheduleType.Immediate:
       return makeSuccessResult(IMMEDIATE_DELIVERY_SCHEDULE);

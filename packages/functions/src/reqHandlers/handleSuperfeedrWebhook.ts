@@ -1,5 +1,4 @@
-// Import types from express instead
-import type {Request} from 'express';
+import type {Request} from 'firebase-functions/v2/https';
 
 import {logger} from '@shared/services/logger.shared';
 
@@ -28,7 +27,7 @@ export async function handleSuperfeedrWebhookHelper(args: {
   readonly rssFeedProvider: RssFeedProvider;
   readonly userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
   readonly feedItemsService: ServerFeedItemsService;
-}): AsyncResult<void> {
+}): AsyncResult<void, Error> {
   const {request, userFeedSubscriptionsService, feedItemsService, rssFeedProvider} = args;
 
   // TODO: Validate the request is from Superfeedr by checking some auth header.
@@ -82,22 +81,20 @@ export async function handleSuperfeedrWebhookHelper(args: {
   const userFeedSubscriptions = fetchSubsResult.value;
 
   // Make a list of supplier methods that create feed items.
-  const createFeedItemResults: Array<Supplier<AsyncResult<FeedItem>>> = [];
+  const createFeedItemResults: Array<Supplier<AsyncResult<FeedItem, Error>>> = [];
   body.items.forEach((item) => {
     logger.log(`[SUPERFEEDR] Processing item ${item.id}`, {item});
 
     userFeedSubscriptions.forEach((userFeedSubscription) => {
-      const newFeedItemResult = async (): AsyncResult<FeedItem> => {
+      const newFeedItemResult = async (): AsyncResult<FeedItem, Error> => {
         return await feedItemsService.createFeedItemFromUrl({
           feedSource: makeRssFeedSource({userFeedSubscription}),
-          content: {
-            url: item.permalinkUrl,
-            title: item.title,
-            description: item.summary,
-            // TODO: Set better initial values for these fields.
-            outgoingLinks: [],
-            summary: null,
-          },
+          url: item.permalinkUrl,
+          title: item.title,
+          description: item.summary,
+          // TODO: Set better initial values for these fields.
+          outgoingLinks: [],
+          summary: null,
           accountId: userFeedSubscription.accountId,
         });
       };
@@ -114,10 +111,10 @@ export async function handleSuperfeedrWebhookHelper(args: {
 
   // Log successes and errors.
   const newFeedItemResults = batchResult.value;
-  const [newFeedItemSuccesses, newFeedItemErrors] = partition<SuccessResult<FeedItem>, ErrorResult>(
-    newFeedItemResults,
-    (result): result is SuccessResult<FeedItem> => result.success
-  );
+  const [newFeedItemSuccesses, newFeedItemErrors] = partition<
+    SuccessResult<FeedItem>,
+    ErrorResult<Error>
+  >(newFeedItemResults, (result): result is SuccessResult<FeedItem> => result.success);
   logger.log(
     `[SUPERFEEDR] Successfully created ${newFeedItemSuccesses.length} feed items, encountered ${newFeedItemErrors.length} errors`,
     {

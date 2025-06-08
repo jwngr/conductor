@@ -34,8 +34,9 @@ import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 import type {EventLogItemFromStorage} from '@shared/schemas/eventLog.schema';
 import {toStorageEventLogItem} from '@shared/storage/eventLog.storage';
 
-import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+import type {ClientFirebaseService} from '@sharedClient/services/firebase.client';
 import {makeClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
 
 type ClientEventLogCollectionService = ClientFirestoreCollectionService<
   EventId,
@@ -43,30 +44,30 @@ type ClientEventLogCollectionService = ClientFirestoreCollectionService<
   EventLogItemFromStorage
 >;
 
-export const clientEventLogCollectionService = makeClientFirestoreCollectionService({
-  collectionPath: EVENT_LOG_DB_COLLECTION,
-  toStorage: toStorageEventLogItem,
-  fromStorage: parseEventLogItem,
-  parseId: parseEventId,
-});
-
 export class ClientEventLogService {
-  private readonly environment: Environment;
-  private readonly eventLogCollectionService: ClientEventLogCollectionService;
   private readonly accountId: AccountId;
+  private readonly environment: Environment;
+  private readonly collectionService: ClientEventLogCollectionService;
 
   constructor(args: {
     readonly environment: Environment;
-    readonly eventLogCollectionService: ClientEventLogCollectionService;
     readonly accountId: AccountId;
+    readonly firebaseService: ClientFirebaseService;
   }) {
-    this.environment = args.environment;
-    this.eventLogCollectionService = args.eventLogCollectionService;
     this.accountId = args.accountId;
+    this.environment = args.environment;
+
+    this.collectionService = makeClientFirestoreCollectionService({
+      firebaseService: args.firebaseService,
+      collectionPath: EVENT_LOG_DB_COLLECTION,
+      toStorage: toStorageEventLogItem,
+      fromStorage: parseEventLogItem,
+      parseId: parseEventId,
+    });
   }
 
-  public async fetchById(eventId: EventId): AsyncResult<EventLogItem | null> {
-    return this.eventLogCollectionService.fetchById(eventId);
+  public async fetchById(eventId: EventId): AsyncResult<EventLogItem | null, Error> {
+    return this.collectionService.fetchById(eventId);
   }
 
   public watchById(
@@ -74,11 +75,7 @@ export class ClientEventLogService {
     successCallback: Consumer<EventLogItem | null>, // null means event log item does not exist.
     errorCallback: Consumer<Error>
   ): Unsubscribe {
-    const unsubscribe = this.eventLogCollectionService.watchDoc(
-      eventId,
-      successCallback,
-      errorCallback
-    );
+    const unsubscribe = this.collectionService.watchDoc(eventId, successCallback, errorCallback);
     return () => unsubscribe();
   }
 
@@ -89,7 +86,7 @@ export class ClientEventLogService {
   }): Unsubscribe {
     const {successCallback, errorCallback, limit} = args;
 
-    const itemsQuery = this.eventLogCollectionService.query(
+    const itemsQuery = this.collectionService.query(
       filterNull([
         where('accountId', '==', this.accountId),
         limit ? firestoreLimit(limit) : null,
@@ -97,7 +94,7 @@ export class ClientEventLogService {
       ])
     );
 
-    const unsubscribe = this.eventLogCollectionService.watchDocs(
+    const unsubscribe = this.collectionService.watchDocs(
       itemsQuery,
       successCallback,
       errorCallback
@@ -105,10 +102,10 @@ export class ClientEventLogService {
     return () => unsubscribe();
   }
 
-  private async logEvent(eventLogItem: EventLogItem): AsyncResult<EventLogItem> {
+  private async logEvent(eventLogItem: EventLogItem): AsyncResult<EventLogItem, Error> {
     const {eventId} = eventLogItem;
 
-    const createResult = await this.eventLogCollectionService.setDoc(eventId, eventLogItem);
+    const createResult = await this.collectionService.setDoc(eventId, eventLogItem);
 
     if (!createResult.success) {
       logger.error(prefixError(createResult.error, 'Failed to log event'), {eventLogItem});
@@ -130,13 +127,13 @@ export class ClientEventLogService {
   public async updateEventLogItem(
     eventId: EventId,
     item: Partial<Pick<EventLogItem, 'data'>>
-  ): AsyncResult<void> {
-    const updateResult = await this.eventLogCollectionService.updateDoc(eventId, item);
+  ): AsyncResult<void, Error> {
+    const updateResult = await this.collectionService.updateDoc(eventId, item);
     return prefixResultIfError(updateResult, 'Error updating event log item');
   }
 
-  public async deleteEventLogItem(eventId: EventId): AsyncResult<void> {
-    const deleteResult = await this.eventLogCollectionService.deleteDoc(eventId);
+  public async deleteEventLogItem(eventId: EventId): AsyncResult<void, Error> {
+    const deleteResult = await this.collectionService.deleteDoc(eventId);
     return prefixResultIfError(deleteResult, 'Error deleting event log item');
   }
 
@@ -147,7 +144,7 @@ export class ClientEventLogService {
     readonly feedItemId: FeedItemId;
     readonly feedItemActionType: FeedItemActionType;
     readonly isUndo: boolean;
-  }): AsyncResult<EventLogItem> {
+  }): AsyncResult<EventLogItem, Error> {
     const {feedItemId, feedItemActionType, isUndo} = args;
     const eventLogItemData = makeFeedItemActionEventLogItemData({
       feedItemId,
@@ -161,7 +158,7 @@ export class ClientEventLogService {
   public async logExperimentEnabledEvent(args: {
     readonly experimentId: ExperimentId;
     readonly experimentType: ExperimentType;
-  }): AsyncResult<EventLogItem> {
+  }): AsyncResult<EventLogItem, Error> {
     const {experimentId, experimentType} = args;
     const eventLogItemData = makeExperimentEnabledEventLogItemData({experimentId, experimentType});
     const eventLogItem = this.makeEventLogItem(eventLogItemData);
@@ -171,7 +168,7 @@ export class ClientEventLogService {
   public async logExperimentDisabledEvent(args: {
     readonly experimentId: ExperimentId;
     readonly experimentType: ExperimentType;
-  }): AsyncResult<EventLogItem> {
+  }): AsyncResult<EventLogItem, Error> {
     const {experimentId, experimentType} = args;
     const eventLogItemData = makeExperimentDisabledEventLogItemData({experimentId, experimentType});
     const eventLogItem = this.makeEventLogItem(eventLogItemData);
@@ -181,7 +178,7 @@ export class ClientEventLogService {
   public async logStringExperimentValueChangedEvent(args: {
     readonly experimentId: ExperimentId;
     readonly value: string;
-  }): AsyncResult<EventLogItem> {
+  }): AsyncResult<EventLogItem, Error> {
     const {experimentId, value} = args;
     const eventLogItemData = makeStringExperimentValueChangedEventLogItemData({
       experimentId,
@@ -195,7 +192,7 @@ export class ClientEventLogService {
     readonly feedSourceType: FeedSourceType;
     readonly userFeedSubscriptionId: UserFeedSubscriptionId;
     readonly isNewSubscription: boolean;
-  }): AsyncResult<EventLogItem> {
+  }): AsyncResult<EventLogItem, Error> {
     const {feedSourceType, userFeedSubscriptionId, isNewSubscription} = args;
     const eventLogItemData = makeSubscribedToFeedSourceEventLogItemData({
       feedSourceType,
@@ -209,7 +206,7 @@ export class ClientEventLogService {
   public async logUnsubscribedFromFeedSourceEvent(args: {
     readonly feedSourceType: FeedSourceType;
     readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-  }): AsyncResult<EventLogItem> {
+  }): AsyncResult<EventLogItem, Error> {
     const {feedSourceType, userFeedSubscriptionId} = args;
     const eventLogItemData = makeUnsubscribedFromFeedSourceEventLogItemData({
       feedSourceType,
@@ -221,7 +218,7 @@ export class ClientEventLogService {
 
   public async logThemePreferenceChangedEvent(args: {
     readonly themePreference: ThemePreference;
-  }): AsyncResult<EventLogItem> {
+  }): AsyncResult<EventLogItem, Error> {
     const {themePreference} = args;
     const eventLogItemData = makeThemePreferenceChangedEventLogItemData({themePreference});
     const eventLogItem = this.makeEventLogItem(eventLogItemData);

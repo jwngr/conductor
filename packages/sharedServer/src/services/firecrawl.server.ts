@@ -7,14 +7,18 @@ import type {ParsedFirecrawlData, RawFirecrawlResponse} from '@shared/types/fire
 import type {AsyncResult} from '@shared/types/results.types';
 
 export class ServerFirecrawlService {
-  constructor(private readonly firecrawlApp: FirecrawlApp) {}
+  private readonly firecrawlApp: FirecrawlApp;
+
+  constructor(args: {readonly firecrawlApp: FirecrawlApp}) {
+    this.firecrawlApp = args.firecrawlApp;
+  }
 
   /**
    * Firecrawl is used for:
    * 1. Markdown-formatted content for LLM prompt consumption (store in Cloud Storage).
    * 2. Outgoing links referenced by the content (stored in Firestore).
    */
-  public async fetchUrl(url: string): AsyncResult<ParsedFirecrawlData> {
+  public async fetchUrl(url: string): AsyncResult<ParsedFirecrawlData, Error> {
     const rawFirecrawlResult = await asyncTry(async () => {
       const firecrawlScrapeUrlResult = await this.firecrawlApp.scrapeUrl(url, {
         formats: ['markdown', 'links'],

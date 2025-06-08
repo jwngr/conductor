@@ -5,7 +5,7 @@ import {logger} from '@shared/services/logger.shared';
 
 import {prefixError} from '@shared/lib/errorUtils.shared';
 
-import {authService} from '@sharedClient/services/auth.client';
+import {authService} from '@src/lib/auth.pwa';
 
 import {signInRoute} from '@src/routes';
 

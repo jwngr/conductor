@@ -7,19 +7,20 @@ import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AsyncResult} from '@shared/types/results.types';
 
-import {getRssServerPortFromEnv} from '@src/lib/env';
+import {rssServerPort} from '@src/lib/environment.rss';
 import {InMemoryRssFeedManager} from '@src/lib/feedManager';
 import {setupRoutes} from '@src/lib/routes';
 
-async function main(): AsyncResult<void> {
+async function main(): AsyncResult<void, Error> {
   const feedManager = new InMemoryRssFeedManager();
   const app = setupRoutes(feedManager);
-  const port = getRssServerPortFromEnv();
 
   return new Promise((resolve) => {
     serve(
-      // eslint-disable-next-line no-restricted-syntax
-      {port, fetch: app.fetch},
+      {
+        port: rssServerPort,
+        fetch: app.fetch, // eslint-disable-line no-restricted-syntax
+      },
       (info) => {
         logger.log(`RSS server running on port ${info.port}`);
         resolve(makeSuccessResult(undefined));
