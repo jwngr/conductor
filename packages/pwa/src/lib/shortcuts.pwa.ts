@@ -3,26 +3,12 @@ import {useCallback, useEffect} from 'react';
 
 import {SharedKeyboardShortcutsService} from '@shared/services/keyboardShortcuts.shared';
 
-import {assertNever} from '@shared/lib/utils.shared';
-
 import type {KeyboardShortcut, ShortcutHandler} from '@shared/types/shortcuts.types';
-import {NavItemId} from '@shared/types/urls.types';
+import type {NavItemId} from '@shared/types/urls.types';
 
 import {IS_MAC} from '@sharedClient/lib/environment.client';
 
-import {
-  allViewRoute,
-  doneViewRoute,
-  experimentsRoute,
-  feedSubscriptionsRoute,
-  importRoute,
-  savedViewRoute,
-  starredViewRoute,
-  todayViewRoute,
-  trashedViewRoute,
-  unreadViewRoute,
-  untriagedViewRoute,
-} from '@src/routes';
+import {getNavItemRoute} from '@src/lib/router.pwa';
 
 interface ShortcutWithHandler {
   readonly shortcut: KeyboardShortcut;
@@ -53,43 +39,8 @@ export function useNavShortcut(shortcut: KeyboardShortcut, navItemId: NavItemId)
   const navigate = useNavigate();
 
   const handleShortcut = useCallback(async (): Promise<void> => {
-    switch (navItemId) {
-      case NavItemId.All:
-        await navigate({to: allViewRoute.fullPath});
-        break;
-      case NavItemId.Done:
-        await navigate({to: doneViewRoute.fullPath});
-        break;
-      case NavItemId.Saved:
-        await navigate({to: savedViewRoute.fullPath});
-        break;
-      case NavItemId.Starred:
-        await navigate({to: starredViewRoute.fullPath});
-        break;
-      case NavItemId.Today:
-        await navigate({to: todayViewRoute.fullPath});
-        break;
-      case NavItemId.Trashed:
-        await navigate({to: trashedViewRoute.fullPath});
-        break;
-      case NavItemId.Unread:
-        await navigate({to: unreadViewRoute.fullPath});
-        break;
-      case NavItemId.Untriaged:
-        await navigate({to: untriagedViewRoute.fullPath});
-        break;
-      case NavItemId.Feeds:
-        await navigate({to: feedSubscriptionsRoute.fullPath});
-        break;
-      case NavItemId.Import:
-        await navigate({to: importRoute.fullPath});
-        break;
-      case NavItemId.Experiments:
-        await navigate({to: experimentsRoute.fullPath});
-        break;
-      default:
-        assertNever(navItemId);
-    }
+    const route = getNavItemRoute(navItemId);
+    void navigate({to: route});
   }, [navigate, navItemId]);
 
   useShortcuts([{shortcut, handler: handleShortcut}]);
