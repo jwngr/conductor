@@ -1,5 +1,5 @@
 import {useNavigate} from '@tanstack/react-router';
-import {useEffect} from 'react';
+import {useCallback, useEffect} from 'react';
 
 import {SharedKeyboardShortcutsService} from '@shared/services/keyboardShortcuts.shared';
 
@@ -32,17 +32,7 @@ interface ShortcutWithHandler {
 export const keyboardShortcutsService = new SharedKeyboardShortcutsService({isMac: IS_MAC});
 
 /**
- * Registers a shortcut with a handler. Existing shortcuts with the same shortcut key pattern will
- * be replaced. Handler is unregistered when the component unmounts.
- */
-export function useShortcut(shortcut: KeyboardShortcut, handler: ShortcutHandler): void {
-  useEffect(() => {
-    return keyboardShortcutsService.registerShortcut(shortcut, handler);
-  }, [shortcut, handler]);
-}
-
-/**
- * Registers multiple shortcuts with handlers. Existing shortcuts with the same shortcut key
+ * Registers 1 or more shortcuts with handlers. Existing shortcuts with the same shortcut key
  * pattern will be replaced. Handlers are unregistered when the component unmounts.
  */
 export function useShortcuts(shortcutsWithHandlers: ShortcutWithHandler[]): void {
@@ -61,7 +51,8 @@ export function useShortcuts(shortcutsWithHandlers: ShortcutWithHandler[]): void
  */
 export function useNavShortcut(shortcut: KeyboardShortcut, navItemId: NavItemId): void {
   const navigate = useNavigate();
-  useShortcut(shortcut, async () => {
+
+  const handleShortcut = useCallback(async (): Promise<void> => {
     switch (navItemId) {
       case NavItemId.All:
         await navigate({to: allViewRoute.fullPath});
@@ -99,5 +90,7 @@ export function useNavShortcut(shortcut: KeyboardShortcut, navItemId: NavItemId)
       default:
         assertNever(navItemId);
     }
-  });
+  }, [navigate, navItemId]);
+
+  useShortcuts([{shortcut, handler: handleShortcut}]);
 }

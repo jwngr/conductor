@@ -60,7 +60,7 @@ const ErrorScreenAuthFooter: React.FC = () => {
   );
 };
 
-export const ErrorScreen: React.FC<{
+const ErrorScreen: React.FC<{
   readonly error: Error;
   readonly title: string | React.ReactElement;
   readonly subtitle: string | React.ReactElement;

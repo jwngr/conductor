@@ -14,12 +14,12 @@
     "packages/sharedServer": {
       "entry": [],
       "project": "src/**/*.{ts,js}",
-      "ignoreDependencies": []
+      "ignoreDependencies": ["@types/turndown"]
     },
     "packages/pwa": {
       "entry": ["src/index.tsx", "index.html"],
       "project": "src/**/*.{ts,tsx,js,jsx}",
-      "ignoreDependencies": ["tailwindcss"]
+      "ignoreDependencies": ["tailwindcss", "@tailwindcss/typography"]
     },
     "packages/extension": {
       "entry": ["src/index.tsx", "src/background.ts"],
@@ -29,7 +29,7 @@
     "packages/functions": {
       "entry": ["src/index.ts"],
       "project": "src/**/*.{ts,js}",
-      "ignoreDependencies": []
+      "ignoreDependencies": ["@types/jsdom"]
     },
     "packages/rssServer": {
       "entry": ["src/server.ts"],
