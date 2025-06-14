@@ -4,16 +4,16 @@ import {assertNever} from '@shared/lib/utils.shared';
 
 import type {
   KeyboardShortcut,
-  RegisteredShortcut,
   ShortcutHandler,
   ShortcutKey,
+  ShortcutWithHandler,
 } from '@shared/types/shortcuts.types';
 import {isModifierKey, KeyboardShortcutId, ModifierKey} from '@shared/types/shortcuts.types';
 import type {Task, Unsubscribe} from '@shared/types/utils.types';
 
 export class SharedKeyboardShortcutsService {
   private isMac: boolean;
-  private readonly registeredShortcuts = new Map<KeyboardShortcutId, RegisteredShortcut>();
+  private readonly registeredShortcuts = new Map<KeyboardShortcutId, ShortcutWithHandler>();
   private unsubscribeTinykeys?: Task;
 
   constructor(args: {readonly isMac: boolean}) {

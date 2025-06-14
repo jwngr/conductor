@@ -48,7 +48,7 @@ const DevToolbarContent: React.FC<{
       )}
       <FlexColumn>
         <H4 bold>Links</H4>
-        <Link to={storiesRedirectRoute.fullPath} onClick={onClose}>
+        <Link to={storiesRedirectRoute.to} onClick={onClose}>
           <P underline="hover">Design system & stories</P>
         </Link>
       </FlexColumn>

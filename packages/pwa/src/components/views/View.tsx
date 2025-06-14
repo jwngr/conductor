@@ -9,7 +9,8 @@ import {assertNever} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
-import {FeedItemContentType, type FeedItem} from '@shared/types/feedItems.types';
+import {FeedItemContentType} from '@shared/types/feedItems.types';
+import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
 import type {Supplier} from '@shared/types/utils.types';
 import {ViewType} from '@shared/types/views.types';
 import type {
@@ -37,14 +38,16 @@ import {H2, H3, P} from '@src/components/atoms/Text';
 import {ErrorArea} from '@src/components/errors/ErrorArea';
 import {HoverFeedItemActions} from '@src/components/feedItems/FeedItemActions';
 import {FeedItemImportStatusBadge} from '@src/components/feedItems/FeedItemImportStatusBadge';
+import {FeedItemKeyboardShortcutHandler} from '@src/components/feedItems/FeedItemKeyboardShortcutHandler';
 import {LoadingArea} from '@src/components/loading/LoadingArea';
 import * as styles from '@src/components/views/View.css';
 import {ViewKeyboardShortcutHandler} from '@src/components/views/ViewKeyboardShortcutHandler';
 import {ViewOptionsDialog} from '@src/components/views/ViewOptionsDialog';
 
 import {firebaseService} from '@src/lib/firebase.pwa';
+import {getRouteFromViewType} from '@src/lib/router.pwa';
 
-import {feedItemRoute} from '@src/routes';
+import {FeedItemScreenContent} from '@src/screens/FeedItemScreen';
 
 function compareFeedItems(args: {
   readonly a: FeedItem;
@@ -233,7 +236,7 @@ const ViewListItem: React.FC<{
   }, [isFocused]);
 
   return (
-    <Link to={feedItemRoute.fullPath} params={{feedItemId: feedItem.feedItemId}}>
+    <Link search={{feedItemId: feedItem.feedItemId}}>
       <div
         ref={itemRef}
         className={styles.viewListItem({isFocused})}
@@ -267,9 +270,10 @@ const ViewListItem: React.FC<{
 const LoadedViewList: React.FC<{
   readonly viewType: ViewType;
   readonly feedItems: FeedItem[];
+  readonly selectedFeedItemId: FeedItemId | null;
   readonly sortBy: readonly ViewSortByOption[];
   readonly groupBy: readonly ViewGroupByOption[];
-}> = ({viewType, feedItems, sortBy, groupBy}) => {
+}> = ({viewType, feedItems, selectedFeedItemId, sortBy, groupBy}) => {
   const sortedItems = useSortedFeedItems(feedItems, sortBy);
   const groupByField = groupBy.length === 0 ? null : groupBy[0].field;
   const groupedItems = useGroupedFeedItems(sortedItems, groupByField);
@@ -279,9 +283,18 @@ const LoadedViewList: React.FC<{
     return <div>No items</div>;
   }
 
-  // Grouping logic.
   let mainContent: React.ReactNode;
-  if (groupedItems === null) {
+  if (selectedFeedItemId) {
+    // If a feed item is selected, render the feed item screen.
+    const currentRoute = getRouteFromViewType(viewType);
+    mainContent = (
+      <>
+        <FeedItemScreenContent feedItemId={selectedFeedItemId} />
+        <FeedItemKeyboardShortcutHandler currentRoute={currentRoute} />
+      </>
+    );
+  } else if (groupedItems === null) {
+    // If no grouping is applied, just render the list of items.
     mainContent = (
       <ul>
         {sortedItems.map((feedItem) => (
@@ -290,6 +303,7 @@ const LoadedViewList: React.FC<{
       </ul>
     );
   } else {
+    // If grouping is applied, render the list of items grouped by the group field.
     mainContent = (
       <FlexColumn gap={4}>
         {Object.entries(groupedItems).map(([groupKey, items]) => (
@@ -316,15 +330,23 @@ const LoadedViewList: React.FC<{
 
 const ViewList: React.FC<{
   readonly viewType: ViewType;
+  readonly selectedFeedItemId: FeedItemId | null;
   readonly sortBy: readonly ViewSortByOption[];
   readonly groupBy: readonly ViewGroupByOption[];
-}> = ({viewType, sortBy, groupBy}) => {
+}> = ({viewType, selectedFeedItemId, sortBy, groupBy}) => {
   // Split views based on whether or not they filter items based on delivery schedules. This is
   // because fetching delivery schedules is more expensive, so we want to avoid doing so for views
   // which do not need them.
   switch (viewType) {
     case ViewType.Untriaged:
-      return <ViewListRespectingDelivery viewType={viewType} sortBy={sortBy} groupBy={groupBy} />;
+      return (
+        <ViewListRespectingDelivery
+          viewType={viewType}
+          selectedFeedItemId={selectedFeedItemId}
+          sortBy={sortBy}
+          groupBy={groupBy}
+        />
+      );
     case ViewType.Saved:
     case ViewType.Done:
     case ViewType.Trashed:
@@ -332,7 +354,14 @@ const ViewList: React.FC<{
     case ViewType.Starred:
     case ViewType.All:
     case ViewType.Today:
-      return <ViewListIgnoringDelivery viewType={viewType} sortBy={sortBy} groupBy={groupBy} />;
+      return (
+        <ViewListIgnoringDelivery
+          viewType={viewType}
+          selectedFeedItemId={selectedFeedItemId}
+          sortBy={sortBy}
+          groupBy={groupBy}
+        />
+      );
     default:
       assertNever(viewType);
   }
@@ -356,9 +385,10 @@ const ViewListErrorArea: React.FC<{
  */
 const ViewListIgnoringDelivery: React.FC<{
   readonly viewType: Exclude<ViewType, ViewType.Untriaged>;
+  readonly selectedFeedItemId: FeedItemId | null;
   readonly sortBy: readonly ViewSortByOption[];
   readonly groupBy: readonly ViewGroupByOption[];
-}> = ({viewType, sortBy, groupBy}) => {
+}> = ({viewType, selectedFeedItemId, sortBy, groupBy}) => {
   const feedItemsState = useFeedItemsIgnoringDelivery({viewType, firebaseService});
 
   switch (feedItemsState.status) {
@@ -378,6 +408,7 @@ const ViewListIgnoringDelivery: React.FC<{
         <LoadedViewList
           viewType={viewType}
           feedItems={feedItemsState.value}
+          selectedFeedItemId={selectedFeedItemId}
           sortBy={sortBy}
           groupBy={groupBy}
         />
@@ -393,9 +424,10 @@ const ViewListIgnoringDelivery: React.FC<{
  */
 const ViewListRespectingDelivery: React.FC<{
   readonly viewType: ViewType.Untriaged;
+  readonly selectedFeedItemId: FeedItemId | null;
   readonly sortBy: readonly ViewSortByOption[];
   readonly groupBy: readonly ViewGroupByOption[];
-}> = ({viewType, sortBy, groupBy}) => {
+}> = ({viewType, selectedFeedItemId, sortBy, groupBy}) => {
   const feedItemsState = useFeedItemsRespectingDelivery({viewType, firebaseService});
 
   switch (feedItemsState.status) {
@@ -415,6 +447,7 @@ const ViewListRespectingDelivery: React.FC<{
         <LoadedViewList
           viewType={viewType}
           feedItems={feedItemsState.value}
+          selectedFeedItemId={selectedFeedItemId}
           sortBy={sortBy}
           groupBy={groupBy}
         />
@@ -454,7 +487,8 @@ interface ViewRendererState {
 
 export const ViewRenderer: React.FC<{
   readonly viewType: ViewType;
-}> = ({viewType}) => {
+  readonly selectedFeedItemId: FeedItemId | null;
+}> = ({viewType, selectedFeedItemId}) => {
   const defaultViewConfig = Views.get(viewType);
 
   const [viewOptions, setViewOptions] = useState<ViewRendererState>(() => {
@@ -484,7 +518,12 @@ export const ViewRenderer: React.FC<{
           }))
         }
       />
-      <ViewList viewType={viewType} sortBy={viewOptions.sortBy} groupBy={viewOptions.groupBy} />
+      <ViewList
+        viewType={viewType}
+        selectedFeedItemId={selectedFeedItemId}
+        sortBy={viewOptions.sortBy}
+        groupBy={viewOptions.groupBy}
+      />
     </FlexColumn>
   );
 };

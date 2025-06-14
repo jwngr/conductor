@@ -25,6 +25,7 @@ import {BadgeStories} from '@src/components/atoms/Badge.stories';
 import {ButtonStories} from '@src/components/atoms/Button.stories';
 import {ButtonIconStories} from '@src/components/atoms/ButtonIcon.stories';
 import {CheckboxStories} from '@src/components/atoms/Checkbox.stories';
+import {CustomIconStories} from '@src/components/atoms/CustomIcons.stories';
 import {DialogStories} from '@src/components/atoms/Dialog.stories';
 import {DividerStories} from '@src/components/atoms/Divider.stories';
 import {DotStories} from '@src/components/atoms/Dot.stories';
@@ -50,7 +51,7 @@ import {TypographyStories} from '@src/components/stories/Typography.stories';
 
 import {useSelectedStoryFromUrl} from '@src/lib/router.pwa';
 
-import {storiesRoute} from '@src/routes/index';
+import {storiesRoute} from '@src/routes';
 import * as styles from '@src/screens/StoriesScreen.css';
 
 const AtomicComponentStoryContent: React.FC<{
@@ -65,6 +66,8 @@ const AtomicComponentStoryContent: React.FC<{
       return <ButtonIconStories />;
     case AtomicComponentType.Checkbox:
       return <CheckboxStories />;
+    case AtomicComponentType.CustomIcon:
+      return <CustomIconStories />;
     case AtomicComponentType.Dialog:
       return <DialogStories />;
     case AtomicComponentType.Divider:
@@ -252,7 +255,7 @@ export const StoriesScreen: React.FC = () => {
 
   const handleSidebarItemClick = (item: StoriesSidebarItem): void => {
     void navigate({
-      to: storiesRoute.fullPath,
+      to: storiesRoute.to,
       params: {sidebarItemId: item.sidebarItemId},
     });
   };

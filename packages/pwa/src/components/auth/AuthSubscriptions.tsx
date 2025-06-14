@@ -11,7 +11,7 @@ import {useAuthStore} from '@sharedClient/stores/AuthStore';
 
 import {authService} from '@src/lib/auth.pwa';
 
-import {rootRoute} from '@src/routes/__root';
+import {signInRoute} from '@src/routes';
 
 /**
  * Listener which updates the auth store when the user's authentication state changes in the auth
@@ -97,7 +97,7 @@ const PasswordlessAuthSubscription: React.FC = () => {
 
       // Logic in `RequireLoggedInAccount` updates the UI when the logged-in state changes in
       // `AuthStore`, but it does not update the URL. Update it to remove the used sign-in link.
-      await navigate({to: rootRoute.fullPath, replace: true});
+      await navigate({to: signInRoute.to, replace: true});
     };
 
     void go();

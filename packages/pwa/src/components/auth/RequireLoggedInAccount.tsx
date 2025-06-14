@@ -24,5 +24,5 @@ export const RequireLoggedInAccount: React.FC<{
   if (isIgnoredPath) return null;
 
   // If not logged in, redirect to sign-in page.
-  return <Navigate to={signInRoute.fullPath} replace />;
+  return <Navigate to={signInRoute.to} replace />;
 };

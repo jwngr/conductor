@@ -12,6 +12,7 @@ import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
 import {FeedItemContentType} from '@shared/types/feedItems.types';
 import {SystemTagId} from '@shared/types/tags.types';
+import {NavItemId} from '@shared/types/urls.types';
 
 import {
   DEFAULT_ROUTE_HERO_PAGE_ACTION,
@@ -22,7 +23,6 @@ import {useFeedItem, useFeedItemsService} from '@sharedClient/hooks/feedItems.ho
 
 import {RegisterIndividualFeedItemDevToolbarSection} from '@src/components/devToolbar/RegisterIndividualFeedItemSection';
 import {ErrorArea} from '@src/components/errors/ErrorArea';
-import {FeedItemScreenKeyboardHandler} from '@src/components/feedItems/FeedItemScreenEscapeHandler';
 import {ArticleFeedItemRenderer} from '@src/components/feedItems/renderers/ArticleFeedItemRenderer';
 import {IntervalFeedItemRenderer} from '@src/components/feedItems/renderers/IntervalFeedItemRenderer';
 import {TweetFeedItemRenderer} from '@src/components/feedItems/renderers/TweetFeedItemRenderer';
@@ -33,7 +33,7 @@ import {YouTubeFeedItemRenderer} from '@src/components/feedItems/renderers/YouTu
 import {LoadingArea} from '@src/components/loading/LoadingArea';
 
 import {firebaseService} from '@src/lib/firebase.pwa';
-import {useFeedItemIdFromUrl} from '@src/lib/router.pwa';
+import {useFeedItemIdFromUrlPath} from '@src/lib/router.pwa';
 
 import {NotFoundScreen} from '@src/screens/404';
 import {Screen} from '@src/screens/Screen';
@@ -129,7 +129,7 @@ const LoadedFeedItemScreenContent: React.FC<{
   );
 };
 
-const FeedItemScreenContent: React.FC<{
+export const FeedItemScreenContent: React.FC<{
   readonly feedItemId: FeedItemId;
 }> = ({feedItemId}) => {
   const feedItemState = useFeedItem({feedItemId, firebaseService});
@@ -161,7 +161,7 @@ const FeedItemScreenContent: React.FC<{
 };
 
 export const FeedItemScreen: React.FC = () => {
-  const feedItemId = useFeedItemIdFromUrl();
+  const feedItemId = useFeedItemIdFromUrlPath();
 
   if (!feedItemId) {
     return (
@@ -173,9 +173,8 @@ export const FeedItemScreen: React.FC = () => {
   }
 
   return (
-    <Screen withHeader withLeftSidebar>
+    <Screen selectedNavItemId={null} withHeader>
       <FeedItemScreenContent feedItemId={feedItemId} />
-      <FeedItemScreenKeyboardHandler />
     </Screen>
   );
 };

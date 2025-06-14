@@ -1,12 +1,10 @@
-import {createRoute, useNavigate} from '@tanstack/react-router';
-import {useEffect} from 'react';
-
-import {DEFAULT_STORIES_SIDEBAR_ITEM} from '@shared/lib/stories.shared';
+import {createRoute} from '@tanstack/react-router';
 
 import {ViewType} from '@shared/types/views.types';
 
 import {RequireLoggedInAccount} from '@src/components/auth/RequireLoggedInAccount';
 import {SignOutRedirect} from '@src/components/auth/SignOutRedirect';
+import {StoriesDefaultRedirect} from '@src/components/stories/StoriesDefaultRedirect';
 
 import {rootRoute} from '@src/routes/__root';
 import {NotFoundScreen} from '@src/screens/404';
@@ -33,19 +31,6 @@ export const signOutRoute = createRoute({
   component: SignOutRedirect,
 });
 
-const StoriesDefaultRedirect: React.FC = () => {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    void navigate({
-      to: storiesRoute.fullPath,
-      params: {sidebarItemId: DEFAULT_STORIES_SIDEBAR_ITEM.sidebarItemId},
-    });
-  }, [navigate]);
-
-  return null;
-};
-
 export const storiesRedirectRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/ui',
@@ -64,6 +49,10 @@ export const storiesRoute = createRoute({
 export const allViewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/all',
+  validateSearch: (search: Record<string, unknown>) => ({
+    // TODO: Use `parseFeedItemId` to validate the feed item ID format.
+    feedItemId: search.feedItemId as string | undefined,
+  }),
   component: () => (
     <RequireLoggedInAccount>
       <ViewScreen viewType={ViewType.All} />
@@ -74,6 +63,9 @@ export const allViewRoute = createRoute({
 export const todayViewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/today',
+  validateSearch: (search: Record<string, unknown>) => ({
+    feedItemId: search.feedItemId as string | undefined,
+  }),
   component: () => (
     <RequireLoggedInAccount>
       <ViewScreen viewType={ViewType.Today} />
@@ -84,6 +76,9 @@ export const todayViewRoute = createRoute({
 export const untriagedViewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
+  validateSearch: (search: Record<string, unknown>) => ({
+    feedItemId: search.feedItemId as string | undefined,
+  }),
   component: () => (
     <RequireLoggedInAccount>
       <ViewScreen viewType={ViewType.Untriaged} />
@@ -94,6 +89,9 @@ export const untriagedViewRoute = createRoute({
 export const unreadViewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/unread',
+  validateSearch: (search: Record<string, unknown>) => ({
+    feedItemId: search.feedItemId as string | undefined,
+  }),
   component: () => (
     <RequireLoggedInAccount>
       <ViewScreen viewType={ViewType.Unread} />
@@ -104,6 +102,9 @@ export const unreadViewRoute = createRoute({
 export const starredViewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/starred',
+  validateSearch: (search: Record<string, unknown>) => ({
+    feedItemId: search.feedItemId as string | undefined,
+  }),
   component: () => (
     <RequireLoggedInAccount>
       <ViewScreen viewType={ViewType.Starred} />
@@ -114,6 +115,9 @@ export const starredViewRoute = createRoute({
 export const savedViewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/saved',
+  validateSearch: (search: Record<string, unknown>) => ({
+    feedItemId: search.feedItemId as string | undefined,
+  }),
   component: () => (
     <RequireLoggedInAccount>
       <ViewScreen viewType={ViewType.Saved} />
@@ -124,6 +128,9 @@ export const savedViewRoute = createRoute({
 export const doneViewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/done',
+  validateSearch: (search: Record<string, unknown>) => ({
+    feedItemId: search.feedItemId as string | undefined,
+  }),
   component: () => (
     <RequireLoggedInAccount>
       <ViewScreen viewType={ViewType.Done} />
@@ -134,6 +141,9 @@ export const doneViewRoute = createRoute({
 export const trashedViewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/trashed',
+  validateSearch: (search: Record<string, unknown>) => ({
+    feedItemId: search.feedItemId as string | undefined,
+  }),
   component: () => (
     <RequireLoggedInAccount>
       <ViewScreen viewType={ViewType.Trashed} />
@@ -180,6 +190,16 @@ export const experimentsRoute = createRoute({
     </RequireLoggedInAccount>
   ),
 });
+
+export type ViewRoute =
+  | typeof allViewRoute
+  | typeof todayViewRoute
+  | typeof untriagedViewRoute
+  | typeof unreadViewRoute
+  | typeof starredViewRoute
+  | typeof savedViewRoute
+  | typeof doneViewRoute
+  | typeof trashedViewRoute;
 
 //////////////////////
 //  CATCH-ALL ROUTE //

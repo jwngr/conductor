@@ -118,11 +118,11 @@ export const SignInScreen: React.FC = () => {
 
   // Redirect to root if already logged in.
   if (loggedInAccount) {
-    return <Navigate to={rootRoute.fullPath} replace />;
+    return <Navigate to={rootRoute.to} replace search={{feedItemId: undefined}} />;
   }
 
   return (
-    <Screen align="center" justify="center" gap={4} maxWidth={480}>
+    <Screen selectedNavItemId={null} align="center" justify="center" gap={4} maxWidth={480}>
       <H1 bold align="center">
         Conductor
       </H1>

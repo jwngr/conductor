@@ -1,4 +1,4 @@
-import type {ToPathOption} from '@tanstack/react-router';
+import type {AnyRoute} from '@tanstack/react-router';
 import {toast} from 'sonner';
 
 import {findStoriesSidebarItemById} from '@shared/lib/stories.shared';
@@ -10,6 +10,7 @@ import {parseStoriesSidebarItemId} from '@shared/parsers/stories.parser';
 import type {FeedItemId} from '@shared/types/feedItems.types';
 import type {StoriesSidebarItem} from '@shared/types/stories.types';
 import {NavItemId} from '@shared/types/urls.types';
+import {ViewType} from '@shared/types/views.types';
 
 import {
   allViewRoute,
@@ -26,8 +27,14 @@ import {
   unreadViewRoute,
   untriagedViewRoute,
 } from '@src/routes/index';
+import type {ViewRoute} from '@src/routes/index';
 
-export const useFeedItemIdFromUrl = (): FeedItemId | null => {
+/**
+ * Returns the feed item ID from the URL path of a feed item route.
+ *
+ * E.g. `/items/123`
+ */
+export function useFeedItemIdFromUrlPath(): FeedItemId | null {
   const {feedItemId: feedItemIdFromUrl} = feedItemRoute.useParams();
 
   if (!feedItemIdFromUrl) return null;
@@ -35,9 +42,25 @@ export const useFeedItemIdFromUrl = (): FeedItemId | null => {
   const feedItemIdResult = parseFeedItemId(feedItemIdFromUrl);
   if (!feedItemIdResult.success) return null;
   return feedItemIdResult.value;
-};
+}
 
-export const useSelectedStoryFromUrl = (): StoriesSidebarItem | null => {
+/**
+ * Returns the feed item ID from the URL search parameters of a view route.
+ *
+ * E.g. `/all?feedItemId=123` or `/?feedItemId=123`
+ */
+export function useFeedItemIdFromUrlSearch(route: ViewRoute): FeedItemId | null {
+  const search = route.useSearch();
+  const feedItemIdFromUrl = search.feedItemId;
+
+  if (!feedItemIdFromUrl) return null;
+
+  const feedItemIdResult = parseFeedItemId(feedItemIdFromUrl);
+  if (!feedItemIdResult.success) return null;
+  return feedItemIdResult.value;
+}
+
+export function useSelectedStoryFromUrl(): StoriesSidebarItem | null {
   const {sidebarItemId: sidebarItemIdFromUrl} = storiesRoute.useParams();
 
   if (!sidebarItemIdFromUrl) return null;
@@ -51,32 +74,55 @@ export const useSelectedStoryFromUrl = (): StoriesSidebarItem | null => {
   }
 
   return findStoriesSidebarItemById(sidebarItemIdResult.value);
-};
+}
 
-export function getNavItemRoute(navItemId: NavItemId): ToPathOption {
+export function getRouteFromViewType(viewType: ViewType): ViewRoute {
+  switch (viewType) {
+    case ViewType.All:
+      return allViewRoute;
+    case ViewType.Today:
+      return todayViewRoute;
+    case ViewType.Untriaged:
+      return untriagedViewRoute;
+    case ViewType.Unread:
+      return unreadViewRoute;
+    case ViewType.Starred:
+      return starredViewRoute;
+    case ViewType.Saved:
+      return savedViewRoute;
+    case ViewType.Done:
+      return doneViewRoute;
+    case ViewType.Trashed:
+      return trashedViewRoute;
+    default:
+      assertNever(viewType);
+  }
+}
+
+export function getRouteFromNavItemId(navItemId: NavItemId): AnyRoute {
   switch (navItemId) {
     case NavItemId.All:
-      return allViewRoute.fullPath;
-    case NavItemId.Done:
-      return doneViewRoute.fullPath;
-    case NavItemId.Saved:
-      return savedViewRoute.fullPath;
-    case NavItemId.Starred:
-      return starredViewRoute.fullPath;
+      return allViewRoute;
     case NavItemId.Today:
-      return todayViewRoute.fullPath;
-    case NavItemId.Trashed:
-      return trashedViewRoute.fullPath;
-    case NavItemId.Unread:
-      return unreadViewRoute.fullPath;
+      return todayViewRoute;
     case NavItemId.Untriaged:
-      return untriagedViewRoute.fullPath;
+      return untriagedViewRoute;
+    case NavItemId.Unread:
+      return unreadViewRoute;
+    case NavItemId.Starred:
+      return starredViewRoute;
+    case NavItemId.Saved:
+      return savedViewRoute;
+    case NavItemId.Done:
+      return doneViewRoute;
+    case NavItemId.Trashed:
+      return trashedViewRoute;
     case NavItemId.Feeds:
-      return feedSubscriptionsRoute.fullPath;
+      return feedSubscriptionsRoute;
     case NavItemId.Import:
-      return importRoute.fullPath;
+      return importRoute;
     case NavItemId.Experiments:
-      return experimentsRoute.fullPath;
+      return experimentsRoute;
     default:
       assertNever(navItemId);
   }

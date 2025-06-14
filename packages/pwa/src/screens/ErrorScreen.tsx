@@ -38,7 +38,7 @@ const ErrorScreenAuthFooter: React.FC = () => {
           Logged in as <b>{loggedInAccount.email}</b>
         </H5>
         <Divider y={24} x={1} />
-        <Link to={signOutRoute.fullPath} replace>
+        <Link to={signOutRoute.to} replace>
           <H5 underline="always" light nowrap>
             Sign out
           </H5>
@@ -67,7 +67,7 @@ const ErrorScreen: React.FC<{
   readonly actions: readonly HeroAction[];
 }> = ({error, title, subtitle, actions}) => {
   return (
-    <Screen>
+    <Screen selectedNavItemId={null}>
       <div className="relative">
         {/* Conductor logo, top left. */}
         <FlexRow className="absolute top-4 left-4 z-10">

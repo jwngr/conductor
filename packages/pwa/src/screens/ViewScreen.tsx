@@ -1,17 +1,24 @@
+import {getNavItemIdFromViewType} from '@shared/lib/navItems.shared';
+
 import type {ViewType} from '@shared/types/views.types';
 
-import {FeedItemScreenKeyboardHandler} from '@src/components/feedItems/FeedItemScreenEscapeHandler';
 import {ViewRenderer} from '@src/components/views/View';
+
+import {getRouteFromViewType, useFeedItemIdFromUrlSearch} from '@src/lib/router.pwa';
 
 import {Screen} from '@src/screens/Screen';
 
 export const ViewScreen: React.FC<{
   readonly viewType: ViewType;
 }> = ({viewType}) => {
+  const selectedNavItemId = getNavItemIdFromViewType(viewType);
+
+  const currentRoute = getRouteFromViewType(viewType);
+  const selectedFeedItemId = useFeedItemIdFromUrlSearch(currentRoute);
+
   return (
-    <Screen withHeader withLeftSidebar>
-      <ViewRenderer key={viewType} viewType={viewType} />
-      <FeedItemScreenKeyboardHandler />
+    <Screen selectedNavItemId={selectedNavItemId} withHeader>
+      <ViewRenderer viewType={viewType} selectedFeedItemId={selectedFeedItemId} />
     </Screen>
   );
 };

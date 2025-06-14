@@ -1,5 +1,7 @@
 import type React from 'react';
 
+import {NavItemId} from '@shared/types/urls.types';
+
 import {useExperimentsStore} from '@sharedClient/stores/ExperimentsStore';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
@@ -40,7 +42,7 @@ const ExperimentsScreenMainContent: React.FC = () => {
 
 export const ExperimentsScreen: React.FC = () => {
   return (
-    <Screen withHeader withLeftSidebar>
+    <Screen selectedNavItemId={NavItemId.Experiments} withHeader>
       <ExperimentsScreenMainContent />
     </Screen>
   );

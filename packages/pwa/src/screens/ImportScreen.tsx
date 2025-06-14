@@ -12,6 +12,7 @@ import {
 } from '@shared/types/migration.types';
 import type {ExternalMigrationItemState} from '@shared/types/migration.types';
 import type {PocketImportItem} from '@shared/types/pocket.types';
+import {NavItemId} from '@shared/types/urls.types';
 import type {Task} from '@shared/types/utils.types';
 
 import {parsePocketCsvContent} from '@sharedClient/lib/pocket.client';
@@ -162,7 +163,7 @@ export const ImportScreen: React.FC = () => {
   };
 
   return (
-    <Screen withHeader withLeftSidebar>
+    <Screen selectedNavItemId={NavItemId.Import} withHeader>
       <FlexColumn flex gap={6} padding={5} overflow="auto">
         <H2 bold>Import</H2>
 
