@@ -46,6 +46,8 @@ function getAtomicComponentSidebarItemTitle(type: AtomicComponentType): string {
       return 'Dialog';
     case AtomicComponentType.Divider:
       return 'Divider';
+    case AtomicComponentType.Dot:
+      return 'Dot';
     case AtomicComponentType.DropdownMenu:
       return 'DropdownMenu';
     case AtomicComponentType.Flex:
@@ -149,6 +151,7 @@ const ORDERED_ATOMIC_COMPONENT_TYPES: AtomicComponentType[] = [
   AtomicComponentType.Toast,
   AtomicComponentType.Tooltip,
   AtomicComponentType.Divider,
+  AtomicComponentType.Dot,
   AtomicComponentType.DropdownMenu,
   AtomicComponentType.Flex,
   AtomicComponentType.Spacer,

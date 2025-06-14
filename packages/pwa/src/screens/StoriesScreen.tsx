@@ -27,6 +27,7 @@ import {ButtonIconStories} from '@src/components/atoms/ButtonIcon.stories';
 import {CheckboxStories} from '@src/components/atoms/Checkbox.stories';
 import {DialogStories} from '@src/components/atoms/Dialog.stories';
 import {DividerStories} from '@src/components/atoms/Divider.stories';
+import {DotStories} from '@src/components/atoms/Dot.stories';
 import {DropdownMenuStories} from '@src/components/atoms/DropdownMenu.stories';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {FlexStories} from '@src/components/atoms/Flex.stories';
@@ -68,6 +69,8 @@ const AtomicComponentStoryContent: React.FC<{
       return <DialogStories />;
     case AtomicComponentType.Divider:
       return <DividerStories />;
+    case AtomicComponentType.Dot:
+      return <DotStories />;
     case AtomicComponentType.DropdownMenu:
       return <DropdownMenuStories />;
     case AtomicComponentType.Flex:
