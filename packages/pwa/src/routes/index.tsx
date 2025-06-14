@@ -1,5 +1,8 @@
 import {createRoute} from '@tanstack/react-router';
 
+import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
+
+import type {FeedItemId} from '@shared/types/feedItems.types';
 import {ViewType} from '@shared/types/views.types';
 
 import {RequireLoggedInAccount} from '@src/components/auth/RequireLoggedInAccount';
@@ -43,16 +46,29 @@ export const storiesRoute = createRoute({
   component: StoriesScreen,
 });
 
+function feedItemIdSearchHandler(search: Record<string, unknown>): {
+  feedItemId: FeedItemId | null;
+} {
+  const parsedResult = parseFeedItemId(search.feedItemId);
+
+  if (!parsedResult.success) {
+    return {
+      feedItemId: null,
+    };
+  }
+
+  return {
+    feedItemId: parsedResult.value,
+  };
+}
+
 ///////////////////////////
 //  AUTHENTICATED ROUTES //
 ///////////////////////////
 export const allViewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/all',
-  validateSearch: (search: Record<string, unknown>) => ({
-    // TODO: Use `parseFeedItemId` to validate the feed item ID format.
-    feedItemId: search.feedItemId as string | undefined,
-  }),
+  validateSearch: feedItemIdSearchHandler,
   component: () => (
     <RequireLoggedInAccount>
       <ViewScreen viewType={ViewType.All} />
@@ -63,9 +79,7 @@ export const allViewRoute = createRoute({
 export const todayViewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/today',
-  validateSearch: (search: Record<string, unknown>) => ({
-    feedItemId: search.feedItemId as string | undefined,
-  }),
+  validateSearch: feedItemIdSearchHandler,
   component: () => (
     <RequireLoggedInAccount>
       <ViewScreen viewType={ViewType.Today} />
@@ -76,9 +90,7 @@ export const todayViewRoute = createRoute({
 export const untriagedViewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  validateSearch: (search: Record<string, unknown>) => ({
-    feedItemId: search.feedItemId as string | undefined,
-  }),
+  validateSearch: feedItemIdSearchHandler,
   component: () => (
     <RequireLoggedInAccount>
       <ViewScreen viewType={ViewType.Untriaged} />
@@ -89,9 +101,7 @@ export const untriagedViewRoute = createRoute({
 export const unreadViewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/unread',
-  validateSearch: (search: Record<string, unknown>) => ({
-    feedItemId: search.feedItemId as string | undefined,
-  }),
+  validateSearch: feedItemIdSearchHandler,
   component: () => (
     <RequireLoggedInAccount>
       <ViewScreen viewType={ViewType.Unread} />
@@ -102,9 +112,7 @@ export const unreadViewRoute = createRoute({
 export const starredViewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/starred',
-  validateSearch: (search: Record<string, unknown>) => ({
-    feedItemId: search.feedItemId as string | undefined,
-  }),
+  validateSearch: feedItemIdSearchHandler,
   component: () => (
     <RequireLoggedInAccount>
       <ViewScreen viewType={ViewType.Starred} />
@@ -115,9 +123,7 @@ export const starredViewRoute = createRoute({
 export const savedViewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/saved',
-  validateSearch: (search: Record<string, unknown>) => ({
-    feedItemId: search.feedItemId as string | undefined,
-  }),
+  validateSearch: feedItemIdSearchHandler,
   component: () => (
     <RequireLoggedInAccount>
       <ViewScreen viewType={ViewType.Saved} />
@@ -128,9 +134,7 @@ export const savedViewRoute = createRoute({
 export const doneViewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/done',
-  validateSearch: (search: Record<string, unknown>) => ({
-    feedItemId: search.feedItemId as string | undefined,
-  }),
+  validateSearch: feedItemIdSearchHandler,
   component: () => (
     <RequireLoggedInAccount>
       <ViewScreen viewType={ViewType.Done} />
@@ -141,9 +145,7 @@ export const doneViewRoute = createRoute({
 export const trashedViewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/trashed',
-  validateSearch: (search: Record<string, unknown>) => ({
-    feedItemId: search.feedItemId as string | undefined,
-  }),
+  validateSearch: feedItemIdSearchHandler,
   component: () => (
     <RequireLoggedInAccount>
       <ViewScreen viewType={ViewType.Trashed} />

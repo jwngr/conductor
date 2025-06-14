@@ -12,7 +12,6 @@ import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
 import {FeedItemContentType} from '@shared/types/feedItems.types';
 import {SystemTagId} from '@shared/types/tags.types';
-import {NavItemId} from '@shared/types/urls.types';
 
 import {
   DEFAULT_ROUTE_HERO_PAGE_ACTION,

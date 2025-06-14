@@ -4,7 +4,7 @@ import type {ViewType} from '@shared/types/views.types';
 
 import {ViewRenderer} from '@src/components/views/View';
 
-import {getRouteFromViewType, useFeedItemIdFromUrlSearch} from '@src/lib/router.pwa';
+import {getRouteFromViewType} from '@src/lib/router.pwa';
 
 import {Screen} from '@src/screens/Screen';
 
@@ -14,7 +14,7 @@ export const ViewScreen: React.FC<{
   const selectedNavItemId = getNavItemIdFromViewType(viewType);
 
   const currentRoute = getRouteFromViewType(viewType);
-  const selectedFeedItemId = useFeedItemIdFromUrlSearch(currentRoute);
+  const {feedItemId: selectedFeedItemId} = currentRoute.useSearch();
 
   return (
     <Screen selectedNavItemId={selectedNavItemId} withHeader>

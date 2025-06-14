@@ -1,7 +1,5 @@
 import {useNavigate} from '@tanstack/react-router';
-import {useCallback} from 'react';
-
-import {filterNull} from '@shared/lib/utils.shared';
+import {useCallback, useMemo} from 'react';
 
 import type {ShortcutWithHandler} from '@shared/types/shortcuts.types';
 
@@ -17,16 +15,19 @@ export const FeedItemKeyboardShortcutHandler: React.FC<{
   const handleClose = useCallback(async () => {
     await navigate({
       to: currentRoute.to,
-      search: (prev) => ({...prev, feedItemId: undefined}),
+      search: (prev) => ({...prev, feedItemId: null}),
     });
   }, [navigate, currentRoute]);
 
-  const feedItemShortcuts: ShortcutWithHandler[] = filterNull([
-    {
-      shortcut: keyboardShortcutsService.forClose(),
-      handler: handleClose,
-    },
-  ]);
+  const feedItemShortcuts: ShortcutWithHandler[] = useMemo(() => {
+    const shortcuts = [
+      {
+        shortcut: keyboardShortcutsService.forClose(),
+        handler: handleClose,
+      },
+    ];
+    return shortcuts;
+  }, [handleClose]);
 
   useShortcuts(feedItemShortcuts);
 

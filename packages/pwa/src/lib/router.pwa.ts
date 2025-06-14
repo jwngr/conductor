@@ -44,22 +44,6 @@ export function useFeedItemIdFromUrlPath(): FeedItemId | null {
   return feedItemIdResult.value;
 }
 
-/**
- * Returns the feed item ID from the URL search parameters of a view route.
- *
- * E.g. `/all?feedItemId=123` or `/?feedItemId=123`
- */
-export function useFeedItemIdFromUrlSearch(route: ViewRoute): FeedItemId | null {
-  const search = route.useSearch();
-  const feedItemIdFromUrl = search.feedItemId;
-
-  if (!feedItemIdFromUrl) return null;
-
-  const feedItemIdResult = parseFeedItemId(feedItemIdFromUrl);
-  if (!feedItemIdResult.success) return null;
-  return feedItemIdResult.value;
-}
-
 export function useSelectedStoryFromUrl(): StoriesSidebarItem | null {
   const {sidebarItemId: sidebarItemIdFromUrl} = storiesRoute.useParams();
 
