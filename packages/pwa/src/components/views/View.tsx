@@ -38,11 +38,11 @@ import {ErrorArea} from '@src/components/errors/ErrorArea';
 import {HoverFeedItemActions} from '@src/components/feedItems/FeedItemActions';
 import {FeedItemImportStatusBadge} from '@src/components/feedItems/FeedItemImportStatusBadge';
 import {LoadingArea} from '@src/components/loading/LoadingArea';
+import * as styles from '@src/components/views/View.css';
 import {ViewKeyboardShortcutHandler} from '@src/components/views/ViewKeyboardShortcutHandler';
 import {ViewOptionsDialog} from '@src/components/views/ViewOptionsDialog';
 
 import {firebaseService} from '@src/lib/firebase.pwa';
-import {cn} from '@src/lib/utils.pwa';
 
 import {feedItemRoute} from '@src/routes';
 
@@ -236,10 +236,7 @@ const ViewListItem: React.FC<{
     <Link to={feedItemRoute.fullPath} params={{feedItemId: feedItem.feedItemId}}>
       <div
         ref={itemRef}
-        className={cn(
-          'hover:bg-neutral-1 focus-visible:bg-neutral-1 relative -m-2 flex cursor-pointer flex-col justify-center gap-1 rounded p-2 outline-none',
-          isFocused && 'bg-neutral-1 outline-neutral-3 outline-2'
-        )}
+        className={styles.viewListItem({isFocused})}
         tabIndex={0}
         onFocus={() => setFocusedFeedItemId(feedItem.feedItemId)}
         onBlur={() => setFocusedFeedItemId(null)}
@@ -258,7 +255,7 @@ const ViewListItem: React.FC<{
           </P>
         </div>
         {shouldShowActions ? (
-          <div className="absolute top-1/2 right-2 -translate-y-1/2 transform">
+          <div className={styles.viewListItemActions()}>
             <HoverFeedItemActions feedItem={feedItem} />
           </div>
         ) : null}
