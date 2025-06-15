@@ -1,3 +1,6 @@
+# Account with this email gets access to internal experiments.
+INTERNAL_ACCOUNT_EMAIL_ADDRESS= # Set your email address for local development
+
 # Firecrawl.
 FIRECRAWL_API_KEY= # Get from Firecrawl
 

@@ -254,12 +254,12 @@ export const StoriesScreen: React.FC = () => {
     return findStoriesSidebarItemById(sidebarItemId);
   }, [sidebarItemId]);
 
-  if (!sidebarItem) {
-    if (!sidebarItemId) {
-      // This root redirect is expected.
-      return <StoriesDefaultRedirect />;
-    }
+  if (!sidebarItemId) {
+    // This root redirect is expected.
+    return <StoriesDefaultRedirect />;
+  }
 
+  if (!sidebarItem) {
     return <DefaultErrorScreen error={new Error('Story ID in URL failed to parse')} />;
   }
 

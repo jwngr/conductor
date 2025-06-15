@@ -1,5 +1,8 @@
-# CONDUCTOR_URL is the URL of the Conductor app.
+# URL of the Conductor app.
 VITE_CONDUCTOR_URL=http://localhost:5173/
+
+# Default email address for passwordless sign in.
+VITE_DEFAULT_PASSWORDLESS_EMAIL_ADDRESS= # Set your email address for local development
 
 # Required Firebase config.
 VITE_FIREBASE_API_KEY=

@@ -37,6 +37,7 @@ jobs:
       - name: Create .env file
         working-directory: packages/functions
         env:
+          INTERNAL_ACCOUNT_EMAIL_ADDRESS: ${{ secrets.INTERNAL_ACCOUNT_EMAIL_ADDRESS }}
           FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
           GOOGLE_GENAI_API_KEY: ${{ secrets.GOOGLE_GENAI_API_KEY }}
           RSS_FEED_PROVIDER_TYPE: ${{ secrets.RSS_FEED_PROVIDER_TYPE }}
@@ -44,6 +45,10 @@ jobs:
           SUPERFEEDR_API_KEY: ${{ secrets.SUPERFEEDR_API_KEY }}
           SUPERFEEDR_WEBHOOK_SECRET: ${{ secrets.SUPERFEEDR_WEBHOOK_SECRET }}
         run: |
+          if [ -z "$INTERNAL_ACCOUNT_EMAIL_ADDRESS" ]; then
+            echo "Error: INTERNAL_ACCOUNT_EMAIL_ADDRESS secret must be added in GitHub"
+            exit 1
+          fi
           if [ -z "$FIRECRAWL_API_KEY" ]; then
             echo "Error: FIRECRAWL_API_KEY secret must be added in GitHub"
             exit 1
@@ -68,7 +73,8 @@ jobs:
             echo "Error: SUPERFEEDR_WEBHOOK_SECRET secret must be added in GitHub"
             exit 1
           fi
-          echo "FIRECRAWL_API_KEY=${FIRECRAWL_API_KEY}" > .env.conductor-prod
+          echo "INTERNAL_ACCOUNT_EMAIL_ADDRESS=${INTERNAL_ACCOUNT_EMAIL_ADDRESS}" > .env.conductor-prod
+          echo "FIRECRAWL_API_KEY=${FIRECRAWL_API_KEY}" >> .env.conductor-prod
           echo "GOOGLE_GENAI_API_KEY=${GOOGLE_GENAI_API_KEY}" >> .env.conductor-prod
           echo "RSS_FEED_PROVIDER_TYPE=${RSS_FEED_PROVIDER_TYPE}" >> .env.conductor-prod
           echo "SUPERFEEDR_USER=${SUPERFEEDR_USER}" >> .env.conductor-prod

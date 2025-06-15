@@ -1,7 +1,5 @@
 import {useEffect} from 'react';
 
-import {isInternalAccount} from '@shared/lib/accounts.shared';
-
 import {Environment} from '@shared/types/environment.types';
 
 import {useExperimentsStore} from '@sharedClient/stores/ExperimentsStore';
@@ -11,6 +9,7 @@ import {ClientExperimentsService} from '@sharedClient/services/experiments.clien
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 import {useEventLogService} from '@sharedClient/hooks/eventLog.hooks';
 
+import {env} from '@src/lib/environment.pwa';
 import {firebaseService} from '@src/lib/firebase.pwa';
 
 export const PWAExperimentsListener: React.FC = () => {
@@ -22,7 +21,7 @@ export const PWAExperimentsListener: React.FC = () => {
     const pwaExperimentsService = new ClientExperimentsService({
       environment: Environment.PWA,
       accountId: loggedInAccount.accountId,
-      isInternalAccount: isInternalAccount({email: loggedInAccount.email}),
+      isInternalAccount: loggedInAccount.email === env.defaultPasswordlessEmailAddress,
       eventLogService,
       firebaseService,
     });
