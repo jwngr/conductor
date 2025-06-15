@@ -6,6 +6,7 @@ import {assertNever} from '@shared/lib/utils.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
 import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import {NavItemId} from '@shared/types/urls.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
 import {
@@ -268,7 +269,7 @@ const FeedSubscriptionsList: React.FC = () => {
 
 export const FeedSubscriptionsScreen: React.FC = () => {
   return (
-    <Screen withHeader withLeftSidebar>
+    <Screen selectedNavItemId={NavItemId.Feeds} withHeader>
       <FlexRow flex align="start" gap={8} padding={4} overflow="auto">
         <FeedAdder />
         <FeedSubscriptionsList />

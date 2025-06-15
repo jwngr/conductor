@@ -24,22 +24,32 @@ import {
 } from '@src/routes/index';
 
 const routeTree = rootRoute.addChildren([
+  // Auth routes.
   signInRoute,
   signOutRoute,
-  storiesRoute,
+
+  // View routes.
   allViewRoute,
-  todayViewRoute,
-  untriagedViewRoute,
-  unreadViewRoute,
-  starredViewRoute,
-  savedViewRoute,
   doneViewRoute,
+  savedViewRoute,
+  starredViewRoute,
+  todayViewRoute,
   trashedViewRoute,
+  unreadViewRoute,
+  untriagedViewRoute,
+
+  // Misc routes.
+  experimentsRoute,
   feedItemRoute,
   feedSubscriptionsRoute,
-  storiesRedirectRoute,
   importRoute,
-  experimentsRoute,
+
+  // Story routes.
+  // TODO: Nest these properly.
+  storiesRoute,
+  storiesRedirectRoute,
+
+  // Catch-all route.
   catchAllRoute,
 ]);
 

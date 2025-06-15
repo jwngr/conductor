@@ -1,4 +1,4 @@
-import type {CustomIcon} from '@shared/lib/customIcons.shared';
+import type {CustomFileIcon, EmojiIcon, SystemIcon} from '@shared/lib/customIcons.shared';
 
 export enum NavItemId {
   Untriaged = 'UNTRIAGED',
@@ -21,6 +21,6 @@ export type ViewNavItemId = Exclude<
 
 export interface NavItem {
   readonly id: NavItemId;
-  readonly icon: CustomIcon;
+  readonly icon: EmojiIcon | SystemIcon | CustomFileIcon;
   readonly title: string;
 }

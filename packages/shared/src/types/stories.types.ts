@@ -12,6 +12,7 @@ export enum AtomicComponentType {
   Button = 'BUTTON',
   ButtonIcon = 'BUTTON_ICON',
   Checkbox = 'CHECKBOX',
+  CustomIcon = 'CUSTOM_ICON',
   Dialog = 'DIALOG',
   Divider = 'DIVIDER',
   Dot = 'DOT',

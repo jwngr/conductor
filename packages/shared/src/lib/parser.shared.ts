@@ -7,6 +7,8 @@ import type {Result} from '@shared/types/results.types';
 
 import type {FirestoreTimestamp} from '@shared/schemas/firebase.schema';
 
+export const PARSING_FAILURE_SENTINEL = 'PARSING_FAILURE';
+
 /**
  * Attempts to parse a value using a Zod schema.
  */
