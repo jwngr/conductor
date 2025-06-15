@@ -1,11 +1,11 @@
 import {deleteField} from 'firebase/firestore';
 import {useEffect, useRef} from 'react';
-import {toast} from 'sonner';
 
 import {logger} from '@shared/services/logger.shared';
 
 import {prefixError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
+import {PARSING_FAILURE_SENTINEL} from '@shared/lib/parser.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
@@ -17,6 +17,7 @@ import {
   DEFAULT_ROUTE_HERO_PAGE_ACTION,
   REFRESH_HERO_PAGE_ACTION,
 } from '@sharedClient/lib/heroActions.client';
+import {toast} from '@sharedClient/lib/toasts.client';
 
 import {useFeedItem, useFeedItemsService} from '@sharedClient/hooks/feedItems.hooks';
 
@@ -32,8 +33,8 @@ import {YouTubeFeedItemRenderer} from '@src/components/feedItems/renderers/YouTu
 import {LoadingArea} from '@src/components/loading/LoadingArea';
 
 import {firebaseService} from '@src/lib/firebase.pwa';
-import {useFeedItemIdFromUrlPath} from '@src/lib/router.pwa';
 
+import {feedItemRoute} from '@src/routes';
 import {NotFoundScreen} from '@src/screens/404';
 import {Screen} from '@src/screens/Screen';
 
@@ -160,14 +161,17 @@ export const FeedItemScreenContent: React.FC<{
 };
 
 export const FeedItemScreen: React.FC = () => {
-  const feedItemId = useFeedItemIdFromUrlPath();
+  const {feedItemId} = feedItemRoute.useParams();
 
   if (!feedItemId) {
     return (
-      <NotFoundScreen
-        title="Feed item ID missing"
-        subtitle="Make sure the URL includes a valid feed item ID"
-      />
+      <NotFoundScreen title="Missing feed item ID" subtitle="The URL does not contain an ID" />
+    );
+  }
+
+  if (feedItemId === PARSING_FAILURE_SENTINEL) {
+    return (
+      <NotFoundScreen title="Invalid feed item ID" subtitle="The ID from the URL failed to parse" />
     );
   }
 

@@ -1,15 +1,19 @@
 import {createRoute} from '@tanstack/react-router';
 
+import {PARSING_FAILURE_SENTINEL} from '@shared/lib/parser.shared';
+
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
+import {parseStoriesSidebarItemId} from '@shared/parsers/stories.parser';
 
 import type {FeedItemId} from '@shared/types/feedItems.types';
+import type {StoriesSidebarItemId} from '@shared/types/stories.types';
 import {ViewType} from '@shared/types/views.types';
 
 import {RequireLoggedInAccount} from '@src/components/auth/RequireLoggedInAccount';
 import {SignOutRedirect} from '@src/components/auth/SignOutRedirect';
-import {StoriesDefaultRedirect} from '@src/components/stories/StoriesDefaultRedirect';
 
 import {rootRoute} from '@src/routes/__root';
+import {StoriesDefaultRedirect} from '@src/routes/Redirects';
 import {NotFoundScreen} from '@src/screens/404';
 import {ExperimentsScreen} from '@src/screens/ExperimentsScreen';
 import {FeedItemScreen} from '@src/screens/FeedItemScreen';
@@ -18,6 +22,50 @@ import {ImportScreen} from '@src/screens/ImportScreen';
 import {SignInScreen} from '@src/screens/SignInScreen';
 import {StoriesScreen} from '@src/screens/StoriesScreen';
 import {ViewScreen} from '@src/screens/ViewScreen';
+
+/////////////////////////
+//  VALIDATION HELPERS //
+/////////////////////////
+function storiesSidebarItemIdParseParamsHandler(params: {sidebarItemId: string}): {
+  sidebarItemId: StoriesSidebarItemId | typeof PARSING_FAILURE_SENTINEL | undefined;
+} {
+  const rawSidebarItemId = params.sidebarItemId;
+
+  if (
+    typeof rawSidebarItemId === 'undefined' ||
+    (typeof rawSidebarItemId === 'string' && rawSidebarItemId.length === 0)
+  ) {
+    return {sidebarItemId: undefined};
+  }
+
+  const result = parseStoriesSidebarItemId(rawSidebarItemId);
+  if (!result.success) {
+    return {sidebarItemId: PARSING_FAILURE_SENTINEL};
+  }
+
+  return {sidebarItemId: result.value};
+}
+
+function feedItemIdSearchHandler(search: Record<string, unknown>): {
+  feedItemId: FeedItemId | typeof PARSING_FAILURE_SENTINEL | undefined;
+} {
+  const rawFeedItemId = search.feedItemId;
+
+  if (
+    typeof rawFeedItemId === 'undefined' ||
+    (typeof rawFeedItemId === 'string' && rawFeedItemId.length === 0)
+  ) {
+    return {feedItemId: undefined};
+  }
+
+  const parsedResult = parseFeedItemId(rawFeedItemId);
+
+  if (!parsedResult.success) {
+    return {feedItemId: PARSING_FAILURE_SENTINEL};
+  }
+
+  return {feedItemId: parsedResult.value};
+}
 
 ////////////////////
 //  PUBLIC ROUTES //
@@ -43,24 +91,9 @@ export const storiesRedirectRoute = createRoute({
 export const storiesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/ui/$sidebarItemId',
+  parseParams: storiesSidebarItemIdParseParamsHandler,
   component: StoriesScreen,
 });
-
-function feedItemIdSearchHandler(search: Record<string, unknown>): {
-  feedItemId: FeedItemId | null;
-} {
-  const parsedResult = parseFeedItemId(search.feedItemId);
-
-  if (!parsedResult.success) {
-    return {
-      feedItemId: null,
-    };
-  }
-
-  return {
-    feedItemId: parsedResult.value,
-  };
-}
 
 ///////////////////////////
 //  AUTHENTICATED ROUTES //
@@ -156,6 +189,7 @@ export const trashedViewRoute = createRoute({
 export const feedItemRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/items/$feedItemId',
+  parseParams: feedItemIdSearchHandler,
   component: () => (
     <RequireLoggedInAccount>
       <FeedItemScreen />
@@ -211,3 +245,5 @@ export const catchAllRoute = createRoute({
   path: '*',
   component: () => <NotFoundScreen title={undefined} subtitle={undefined} />,
 });
+
+export const DEFAULT_ROUTE = untriagedViewRoute;

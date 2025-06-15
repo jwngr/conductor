@@ -15,7 +15,7 @@ export const FeedItemKeyboardShortcutHandler: React.FC<{
   const handleClose = useCallback(async () => {
     await navigate({
       to: currentRoute.to,
-      search: (prev) => ({...prev, feedItemId: null}),
+      search: (prev) => ({...prev, feedItemId: undefined}),
     });
   }, [navigate, currentRoute]);
 

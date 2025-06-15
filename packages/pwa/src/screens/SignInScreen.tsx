@@ -20,7 +20,7 @@ import {env, IS_DEVELOPMENT} from '@src/lib/environment.pwa';
 
 import type {OnClick} from '@src/types/utils.pwa.types';
 
-import {untriagedViewRoute} from '@src/routes';
+import {DefaultRouteRedirect} from '@src/routes/Redirects';
 import {Screen} from '@src/screens/Screen';
 
 const PASSWORDLESS_AUTH_ACTION_CODE_SETTINGS: ActionCodeSettings = {
@@ -118,7 +118,7 @@ export const SignInScreen: React.FC = () => {
 
   // Redirect to root if already logged in.
   if (loggedInAccount) {
-    return <Navigate to={untriagedViewRoute.to} replace search={{feedItemId: null}} />;
+    return <DefaultRouteRedirect />;
   }
 
   return (

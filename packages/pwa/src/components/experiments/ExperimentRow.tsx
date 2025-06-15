@@ -1,6 +1,5 @@
 import type React from 'react';
 import {useCallback, useState} from 'react';
-import {toast} from 'sonner';
 
 import {logger} from '@shared/services/logger.shared';
 
@@ -14,6 +13,8 @@ import type {
 import {ExperimentType} from '@shared/types/experiments.types';
 
 import {useExperimentsStore} from '@sharedClient/stores/ExperimentsStore';
+
+import {toast} from '@sharedClient/lib/toasts.client';
 
 import {Checkbox} from '@src/components/atoms/Checkbox';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
