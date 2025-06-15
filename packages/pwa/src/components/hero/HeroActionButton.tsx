@@ -25,9 +25,11 @@ const RefreshActionButton: React.FC = () => {
 
 const DefaultRouteNavActionButton: React.FC = () => {
   return (
-    <Link to={DEFAULT_ROUTE.to} search={{feedItemId: undefined}}>
-      <Button variant="outline">Back to default view</Button>
-    </Link>
+    <Button variant="outline" asChild>
+      <Link to={DEFAULT_ROUTE.to} search={{feedItemId: undefined}}>
+        Back to default view
+      </Link>
+    </Button>
   );
 };
 
