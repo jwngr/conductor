@@ -254,18 +254,13 @@ export const StoriesScreen: React.FC = () => {
     return findStoriesSidebarItemById(sidebarItemId);
   }, [sidebarItemId]);
 
-  if (!sidebarItemId) {
-    // This root redirect is expected.
-    return <StoriesDefaultRedirect />;
-  }
-
-  if (sidebarItemId === PARSING_FAILURE_SENTINEL) {
-    return <DefaultErrorScreen error={new Error('Story ID in URL failed to parse')} />;
-  }
-
   if (!sidebarItem) {
-    // This should never happen, but the types and rules of hooks allow it.
-    return <DefaultErrorScreen error={new Error('Sidebar item not found for story ID in URL')} />;
+    if (!sidebarItemId) {
+      // This root redirect is expected.
+      return <StoriesDefaultRedirect />;
+    }
+
+    return <DefaultErrorScreen error={new Error('Story ID in URL failed to parse')} />;
   }
 
   return (
