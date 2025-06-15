@@ -13,7 +13,7 @@ export function getFunctionsBaseUrl(): string {
   return `https://${FIREBASE_FUNCTIONS_REGION}-${projectID.value()}.cloudfunctions.net`;
 }
 
-function getInternalAccountEmailAddress(): EmailAddress {
+export function getInternalAccountEmailAddress(): EmailAddress {
   const parsedInternalAccountEmailAddress = parseEmailAddress(
     defineString('INTERNAL_ACCOUNT_EMAIL_ADDRESS').value()
   );
@@ -30,5 +30,3 @@ function getInternalAccountEmailAddress(): EmailAddress {
 
   return parsedInternalAccountEmailAddress.value;
 }
-
-export const INTERNAL_ACCOUNT_EMAIL_ADDRESS = getInternalAccountEmailAddress();
