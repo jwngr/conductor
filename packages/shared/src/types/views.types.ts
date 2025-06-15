@@ -1,4 +1,3 @@
-import type {FeedItem} from '@shared/types/feedItems.types';
 import type {QueryFilterOp, SortDirection} from '@shared/types/query.types';
 
 export enum ViewType {
@@ -27,27 +26,26 @@ interface ViewFilter<T> {
   readonly value: unknown;
 }
 
-export type ViewGroupByField =
-  | 'feedSourceType'
-  | keyof Pick<FeedItem, 'feedItemContentType' | 'importState' | 'createdTime' | 'lastUpdatedTime'>;
+export enum ViewGroupByField {
+  FeedSourceType = 'FEED_SOURCE_TYPE',
+  FeedItemContentType = 'FEED_ITEM_CONTENT_TYPE',
+  TriageStatus = 'TRIAGE_STATUS',
+  ImportState = 'IMPORT_STATE',
+  CreatedTime = 'CREATED_TIME',
+  LastUpdatedTime = 'LAST_UPDATED_TIME',
+}
 
 export interface ViewGroupByOption {
   readonly field: ViewGroupByField;
 }
 
-export type ViewSortByField = 'createdTime' | 'lastUpdatedTime' | 'title';
+export enum ViewSortByField {
+  CreatedTime = 'CREATED_TIME',
+  LastUpdatedTime = 'LAST_UPDATED_TIME',
+  Title = 'TITLE',
+}
 
 export interface ViewSortByOption {
   readonly field: ViewSortByField;
   readonly direction: SortDirection;
 }
-
-export const SORT_BY_CREATED_TIME_DESC_OPTION: ViewSortByOption = {
-  field: 'createdTime',
-  direction: 'desc',
-};
-
-export const SORT_BY_LAST_UPDATED_TIME_DESC_OPTION: ViewSortByOption = {
-  field: 'lastUpdatedTime',
-  direction: 'desc',
-};

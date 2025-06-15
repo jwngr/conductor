@@ -4,24 +4,25 @@ import type {FeedItem} from '@shared/types/feedItems.types';
 import {TriageStatus} from '@shared/types/feedItems.types';
 import {QueryFilterOp} from '@shared/types/query.types';
 import {SystemTagId} from '@shared/types/tags.types';
-import type {
-  View,
-  ViewGroupByField,
-  ViewGroupByOption,
-  ViewSortByField,
-} from '@shared/types/views.types';
-import {
-  SORT_BY_CREATED_TIME_DESC_OPTION,
-  SORT_BY_LAST_UPDATED_TIME_DESC_OPTION,
-  ViewType,
-} from '@shared/types/views.types';
+import type {View, ViewGroupByOption, ViewSortByOption} from '@shared/types/views.types';
+import {ViewGroupByField, ViewSortByField, ViewType} from '@shared/types/views.types';
 
-const GROUP_BY_CREATED_DATE_OPTION: ViewGroupByOption = {
-  field: 'createdTime',
+export const GROUP_BY_CREATED_TIME_OPTION: ViewGroupByOption = {
+  field: ViewGroupByField.CreatedTime,
 };
 
-const GROUP_BY_LAST_UPDATED_DATE_OPTION: ViewGroupByOption = {
-  field: 'lastUpdatedTime',
+const GROUP_BY_LAST_UPDATED_TIME_OPTION: ViewGroupByOption = {
+  field: ViewGroupByField.LastUpdatedTime,
+};
+
+export const SORT_BY_CREATED_TIME_DESC_OPTION: ViewSortByOption = {
+  field: ViewSortByField.CreatedTime,
+  direction: 'desc',
+};
+
+export const SORT_BY_LAST_UPDATED_TIME_DESC_OPTION: ViewSortByOption = {
+  field: ViewSortByField.LastUpdatedTime,
+  direction: 'desc',
 };
 
 const ALL_VIEW_CONFIGS: Record<ViewType, View<FeedItem>> = {
@@ -30,28 +31,28 @@ const ALL_VIEW_CONFIGS: Record<ViewType, View<FeedItem>> = {
     viewType: ViewType.Untriaged,
     filters: [{field: 'triageStatus', op: QueryFilterOp.Equals, value: TriageStatus.Untriaged}],
     sortBy: [SORT_BY_CREATED_TIME_DESC_OPTION],
-    groupBy: [GROUP_BY_CREATED_DATE_OPTION],
+    groupBy: [GROUP_BY_CREATED_TIME_OPTION],
   },
   [ViewType.Saved]: {
     name: 'Saved',
     viewType: ViewType.Saved,
     filters: [{field: 'triageStatus', op: QueryFilterOp.Equals, value: TriageStatus.Saved}],
     sortBy: [SORT_BY_LAST_UPDATED_TIME_DESC_OPTION],
-    groupBy: [GROUP_BY_LAST_UPDATED_DATE_OPTION],
+    groupBy: [GROUP_BY_LAST_UPDATED_TIME_OPTION],
   },
   [ViewType.Done]: {
     name: 'Done',
     viewType: ViewType.Done,
     filters: [{field: 'triageStatus', op: QueryFilterOp.Equals, value: TriageStatus.Done}],
     sortBy: [SORT_BY_LAST_UPDATED_TIME_DESC_OPTION],
-    groupBy: [GROUP_BY_LAST_UPDATED_DATE_OPTION],
+    groupBy: [GROUP_BY_LAST_UPDATED_TIME_OPTION],
   },
   [ViewType.Trashed]: {
     name: 'Trashed',
     viewType: ViewType.Trashed,
     filters: [{field: 'triageStatus', op: QueryFilterOp.Equals, value: TriageStatus.Trashed}],
     sortBy: [SORT_BY_LAST_UPDATED_TIME_DESC_OPTION],
-    groupBy: [GROUP_BY_LAST_UPDATED_DATE_OPTION],
+    groupBy: [GROUP_BY_LAST_UPDATED_TIME_OPTION],
   },
   [ViewType.Unread]: {
     name: 'Unread',
@@ -62,7 +63,7 @@ const ALL_VIEW_CONFIGS: Record<ViewType, View<FeedItem>> = {
       {field: `tagIds.${SystemTagId.Unread}` as any, op: QueryFilterOp.Equals, value: true},
     ],
     sortBy: [SORT_BY_CREATED_TIME_DESC_OPTION],
-    groupBy: [GROUP_BY_CREATED_DATE_OPTION],
+    groupBy: [GROUP_BY_CREATED_TIME_OPTION],
   },
   [ViewType.Starred]: {
     name: 'Starred',
@@ -73,14 +74,14 @@ const ALL_VIEW_CONFIGS: Record<ViewType, View<FeedItem>> = {
       {field: `tagIds.${SystemTagId.Starred}` as any, op: QueryFilterOp.Equals, value: true},
     ],
     sortBy: [SORT_BY_CREATED_TIME_DESC_OPTION],
-    groupBy: [GROUP_BY_CREATED_DATE_OPTION],
+    groupBy: [GROUP_BY_CREATED_TIME_OPTION],
   },
   [ViewType.All]: {
     name: 'All',
     viewType: ViewType.All,
     filters: [],
     sortBy: [SORT_BY_CREATED_TIME_DESC_OPTION],
-    groupBy: [GROUP_BY_CREATED_DATE_OPTION],
+    groupBy: [GROUP_BY_CREATED_TIME_OPTION],
   },
   [ViewType.Today]: {
     name: 'Today',
@@ -93,7 +94,7 @@ const ALL_VIEW_CONFIGS: Record<ViewType, View<FeedItem>> = {
       },
     ],
     sortBy: [SORT_BY_CREATED_TIME_DESC_OPTION],
-    groupBy: [GROUP_BY_CREATED_DATE_OPTION],
+    groupBy: [GROUP_BY_CREATED_TIME_OPTION],
   },
 };
 
@@ -158,30 +159,32 @@ export class Views {
   }
 }
 
-export function toViewGroupByOptionText(viewGroupByField: ViewGroupByField): string {
+export function getViewGroupByFieldText(viewGroupByField: ViewGroupByField): string {
   switch (viewGroupByField) {
-    case 'feedItemContentType':
+    case ViewGroupByField.FeedItemContentType:
       return 'Type';
-    case 'feedSourceType':
+    case ViewGroupByField.FeedSourceType:
       return 'Source';
-    case 'importState':
+    case ViewGroupByField.ImportState:
       return 'Import state';
-    case 'createdTime':
+    case ViewGroupByField.CreatedTime:
       return 'Created date';
-    case 'lastUpdatedTime':
+    case ViewGroupByField.LastUpdatedTime:
       return 'Last updated date';
+    case ViewGroupByField.TriageStatus:
+      return 'Triage status';
     default:
       assertNever(viewGroupByField);
   }
 }
 
-export function toViewSortByOptionText(viewSortByField: ViewSortByField): string {
+export function getViewSortByFieldText(viewSortByField: ViewSortByField): string {
   switch (viewSortByField) {
-    case 'createdTime':
+    case ViewSortByField.CreatedTime:
       return 'Created time';
-    case 'lastUpdatedTime':
+    case ViewSortByField.LastUpdatedTime:
       return 'Last updated time';
-    case 'title':
+    case ViewSortByField.Title:
       return 'Title';
     default:
       assertNever(viewSortByField);
