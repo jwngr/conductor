@@ -1,4 +1,3 @@
-import {isInternalAccount} from '@shared/lib/accounts.shared';
 import {ACCOUNT_EXPERIMENTS_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {makeDefaultAccountExperimentsState} from '@shared/lib/experiments.shared';
 
@@ -25,8 +24,12 @@ type ServerAccountExperimentsCollectionService = ServerFirestoreCollectionServic
 
 export class ServerExperimentsService {
   private readonly collectionService: ServerAccountExperimentsCollectionService;
+  private readonly internalAccountEmails: EmailAddress[];
 
-  constructor(args: {readonly firebaseService: ServerFirebaseService}) {
+  constructor(args: {
+    readonly firebaseService: ServerFirebaseService;
+    readonly internalAccountEmails: EmailAddress[];
+  }) {
     this.collectionService = makeServerFirestoreCollectionService({
       firebaseService: args.firebaseService,
       collectionPath: ACCOUNT_EXPERIMENTS_DB_COLLECTION,
@@ -34,6 +37,7 @@ export class ServerExperimentsService {
       toStorage: toStorageAccountExperimentsState,
       fromStorage: parseAccountExperimentsState,
     });
+    this.internalAccountEmails = args.internalAccountEmails;
   }
 
   public async initializeForAccount(args: {
@@ -44,7 +48,7 @@ export class ServerExperimentsService {
 
     const defaultAccountExperimentsState = makeDefaultAccountExperimentsState({
       accountId,
-      isInternalAccount: isInternalAccount({email}),
+      isInternalAccount: this.internalAccountEmails.includes(email),
     });
 
     return this.setAccountExperimentsState({

@@ -2,7 +2,10 @@ import {prettifyError} from 'zod/v4';
 
 import {logger} from '@shared/services/logger.shared';
 
+import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+
+import {parseEmailAddress} from '@shared/parsers/emails.parser';
 
 import type {Result} from '@shared/types/results.types';
 
@@ -15,8 +18,18 @@ function getEnvironmentVariables(): Result<PWAEnvironmentVariables, Error> {
     const zodErrorMessage = prettifyError(parsedEnvResult.error);
     return makeErrorResult(new Error(`Failed to parse environment variables: ${zodErrorMessage}`));
   }
+
+  const parsedEmailAddressResult = parseEmailAddress(
+    parsedEnvResult.data.VITE_DEFAULT_PASSWORDLESS_EMAIL_ADDRESS
+  );
+  if (!parsedEmailAddressResult.success) {
+    const message = 'VITE_DEFAULT_PASSWORDLESS_EMAIL_ADDRESS is not a valid email address';
+    return prefixErrorResult(parsedEmailAddressResult, message);
+  }
+
   return makeSuccessResult({
     mode: parsedEnvResult.data.MODE,
+    defaultEmailAddress: parsedEmailAddressResult.value,
     conductorUrl: parsedEnvResult.data.VITE_CONDUCTOR_URL,
     firebaseApiKey: parsedEnvResult.data.VITE_FIREBASE_API_KEY,
     firebaseAuthDomain: parsedEnvResult.data.VITE_FIREBASE_AUTH_DOMAIN,

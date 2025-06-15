@@ -24,7 +24,7 @@ import type {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
 import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
 import type {WipeoutService} from '@sharedServer/services/wipeout.server';
 
-import {FIREBASE_FUNCTIONS_REGION} from '@src/lib/env';
+import {FIREBASE_FUNCTIONS_REGION} from '@src/lib/environment.func';
 import {initServices} from '@src/lib/initServices.func';
 import {validateUrlParam, verifyAuth} from '@src/lib/middleware';
 

@@ -19,6 +19,7 @@ import {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
 import {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
 import {WipeoutService} from '@sharedServer/services/wipeout.server';
 
+import {INTERNAL_ACCOUNT_EMAIL_ADDRESS} from '@src/lib/environment.func';
 import {firebaseService} from '@src/lib/firebase.func';
 import {getRssFeedProvider} from '@src/lib/rssFeedProvider.func';
 
@@ -61,6 +62,7 @@ export function initServices(): Result<InitializedServices, Error> {
   // Account experiments service.
   const experimentsService = new ServerExperimentsService({
     firebaseService,
+    internalAccountEmails: [INTERNAL_ACCOUNT_EMAIL_ADDRESS],
   });
 
   // Account settings service.

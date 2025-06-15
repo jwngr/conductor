@@ -13,7 +13,7 @@ import type {SuperfeedrCredentials} from '@shared/types/superfeedr.types';
 import {LocalRssFeedProvider} from '@sharedServer/services/localRssFeedProvider';
 import {SuperfeedrService} from '@sharedServer/services/superfeedr.server';
 
-import {getFunctionsBaseUrl} from '@src/lib/env';
+import {getFunctionsBaseUrl} from '@src/lib/environment.func';
 
 const LOCAL_RSS_FEED_PROVIDER_PORT = defineString('LOCAL_RSS_FEED_PROVIDER_PORT');
 const RSS_FEED_PROVIDER_TYPE = defineString('RSS_FEED_PROVIDER_TYPE');
