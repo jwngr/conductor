@@ -1,10 +1,7 @@
-import {logger} from '@shared/lib/logger.shared';
 import {getNavItemIdFromViewType} from '@shared/lib/navItems.shared';
 import {PARSING_FAILURE_SENTINEL} from '@shared/lib/parser.shared';
 
 import type {ViewType} from '@shared/types/views.types';
-
-import {toast} from '@sharedClient/lib/toasts.client';
 
 import {ViewRenderer} from '@src/components/views/View';
 

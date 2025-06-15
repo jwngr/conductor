@@ -1,4 +1,3 @@
-import {Navigate} from '@tanstack/react-router';
 import type {ActionCodeSettings} from 'firebase/auth';
 import {useCallback, useState} from 'react';
 
