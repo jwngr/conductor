@@ -5,7 +5,6 @@ import {logger} from '@shared/services/logger.shared';
 import {parseEmailAddress} from '@shared/parsers/emails.parser';
 
 import type {EmailAddress} from '@shared/types/emails.types';
-import {makeSuccessResult, type Result} from '@shared/types/results.types';
 
 // TODO: Make region an environment variable.
 export const FIREBASE_FUNCTIONS_REGION = 'us-central1';

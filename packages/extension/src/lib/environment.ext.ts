@@ -30,7 +30,7 @@ function getEnvironmentVariables(): Result<ExtensionEnvironmentVariables, Error>
   return makeSuccessResult({
     mode: parsedEnvResult.data.MODE,
     conductorUrl: parsedEnvResult.data.VITE_CONDUCTOR_URL,
-    defaultPasswordlessEmailAddress: parsedEnvResult.data.VITE_DEFAULT_PASSWORDLESS_EMAIL_ADDRESS,
+    defaultPasswordlessEmailAddress: parsedEmailAddressResult.value,
     firebaseApiKey: parsedEnvResult.data.VITE_FIREBASE_API_KEY,
     firebaseAuthDomain: parsedEnvResult.data.VITE_FIREBASE_AUTH_DOMAIN,
     firebaseProjectId: parsedEnvResult.data.VITE_FIREBASE_PROJECT_ID,
