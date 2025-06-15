@@ -21,7 +21,7 @@ export const PWAExperimentsListener: React.FC = () => {
     const pwaExperimentsService = new ClientExperimentsService({
       environment: Environment.PWA,
       accountId: loggedInAccount.accountId,
-      isInternalAccount: loggedInAccount.email === env.defaultEmailAddress,
+      isInternalAccount: loggedInAccount.email === env.defaultPasswordlessEmailAddress,
       eventLogService,
       firebaseService,
     });

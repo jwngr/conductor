@@ -144,7 +144,7 @@ export const SignInScreen: React.FC = () => {
 
       {IS_DEVELOPMENT
         ? renderPasswordlessAuthButton({
-            maybeEmail: env.defaultEmailAddress,
+            maybeEmail: env.defaultPasswordlessEmailAddress,
             text: 'Send link to myself',
           })
         : null}

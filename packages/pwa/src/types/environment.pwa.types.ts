@@ -5,14 +5,14 @@ import type {EmailAddress} from '@shared/types/emails.types';
 type ViteEnvironmentMode = 'development' | 'production';
 
 export const PWAEnvironmentVariablesSchema = z.object({
-  // Default email address for passwordless sign in.
-  VITE_DEFAULT_PASSWORDLESS_EMAIL_ADDRESS: z.email(),
-
   // Built-in Vite variables.
   MODE: z.enum(['development', 'production']).default('development'),
 
   // Conductor URL.
   VITE_CONDUCTOR_URL: z.url(),
+
+  // Default email address for passwordless sign in.
+  VITE_DEFAULT_PASSWORDLESS_EMAIL_ADDRESS: z.email(),
 
   // Firebase config.
   VITE_FIREBASE_API_KEY: z.string().min(1),
@@ -29,8 +29,8 @@ export const PWAEnvironmentVariablesSchema = z.object({
 
 export interface PWAEnvironmentVariables {
   readonly mode: ViteEnvironmentMode;
-  readonly defaultEmailAddress: EmailAddress;
   readonly conductorUrl: string;
+  readonly defaultPasswordlessEmailAddress: EmailAddress;
   readonly firebaseApiKey: string;
   readonly firebaseAuthDomain: string;
   readonly firebaseProjectId: string;

@@ -29,8 +29,8 @@ function getEnvironmentVariables(): Result<PWAEnvironmentVariables, Error> {
 
   return makeSuccessResult({
     mode: parsedEnvResult.data.MODE,
-    defaultEmailAddress: parsedEmailAddressResult.value,
     conductorUrl: parsedEnvResult.data.VITE_CONDUCTOR_URL,
+    defaultPasswordlessEmailAddress: parsedEmailAddressResult.value,
     firebaseApiKey: parsedEnvResult.data.VITE_FIREBASE_API_KEY,
     firebaseAuthDomain: parsedEnvResult.data.VITE_FIREBASE_AUTH_DOMAIN,
     firebaseProjectId: parsedEnvResult.data.VITE_FIREBASE_PROJECT_ID,
