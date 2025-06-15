@@ -280,8 +280,9 @@ interface LoadedViewListState {
 const LoadedViewList: React.FC<{
   readonly viewType: ViewType;
   readonly feedItems: FeedItem[];
+  readonly showSidebar: boolean;
   readonly selectedFeedItemId: FeedItemId | null;
-}> = ({viewType, feedItems, selectedFeedItemId}) => {
+}> = ({viewType, feedItems, showSidebar, selectedFeedItemId}) => {
   const defaultViewConfig = Views.get(viewType);
 
   const [viewOptions, setViewOptions] = useState<LoadedViewListState>(() => {
@@ -338,7 +339,7 @@ const LoadedViewList: React.FC<{
     );
   }
 
-  const controlsSidebar = (
+  const controlsSidebar = showSidebar ? (
     <UntriagedViewControlsSidebar
       sortBy={viewOptions.sortBy}
       groupBy={viewOptions.groupBy}
@@ -355,7 +356,7 @@ const LoadedViewList: React.FC<{
         }))
       }
     />
-  );
+  ) : null;
 
   return (
     <>
@@ -407,6 +408,7 @@ export const ViewListIgnoringDelivery: React.FC<{
         <LoadedViewList
           viewType={viewType}
           feedItems={feedItemsState.value}
+          showSidebar={false}
           selectedFeedItemId={selectedFeedItemId}
         />
       );
@@ -442,6 +444,7 @@ export const ViewListRespectingDelivery: React.FC<{
         <LoadedViewList
           viewType={viewType}
           feedItems={feedItemsState.value}
+          showSidebar
           selectedFeedItemId={selectedFeedItemId}
         />
       );

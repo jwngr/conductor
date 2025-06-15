@@ -32,9 +32,7 @@ const ControlsSidebarGroupBySection: React.FC<{
   const firstGroupByOption: ViewGroupByOption | null = groupBy[0] ?? null;
 
   const handleGroupByChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
-    onGroupByChange(
-      event.target.value === 'none' ? [] : [{field: event.target.value as ViewGroupByField}]
-    );
+    onGroupByChange([{field: event.target.value as ViewGroupByField}]);
   };
 
   return (
