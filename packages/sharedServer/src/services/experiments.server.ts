@@ -24,11 +24,11 @@ type ServerAccountExperimentsCollectionService = ServerFirestoreCollectionServic
 
 export class ServerExperimentsService {
   private readonly collectionService: ServerAccountExperimentsCollectionService;
-  private readonly internalAccountEmails: EmailAddress[];
+  private readonly internalAccountEmails: readonly EmailAddress[];
 
   constructor(args: {
     readonly firebaseService: ServerFirebaseService;
-    readonly internalAccountEmails: EmailAddress[];
+    readonly internalAccountEmails: readonly EmailAddress[];
   }) {
     this.collectionService = makeServerFirestoreCollectionService({
       firebaseService: args.firebaseService,
