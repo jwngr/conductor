@@ -32,15 +32,15 @@ import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {H6, P} from '@src/components/atoms/Text';
 import * as styles from '@src/components/views/UntriagedViewControlsSidebar.css';
 
-const ControlsSidebarCategorySection = <T extends string>(args: {
+const ControlsSidebarFilterCriteriaSection = <T extends string>(args: {
   readonly title: string;
   readonly feedItems: readonly FeedItem[];
-  readonly activeCategories: Set<T>;
+  readonly activeCriteria: Set<T>;
   readonly reducer: (acc: Record<T, number>, item: FeedItem) => Record<T, number>;
-  readonly getCategoryName: (category: T) => string;
-  readonly onCategoryClick: (category: T) => void;
+  readonly getCriteriaName: (criteria: T) => string;
+  readonly onCriteriaClick: (criteria: T) => void;
 }): React.ReactElement => {
-  const {title, feedItems, activeCategories, reducer, getCategoryName, onCategoryClick} = args;
+  const {title, feedItems, activeCriteria, reducer, getCriteriaName, onCriteriaClick} = args;
 
   const itemCountByCategory = {} as Record<T, number>;
   arrayReduce(feedItems, reducer, itemCountByCategory);
@@ -58,8 +58,8 @@ const ControlsSidebarCategorySection = <T extends string>(args: {
     mainContent = (
       <FlexColumn gap={2}>
         {objectMapEntries(itemCountByCategory, (category, itemCount) => (
-          <FlexRow key={category} justify="between" onClick={() => onCategoryClick(category)}>
-            <P bold={activeCategories.has(category)}>{getCategoryName(category)}</P>
+          <FlexRow key={category} justify="between" onClick={() => onCriteriaClick(category)}>
+            <P bold={activeCriteria.has(category)}>{getCriteriaName(category)}</P>
             <H6 light>{itemCount}</H6>
           </FlexRow>
         ))}
@@ -83,21 +83,21 @@ const ControlsSidebarTagsSection: React.FC<{
   readonly onTagClick: Consumer<TagId>;
 }> = ({feedItems, tagIdsToFilterBy, onTagClick}) => {
   return (
-    <ControlsSidebarCategorySection<TagId>
+    <ControlsSidebarFilterCriteriaSection<TagId>
       title="Tags"
       feedItems={feedItems}
-      activeCategories={tagIdsToFilterBy}
+      activeCriteria={tagIdsToFilterBy}
       reducer={(acc, item) => {
         objectForEachEntry(item.tagIds, (tagId) => {
           acc[tagId] = (acc[tagId] ?? 0) + 1;
         });
         return acc;
       }}
-      getCategoryName={(tagId) => {
+      getCriteriaName={(tagId) => {
         // TODO: Get tag name from store.
         return tagId;
       }}
-      onCategoryClick={onTagClick}
+      onCriteriaClick={onTagClick}
     />
   );
 };
@@ -108,16 +108,16 @@ const ControlsSidebarFeedSourcesSection: React.FC<{
   readonly onFeedSourceClick: Consumer<FeedSourceType>;
 }> = ({feedItems, sourceTypesToFilterBy, onFeedSourceClick}) => {
   return (
-    <ControlsSidebarCategorySection<FeedSourceType>
+    <ControlsSidebarFilterCriteriaSection<FeedSourceType>
       title="Sources"
       feedItems={feedItems}
-      activeCategories={sourceTypesToFilterBy}
+      activeCriteria={sourceTypesToFilterBy}
       reducer={(acc, item) => {
         acc[item.feedSource.feedSourceType] = (acc[item.feedSource.feedSourceType] ?? 0) + 1;
         return acc;
       }}
-      getCategoryName={getNameForFeedSourceType}
-      onCategoryClick={onFeedSourceClick}
+      getCriteriaName={getNameForFeedSourceType}
+      onCriteriaClick={onFeedSourceClick}
     />
   );
 };
@@ -128,10 +128,10 @@ const ControlsSidebarFeedSubscriptionsSection: React.FC<{
   readonly onFeedSubscriptionClick: Consumer<UserFeedSubscriptionId>;
 }> = ({feedItems, subscriptionIdsToFilterBy, onFeedSubscriptionClick}) => {
   return (
-    <ControlsSidebarCategorySection<UserFeedSubscriptionId>
+    <ControlsSidebarFilterCriteriaSection<UserFeedSubscriptionId>
       title="Subscriptions"
       feedItems={feedItems}
-      activeCategories={subscriptionIdsToFilterBy}
+      activeCriteria={subscriptionIdsToFilterBy}
       reducer={(acc, item) => {
         const feedSubscriptionId = getFeedSubscriptionIdForFeedSource(item.feedSource);
         if (feedSubscriptionId) {
@@ -139,11 +139,11 @@ const ControlsSidebarFeedSubscriptionsSection: React.FC<{
         }
         return acc;
       }}
-      getCategoryName={(feedSubscriptionId) => {
+      getCriteriaName={(feedSubscriptionId) => {
         // TODO: Get feed subscription name from store.
         return feedSubscriptionId;
       }}
-      onCategoryClick={onFeedSubscriptionClick}
+      onCriteriaClick={onFeedSubscriptionClick}
     />
   );
 };
@@ -154,16 +154,16 @@ const ControlsSidebarContentTypesSection: React.FC<{
   readonly onContentTypeClick: Consumer<FeedItemContentType>;
 }> = ({feedItems, contentTypesToFilterBy, onContentTypeClick}) => {
   return (
-    <ControlsSidebarCategorySection<FeedItemContentType>
+    <ControlsSidebarFilterCriteriaSection<FeedItemContentType>
       title="Content types"
       feedItems={feedItems}
-      activeCategories={contentTypesToFilterBy}
+      activeCriteria={contentTypesToFilterBy}
       reducer={(acc, item) => {
         acc[item.feedItemContentType] = (acc[item.feedItemContentType] ?? 0) + 1;
         return acc;
       }}
-      getCategoryName={getFeedItemContentTypeText}
-      onCategoryClick={onContentTypeClick}
+      getCriteriaName={getFeedItemContentTypeText}
+      onCriteriaClick={onContentTypeClick}
     />
   );
 };

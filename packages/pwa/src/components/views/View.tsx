@@ -359,6 +359,31 @@ const LoadedViewList: React.FC<{
   const groupByField = viewOptions.groupBy.length === 0 ? null : viewOptions.groupBy[0].field;
   const groupedItems = useGroupedFeedItems(sortedItems, groupByField);
 
+  const handleFilterByCriteriaChange = <T,>(
+    criteria: T,
+    setKey: keyof Pick<
+      LoadedViewListState,
+      | 'sourceTypesToFilterBy'
+      | 'contentTypesToFilterBy'
+      | 'tagIdsToFilterBy'
+      | 'subscriptionIdsToFilterBy'
+    >
+  ): void => {
+    setViewOptions((prev) => {
+      const currentSet = prev[setKey] as Set<T>;
+      const newSet = new Set(currentSet);
+      if (newSet.has(criteria)) {
+        newSet.delete(criteria);
+      } else {
+        newSet.add(criteria);
+      }
+      return {
+        ...prev,
+        [setKey]: newSet,
+      };
+    });
+  };
+
   if (feedItems.length === 0) {
     // TODO: Introduce proper empty state.
     return <div>No items</div>;
@@ -423,60 +448,14 @@ const LoadedViewList: React.FC<{
         }))
       }
       onSourceTypeClick={(sourceType) =>
-        setViewOptions((prev) => {
-          const newSet = new Set(prev.sourceTypesToFilterBy);
-          if (newSet.has(sourceType)) {
-            newSet.delete(sourceType);
-          } else {
-            newSet.add(sourceType);
-          }
-          return {
-            ...prev,
-            sourceTypesToFilterBy: newSet,
-          };
-        })
+        handleFilterByCriteriaChange(sourceType, 'sourceTypesToFilterBy')
       }
       onContentTypeClick={(contentType) =>
-        setViewOptions((prev) => {
-          const newSet = new Set(prev.contentTypesToFilterBy);
-          if (newSet.has(contentType)) {
-            newSet.delete(contentType);
-          } else {
-            newSet.add(contentType);
-          }
-          return {
-            ...prev,
-            contentTypesToFilterBy: newSet,
-          };
-        })
+        handleFilterByCriteriaChange(contentType, 'contentTypesToFilterBy')
       }
-      onTagClick={(tagId) =>
-        setViewOptions((prev) => {
-          const newSet = new Set(prev.tagIdsToFilterBy);
-          if (newSet.has(tagId)) {
-            newSet.delete(tagId);
-          } else {
-            newSet.add(tagId);
-          }
-          return {
-            ...prev,
-            tagIdsToFilterBy: newSet,
-          };
-        })
-      }
+      onTagClick={(tagId) => handleFilterByCriteriaChange(tagId, 'tagIdsToFilterBy')}
       onSubscriptionClick={(subscriptionId) =>
-        setViewOptions((prev) => {
-          const newSet = new Set(prev.subscriptionIdsToFilterBy);
-          if (newSet.has(subscriptionId)) {
-            newSet.delete(subscriptionId);
-          } else {
-            newSet.add(subscriptionId);
-          }
-          return {
-            ...prev,
-            subscriptionIdsToFilterBy: newSet,
-          };
-        })
+        handleFilterByCriteriaChange(subscriptionId, 'subscriptionIdsToFilterBy')
       }
     />
   ) : null;
