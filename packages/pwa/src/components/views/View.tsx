@@ -5,12 +5,16 @@ import {logger} from '@shared/services/logger.shared';
 import {isDate} from '@shared/lib/datetime.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
-import {assertNever} from '@shared/lib/utils.shared';
+import {getFeedSubscriptionIdForFeedSource} from '@shared/lib/feedSources.shared';
+import {arrayFilter, arraySome, assertNever, objectKeys} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
 import {FeedItemContentType} from '@shared/types/feedItems.types';
 import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
+import type {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import type {TagId} from '@shared/types/tags.types';
+import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {Supplier} from '@shared/types/utils.types';
 import type {ViewGroupByOption, ViewSortByOption, ViewType} from '@shared/types/views.types';
 import {ViewGroupByField, ViewSortByField} from '@shared/types/views.types';
@@ -87,6 +91,51 @@ function compareFeedItems(args: {
   if (valA < valB) return -direction;
   if (valA > valB) return direction;
   return 0;
+}
+
+function useFilteredFeedItems(
+  feedItems: FeedItem[],
+  filterByOptions: {
+    readonly sourceTypesToFilterBy: Set<FeedSourceType>;
+    readonly contentTypesToFilterBy: Set<FeedItemContentType>;
+    readonly tagIdsToFilterBy: Set<TagId>;
+    readonly subscriptionIdsToFilterBy: Set<UserFeedSubscriptionId>;
+  }
+): FeedItem[] {
+  return useMemo(() => {
+    return arrayFilter(feedItems, (item) => {
+      const passesSourceTypeFilter =
+        filterByOptions.sourceTypesToFilterBy.size === 0 ||
+        filterByOptions.sourceTypesToFilterBy.has(item.feedSource.feedSourceType);
+
+      const passesContentTypeFilter =
+        filterByOptions.contentTypesToFilterBy.size === 0 ||
+        filterByOptions.contentTypesToFilterBy.has(item.feedItemContentType);
+
+      // Feed subscription filter.
+      const feedSubscriptionId = getFeedSubscriptionIdForFeedSource(item.feedSource);
+      const passesSubscriptionFilter =
+        filterByOptions.subscriptionIdsToFilterBy.size === 0 ||
+        (feedSubscriptionId
+          ? filterByOptions.subscriptionIdsToFilterBy.has(feedSubscriptionId)
+          : false);
+
+      // Tag filter.
+      const feedItemTagIds = objectKeys(item.tagIds);
+      const passesTagFilter =
+        filterByOptions.tagIdsToFilterBy.size === 0 ||
+        arraySome(feedItemTagIds, (tagId) => filterByOptions.tagIdsToFilterBy.has(tagId));
+
+      // Only include feed items that pass all filters. If no items are active for a filter, it is
+      // considered passed.
+      return (
+        passesSourceTypeFilter &&
+        passesContentTypeFilter &&
+        passesSubscriptionFilter &&
+        passesTagFilter
+      );
+    });
+  }, [feedItems, filterByOptions]);
 }
 
 /**
@@ -275,6 +324,10 @@ const ViewListItem: React.FC<{
 interface LoadedViewListState {
   readonly sortBy: ViewSortByOption[];
   readonly groupBy: ViewGroupByOption[];
+  readonly sourceTypesToFilterBy: Set<FeedSourceType>;
+  readonly contentTypesToFilterBy: Set<FeedItemContentType>;
+  readonly tagIdsToFilterBy: Set<TagId>;
+  readonly subscriptionIdsToFilterBy: Set<UserFeedSubscriptionId>;
 }
 
 const LoadedViewList: React.FC<{
@@ -290,12 +343,65 @@ const LoadedViewList: React.FC<{
     return {
       sortBy: [...defaultViewConfig.sortBy],
       groupBy: [...defaultViewConfig.groupBy],
+      sourceTypesToFilterBy: new Set<FeedSourceType>(),
+      contentTypesToFilterBy: new Set<FeedItemContentType>(),
+      tagIdsToFilterBy: new Set<TagId>(),
+      subscriptionIdsToFilterBy: new Set<UserFeedSubscriptionId>(),
     };
   });
 
-  const sortedItems = useSortedFeedItems(feedItems, viewOptions.sortBy);
+  const filteredItems = useFilteredFeedItems(feedItems, viewOptions);
+  const sortedItems = useSortedFeedItems(filteredItems, viewOptions.sortBy);
   const groupByField = viewOptions.groupBy.length === 0 ? null : viewOptions.groupBy[0].field;
   const groupedItems = useGroupedFeedItems(sortedItems, groupByField);
+
+  const handleFilterBySourceTypeChange = (criteria: FeedSourceType): void => {
+    setViewOptions((prev: LoadedViewListState) => {
+      const newSet = new Set(prev.sourceTypesToFilterBy);
+      if (newSet.has(criteria)) {
+        newSet.delete(criteria);
+      } else {
+        newSet.add(criteria);
+      }
+      return {...prev, sourceTypesToFilterBy: newSet};
+    });
+  };
+
+  const handleFilterByContentTypeChange = (criteria: FeedItemContentType): void => {
+    setViewOptions((prev: LoadedViewListState) => {
+      const newSet = new Set(prev.contentTypesToFilterBy);
+      if (newSet.has(criteria)) {
+        newSet.delete(criteria);
+      } else {
+        newSet.add(criteria);
+      }
+      return {...prev, contentTypesToFilterBy: newSet};
+    });
+  };
+
+  const handleFilterByTagChange = (criteria: TagId): void => {
+    setViewOptions((prev: LoadedViewListState) => {
+      const newSet = new Set(prev.tagIdsToFilterBy);
+      if (newSet.has(criteria)) {
+        newSet.delete(criteria);
+      } else {
+        newSet.add(criteria);
+      }
+      return {...prev, tagIdsToFilterBy: newSet};
+    });
+  };
+
+  const handleFilterBySubscriptionChange = (criteria: UserFeedSubscriptionId): void => {
+    setViewOptions((prev: LoadedViewListState) => {
+      const newSet = new Set(prev.subscriptionIdsToFilterBy);
+      if (newSet.has(criteria)) {
+        newSet.delete(criteria);
+      } else {
+        newSet.add(criteria);
+      }
+      return {...prev, subscriptionIdsToFilterBy: newSet};
+    });
+  };
 
   if (feedItems.length === 0) {
     // TODO: Introduce proper empty state.
@@ -341,20 +447,29 @@ const LoadedViewList: React.FC<{
 
   const controlsSidebar = showSidebar ? (
     <UntriagedViewControlsSidebar
+      feedItems={feedItems}
       sortBy={viewOptions.sortBy}
       groupBy={viewOptions.groupBy}
+      sourceTypesToFilterBy={viewOptions.sourceTypesToFilterBy}
+      contentTypesToFilterBy={viewOptions.contentTypesToFilterBy}
+      tagIdsToFilterBy={viewOptions.tagIdsToFilterBy}
+      subscriptionIdsToFilterBy={viewOptions.subscriptionIdsToFilterBy}
       onSortByChange={(newSortBy) =>
         setViewOptions((prev) => ({
           ...prev,
-          sortBy: typeof newSortBy === 'function' ? newSortBy(prev.sortBy) : newSortBy,
+          sortBy: [newSortBy],
         }))
       }
       onGroupByChange={(newGroupBy) =>
         setViewOptions((prev) => ({
           ...prev,
-          groupBy: typeof newGroupBy === 'function' ? newGroupBy(prev.groupBy) : newGroupBy,
+          groupBy: [{field: newGroupBy}],
         }))
       }
+      onSourceTypeClick={handleFilterBySourceTypeChange}
+      onContentTypeClick={handleFilterByContentTypeChange}
+      onTagClick={handleFilterByTagChange}
+      onSubscriptionClick={handleFilterBySubscriptionChange}
     />
   ) : null;
 

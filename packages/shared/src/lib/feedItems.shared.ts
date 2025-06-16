@@ -266,3 +266,24 @@ export function makeNewFeedItemImportState(): NewFeedItemImportState {
     lastSuccessfulImportTime: null,
   };
 }
+
+export function getFeedItemContentTypeText(feedItemContentType: FeedItemContentType): string {
+  switch (feedItemContentType) {
+    case FeedItemContentType.Article:
+      return 'Article';
+    case FeedItemContentType.Video:
+      return 'Video';
+    case FeedItemContentType.Website:
+      return 'Website';
+    case FeedItemContentType.Tweet:
+      return 'Tweet';
+    case FeedItemContentType.YouTube:
+      return 'YouTube';
+    case FeedItemContentType.Xkcd:
+      return 'XKCD';
+    case FeedItemContentType.Interval:
+      return 'Interval';
+    default:
+      assertNever(feedItemContentType);
+  }
+}

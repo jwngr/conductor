@@ -1,7 +1,7 @@
 import {ALL_EXPERIMENT_DEFINITIONS} from '@shared/lib/experimentDefinitions.shared';
 import {parseStorageTimestamp} from '@shared/lib/parser.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
-import {assertNever, mapObjectValues} from '@shared/lib/utils.shared';
+import {assertNever, objectMapValues} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 
@@ -95,7 +95,7 @@ export function fromStorageExperimentDefinition(
 export function toStorageAccountExperimentsState(
   accountExperimentsState: AccountExperimentsState
 ): AccountExperimentsStateFromStorage {
-  const experimentOverridesFromStorage = mapObjectValues(
+  const experimentOverridesFromStorage = objectMapValues(
     accountExperimentsState.experimentOverrides,
     toStorageExperimentOverride
   );
@@ -152,7 +152,7 @@ export function fromStorageAccountExperimentsState(
   const parsedAccountId = parseAccountId(accountExperimentsStateFromStorage.accountId);
   if (!parsedAccountId.success) return parsedAccountId;
 
-  const experimentOverrides = mapObjectValues(
+  const experimentOverrides = objectMapValues(
     accountExperimentsStateFromStorage.experimentOverrides,
     fromStorageExperimentOverride,
     (key) => key in ALL_EXPERIMENT_DEFINITIONS
