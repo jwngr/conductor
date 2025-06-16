@@ -11,6 +11,9 @@ import {Views} from '@shared/lib/views.shared';
 import {AsyncStatus} from '@shared/types/asyncState.types';
 import {FeedItemContentType} from '@shared/types/feedItems.types';
 import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
+import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import {TagId} from '@shared/types/tags.types';
+import {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {Supplier} from '@shared/types/utils.types';
 import type {ViewGroupByOption, ViewSortByOption, ViewType} from '@shared/types/views.types';
 import {ViewGroupByField, ViewSortByField} from '@shared/types/views.types';
@@ -275,6 +278,10 @@ const ViewListItem: React.FC<{
 interface LoadedViewListState {
   readonly sortBy: ViewSortByOption[];
   readonly groupBy: ViewGroupByOption[];
+  readonly sourceTypesToFilterBy: Set<FeedSourceType>;
+  readonly contentTypesToFilterBy: Set<FeedItemContentType>;
+  readonly tagIdsToFilterBy: Set<TagId>;
+  readonly subscriptionIdsToFilterBy: Set<UserFeedSubscriptionId>;
 }
 
 const LoadedViewList: React.FC<{
@@ -290,6 +297,10 @@ const LoadedViewList: React.FC<{
     return {
       sortBy: [...defaultViewConfig.sortBy],
       groupBy: [...defaultViewConfig.groupBy],
+      sourceTypesToFilterBy: new Set(),
+      contentTypesToFilterBy: new Set(),
+      tagIdsToFilterBy: new Set(),
+      subscriptionIdsToFilterBy: new Set(),
     };
   });
 
@@ -341,8 +352,13 @@ const LoadedViewList: React.FC<{
 
   const controlsSidebar = showSidebar ? (
     <UntriagedViewControlsSidebar
+      feedItems={feedItems}
       sortBy={viewOptions.sortBy}
       groupBy={viewOptions.groupBy}
+      sourceTypesToFilterBy={viewOptions.sourceTypesToFilterBy}
+      contentTypesToFilterBy={viewOptions.contentTypesToFilterBy}
+      tagIdsToFilterBy={viewOptions.tagIdsToFilterBy}
+      subscriptionIdsToFilterBy={viewOptions.subscriptionIdsToFilterBy}
       onSortByChange={(newSortBy) =>
         setViewOptions((prev) => ({
           ...prev,
@@ -353,6 +369,30 @@ const LoadedViewList: React.FC<{
         setViewOptions((prev) => ({
           ...prev,
           groupBy: typeof newGroupBy === 'function' ? newGroupBy(prev.groupBy) : newGroupBy,
+        }))
+      }
+      onSourceTypesToFilterByChange={(newSourceTypesToFilterBy) =>
+        setViewOptions((prev) => ({
+          ...prev,
+          sourceTypesToFilterBy: newSourceTypesToFilterBy,
+        }))
+      }
+      onContentTypesToFilterByChange={(newContentTypesToFilterBy) =>
+        setViewOptions((prev) => ({
+          ...prev,
+          contentTypesToFilterBy: newContentTypesToFilterBy,
+        }))
+      }
+      onTagIdsToFilterByChange={(newTagIdsToFilterBy) =>
+        setViewOptions((prev) => ({
+          ...prev,
+          tagIdsToFilterBy: newTagIdsToFilterBy,
+        }))
+      }
+      onSubscriptionIdsToFilterByChange={(newSubscriptionIdsToFilterBy) =>
+        setViewOptions((prev) => ({
+          ...prev,
+          subscriptionIdsToFilterBy: newSubscriptionIdsToFilterBy,
         }))
       }
     />

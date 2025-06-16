@@ -226,14 +226,21 @@ export function isPositiveInteger(value: number): boolean {
 }
 
 /**
- * Returns a new typed array with the same length, but each value having been filtered by `filter`.
+ * Typed helper for iterating over an array and calling `callback` for each value.
+ */
+export function forEachArray<T>(arr: T[], callback: Func<T, void>): void {
+  arr.forEach(callback);
+}
+
+/**
+ * Typed helper for filtering an array to only include values that pass the `filter` predicate.
  */
 export function filterArray<T>(arr: T[], filter: Func<T, boolean>): T[] {
   return arr.filter(filter);
 }
 
 /**
- * Returns a new typed array with the same length, but each value having been transformed by
+ * Typed helper for mapping over an array and returning a new array of values transformed by
  * `mapper`.
  */
 export function mapArray<Start, End>(arr: Start[], mapper: Func<Start, End>): End[] {
@@ -241,17 +248,85 @@ export function mapArray<Start, End>(arr: Start[], mapper: Func<Start, End>): En
 }
 
 /**
- * Returns a new typed object with the same keys, but each value having been transformed by
+ * Typed helper for reducing an array to a single value.
+ */
+export function reduceArray<Start, Accumulator>(
+  arr: readonly Start[],
+  reducer: (
+    accumulator: Accumulator,
+    currentValue: Start,
+    currentIndex: number,
+    array: readonly Start[]
+  ) => Accumulator,
+  initialValue: Accumulator
+): Accumulator {
+  return (arr as Start[]).reduce(reducer, initialValue);
+}
+
+type ObjectKey = string | number | symbol;
+
+/**
+ * Typed helper for iterating over object entries and calling `callback` for each key-value pair.
+ */
+export function forEachObjectEntries<Key extends ObjectKey, Value>(
+  obj: Partial<Record<Key, Value>>,
+  callback: (key: Key, value: Value) => void
+): void {
+  (Object.entries(obj) as Array<[Key, Value]>).forEach(([key, value]) => callback(key, value));
+}
+
+/**
+ * Typed helper for iterating over object values and calling `callback` for each value.
+ */
+export function forEachObjectValues<Key extends ObjectKey, Value>(
+  obj: Record<Key, Value>,
+  callback: (value: Value) => void
+): void {
+  (Object.values(obj) as Value[]).forEach(callback);
+}
+
+/**
+ * Typed helper for mapping over object entries and returning an array of values transformed by
  * `mapper`.
  */
-export function mapObjectValues<Key extends string, Start, End>(
-  obj: Partial<Record<Key, Start>>,
-  mapper: Func<Start, End>,
+export function mapEntries<Key extends ObjectKey, Value, Result>(
+  obj: Record<Key, Value>,
+  mapper: (key: Key, value: Value) => Result
+): Result[] {
+  return (Object.entries(obj) as Array<[Key, Value]>).map(([key, value]) => mapper(key, value));
+}
+
+/**
+ * Typed helper for mapping over object values and returning a new object with the same keys, but
+ * each value having been transformed by `mapper`.
+ */
+export function mapObjectValues<Key extends ObjectKey, StartValue, EndValue>(
+  obj: Record<Key, StartValue>,
+  mapper: Func<StartValue, EndValue>,
   filter?: Func<Key, boolean>
-): Record<Key, End> {
-  const entries = Object.entries(obj).map(([key, value]) => [key as Key, mapper(value as Start)]);
+): Record<Key, EndValue> {
+  const entries = Object.entries(obj).map(([key, value]) => [
+    key as Key,
+    mapper(value as StartValue),
+  ]);
   const filteredEntries = filter ? filterArray(entries, ([key]) => filter(key as Key)) : entries;
   return Object.fromEntries(filteredEntries);
+}
+
+/**
+ * Typed helper for reducing all values in an object into a single value.
+ */
+export function reduceObjectValues<Key extends ObjectKey, StartValue, Accumulator>(
+  obj: Record<Key, StartValue>,
+  reducer: (
+    accumulator: Accumulator,
+    currentValue: StartValue,
+    currentIndex: number,
+    array: readonly Start[]
+  ) => Accumulator,
+  initialValue: Accumulator
+): Accumulator {
+  return (Object.values(obj) as StartValue[]).reduce(reducer, initialValue);
 }
 
 export function isDefined<T>(val: T | undefined): val is T {
