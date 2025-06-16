@@ -347,10 +347,10 @@ const LoadedViewList: React.FC<{
     return {
       sortBy: [...defaultViewConfig.sortBy],
       groupBy: [...defaultViewConfig.groupBy],
-      sourceTypesToFilterBy: new Set(),
-      contentTypesToFilterBy: new Set(),
-      tagIdsToFilterBy: new Set(),
-      subscriptionIdsToFilterBy: new Set(),
+      sourceTypesToFilterBy: new Set<FeedSourceType>(),
+      contentTypesToFilterBy: new Set<FeedItemContentType>(),
+      tagIdsToFilterBy: new Set<TagId>(),
+      subscriptionIdsToFilterBy: new Set<UserFeedSubscriptionId>(),
     };
   });
 
@@ -359,28 +359,51 @@ const LoadedViewList: React.FC<{
   const groupByField = viewOptions.groupBy.length === 0 ? null : viewOptions.groupBy[0].field;
   const groupedItems = useGroupedFeedItems(sortedItems, groupByField);
 
-  const handleFilterByCriteriaChange = <T,>(
-    criteria: T,
-    setKey: keyof Pick<
-      LoadedViewListState,
-      | 'sourceTypesToFilterBy'
-      | 'contentTypesToFilterBy'
-      | 'tagIdsToFilterBy'
-      | 'subscriptionIdsToFilterBy'
-    >
-  ): void => {
-    setViewOptions((prev) => {
-      const currentSet = prev[setKey] as Set<T>;
-      const newSet = new Set(currentSet);
+  const handleFilterBySourceTypeChange = (criteria: FeedSourceType): void => {
+    setViewOptions((prev: LoadedViewListState) => {
+      const newSet = new Set(prev.sourceTypesToFilterBy);
       if (newSet.has(criteria)) {
         newSet.delete(criteria);
       } else {
         newSet.add(criteria);
       }
-      return {
-        ...prev,
-        [setKey]: newSet,
-      };
+      return {...prev, sourceTypesToFilterBy: newSet};
+    });
+  };
+
+  const handleFilterByContentTypeChange = (criteria: FeedItemContentType): void => {
+    setViewOptions((prev: LoadedViewListState) => {
+      const newSet = new Set(prev.contentTypesToFilterBy);
+      if (newSet.has(criteria)) {
+        newSet.delete(criteria);
+      } else {
+        newSet.add(criteria);
+      }
+      return {...prev, contentTypesToFilterBy: newSet};
+    });
+  };
+
+  const handleFilterByTagChange = (criteria: TagId): void => {
+    setViewOptions((prev: LoadedViewListState) => {
+      const newSet = new Set(prev.tagIdsToFilterBy);
+      if (newSet.has(criteria)) {
+        newSet.delete(criteria);
+      } else {
+        newSet.add(criteria);
+      }
+      return {...prev, tagIdsToFilterBy: newSet};
+    });
+  };
+
+  const handleFilterBySubscriptionChange = (criteria: UserFeedSubscriptionId): void => {
+    setViewOptions((prev: LoadedViewListState) => {
+      const newSet = new Set(prev.subscriptionIdsToFilterBy);
+      if (newSet.has(criteria)) {
+        newSet.delete(criteria);
+      } else {
+        newSet.add(criteria);
+      }
+      return {...prev, subscriptionIdsToFilterBy: newSet};
     });
   };
 
@@ -447,16 +470,10 @@ const LoadedViewList: React.FC<{
           groupBy: [{field: newGroupBy}],
         }))
       }
-      onSourceTypeClick={(sourceType) =>
-        handleFilterByCriteriaChange(sourceType, 'sourceTypesToFilterBy')
-      }
-      onContentTypeClick={(contentType) =>
-        handleFilterByCriteriaChange(contentType, 'contentTypesToFilterBy')
-      }
-      onTagClick={(tagId) => handleFilterByCriteriaChange(tagId, 'tagIdsToFilterBy')}
-      onSubscriptionClick={(subscriptionId) =>
-        handleFilterByCriteriaChange(subscriptionId, 'subscriptionIdsToFilterBy')
-      }
+      onSourceTypeClick={handleFilterBySourceTypeChange}
+      onContentTypeClick={handleFilterByContentTypeChange}
+      onTagClick={handleFilterByTagChange}
+      onSubscriptionClick={handleFilterBySubscriptionChange}
     />
   ) : null;
 
