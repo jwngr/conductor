@@ -103,41 +103,37 @@ function useFilteredFeedItems(
   }
 ): FeedItem[] {
   return useMemo(() => {
-    const activeFilterCount =
-      filterByOptions.sourceTypesToFilterBy.size +
-      filterByOptions.contentTypesToFilterBy.size +
-      filterByOptions.tagIdsToFilterBy.size +
-      filterByOptions.subscriptionIdsToFilterBy.size;
-
-    if (activeFilterCount === 0) {
-      // No filters are active, so return the original list of feed items.
-      return feedItems;
-    }
-
-    // At least one filter is active, so only include the feed items that pass at least one filter.
     return arrayFilter(feedItems, (item) => {
-      // Feed source type filter.
-      if (filterByOptions.sourceTypesToFilterBy.has(item.feedSource.feedSourceType)) {
-        return true;
-      }
+      const passesSourceTypeFilter =
+        filterByOptions.sourceTypesToFilterBy.size === 0 ||
+        filterByOptions.sourceTypesToFilterBy.has(item.feedSource.feedSourceType);
 
-      // Feed item content type filter.
-      if (filterByOptions.contentTypesToFilterBy.has(item.feedItemContentType)) {
-        return true;
-      }
+      const passesContentTypeFilter =
+        filterByOptions.contentTypesToFilterBy.size === 0 ||
+        filterByOptions.contentTypesToFilterBy.has(item.feedItemContentType);
 
       // Feed subscription filter.
       const feedSubscriptionId = getFeedSubscriptionIdForFeedSource(item.feedSource);
-      if (feedSubscriptionId && filterByOptions.subscriptionIdsToFilterBy.has(feedSubscriptionId)) {
-        return true;
-      }
+      const passesSubscriptionFilter =
+        filterByOptions.subscriptionIdsToFilterBy.size === 0 ||
+        (feedSubscriptionId
+          ? filterByOptions.subscriptionIdsToFilterBy.has(feedSubscriptionId)
+          : false);
 
       // Tag filter.
       const feedItemTagIds = objectKeys(item.tagIds);
-      const hasFilteredTag = arraySome(feedItemTagIds, (tagId) =>
-        filterByOptions.tagIdsToFilterBy.has(tagId)
+      const passesTagFilter =
+        filterByOptions.tagIdsToFilterBy.size === 0 ||
+        arraySome(feedItemTagIds, (tagId) => filterByOptions.tagIdsToFilterBy.has(tagId));
+
+      // Only include feed items that pass all filters. If no items are active for a filter, it is
+      // considered passed.
+      return (
+        passesSourceTypeFilter &&
+        passesContentTypeFilter &&
+        passesSubscriptionFilter &&
+        passesTagFilter
       );
-      return hasFilteredTag;
     });
   }, [feedItems, filterByOptions]);
 }
