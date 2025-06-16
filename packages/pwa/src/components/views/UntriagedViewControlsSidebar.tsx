@@ -6,10 +6,10 @@ import {
   getNameForFeedSourceType,
 } from '@shared/lib/feedSources.shared';
 import {
-  forEachObjectEntries,
-  mapEntries,
-  reduceArray,
-  reduceObjectValues,
+  arrayReduce,
+  objectForEachEntry,
+  objectMapEntries,
+  objectReduceValues,
 } from '@shared/lib/utils.shared';
 import {
   getViewGroupByFieldText,
@@ -43,9 +43,9 @@ const ControlsSidebarCategorySection = <T extends string>(args: {
   const {title, feedItems, activeCategories, reducer, getCategoryName, onCategoryClick} = args;
 
   const itemCountByCategory = {} as Record<T, number>;
-  reduceArray(feedItems, reducer, itemCountByCategory);
+  arrayReduce(feedItems, reducer, itemCountByCategory);
 
-  const totalItemCount = reduceObjectValues(
+  const totalItemCount = objectReduceValues(
     itemCountByCategory,
     (acc, itemCount) => acc + itemCount,
     0
@@ -57,7 +57,7 @@ const ControlsSidebarCategorySection = <T extends string>(args: {
   } else {
     mainContent = (
       <FlexColumn gap={2}>
-        {mapEntries(itemCountByCategory, (category, itemCount) => (
+        {objectMapEntries(itemCountByCategory, (category, itemCount) => (
           <FlexRow key={category} justify="between" onClick={() => onCategoryClick(category)}>
             <P bold={activeCategories.has(category)}>{getCategoryName(category)}</P>
             <H6 light>{itemCount}</H6>
@@ -88,7 +88,7 @@ const ControlsSidebarTagsSection: React.FC<{
       feedItems={feedItems}
       activeCategories={tagIdsToFilterBy}
       reducer={(acc, item) => {
-        forEachObjectEntries(item.tagIds, (tagId) => {
+        objectForEachEntry(item.tagIds, (tagId) => {
           acc[tagId] = (acc[tagId] ?? 0) + 1;
         });
         return acc;
@@ -170,7 +170,7 @@ const ControlsSidebarContentTypesSection: React.FC<{
 
 const ControlsSidebarGroupBySection: React.FC<{
   readonly groupBy: readonly ViewGroupByOption[];
-  readonly onGroupByChange: React.Dispatch<React.SetStateAction<ViewGroupByOption[]>>;
+  readonly onGroupByChange: Consumer<ViewGroupByField>;
 }> = ({groupBy, onGroupByChange}) => {
   const groupByFields = [
     ViewGroupByField.CreatedTime,
@@ -184,7 +184,7 @@ const ControlsSidebarGroupBySection: React.FC<{
   const firstGroupByOption: ViewGroupByOption | null = groupBy[0] ?? null;
 
   const handleGroupByChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
-    onGroupByChange([{field: event.target.value as ViewGroupByField}]);
+    onGroupByChange(event.target.value as ViewGroupByField);
   };
 
   return (
@@ -210,7 +210,7 @@ const ControlsSidebarGroupBySection: React.FC<{
 
 const ControlsSidebarSortBySection: React.FC<{
   readonly sortBy: readonly ViewSortByOption[];
-  readonly onSortByChange: React.Dispatch<React.SetStateAction<ViewSortByOption[]>>;
+  readonly onSortByChange: Consumer<ViewSortByOption>;
 }> = ({sortBy, onSortByChange}) => {
   const sortByOptions = [
     ViewSortByField.CreatedTime,
@@ -221,24 +221,17 @@ const ControlsSidebarSortBySection: React.FC<{
   const firstSortByOption = sortBy[0] ?? SORT_BY_CREATED_TIME_DESC_OPTION;
 
   const handleSortFieldChange = (event: React.ChangeEvent<HTMLSelectElement>): void => {
-    onSortByChange([
-      {
-        field: event.target.value as ViewSortByField,
-        direction: firstSortByOption.direction,
-      },
-    ]);
+    onSortByChange({
+      field: event.target.value as ViewSortByField,
+      direction: firstSortByOption.direction,
+    });
   };
 
   const handleSortDirectionToggle = (): void => {
-    onSortByChange((prevOptions) => {
-      const currentSortOption = prevOptions[0] ?? SORT_BY_CREATED_TIME_DESC_OPTION;
-      const newDirection = currentSortOption.direction === 'asc' ? 'desc' : 'asc';
-      return [
-        {
-          field: currentSortOption.field,
-          direction: newDirection,
-        },
-      ];
+    const newDirection = firstSortByOption.direction === 'asc' ? 'desc' : 'asc';
+    onSortByChange({
+      field: firstSortByOption.field,
+      direction: newDirection,
     });
   };
 
@@ -253,11 +246,9 @@ const ControlsSidebarSortBySection: React.FC<{
         Sort by
       </H6>
       <FlexRow gap={2}>
-        {/* TODO: Use `DropdownMenu` atomic component. */}
         <select
           value={firstSortByOption.field}
           onChange={handleSortFieldChange}
-          // TODO: Migrate to vanilla-extract.
           className="border-neutral-2 rounded border p-1 text-sm"
         >
           {sortByOptions.map((field) => (
@@ -286,16 +277,12 @@ export const UntriagedViewControlsSidebar: React.FC<{
   readonly contentTypesToFilterBy: Set<FeedItemContentType>;
   readonly tagIdsToFilterBy: Set<TagId>;
   readonly subscriptionIdsToFilterBy: Set<UserFeedSubscriptionId>;
-  readonly onSortByChange: React.Dispatch<React.SetStateAction<ViewSortByOption[]>>;
-  readonly onGroupByChange: React.Dispatch<React.SetStateAction<ViewGroupByOption[]>>;
-  readonly onSourceTypesToFilterByChange: React.Dispatch<React.SetStateAction<Set<FeedSourceType>>>;
-  readonly onContentTypesToFilterByChange: React.Dispatch<
-    React.SetStateAction<Set<FeedItemContentType>>
-  >;
-  readonly onTagIdsToFilterByChange: React.Dispatch<React.SetStateAction<Set<TagId>>>;
-  readonly onSubscriptionIdsToFilterByChange: React.Dispatch<
-    React.SetStateAction<Set<UserFeedSubscriptionId>>
-  >;
+  readonly onSortByChange: Consumer<ViewSortByOption>;
+  readonly onGroupByChange: Consumer<ViewGroupByField>;
+  readonly onSourceTypeClick: Consumer<FeedSourceType>;
+  readonly onContentTypeClick: Consumer<FeedItemContentType>;
+  readonly onTagClick: Consumer<TagId>;
+  readonly onSubscriptionClick: Consumer<UserFeedSubscriptionId>;
 }> = ({
   feedItems,
   sortBy,
@@ -306,38 +293,32 @@ export const UntriagedViewControlsSidebar: React.FC<{
   subscriptionIdsToFilterBy,
   onSortByChange,
   onGroupByChange,
-  onSourceTypesToFilterByChange,
-  onContentTypesToFilterByChange,
-  onTagIdsToFilterByChange,
-  onSubscriptionIdsToFilterByChange,
+  onSourceTypeClick,
+  onContentTypeClick,
+  onTagClick,
+  onSubscriptionClick,
 }) => {
   return (
     <FlexColumn overflow="auto" gap={4} padding={2} className={styles.controlsSidebarWrapper}>
       <ControlsSidebarTagsSection
         feedItems={feedItems}
         tagIdsToFilterBy={tagIdsToFilterBy}
-        onTagClick={(tagId) => onTagIdsToFilterByChange((prev) => ({...prev, [tagId]: true}))}
+        onTagClick={onTagClick}
       />
       <ControlsSidebarFeedSubscriptionsSection
         feedItems={feedItems}
         subscriptionIdsToFilterBy={subscriptionIdsToFilterBy}
-        onFeedSubscriptionClick={(feedSubscriptionId) =>
-          onSubscriptionIdsToFilterByChange((prev) => ({...prev, [feedSubscriptionId]: true}))
-        }
+        onFeedSubscriptionClick={onSubscriptionClick}
       />
       <ControlsSidebarFeedSourcesSection
         feedItems={feedItems}
         sourceTypesToFilterBy={sourceTypesToFilterBy}
-        onFeedSourceClick={(feedSourceType) =>
-          onSourceTypesToFilterByChange((prev) => ({...prev, [feedSourceType]: true}))
-        }
+        onFeedSourceClick={onSourceTypeClick}
       />
       <ControlsSidebarContentTypesSection
         feedItems={feedItems}
         contentTypesToFilterBy={contentTypesToFilterBy}
-        onContentTypeClick={(feedItemContentType) =>
-          onContentTypesToFilterByChange((prev) => ({...prev, [feedItemContentType]: true}))
-        }
+        onContentTypeClick={onContentTypeClick}
       />
       <ControlsSidebarGroupBySection groupBy={groupBy} onGroupByChange={onGroupByChange} />
       <ControlsSidebarSortBySection sortBy={sortBy} onSortByChange={onSortByChange} />
