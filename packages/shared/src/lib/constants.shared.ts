@@ -26,6 +26,9 @@ export const MILLIS_PER_HOUR = 1000 * 60 * 60;
 export const EMPTY_ARRAY = [] as const;
 export const EMPTY_OBJECT = Object.freeze({});
 
+// Local cache limits.
+export const USER_FEED_SUBSCRIPTIONS_CACHE_LIMIT = 100;
+
 // Miscellaneous.
 export const DEFAULT_FEED_TITLE = '(no title)';
 export const PERSONAL_YOUTUBE_CHANNEL_ID = 'UCndkjnoQawp7Tjy1uNj53yQ' as YouTubeChannelId;
