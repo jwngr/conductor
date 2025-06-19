@@ -1,9 +1,10 @@
 import dotenv from 'dotenv';
-import {prettifyError} from 'zod/v4';
 
 import {logger} from '@shared/services/logger.shared';
 
-import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
+import {parseZodResult} from '@shared/lib/parser.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 import {isValidPort} from '@shared/lib/utils.shared';
 
 import type {Result} from '@shared/types/results.types';
@@ -14,15 +15,16 @@ import {RssServerEnvironmentVariablesSchema} from '@src/types/environment.rss.ty
 dotenv.config();
 
 function getEnvironmentVariables(): Result<RssServerEnvironmentVariables, Error> {
-  const parsedEnvResult = RssServerEnvironmentVariablesSchema.safeParse({
+  const parsedEnvResult = parseZodResult(RssServerEnvironmentVariablesSchema, {
     LOCAL_RSS_FEED_PROVIDER_PORT: Number(process.env.LOCAL_RSS_FEED_PROVIDER_PORT),
   });
   if (!parsedEnvResult.success) {
-    const zodErrorMessage = prettifyError(parsedEnvResult.error);
-    return makeErrorResult(new Error(`Failed to parse environment variables: ${zodErrorMessage}`));
+    return prefixErrorResult(parsedEnvResult, 'Failed to parse environment variables');
   }
+  const env = parsedEnvResult.value;
+
   return makeSuccessResult({
-    port: parsedEnvResult.data.LOCAL_RSS_FEED_PROVIDER_PORT,
+    port: env.LOCAL_RSS_FEED_PROVIDER_PORT,
   });
 }
 
