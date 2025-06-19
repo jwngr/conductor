@@ -39,12 +39,17 @@ export class ServerFirebaseService {
       throw error;
     }
 
+    admin.initializeApp();
+
     // Enable telemetry, ignoring errors.
     void enableTelemetry();
 
+    // Create references to Firebase services.
     this.authInstance = admin.auth();
     this.storageInstance = admin.storage();
     this.firestoreInstance = admin.firestore();
+
+    // Firestore settings.
     this.firestoreInstance.settings({ignoreUndefinedProperties: true});
 
     // To run against the Firebase emulators, set the following environment variables:
