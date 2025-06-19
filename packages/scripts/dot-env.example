@@ -1,0 +1,7 @@
+# Firecrawl.
+FIRECRAWL_API_KEY=
+
+# Firebase user ID.
+FIREBASE_USER_ID=
+
+# See other environment variables in packages/functions/dot-env.example

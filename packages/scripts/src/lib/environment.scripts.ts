@@ -16,6 +16,7 @@ function getEnvironmentVariables(): Result<ScriptsEnvironmentVariables, Error> {
   const parsedEnvResult = ScriptsEnvironmentVariablesSchema.safeParse({
     FIREBASE_USER_ID: process.env.FIREBASE_USER_ID,
     FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY,
+    INTERNAL_ACCOUNT_EMAIL_ADDRESS: process.env.INTERNAL_ACCOUNT_EMAIL_ADDRESS,
   });
   if (!parsedEnvResult.success) {
     const zodErrorMessage = prettifyError(parsedEnvResult.error);
@@ -24,6 +25,7 @@ function getEnvironmentVariables(): Result<ScriptsEnvironmentVariables, Error> {
   return makeSuccessResult({
     firebaseUserId: parsedEnvResult.data.FIREBASE_USER_ID,
     firecrawlApiKey: parsedEnvResult.data.FIRECRAWL_API_KEY,
+    internalAccountEmailAddress: parsedEnvResult.data.INTERNAL_ACCOUNT_EMAIL_ADDRESS,
   });
 }
 

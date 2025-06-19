@@ -143,4 +143,17 @@ export class ServerUserFeedSubscriptionsService {
     const docIdsToDelete = queryResult.value;
     return await this.collectionService.batchDeleteDocs(docIdsToDelete);
   }
+
+  /**
+   * Creates a new user feed subscription in Firestore.
+   */
+  public async createSubscription(
+    userFeedSubscription: UserFeedSubscription
+  ): AsyncResult<void, Error> {
+    const createResult = await this.collectionService.setDoc(
+      userFeedSubscription.userFeedSubscriptionId,
+      userFeedSubscription
+    );
+    return prefixResultIfError(createResult, 'Error creating user feed subscription in Firestore');
+  }
 }

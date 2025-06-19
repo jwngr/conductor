@@ -1,5 +1,6 @@
 import {enableFirebaseTelemetry} from '@genkit-ai/firebase';
 import admin from 'firebase-admin';
+import type {Auth} from 'firebase-admin/auth';
 import {FieldValue} from 'firebase-admin/firestore';
 import type {Firestore} from 'firebase-admin/firestore';
 import type {Storage} from 'firebase-admin/storage';
@@ -24,6 +25,7 @@ async function enableTelemetry(): AsyncResult<void, Error> {
 }
 
 export class ServerFirebaseService {
+  private authInstance: Auth;
   private storageInstance: Storage;
   private firestoreInstance: Firestore;
 
@@ -42,10 +44,17 @@ export class ServerFirebaseService {
     // Enable telemetry, ignoring errors.
     void enableTelemetry();
 
+    this.authInstance = admin.auth();
     this.storageInstance = admin.storage();
-
     this.firestoreInstance = admin.firestore();
     this.firestoreInstance.settings({ignoreUndefinedProperties: true});
+
+    // To run against the Firestore emulator, set the `FIRESTORE_EMULATOR_HOST` environment variable
+    // to `127.0.0.1:8080` in `.env`.
+  }
+
+  public get auth(): Auth {
+    return this.authInstance;
   }
 
   public get storage(): Storage {
