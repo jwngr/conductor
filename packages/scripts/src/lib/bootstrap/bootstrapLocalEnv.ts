@@ -141,10 +141,11 @@ function getEmail(): EmailAddress {
   if (emailFromFlags) {
     email = emailFromFlags;
   } else {
-    const envEmail = env.internalAccountEmailAddress;
-    if (envEmail) {
-      logger.log('[BOOTSTRAP] Using default email from environment', {email: envEmail});
-      email = envEmail;
+    const emailFromEnv = env.localEmailAddress;
+    if (emailFromEnv) {
+      const message = `No email provided, using LOCAL_EMAIL_ADDRESS environment variable: ${emailFromEnv}`;
+      logger.log(message);
+      email = emailFromEnv;
     }
   }
 
