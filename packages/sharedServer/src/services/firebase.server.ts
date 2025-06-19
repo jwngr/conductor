@@ -39,7 +39,14 @@ export class ServerFirebaseService {
       throw error;
     }
 
-    admin.initializeApp();
+    try {
+      logger.log('Initializing Firebase admin...');
+      admin.initializeApp();
+      logger.log('Successfully initialized Firebase admin');
+    } catch (error) {
+      logger.error('Failed to initialize Firebase admin', {error});
+      throw error;
+    }
 
     // Enable telemetry, ignoring errors.
     void enableTelemetry();

@@ -1,19 +1,16 @@
 import {logger} from '@shared/services/logger.shared';
 
-import {IMMEDIATE_DELIVERY_SCHEDULE} from '@shared/lib/deliverySchedules.shared';
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {makeRssFeedSource} from '@shared/lib/feedSources.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
+import {
+  makeIntervalUserFeedSubscription,
+  makeRssUserFeedSubscription,
+} from '@shared/lib/userFeedSubscriptions.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {FeedItem} from '@shared/types/feedItems.types';
-import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import type {AsyncResult} from '@shared/types/results.types';
-import type {
-  IntervalUserFeedSubscription,
-  RssUserFeedSubscription,
-  UserFeedSubscriptionId,
-} from '@shared/types/userFeedSubscriptions.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 
@@ -59,17 +56,11 @@ export async function createSampleFeedItems(args: {
   ];
 
   // Create RSS feed items using a sample RSS subscription as the source.
-  const rssSubscription: RssUserFeedSubscription = {
-    userFeedSubscriptionId: 'sample-rss-subscription-id' as UserFeedSubscriptionId,
-    feedSourceType: FeedSourceType.RSS,
+  const rssSubscription = makeRssUserFeedSubscription({
     accountId,
-    isActive: true,
-    deliverySchedule: IMMEDIATE_DELIVERY_SCHEDULE,
     url: 'https://feeds.feedburner.com/TechCrunch',
     title: 'TechCrunch',
-    createdTime: new Date(),
-    lastUpdatedTime: new Date(),
-  };
+  });
 
   for (const item of rssFeedItems) {
     const saveResult = await feedItemsService.createFeedItemFromUrl({
@@ -90,16 +81,10 @@ export async function createSampleFeedItems(args: {
   }
 
   // Create sample interval feed item.
-  const intervalSubscription: IntervalUserFeedSubscription = {
-    userFeedSubscriptionId: 'sample-interval-subscription-id' as UserFeedSubscriptionId,
-    feedSourceType: FeedSourceType.Interval,
+  const intervalSubscription = makeIntervalUserFeedSubscription({
     accountId,
-    isActive: true,
-    deliverySchedule: IMMEDIATE_DELIVERY_SCHEDULE,
     intervalSeconds: 300,
-    createdTime: new Date(),
-    lastUpdatedTime: new Date(),
-  };
+  });
 
   const intervalFeedItemResult = await feedItemsService.createIntervalFeedItem({
     accountId,

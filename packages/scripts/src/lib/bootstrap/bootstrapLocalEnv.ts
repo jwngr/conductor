@@ -12,8 +12,6 @@ import type {AccountId} from '@shared/types/accounts.types';
 import type {EmailAddress} from '@shared/types/emails.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
-import {bootstrapAccountData} from '@src/lib/bootstrap/account';
-import {createSampleExperiments} from '@src/lib/bootstrap/experiments';
 import {createSampleFeedItems} from '@src/lib/bootstrap/feedItems';
 import {createSampleUserFeedSubscriptions} from '@src/lib/bootstrap/userFeedSubscriptions';
 import {env} from '@src/lib/environment.scripts';
@@ -25,7 +23,6 @@ interface BootstrapResult {
   readonly firebaseUid: string;
   readonly userFeedSubscriptionsCreated: number;
   readonly feedItemsCreated: number;
-  readonly experimentsCreated: number;
 }
 
 async function bootstrapLocalEnv(args: {
@@ -67,18 +64,6 @@ async function bootstrapLocalEnv(args: {
   // Initialize services.
   const {feedItemsService} = initServices({firecrawlApiKey: env.firecrawlApiKey});
 
-  // Bootstrap account data.
-  logger.log('[BOOTSTRAP] Bootstrapping account data...', {accountId, email: parsedEmail});
-  const accountDataResult = await bootstrapAccountData({
-    accountId,
-    email: parsedEmail,
-    firebaseService,
-  });
-  if (!accountDataResult.success) {
-    return prefixErrorResult(accountDataResult, 'Failed to bootstrap account data');
-  }
-  logger.log('[BOOTSTRAP] Bootstrapped account data', {accountId});
-
   // Create user feed subscriptions.
   logger.log('[BOOTSTRAP] Creating user feed subscriptions...', {accountId});
   const subscriptionsResult = await createSampleUserFeedSubscriptions({
@@ -101,24 +86,11 @@ async function bootstrapLocalEnv(args: {
   }
   logger.log('[BOOTSTRAP] Created feed items', {accountId});
 
-  // Create experiments.
-  logger.log('[BOOTSTRAP] Creating experiments...', {accountId});
-  const experimentsResult = await createSampleExperiments({
-    accountId,
-    email: parsedEmail,
-    firebaseService,
-  });
-  if (!experimentsResult.success) {
-    return prefixErrorResult(experimentsResult, 'Failed to create experiments');
-  }
-  logger.log('[BOOTSTRAP] Created experiments', {accountId});
-
   const result: BootstrapResult = {
     accountId,
     firebaseUid,
     userFeedSubscriptionsCreated: subscriptionsResult.value.count,
     feedItemsCreated: feedItemsResult.value.count,
-    experimentsCreated: experimentsResult.value.count,
   };
 
   return makeSuccessResult(result);
@@ -176,7 +148,7 @@ if (!bootstrapResult.success) {
 }
 
 // Log the bootstrap result and exit successfully.
-const {accountId, firebaseUid, userFeedSubscriptionsCreated, feedItemsCreated, experimentsCreated} =
+const {accountId, firebaseUid, userFeedSubscriptionsCreated, feedItemsCreated} =
   bootstrapResult.value;
 logger.log('✅ Bootstrap completed successfully!');
 logger.log(`📊 Summary:`);
@@ -185,7 +157,6 @@ logger.log(`   Firebase UID: ${firebaseUid}`);
 logger.log(`   Account ID: ${accountId}`);
 logger.log(`   User Feed Subscriptions: ${userFeedSubscriptionsCreated}`);
 logger.log(`   Feed Items: ${feedItemsCreated}`);
-logger.log(`   Experiments: ${experimentsCreated}`);
 logger.log('');
 logger.log('🎉 Your development environment is now ready!');
 
