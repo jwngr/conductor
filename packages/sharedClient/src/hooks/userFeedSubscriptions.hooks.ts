@@ -47,8 +47,8 @@ export function useUserFeedSubscription(args: {
     setPending();
     const unsubscribe = userFeedSubscriptionsService.watchSubscription({
       userFeedSubscriptionId,
-      successCallback: setSuccess,
-      errorCallback: setError,
+      onData: setSuccess,
+      onError: setError,
     });
 
     return () => unsubscribe();
@@ -59,18 +59,19 @@ export function useUserFeedSubscription(args: {
 
 export function useUserFeedSubscriptions(args: {
   readonly firebaseService: ClientFirebaseService;
-}): AsyncState<UserFeedSubscription[]> {
+}): AsyncState<Record<UserFeedSubscriptionId, UserFeedSubscription>> {
   const {firebaseService} = args;
 
   const userFeedSubscriptionsService = useUserFeedSubscriptionsService({firebaseService});
 
-  const {asyncState, setPending, setError, setSuccess} = useAsyncState<UserFeedSubscription[]>();
+  const {asyncState, setPending, setError, setSuccess} =
+    useAsyncState<Record<UserFeedSubscriptionId, UserFeedSubscription>>();
 
   useEffect(() => {
     setPending();
     const unsubscribe = userFeedSubscriptionsService.watchAllSubscriptions({
-      successCallback: setSuccess,
-      errorCallback: setError,
+      onData: setSuccess,
+      onError: setError,
     });
 
     return () => unsubscribe();

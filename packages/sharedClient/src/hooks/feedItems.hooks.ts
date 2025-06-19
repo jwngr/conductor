@@ -21,7 +21,10 @@ import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {AsyncState} from '@shared/types/asyncState.types';
 import type {FeedItem, FeedItemId, XkcdFeedItem} from '@shared/types/feedItems.types';
 import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
-import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
+import type {
+  UserFeedSubscription,
+  UserFeedSubscriptionId,
+} from '@shared/types/userFeedSubscriptions.types';
 import type {ViewType} from '@shared/types/views.types';
 
 import {ClientFeedItemsService} from '@sharedClient/services/feedItems.client';
@@ -79,7 +82,7 @@ export function useFeedItem(args: {
  */
 function filterFeedItemsByDeliverySchedules(args: {
   readonly feedItems: FeedItem[];
-  readonly userFeedSubscriptions: UserFeedSubscription[];
+  readonly userFeedSubscriptions: Record<UserFeedSubscriptionId, UserFeedSubscription>;
 }): FeedItem[] {
   const {feedItems, userFeedSubscriptions} = args;
 

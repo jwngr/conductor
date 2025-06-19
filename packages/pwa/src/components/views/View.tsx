@@ -6,7 +6,13 @@ import {isDate} from '@shared/lib/datetime.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {getFeedSubscriptionIdForFeedSource} from '@shared/lib/feedSources.shared';
-import {arrayFilter, arraySome, assertNever, objectKeys} from '@shared/lib/utils.shared';
+import {
+  arrayFilter,
+  arraySome,
+  assertNever,
+  objectKeys,
+  objectMapEntries,
+} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
@@ -431,7 +437,7 @@ const LoadedViewList: React.FC<{
     // If grouping is applied, render the list of items grouped by the group field.
     mainContent = (
       <FlexColumn flex gap={4} padding={4}>
-        {Object.entries(groupedItems).map(([groupKey, items]) => (
+        {objectMapEntries(groupedItems, (groupKey, items) => (
           <React.Fragment key={`${viewType}-${groupKey}`}>
             <H3>{groupKey}</H3>
             <ul>

@@ -1,4 +1,4 @@
-import {assertNever} from '@shared/lib/utils.shared';
+import {assertNever, objectKeys} from '@shared/lib/utils.shared';
 
 import type {FeedItem} from '@shared/types/feedItems.types';
 import {TriageStatus} from '@shared/types/feedItems.types';
@@ -155,7 +155,7 @@ export class Views {
   }
 
   static getAllViewTypes(): ViewType[] {
-    return Object.keys(ALL_VIEW_CONFIGS).map((key) => key as ViewType);
+    return objectKeys(ALL_VIEW_CONFIGS);
   }
 }
 

@@ -277,6 +277,29 @@ export function arrayReduce<Start, Accumulator>(
   return (arr as Start[]).reduce(reducer, initialValue);
 }
 
+/**
+ * Typed helper for sorting an array.
+ */
+export function arraySort<T>(arr: T[], comparator: (a: T, b: T) => number): T[] {
+  return arr.sort(comparator);
+}
+
+/**
+ * Typed helper for converting an array of items into a record.
+ */
+export function arrayToRecord<Item, Key extends string | number | symbol>(
+  items: readonly Item[],
+  getKey: Func<Item, Key>
+): Record<Key, Item> {
+  return items.reduce(
+    (acc, item) => {
+      acc[getKey(item)] = item;
+      return acc;
+    },
+    {} as Record<Key, Item>
+  );
+}
+
 type ObjectKey = string | number | symbol;
 
 /**
@@ -318,36 +341,54 @@ export function objectMapEntries<Key extends ObjectKey, Value, Result>(
 }
 
 /**
+ * Typed helper for converting an array of entries into a record.
+ */
+export function objectFromEntries<Key extends ObjectKey, Value>(
+  entries: Array<[Key, Value]>
+): Record<Key, Value> {
+  return Object.fromEntries(entries) as Record<Key, Value>;
+}
+
+/**
+ * Typed helper for getting all values from an object.
+ */
+export function objectValues<Value>(obj: Partial<Record<ObjectKey, Value>>): Value[] {
+  return Object.values(obj) as Value[];
+}
+
+/**
  * Typed helper for mapping over object values and returning a new object with the same keys, but
  * each value having been transformed by `mapper`.
  */
-export function objectMapValues<Key extends ObjectKey, StartValue, EndValue>(
-  obj: Partial<Record<Key, StartValue>>,
+export function objectMapValues<StartValue, EndValue>(
+  obj: Partial<Record<ObjectKey, StartValue>>,
   mapper: Func<StartValue, EndValue>,
-  filter?: Func<Key, boolean>
-): Record<Key, EndValue> {
+  filter?: Func<ObjectKey, boolean>
+): Record<ObjectKey, EndValue> {
   const entries = Object.entries(obj).map(([key, value]) => [
-    key as Key,
+    key as ObjectKey,
     mapper(value as StartValue),
   ]);
-  const filteredEntries = filter ? arrayFilter(entries, ([key]) => filter(key as Key)) : entries;
+  const filteredEntries = filter
+    ? arrayFilter(entries, ([key]) => filter(key as ObjectKey))
+    : entries;
   return Object.fromEntries(filteredEntries);
 }
 
 /**
  * Typed helper for reducing all values in an object into a single value.
  */
-export function objectReduceValues<Key extends ObjectKey, StartValue, Accumulator>(
-  obj: Partial<Record<Key, StartValue>>,
+export function objectReduceValues<Value, Accumulator>(
+  obj: Partial<Record<ObjectKey, Value>>,
   reducer: (
     accumulator: Accumulator,
-    currentValue: StartValue,
+    currentValue: Value,
     currentIndex: number,
-    array: readonly StartValue[]
+    array: readonly Value[]
   ) => Accumulator,
   initialValue: Accumulator
 ): Accumulator {
-  return (Object.values(obj) as StartValue[]).reduce(reducer, initialValue);
+  return objectValues(obj).reduce(reducer, initialValue);
 }
 
 export function isDefined<T>(val: T | undefined): val is T {

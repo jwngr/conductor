@@ -1,5 +1,9 @@
 import {useEffect} from 'react';
 
+import {logger} from '@shared/services/logger.shared';
+
+import {prefixError} from '@shared/lib/errorUtils.shared';
+
 import {Environment} from '@shared/types/environment.types';
 
 import {useExperimentsStore} from '@sharedClient/stores/ExperimentsStore';
@@ -28,7 +32,13 @@ export const PWAExperimentsListener: React.FC = () => {
 
     setExperimentsService(pwaExperimentsService);
 
-    const unsubscribe = pwaExperimentsService.watchAccountExperiments(setExperiments);
+    const unsubscribe = pwaExperimentsService.watchExperimentsForAccount({
+      onData: setExperiments,
+      onError: (error) => {
+        const betterError = prefixError(error, 'Failed to fetch experiments for account');
+        logger.error(betterError);
+      },
+    });
 
     return () => {
       unsubscribe();

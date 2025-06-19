@@ -3,13 +3,16 @@ import {useCallback, useState} from 'react';
 import {PERSONAL_YOUTUBE_CHANNEL_ID} from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 import {parseUrl} from '@shared/lib/urls.shared';
-import {assertNever} from '@shared/lib/utils.shared';
+import {arraySort, assertNever, objectValues} from '@shared/lib/utils.shared';
 import {makeYouTubeChannelUrl} from '@shared/lib/youtube.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
 import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import {NavItemId} from '@shared/types/urls.types';
-import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
+import type {
+  UserFeedSubscription,
+  UserFeedSubscriptionId,
+} from '@shared/types/userFeedSubscriptions.types';
 
 import {
   DEFAULT_ROUTE_HERO_PAGE_ACTION,
@@ -214,16 +217,21 @@ const FeedSubscriptionItem: React.FC<{
 };
 
 const LoadedFeedSubscriptionsListMainContent: React.FC<{
-  subscriptions: UserFeedSubscription[];
+  subscriptions: Record<UserFeedSubscriptionId, UserFeedSubscription>;
 }> = ({subscriptions}) => {
-  if (subscriptions.length === 0) {
+  const orderedSubscriptions = arraySort(
+    objectValues(subscriptions),
+    (a, b) => a.lastUpdatedTime.getTime() - b.lastUpdatedTime.getTime()
+  );
+
+  if (orderedSubscriptions.length === 0) {
     // TODO: Add better empty state.
     return <P light>None</P>;
   }
 
   return (
     <FlexColumn flex>
-      {subscriptions.map((subscription) => (
+      {orderedSubscriptions.map((subscription) => (
         <FeedSubscriptionItem
           key={subscription.userFeedSubscriptionId}
           subscription={subscription}
