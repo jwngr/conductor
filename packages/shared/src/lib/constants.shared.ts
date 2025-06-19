@@ -1,4 +1,4 @@
-import {YouTubeChannelId} from '@shared/types/youtube.types';
+import type {YouTubeChannelId} from '@shared/types/youtube.types';
 
 // Firestore collections.
 export const EVENT_LOG_DB_COLLECTION = 'eventLog';

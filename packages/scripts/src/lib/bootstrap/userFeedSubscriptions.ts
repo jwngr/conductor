@@ -1,5 +1,6 @@
 import {logger} from '@shared/services/logger.shared';
 
+import {PERSONAL_YOUTUBE_CHANNEL_ID} from '@shared/lib/constants.shared';
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {
@@ -11,7 +12,6 @@ import {
 import type {AccountId} from '@shared/types/accounts.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
-import type {YouTubeChannelId} from '@shared/types/youtube.types';
 
 import type {ServerFirebaseService} from '@sharedServer/services/firebase.server';
 import {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
@@ -55,7 +55,7 @@ export async function createSampleUserFeedSubscriptions(
   // Create sample YouTube channel subscription.
   const youtubeSubscription = makeYouTubeChannelUserFeedSubscription({
     accountId,
-    channelId: 'UCX6OQ3DkcsbYNE6H8uQQuVA' as YouTubeChannelId, // MrBeast
+    channelId: PERSONAL_YOUTUBE_CHANNEL_ID,
   });
 
   // Create sample interval subscription.

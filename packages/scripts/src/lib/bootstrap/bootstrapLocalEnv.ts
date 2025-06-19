@@ -120,8 +120,8 @@ function getEmail(): EmailAddress {
   // If no email is provided, log an error and exit.
   if (!email) {
     const message =
-      `Usage: npx tsx ${process.argv[1]} --email <email>\nOr set INTERNAL_ACCOUNT_EMAIL_ADDRESS in ` +
-      `your environment.`;
+      `Usage: npx tsx ${process.argv[1]} --email <email>\n` +
+      `Or set LOCAL_EMAIL_ADDRESS environment variable`;
     logger.error(new Error(message));
     process.exit(1);
   }
