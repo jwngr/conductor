@@ -2,6 +2,12 @@
 FIRECRAWL_API_KEY=
 
 # Firebase user ID.
+# TODO: Delete this and use lookups on email address instead.
 FIREBASE_USER_ID=
+
+# Firebase project configuration for local development.
+# TODO: Why is this not pulled from local env?
+GOOGLE_CLOUD_PROJECT=
+FIREBASE_PROJECT_ID=
 
 # See other environment variables in packages/functions/dot-env.example

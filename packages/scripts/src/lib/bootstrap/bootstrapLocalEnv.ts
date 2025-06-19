@@ -12,10 +12,10 @@ import type {AccountId} from '@shared/types/accounts.types';
 import type {EmailAddress} from '@shared/types/emails.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
-import {bootstrapAccountData} from '@src/lib/bootstrapData/account';
-import {createSampleExperiments} from '@src/lib/bootstrapData/experiments';
-import {createSampleFeedItems} from '@src/lib/bootstrapData/feedItems';
-import {createSampleUserFeedSubscriptions} from '@src/lib/bootstrapData/userFeedSubscriptions';
+import {bootstrapAccountData} from '@src/lib/bootstrap/account';
+import {createSampleExperiments} from '@src/lib/bootstrap/experiments';
+import {createSampleFeedItems} from '@src/lib/bootstrap/feedItems';
+import {createSampleUserFeedSubscriptions} from '@src/lib/bootstrap/userFeedSubscriptions';
 import {env} from '@src/lib/environment.scripts';
 import {firebaseService} from '@src/lib/firebase.scripts';
 import {initServices} from '@src/lib/initServices.scripts';
@@ -28,7 +28,7 @@ interface BootstrapResult {
   readonly experimentsCreated: number;
 }
 
-async function bootstrapDevelopmentData(args: {
+async function bootstrapLocalEnv(args: {
   readonly email: string;
 }): AsyncResult<BootstrapResult, Error> {
   const {email} = args;
@@ -68,8 +68,8 @@ async function bootstrapDevelopmentData(args: {
   if (!accountIdResult.success) return accountIdResult;
   const accountId = accountIdResult.value;
 
-  // Initialize services (without Firecrawl since we don't need it for bootstrap).
-  const {feedItemsService} = initServices({firecrawlApiKey: 'dummy-key'}); // We don't actually use Firecrawl for bootstrap
+  // Initialize services.
+  const {feedItemsService} = initServices({firecrawlApiKey: env.firecrawlApiKey});
 
   // Bootstrap account data.
   logger.log('[BOOTSTRAP] Bootstrapping account data...', {accountId, email: parsedEmail});
@@ -167,9 +167,9 @@ function getEmail(): EmailAddress {
   return parseEmailResult.value;
 }
 
-// Bootstrap development data.
+// Bootstrap local environment.
 const email = getEmail();
-const bootstrapResult = await bootstrapDevelopmentData({email});
+const bootstrapResult = await bootstrapLocalEnv({email});
 
 // If the bootstrap fails, log an error and exit.
 if (!bootstrapResult.success) {
