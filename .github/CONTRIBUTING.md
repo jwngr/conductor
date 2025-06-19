@@ -60,22 +60,19 @@ The packages are:
 
     **Note:** Enabling Analytics is not required for local development.
 
-1.  Populate a `.env` file at the root of the repo:
-
-    ```bash
-    $ cp dot-env.example .env
-    # Open `.env` and add config.
-    ```
-
 1.  [Firecrawl](https://www.firecrawl.dev/) is used to convert websites into LLM-friendly content.
     Create a Firecrawl account and generate an API key for local development.
 
-1.  Populate a `.env.<FIREBASE_PROJECT_ID>` file inside of `/packages/functions`:
+1.  Copy all `.env` files from the `dot-env` directory:
 
     ```bash
-    $ cp /packages/functions/dot-env.example /packages/functions/.env.<FIREBASE_PROJECT_ID>
-    # Open `.env.<FIREBASE_PROJECT_ID>` and add config.
+    $ cp dot-env/shared.env .env
+    $ cp dot-env/functions.env packages/functions/.env.<FIREBASE_PROJECT_ID>
+    $ cp dot-env/rssServer.env packages/rssServer/.env
+    $ cp dot-env/scripts.env packages/scripts/.env
     ```
+
+1.  Open each `.env` file and add required config.
 
 ## Recurring setup (PWA)
 
