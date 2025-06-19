@@ -78,6 +78,10 @@ export function getYouTubeChannelId(url: string): Result<YouTubeChannelId | null
   return makeSuccessResult(null);
 }
 
+export function makeYouTubeChannelUrl(channelId: YouTubeChannelId): string {
+  return `https://www.youtube.com/channel/${channelId}`;
+}
+
 /**
  * Returns the YouTube channel handle from the provided URL. Handles many variations of YouTube
  * URLs.

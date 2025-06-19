@@ -47,8 +47,11 @@ export class ServerFirebaseService {
     this.firestoreInstance = admin.firestore();
     this.firestoreInstance.settings({ignoreUndefinedProperties: true});
 
-    // To run against the Firestore emulator, set the `FIRESTORE_EMULATOR_HOST` environment variable
-    // to `127.0.0.1:8080` in `.env`.
+    // To run against the Firebase emulators, set the following environment variables:
+    //  - `FIREBASE_AUTH_EMULATOR_HOST`
+    //  - `FIREBASE_STORAGE_EMULATOR_HOST`
+    //  - `FIRESTORE_EMULATOR_HOST`
+    // This is done automatically in the `yarn bootstrap:emulator` script.
   }
 
   public get auth(): Auth {

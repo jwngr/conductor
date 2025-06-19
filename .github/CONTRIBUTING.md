@@ -88,6 +88,33 @@ By default, the PWA runs against a local emulator (server functions) and in-memo
 - [Server functions local development](#server-functions-local-development)
 - [RSS feed provider local development](#rss-feed-provider-local-development)
 
+## Bootstrap local environment
+
+A script to bootstrap your local environment with test data can be run against a live
+Firebase project or against the Firebase emulator suite.
+
+1. Start all local services:
+
+   ```bash
+   $ yarn run dev:functions
+   $ yarn run dev:rss
+   $ yarn run dev:pwa
+   ```
+
+1. Sign in to Conductor locally to create an account.
+
+1. Run the bootstrap script:
+
+   ```bash
+   # Run against a live Firebase project
+   $ yarn bootstrap
+
+   # Run against the Firebase emulator suite
+   $ yarn bootstrap:emulator
+   ```
+
+You should see items in your inbox.
+
 ## Server functions local development
 
 Firebase Functions power many server-side capabilities of Conductor. This repo is configured to work
