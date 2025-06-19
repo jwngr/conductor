@@ -35,9 +35,8 @@ async function bootstrapLocalEnv(args: {
 
   // Log the Firebase project info for debugging.
   logger.log('[BOOTSTRAP] Firebase project info', {
-    GOOGLE_CLOUD_PROJECT: process.env.GOOGLE_CLOUD_PROJECT,
-    FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID,
-    FIRESTORE_EMULATOR_HOST: process.env.FIRESTORE_EMULATOR_HOST,
+    GOOGLE_CLOUD_PROJECT: env.googleCloudProject,
+    FIREBASE_PROJECT_ID: env.firebaseProjectId,
   });
 
   // Parse email.
@@ -47,10 +46,7 @@ async function bootstrapLocalEnv(args: {
 
   // Look up the Firebase user by email
   logger.log('[BOOTSTRAP] Looking up Firebase user...', {email: parsedEmail});
-  const userResult = await asyncTry(async () => {
-    const userRecord = await firebaseService.auth.getUserByEmail(parsedEmail);
-    return userRecord;
-  });
+  const userResult = await asyncTry(async () => firebaseService.auth.getUserByEmail(parsedEmail));
 
   if (!userResult.success) {
     const message =
