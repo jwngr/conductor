@@ -1,8 +1,10 @@
 import {useCallback, useState} from 'react';
 
+import {PERSONAL_YOUTUBE_CHANNEL_ID} from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 import {parseUrl} from '@shared/lib/urls.shared';
 import {assertNever} from '@shared/lib/utils.shared';
+import {makeYouTubeChannelUrl} from '@shared/lib/youtube.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
 import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
@@ -160,7 +162,7 @@ const FeedAdder: React.FC = () => {
             variant="default"
             onClick={async () =>
               void handleSubscribeToYouTubeChannel(
-                'https://www.youtube.com/channel/UCndkjnoQawp7Tjy1uNj53yQ'
+                makeYouTubeChannelUrl(PERSONAL_YOUTUBE_CHANNEL_ID)
               )
             }
           >

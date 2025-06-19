@@ -1,3 +1,4 @@
+import {PERSONAL_YOUTUBE_CHANNEL_ID} from '@shared/lib/constants.shared';
 import {expectErrorResult, expectSuccessResult, unwrapOrThrow} from '@shared/lib/testUtils.shared';
 import {
   getYouTubeChannelHandle,
@@ -11,13 +12,11 @@ import {
   parseYouTubeVideoId,
 } from '@shared/parsers/youtube.parser';
 
-import type {YouTubeChannelId, YouTubeHandle, YouTubeVideoId} from '@shared/types/youtube.types';
+import type {YouTubeHandle, YouTubeVideoId} from '@shared/types/youtube.types';
 
 const VALID_YOUTUBE_VIDEO_ID = unwrapOrThrow<YouTubeVideoId>(parseYouTubeVideoId('_cjTOlTxyQ8'));
 
-const VALID_CHANNEL_ID = unwrapOrThrow<YouTubeChannelId>(
-  parseYouTubeChannelId('UCndkjnoQawp7Tjy1uNj53yQ')
-);
+const VALID_CHANNEL_ID = PERSONAL_YOUTUBE_CHANNEL_ID;
 const VALID_HANDLE = unwrapOrThrow<YouTubeHandle>(parseYouTubeHandle('jacobwenger8649'));
 
 const VALID_YOUTUBE_CHANNEL_URLS_WITH_HANDLE = [
@@ -89,10 +88,10 @@ describe('parseYouTubeChannelId', () => {
   });
 
   it.each([
-    'UCndkjnoQawp7Tjy1uNj53y', // Too short.
-    'UCndkjnoQawp7Tjy1uNj53yQQ', // Too long.
-    'ACndkjnoQawp7Tjy1uNj53yQ', // Does not start with UC.
-    'UCndkjnoQawp7Tjy1uNj53y!', // Invalid character.
+    'UC345678901234567890123', // Too short.
+    'UC34567890123456789012345', // Too long.
+    'AC3456789012345678901234', // Does not start with UC.
+    'UC345678901234567890123!', // Invalid character.
     'jacobwenger8649', // Not a channel ID (handle).
     'a'.repeat(24), // 24 chars but does not match regex.
     '', // Empty string.

@@ -1,3 +1,5 @@
+import type {YouTubeChannelId} from '@shared/types/youtube.types';
+
 // Firestore collections.
 export const EVENT_LOG_DB_COLLECTION = 'eventLog';
 export const FEED_ITEMS_DB_COLLECTION = 'feedItems';
@@ -26,3 +28,4 @@ export const EMPTY_OBJECT = Object.freeze({});
 
 // Miscellaneous.
 export const DEFAULT_FEED_TITLE = '(no title)';
+export const PERSONAL_YOUTUBE_CHANNEL_ID = 'UCndkjnoQawp7Tjy1uNj53yQ' as YouTubeChannelId;
