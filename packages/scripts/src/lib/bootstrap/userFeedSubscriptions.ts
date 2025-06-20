@@ -1,7 +1,8 @@
 import {logger} from '@shared/services/logger.shared';
 
+import {arrayMap} from '@shared/lib/arrayUtils.shared';
 import {PERSONAL_YOUTUBE_CHANNEL_ID} from '@shared/lib/constants.shared';
-import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
+import {asyncTryAll, prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {
   makeIntervalUserFeedSubscription,
@@ -19,6 +20,8 @@ import type {
 
 import type {ServerFirebaseService} from '@sharedServer/services/firebase.server';
 import {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
+
+import {getMockUserFeedSubscriptions} from '@src/bootstrap/userFeedSubscriptions.bootstrap';
 
 interface CreateSampleUserFeedSubscriptionsArgs {
   readonly accountId: AccountId;
@@ -38,6 +41,22 @@ export async function createSampleUserFeedSubscriptions(
   const {accountId, firebaseService} = args;
 
   const userFeedSubscriptionsService = new ServerUserFeedSubscriptionsService({firebaseService});
+
+  const mockUserFeedSubscriptions = getMockUserFeedSubscriptions({accountId});
+  const saveResults2 = arrayMap(mockUserFeedSubscriptions, async (subscription) => {
+    const saveResult = await userFeedSubscriptionsService.createSubscription(subscription);
+    if (!saveResult.success) {
+      const betterError = prefixErrorResult(saveResult, 'Failed to save user feed subscription');
+      logger.error(betterError.error, {
+        subscriptionId: subscription.userFeedSubscriptionId,
+        feedSourceType: subscription.feedSourceType,
+      });
+    }
+    return saveResult;
+  });
+
+  const batchSaveResult = await asyncTryAll(saveResults2);
+  if (!batchSaveResult.success) return batchSaveResult;
 
   // Create sample RSS subscriptions.
   const rssSubscriptions = [
