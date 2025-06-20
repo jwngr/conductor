@@ -20,8 +20,8 @@ import {EventType} from '@shared/types/eventLog.types';
 import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
 import type {FeedType} from '@shared/types/feedSourceTypes.types';
+import type {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
 import type {ThemePreference} from '@shared/types/theme.types';
-import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 
 /**
  * Creates a new random {@link EventId}.
@@ -114,27 +114,27 @@ export function makeStringExperimentValueChangedEventLogItemData(args: {
 
 export function makeSubscribedToFeedEventLogItemData(args: {
   readonly feedType: FeedType;
-  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+  readonly feedSubscriptionId: FeedSubscriptionId;
   readonly isNewSubscription: boolean;
 }): SubscribedToFeedEventLogItemData {
-  const {feedType, userFeedSubscriptionId, isNewSubscription} = args;
+  const {feedType, feedSubscriptionId, isNewSubscription} = args;
   return {
     eventType: EventType.SubscribedToFeed,
     feedType,
-    userFeedSubscriptionId,
+    feedSubscriptionId,
     isNewSubscription,
   };
 }
 
 export function makeUnsubscribedFromFeedEventLogItemData(args: {
   readonly feedType: FeedType;
-  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+  readonly feedSubscriptionId: FeedSubscriptionId;
 }): UnsubscribedFromFeedEventLogItemData {
-  const {feedType, userFeedSubscriptionId} = args;
+  const {feedType, feedSubscriptionId} = args;
   return {
     eventType: EventType.UnsubscribedFromFeed,
     feedType,
-    userFeedSubscriptionId,
+    feedSubscriptionId,
   };
 }
 

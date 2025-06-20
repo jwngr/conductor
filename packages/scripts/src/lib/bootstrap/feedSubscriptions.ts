@@ -2,56 +2,52 @@ import {logger} from '@shared/services/logger.shared';
 
 import {PERSONAL_YOUTUBE_CHANNEL_ID} from '@shared/lib/constants.shared';
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {makeSuccessResult} from '@shared/lib/results.shared';
 import {
-  makeIntervalUserFeedSubscription,
-  makeRssUserFeedSubscription,
-  makeYouTubeChannelUserFeedSubscription,
-} from '@shared/lib/userFeedSubscriptions.shared';
+  makeIntervalFeedSubscription,
+  makeRssFeedSubscription,
+  makeYouTubeChannelFeedSubscription,
+} from '@shared/lib/feedSubscriptions.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import type {AsyncResult} from '@shared/types/results.types';
 import type {
-  IntervalUserFeedSubscription,
-  RssUserFeedSubscription,
-  YouTubeChannelUserFeedSubscription,
-} from '@shared/types/userFeedSubscriptions.types';
+  IntervalFeedSubscription,
+  RssFeedSubscription,
+  YouTubeChannelFeedSubscription,
+} from '@shared/types/feedSubscriptions.types';
+import type {AsyncResult} from '@shared/types/results.types';
 
+import {ServerFeedSubscriptionsService} from '@sharedServer/services/feedSubscriptions.server';
 import type {ServerFirebaseService} from '@sharedServer/services/firebase.server';
-import {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
 
-interface CreateSampleUserFeedSubscriptionsArgs {
+interface CreateSampleFeedSubscriptionsResult {
+  readonly count: number;
+  readonly rssSubscriptions: readonly RssFeedSubscription[];
+  readonly youtubeSubscriptions: readonly YouTubeChannelFeedSubscription[];
+  readonly intervalSubscriptions: readonly IntervalFeedSubscription[];
+}
+
+export async function createSampleFeedSubscriptions(args: {
   readonly accountId: AccountId;
   readonly firebaseService: ServerFirebaseService;
-}
-
-interface CreateSampleUserFeedSubscriptionsResult {
-  readonly count: number;
-  readonly rssSubscriptions: readonly RssUserFeedSubscription[];
-  readonly youtubeSubscriptions: readonly YouTubeChannelUserFeedSubscription[];
-  readonly intervalSubscriptions: readonly IntervalUserFeedSubscription[];
-}
-
-export async function createSampleUserFeedSubscriptions(
-  args: CreateSampleUserFeedSubscriptionsArgs
-): AsyncResult<CreateSampleUserFeedSubscriptionsResult, Error> {
+}): AsyncResult<CreateSampleFeedSubscriptionsResult, Error> {
   const {accountId, firebaseService} = args;
 
-  const userFeedSubscriptionsService = new ServerUserFeedSubscriptionsService({firebaseService});
+  const feedSubscriptionsService = new ServerFeedSubscriptionsService({firebaseService});
 
   // Create sample RSS subscriptions.
   const rssSubscriptions = [
-    makeRssUserFeedSubscription({
+    makeRssFeedSubscription({
       accountId,
       url: 'https://feeds.feedburner.com/TechCrunch',
       title: 'TechCrunch',
     }),
-    makeRssUserFeedSubscription({
+    makeRssFeedSubscription({
       accountId,
       url: 'https://rss.cnn.com/rss/edition.rss',
       title: 'CNN',
     }),
-    makeRssUserFeedSubscription({
+    makeRssFeedSubscription({
       accountId,
       url: 'https://feeds.bbci.co.uk/news/rss.xml',
       title: 'BBC News',
@@ -59,13 +55,13 @@ export async function createSampleUserFeedSubscriptions(
   ];
 
   // Create sample YouTube channel subscription.
-  const youtubeSubscription = makeYouTubeChannelUserFeedSubscription({
+  const youtubeSubscription = makeYouTubeChannelFeedSubscription({
     accountId,
     channelId: PERSONAL_YOUTUBE_CHANNEL_ID,
   });
 
   // Create sample interval subscription.
-  const intervalSubscription = makeIntervalUserFeedSubscription({
+  const intervalSubscription = makeIntervalFeedSubscription({
     accountId,
     intervalSeconds: 300, // 5 minutes
   });
@@ -74,10 +70,10 @@ export async function createSampleUserFeedSubscriptions(
 
   // Save all subscriptions using the service's createSubscription method.
   const savePromises = allSubscriptions.map(async (subscription) => {
-    const saveResult = await userFeedSubscriptionsService.createSubscription(subscription);
+    const saveResult = await feedSubscriptionsService.createSubscription(subscription);
     if (!saveResult.success) {
       logger.error(saveResult.error, {
-        subscriptionId: subscription.userFeedSubscriptionId,
+        subscriptionId: subscription.feedSubscriptionId,
         feedType: subscription.feedType,
       });
     }
@@ -89,10 +85,10 @@ export async function createSampleUserFeedSubscriptions(
 
   if (failedResults.length > 0) {
     const firstError = failedResults[0];
-    return prefixErrorResult(firstError, 'Failed to save some user feed subscriptions');
+    return prefixErrorResult(firstError, 'Failed to save some feed subscriptions');
   }
 
-  logger.log('[BOOTSTRAP] Successfully created user feed subscriptions', {
+  logger.log('[BOOTSTRAP] Successfully created feed subscriptions', {
     accountId,
     count: allSubscriptions.length,
   });

@@ -32,7 +32,7 @@ interface BaseExperimentDefinition {
   readonly title: string;
   /** User-visible description of the experiment. */
   readonly description: string;
-  /** Which set of users can see the experiment. */
+  /** Which accounts can see the experiment. */
   readonly visibility: ExperimentVisibility;
   /** Whether or not the experiment is enabled by default. */
   readonly defaultIsEnabled: boolean;

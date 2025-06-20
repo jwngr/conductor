@@ -48,7 +48,7 @@ export function ThemeProvider({children}: WithChildren): ReactNode {
   });
 
   /**
-   * Handler called on mount and whenever the user manually changes the theme setting.
+   * Handler called on mount and whenever the theme setting is manually changed.
    */
   useEffect(() => {
     updateBodyOnNewThemePreference(toPrefersColorScheme(themePreference));
@@ -62,7 +62,7 @@ export function ThemeProvider({children}: WithChildren): ReactNode {
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = (event: MediaQueryListEvent): void => {
-      // Only auto-update body if user preference is "System".
+      // Only auto-update body if theme preference is "System".
       if (themePreference !== ThemePreference.System) return;
 
       const prefersColorScheme: BrowserPrefersColorScheme = event.matches ? 'dark' : 'light';

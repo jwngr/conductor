@@ -10,20 +10,20 @@ import type {Supplier} from '@shared/types/utils.types';
 
 import type {ServerAccountsService} from '@sharedServer/services/accounts.server';
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
-import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
+import type {ServerFeedSubscriptionsService} from '@sharedServer/services/feedSubscriptions.server';
 
 export class WipeoutService {
   private accountsService: ServerAccountsService;
-  private userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
+  private feedSubscriptionsService: ServerFeedSubscriptionsService;
   private feedItemsService: ServerFeedItemsService;
 
   constructor(args: {
     readonly accountsService: ServerAccountsService;
-    readonly userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
+    readonly feedSubscriptionsService: ServerFeedSubscriptionsService;
     readonly feedItemsService: ServerFeedItemsService;
   }) {
     this.accountsService = args.accountsService;
-    this.userFeedSubscriptionsService = args.userFeedSubscriptionsService;
+    this.feedSubscriptionsService = args.feedSubscriptionsService;
     this.feedItemsService = args.feedItemsService;
   }
 
@@ -37,40 +37,39 @@ export class WipeoutService {
     const logDetails = {accountId} as const;
 
     logger.log(`[WIPEOUT] Fetching feed subscriptions for account ${accountId}...`, logDetails);
-    const userFeedSubscriptionsResult =
-      await this.userFeedSubscriptionsService.fetchAllForAccount(accountId);
-    if (!userFeedSubscriptionsResult.success) {
+    const feedSubscriptionsResult =
+      await this.feedSubscriptionsService.fetchAllForAccount(accountId);
+    if (!feedSubscriptionsResult.success) {
       logger.error(
         prefixError(
-          userFeedSubscriptionsResult.error,
-          '[WIPEOUT] Failed to fetch user feed subscriptions for account to wipe out'
+          feedSubscriptionsResult.error,
+          '[WIPEOUT] Failed to fetch feed subscriptions for account to wipe out'
         ),
         logDetails
       );
       wasSuccessful = false;
     }
 
-    if (userFeedSubscriptionsResult.success) {
-      const userFeedSubscriptions = userFeedSubscriptionsResult.value;
-      const activeUserFeedSubscriptions = userFeedSubscriptions.filter(({isActive}) => isActive);
-      const activeUserFeedSubscriptionIds = activeUserFeedSubscriptions.map(
-        ({userFeedSubscriptionId}) => userFeedSubscriptionId
+    if (feedSubscriptionsResult.success) {
+      const activeFeedSubscriptions = feedSubscriptionsResult.value.filter(
+        ({isActive}) => isActive
+      );
+      const activeFeedSubscriptionIds = activeFeedSubscriptions.map(
+        ({feedSubscriptionId}) => feedSubscriptionId
       );
 
       logger.log(
-        `[WIPEOUT] Unsubscribing account ${accountId} from active feed subscriptions (${activeUserFeedSubscriptionIds.length})`,
-        {activeUserFeedSubscriptionIds, ...logDetails}
+        `[WIPEOUT] Unsubscribing account ${accountId} from active feed subscriptions (${activeFeedSubscriptionIds.length})`,
+        {activeFeedSubscriptionIds, ...logDetails}
       );
 
       const unsubscribeFromFeedSuppliers: Array<Supplier<AsyncResult<void, Error>>> =
-        activeUserFeedSubscriptionIds.map((userFeedSubscriptionId) => async () => {
+        activeFeedSubscriptionIds.map((feedSubscriptionId) => async () => {
           logger.log(
-            `[WIPEOUT] Unsubscribing account ${accountId} from feed subscription ${userFeedSubscriptionId}...`,
-            {userFeedSubscriptionId, ...logDetails}
+            `[WIPEOUT] Unsubscribing account ${accountId} from feed subscription ${feedSubscriptionId}...`,
+            {feedSubscriptionId, ...logDetails}
           );
-          return await this.userFeedSubscriptionsService.deactivateFeedSubscription(
-            userFeedSubscriptionId
-          );
+          return await this.feedSubscriptionsService.deactivateFeedSubscription(feedSubscriptionId);
         });
 
       const unsubscribeFromFeedsResult = await batchAsyncResults(unsubscribeFromFeedSuppliers, 3);
@@ -104,7 +103,7 @@ export class WipeoutService {
     const deleteFirestoreResult = await asyncTryAll([
       this.accountsService.deleteAccount(accountId),
       this.feedItemsService.deleteAllForAccount(accountId),
-      this.userFeedSubscriptionsService.deleteAllForAccount(accountId),
+      this.feedSubscriptionsService.deleteAllForAccount(accountId),
     ]);
     const deleteFirestoreResultError = deleteFirestoreResult.success
       ? deleteFirestoreResult.value.results.find((result) => !result.success)?.error

@@ -27,8 +27,8 @@ import type {
   YouTubeFeedItemContent,
 } from '@shared/types/feedItems.types';
 import type {Feed} from '@shared/types/feeds.types';
+import type {IntervalFeedSubscription} from '@shared/types/feedSubscriptions.types';
 import type {AsyncResult, Result} from '@shared/types/results.types';
-import type {IntervalUserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
 import {toStorageFeedItem} from '@shared/storage/feedItems.storage';
 
@@ -113,17 +113,17 @@ export class ServerFeedItemsService {
     /** The account that the feed item belongs to. */
     readonly accountId: AccountId;
     /** The subscription that is creating the feed item. */
-    readonly userFeedSubscription: IntervalUserFeedSubscription;
+    readonly subscription: IntervalFeedSubscription;
   }): AsyncResult<IntervalFeedItem, Error> {
-    const {userFeedSubscription, accountId} = args;
+    const {subscription, accountId} = args;
 
     const feedItem = makeFeedItem({
-      origin: makeIntervalFeed({userFeedSubscription}),
+      origin: makeIntervalFeed({subscription}),
       accountId,
       content: {
         feedItemContentType: FeedItemContentType.Interval,
         title: `Interval feed item for ${new Date().toISOString()}`,
-        intervalSeconds: userFeedSubscription.intervalSeconds,
+        intervalSeconds: subscription.intervalSeconds,
       },
     });
 

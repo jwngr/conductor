@@ -7,11 +7,11 @@ import {DeliveryScheduleSchema} from '@shared/schemas/deliverySchedules.schema';
 import {FirestoreTimestampSchema} from '@shared/schemas/firebase.schema';
 import {YouTubeChannelIdSchema} from '@shared/schemas/youtube.schema';
 
-export const UserFeedSubscriptionIdSchema = z.uuid();
+export const FeedSubscriptionIdSchema = z.uuid();
 
-const BaseUserFeedSubscriptionSchema = z.object({
+const BaseFeedSubscriptionSchema = z.object({
   feedType: z.enum(FEED_TYPES_WITH_SUBSCRIPTIONS),
-  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
+  feedSubscriptionId: FeedSubscriptionIdSchema,
   accountId: AccountIdSchema,
   isActive: z.boolean(),
   deliverySchedule: DeliveryScheduleSchema,
@@ -21,39 +21,37 @@ const BaseUserFeedSubscriptionSchema = z.object({
   lastUpdatedTime: FirestoreTimestampSchema.or(z.date()).or(z.null()),
 });
 
-const RssUserFeedSubscriptionSchema = BaseUserFeedSubscriptionSchema.extend({
+const RssFeedSubscriptionSchema = BaseFeedSubscriptionSchema.extend({
   feedType: z.literal(FeedType.RSS),
   url: z.url(),
   title: z.string(),
 });
 
-export type RssUserFeedSubscriptionFromStorage = z.infer<typeof RssUserFeedSubscriptionSchema>;
+export type RssFeedSubscriptionFromStorage = z.infer<typeof RssFeedSubscriptionSchema>;
 
-const YouTubeChannelUserFeedSubscriptionSchema = BaseUserFeedSubscriptionSchema.extend({
+const YouTubeChannelFeedSubscriptionSchema = BaseFeedSubscriptionSchema.extend({
   feedType: z.literal(FeedType.YouTubeChannel),
   channelId: YouTubeChannelIdSchema,
 });
 
-export type YouTubeChannelUserFeedSubscriptionFromStorage = z.infer<
-  typeof YouTubeChannelUserFeedSubscriptionSchema
+export type YouTubeChannelFeedSubscriptionFromStorage = z.infer<
+  typeof YouTubeChannelFeedSubscriptionSchema
 >;
 
-const IntervalUserFeedSubscriptionSchema = BaseUserFeedSubscriptionSchema.extend({
+const IntervalFeedSubscriptionSchema = BaseFeedSubscriptionSchema.extend({
   feedType: z.literal(FeedType.Interval),
   intervalSeconds: z.number().positive().int(),
 });
 
-export type IntervalUserFeedSubscriptionFromStorage = z.infer<
-  typeof IntervalUserFeedSubscriptionSchema
->;
+export type IntervalFeedSubscriptionFromStorage = z.infer<typeof IntervalFeedSubscriptionSchema>;
 
-export const UserFeedSubscriptionSchema = z.discriminatedUnion('feedType', [
-  RssUserFeedSubscriptionSchema,
-  YouTubeChannelUserFeedSubscriptionSchema,
-  IntervalUserFeedSubscriptionSchema,
+export const FeedSubscriptionSchema = z.discriminatedUnion('feedType', [
+  RssFeedSubscriptionSchema,
+  YouTubeChannelFeedSubscriptionSchema,
+  IntervalFeedSubscriptionSchema,
 ]);
 
 /**
- * Type for a {@link UserFeedSubscription} persisted to Firestore.
+ * Type for a {@link FeedSubscription} persisted to Firestore.
  */
-export type UserFeedSubscriptionFromStorage = z.infer<typeof UserFeedSubscriptionSchema>;
+export type FeedSubscriptionFromStorage = z.infer<typeof FeedSubscriptionSchema>;

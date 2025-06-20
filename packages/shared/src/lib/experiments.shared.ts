@@ -211,7 +211,7 @@ export function getExperimentsForAccount(args: {
     environment,
   });
 
-  // Merge user overrides into default values.
+  // Merge account overrides into default values.
   return filteredExperimentIds.map((experimentId) => {
     const definition = ALL_EXPERIMENT_DEFINITIONS[experimentId];
     const override = experimentOverrides[definition.experimentId];

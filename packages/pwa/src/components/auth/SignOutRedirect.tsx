@@ -20,9 +20,9 @@ export const SignOutRedirect: React.FC = () => {
       const signOutResult = await authService.signOut();
       if (!signOutResult.success) {
         // TODO: Can this be de-duped with the error handler in `AuthServiceSubscription`?
-        // TODO: Filter out expected user errors..
+        // TODO: Filter out expected errors..
         logger.error(prefixError(signOutResult.error, 'Failed to sign out account'));
-        // TODO: Surface error to user.
+        // TODO: Surface error in UI.
         return;
       }
 

@@ -1,7 +1,7 @@
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
-import {parseUserFeedSubscription} from '@shared/parsers/userFeedSubscriptions.parser';
+import {parseFeedSubscription} from '@shared/parsers/feedSubscriptions.parser';
 
 import {FeedType} from '@shared/types/feedSourceTypes.types';
 import type {AsyncResult} from '@shared/types/results.types';
@@ -22,11 +22,11 @@ export async function handleFeedUnsubscribe(args: {
     return makeErrorResult(new Error('Missing after data'));
   }
 
-  const beforeResult = parseUserFeedSubscription(beforeData);
-  const afterResult = parseUserFeedSubscription(afterData);
+  const beforeResult = parseFeedSubscription(beforeData);
+  const afterResult = parseFeedSubscription(afterData);
 
   if (!beforeResult.success || !afterResult.success) {
-    return makeErrorResult(new Error('Failed to parse user feed subscription data'));
+    return makeErrorResult(new Error('Failed to parse feed subscription data'));
   }
 
   const before = beforeResult.value;

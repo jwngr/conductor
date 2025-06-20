@@ -5,23 +5,23 @@ import type {BaseStoreItem} from '@shared/types/utils.types';
 import type {YouTubeChannelId} from '@shared/types/youtube.types';
 
 /**
- * Strongly-typed type for a {@link UserFeedSubscription}'s unique identifier. Prefer this over
+ * Strongly-typed type for a {@link FeedSubscription}'s unique identifier. Prefer this over
  * plain strings.
  */
-export type UserFeedSubscriptionId = string & {readonly __brand: 'UserFeedSubscriptionIdBrand'};
+export type FeedSubscriptionId = string & {readonly __brand: 'FeedSubscriptionIdBrand'};
 
 /**
  * An individual account's subscription to a feed source.
  *
- * A single URL can have multiple {@link UserFeedSubscription}s, one for each {@link Account}
+ * A single URL can have multiple {@link FeedSubscription}s, one for each {@link Account}
  * subscribed to it.
  *
- * User feed subscriptions are not deleted when an account unsubscribes from a feed. Instead, they
- * are marked as inactive. They are only deleted when an account is wiped out.
+ * Feed subscriptions are not deleted when an account unsubscribes from a feed. Instead, they are
+ * marked as inactive. They are only deleted when an account is wiped out.
  */
-interface BaseUserFeedSubscription extends BaseStoreItem {
+interface BaseFeedSubscription extends BaseStoreItem {
   /** The unique identifier for this subscription. */
-  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+  readonly feedSubscriptionId: FeedSubscriptionId;
   /** The type of feed source this subscription is for. */
   readonly feedType: FeedTypeWithSubscription;
   /** The account that owns this subscription. */
@@ -34,23 +34,23 @@ interface BaseUserFeedSubscription extends BaseStoreItem {
   readonly unsubscribedTime?: Date | undefined;
 }
 
-export interface RssUserFeedSubscription extends BaseUserFeedSubscription {
+export interface RssFeedSubscription extends BaseFeedSubscription {
   readonly feedType: FeedType.RSS;
   readonly url: string;
   readonly title: string;
 }
 
-export interface YouTubeChannelUserFeedSubscription extends BaseUserFeedSubscription {
+export interface YouTubeChannelFeedSubscription extends BaseFeedSubscription {
   readonly feedType: FeedType.YouTubeChannel;
   readonly channelId: YouTubeChannelId;
 }
 
-export interface IntervalUserFeedSubscription extends BaseUserFeedSubscription {
+export interface IntervalFeedSubscription extends BaseFeedSubscription {
   readonly feedType: FeedType.Interval;
   readonly intervalSeconds: number;
 }
 
-export type UserFeedSubscription =
-  | RssUserFeedSubscription
-  | YouTubeChannelUserFeedSubscription
-  | IntervalUserFeedSubscription;
+export type FeedSubscription =
+  | RssFeedSubscription
+  | YouTubeChannelFeedSubscription
+  | IntervalFeedSubscription;

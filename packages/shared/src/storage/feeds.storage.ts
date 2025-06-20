@@ -2,7 +2,7 @@ import {EXTENSION_FEED, POCKET_EXPORT_FEED, PWA_FEED} from '@shared/lib/feeds.sh
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
-import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions.parser';
+import {parseFeedSubscriptionId} from '@shared/parsers/feedSubscriptions.parser';
 
 import type {Feed, IntervalFeed, RssFeed, YouTubeChannelFeed} from '@shared/types/feeds.types';
 import {FeedType} from '@shared/types/feedSourceTypes.types';
@@ -40,21 +40,21 @@ export function toStorageFeed(feed: Feed): FeedFromStorage {
 function toStorageRssFeed(feed: RssFeed): RssFeedFromStorage {
   return {
     feedType: FeedType.RSS,
-    userFeedSubscriptionId: feed.userFeedSubscriptionId,
+    feedSubscriptionId: feed.feedSubscriptionId,
   };
 }
 
 function toStorageYouTubeChannelFeed(feed: YouTubeChannelFeed): YouTubeChannelFeedFromStorage {
   return {
     feedType: FeedType.YouTubeChannel,
-    userFeedSubscriptionId: feed.userFeedSubscriptionId,
+    feedSubscriptionId: feed.feedSubscriptionId,
   };
 }
 
 function toStorageIntervalFeed(feed: IntervalFeed): IntervalFeedFromStorage {
   return {
     feedType: FeedType.Interval,
-    userFeedSubscriptionId: feed.userFeedSubscriptionId,
+    feedSubscriptionId: feed.feedSubscriptionId,
   };
 }
 
@@ -81,35 +81,35 @@ export function fromStorageFeed(feedFromStorage: FeedFromStorage): Result<Feed, 
 }
 
 function fromStorageRssFeed(feedFromStorage: RssFeedFromStorage): Result<RssFeed, Error> {
-  const parsedFeedSubIdResult = parseUserFeedSubscriptionId(feedFromStorage.userFeedSubscriptionId);
+  const parsedFeedSubIdResult = parseFeedSubscriptionId(feedFromStorage.feedSubscriptionId);
   if (!parsedFeedSubIdResult.success) return parsedFeedSubIdResult;
 
   return makeSuccessResult({
     feedType: FeedType.RSS,
-    userFeedSubscriptionId: parsedFeedSubIdResult.value,
+    feedSubscriptionId: parsedFeedSubIdResult.value,
   });
 }
 
 function fromStorageYouTubeChannelFeed(
   feedFromStorage: YouTubeChannelFeedFromStorage
 ): Result<YouTubeChannelFeed, Error> {
-  const parsedFeedSubIdResult = parseUserFeedSubscriptionId(feedFromStorage.userFeedSubscriptionId);
+  const parsedFeedSubIdResult = parseFeedSubscriptionId(feedFromStorage.feedSubscriptionId);
   if (!parsedFeedSubIdResult.success) return parsedFeedSubIdResult;
 
   return makeSuccessResult({
     feedType: FeedType.YouTubeChannel,
-    userFeedSubscriptionId: parsedFeedSubIdResult.value,
+    feedSubscriptionId: parsedFeedSubIdResult.value,
   });
 }
 
 function fromStorageIntervalFeed(
   feedFromStorage: IntervalFeedFromStorage
 ): Result<IntervalFeed, Error> {
-  const parsedFeedSubIdResult = parseUserFeedSubscriptionId(feedFromStorage.userFeedSubscriptionId);
+  const parsedFeedSubIdResult = parseFeedSubscriptionId(feedFromStorage.feedSubscriptionId);
   if (!parsedFeedSubIdResult.success) return parsedFeedSubIdResult;
 
   return makeSuccessResult({
     feedType: FeedType.Interval,
-    userFeedSubscriptionId: parsedFeedSubIdResult.value,
+    feedSubscriptionId: parsedFeedSubIdResult.value,
   });
 }

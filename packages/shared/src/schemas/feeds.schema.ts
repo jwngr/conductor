@@ -2,7 +2,7 @@ import {z} from 'zod/v4';
 
 import {FeedType} from '@shared/types/feedSourceTypes.types';
 
-import {UserFeedSubscriptionIdSchema} from '@shared/schemas/userFeedSubscriptions.schema';
+import {FeedSubscriptionIdSchema} from '@shared/schemas/feedSubscriptions.schema';
 
 const BaseFeedSchema = z.object({
   feedType: z.enum(FeedType),
@@ -10,21 +10,21 @@ const BaseFeedSchema = z.object({
 
 const RssFeedSchema = BaseFeedSchema.extend({
   feedType: z.literal(FeedType.RSS),
-  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
+  feedSubscriptionId: FeedSubscriptionIdSchema,
 });
 
 export type RssFeedFromStorage = z.infer<typeof RssFeedSchema>;
 
 const YouTubeChannelFeedSchema = BaseFeedSchema.extend({
   feedType: z.literal(FeedType.YouTubeChannel),
-  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
+  feedSubscriptionId: FeedSubscriptionIdSchema,
 });
 
 export type YouTubeChannelFeedFromStorage = z.infer<typeof YouTubeChannelFeedSchema>;
 
 const IntervalFeedSchema = BaseFeedSchema.extend({
   feedType: z.literal(FeedType.Interval),
-  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
+  feedSubscriptionId: FeedSubscriptionIdSchema,
 });
 
 export type IntervalFeedFromStorage = z.infer<typeof IntervalFeedSchema>;

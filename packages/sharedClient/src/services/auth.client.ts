@@ -49,10 +49,8 @@ export class ClientAuthService {
         const loggedInAccountResult = parseLoggedInAccount(firebaseUser);
         if (!loggedInAccountResult.success) {
           this.currentAccount = null;
-          const betterError = prefixError(
-            loggedInAccountResult.error,
-            'Failed to parse logged in account from Firebase user'
-          );
+          const message = 'Failed to parse logged in account from Firebase user';
+          const betterError = prefixError(loggedInAccountResult.error, message);
           this.subscribers.forEach((cb) => cb.errorCallback(betterError));
           return;
         }

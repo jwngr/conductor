@@ -1,8 +1,8 @@
 /**
  * Note: This file exists to avoid circular dependencies between `feeds.types.ts` and
- * `userFeedSubscriptions.types.ts`. `Feed`s store a `UserFeedSubscriptionId` and
- * `UserFeedSubscription`s store a `FeedType`. Alternatively, we could consider moving IDs into a
- * separate file to eliminate the dependency from `feeds.types.ts`.
+ * `feedSubscriptions.types.ts`. `Feed`s store a `FeedSubscriptionId` and `FeedSubscription`s store
+ * a `FeedType`. Alternatively, we could consider moving IDs into a separate file to eliminate the
+ * dependency from `feeds.types.ts`.
  */
 
 /**
@@ -24,7 +24,7 @@ export enum FeedType {
 }
 
 /**
- * List of {@link FeedType} that have a {@link UserFeedSubscription} associated with them.
+ * List of {@link FeedType} that have a {@link FeedSubscription} associated with them.
  */
 export const FEED_TYPES_WITH_SUBSCRIPTIONS = [
   FeedType.RSS,
@@ -33,6 +33,6 @@ export const FEED_TYPES_WITH_SUBSCRIPTIONS = [
 ] as const;
 
 /**
- * Subset of {@link FeedType} that have a {@link UserFeedSubscription} associated with them.
+ * Subset of {@link FeedType} that have a {@link FeedSubscription} associated with them.
  */
 export type FeedTypeWithSubscription = (typeof FEED_TYPES_WITH_SUBSCRIPTIONS)[number];

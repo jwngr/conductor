@@ -21,14 +21,14 @@ import {
 
 import type {FeedItem, FeedItemContentType} from '@shared/types/feedItems.types';
 import {FeedType} from '@shared/types/feedSourceTypes.types';
+import type {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
 import {IconName} from '@shared/types/icons.types';
 import type {TagId} from '@shared/types/tags.types';
-import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {Consumer} from '@shared/types/utils.types';
 import type {ViewGroupByOption, ViewSortByOption} from '@shared/types/views.types';
 import {ViewGroupByField, ViewSortByField} from '@shared/types/views.types';
 
-import {useUserFeedSubscriptionsStore} from '@sharedClient/stores/UserFeedSubscriptionsStore';
+import {useFeedSubscriptionsStore} from '@sharedClient/stores/FeedSubscriptionsStore';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
@@ -127,12 +127,12 @@ const ControlsSidebarFeedsSection: React.FC<{
 
 const ControlsSidebarFeedSubscriptionsSection: React.FC<{
   readonly feedItems: readonly FeedItem[];
-  readonly subscriptionIdsToFilterBy: Set<UserFeedSubscriptionId>;
-  readonly onFeedSubscriptionClick: Consumer<UserFeedSubscriptionId>;
+  readonly subscriptionIdsToFilterBy: Set<FeedSubscriptionId>;
+  readonly onFeedSubscriptionClick: Consumer<FeedSubscriptionId>;
 }> = ({feedItems, subscriptionIdsToFilterBy, onFeedSubscriptionClick}) => {
-  const {getFeedSubscription} = useUserFeedSubscriptionsStore();
+  const {getFeedSubscription} = useFeedSubscriptionsStore();
 
-  const getCriteriaName = (feedSubscriptionId: UserFeedSubscriptionId): string => {
+  const getCriteriaName = (feedSubscriptionId: FeedSubscriptionId): string => {
     const feedSubscription = getFeedSubscription(feedSubscriptionId);
     if (!feedSubscription) return feedSubscriptionId;
     switch (feedSubscription.feedType) {
@@ -148,7 +148,7 @@ const ControlsSidebarFeedSubscriptionsSection: React.FC<{
   };
 
   return (
-    <ControlsSidebarFilterCriteriaSection<UserFeedSubscriptionId>
+    <ControlsSidebarFilterCriteriaSection<FeedSubscriptionId>
       title="Subscriptions"
       feedItems={feedItems}
       activeCriteria={subscriptionIdsToFilterBy}
@@ -293,13 +293,13 @@ export const UntriagedViewControlsSidebar: React.FC<{
   readonly feedTypesToFilterBy: Set<FeedType>;
   readonly contentTypesToFilterBy: Set<FeedItemContentType>;
   readonly tagIdsToFilterBy: Set<TagId>;
-  readonly subscriptionIdsToFilterBy: Set<UserFeedSubscriptionId>;
+  readonly subscriptionIdsToFilterBy: Set<FeedSubscriptionId>;
   readonly onSortByChange: Consumer<ViewSortByOption>;
   readonly onGroupByChange: Consumer<ViewGroupByField>;
   readonly onSourceTypeClick: Consumer<FeedType>;
   readonly onContentTypeClick: Consumer<FeedItemContentType>;
   readonly onTagClick: Consumer<TagId>;
-  readonly onSubscriptionClick: Consumer<UserFeedSubscriptionId>;
+  readonly onSubscriptionClick: Consumer<FeedSubscriptionId>;
 }> = ({
   feedItems,
   sortBy,

@@ -23,11 +23,11 @@ import type {
 } from '@shared/types/feedItems.types';
 import type {Feed} from '@shared/types/feeds.types';
 import {FeedType} from '@shared/types/feedSourceTypes.types';
+import type {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/results.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
-import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 
 export const DEFAULT_FEED_ITEM_CONTENT_TYPE = FeedItemContentType.Article;
 
@@ -274,12 +274,12 @@ export function getFeedItemContentTypeText(feedItemContentType: FeedItemContentT
   }
 }
 
-export function getFeedSubscriptionIdForItem(feedItem: FeedItem): UserFeedSubscriptionId | null {
+export function getFeedSubscriptionIdForItem(feedItem: FeedItem): FeedSubscriptionId | null {
   switch (feedItem.origin.feedType) {
     case FeedType.RSS:
     case FeedType.YouTubeChannel:
     case FeedType.Interval:
-      return feedItem.origin.userFeedSubscriptionId;
+      return feedItem.origin.feedSubscriptionId;
     case FeedType.PWA:
     case FeedType.Extension:
     case FeedType.PocketExport:

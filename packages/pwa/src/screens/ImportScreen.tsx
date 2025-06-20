@@ -64,7 +64,7 @@ export const ImportScreen: React.FC = () => {
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
-    // Reset state every time user uploads a new file.
+    // Reset state every time new file is uploaded.
     setState(INITIAL_IMPORT_SCREEN_STATE);
 
     const file = event.target.files?.[0];

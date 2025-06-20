@@ -9,7 +9,7 @@ import {logger} from '@shared/services/logger.shared';
 
 import {
   FEED_ITEMS_DB_COLLECTION,
-  USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
+  FEED_SUBSCRIPTIONS_DB_COLLECTION,
 } from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 
@@ -20,8 +20,8 @@ import type {RssFeedProvider} from '@shared/types/rss.types';
 
 import type {ServerAccountsService} from '@sharedServer/services/accounts.server';
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
+import type {ServerFeedSubscriptionsService} from '@sharedServer/services/feedSubscriptions.server';
 import type {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
-import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
 import type {WipeoutService} from '@sharedServer/services/wipeout.server';
 
 import {FIREBASE_FUNCTIONS_REGION} from '@src/lib/environment.func';
@@ -39,7 +39,7 @@ import {handleSubscribeToRssFeed} from '@src/reqHandlers/handleSubscribeToRssFee
 import {handleSuperfeedrWebhookHelper} from '@src/reqHandlers/handleSuperfeedrWebhook';
 import {handleWipeoutAccount} from '@src/reqHandlers/handleWipeoutAccount';
 
-let userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
+let feedSubscriptionsService: ServerFeedSubscriptionsService;
 let wipeoutService: WipeoutService;
 let accountsService: ServerAccountsService;
 let rssFeedService: ServerRssFeedService;
@@ -61,7 +61,7 @@ onInit(() => {
 
   const services = initServicesResult.value;
 
-  userFeedSubscriptionsService = services.userFeedSubscriptionsService;
+  feedSubscriptionsService = services.feedSubscriptionsService;
   accountsService = services.accountsService;
   wipeoutService = services.wipeoutService;
   rssFeedService = services.rssFeedService;
@@ -83,7 +83,7 @@ export const handleSuperfeedrWebhook = onRequest(
   async (request, response) => {
     const handleWebhookResult = await handleSuperfeedrWebhookHelper({
       request,
-      userFeedSubscriptionsService,
+      feedSubscriptionsService,
       feedItemsService,
       rssFeedProvider,
     });
@@ -193,8 +193,8 @@ export const importFeedItemOnCreate = onDocumentCreated(
 );
 
 /**
- * Every time a feed item is updated, checks to see if it should be re-imported. The UI allows users
- * to manually re-import a feed item.
+ * Every time a feed item is updated, checks to see if it should be re-imported. The UI allows
+ * manually re-importing a feed item.
  */
 export const importFeedItemOnUpdate = onDocumentUpdated(
   `${FEED_ITEMS_DB_COLLECTION}/{feedItemId}`,
@@ -234,17 +234,17 @@ export const importFeedItemOnUpdate = onDocumentUpdated(
 );
 
 /**
- * Handles unsubscribe events when a user feed subscription is marked as inactive.
+ * Handles unsubscribe events when a feed subscription is marked as inactive.
  */
 export const handleFeedUnsubscribeOnUpdate = onDocumentUpdated(
-  `${USER_FEED_SUBSCRIPTIONS_DB_COLLECTION}/{userFeedSubscriptionId}`,
+  `${FEED_SUBSCRIPTIONS_DB_COLLECTION}/{feedSubscriptionId}`,
   async (event) => {
-    const userFeedSubscriptionId = event.params.userFeedSubscriptionId;
+    const feedSubscriptionId = event.params.feedSubscriptionId;
 
     const beforeData = event.data?.before.data();
     const afterData = event.data?.after.data();
 
-    const logDetails = {userFeedSubscriptionId, beforeData, afterData} as const;
+    const logDetails = {feedSubscriptionId, beforeData, afterData} as const;
 
     const result = await handleFeedUnsubscribe({
       beforeData,
@@ -276,7 +276,7 @@ export const emitIntervalFeeds = onSchedule(
   async () => {
     logger.log('[INTERVAL FEEDS] Checking for interval feed emissions...');
 
-    const result = await handleEmitIntervalFeeds({feedItemsService, userFeedSubscriptionsService});
+    const result = await handleEmitIntervalFeeds({feedItemsService, feedSubscriptionsService});
 
     if (!result.success) {
       logger.error(prefixError(result.error, `[INTERVAL FEEDS] Error emitting interval feeds`));
