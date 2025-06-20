@@ -17,7 +17,9 @@ export class ServerPocketService {
    * title,url,time_added,tags,status
    * This file can be downloaded from https://getpocket.com/export.
    */
-  static async parseCsvExportFile(filePath: string): AsyncResult<readonly PocketImportItem[]> {
+  static async parseCsvExportFile(
+    filePath: string
+  ): AsyncResult<readonly PocketImportItem[], Error> {
     const fileContentResult = await readFile(filePath, 'utf-8');
     if (!fileContentResult.success) return fileContentResult;
 
@@ -45,7 +47,7 @@ export class ServerPocketService {
    *
    * @deprecated This appears to be a legacy format and more recent exports use {@link parseCsvExportFile}.
    */
-  static async parseHtmlExportFile(path: string): AsyncResult<readonly PocketImportItem[]> {
+  static async parseHtmlExportFile(path: string): AsyncResult<readonly PocketImportItem[], Error> {
     const readFileResult = await readFile(path, 'utf-8');
     if (!readFileResult.success) return readFileResult;
 

@@ -1,6 +1,6 @@
 import {FEED_ITEM_FILE_XKCD_EXPLAIN} from '@shared/lib/constants.shared';
-import {asyncTryAll, prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {asyncTryAll, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 import {parseXkcdComicIdFromUrl} from '@shared/lib/xkcd.shared';
 
 import type {XkcdFeedItem} from '@shared/types/feedItems.types';
@@ -20,7 +20,7 @@ export class XkcdFeedItemImporter {
   public async fetchAndSaveXkcdComic(args: {
     readonly comicId: number;
     readonly feedItem: XkcdFeedItem;
-  }): AsyncResult<void> {
+  }): AsyncResult<void, Error> {
     const {comicId, feedItem} = args;
 
     const fetchXkcdComicResult = await fetchXkcdComic(comicId);
@@ -28,17 +28,17 @@ export class XkcdFeedItemImporter {
 
     const {title, imageUrlSmall, imageUrlLarge, altText} = fetchXkcdComicResult.value;
 
-    const updateFeedItemResult = await this.feedItemService.updateFeedItem(feedItem.feedItemId, {
-      title,
-      xkcd: {imageUrlSmall, imageUrlLarge, altText},
-    });
+    const updateFeedItemResult = await this.feedItemService.updateXkcdFeedItemContent(
+      feedItem.feedItemId,
+      {title, imageUrlSmall, imageUrlLarge, altText}
+    );
     return prefixResultIfError(updateFeedItemResult, 'Error updating XKCD comic');
   }
 
   public async fetchAndSaveExplainXkcdContent(args: {
     readonly comicId: number;
     readonly feedItem: XkcdFeedItem;
-  }): AsyncResult<void> {
+  }): AsyncResult<void, Error> {
     const {comicId, feedItem} = args;
 
     const fetchExplainXkcdContentResult = await fetchExplainXkcdContent(comicId);
@@ -63,8 +63,8 @@ export class XkcdFeedItemImporter {
     return prefixResultIfError(saveExplainXkcdContentResult, 'Error saving XKCD explain content');
   }
 
-  public async import(feedItem: XkcdFeedItem): AsyncResult<void> {
-    const comicIdResult = parseXkcdComicIdFromUrl(feedItem.url);
+  public async import(feedItem: XkcdFeedItem): AsyncResult<void, Error> {
+    const comicIdResult = parseXkcdComicIdFromUrl(feedItem.content.url);
     if (!comicIdResult.success) return comicIdResult;
 
     const comicId = comicIdResult.value;
@@ -72,11 +72,11 @@ export class XkcdFeedItemImporter {
       this.fetchAndSaveXkcdComic({comicId, feedItem}),
       this.fetchAndSaveExplainXkcdContent({comicId, feedItem}),
     ]);
-    const fetchXkcdResultsError = fetchXkcdResults.success
-      ? fetchXkcdResults.value.results.find((result) => !result.success)?.error
-      : fetchXkcdResults.error;
-    if (fetchXkcdResultsError) {
-      return makeErrorResult(prefixError(fetchXkcdResultsError, 'Error fetching XKCD data'));
+    const fetchXkcdErrorResult = fetchXkcdResults.success
+      ? fetchXkcdResults.value.results.find((result) => !result.success)
+      : fetchXkcdResults;
+    if (fetchXkcdErrorResult) {
+      return prefixErrorResult(fetchXkcdErrorResult, 'Error fetching XKCD data');
     }
 
     return makeSuccessResult(undefined);

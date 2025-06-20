@@ -1,14 +1,19 @@
-import {createRoute, useNavigate} from '@tanstack/react-router';
-import {useEffect} from 'react';
+import {createRoute} from '@tanstack/react-router';
 
-import {DEFAULT_STORIES_SIDEBAR_ITEM} from '@shared/lib/stories.shared';
+import {PARSING_FAILURE_SENTINEL} from '@shared/lib/parser.shared';
 
+import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
+import {parseStoriesSidebarItemId} from '@shared/parsers/stories.parser';
+
+import type {FeedItemId} from '@shared/types/feedItems.types';
+import type {StoriesSidebarItemId} from '@shared/types/stories.types';
 import {ViewType} from '@shared/types/views.types';
 
 import {RequireLoggedInAccount} from '@src/components/auth/RequireLoggedInAccount';
 import {SignOutRedirect} from '@src/components/auth/SignOutRedirect';
 
 import {rootRoute} from '@src/routes/__root';
+import {StoriesDefaultRedirect} from '@src/routes/Redirects';
 import {NotFoundScreen} from '@src/screens/404';
 import {ExperimentsScreen} from '@src/screens/ExperimentsScreen';
 import {FeedItemScreen} from '@src/screens/FeedItemScreen';
@@ -17,6 +22,50 @@ import {ImportScreen} from '@src/screens/ImportScreen';
 import {SignInScreen} from '@src/screens/SignInScreen';
 import {StoriesScreen} from '@src/screens/StoriesScreen';
 import {ViewScreen} from '@src/screens/ViewScreen';
+
+/////////////////////////
+//  VALIDATION HELPERS //
+/////////////////////////
+function storiesSidebarItemIdParseParamsHandler(params: {sidebarItemId: string}): {
+  sidebarItemId: StoriesSidebarItemId | typeof PARSING_FAILURE_SENTINEL | undefined;
+} {
+  const rawSidebarItemId = params.sidebarItemId;
+
+  if (
+    typeof rawSidebarItemId === 'undefined' ||
+    (typeof rawSidebarItemId === 'string' && rawSidebarItemId.length === 0)
+  ) {
+    return {sidebarItemId: undefined};
+  }
+
+  const result = parseStoriesSidebarItemId(rawSidebarItemId);
+  if (!result.success) {
+    return {sidebarItemId: PARSING_FAILURE_SENTINEL};
+  }
+
+  return {sidebarItemId: result.value};
+}
+
+function feedItemIdSearchHandler(search: Record<string, unknown>): {
+  feedItemId: FeedItemId | typeof PARSING_FAILURE_SENTINEL | undefined;
+} {
+  const rawFeedItemId = search.feedItemId;
+
+  if (
+    typeof rawFeedItemId === 'undefined' ||
+    (typeof rawFeedItemId === 'string' && rawFeedItemId.length === 0)
+  ) {
+    return {feedItemId: undefined};
+  }
+
+  const parsedResult = parseFeedItemId(rawFeedItemId);
+
+  if (!parsedResult.success) {
+    return {feedItemId: PARSING_FAILURE_SENTINEL};
+  }
+
+  return {feedItemId: parsedResult.value};
+}
 
 ////////////////////
 //  PUBLIC ROUTES //
@@ -33,19 +82,6 @@ export const signOutRoute = createRoute({
   component: SignOutRedirect,
 });
 
-const StoriesDefaultRedirect: React.FC = () => {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    void navigate({
-      to: storiesRoute.fullPath,
-      params: {sidebarItemId: DEFAULT_STORIES_SIDEBAR_ITEM.sidebarItemId},
-    });
-  }, [navigate]);
-
-  return null;
-};
-
 export const storiesRedirectRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/ui',
@@ -55,6 +91,7 @@ export const storiesRedirectRoute = createRoute({
 export const storiesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/ui/$sidebarItemId',
+  parseParams: storiesSidebarItemIdParseParamsHandler,
   component: StoriesScreen,
 });
 
@@ -64,6 +101,7 @@ export const storiesRoute = createRoute({
 export const allViewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/all',
+  validateSearch: feedItemIdSearchHandler,
   component: () => (
     <RequireLoggedInAccount>
       <ViewScreen viewType={ViewType.All} />
@@ -74,6 +112,7 @@ export const allViewRoute = createRoute({
 export const todayViewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/today',
+  validateSearch: feedItemIdSearchHandler,
   component: () => (
     <RequireLoggedInAccount>
       <ViewScreen viewType={ViewType.Today} />
@@ -84,6 +123,7 @@ export const todayViewRoute = createRoute({
 export const untriagedViewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
+  validateSearch: feedItemIdSearchHandler,
   component: () => (
     <RequireLoggedInAccount>
       <ViewScreen viewType={ViewType.Untriaged} />
@@ -94,6 +134,7 @@ export const untriagedViewRoute = createRoute({
 export const unreadViewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/unread',
+  validateSearch: feedItemIdSearchHandler,
   component: () => (
     <RequireLoggedInAccount>
       <ViewScreen viewType={ViewType.Unread} />
@@ -104,6 +145,7 @@ export const unreadViewRoute = createRoute({
 export const starredViewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/starred',
+  validateSearch: feedItemIdSearchHandler,
   component: () => (
     <RequireLoggedInAccount>
       <ViewScreen viewType={ViewType.Starred} />
@@ -114,6 +156,7 @@ export const starredViewRoute = createRoute({
 export const savedViewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/saved',
+  validateSearch: feedItemIdSearchHandler,
   component: () => (
     <RequireLoggedInAccount>
       <ViewScreen viewType={ViewType.Saved} />
@@ -124,6 +167,7 @@ export const savedViewRoute = createRoute({
 export const doneViewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/done',
+  validateSearch: feedItemIdSearchHandler,
   component: () => (
     <RequireLoggedInAccount>
       <ViewScreen viewType={ViewType.Done} />
@@ -134,6 +178,7 @@ export const doneViewRoute = createRoute({
 export const trashedViewRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/trashed',
+  validateSearch: feedItemIdSearchHandler,
   component: () => (
     <RequireLoggedInAccount>
       <ViewScreen viewType={ViewType.Trashed} />
@@ -144,6 +189,7 @@ export const trashedViewRoute = createRoute({
 export const feedItemRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/items/$feedItemId',
+  parseParams: feedItemIdSearchHandler,
   component: () => (
     <RequireLoggedInAccount>
       <FeedItemScreen />
@@ -181,6 +227,16 @@ export const experimentsRoute = createRoute({
   ),
 });
 
+export type ViewRoute =
+  | typeof allViewRoute
+  | typeof todayViewRoute
+  | typeof untriagedViewRoute
+  | typeof unreadViewRoute
+  | typeof starredViewRoute
+  | typeof savedViewRoute
+  | typeof doneViewRoute
+  | typeof trashedViewRoute;
+
 //////////////////////
 //  CATCH-ALL ROUTE //
 //////////////////////
@@ -189,3 +245,5 @@ export const catchAllRoute = createRoute({
   path: '*',
   component: () => <NotFoundScreen title={undefined} subtitle={undefined} />,
 });
+
+export const DEFAULT_ROUTE = untriagedViewRoute;

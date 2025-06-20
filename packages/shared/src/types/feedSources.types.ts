@@ -39,9 +39,7 @@ export interface PocketExportFeedSource extends BaseFeedSource {
 export type FeedSource =
   | RssFeedSource
   | YouTubeChannelFeedSource
-  | IntervalFeedSource
   | PwaFeedSource
   | ExtensionFeedSource
-  | PocketExportFeedSource;
-
-export type FeedSourceWithUrl = Exclude<FeedSource, IntervalFeedSource>;
+  | PocketExportFeedSource
+  | IntervalFeedSource;

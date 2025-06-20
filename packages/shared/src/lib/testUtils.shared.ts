@@ -4,7 +4,7 @@ import type {Result} from '@shared/types/results.types';
  * A convenience function to quickly assert that a {@link Result} is successful and has the expected
  * value.
  */
-export function expectSuccessResult<T>(result: Result<T>, expectedValue: T): void {
+export function expectSuccessResult<T, Error>(result: Result<T, Error>, expectedValue: T): void {
   expect(result.success).toBe(true);
   if (result.success) {
     expect(result.value).toStrictEqual(expectedValue);
@@ -16,7 +16,7 @@ export function expectSuccessResult<T>(result: Result<T>, expectedValue: T): voi
  * expected error message.
  */
 export function expectErrorResult<T>(
-  result: Result<T>,
+  result: Result<T, Error>,
   expectedErrorMessage?: string | RegExp
 ): void {
   expect(result.success).toBe(false);
@@ -30,7 +30,7 @@ export function expectErrorResult<T>(
  *
  * WARNING: This method is unsafe. It throws an error if the result is not successful.
  */
-export function unwrapOrThrow<T>(result: Result<T>): T {
+export function unwrapOrThrow<T>(result: Result<T, Error>): T {
   if (result.success) return result.value;
 
   // This is a test utility function, so it is okay to throw.

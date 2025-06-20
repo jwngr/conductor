@@ -4,17 +4,18 @@ import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {toast} from '@sharedClient/lib/toasts.client';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
+import {FlexRow} from '@src/components/atoms/Flex';
 import {StorySection} from '@src/components/stories/StorySection';
 
 export const ButtonIconStories: React.FC = () => {
   const handleButtonIconClick = (): void => {
-    toast.success('Button icon clicked');
+    toast('Button icon clicked');
   };
 
   return (
     <>
       <StorySection title="Basic button icons">
-        <div className="flex flex-row items-center gap-2">
+        <FlexRow gap={3}>
           <ButtonIcon
             name={IconName.Star}
             size={32}
@@ -33,11 +34,11 @@ export const ButtonIconStories: React.FC = () => {
             tooltip="Mark Done"
             onClick={handleButtonIconClick}
           />
-        </div>
+        </FlexRow>
       </StorySection>
 
       <StorySection title="Button icon sizes">
-        <div className="flex flex-row items-center gap-2">
+        <FlexRow gap={3}>
           <ButtonIcon
             name={IconName.Star}
             size={24}
@@ -56,26 +57,26 @@ export const ButtonIconStories: React.FC = () => {
             tooltip="Large"
             onClick={handleButtonIconClick}
           />
-        </div>
+        </FlexRow>
       </StorySection>
 
       <StorySection title="Button icon colors">
-        <div className="flex flex-row items-center gap-2">
+        <FlexRow gap={3}>
           <ButtonIcon
             name={IconName.Star}
             size={32}
-            className="text-error"
+            className="text-red-2"
             tooltip="Red"
             onClick={handleButtonIconClick}
           />
           <ButtonIcon
             name={IconName.Star}
             size={32}
-            className="text-success"
+            className="text-green-2"
             tooltip="Green"
             onClick={handleButtonIconClick}
           />
-        </div>
+        </FlexRow>
       </StorySection>
 
       <StorySection title="Button icon with keyboard shortcut">

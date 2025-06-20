@@ -14,21 +14,23 @@ import {useFeedItemsService} from '@sharedClient/hooks/feedItems.hooks';
 
 import {Button} from '@src/components/atoms/Button';
 import {Input} from '@src/components/atoms/Input';
-import {Text} from '@src/components/atoms/Text';
+import {P} from '@src/components/atoms/Text';
+
+import {firebaseService} from '@src/lib/firebase.pwa';
 
 const StatusText: React.FC<{
   readonly isError?: boolean;
   readonly children: React.ReactNode;
 }> = ({isError, children}) => {
   return (
-    <Text as="p" className={`text-xs ${isError ? 'text-error' : 'text-success'}`}>
+    <P error={isError} success={!isError}>
       {children}
-    </Text>
+    </P>
   );
 };
 
 const FeedItemImporter: React.FC = () => {
-  const feedItemsService = useFeedItemsService();
+  const feedItemsService = useFeedItemsService({firebaseService});
 
   const [urlInputValue, setUrlInputValue] = useState('');
   const {asyncState, setPending, setError, setSuccess} = useAsyncState<undefined>();
@@ -47,6 +49,10 @@ const FeedItemImporter: React.FC = () => {
         feedSource: PWA_FEED_SOURCE,
         url: trimmedUrl,
         title: trimmedUrl,
+        // These values are not provided in the dev toolbar importer.
+        description: null,
+        outgoingLinks: [],
+        summary: null,
       });
 
       if (!addFeedItemResult.success) {

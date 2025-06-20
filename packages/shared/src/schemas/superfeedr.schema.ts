@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import {z} from 'zod/v4';
 
 const SuperfeedrActorSchema = z.object({
   displayName: z.string(),
@@ -17,7 +17,7 @@ const SuperfeedrFeedSourceSchema = z.object({
   title: z.string(),
   updated: z.number(),
   published: z.number(),
-  permalinkUrl: z.string().url(),
+  permalinkUrl: z.url(),
   standardLinks: z.object({
     alternate: z.array(SuperfeedrStandardLinkSchema),
     superfeedr: z.array(SuperfeedrStandardLinkSchema),
@@ -30,7 +30,7 @@ const SuperfeedrFeedItemSchema = z.object({
   updated: z.number(),
   title: z.string(),
   summary: z.string(),
-  permalinkUrl: z.string().url(),
+  permalinkUrl: z.url(),
   standardLinks: z.object({
     alternate: z.array(SuperfeedrStandardLinkSchema),
   }),

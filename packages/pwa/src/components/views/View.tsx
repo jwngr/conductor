@@ -2,20 +2,24 @@ import React, {useEffect, useMemo, useRef, useState} from 'react';
 
 import {logger} from '@shared/services/logger.shared';
 
+import {arrayFilter} from '@shared/lib/arrayUtils.shared';
+import {isDate} from '@shared/lib/datetime.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
+import {getFeedSubscriptionIdForFeedSource} from '@shared/lib/feedSources.shared';
+import {objectKeys, objectMapEntries} from '@shared/lib/objectUtils.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
-import {FeedItemType, type FeedItem} from '@shared/types/feedItems.types';
-import {ViewType} from '@shared/types/views.types';
-import type {
-  ViewGroupByField,
-  ViewGroupByOption,
-  ViewSortByField,
-  ViewSortByOption,
-} from '@shared/types/views.types';
+import {FeedItemContentType} from '@shared/types/feedItems.types';
+import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
+import type {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import type {TagId} from '@shared/types/tags.types';
+import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
+import type {Supplier} from '@shared/types/utils.types';
+import type {ViewGroupByOption, ViewSortByOption, ViewType} from '@shared/types/views.types';
+import {ViewGroupByField, ViewSortByField} from '@shared/types/views.types';
 
 import {useFocusStore} from '@sharedClient/stores/FocusStore';
 
@@ -31,15 +35,20 @@ import {
 
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
-import {Text} from '@src/components/atoms/Text';
+import {H3, P} from '@src/components/atoms/Text';
 import {ErrorArea} from '@src/components/errors/ErrorArea';
 import {HoverFeedItemActions} from '@src/components/feedItems/FeedItemActions';
 import {FeedItemImportStatusBadge} from '@src/components/feedItems/FeedItemImportStatusBadge';
+import {FeedItemKeyboardShortcutHandler} from '@src/components/feedItems/FeedItemKeyboardShortcutHandler';
 import {LoadingArea} from '@src/components/loading/LoadingArea';
+import {UntriagedViewControlsSidebar} from '@src/components/views/UntriagedViewControlsSidebar';
+import * as styles from '@src/components/views/View.css';
 import {ViewKeyboardShortcutHandler} from '@src/components/views/ViewKeyboardShortcutHandler';
-import {ViewOptionsDialog} from '@src/components/views/ViewOptionsDialog';
 
-import {feedItemRoute} from '@src/routes';
+import {firebaseService} from '@src/lib/firebase.pwa';
+import {getRouteFromViewType} from '@src/lib/router.pwa';
+
+import {FeedItemScreenContent} from '@src/screens/FeedItemScreen';
 
 function compareFeedItems(args: {
   readonly a: FeedItem;
@@ -53,24 +62,24 @@ function compareFeedItems(args: {
   let valB: string | number | Date;
 
   switch (field) {
-    case 'createdTime':
+    case ViewSortByField.CreatedTime:
       valA = a.createdTime;
       valB = b.createdTime;
       break;
-    case 'lastUpdatedTime':
+    case ViewSortByField.LastUpdatedTime:
       valA = a.lastUpdatedTime;
       valB = b.lastUpdatedTime;
       break;
-    case 'title':
-      valA = a.title;
-      valB = b.title;
+    case ViewSortByField.Title:
+      valA = a.content.title;
+      valB = b.content.title;
       break;
     default:
       assertNever(field);
   }
 
   // Handle date sorting.
-  if (field === 'createdTime' || field === 'lastUpdatedTime') {
+  if (field === ViewSortByField.CreatedTime || field === ViewSortByField.LastUpdatedTime) {
     valA = valA instanceof Date ? valA.getTime() : new Date(valA).getTime();
     valB = valB instanceof Date ? valB.getTime() : new Date(valB).getTime();
   }
@@ -84,6 +93,51 @@ function compareFeedItems(args: {
   if (valA < valB) return -direction;
   if (valA > valB) return direction;
   return 0;
+}
+
+function useFilteredFeedItems(
+  feedItems: FeedItem[],
+  filterByOptions: {
+    readonly sourceTypesToFilterBy: Set<FeedSourceType>;
+    readonly contentTypesToFilterBy: Set<FeedItemContentType>;
+    readonly tagIdsToFilterBy: Set<TagId>;
+    readonly subscriptionIdsToFilterBy: Set<UserFeedSubscriptionId>;
+  }
+): FeedItem[] {
+  return useMemo(() => {
+    return arrayFilter(feedItems, (item) => {
+      const passesSourceTypeFilter =
+        filterByOptions.sourceTypesToFilterBy.size === 0 ||
+        filterByOptions.sourceTypesToFilterBy.has(item.feedSource.feedSourceType);
+
+      const passesContentTypeFilter =
+        filterByOptions.contentTypesToFilterBy.size === 0 ||
+        filterByOptions.contentTypesToFilterBy.has(item.feedItemContentType);
+
+      // Feed subscription filter.
+      const feedSubscriptionId = getFeedSubscriptionIdForFeedSource(item.feedSource);
+      const passesSubscriptionFilter =
+        filterByOptions.subscriptionIdsToFilterBy.size === 0 ||
+        (feedSubscriptionId
+          ? filterByOptions.subscriptionIdsToFilterBy.has(feedSubscriptionId)
+          : false);
+
+      // Tag filter.
+      const feedItemTagIds = objectKeys(item.tagIds);
+      const passesTagFilter =
+        filterByOptions.tagIdsToFilterBy.size === 0 ||
+        feedItemTagIds.some((tagId) => filterByOptions.tagIdsToFilterBy.has(tagId));
+
+      // Only include feed items that pass all filters. If no items are active for a filter, it is
+      // considered passed.
+      return (
+        passesSourceTypeFilter &&
+        passesContentTypeFilter &&
+        passesSubscriptionFilter &&
+        passesTagFilter
+      );
+    });
+  }, [feedItems, filterByOptions]);
 }
 
 /**
@@ -118,10 +172,17 @@ function useSortedFeedItems(
   return sortedItems;
 }
 
-const getDateGroupKey = (date: Date | string): string => {
-  const d = typeof date === 'string' ? new Date(date) : date;
+const getDateGroupKey = (rawDate: Date | string | {toDate: Supplier<Date>}): string => {
+  let date: Date;
+  if (isDate(rawDate)) {
+    date = rawDate;
+  } else if (typeof rawDate === 'string') {
+    date = new Date(rawDate);
+  } else {
+    date = rawDate.toDate();
+  }
   // TODO: Use better names for group keys.
-  return d.toISOString().split('T')[0]; // YYYY-MM-DD format
+  return date.toISOString().split('T')[0]; // YYYY-MM-DD format
 };
 
 /**
@@ -141,9 +202,9 @@ function useGroupedFeedItems(
 
     const groupedItems: Record<string, FeedItem[]> = {};
     switch (groupByField) {
-      case 'feedItemType':
+      case ViewGroupByField.FeedItemContentType:
         for (const item of feedItems) {
-          const groupKey = item.feedItemType;
+          const groupKey = item.feedItemContentType;
           if (!groupedItems[groupKey]) {
             groupedItems[groupKey] = [];
           }
@@ -151,7 +212,7 @@ function useGroupedFeedItems(
         }
         return groupedItems;
 
-      case 'feedSourceType':
+      case ViewGroupByField.FeedSourceType:
         for (const item of feedItems) {
           const groupKey = item.feedSource.feedSourceType;
           if (!groupedItems[groupKey]) {
@@ -161,7 +222,7 @@ function useGroupedFeedItems(
         }
         return groupedItems;
 
-      case 'importState':
+      case ViewGroupByField.ImportState:
         for (const item of feedItems) {
           const groupKey = item.importState.status;
           if (!groupedItems[groupKey]) {
@@ -171,7 +232,7 @@ function useGroupedFeedItems(
         }
         return groupedItems;
 
-      case 'createdTime':
+      case ViewGroupByField.CreatedTime:
         // TODO: Handle timezones.
         for (const item of feedItems) {
           const groupKey = getDateGroupKey(item.createdTime);
@@ -182,10 +243,20 @@ function useGroupedFeedItems(
         }
         return groupedItems;
 
-      case 'lastUpdatedTime':
+      case ViewGroupByField.LastUpdatedTime:
         // TODO: Handle timezones.
         for (const item of feedItems) {
           const groupKey = getDateGroupKey(item.lastUpdatedTime);
+          if (!groupedItems[groupKey]) {
+            groupedItems[groupKey] = [];
+          }
+          groupedItems[groupKey].push(item);
+        }
+        return groupedItems;
+
+      case ViewGroupByField.TriageStatus:
+        for (const item of feedItems) {
+          const groupKey = item.triageStatus;
           if (!groupedItems[groupKey]) {
             groupedItems[groupKey] = [];
           }
@@ -221,12 +292,10 @@ const ViewListItem: React.FC<{
   }, [isFocused]);
 
   return (
-    <Link to={feedItemRoute.fullPath} params={{feedItemId: feedItem.feedItemId}}>
+    <Link search={{feedItemId: feedItem.feedItemId}}>
       <div
         ref={itemRef}
-        className={`hover:bg-neutral-1 focus-visible:bg-neutral-1 relative flex cursor-pointer flex-col justify-center gap-1 rounded p-2 outline-none ${
-          isFocused ? `bg-neutral-1 outline-2 outline-stone-500` : ''
-        }`}
+        className={styles.viewListItem({isFocused})}
         tabIndex={0}
         onFocus={() => setFocusedFeedItemId(feedItem.feedItemId)}
         onBlur={() => setFocusedFeedItemId(null)}
@@ -235,17 +304,17 @@ const ViewListItem: React.FC<{
       >
         <div>
           <FlexRow gap={3}>
-            <Text as="p" bold={isUnread}>
-              {feedItem.title || 'No title'}
-            </Text>
+            <P bold={isUnread}>{feedItem.content.title || 'No title'}</P>
             <FeedItemImportStatusBadge importState={feedItem.importState} />
           </FlexRow>
-          <Text as="p" light>
-            {feedItem.feedItemType === FeedItemType.Interval ? 'Interval' : feedItem.url}
-          </Text>
+          <P light>
+            {feedItem.feedItemContentType === FeedItemContentType.Interval
+              ? 'Interval'
+              : feedItem.content.url}
+          </P>
         </div>
         {shouldShowActions ? (
-          <div className="absolute top-1/2 right-2 -translate-y-1/2 transform">
+          <div className={styles.viewListItemActions()}>
             <HoverFeedItemActions feedItem={feedItem} />
           </div>
         ) : null}
@@ -254,24 +323,105 @@ const ViewListItem: React.FC<{
   );
 };
 
+interface LoadedViewListState {
+  readonly sortBy: ViewSortByOption[];
+  readonly groupBy: ViewGroupByOption[];
+  readonly sourceTypesToFilterBy: Set<FeedSourceType>;
+  readonly contentTypesToFilterBy: Set<FeedItemContentType>;
+  readonly tagIdsToFilterBy: Set<TagId>;
+  readonly subscriptionIdsToFilterBy: Set<UserFeedSubscriptionId>;
+}
+
 const LoadedViewList: React.FC<{
   readonly viewType: ViewType;
   readonly feedItems: FeedItem[];
-  readonly sortBy: readonly ViewSortByOption[];
-  readonly groupBy: readonly ViewGroupByOption[];
-}> = ({viewType, feedItems, sortBy, groupBy}) => {
-  const sortedItems = useSortedFeedItems(feedItems, sortBy);
-  const groupByField = groupBy.length === 0 ? null : groupBy[0].field;
+  readonly showSidebar: boolean;
+  readonly selectedFeedItemId: FeedItemId | null;
+}> = ({viewType, feedItems, showSidebar, selectedFeedItemId}) => {
+  const defaultViewConfig = Views.get(viewType);
+
+  const [viewOptions, setViewOptions] = useState<LoadedViewListState>(() => {
+    // Create mutable copies for the initial state.
+    return {
+      sortBy: [...defaultViewConfig.sortBy],
+      groupBy: [...defaultViewConfig.groupBy],
+      sourceTypesToFilterBy: new Set<FeedSourceType>(),
+      contentTypesToFilterBy: new Set<FeedItemContentType>(),
+      tagIdsToFilterBy: new Set<TagId>(),
+      subscriptionIdsToFilterBy: new Set<UserFeedSubscriptionId>(),
+    };
+  });
+
+  const filteredItems = useFilteredFeedItems(feedItems, viewOptions);
+  const sortedItems = useSortedFeedItems(filteredItems, viewOptions.sortBy);
+  const groupByField = viewOptions.groupBy.length === 0 ? null : viewOptions.groupBy[0].field;
   const groupedItems = useGroupedFeedItems(sortedItems, groupByField);
+
+  const handleFilterBySourceTypeChange = (criteria: FeedSourceType): void => {
+    setViewOptions((prev: LoadedViewListState) => {
+      const newSet = new Set(prev.sourceTypesToFilterBy);
+      if (newSet.has(criteria)) {
+        newSet.delete(criteria);
+      } else {
+        newSet.add(criteria);
+      }
+      return {...prev, sourceTypesToFilterBy: newSet};
+    });
+  };
+
+  const handleFilterByContentTypeChange = (criteria: FeedItemContentType): void => {
+    setViewOptions((prev: LoadedViewListState) => {
+      const newSet = new Set(prev.contentTypesToFilterBy);
+      if (newSet.has(criteria)) {
+        newSet.delete(criteria);
+      } else {
+        newSet.add(criteria);
+      }
+      return {...prev, contentTypesToFilterBy: newSet};
+    });
+  };
+
+  const handleFilterByTagChange = (criteria: TagId): void => {
+    setViewOptions((prev: LoadedViewListState) => {
+      const newSet = new Set(prev.tagIdsToFilterBy);
+      if (newSet.has(criteria)) {
+        newSet.delete(criteria);
+      } else {
+        newSet.add(criteria);
+      }
+      return {...prev, tagIdsToFilterBy: newSet};
+    });
+  };
+
+  const handleFilterBySubscriptionChange = (criteria: UserFeedSubscriptionId): void => {
+    setViewOptions((prev: LoadedViewListState) => {
+      const newSet = new Set(prev.subscriptionIdsToFilterBy);
+      if (newSet.has(criteria)) {
+        newSet.delete(criteria);
+      } else {
+        newSet.add(criteria);
+      }
+      return {...prev, subscriptionIdsToFilterBy: newSet};
+    });
+  };
 
   if (feedItems.length === 0) {
     // TODO: Introduce proper empty state.
     return <div>No items</div>;
   }
 
-  // Grouping logic.
   let mainContent: React.ReactNode;
-  if (groupedItems === null) {
+  if (selectedFeedItemId) {
+    // If a feed item is selected, render the feed item screen.
+    const currentRoute = getRouteFromViewType(viewType);
+    mainContent = (
+      <>
+        <FeedItemScreenContent feedItemId={selectedFeedItemId} />
+        <FeedItemKeyboardShortcutHandler currentRoute={currentRoute} />
+      </>
+    );
+  } else if (groupedItems === null) {
+    // If no grouping is applied, just render the list of items.
     mainContent = (
       <ul>
         {sortedItems.map((feedItem) => (
@@ -280,11 +430,12 @@ const LoadedViewList: React.FC<{
       </ul>
     );
   } else {
+    // If grouping is applied, render the list of items grouped by the group field.
     mainContent = (
-      <FlexColumn gap={4}>
-        {Object.entries(groupedItems).map(([groupKey, items]) => (
+      <FlexColumn flex gap={4} padding={4}>
+        {objectMapEntries(groupedItems, (groupKey, items) => (
           <React.Fragment key={`${viewType}-${groupKey}`}>
-            <Text as="h3">{groupKey}</Text>
+            <H3>{groupKey}</H3>
             <ul>
               {items.map((feedItem) => (
                 <ViewListItem key={feedItem.feedItemId} feedItem={feedItem} viewType={viewType} />
@@ -296,36 +447,43 @@ const LoadedViewList: React.FC<{
     );
   }
 
+  const controlsSidebar = showSidebar ? (
+    <UntriagedViewControlsSidebar
+      feedItems={feedItems}
+      sortBy={viewOptions.sortBy}
+      groupBy={viewOptions.groupBy}
+      sourceTypesToFilterBy={viewOptions.sourceTypesToFilterBy}
+      contentTypesToFilterBy={viewOptions.contentTypesToFilterBy}
+      tagIdsToFilterBy={viewOptions.tagIdsToFilterBy}
+      subscriptionIdsToFilterBy={viewOptions.subscriptionIdsToFilterBy}
+      onSortByChange={(newSortBy) =>
+        setViewOptions((prev) => ({
+          ...prev,
+          sortBy: [newSortBy],
+        }))
+      }
+      onGroupByChange={(newGroupBy) =>
+        setViewOptions((prev) => ({
+          ...prev,
+          groupBy: [{field: newGroupBy}],
+        }))
+      }
+      onSourceTypeClick={handleFilterBySourceTypeChange}
+      onContentTypeClick={handleFilterByContentTypeChange}
+      onTagClick={handleFilterByTagChange}
+      onSubscriptionClick={handleFilterBySubscriptionChange}
+    />
+  ) : null;
+
   return (
     <>
-      {mainContent}
+      <FlexRow align="stretch" className="h-full">
+        {controlsSidebar}
+        {mainContent}
+      </FlexRow>
       <ViewKeyboardShortcutHandler feedItems={sortedItems} />
     </>
   );
-};
-
-const ViewList: React.FC<{
-  readonly viewType: ViewType;
-  readonly sortBy: readonly ViewSortByOption[];
-  readonly groupBy: readonly ViewGroupByOption[];
-}> = ({viewType, sortBy, groupBy}) => {
-  // Split views based on whether or not they filter items based on delivery schedules. This is
-  // because fetching delivery schedules is more expensive, so we want to avoid doing so for views
-  // which do not need them.
-  switch (viewType) {
-    case ViewType.Untriaged:
-      return <ViewListRespectingDelivery viewType={viewType} sortBy={sortBy} groupBy={groupBy} />;
-    case ViewType.Saved:
-    case ViewType.Done:
-    case ViewType.Trashed:
-    case ViewType.Unread:
-    case ViewType.Starred:
-    case ViewType.All:
-    case ViewType.Today:
-      return <ViewListIgnoringDelivery viewType={viewType} sortBy={sortBy} groupBy={groupBy} />;
-    default:
-      assertNever(viewType);
-  }
 };
 
 const ViewListErrorArea: React.FC<{
@@ -344,12 +502,11 @@ const ViewListErrorArea: React.FC<{
 /**
  * Primary list component for views which do not filter items based on delivery schedules.
  */
-const ViewListIgnoringDelivery: React.FC<{
+export const ViewListIgnoringDelivery: React.FC<{
   readonly viewType: Exclude<ViewType, ViewType.Untriaged>;
-  readonly sortBy: readonly ViewSortByOption[];
-  readonly groupBy: readonly ViewGroupByOption[];
-}> = ({viewType, sortBy, groupBy}) => {
-  const feedItemsState = useFeedItemsIgnoringDelivery({viewType});
+  readonly selectedFeedItemId: FeedItemId | null;
+}> = ({viewType, selectedFeedItemId}) => {
+  const feedItemsState = useFeedItemsIgnoringDelivery({viewType, firebaseService});
 
   switch (feedItemsState.status) {
     case AsyncStatus.Idle:
@@ -360,7 +517,7 @@ const ViewListIgnoringDelivery: React.FC<{
         feedItemsState.error,
         'Failed to load items ignoring delivery schedules'
       );
-      logger.error(betterError, {viewType, sortBy, groupBy});
+      logger.error(betterError, {viewType});
       return <ViewListErrorArea error={feedItemsState.error} />;
     }
     case AsyncStatus.Success: {
@@ -368,8 +525,8 @@ const ViewListIgnoringDelivery: React.FC<{
         <LoadedViewList
           viewType={viewType}
           feedItems={feedItemsState.value}
-          sortBy={sortBy}
-          groupBy={groupBy}
+          showSidebar={false}
+          selectedFeedItemId={selectedFeedItemId}
         />
       );
     }
@@ -381,12 +538,11 @@ const ViewListIgnoringDelivery: React.FC<{
 /**
  * Primary list component for views which filter items based on delivery schedules.
  */
-const ViewListRespectingDelivery: React.FC<{
+export const ViewListRespectingDelivery: React.FC<{
   readonly viewType: ViewType.Untriaged;
-  readonly sortBy: readonly ViewSortByOption[];
-  readonly groupBy: readonly ViewGroupByOption[];
-}> = ({viewType, sortBy, groupBy}) => {
-  const feedItemsState = useFeedItemsRespectingDelivery({viewType});
+  readonly selectedFeedItemId: FeedItemId | null;
+}> = ({viewType, selectedFeedItemId}) => {
+  const feedItemsState = useFeedItemsRespectingDelivery({viewType, firebaseService});
 
   switch (feedItemsState.status) {
     case AsyncStatus.Idle:
@@ -397,7 +553,7 @@ const ViewListRespectingDelivery: React.FC<{
         feedItemsState.error,
         'Failed to load items respecting delivery schedules'
       );
-      logger.error(betterError, {viewType, sortBy, groupBy});
+      logger.error(betterError, {viewType});
       return <ViewListErrorArea error={feedItemsState.error} />;
     }
     case AsyncStatus.Success: {
@@ -405,78 +561,12 @@ const ViewListRespectingDelivery: React.FC<{
         <LoadedViewList
           viewType={viewType}
           feedItems={feedItemsState.value}
-          sortBy={sortBy}
-          groupBy={groupBy}
+          showSidebar
+          selectedFeedItemId={selectedFeedItemId}
         />
       );
     }
     default:
       assertNever(feedItemsState);
   }
-};
-
-const ViewHeader: React.FC<{
-  name: string;
-  sortBy: readonly ViewSortByOption[];
-  groupBy: readonly ViewGroupByOption[];
-  onSortByChange: React.Dispatch<React.SetStateAction<ViewSortByOption[]>>;
-  onGroupByChange: React.Dispatch<React.SetStateAction<ViewGroupByOption[]>>;
-}> = ({name, sortBy, groupBy, onSortByChange, onGroupByChange}) => {
-  return (
-    <FlexRow justify="between" padding={4}>
-      <Text as="h2" bold>
-        {name}
-      </Text>
-      <FlexRow gap={2}>
-        <ViewOptionsDialog
-          sortBy={sortBy}
-          groupBy={groupBy}
-          onSortByChange={onSortByChange}
-          onGroupByChange={onGroupByChange}
-        />
-      </FlexRow>
-    </FlexRow>
-  );
-};
-
-interface ViewRendererState {
-  readonly sortBy: ViewSortByOption[];
-  readonly groupBy: ViewGroupByOption[];
-}
-
-export const ViewRenderer: React.FC<{
-  readonly viewType: ViewType;
-}> = ({viewType}) => {
-  const defaultViewConfig = Views.get(viewType);
-
-  const [viewOptions, setViewOptions] = useState<ViewRendererState>(() => {
-    // Create mutable copies for the initial state.
-    return {
-      sortBy: [...defaultViewConfig.sortBy],
-      groupBy: [...defaultViewConfig.groupBy],
-    };
-  });
-
-  return (
-    <FlexColumn flex={1} overflow="auto" padding={4}>
-      <ViewHeader
-        name={defaultViewConfig.name}
-        sortBy={viewOptions.sortBy}
-        groupBy={viewOptions.groupBy}
-        onSortByChange={(newSortBy) =>
-          setViewOptions((prev) => ({
-            ...prev,
-            sortBy: typeof newSortBy === 'function' ? newSortBy(prev.sortBy) : newSortBy,
-          }))
-        }
-        onGroupByChange={(newGroupBy) =>
-          setViewOptions((prev) => ({
-            ...prev,
-            groupBy: typeof newGroupBy === 'function' ? newGroupBy(prev.groupBy) : newGroupBy,
-          }))
-        }
-      />
-      <ViewList viewType={viewType} sortBy={viewOptions.sortBy} groupBy={viewOptions.groupBy} />
-    </FlexColumn>
-  );
 };

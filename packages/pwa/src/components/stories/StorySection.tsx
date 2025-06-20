@@ -1,5 +1,5 @@
 import {FlexColumn} from '@src/components/atoms/Flex';
-import {Text} from '@src/components/atoms/Text';
+import {H2} from '@src/components/atoms/Text';
 
 export const StorySection: React.FC<{
   readonly title: string | null;
@@ -7,11 +7,7 @@ export const StorySection: React.FC<{
 }> = ({title, children}) => {
   return (
     <FlexColumn gap={2}>
-      {title ? (
-        <Text as="h2" bold>
-          {title}
-        </Text>
-      ) : null}
+      {title ? <H2 bold>{title}</H2> : null}
       <FlexColumn gap={4}>{children}</FlexColumn>
     </FlexColumn>
   );

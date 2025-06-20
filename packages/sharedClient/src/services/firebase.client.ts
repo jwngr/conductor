@@ -9,42 +9,11 @@ import {connectFunctionsEmulator, getFunctions} from 'firebase/functions';
 import type {FirebaseStorage} from 'firebase/storage';
 import {connectStorageEmulator, getStorage} from 'firebase/storage';
 
-import {logger} from '@shared/services/logger.shared';
-
 import type {FirebaseConfig} from '@shared/types/firebase.types';
 
-function validateRequiredEnvVar(name: string): string {
-  const value = import.meta.env[name];
-  if (!value) {
-    const error = new Error(`${name} environment variable is not set`);
-    logger.error(error);
-    // eslint-disable-next-line no-restricted-syntax
-    throw error;
-  }
-  return value;
-}
+export const clientTimestampSupplier = (): FieldValue => serverTimestamp();
 
-// Firebase config is stored in `.env` at the root of the repo.
-function getFirebaseConfig(): FirebaseConfig {
-  return {
-    apiKey: validateRequiredEnvVar('VITE_FIREBASE_API_KEY'),
-    authDomain: validateRequiredEnvVar('VITE_FIREBASE_AUTH_DOMAIN'),
-    projectId: validateRequiredEnvVar('VITE_FIREBASE_PROJECT_ID'),
-    storageBucket: validateRequiredEnvVar('VITE_FIREBASE_STORAGE_BUCKET'),
-    messagingSenderId: validateRequiredEnvVar('VITE_FIREBASE_MESSAGING_SENDER_ID'),
-    appId: validateRequiredEnvVar('VITE_FIREBASE_APP_ID'),
-    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID, // Optional.
-  };
-}
-
-function getIsFirebaseEmulatorEnabled(): boolean {
-  // Only enable emulator in dev mode.
-  if (!import.meta.env.DEV) return false;
-  // Only enable emulator if the env var is set to `true`.
-  return import.meta.env.VITE_FIREBASE_USE_EMULATOR === 'true';
-}
-
-class ClientFirebaseService {
+export class ClientFirebaseService {
   private app: FirebaseApp;
   private config: FirebaseConfig;
   private isEmulatorEnabled: boolean;
@@ -114,10 +83,3 @@ class ClientFirebaseService {
     return this.functionsInstance;
   }
 }
-
-export const firebaseService = new ClientFirebaseService({
-  config: getFirebaseConfig(),
-  isEmulatorEnabled: getIsFirebaseEmulatorEnabled(),
-});
-
-export const clientTimestampSupplier = (): FieldValue => serverTimestamp();

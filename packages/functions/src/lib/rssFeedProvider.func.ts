@@ -13,7 +13,7 @@ import type {SuperfeedrCredentials} from '@shared/types/superfeedr.types';
 import {LocalRssFeedProvider} from '@sharedServer/services/localRssFeedProvider';
 import {SuperfeedrService} from '@sharedServer/services/superfeedr.server';
 
-import {getFunctionsBaseUrl} from '@src/lib/env';
+import {getFunctionsBaseUrl} from '@src/lib/environment.func';
 
 const LOCAL_RSS_FEED_PROVIDER_PORT = defineString('LOCAL_RSS_FEED_PROVIDER_PORT');
 const RSS_FEED_PROVIDER_TYPE = defineString('RSS_FEED_PROVIDER_TYPE');
@@ -24,7 +24,7 @@ const LOCAL_RSS_FEED_PROVIDER_WEBHOOK_SECRET = defineString(
   'LOCAL_RSS_FEED_PROVIDER_WEBHOOK_SECRET'
 );
 
-export function getRssFeedProvider(): Result<RssFeedProvider> {
+export function getRssFeedProvider(): Result<RssFeedProvider, Error> {
   const rawRssFeedProviderType = RSS_FEED_PROVIDER_TYPE.value();
   const uppercasedRssFeedProviderType = rawRssFeedProviderType.toUpperCase();
   const parsedFeedProviderTypeResult = parseRssFeedProviderType(uppercasedRssFeedProviderType);
@@ -46,7 +46,7 @@ export function getRssFeedProvider(): Result<RssFeedProvider> {
   }
 }
 
-function getLocalRssFeedProvider(): Result<RssFeedProvider> {
+function getLocalRssFeedProvider(): Result<RssFeedProvider, Error> {
   // TODO: Consider using a different callback URL for the local feed provider.
   const callbackUrl = `${getFunctionsBaseUrl()}/handleSuperfeedrWebhook`;
 
@@ -69,7 +69,7 @@ function getLocalRssFeedProvider(): Result<RssFeedProvider> {
   return makeSuccessResult(rssFeedProvider);
 }
 
-function getSuperfeedrRssFeedProvider(): Result<RssFeedProvider> {
+function getSuperfeedrRssFeedProvider(): Result<RssFeedProvider, Error> {
   const callbackUrl = `${getFunctionsBaseUrl()}/handleSuperfeedrWebhook`;
 
   const credentialsResult = validateSuperfeedrCredentials();
@@ -89,7 +89,7 @@ function getSuperfeedrRssFeedProvider(): Result<RssFeedProvider> {
   return makeSuccessResult(rssFeedProvider);
 }
 
-function validateSuperfeedrCredentials(): Result<SuperfeedrCredentials> {
+function validateSuperfeedrCredentials(): Result<SuperfeedrCredentials, Error> {
   const rawSuperfeedrUser = SUPERFEEDR_USER.value();
   const rawSuperfeedrApiKey = SUPERFEEDR_API_KEY.value();
 

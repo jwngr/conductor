@@ -30,7 +30,7 @@ export class WipeoutService {
   /**
    * Permanently deletes all data associated with an account.
    */
-  public async wipeoutAccount(accountId: AccountId): AsyncResult<void> {
+  public async wipeoutAccount(accountId: AccountId): AsyncResult<void, Error> {
     // Assume success until proven otherwise.
     let wasSuccessful = true;
 
@@ -62,7 +62,7 @@ export class WipeoutService {
         {activeUserFeedSubscriptionIds, ...logDetails}
       );
 
-      const unsubscribeFromFeedSuppliers: Array<Supplier<AsyncResult<void>>> =
+      const unsubscribeFromFeedSuppliers: Array<Supplier<AsyncResult<void, Error>>> =
         activeUserFeedSubscriptionIds.map((userFeedSubscriptionId) => async () => {
           logger.log(
             `[WIPEOUT] Unsubscribing account ${accountId} from feed subscription ${userFeedSubscriptionId}...`,
@@ -102,7 +102,7 @@ export class WipeoutService {
 
     logger.log('[WIPEOUT] Wiping out Firestore data for account...', logDetails);
     const deleteFirestoreResult = await asyncTryAll([
-      this.accountsService.deleteAccountDoc(accountId),
+      this.accountsService.deleteAccount(accountId),
       this.feedItemsService.deleteAllForAccount(accountId),
       this.userFeedSubscriptionsService.deleteAllForAccount(accountId),
     ]);

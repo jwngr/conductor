@@ -25,10 +25,6 @@ export interface FlexProps extends HTMLAttributes<HTMLDivElement> {
   readonly padding?: ThemeSpacing;
 }
 
-const getFlexValue = (value: FlexValue | boolean | undefined): FlexValue | undefined => {
-  return value === true ? 1 : value === false ? 'none' : value === undefined ? undefined : value;
-};
-
 export const FlexRow: React.FC<WithChildren<Partial<FlexProps>>> = (props) => {
   const {align, justify, gap, wrap, flex, overflow, padding, children, className, ...rest} = props;
 
@@ -39,7 +35,7 @@ export const FlexRow: React.FC<WithChildren<Partial<FlexProps>>> = (props) => {
           direction: 'row',
           align: align ?? 'center',
           justify: justify ?? 'start',
-          flexValue: getFlexValue(flex),
+          flexValue: flex,
           gap,
           wrap,
           overflow,
@@ -64,7 +60,7 @@ export const FlexColumn: React.FC<WithChildren<Partial<FlexProps>>> = (props) =>
           direction: 'column',
           align: align ?? 'stretch',
           justify: justify ?? 'start',
-          flexValue: getFlexValue(flex),
+          flexValue: flex,
           gap,
           wrap,
           overflow,

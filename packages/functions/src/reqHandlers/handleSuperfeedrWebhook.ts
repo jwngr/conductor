@@ -1,16 +1,16 @@
-// Import types from express instead
-import type {Request} from 'express';
+import type {Request} from 'firebase-functions/v2/https';
 
 import {logger} from '@shared/services/logger.shared';
 
+import {arrayPartition} from '@shared/lib/arrayUtils.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 import {makeRssFeedSource} from '@shared/lib/feedSources.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
-import {assertNever, batchAsyncResults, partition} from '@shared/lib/utils.shared';
+import {assertNever, batchAsyncResults} from '@shared/lib/utils.shared';
 
 import {parseSuperfeedrWebhookRequestBody} from '@shared/parsers/superfeedr.parser';
 
-import type {FeedItemWithUrl} from '@shared/types/feedItems.types';
+import type {FeedItem} from '@shared/types/feedItems.types';
 import type {AsyncResult, ErrorResult, SuccessResult} from '@shared/types/results.types';
 import type {RssFeedProvider} from '@shared/types/rss.types';
 import {RssFeedProviderType} from '@shared/types/rss.types';
@@ -28,7 +28,7 @@ export async function handleSuperfeedrWebhookHelper(args: {
   readonly rssFeedProvider: RssFeedProvider;
   readonly userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
   readonly feedItemsService: ServerFeedItemsService;
-}): AsyncResult<void> {
+}): AsyncResult<void, Error> {
   const {request, userFeedSubscriptionsService, feedItemsService, rssFeedProvider} = args;
 
   // TODO: Validate the request is from Superfeedr by checking some auth header.
@@ -82,18 +82,21 @@ export async function handleSuperfeedrWebhookHelper(args: {
   const userFeedSubscriptions = fetchSubsResult.value;
 
   // Make a list of supplier methods that create feed items.
-  const createFeedItemResults: Array<Supplier<AsyncResult<FeedItemWithUrl>>> = [];
+  const createFeedItemResults: Array<Supplier<AsyncResult<FeedItem, Error>>> = [];
   body.items.forEach((item) => {
     logger.log(`[SUPERFEEDR] Processing item ${item.id}`, {item});
 
     userFeedSubscriptions.forEach((userFeedSubscription) => {
-      const newFeedItemResult = async (): AsyncResult<FeedItemWithUrl> => {
+      const newFeedItemResult = async (): AsyncResult<FeedItem, Error> => {
         return await feedItemsService.createFeedItemFromUrl({
           feedSource: makeRssFeedSource({userFeedSubscription}),
           url: item.permalinkUrl,
-          accountId: userFeedSubscription.accountId,
           title: item.title,
           description: item.summary,
+          // TODO: Set better initial values for these fields.
+          outgoingLinks: [],
+          summary: null,
+          accountId: userFeedSubscription.accountId,
         });
       };
       createFeedItemResults.push(newFeedItemResult);
@@ -109,10 +112,10 @@ export async function handleSuperfeedrWebhookHelper(args: {
 
   // Log successes and errors.
   const newFeedItemResults = batchResult.value;
-  const [newFeedItemSuccesses, newFeedItemErrors] = partition<
-    SuccessResult<FeedItemWithUrl>,
-    ErrorResult
-  >(newFeedItemResults, (result): result is SuccessResult<FeedItemWithUrl> => result.success);
+  const [newFeedItemSuccesses, newFeedItemErrors] = arrayPartition<
+    SuccessResult<FeedItem>,
+    ErrorResult<Error>
+  >(newFeedItemResults, (result) => result.success);
   logger.log(
     `[SUPERFEEDR] Successfully created ${newFeedItemSuccesses.length} feed items, encountered ${newFeedItemErrors.length} errors`,
     {

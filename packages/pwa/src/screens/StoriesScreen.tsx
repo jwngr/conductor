@@ -1,9 +1,10 @@
-import {useNavigate} from '@tanstack/react-router';
+import {Link} from '@tanstack/react-router';
 import type React from 'react';
+import {useMemo} from 'react';
 
-import {DEFAULT_NAV_ITEM} from '@shared/lib/navItems.shared';
+import {PARSING_FAILURE_SENTINEL} from '@shared/lib/parser.shared';
 import {
-  DEFAULT_STORIES_SIDEBAR_ITEM,
+  findStoriesSidebarItemById,
   getAtomicComponentSidebarItems,
   getDesignSystemSidebarItems,
   getMoleculeComponentSidebarItems,
@@ -19,14 +20,15 @@ import {
   StoriesSidebarSectionId,
 } from '@shared/types/stories.types';
 import type {StoriesSidebarItem} from '@shared/types/stories.types';
-import type {Consumer} from '@shared/types/utils.types';
 
 import {BadgeStories} from '@src/components/atoms/Badge.stories';
 import {ButtonStories} from '@src/components/atoms/Button.stories';
 import {ButtonIconStories} from '@src/components/atoms/ButtonIcon.stories';
 import {CheckboxStories} from '@src/components/atoms/Checkbox.stories';
+import {CustomIconStories} from '@src/components/atoms/CustomIcons.stories';
 import {DialogStories} from '@src/components/atoms/Dialog.stories';
 import {DividerStories} from '@src/components/atoms/Divider.stories';
+import {DotStories} from '@src/components/atoms/Dot.stories';
 import {DropdownMenuStories} from '@src/components/atoms/DropdownMenu.stories';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {FlexStories} from '@src/components/atoms/Flex.stories';
@@ -34,7 +36,7 @@ import {IconStories} from '@src/components/atoms/Icon.stories';
 import {InputStories} from '@src/components/atoms/Input.stories';
 import {LinkStories} from '@src/components/atoms/Link.stories';
 import {SpacerStories} from '@src/components/atoms/Spacer.stories';
-import {Text} from '@src/components/atoms/Text';
+import {H1, H6, P} from '@src/components/atoms/Text';
 import {TextStories} from '@src/components/atoms/Text.stories';
 import {TextIconStories} from '@src/components/atoms/TextIcon.stories';
 import {ToastStories} from '@src/components/atoms/Toast.stories';
@@ -42,14 +44,13 @@ import {TooltipStories} from '@src/components/atoms/Tooltip.stories';
 import {ErrorAreaStories} from '@src/components/errors/ErrorArea.stories';
 import {HeroAreaStories} from '@src/components/hero/HeroArea.stories';
 import {MarkdownStories} from '@src/components/Markdown.stories';
-import {NavItemLink} from '@src/components/nav/NavItemLink';
 import {ColorsStories} from '@src/components/stories/Colors.stories';
 import {ColorsVanillaStories} from '@src/components/stories/ColorsVanilla.stories';
 import {TypographyStories} from '@src/components/stories/Typography.stories';
 
-import {useSelectedStoryFromUrl} from '@src/lib/router.pwa';
-
-import {storiesRoute} from '@src/routes/index';
+import {DEFAULT_ROUTE, storiesRoute} from '@src/routes';
+import {StoriesDefaultRedirect} from '@src/routes/Redirects';
+import {DefaultErrorScreen} from '@src/screens/ErrorScreen';
 import * as styles from '@src/screens/StoriesScreen.css';
 
 const AtomicComponentStoryContent: React.FC<{
@@ -64,10 +65,14 @@ const AtomicComponentStoryContent: React.FC<{
       return <ButtonIconStories />;
     case AtomicComponentType.Checkbox:
       return <CheckboxStories />;
+    case AtomicComponentType.CustomIcon:
+      return <CustomIconStories />;
     case AtomicComponentType.Dialog:
       return <DialogStories />;
     case AtomicComponentType.Divider:
       return <DividerStories />;
+    case AtomicComponentType.Dot:
+      return <DotStories />;
     case AtomicComponentType.DropdownMenu:
       return <DropdownMenuStories />;
     case AtomicComponentType.Flex:
@@ -138,24 +143,25 @@ const SidebarSection: React.FC<{
   readonly title: string;
   readonly items: StoriesSidebarItem[];
   readonly activeSidebarItem: StoriesSidebarItem;
-  readonly onItemClick: Consumer<StoriesSidebarItem>;
-}> = ({title, items, activeSidebarItem, onItemClick}) => {
+}> = ({title, items, activeSidebarItem}) => {
   return (
     <FlexColumn gap={2}>
-      <Text as="h6" light>
-        {title}
-      </Text>
+      <H6 light>{title}</H6>
       <FlexColumn>
         {items.map((item) => (
-          <Text
-            key={item.title}
-            className={styles.storyGroupSidebarItem({
-              isActive: activeSidebarItem.sidebarItemId === item.sidebarItemId,
-            })}
-            onClick={() => onItemClick(item)}
+          <Link
+            key={item.sidebarItemId}
+            to={storiesRoute.to}
+            params={{sidebarItemId: item.sidebarItemId}}
           >
-            {item.title}
-          </Text>
+            <P
+              className={styles.storyGroupSidebarItem({
+                isActive: activeSidebarItem.sidebarItemId === item.sidebarItemId,
+              })}
+            >
+              {item.title}
+            </P>
+          </Link>
         ))}
       </FlexColumn>
     </FlexColumn>
@@ -164,41 +170,36 @@ const SidebarSection: React.FC<{
 
 const StoriesLeftSidebar: React.FC<{
   readonly activeSidebarItem: StoriesSidebarItem;
-  readonly onItemClick: Consumer<StoriesSidebarItem>;
-}> = ({activeSidebarItem, onItemClick}) => {
+}> = ({activeSidebarItem}) => {
   return (
     <FlexColumn overflow="auto" className={styles.storiesLeftSidebar}>
       <div className="pt-4 pl-4">
-        <NavItemLink navItemId={DEFAULT_NAV_ITEM.id}>
-          <Text as="p" underline="hover" light>
+        <Link to={DEFAULT_ROUTE.to} search={{feedItemId: undefined}}>
+          <P underline="hover" light>
             ← Back to app
-          </Text>
-        </NavItemLink>
+          </P>
+        </Link>
       </div>
-      <FlexColumn flex={1} gap={6} padding={4}>
+      <FlexColumn flex gap={6} padding={4}>
         <SidebarSection
           title="Design system"
           items={getDesignSystemSidebarItems()}
           activeSidebarItem={activeSidebarItem}
-          onItemClick={onItemClick}
         />
         <SidebarSection
           title="Atoms"
           items={getAtomicComponentSidebarItems()}
           activeSidebarItem={activeSidebarItem}
-          onItemClick={onItemClick}
         />
         <SidebarSection
           title="Molecules"
           items={getMoleculeComponentSidebarItems()}
           activeSidebarItem={activeSidebarItem}
-          onItemClick={onItemClick}
         />
         <SidebarSection
           title="Renderers"
           items={getRendererSidebarItems()}
           activeSidebarItem={activeSidebarItem}
-          onItemClick={onItemClick}
         />
       </FlexColumn>
     </FlexColumn>
@@ -231,40 +232,41 @@ const StoriesScreenMainContent: React.FC<{
 
   return (
     <FlexColumn
-      flex={1}
+      flex
       gap={8}
       padding={4}
       overflow="auto"
       className={styles.storiesScreenMainContent}
     >
-      <Text as="h1" bold>
-        {activeSidebarItem.title}
-      </Text>
+      <H1 bold>{activeSidebarItem.title}</H1>
       {mainContent}
     </FlexColumn>
   );
 };
 
 export const StoriesScreen: React.FC = () => {
-  const navigate = useNavigate();
+  const {sidebarItemId} = storiesRoute.useParams();
 
-  const sidebarItemIdFromUrl = useSelectedStoryFromUrl();
-  const selectedSidebarItem = sidebarItemIdFromUrl ?? DEFAULT_STORIES_SIDEBAR_ITEM;
+  const sidebarItem: StoriesSidebarItem | null = useMemo(() => {
+    if (!sidebarItemId || sidebarItemId === PARSING_FAILURE_SENTINEL) {
+      return null;
+    }
+    return findStoriesSidebarItemById(sidebarItemId);
+  }, [sidebarItemId]);
 
-  const handleSidebarItemClick = (item: StoriesSidebarItem): void => {
-    void navigate({
-      to: storiesRoute.fullPath,
-      params: {sidebarItemId: item.sidebarItemId},
-    });
-  };
+  if (!sidebarItemId) {
+    // This root redirect is expected.
+    return <StoriesDefaultRedirect />;
+  }
+
+  if (!sidebarItem) {
+    return <DefaultErrorScreen error={new Error('Story ID in URL failed to parse')} />;
+  }
 
   return (
     <FlexRow overflow="hidden" className={styles.storiesScreen}>
-      <StoriesLeftSidebar
-        activeSidebarItem={selectedSidebarItem}
-        onItemClick={handleSidebarItemClick}
-      />
-      <StoriesScreenMainContent activeSidebarItem={selectedSidebarItem} />
+      <StoriesLeftSidebar activeSidebarItem={sidebarItem} />
+      <StoriesScreenMainContent activeSidebarItem={sidebarItem} />
     </FlexRow>
   );
 };

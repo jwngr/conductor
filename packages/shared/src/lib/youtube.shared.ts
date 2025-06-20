@@ -63,7 +63,7 @@ export function isYouTubeVideoUrl(url: string): boolean {
  *
  * If no channel ID found, returns `null`.
  */
-export function getYouTubeChannelId(url: string): Result<YouTubeChannelId | null> {
+export function getYouTubeChannelId(url: string): Result<YouTubeChannelId | null, Error> {
   const parsedUrl = parseUrl(url);
   if (!parsedUrl) return makeSuccessResult(null);
 
@@ -78,13 +78,17 @@ export function getYouTubeChannelId(url: string): Result<YouTubeChannelId | null
   return makeSuccessResult(null);
 }
 
+export function makeYouTubeChannelUrl(channelId: YouTubeChannelId): string {
+  return `https://www.youtube.com/channel/${channelId}`;
+}
+
 /**
  * Returns the YouTube channel handle from the provided URL. Handles many variations of YouTube
  * URLs.
  *
  * If no channel handle found, returns `null`.
  */
-export function getYouTubeChannelHandle(url: string): Result<YouTubeHandle | null> {
+export function getYouTubeChannelHandle(url: string): Result<YouTubeHandle | null, Error> {
   const parsedUrl = parseUrl(url);
   if (!parsedUrl) return makeSuccessResult(null);
 

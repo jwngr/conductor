@@ -22,7 +22,7 @@ export interface RawPocketCsvRecord {
   readonly status: string;
 }
 
-function parsePocketCsvRecordStatus(status: string): Result<PocketImportItemStatus> {
+function parsePocketCsvRecordStatus(status: string): Result<PocketImportItemStatus, Error> {
   switch (status) {
     case 'unread':
       return makeSuccessResult('unread');
@@ -33,11 +33,9 @@ function parsePocketCsvRecordStatus(status: string): Result<PocketImportItemStat
   }
 }
 
-export function parsePocketCsvRecord(record: RawPocketCsvRecord): Result<PocketImportItem> {
+export function parsePocketCsvRecord(record: RawPocketCsvRecord): Result<PocketImportItem, Error> {
   const statusResult = parsePocketCsvRecordStatus(record.status);
-  if (!statusResult.success) {
-    return makeErrorResult(statusResult.error);
-  }
+  if (!statusResult.success) return statusResult;
 
   let timeAddedMs = parseInt(record.time_added, 10) * 1000;
   if (isNaN(timeAddedMs)) {

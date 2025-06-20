@@ -5,13 +5,16 @@ import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {EventLogItem} from '@shared/types/eventLog.types';
 import {IconName} from '@shared/types/icons.types';
 
-import {useEventLogItems} from '@sharedClient/services/eventLog.client';
+import {useEventLogItems} from '@sharedClient/hooks/eventLog.hooks';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
+import {FlexColumn} from '@src/components/atoms/Flex';
 import {Popover, PopoverContent, PopoverTrigger} from '@src/components/atoms/Popover';
-import {Text} from '@src/components/atoms/Text';
+import {H4, P} from '@src/components/atoms/Text';
 import {ErrorArea} from '@src/components/errors/ErrorArea';
 import {LoadingArea} from '@src/components/loading/LoadingArea';
+
+import {firebaseService} from '@src/lib/firebase.pwa';
 
 const RecentActivityFeedItem: React.FC<{
   readonly eventLogItem: EventLogItem;
@@ -21,10 +24,10 @@ const RecentActivityFeedItem: React.FC<{
   return (
     <li key={eventId} className="border-border bg-background rounded border p-1">
       <div className="flex justify-between">
-        <Text bold>{data.eventType}</Text>
-        <Text light title={createdTime.toISOString()}>
+        <P bold>{data.eventType}</P>
+        <P light title={createdTime.toISOString()}>
           {formatRelativeTime(createdTime)}
-        </Text>
+        </P>
       </div>
       <pre className="text-foreground text-xs break-all whitespace-pre-wrap">
         {JSON.stringify(data, null, 2)}
@@ -37,7 +40,7 @@ const LoadedRecentActivityFeed: React.FC<{
   readonly eventLogItems: readonly EventLogItem[];
 }> = ({eventLogItems}) => {
   if (eventLogItems.length === 0) {
-    return <Text light>No recent activity</Text>;
+    return <P light>No recent activity</P>;
   }
 
   return (
@@ -52,23 +55,21 @@ const LoadedRecentActivityFeed: React.FC<{
       </PopoverTrigger>
 
       <PopoverContent className="w-[350px]" align="end">
-        <div className="flex flex-col gap-2">
-          <Text as="h4" bold className="mb-1">
-            Recent activity
-          </Text>
+        <FlexColumn gap={2}>
+          <H4 bold>Recent activity</H4>
           <ul className="flex max-h-[400px] flex-col gap-1 overflow-y-auto">
             {eventLogItems.map((item) => (
               <RecentActivityFeedItem key={item.eventId} eventLogItem={item} />
             ))}
           </ul>
-        </div>
+        </FlexColumn>
       </PopoverContent>
     </Popover>
   );
 };
 
 export const RecentActivityFeed: React.FC = () => {
-  const eventLogItemsState = useEventLogItems();
+  const eventLogItemsState = useEventLogItems({firebaseService});
 
   switch (eventLogItemsState.status) {
     case AsyncStatus.Idle:

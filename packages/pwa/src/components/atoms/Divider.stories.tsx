@@ -1,34 +1,34 @@
 import {Divider} from '@src/components/atoms/Divider';
-import {Text} from '@src/components/atoms/Text';
+import {P} from '@src/components/atoms/Text';
 import {StorySection} from '@src/components/stories/StorySection';
 
 export const DividerStories: React.FC = () => {
   return (
     <>
       <StorySection title="Horizontal divider (default)">
-        <Text>Content above</Text>
+        <P>Content above</P>
         <Divider />
-        <Text>Content below</Text>
+        <P>Content below</P>
       </StorySection>
 
       <StorySection title="Horizontal divider with width">
-        <Text>Content above</Text>
+        <P>Content above</P>
         <Divider x={200} />
-        <Text>Content below</Text>
+        <P>Content below</P>
       </StorySection>
 
       <StorySection title="Vertical divider">
         <div style={{height: 100, display: 'flex', alignItems: 'center'}}>
-          <Text>Left content</Text>
+          <P>Left content</P>
           <Divider y={50} />
-          <Text>Right content</Text>
+          <P>Right content</P>
         </div>
       </StorySection>
 
       <StorySection title="Box divider">
-        <Text>Content above</Text>
+        <P>Content above</P>
         <Divider x={200} y={20} />
-        <Text>Content below</Text>
+        <P>Content below</P>
       </StorySection>
     </>
   );

@@ -15,8 +15,8 @@ export class YouTubeFeedItemImporter {
     this.feedItemService = args.feedItemService;
   }
 
-  public async import(feedItem: YouTubeFeedItem): AsyncResult<void> {
-    const fetchTranscriptResult = await fetchYouTubeTranscript(feedItem.url);
+  public async import(feedItem: YouTubeFeedItem): AsyncResult<void, Error> {
+    const fetchTranscriptResult = await fetchYouTubeTranscript(feedItem.content.url);
     if (!fetchTranscriptResult.success) {
       return prefixErrorResult(fetchTranscriptResult, 'Error fetching YouTube transcript');
     }

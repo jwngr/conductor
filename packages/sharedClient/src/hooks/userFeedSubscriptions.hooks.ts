@@ -1,61 +1,44 @@
 import {useEffect, useMemo} from 'react';
 
-import {USER_FEED_SUBSCRIPTIONS_DB_COLLECTION} from '@shared/lib/constants.shared';
-
-import {
-  parseUserFeedSubscription,
-  parseUserFeedSubscriptionId,
-  toStorageUserFeedSubscription,
-} from '@shared/parsers/userFeedSubscriptions.parser';
-
 import type {AsyncState} from '@shared/types/asyncState.types';
 import type {
   UserFeedSubscription,
   UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
 
-import {useEventLogService} from '@sharedClient/services/eventLog.client';
-import {firebaseService} from '@sharedClient/services/firebase.client';
-import {
-  ClientFirestoreCollectionService,
-  makeFirestoreDataConverter,
-} from '@sharedClient/services/firestore.client';
+import type {ClientFirebaseService} from '@sharedClient/services/firebase.client';
 import {ClientUserFeedSubscriptionsService} from '@sharedClient/services/userFeedSubscriptions.client';
 
 import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
+import {useEventLogService} from '@sharedClient/hooks/eventLog.hooks';
 
-const userFeedSubscriptionFirestoreConverter = makeFirestoreDataConverter(
-  toStorageUserFeedSubscription,
-  parseUserFeedSubscription
-);
+export function useUserFeedSubscriptionsService(args: {
+  readonly firebaseService: ClientFirebaseService;
+}): ClientUserFeedSubscriptionsService {
+  const {firebaseService} = args;
 
-const userFeedSubscriptionsCollectionService = new ClientFirestoreCollectionService({
-  collectionPath: USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
-  converter: userFeedSubscriptionFirestoreConverter,
-  parseId: parseUserFeedSubscriptionId,
-});
-
-export function useUserFeedSubscriptionsService(): ClientUserFeedSubscriptionsService {
   const loggedInAccount = useLoggedInAccount();
-  const eventLogService = useEventLogService();
+  const eventLogService = useEventLogService({firebaseService});
 
   const userFeedSubscriptionsService = useMemo(() => {
     return new ClientUserFeedSubscriptionsService({
       accountId: loggedInAccount.accountId,
-      functions: firebaseService.functions,
-      eventLogService: eventLogService,
-      userFeedSubscriptionsCollectionService,
+      firebaseService,
+      eventLogService,
     });
-  }, [loggedInAccount.accountId, eventLogService]);
+  }, [loggedInAccount.accountId, eventLogService, firebaseService]);
 
   return userFeedSubscriptionsService;
 }
 
-export function useUserFeedSubscription(
-  userFeedSubscriptionId: UserFeedSubscriptionId
-): AsyncState<UserFeedSubscription | null> {
-  const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
+export function useUserFeedSubscription(args: {
+  readonly firebaseService: ClientFirebaseService;
+  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+}): AsyncState<UserFeedSubscription | null> {
+  const {firebaseService, userFeedSubscriptionId} = args;
+
+  const userFeedSubscriptionsService = useUserFeedSubscriptionsService({firebaseService});
 
   const {asyncState, setPending, setError, setSuccess} =
     useAsyncState<UserFeedSubscription | null>();
@@ -64,8 +47,8 @@ export function useUserFeedSubscription(
     setPending();
     const unsubscribe = userFeedSubscriptionsService.watchSubscription({
       userFeedSubscriptionId,
-      successCallback: setSuccess,
-      errorCallback: setError,
+      onData: setSuccess,
+      onError: setError,
     });
 
     return () => unsubscribe();
@@ -74,16 +57,21 @@ export function useUserFeedSubscription(
   return asyncState;
 }
 
-export function useUserFeedSubscriptions(): AsyncState<UserFeedSubscription[]> {
-  const userFeedSubscriptionsService = useUserFeedSubscriptionsService();
+export function useUserFeedSubscriptions(args: {
+  readonly firebaseService: ClientFirebaseService;
+}): AsyncState<Record<UserFeedSubscriptionId, UserFeedSubscription>> {
+  const {firebaseService} = args;
 
-  const {asyncState, setPending, setError, setSuccess} = useAsyncState<UserFeedSubscription[]>();
+  const userFeedSubscriptionsService = useUserFeedSubscriptionsService({firebaseService});
+
+  const {asyncState, setPending, setError, setSuccess} =
+    useAsyncState<Record<UserFeedSubscriptionId, UserFeedSubscription>>();
 
   useEffect(() => {
     setPending();
     const unsubscribe = userFeedSubscriptionsService.watchAllSubscriptions({
-      successCallback: setSuccess,
-      errorCallback: setError,
+      onData: setSuccess,
+      onError: setError,
     });
 
     return () => unsubscribe();

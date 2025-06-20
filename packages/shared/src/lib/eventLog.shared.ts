@@ -13,12 +13,14 @@ import type {
   FeedItemImportedEventLogItemData,
   StringExperimentValueChangedEventLogItemData,
   SubscribedToFeedSourceEventLogItemData,
+  ThemePreferenceChangedEventLogItemData,
   UnsubscribedFromFeedSourceEventLogItemData,
 } from '@shared/types/eventLog.types';
 import {EventType} from '@shared/types/eventLog.types';
 import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
 import type {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import type {ThemePreference} from '@shared/types/theme.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 
 /**
@@ -53,12 +55,14 @@ export function makeEventLogItem(args: {
 export function makeFeedItemActionEventLogItemData(args: {
   readonly feedItemId: FeedItemId;
   readonly feedItemActionType: FeedItemActionType;
+  readonly isUndo: boolean;
 }): FeedItemActionEventLogItemData {
-  const {feedItemId, feedItemActionType} = args;
+  const {feedItemId, feedItemActionType, isUndo} = args;
   return {
     eventType: EventType.FeedItemAction,
     feedItemId,
     feedItemActionType,
+    isUndo,
   };
 }
 
@@ -111,14 +115,14 @@ export function makeStringExperimentValueChangedEventLogItemData(args: {
 export function makeSubscribedToFeedSourceEventLogItemData(args: {
   readonly feedSourceType: FeedSourceType;
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-  readonly isResubscribe: boolean;
+  readonly isNewSubscription: boolean;
 }): SubscribedToFeedSourceEventLogItemData {
-  const {feedSourceType, userFeedSubscriptionId, isResubscribe} = args;
+  const {feedSourceType, userFeedSubscriptionId, isNewSubscription} = args;
   return {
     eventType: EventType.SubscribedToFeedSource,
     feedSourceType,
     userFeedSubscriptionId,
-    isResubscribe,
+    isNewSubscription,
   };
 }
 
@@ -131,5 +135,15 @@ export function makeUnsubscribedFromFeedSourceEventLogItemData(args: {
     eventType: EventType.UnsubscribedFromFeedSource,
     feedSourceType,
     userFeedSubscriptionId,
+  };
+}
+
+export function makeThemePreferenceChangedEventLogItemData(args: {
+  readonly themePreference: ThemePreference;
+}): ThemePreferenceChangedEventLogItemData {
+  const {themePreference} = args;
+  return {
+    eventType: EventType.ThemePreferenceChanged,
+    themePreference,
   };
 }

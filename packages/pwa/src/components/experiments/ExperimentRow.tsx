@@ -1,6 +1,5 @@
 import type React from 'react';
 import {useCallback, useState} from 'react';
-import {toast} from 'sonner';
 
 import {logger} from '@shared/services/logger.shared';
 
@@ -15,10 +14,12 @@ import {ExperimentType} from '@shared/types/experiments.types';
 
 import {useExperimentsStore} from '@sharedClient/stores/ExperimentsStore';
 
+import {toast} from '@sharedClient/lib/toasts.client';
+
 import {Checkbox} from '@src/components/atoms/Checkbox';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Input} from '@src/components/atoms/Input';
-import {Text} from '@src/components/atoms/Text';
+import {H4, P} from '@src/components/atoms/Text';
 
 const ExperimentControl: React.FC<{
   readonly accountExperiment: AccountExperiment;
@@ -135,16 +136,14 @@ export const ExperimentRow: React.FC<{
 }> = ({accountExperiment}) => {
   return (
     <FlexRow gap={4} padding={4} className="rounded-lg border border-gray-200">
-      <FlexColumn flex={1} gap={2}>
-        <Text bold>{accountExperiment.definition.title}</Text>
-        <Text as="p" light>
-          {accountExperiment.definition.description}
-        </Text>
-        <Text as="p" light>
+      <FlexColumn flex gap={2}>
+        <H4 bold>{accountExperiment.definition.title}</H4>
+        <P light>{accountExperiment.definition.description}</P>
+        <P light>
           ID: {accountExperiment.definition.experimentId} | Type:{' '}
           {accountExperiment.definition.experimentType} | Default:{' '}
           {String(accountExperiment.definition.defaultIsEnabled)}
-        </Text>
+        </P>
       </FlexColumn>
       <FlexColumn gap={2} className="items-end">
         <ExperimentControl accountExperiment={accountExperiment} />

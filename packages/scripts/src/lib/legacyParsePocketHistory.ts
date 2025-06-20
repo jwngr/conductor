@@ -1,64 +1,52 @@
 import path from 'path';
-import {fileURLToPath} from 'url';
-
-import FirecrawlApp from '@mendable/firecrawl-js';
-import dotenv from 'dotenv';
 
 import {logger} from '@shared/services/logger.shared';
 
-import {
-  EVENT_LOG_DB_COLLECTION,
-  FEED_ITEMS_DB_COLLECTION,
-  FEED_ITEMS_STORAGE_COLLECTION,
-} from '@shared/lib/constants.shared';
-import {prefixError} from '@shared/lib/errorUtils.shared';
+import {asyncTry, prefixError, prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {POCKET_EXPORT_FEED_SOURCE} from '@shared/lib/feedSources.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 import {pluralizeWithCount} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
-import {
-  parseEventId,
-  parseEventLogItem,
-  toStorageEventLogItem,
-} from '@shared/parsers/eventLog.parser';
-import {parseFeedItem, parseFeedItemId, toStorageFeedItem} from '@shared/parsers/feedItems.parser';
 
-import {Environment} from '@shared/types/environment.types';
+import type {AccountId} from '@shared/types/accounts.types';
+import type {EmailAddress} from '@shared/types/emails.types';
 import type {PocketImportItem} from '@shared/types/pocket.types';
-
-import {ServerEventLogService} from '@sharedServer/services/eventLog.server';
-import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
-import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
-import {
-  makeFirestoreDataConverter,
-  ServerFirestoreCollectionService,
-} from '@sharedServer/services/firestore.server';
+import type {AsyncResult} from '@shared/types/results.types';
 
 import {ServerPocketService} from '@sharedServer/lib/pocket.server';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import {env} from '@src/lib/environment.scripts';
+import {firebaseService} from '@src/lib/firebase.scripts';
+import {initServices} from '@src/lib/initServices.scripts';
 
-// Load environment variables from packages/scripts/.env file
-const envResult = dotenv.config({path: path.resolve(__dirname, '../../.env')});
-if (envResult.error) {
-  logger.log(`Error loading .env file: ${envResult.error.message}`);
-  process.exit(1);
-}
+async function getAccountId(args: {readonly email: EmailAddress}): AsyncResult<AccountId, Error> {
+  const {email} = args;
 
-// Load Firecrawl API key from environment variable.
-const firecrawlApiKey = process.env.FIRECRAWL_API_KEY;
-if (!firecrawlApiKey) {
-  logger.error(new Error('FIRECRAWL_API_KEY environment variable is not defined'));
-  process.exit(1);
-}
+  // Log the Firebase project info for debugging.
+  logger.log('[BOOTSTRAP] Firebase project info', {
+    GOOGLE_CLOUD_PROJECT: env.googleCloudProject,
+    FIREBASE_PROJECT_ID: env.firebaseProjectId,
+  });
 
-const accountIdResult = parseAccountId(process.env.FIREBASE_USER_ID || '');
-if (!accountIdResult.success) {
-  logger.error(prefixError(accountIdResult.error, 'Invalid FIREBASE_USER_ID environment variable'));
-  process.exit(1);
+  // Look up the Firebase user by email
+  const userResult = await asyncTry(async () => firebaseService.auth.getUserByEmail(email));
+
+  if (!userResult.success) {
+    const message =
+      `No Firebase user exists with email ${email}. Make sure the user exists and you ` +
+      `have authenticated to Firebase.`;
+    return prefixErrorResult(userResult, message);
+  }
+
+  const firebaseUid = userResult.value.uid;
+
+  // Parse account ID from the Firebase UID.
+  const accountIdResult = parseAccountId(firebaseUid);
+  if (!accountIdResult.success) return accountIdResult;
+
+  return makeSuccessResult(accountIdResult.value);
 }
-const accountId = accountIdResult.value;
 
 const args = process.argv.slice(2);
 if (args.length === 0) {
@@ -69,46 +57,38 @@ if (args.length === 0) {
 
 const POCKET_EXPORT_FILE_PATH = path.resolve(args[0]);
 
-async function main(): Promise<void> {
-  const feedItemFirestoreConverter = makeFirestoreDataConverter(toStorageFeedItem, parseFeedItem);
+/**
+ * Throws if the Firecrawl API key environment variable is not defined.
+ */
+function validateFirecrawlApiKey(): string {
+  const firecrawlApiKey = env.firecrawlApiKey;
 
-  const feedItemsCollectionService = new ServerFirestoreCollectionService({
-    collectionPath: FEED_ITEMS_DB_COLLECTION,
-    converter: feedItemFirestoreConverter,
-    parseId: parseFeedItemId,
-  });
+  if (!firecrawlApiKey) {
+    logger.error(new Error('FIRECRAWL_API_KEY environment variable is not defined'));
+    process.exit(1);
+  }
 
-  const firecrawlApp = new FirecrawlApp({apiKey: firecrawlApiKey});
-  const firecrawlService = new ServerFirecrawlService(firecrawlApp);
+  return firecrawlApiKey;
+}
 
-  const eventLogItemFirestoreConverter = makeFirestoreDataConverter(
-    toStorageEventLogItem,
-    parseEventLogItem
-  );
+async function main(): AsyncResult<string, Error> {
+  const firecrawlApiKey = validateFirecrawlApiKey();
+  const {feedItemsService} = initServices({firecrawlApiKey});
 
-  const eventLogCollectionService = new ServerFirestoreCollectionService({
-    collectionPath: EVENT_LOG_DB_COLLECTION,
-    converter: eventLogItemFirestoreConverter,
-    parseId: parseEventId,
-  });
-
-  const eventLogService = new ServerEventLogService({
-    environment: Environment.Scripts,
-    eventLogCollectionService,
-  });
-
-  const feedItemsService = new ServerFeedItemsService({
-    feedItemsCollectionService,
-    storageCollectionPath: FEED_ITEMS_STORAGE_COLLECTION,
-    firecrawlService,
-    eventLogService,
-  });
+  const accountIdResult = await getAccountId({email: env.localEmailAddress});
+  if (!accountIdResult.success) {
+    const betterErrorResult = prefixErrorResult(accountIdResult, 'Error getting account ID');
+    logger.error(betterErrorResult.error);
+    return betterErrorResult;
+  }
+  const accountId = accountIdResult.value;
 
   const pocketItemsResult = await ServerPocketService.parseHtmlExportFile(POCKET_EXPORT_FILE_PATH);
-
   if (!pocketItemsResult.success) {
-    logger.error(prefixError(pocketItemsResult.error, 'Error parsing Pocket export file'));
-    process.exit(1);
+    const message = 'Error parsing Pocket export file';
+    const betterErrorResult = prefixErrorResult(pocketItemsResult, message);
+    logger.error(betterErrorResult.error);
+    return betterErrorResult;
   }
 
   const itemsWithCount = pluralizeWithCount(pocketItemsResult.value.length, 'item', 'items');
@@ -132,14 +112,16 @@ async function main(): Promise<void> {
       accountId,
       url: pocketItem.url,
       title: pocketItem.title,
+      // These values are not provided in the Pocket export.
       description: null,
+      outgoingLinks: [],
+      summary: null,
     });
 
     if (!createFeedItemResult.success) {
       // Treat individual errors as non-fatal.
-      logger.error(
-        prefixError(createFeedItemResult.error, `Error creating feed item for ${pocketItem.url}`)
-      );
+      const message = `Error creating feed item for ${pocketItem.url}`;
+      logger.error(prefixError(createFeedItemResult.error, message));
       continue;
     }
   }
@@ -154,8 +136,7 @@ async function main(): Promise<void> {
     )
     .join('\n');
 
-  // Output to stdout instead of writing to a file
-  process.stdout.write(tsvFields);
+  return makeSuccessResult(tsvFields);
 }
 
 /** Escapes a field so it can be safely written to a TSV file. */
@@ -163,4 +144,14 @@ function escapeFieldForTsv(field: string): string {
   return field.replace(/\t/g, ' ').replace(/\n/g, ' ');
 }
 
-void main();
+const result = await main();
+if (!result.success) {
+  logger.error(result.error);
+  process.exit(1);
+}
+
+// Output to stdout instead of writing to a file
+process.stdout.write(result.value);
+
+logger.log('\n✅ Successfully output Pocket export to stdout');
+process.exit(0);

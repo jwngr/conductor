@@ -1,60 +1,82 @@
 import type React from 'react';
 
+import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
-import {FeedItemType} from '@shared/types/feedItems.types';
-import type {FeedItem, FeedItemWithUrl} from '@shared/types/feedItems.types';
+import {FeedItemContentType} from '@shared/types/feedItems.types';
+import type {FeedItem} from '@shared/types/feedItems.types';
 
+import type {WithChildren} from '@sharedClient/types/utils.client.types';
+
+import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {ExternalLink} from '@src/components/atoms/Link';
 import {Spacer} from '@src/components/atoms/Spacer';
-import {Text} from '@src/components/atoms/Text';
+import {H1, P} from '@src/components/atoms/Text';
 import {FeedItemActions} from '@src/components/feedItems/FeedItemActions';
+import {ImportingFeedItem} from '@src/components/feedItems/ImportingFeedItem';
 import {Markdown} from '@src/components/Markdown';
 
-export const FeedItemWrapper: React.FC<{readonly children: React.ReactNode}> = ({children}) => {
-  return <div className="flex flex-1 flex-col gap-3 overflow-auto p-5">{children}</div>;
-};
-
 const FeedItemHeaderTitle: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
-  const titleContentWithoutLink = (
-    <Text as="h1" bold>
-      {feedItem.title}
-    </Text>
-  );
+  const titleContentWithoutLink = <H1 bold>{feedItem.content.title}</H1>;
 
-  switch (feedItem.feedItemType) {
-    case FeedItemType.Interval:
+  switch (feedItem.feedItemContentType) {
+    case FeedItemContentType.Interval:
       return titleContentWithoutLink;
-    case FeedItemType.Article:
-    case FeedItemType.Tweet:
-    case FeedItemType.Video:
-    case FeedItemType.Website:
-    case FeedItemType.Xkcd:
-    case FeedItemType.YouTube:
-      return <ExternalLink href={feedItem.url}>{titleContentWithoutLink}</ExternalLink>;
+    case FeedItemContentType.Article:
+    case FeedItemContentType.Tweet:
+    case FeedItemContentType.Video:
+    case FeedItemContentType.Website:
+    case FeedItemContentType.Xkcd:
+    case FeedItemContentType.YouTube:
+      return <ExternalLink href={feedItem.content.url}>{titleContentWithoutLink}</ExternalLink>;
     default:
       assertNever(feedItem);
   }
 };
 
-export const FeedItemHeader: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
+const FeedItemHeader: React.FC<{readonly feedItem: FeedItem}> = ({feedItem}) => {
   return (
-    <div className="flex">
+    <FlexRow>
       <FeedItemHeaderTitle feedItem={feedItem} />
       <Spacer flex />
       <FeedItemActions feedItem={feedItem} />
-    </div>
+    </FlexRow>
   );
 };
 
-export const FeedItemSummary: React.FC<{readonly feedItem: FeedItemWithUrl}> = ({feedItem}) => {
-  if (feedItem.summary === null) {
-    return <Text as="p">No summary generated</Text>;
+export const FeedItemSummary: React.FC<{readonly summary: string | null}> = ({summary}) => {
+  if (summary === null) {
+    return <P>No summary generated</P>;
   }
 
-  if (feedItem.summary.length === 0) {
-    return <Text as="p">Summary empty</Text>;
+  if (summary.length === 0) {
+    return <P>Summary empty</P>;
   }
 
-  return <Markdown content={feedItem.summary.replace(/•/g, '*')} />;
+  return <Markdown content={summary.replace(/•/g, '*')} />;
+};
+
+interface SimpleFeedItemRendererProps extends WithChildren {
+  readonly feedItem: FeedItem;
+}
+
+export const SimpleFeedItemRenderer: React.FC<SimpleFeedItemRendererProps> = ({
+  feedItem,
+  children,
+}) => {
+  const hasFeedItemEverBeenImported = SharedFeedItemHelpers.hasEverBeenImported(feedItem);
+
+  let mainContent: React.ReactNode;
+  if (!hasFeedItemEverBeenImported) {
+    mainContent = <ImportingFeedItem feedItem={feedItem} />;
+  } else {
+    mainContent = children;
+  }
+
+  return (
+    <FlexColumn flex gap={3} overflow="auto" className="p-5">
+      <FeedItemHeader feedItem={feedItem} />
+      {mainContent}
+    </FlexColumn>
+  );
 };

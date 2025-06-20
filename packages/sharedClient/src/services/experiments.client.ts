@@ -1,5 +1,3 @@
-import {useMemo} from 'react';
-
 import {logger} from '@shared/services/logger.shared';
 
 import {ACCOUNT_EXPERIMENTS_DB_COLLECTION} from '@shared/lib/constants.shared';
@@ -12,10 +10,7 @@ import {
 } from '@shared/lib/experiments.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
-import {
-  parseAccountExperimentsState,
-  toStorageAccountExperimentsState,
-} from '@shared/parsers/experiments.parser';
+import {parseAccountExperimentsState} from '@shared/parsers/experiments.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {ClientEnvironment} from '@shared/types/environment.types';
@@ -27,36 +22,62 @@ import type {
 import type {AsyncResult} from '@shared/types/results.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
+import type {AccountExperimentsStateFromStorage} from '@shared/schemas/experiments.schema';
+import {toStorageAccountExperimentsState} from '@shared/storage/experiments.storage';
+
 import type {ClientEventLogService} from '@sharedClient/services/eventLog.client';
-import {
-  ClientFirestoreCollectionService,
-  makeFirestoreDataConverter,
-} from '@sharedClient/services/firestore.client';
+import type {ClientFirebaseService} from '@sharedClient/services/firebase.client';
+import {makeClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
+
+type ClientAccountExperimentsCollectionService = ClientFirestoreCollectionService<
+  AccountId,
+  AccountExperimentsState,
+  AccountExperimentsStateFromStorage
+>;
 
 export class ClientExperimentsService {
   private readonly environment: ClientEnvironment;
-  private readonly accountExperimentsCollectionService: ClientAccountExperimentsCollectionService;
   private readonly accountId: AccountId;
   private readonly unsubscribeWatcher: Unsubscribe;
   private readonly isInternalAccount: boolean;
   private readonly eventLogService: ClientEventLogService;
   private accountExperimentsState: AccountExperimentsState | null = null;
+  private readonly collectionService: ClientAccountExperimentsCollectionService;
 
   constructor(args: {
     readonly accountId: AccountId;
     readonly isInternalAccount: boolean;
     readonly environment: ClientEnvironment;
-    readonly accountExperimentsCollectionService: ClientAccountExperimentsCollectionService;
     readonly eventLogService: ClientEventLogService;
+    readonly firebaseService: ClientFirebaseService;
   }) {
     this.accountId = args.accountId;
     this.isInternalAccount = args.isInternalAccount;
     this.environment = args.environment;
-    this.accountExperimentsCollectionService = args.accountExperimentsCollectionService;
     this.eventLogService = args.eventLogService;
 
-    this.unsubscribeWatcher = this.watchAccountExperimentsState((accountExperimentsState) => {
-      this.accountExperimentsState = accountExperimentsState;
+    this.collectionService = makeClientFirestoreCollectionService({
+      firebaseService: args.firebaseService,
+      collectionPath: ACCOUNT_EXPERIMENTS_DB_COLLECTION,
+      toStorage: toStorageAccountExperimentsState,
+      fromStorage: parseAccountExperimentsState,
+      parseId: parseAccountId,
+    });
+
+    this.unsubscribeWatcher = this.watchAccountExperimentsStateDoc({
+      onData: (accountExperimentsState) => {
+        this.accountExperimentsState = accountExperimentsState;
+      },
+      onError: (error) => {
+        const message =
+          'Failed to fetch account experiments state. Using default experiment values.';
+        logger.error(prefixError(error, message));
+        this.accountExperimentsState = makeDefaultAccountExperimentsState({
+          accountId: this.accountId,
+          isInternalAccount: this.isInternalAccount,
+        });
+      },
     });
   }
 
@@ -64,18 +85,23 @@ export class ClientExperimentsService {
     this.unsubscribeWatcher();
   }
 
-  private watchAccountExperimentsState(callback: Consumer<AccountExperimentsState>): Unsubscribe {
+  private watchAccountExperimentsStateDoc(args: {
+    readonly onData: Consumer<AccountExperimentsState>;
+    readonly onError: Consumer<Error>;
+  }): Unsubscribe {
+    const {onData, onError} = args;
+
     // If the account experiments state is already set, call the callback with the current state.
     if (this.accountExperimentsState) {
-      callback(this.accountExperimentsState);
+      onData(this.accountExperimentsState);
     }
 
-    return this.accountExperimentsCollectionService.watchDoc(
+    return this.collectionService.watchDoc(
       this.accountId,
       (accountExperimentsState) => {
         if (!accountExperimentsState) {
           // If no account experiments state is found, assume default state.
-          callback(
+          onData(
             makeDefaultAccountExperimentsState({
               accountId: this.accountId,
               isInternalAccount: this.isInternalAccount,
@@ -84,52 +110,47 @@ export class ClientExperimentsService {
           return;
         }
 
-        callback({
+        onData({
           accountId: this.accountId,
           accountVisibility: accountExperimentsState.accountVisibility,
           experimentOverrides: accountExperimentsState.experimentOverrides,
-          // TODO(timestamps): Use server timestamps instead.
           createdTime: accountExperimentsState.createdTime,
           lastUpdatedTime: accountExperimentsState.lastUpdatedTime,
         });
       },
-      (error) => {
-        const message =
-          'Failed to fetch account experiments state. Using default experiment values.';
-        logger.error(prefixError(error, message));
-
-        // Assume default experiment values in error case.
-        callback(
-          makeDefaultAccountExperimentsState({
-            accountId: this.accountId,
-            isInternalAccount: this.isInternalAccount,
-          })
-        );
-      }
+      onError
     );
   }
 
-  public watchAccountExperiments(callback: Consumer<readonly AccountExperiment[]>): Unsubscribe {
-    return this.watchAccountExperimentsState((accountExperimentsState) => {
-      const accountExperiments = getExperimentsForAccount({
-        environment: this.environment,
-        accountVisibility: accountExperimentsState.accountVisibility,
-        accountOverrides: accountExperimentsState.experimentOverrides,
-      });
-      callback(accountExperiments);
+  public watchExperimentsForAccount(args: {
+    readonly onData: Consumer<readonly AccountExperiment[]>;
+    readonly onError: Consumer<Error>;
+  }): Unsubscribe {
+    const {onData, onError} = args;
+
+    return this.watchAccountExperimentsStateDoc({
+      onData: (accountExperimentsState) => {
+        const accountExperiments = getExperimentsForAccount({
+          environment: this.environment,
+          accountVisibility: accountExperimentsState.accountVisibility,
+          accountOverrides: accountExperimentsState.experimentOverrides,
+        });
+        onData(accountExperiments);
+      },
+      onError,
     });
   }
 
   public async setIsExperimentEnabled(args: {
     readonly experimentId: ExperimentId;
     readonly isEnabled: boolean;
-  }): AsyncResult<void> {
+  }): AsyncResult<void, Error> {
     const {experimentId, isEnabled} = args;
 
     const pathToUpdate = `experimentOverrides.${experimentId}`;
     const experimentOverride = makeBooleanExperimentOverride({experimentId, isEnabled});
 
-    const updateResult = await this.accountExperimentsCollectionService.updateDoc(this.accountId, {
+    const updateResult = await this.collectionService.updateDoc(this.accountId, {
       [pathToUpdate]: experimentOverride,
     });
 
@@ -153,7 +174,7 @@ export class ClientExperimentsService {
   public async setStringExperimentValue(args: {
     readonly accountExperiment: AccountExperiment;
     readonly value: string;
-  }): AsyncResult<void> {
+  }): AsyncResult<void, Error> {
     const {accountExperiment, value} = args;
     const {experimentId} = accountExperiment.definition;
 
@@ -164,7 +185,7 @@ export class ClientExperimentsService {
       value,
     });
 
-    const updateResult = await this.accountExperimentsCollectionService.updateDoc(this.accountId, {
+    const updateResult = await this.collectionService.updateDoc(this.accountId, {
       [pathToUpdate]: experimentOverride,
     });
 
@@ -174,26 +195,4 @@ export class ClientExperimentsService {
 
     return updateResult;
   }
-}
-
-const accountExperimentsFirestoreConverter = makeFirestoreDataConverter(
-  toStorageAccountExperimentsState,
-  parseAccountExperimentsState
-);
-
-type ClientAccountExperimentsCollectionService = ClientFirestoreCollectionService<
-  AccountId,
-  AccountExperimentsState
->;
-
-export function useAccountExperimentsCollectionService(): ClientAccountExperimentsCollectionService {
-  const accountExperimentsCollectionService = useMemo(() => {
-    return new ClientFirestoreCollectionService({
-      collectionPath: ACCOUNT_EXPERIMENTS_DB_COLLECTION,
-      converter: accountExperimentsFirestoreConverter,
-      parseId: parseAccountId,
-    });
-  }, []);
-
-  return accountExperimentsCollectionService;
 }

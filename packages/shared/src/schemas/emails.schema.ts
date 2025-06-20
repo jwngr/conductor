@@ -1,4 +1,3 @@
-import {z} from 'zod';
+import {z} from 'zod/v4';
 
-/** Zod schema for an {@link EmailAddress}. */
-export const EmailAddressSchema = z.string().email();
+export const EmailAddressSchema = z.email();

@@ -5,7 +5,7 @@ import {logger} from '@shared/services/logger.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AsyncResult, Result} from '@shared/types/results.types';
-import type {Func, Supplier, UUID} from '@shared/types/utils.types';
+import type {Supplier, UUID} from '@shared/types/utils.types';
 
 /**
  * Formats a number with commas.
@@ -26,8 +26,8 @@ const DEFAULT_ASSERT_NEVER_OPTIONS: AssertNeverOptions = {
 };
 
 /**
- * Throws an error if the provided value is not of type `never`. This is useful for exhaustive
- * switch statements.
+ * Throws an error and throws if the provided value is not of type `never`. This is useful for
+ * exhaustive switch statements.
  */
 export function assertNever(
   val: never,
@@ -42,53 +42,24 @@ export function assertNever(
 }
 
 /**
- * Logs an error if the provided value is not of type `never`. This is useful for exhaustive
- * switch statements.
- */
-export function safeAssertNever(val: never): void {
-  logger.error(new Error('safeAssertNever received non-empty value'), {val});
-}
-
-/**
- * Filters out all null values from the provided array.
- */
-export function filterNull<T>(arr: Array<T | null>): T[] {
-  return arr.filter(Boolean) as T[];
-}
-
-/**
- * Filters out all undefined values from the provided array.
- */
-export function filterUndefined<T>(arr: Array<T | undefined>): T[] {
-  return arr.filter(Boolean) as T[];
-}
-
-/**
- * Omits all undefined values from the provided object.
- */
-export function omitUndefined<T extends object>(obj: T): T {
-  return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined)) as T;
-}
-
-/**
  * Runs all of the provided sync task suppliers in batches of a given size. If the number of tasks
  * is less than the batch size, all tasks are run in parallel. Tasks are not executed until this
  * function is called.
  */
 export function batchSyncResults<T>(
-  syncResultSuppliers: Array<Supplier<Result<T>>>,
+  syncResultSuppliers: Array<Supplier<Result<T, Error>>>,
   batchSize: number
-): Result<Array<Result<T>>> {
+): Result<Array<Result<T, Error>>, Error> {
   if (batchSize < 1) {
     return makeErrorResult(new Error(`Batch size must be at least 1: ${batchSize}`));
   }
 
-  const resultsPerBatch: Array<Array<Supplier<Result<T>>>> = [];
+  const resultsPerBatch: Array<Array<Supplier<Result<T, Error>>>> = [];
   for (let i = 0; i < syncResultSuppliers.length; i += batchSize) {
     resultsPerBatch.push(syncResultSuppliers.slice(i, i + batchSize));
   }
 
-  const allResults: Array<Result<T>> = [];
+  const allResults: Array<Result<T, Error>> = [];
   for (const currentSuppliers of resultsPerBatch) {
     const currentResults = currentSuppliers.map((supplier) => supplier());
     allResults.push(...currentResults);
@@ -102,44 +73,24 @@ export function batchSyncResults<T>(
  * function is called.
  */
 export async function batchAsyncResults<T>(
-  asyncResultSuppliers: Array<Supplier<AsyncResult<T>>>,
+  asyncResultSuppliers: Array<Supplier<AsyncResult<T, Error>>>,
   batchSize: number
-): AsyncResult<Array<Result<T>>> {
+): AsyncResult<Array<Result<T, Error>>, Error> {
   if (batchSize < 1) {
     return makeErrorResult(new Error(`Batch size must be at least 1: ${batchSize}`));
   }
 
-  const resultsPerBatch: Array<Array<Supplier<AsyncResult<T>>>> = [];
+  const resultsPerBatch: Array<Array<Supplier<AsyncResult<T, Error>>>> = [];
   for (let i = 0; i < asyncResultSuppliers.length; i += batchSize) {
     resultsPerBatch.push(asyncResultSuppliers.slice(i, i + batchSize));
   }
 
-  const allResults: Array<Result<T>> = [];
+  const allResults: Array<Result<T, Error>> = [];
   for (const currentSuppliers of resultsPerBatch) {
     const currentResults = await Promise.all(currentSuppliers.map(async (supplier) => supplier()));
     allResults.push(...currentResults);
   }
   return makeSuccessResult(allResults);
-}
-
-/**
- * Partitions an array into two arrays based on the provided predicate.
- */
-export function partition<T, U>(
-  arr: ReadonlyArray<T | U>,
-  predicate: Func<T | U, boolean>
-): [T[], U[]] {
-  return arr.reduce(
-    (acc, item) => {
-      if (predicate(item)) {
-        acc[0].push(item as T);
-      } else {
-        acc[1].push(item as U);
-      }
-      return acc;
-    },
-    [[], []] as [T[], U[]]
-  );
 }
 
 /**
@@ -222,4 +173,32 @@ export function isInteger(value: number): boolean {
  */
 export function isPositiveInteger(value: number): boolean {
   return isInteger(value) && value > 0;
+}
+
+/**
+ * Returns `true` if the provided value is `null`. Useful for type narrowing or chaining.
+ */
+export function isNull<T>(val: T | null): val is null {
+  return val === null;
+}
+
+/**
+ * Returns `true` if the provided value is not `null`. Useful for type narrowing or chaining.
+ */
+export function isNotNull<T>(val: T | null): val is T {
+  return val !== null;
+}
+
+/**
+ * Returns `true` if the provided value is not `undefined`. Useful for type narrowing or chaining.
+ */
+export function isDefined<T>(val: T | undefined): val is T {
+  return val !== undefined;
+}
+
+/**
+ * Returns `true` if the provided value is `undefined`. Useful for type narrowing or chaining.
+ */
+export function isUndefined<T>(val: T | undefined): val is undefined {
+  return val === undefined;
 }

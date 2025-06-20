@@ -1,35 +1,38 @@
 import {logger} from '@shared/services/logger.shared';
 
-import {prefixError, upgradeUnknownError} from '@shared/lib/errorUtils.shared';
+import {prefixErrorResult, syncTry} from '@shared/lib/errorUtils.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {parseUrl} from '@shared/lib/urls.shared';
 import {assertNever, makeUuid} from '@shared/lib/utils.shared';
 import {isXkcdComicUrl} from '@shared/lib/xkcd.shared';
 import {isYouTubeVideoUrl} from '@shared/lib/youtube.shared';
 
+import type {AccountId} from '@shared/types/accounts.types';
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
 import {
   FeedItemActionType,
-  FeedItemType,
-  makeNewFeedItemImportState,
+  FeedItemContentType,
+  FeedItemImportStatus,
   TriageStatus,
 } from '@shared/types/feedItems.types';
 import type {
   FeedItem,
   FeedItemAction,
+  FeedItemContent,
   FeedItemId,
-  IntervalFeedItem,
-  XkcdFeedItem,
+  NewFeedItemImportState,
 } from '@shared/types/feedItems.types';
+import type {FeedSource} from '@shared/types/feedSources.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/results.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
-import type {TagId} from '@shared/types/tags.types';
 import type {
   UserFeedSubscription,
   UserFeedSubscriptionId,
 } from '@shared/types/userFeedSubscriptions.types';
+
+export const DEFAULT_FEED_ITEM_CONTENT_TYPE = FeedItemContentType.Article;
 
 type MaybeFeedItem = FeedItem | undefined | null;
 
@@ -59,107 +62,6 @@ export class SharedFeedItemHelpers {
 
   public static isUnread(feedItem: MaybeFeedItem): boolean {
     return feedItem?.tagIds[SystemTagId.Unread] === true;
-  }
-
-  public static makeFeedItemFromUrl(
-    args: Pick<
-      Exclude<FeedItem, IntervalFeedItem>,
-      'feedSource' | 'accountId' | 'url' | 'title' | 'description'
-    >
-  ): Result<Exclude<FeedItem, IntervalFeedItem>> {
-    const {feedSource, accountId, url, title, description} = args;
-
-    // Common fields across all feed item types.
-    const feedItemId = makeFeedItemId();
-    const feedItemType = getFeedItemTypeFromUrl(url);
-    const triageStatus = TriageStatus.Untriaged;
-    const importState = makeNewFeedItemImportState();
-    const tagIds: Partial<Record<TagId, true>> = {
-      [SystemTagId.Unread]: true,
-    };
-    const summary = null;
-    const outgoingLinks: string[] = [];
-
-    // Some feed item contain additional fields.
-    switch (feedItemType) {
-      case FeedItemType.Article:
-      case FeedItemType.Video:
-      case FeedItemType.Tweet:
-      case FeedItemType.Website:
-      case FeedItemType.YouTube:
-        return makeSuccessResult({
-          feedItemType,
-          feedSource,
-          url,
-          accountId,
-          feedItemId,
-          importState,
-          title,
-          description,
-          summary,
-          outgoingLinks,
-          triageStatus,
-          tagIds,
-          // TODO(timestamps): Use server timestamps instead.
-          createdTime: new Date(),
-          lastUpdatedTime: new Date(),
-        });
-      case FeedItemType.Xkcd:
-        return SharedFeedItemHelpers.makeXkcdFeedItem({
-          feedSource,
-          accountId,
-          url,
-          title,
-          description,
-        });
-      default:
-        assertNever(feedItemType);
-    }
-  }
-
-  public static makeXkcdFeedItem(
-    args: Pick<XkcdFeedItem, 'feedSource' | 'accountId' | 'url' | 'title' | 'description'>
-  ): Result<XkcdFeedItem> {
-    const {feedSource, accountId, url, title, description} = args;
-
-    return makeSuccessResult<XkcdFeedItem>({
-      feedItemType: FeedItemType.Xkcd,
-      xkcd: null,
-      feedItemId: makeFeedItemId(),
-      importState: makeNewFeedItemImportState(),
-      triageStatus: TriageStatus.Untriaged,
-      tagIds: {[SystemTagId.Unread]: true},
-      summary: null,
-      outgoingLinks: [],
-      feedSource,
-      url,
-      accountId,
-      title: title,
-      description,
-      // TODO(timestamps): Use server timestamps instead.
-      createdTime: new Date(),
-      lastUpdatedTime: new Date(),
-    });
-  }
-
-  public static makeIntervalFeedItem(
-    args: Pick<IntervalFeedItem, 'feedSource' | 'accountId' | 'title'>
-  ): Result<IntervalFeedItem> {
-    const {feedSource, accountId, title} = args;
-
-    return makeSuccessResult<IntervalFeedItem>({
-      feedItemType: FeedItemType.Interval,
-      feedItemId: makeFeedItemId(),
-      triageStatus: TriageStatus.Untriaged,
-      importState: makeNewFeedItemImportState(),
-      tagIds: {[SystemTagId.Unread]: true},
-      feedSource,
-      accountId,
-      title,
-      // TODO(timestamps): Use server timestamps instead.
-      createdTime: new Date(),
-      lastUpdatedTime: new Date(),
-    });
   }
 
   public static getMarkDoneFeedItemActionInfo(feedItem: FeedItem): FeedItemAction {
@@ -218,7 +120,7 @@ export class SharedFeedItemHelpers {
     };
   }
 
-  public static validateUrl(url: string): Result<void> {
+  public static validateUrl(url: string): Result<void, Error> {
     const parsedUrl = parseUrl(url);
     if (!parsedUrl) {
       return makeErrorResult(new Error('Invalid URL'));
@@ -255,43 +157,131 @@ export class SharedFeedItemHelpers {
 
 export function findDeliveryScheduleForFeedSubscription(args: {
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-  readonly userFeedSubscriptions: UserFeedSubscription[];
+  readonly userFeedSubscriptions: Record<UserFeedSubscriptionId, UserFeedSubscription>;
 }): DeliverySchedule | null {
   const {userFeedSubscriptionId, userFeedSubscriptions} = args;
-  const matchingUserFeedSubscription = userFeedSubscriptions.find(
-    (subscription) => subscription.userFeedSubscriptionId === userFeedSubscriptionId
-  );
+  const matchingUserFeedSubscription = userFeedSubscriptions[userFeedSubscriptionId];
   return matchingUserFeedSubscription?.deliverySchedule ?? null;
 }
 
+export function makeFeedItem(args: {
+  feedSource: FeedSource;
+  accountId: AccountId;
+  content: FeedItemContent;
+}): FeedItem {
+  const {feedSource, accountId, content} = args;
+
+  return {
+    feedItemContentType: content.feedItemContentType,
+    feedItemId: makeFeedItemId(),
+    content,
+    feedSource,
+    accountId,
+    importState: makeNewFeedItemImportState(),
+    triageStatus: TriageStatus.Untriaged,
+    tagIds: {[SystemTagId.Unread]: true},
+    // TODO(timestamps): Use server timestamps instead.
+    createdTime: new Date(),
+    lastUpdatedTime: new Date(),
+    // TODO(types): Remove this cast.
+  } as FeedItem;
+}
+
 /**
- * Uses heuristics to determine what {@link FeedItemType} a URL is likely to be. This is used to
- * determine which renderer to use when rendering a feed item.
+ * Returns the best guess {@link FeedItemContentType} for a given URL based on a set of rules and
+ * heuristics.
  */
-export function getFeedItemTypeFromUrl(url: string): Exclude<FeedItemType, FeedItemType.Interval> {
-  // Parsing the URL may throw. If it does, ignore the error and just use a default value.
-  let parsedUrl: URL;
-  // eslint-disable-next-line no-restricted-syntax
-  try {
-    parsedUrl = new URL(url);
-  } catch (error) {
-    const betterError = upgradeUnknownError(error);
-    logger.error(prefixError(betterError, 'Error parsing feed item type from URL'), {error, url});
-    return FeedItemType.Website;
+function getFeedItemContentTypeFromUrl(
+  url: string
+): Exclude<FeedItemContentType, FeedItemContentType.Interval> {
+  const parsedUrlResult = syncTry(() => new URL(url));
+  if (!parsedUrlResult.success) {
+    // Parsing the URL may throw. If it does, log the error and use a default value.
+    const betterError = prefixErrorResult(parsedUrlResult, 'Error parsing feed item type from URL');
+    logger.error(betterError.error, {url});
+    return DEFAULT_FEED_ITEM_CONTENT_TYPE;
   }
 
-  const hostname = parsedUrl.hostname.toLowerCase();
+  const parsedUrl = parsedUrlResult.value;
 
   // Check for exact matches against allowed hostnames.
+  const hostname = parsedUrl.hostname.toLowerCase();
   const twitterHosts = ['twitter.com', 'www.twitter.com', 'x.com', 'www.x.com'];
   if (isYouTubeVideoUrl(parsedUrl.href)) {
-    return FeedItemType.YouTube;
+    return FeedItemContentType.YouTube;
   } else if (isXkcdComicUrl(parsedUrl.href)) {
-    return FeedItemType.Xkcd;
+    return FeedItemContentType.Xkcd;
   } else if (twitterHosts.includes(hostname)) {
-    return FeedItemType.Tweet;
+    return FeedItemContentType.Tweet;
   }
 
-  // Default to article.
-  return FeedItemType.Article;
+  // Fallback.
+  return DEFAULT_FEED_ITEM_CONTENT_TYPE;
+}
+
+/**
+ * Creates a new local {@link FeedItemContent} object given a URL and other metadata.
+ */
+export function makeFeedItemContentFromUrl(args: {
+  readonly url: string;
+  readonly title: string;
+  readonly description: string | null;
+  readonly outgoingLinks: string[];
+  readonly summary: string | null;
+}): Exclude<FeedItemContent, FeedItemContentType.Interval> {
+  const {url, title, description, outgoingLinks, summary} = args;
+
+  const feedItemContentType = getFeedItemContentTypeFromUrl(url);
+
+  switch (feedItemContentType) {
+    case FeedItemContentType.Article:
+    case FeedItemContentType.Video:
+    case FeedItemContentType.Website:
+    case FeedItemContentType.Tweet:
+    case FeedItemContentType.YouTube:
+      return {feedItemContentType, url, title, description, outgoingLinks, summary};
+    case FeedItemContentType.Xkcd:
+      return {
+        feedItemContentType,
+        url,
+        title,
+        summary,
+        // Remaining fields will be filled in by import.
+        altText: '',
+        imageUrlSmall: '',
+        imageUrlLarge: '',
+      };
+    default:
+      assertNever(feedItemContentType);
+  }
+}
+
+export function makeNewFeedItemImportState(): NewFeedItemImportState {
+  return {
+    status: FeedItemImportStatus.New,
+    shouldFetch: true,
+    lastImportRequestedTime: new Date(),
+    lastSuccessfulImportTime: null,
+  };
+}
+
+export function getFeedItemContentTypeText(feedItemContentType: FeedItemContentType): string {
+  switch (feedItemContentType) {
+    case FeedItemContentType.Article:
+      return 'Article';
+    case FeedItemContentType.Video:
+      return 'Video';
+    case FeedItemContentType.Website:
+      return 'Website';
+    case FeedItemContentType.Tweet:
+      return 'Tweet';
+    case FeedItemContentType.YouTube:
+      return 'YouTube';
+    case FeedItemContentType.Xkcd:
+      return 'XKCD';
+    case FeedItemContentType.Interval:
+      return 'Interval';
+    default:
+      assertNever(feedItemContentType);
+  }
 }

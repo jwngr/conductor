@@ -2,7 +2,7 @@ import {useState} from 'react';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Input} from '@src/components/atoms/Input';
-import {Text} from '@src/components/atoms/Text';
+import {P} from '@src/components/atoms/Text';
 import {StorySection} from '@src/components/stories/StorySection';
 
 export const InputStories: React.FC = () => {
@@ -25,7 +25,7 @@ export const InputStories: React.FC = () => {
             onChange={(e) => setControlledValue(e.target.value)}
             placeholder="Type something..."
           />
-          <Text>Current value: {controlledValue || '(empty)'}</Text>
+          <P>Current value: {controlledValue || '(empty)'}</P>
         </FlexColumn>
       </StorySection>
     </>

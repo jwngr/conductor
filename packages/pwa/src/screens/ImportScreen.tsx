@@ -12,6 +12,7 @@ import {
 } from '@shared/types/migration.types';
 import type {ExternalMigrationItemState} from '@shared/types/migration.types';
 import type {PocketImportItem} from '@shared/types/pocket.types';
+import {NavItemId} from '@shared/types/urls.types';
 import type {Task} from '@shared/types/utils.types';
 
 import {parsePocketCsvContent} from '@sharedClient/lib/pocket.client';
@@ -24,8 +25,10 @@ import {Button} from '@src/components/atoms/Button';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Input} from '@src/components/atoms/Input';
 import {ExternalLink} from '@src/components/atoms/Link';
-import {Text} from '@src/components/atoms/Text';
+import {H2, P} from '@src/components/atoms/Text';
 import {FeedItemImportStatusBadge} from '@src/components/feedItems/FeedItemImportStatusBadge';
+
+import {firebaseService} from '@src/lib/firebase.pwa';
 
 import {Screen} from '@src/screens/Screen';
 
@@ -47,7 +50,7 @@ const INITIAL_IMPORT_SCREEN_STATE: ImportScreenState = {
 
 export const ImportScreen: React.FC = () => {
   const [state, setState] = useState<ImportScreenState>(INITIAL_IMPORT_SCREEN_STATE);
-  const feedItemsService = useFeedItemsService();
+  const feedItemsService = useFeedItemsService({firebaseService});
 
   const setFileError = (error: Error): void => {
     setState((prev) => ({...prev, fileError: error}));
@@ -104,6 +107,10 @@ export const ImportScreen: React.FC = () => {
       feedSource: POCKET_EXPORT_FEED_SOURCE,
       url: item.url,
       title: item.title,
+      // This data is not available at import time.
+      description: null,
+      outgoingLinks: [],
+      summary: null,
     });
 
     if (!createResult.success) {
@@ -126,14 +133,12 @@ export const ImportScreen: React.FC = () => {
     if (state.pocketImportItems === null) return null;
 
     if (state.pocketImportItems.length === 0) {
-      return <Text>No items found in the CSV file</Text>;
+      return <P>No items found in the CSV file</P>;
     }
 
     return (
       <FlexColumn gap={4}>
-        <Text bold>
-          Found {pluralizeWithCount(state.pocketImportItems.length, 'item')} to import:
-        </Text>
+        <P bold>Found {pluralizeWithCount(state.pocketImportItems.length, 'item')} to import:</P>
         <FlexColumn gap={3}>
           {state.pocketImportItems.map((item, index) => {
             const key = `${item.url}-${index}`;
@@ -158,18 +163,16 @@ export const ImportScreen: React.FC = () => {
   };
 
   return (
-    <Screen withHeader withLeftSidebar>
-      <FlexColumn flex={1} gap={6} padding={5} overflow="auto">
-        <Text as="h2" bold>
-          Import
-        </Text>
+    <Screen selectedNavItemId={NavItemId.Import} withHeader>
+      <FlexColumn flex gap={6} padding={5} overflow="auto">
+        <H2 bold>Import</H2>
 
         <FlexColumn gap={2}>
-          <Text as="h2">Pocket</Text>
-          <Text as="p" light>
+          <H2>Pocket</H2>
+          <P light>
             Download CSV file from{' '}
             <ExternalLink href="https://getpocket.com/export">Pocket</ExternalLink>
-          </Text>
+          </P>
           <Input
             id="pocket-csv-input"
             type="file"
@@ -177,11 +180,7 @@ export const ImportScreen: React.FC = () => {
             onChange={handleFileChange}
             className="max-w-sm"
           />
-          {state.fileError ? (
-            <Text as="p" className="text-error">
-              {state.fileError.message}
-            </Text>
-          ) : null}
+          {state.fileError ? <P error>{state.fileError.message}</P> : null}
         </FlexColumn>
 
         {renderParsedItems()}
@@ -213,20 +212,14 @@ const IndividualImportItem: React.FC<WithChildren<IndividualImportItemProps>> = 
   if (isError) buttonText = 'Retry';
 
   return (
-    <FlexRow gap={3} padding={3} className="rounded-lg border border-gray-200">
-      <FlexColumn flex={1} gap={1}>
+    <FlexRow gap={3} padding={3} className="border-neutral-2 rounded-lg border">
+      <FlexColumn flex gap={1}>
         <FlexRow gap={2}>
-          <Text bold>{item.title}</Text>
+          <P bold>{item.title}</P>
           {children}
         </FlexRow>
-        <Text as="p" light>
-          {item.url}
-        </Text>
-        {isError ? (
-          <Text as="p" className="text-error">
-            {status.error.message}
-          </Text>
-        ) : null}
+        <P light>{item.url}</P>
+        {isError ? <P error>{status.error.message}</P> : null}
       </FlexColumn>
       <Button onClick={onImport} disabled={isImporting || isImported} size="sm">
         {buttonText}

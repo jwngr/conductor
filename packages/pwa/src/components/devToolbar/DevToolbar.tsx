@@ -8,14 +8,15 @@ import type {Task} from '@shared/types/utils.types';
 
 import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
-import {IS_DEVELOPMENT} from '@sharedClient/lib/environment.client';
-
 import {useBooleanAccountExperiment} from '@sharedClient/hooks/experiments.hooks';
 
 import {FlexColumn} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
-import {Text} from '@src/components/atoms/Text';
+import {H4, P} from '@src/components/atoms/Text';
 import {RequireLoggedInAccount} from '@src/components/auth/RequireLoggedInAccount';
+
+import {IS_DEVELOPMENT} from '@src/lib/environment.pwa';
+import {cn} from '@src/lib/utils.pwa';
 
 import {storiesRedirectRoute} from '@src/routes';
 
@@ -46,13 +47,9 @@ const DevToolbarContent: React.FC<{
         )
       )}
       <FlexColumn>
-        <Text as="h4" bold>
-          Links
-        </Text>
-        <Link to={storiesRedirectRoute.fullPath} onClick={onClose}>
-          <Text as="p" underline="hover">
-            Design system & stories
-          </Text>
+        <H4 bold>Links</H4>
+        <Link to={storiesRedirectRoute.to} onClick={onClose}>
+          <P underline="hover">Design system & stories</P>
         </Link>
       </FlexColumn>
     </FlexColumn>
@@ -64,9 +61,7 @@ const DevToolbarSectionComponent: React.FC<{
 }> = ({section}) => {
   return (
     <FlexColumn gap={1}>
-      <Text as="h4" bold>
-        {section.title}
-      </Text>
+      <H4 bold>{section.title}</H4>
       <FlexColumn gap={2}>{section.renderSection()}</FlexColumn>
     </FlexColumn>
   );
@@ -118,11 +113,12 @@ export const DevToolbar: React.FC = () => {
     <div
       ref={toolbarRef}
       onClick={handleToolbarClick}
-      className={`border-border fixed right-4 bottom-4 border-2 border-solid shadow-md ${
+      className={cn(
+        'border-border fixed right-4 bottom-4 border-2 border-solid shadow-md',
         isOpen
           ? 'bg-neutral-1 h-auto w-[300px] cursor-default rounded-xl p-4'
           : 'bg-neutral-1 h-8 w-8 cursor-pointer rounded-full p-0'
-      }`}
+      )}
     >
       {isOpen ? <DevToolbarContent onClose={() => setIsOpen(false)} /> : <BugEmoji />}
     </div>

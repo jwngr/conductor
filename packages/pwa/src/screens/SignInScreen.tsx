@@ -1,4 +1,3 @@
-import {Navigate} from '@tanstack/react-router';
 import type {ActionCodeSettings} from 'firebase/auth';
 import {useCallback, useState} from 'react';
 
@@ -8,24 +7,23 @@ import {parseEmailAddress} from '@shared/parsers/emails.parser';
 
 import type {Consumer} from '@shared/types/utils.types';
 
-import {authService} from '@sharedClient/services/auth.client';
-
-import {IS_DEVELOPMENT} from '@sharedClient/lib/environment.client';
-
 import {useMaybeLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
 import {Button} from '@src/components/atoms/Button';
 import {Input} from '@src/components/atoms/Input';
 import {Spacer} from '@src/components/atoms/Spacer';
-import {Text} from '@src/components/atoms/Text';
+import {H1, H3, P, Span} from '@src/components/atoms/Text';
+
+import {authService} from '@src/lib/auth.pwa';
+import {env, IS_DEVELOPMENT} from '@src/lib/environment.pwa';
 
 import type {OnClick} from '@src/types/utils.pwa.types';
 
-import {rootRoute} from '@src/routes/__root';
+import {DefaultRouteRedirect} from '@src/routes/Redirects';
 import {Screen} from '@src/screens/Screen';
 
 const PASSWORDLESS_AUTH_ACTION_CODE_SETTINGS: ActionCodeSettings = {
-  url: import.meta.env.VITE_CONDUCTOR_URL, // URL to redirect back to.
+  url: env.conductorUrl, // URL to redirect back to.
   handleCodeInApp: true, // Must be true for this flow.
 };
 
@@ -119,18 +117,18 @@ export const SignInScreen: React.FC = () => {
 
   // Redirect to root if already logged in.
   if (loggedInAccount) {
-    return <Navigate to={rootRoute.fullPath} replace />;
+    return <DefaultRouteRedirect />;
   }
 
   return (
-    <Screen align="center" justify="center" gap={4} maxWidth={480}>
-      <Text as="h1" bold align="center">
+    <Screen selectedNavItemId={null} align="center" justify="center" gap={4} maxWidth={480}>
+      <H1 bold align="center">
         Conductor
-      </Text>
+      </H1>
       <Spacer y={8} />
-      <Text as="h3" bold align="center">
+      <H3 bold align="center">
         Enter email for a passwordless sign in link
-      </Text>
+      </H3>
       <Input
         type="email"
         value={state.emailInputVal}
@@ -146,21 +144,20 @@ export const SignInScreen: React.FC = () => {
 
       {IS_DEVELOPMENT
         ? renderPasswordlessAuthButton({
-            // TODO: Move to enviroment variable.
-            maybeEmail: 'wenger.jacob@gmail.com',
+            maybeEmail: env.defaultPasswordlessEmailAddress,
             text: 'Send link to myself',
           })
         : null}
 
       {state.successfulSignInLinkSentTo ? (
-        <Text align="center">
+        <P align="center">
           Check <b>{state.successfulSignInLinkSentTo}</b> for the sign in link.
-        </Text>
+        </P>
       ) : null}
       {state.signInLinkError ? (
-        <Text className="text-error" align="center">
-          <Text bold>Error signing in:</Text> {state.signInLinkError.message}
-        </Text>
+        <P error align="center">
+          <Span bold>Error signing in:</Span> {state.signInLinkError.message}
+        </P>
       ) : null}
     </Screen>
   );

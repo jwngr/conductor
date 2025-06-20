@@ -12,7 +12,7 @@ export async function handleFeedUnsubscribe(args: {
   readonly beforeData: unknown;
   readonly afterData: unknown;
   readonly rssFeedService: ServerRssFeedService;
-}): AsyncResult<void> {
+}): AsyncResult<void, Error> {
   const {beforeData, afterData, rssFeedService} = args;
 
   // Parse the before and after data.
@@ -42,7 +42,7 @@ export async function handleFeedUnsubscribe(args: {
       return await rssFeedService.unsubscribeFromUrl(after.url);
     case FeedSourceType.YouTubeChannel:
     case FeedSourceType.Interval:
-      // TODO: Disable the server-side behavior for these once implemented.
+      // Feed sources with no unsubscribing required.
       return makeSuccessResult(undefined);
     default:
       assertNever(after);

@@ -1,9 +1,5 @@
-import {Text} from '@src/components/atoms/Text';
+import {H2} from '@src/components/atoms/Text';
 
 export const ConductorLogo: React.FC = () => {
-  return (
-    <Text as="h2" bold>
-      Conductor
-    </Text>
-  );
+  return <H2 bold>Conductor</H2>;
 };

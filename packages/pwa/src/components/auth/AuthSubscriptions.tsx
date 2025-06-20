@@ -1,5 +1,4 @@
 import {useNavigate} from '@tanstack/react-router';
-import {isSignInWithEmailLink} from 'firebase/auth';
 import {useEffect, useRef} from 'react';
 
 import {logger} from '@shared/services/logger.shared';
@@ -10,10 +9,9 @@ import {parseEmailAddress} from '@shared/parsers/emails.parser';
 
 import {useAuthStore} from '@sharedClient/stores/AuthStore';
 
-import {authService} from '@sharedClient/services/auth.client';
-import {firebaseService} from '@sharedClient/services/firebase.client';
+import {authService} from '@src/lib/auth.pwa';
 
-import {rootRoute} from '@src/routes/__root';
+import {signInRoute} from '@src/routes';
 
 /**
  * Listener which updates the auth store when the user's authentication state changes in the auth
@@ -50,7 +48,7 @@ const PasswordlessAuthSubscription: React.FC = () => {
     isFirstMount.current = false;
 
     // Only do something if the current URL is a "sign-in with email" link.
-    if (!isSignInWithEmailLink(firebaseService.auth, window.location.href)) return;
+    if (!authService.isSignInWithEmailLink(window.location.href)) return;
 
     const go = async (): Promise<void> => {
       // The sign in screen persisted the email to login in local storage. If the sign-in link was
@@ -99,7 +97,7 @@ const PasswordlessAuthSubscription: React.FC = () => {
 
       // Logic in `RequireLoggedInAccount` updates the UI when the logged-in state changes in
       // `AuthStore`, but it does not update the URL. Update it to remove the used sign-in link.
-      await navigate({to: rootRoute.fullPath, replace: true});
+      await navigate({to: signInRoute.to, replace: true});
     };
 
     void go();

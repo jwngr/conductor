@@ -3,7 +3,7 @@ import type {HTMLAttributes} from 'react';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import type {FlexValue} from '@shared/types/flex.types';
-import {DEFAULT_TEXT_COLOR, DEFAULT_TEXT_LIGHT_COLOR} from '@shared/types/theme.types';
+import {DEFAULT_TEXT_LIGHT_COLOR} from '@shared/types/theme.types';
 
 import {cn} from '@src/lib/utils.pwa';
 
@@ -11,14 +11,13 @@ type FontWeight = 'normal' | 'bold' | '900';
 function getFontWeightClasses(args: {
   readonly bold?: boolean;
   readonly weight?: FontWeight;
-}): string {
+}): string | null {
   const {bold, weight} = args;
 
-  if (typeof weight === 'undefined') {
-    return bold ? 'font-bold' : 'normal';
-  }
-
   switch (weight) {
+    case undefined:
+      // `weight` takes precedence over `bold`.
+      return bold ? 'font-bold' : null;
     case 'normal':
       return 'font-normal';
     case 'bold':
@@ -30,31 +29,44 @@ function getFontWeightClasses(args: {
   }
 }
 
-function getTextAlignClasses(args: {readonly align?: 'left' | 'center' | 'right'}): string {
+type TextAlign = 'left' | 'center' | 'right';
+function getTextAlignClasses(args: {readonly align?: TextAlign}): string | null {
   const {align} = args;
-
-  if (typeof align === 'undefined') return '';
-  return `text-${align}`;
+  switch (align) {
+    case undefined:
+      return null;
+    case 'left':
+      return 'text-left';
+    case 'center':
+      return 'text-center';
+    case 'right':
+      return 'text-right';
+    default:
+      return assertNever(align);
+  }
 }
 
-/**
- * Note that most colors should be handled by Tailwind classes.
- *
- * TODO: Add back a proper `color` attribute that is semantically cleaner.
- */
-function getColorClasses(args: {readonly light?: boolean}): string {
-  const {light} = args;
-  // TODO: Move this default somewhere else so that every text component doesn't need to set it. It
-  // also overrides color of any text component it is inside, which breaks the `span` use case.
-  return light ? DEFAULT_TEXT_LIGHT_COLOR : DEFAULT_TEXT_COLOR;
+// TODO: Introduce an additional typesafe `color` attribute.
+function getColorClasses(args: {
+  readonly light?: boolean;
+  readonly error?: boolean;
+  readonly success?: boolean;
+  readonly isSpan?: boolean;
+}): string | null {
+  const {light, error, success, isSpan} = args;
+  if (error) return 'text-error';
+  if (success) return 'text-success';
+  if (light) return DEFAULT_TEXT_LIGHT_COLOR;
+  if (isSpan) return 'text-inherit';
+  return null;
 }
 
-function getUnderlineClasses(args: {readonly underline?: 'always' | 'hover' | 'never'}): string {
+type Underline = 'always' | 'hover' | 'never';
+function getUnderlineClasses(args: {readonly underline?: Underline}): string | null {
   const {underline} = args;
-
-  if (typeof underline === 'undefined') return '';
-
   switch (underline) {
+    case undefined:
+      return null;
     case 'always':
       return 'underline cursor-pointer';
     case 'hover':
@@ -66,66 +78,72 @@ function getUnderlineClasses(args: {readonly underline?: 'always' | 'hover' | 'n
   }
 }
 
-function getFlexClasses(args: {readonly flex?: FlexValue}): string {
+function getFlexClasses(args: {readonly flex?: FlexValue}): string | null {
   const {flex} = args;
-
-  if (typeof flex === 'undefined') return '';
-  if (typeof flex === 'boolean') {
-    return flex ? 'flex-1' : 'flex-none';
+  switch (flex) {
+    case undefined:
+      return null;
+    case true:
+      return 'flex-1';
+    case false:
+      return 'flex-none';
+    case 'auto':
+      return 'flex-auto';
+    case 'initial':
+      return 'flex-initial';
+    default:
+      return assertNever(flex);
   }
-  return `flex-${flex}`;
-}
-
-function getFontFamilyClasses(args: {readonly monospace?: boolean}): string {
-  const {monospace} = args;
-  return monospace ? 'font-mono' : 'font-sans';
-}
-
-function getTruncateClasses(args: {readonly truncate?: boolean}): string {
-  const {truncate} = args;
-
-  if (typeof truncate === 'undefined') return '';
-  return truncate ? 'truncate' : '';
 }
 
 type TextElement = 'p' | 'span' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 
 interface TextProps extends HTMLAttributes<HTMLParagraphElement> {
-  readonly as?: TextElement;
-  readonly align?: 'left' | 'center' | 'right';
+  readonly as: TextElement;
+  readonly align?: TextAlign;
   readonly bold?: boolean;
   readonly weight?: FontWeight;
   readonly flex?: FlexValue;
   readonly truncate?: boolean;
+  readonly nowrap?: boolean;
   readonly monospace?: boolean;
   readonly light?: boolean;
+  readonly error?: boolean;
+  readonly success?: boolean;
   readonly underline?: 'always' | 'hover' | 'never';
+  readonly italic?: boolean;
   readonly children: React.ReactNode;
 }
 
-export const Text: React.FC<TextProps> = ({
-  as: Component = 'p',
+const Text: React.FC<TextProps> = ({
+  as: Component,
   align,
   bold,
   weight,
   flex,
   children,
   light,
+  error,
+  success,
   monospace,
   truncate,
+  nowrap,
   underline,
+  italic,
   style,
   className,
   ...rest
 }) => {
   const classes = cn(
-    getColorClasses({light}),
+    getColorClasses({light, error, success, isSpan: Component === 'span'}),
     getUnderlineClasses({underline}),
     getFontWeightClasses({bold, weight}),
-    getFontFamilyClasses({monospace}),
     getTextAlignClasses({align}),
     getFlexClasses({flex}),
-    getTruncateClasses({truncate}),
+    monospace && 'font-mono',
+    truncate && 'truncate',
+    nowrap && 'whitespace-nowrap',
+    italic && 'italic',
     className
   );
 
@@ -135,3 +153,14 @@ export const Text: React.FC<TextProps> = ({
     </Component>
   );
 };
+
+type TextPropsWithoutAs = Omit<TextProps, 'as'>;
+
+export const P: React.FC<TextPropsWithoutAs> = ({...props}) => <Text as="p" {...props} />;
+export const Span: React.FC<TextPropsWithoutAs> = ({...props}) => <Text as="span" {...props} />;
+export const H1: React.FC<TextPropsWithoutAs> = ({...props}) => <Text as="h1" {...props} />;
+export const H2: React.FC<TextPropsWithoutAs> = ({...props}) => <Text as="h2" {...props} />;
+export const H3: React.FC<TextPropsWithoutAs> = ({...props}) => <Text as="h3" {...props} />;
+export const H4: React.FC<TextPropsWithoutAs> = ({...props}) => <Text as="h4" {...props} />;
+export const H5: React.FC<TextPropsWithoutAs> = ({...props}) => <Text as="h5" {...props} />;
+export const H6: React.FC<TextPropsWithoutAs> = ({...props}) => <Text as="h6" {...props} />;

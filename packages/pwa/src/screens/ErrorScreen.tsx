@@ -15,7 +15,7 @@ import {Divider} from '@src/components/atoms/Divider';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {Link} from '@src/components/atoms/Link';
 import {Spacer} from '@src/components/atoms/Spacer';
-import {Text} from '@src/components/atoms/Text';
+import {H5, P} from '@src/components/atoms/Text';
 import {ErrorArea} from '@src/components/errors/ErrorArea';
 import {ConductorLogo} from '@src/components/logos/ConductorLogo';
 
@@ -34,23 +34,22 @@ const ErrorScreenAuthFooter: React.FC = () => {
     // TODO: Make this more responsive on mobile.
     innerContent = (
       <FlexRow align="center" gap={3}>
-        <Text as="h5" light>
+        <H5 light>
           Logged in as <b>{loggedInAccount.email}</b>
-        </Text>
+        </H5>
         <Divider y={24} x={1} />
-        <Link to={signOutRoute.fullPath} replace>
-          {/* TODO: Add `nowrap` as a prop to `Text`. */}
-          <Text as="h5" underline="always" light className="text-nowrap">
+        <Link to={signOutRoute.to} replace>
+          <H5 underline="always" light nowrap>
             Sign out
-          </Text>
+          </H5>
         </Link>
       </FlexRow>
     );
   } else {
     innerContent = (
-      <Text as="p" align="center" light>
+      <P align="center" light>
         Not logged in
-      </Text>
+      </P>
     );
   }
 
@@ -61,14 +60,14 @@ const ErrorScreenAuthFooter: React.FC = () => {
   );
 };
 
-export const ErrorScreen: React.FC<{
+const ErrorScreen: React.FC<{
   readonly error: Error;
   readonly title: string | React.ReactElement;
   readonly subtitle: string | React.ReactElement;
   readonly actions: readonly HeroAction[];
 }> = ({error, title, subtitle, actions}) => {
   return (
-    <Screen>
+    <Screen selectedNavItemId={null}>
       <div className="relative">
         {/* Conductor logo, top left. */}
         <FlexRow className="absolute top-4 left-4 z-10">

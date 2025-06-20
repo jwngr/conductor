@@ -1,28 +1,28 @@
 import {deleteField} from 'firebase/firestore';
 import {useEffect, useRef} from 'react';
-import {toast} from 'sonner';
 
 import {logger} from '@shared/services/logger.shared';
 
 import {prefixError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
+import {PARSING_FAILURE_SENTINEL} from '@shared/lib/parser.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
-import {FeedItemType} from '@shared/types/feedItems.types';
+import {FeedItemContentType} from '@shared/types/feedItems.types';
 import {SystemTagId} from '@shared/types/tags.types';
 
 import {
   DEFAULT_ROUTE_HERO_PAGE_ACTION,
   REFRESH_HERO_PAGE_ACTION,
 } from '@sharedClient/lib/heroActions.client';
+import {toast} from '@sharedClient/lib/toasts.client';
 
 import {useFeedItem, useFeedItemsService} from '@sharedClient/hooks/feedItems.hooks';
 
 import {RegisterIndividualFeedItemDevToolbarSection} from '@src/components/devToolbar/RegisterIndividualFeedItemSection';
 import {ErrorArea} from '@src/components/errors/ErrorArea';
-import {FeedItemScreenKeyboardHandler} from '@src/components/feedItems/FeedItemScreenEscapeHandler';
 import {ArticleFeedItemRenderer} from '@src/components/feedItems/renderers/ArticleFeedItemRenderer';
 import {IntervalFeedItemRenderer} from '@src/components/feedItems/renderers/IntervalFeedItemRenderer';
 import {TweetFeedItemRenderer} from '@src/components/feedItems/renderers/TweetFeedItemRenderer';
@@ -32,8 +32,9 @@ import {XkcdFeedItemRenderer} from '@src/components/feedItems/renderers/XkcdFeed
 import {YouTubeFeedItemRenderer} from '@src/components/feedItems/renderers/YouTubeFeedItemRenderer';
 import {LoadingArea} from '@src/components/loading/LoadingArea';
 
-import {useFeedItemIdFromUrl} from '@src/lib/router.pwa';
+import {firebaseService} from '@src/lib/firebase.pwa';
 
+import {feedItemRoute} from '@src/routes';
 import {NotFoundScreen} from '@src/screens/404';
 import {Screen} from '@src/screens/Screen';
 
@@ -43,7 +44,7 @@ const useMarkFeedItemRead = (args: {
 }): void => {
   const {feedItemId, feedItem} = args;
 
-  const feedItemsService = useFeedItemsService();
+  const feedItemsService = useFeedItemsService({firebaseService});
 
   const wasAlreadyMarkedReadAtMount = useRef(
     feedItem ? !SharedFeedItemHelpers.isUnread(feedItem) : false
@@ -88,32 +89,32 @@ const useMarkFeedItemRead = (args: {
   }, [feedItemId, isFeedItemNull, feedItemsService, hasFeedItemBeenImported]);
 };
 
-const LoadedFeedItemScreenMainContent: React.FC<{
+const LoadedFeedItemScreenContent: React.FC<{
   readonly feedItem: FeedItem;
 }> = ({feedItem}) => {
   useMarkFeedItemRead({feedItem, feedItemId: feedItem.feedItemId});
 
   let feedItemContent: React.ReactNode;
-  switch (feedItem.feedItemType) {
-    case FeedItemType.Article:
+  switch (feedItem.feedItemContentType) {
+    case FeedItemContentType.Article:
       feedItemContent = <ArticleFeedItemRenderer feedItem={feedItem} />;
       break;
-    case FeedItemType.Video:
+    case FeedItemContentType.Video:
       feedItemContent = <VideoFeedItemRenderer feedItem={feedItem} />;
       break;
-    case FeedItemType.Website:
+    case FeedItemContentType.Website:
       feedItemContent = <WebsiteFeedItemRenderer feedItem={feedItem} />;
       break;
-    case FeedItemType.Tweet:
+    case FeedItemContentType.Tweet:
       feedItemContent = <TweetFeedItemRenderer feedItem={feedItem} />;
       break;
-    case FeedItemType.Xkcd:
+    case FeedItemContentType.Xkcd:
       feedItemContent = <XkcdFeedItemRenderer feedItem={feedItem} />;
       break;
-    case FeedItemType.YouTube:
+    case FeedItemContentType.YouTube:
       feedItemContent = <YouTubeFeedItemRenderer feedItem={feedItem} />;
       break;
-    case FeedItemType.Interval:
+    case FeedItemContentType.Interval:
       feedItemContent = <IntervalFeedItemRenderer feedItem={feedItem} />;
       break;
     default:
@@ -128,10 +129,10 @@ const LoadedFeedItemScreenMainContent: React.FC<{
   );
 };
 
-const FeedItemScreenMainContent: React.FC<{
+export const FeedItemScreenContent: React.FC<{
   readonly feedItemId: FeedItemId;
 }> = ({feedItemId}) => {
-  const feedItemState = useFeedItem(feedItemId);
+  const feedItemState = useFeedItem({feedItemId, firebaseService});
 
   switch (feedItemState.status) {
     case AsyncStatus.Idle:
@@ -153,28 +154,30 @@ const FeedItemScreenMainContent: React.FC<{
       if (!feedItemState.value) {
         return <NotFoundScreen title="Feed item not found" subtitle={undefined} />;
       }
-      return <LoadedFeedItemScreenMainContent feedItem={feedItemState.value} />;
+      return <LoadedFeedItemScreenContent feedItem={feedItemState.value} />;
     default:
       assertNever(feedItemState);
   }
 };
 
 export const FeedItemScreen: React.FC = () => {
-  const feedItemId = useFeedItemIdFromUrl();
+  const {feedItemId} = feedItemRoute.useParams();
 
   if (!feedItemId) {
     return (
-      <NotFoundScreen
-        title="Feed item ID missing"
-        subtitle="Make sure the URL includes a valid feed item ID"
-      />
+      <NotFoundScreen title="Missing feed item ID" subtitle="The URL does not contain an ID" />
+    );
+  }
+
+  if (feedItemId === PARSING_FAILURE_SENTINEL) {
+    return (
+      <NotFoundScreen title="Invalid feed item ID" subtitle="The ID from the URL failed to parse" />
     );
   }
 
   return (
-    <Screen withHeader withLeftSidebar>
-      <FeedItemScreenMainContent feedItemId={feedItemId} />
-      <FeedItemScreenKeyboardHandler />
+    <Screen selectedNavItemId={null} withHeader>
+      <FeedItemScreenContent feedItemId={feedItemId} />
     </Screen>
   );
 };

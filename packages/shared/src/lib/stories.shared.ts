@@ -1,3 +1,5 @@
+import {logger} from '@shared/services/logger.shared';
+
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {RendererType} from '@shared/types/renderers.types';
@@ -42,10 +44,14 @@ function getAtomicComponentSidebarItemTitle(type: AtomicComponentType): string {
       return 'ButtonIcon';
     case AtomicComponentType.Checkbox:
       return 'Checkbox';
+    case AtomicComponentType.CustomIcon:
+      return 'CustomIcon';
     case AtomicComponentType.Dialog:
       return 'Dialog';
     case AtomicComponentType.Divider:
       return 'Divider';
+    case AtomicComponentType.Dot:
+      return 'Dot';
     case AtomicComponentType.DropdownMenu:
       return 'DropdownMenu';
     case AtomicComponentType.Flex:
@@ -144,11 +150,13 @@ const ORDERED_ATOMIC_COMPONENT_TYPES: AtomicComponentType[] = [
   AtomicComponentType.Button,
   AtomicComponentType.Badge,
   AtomicComponentType.Checkbox,
+  AtomicComponentType.CustomIcon,
   AtomicComponentType.Input,
   AtomicComponentType.Dialog,
   AtomicComponentType.Toast,
   AtomicComponentType.Tooltip,
   AtomicComponentType.Divider,
+  AtomicComponentType.Dot,
   AtomicComponentType.DropdownMenu,
   AtomicComponentType.Flex,
   AtomicComponentType.Spacer,
@@ -175,9 +183,7 @@ export function getMoleculeComponentSidebarItems(): MoleculeComponentSidebarItem
 
 export const DEFAULT_STORIES_SIDEBAR_ITEM = getDesignSystemSidebarItems()[0];
 
-export function findStoriesSidebarItemById(
-  itemId: StoriesSidebarItemId
-): StoriesSidebarItem | null {
+export function findStoriesSidebarItemById(itemId: StoriesSidebarItemId): StoriesSidebarItem {
   const designSystemSidebarItems = getDesignSystemSidebarItems();
   const designSystemItem = designSystemSidebarItems.find((item) => item.sidebarItemId === itemId);
   if (designSystemItem) return designSystemItem;
@@ -198,5 +204,7 @@ export function findStoriesSidebarItemById(
   );
   if (moleculeComponentItem) return moleculeComponentItem;
 
-  return null;
+  logger.error(new Error('Unexpectedly found no story for sidebar item ID'), {itemId});
+
+  return DEFAULT_STORIES_SIDEBAR_ITEM;
 }

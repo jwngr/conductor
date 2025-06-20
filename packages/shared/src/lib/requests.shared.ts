@@ -1,6 +1,7 @@
 import {logger} from '@shared/services/logger.shared';
 
 import {asyncTry, prefixError, upgradeUnknownError} from '@shared/lib/errorUtils.shared';
+import {objectKeys} from '@shared/lib/objectUtils.shared';
 
 import type {AsyncResponseResult, RequestBody, RequestOptions} from '@shared/types/requests.types';
 import {
@@ -19,11 +20,11 @@ async function request<T>(
   url: string,
   method: HttpMethod,
   options: RequestOptions = {}
-): AsyncResponseResult<T> {
+): AsyncResponseResult<T, Error> {
   const {headers = {}, body, params = {}} = options;
 
   const queryString =
-    Object.keys(params).length > 0 ? `?${new URLSearchParams(params).toString()}` : ``;
+    objectKeys(params).length > 0 ? `?${new URLSearchParams(params).toString()}` : ``;
 
   const rawResponseResult = await asyncTry(async () =>
     // Allow `fetch` here. We cannot use `request*` since we are inside its implementation.
@@ -96,7 +97,10 @@ async function request<T>(
   return makeSuccessResponseResult(jsonResponse, statusCode);
 }
 
-export async function requestGet<T>(url: string, options?: RequestOptions): AsyncResponseResult<T> {
+export async function requestGet<T>(
+  url: string,
+  options?: RequestOptions
+): AsyncResponseResult<T, Error> {
   return request<T>(url, HttpMethod.GET, options);
 }
 
@@ -104,14 +108,14 @@ export async function requestPost<T>(
   url: string,
   body: RequestBody,
   options?: RequestOptions
-): AsyncResponseResult<T> {
+): AsyncResponseResult<T, Error> {
   return request<T>(url, HttpMethod.POST, {...options, body});
 }
 
 export async function requestDelete<T>(
   url: string,
   options?: RequestOptions
-): AsyncResponseResult<T> {
+): AsyncResponseResult<T, Error> {
   return request<T>(url, HttpMethod.DELETE, options);
 }
 
@@ -119,6 +123,6 @@ export async function requestPut<T>(
   url: string,
   body: RequestBody,
   options?: RequestOptions
-): AsyncResponseResult<T> {
+): AsyncResponseResult<T, Error> {
   return request<T>(url, HttpMethod.PUT, {...options, body});
 }

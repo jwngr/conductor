@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import {z} from 'zod/v4';
 
 import {RendererType} from '@shared/types/renderers.types';
 import {
@@ -7,12 +7,9 @@ import {
   MoleculeComponentType,
 } from '@shared/types/stories.types';
 
-/**
- * Zod schema for a {@link StoriesSidebarItemId}. Used to parse a sidebar item ID from the URL.
- */
 export const StoriesSidebarItemIdSchema = z.union([
-  z.nativeEnum(AtomicComponentType),
-  z.nativeEnum(DesignSystemComponentType),
-  z.nativeEnum(RendererType),
-  z.nativeEnum(MoleculeComponentType),
+  z.enum(AtomicComponentType),
+  z.enum(DesignSystemComponentType),
+  z.enum(RendererType),
+  z.enum(MoleculeComponentType),
 ]);

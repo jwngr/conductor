@@ -9,6 +9,7 @@
     "dev:pwa": "yarn workspace @conductor/pwa dev",
     "dev:rss": "yarn workspace @conductor/rss-server dev",
     "dev:functions": "firebase emulators:start",
+    "bootstrap": "yarn workspace @conductor/scripts bootstrap",
     "validate": "yarn workspaces foreach --all -p -t run validate",
     "validate:lint": "yarn workspaces foreach --all -p -t run validate:lint",
     "validate:lint:fix": "yarn workspaces foreach --all -p -t run validate:lint:fix && yarn format",

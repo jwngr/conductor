@@ -4,16 +4,18 @@ import {
   assertNever,
   batchAsyncResults,
   batchSyncResults,
-  filterNull,
-  filterUndefined,
   formatWithCommas,
+  isDefined,
   isInteger,
+  isNotNull,
+  isNull,
   isPositiveInteger,
+  isUndefined,
   isValidPort,
   makeUuid,
+  noop,
+  noopFalse,
   noopTrue,
-  omitUndefined,
-  partition,
   pluralize,
   pluralizeWithCount,
 } from '@shared/lib/utils.shared';
@@ -36,126 +38,6 @@ describe('formatWithCommas', () => {
   test('should handle decimal numbers correctly', () => {
     expect(formatWithCommas(1000.5)).toBe('1,000.5');
     expect(formatWithCommas(1234567.89)).toBe('1,234,567.89');
-  });
-});
-
-describe('filterNull', () => {
-  test('should remove null values from array', () => {
-    expect(filterNull([1, null, 2, null, 3])).toEqual([1, 2, 3]);
-  });
-
-  test('should return empty array if all values are null', () => {
-    expect(filterNull([null, null])).toEqual([]);
-  });
-
-  test('should return same array if no null values', () => {
-    expect(filterNull([1, 2, 3])).toEqual([1, 2, 3]);
-  });
-
-  test('should handle empty array', () => {
-    expect(filterNull([])).toEqual([]);
-  });
-});
-
-describe('filterUndefined', () => {
-  test('should remove undefined values from array', () => {
-    expect(filterUndefined([1, undefined, 2, undefined, 3])).toEqual([1, 2, 3]);
-  });
-
-  test('should return empty array if all values are undefined', () => {
-    expect(filterUndefined([undefined, undefined])).toEqual([]);
-  });
-
-  test('should return same array if no undefined values', () => {
-    expect(filterUndefined([1, 2, 3])).toEqual([1, 2, 3]);
-  });
-
-  test('should handle empty array', () => {
-    expect(filterUndefined([])).toEqual([]);
-  });
-});
-
-describe('omitUndefined', () => {
-  test('should remove properties with undefined values', () => {
-    const obj = {
-      a: 1,
-      b: undefined,
-      c: 'test',
-      d: undefined,
-    };
-    expect(omitUndefined(obj)).toEqual({
-      a: 1,
-      c: 'test',
-    });
-  });
-
-  test('should return same object if no undefined values', () => {
-    const obj = {
-      a: 1,
-      b: 2,
-      c: 'test',
-    };
-    expect(omitUndefined(obj)).toEqual(obj);
-  });
-
-  test('should return empty object if all values are undefined', () => {
-    const obj = {
-      a: undefined,
-      b: undefined,
-    };
-    expect(omitUndefined(obj)).toEqual({});
-  });
-
-  test('should handle empty object', () => {
-    expect(omitUndefined({})).toEqual({});
-  });
-
-  test('should handle null values (preserving them)', () => {
-    const obj = {
-      a: 1,
-      b: null,
-      c: undefined,
-    };
-    expect(omitUndefined(obj)).toEqual({
-      a: 1,
-      b: null,
-    });
-  });
-});
-
-describe('partition', () => {
-  test('should partition array based on predicate', () => {
-    const numbers = [1, 2, 3, 4, 5, 6];
-    const [evens, odds] = partition(numbers, (n) => n % 2 === 0);
-    expect(evens).toEqual([2, 4, 6]);
-    expect(odds).toEqual([1, 3, 5]);
-  });
-
-  test('should handle empty array', () => {
-    const [trueValues, falseValues] = partition([], noopTrue);
-    expect(trueValues).toEqual([]);
-    expect(falseValues).toEqual([]);
-  });
-
-  test('should handle array with only matching elements', () => {
-    const numbers = [2, 4, 6, 8];
-    const [evens, odds] = partition(numbers, (n) => n % 2 === 0);
-    expect(evens).toEqual([2, 4, 6, 8]);
-    expect(odds).toEqual([]);
-  });
-
-  test('should handle array with no matching elements', () => {
-    const numbers = [1, 3, 5, 7];
-    const [evens, odds] = partition(numbers, (n) => n % 2 === 0);
-    expect(evens).toEqual([]);
-    expect(odds).toEqual([1, 3, 5, 7]);
-  });
-
-  test('should work with different types', () => {
-    const mixed = [1, 'a', 2, 'b', 3];
-    const [numbers, strings] = partition(mixed, (item) => typeof item === 'number');
-    expect(numbers).toEqual([1, 2, 3]);
-    expect(strings).toEqual(['a', 'b']);
   });
 });
 
@@ -258,7 +140,7 @@ describe('batchSyncResults', () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.value.length).toBe(5);
-      result.value.forEach((res: Result<number>, i: number) => {
+      result.value.forEach((res: Result<number, Error>, i: number) => {
         expectSuccessResult(res, i + 1);
       });
     }
@@ -312,7 +194,7 @@ describe('batchAsyncResults', () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.value.length).toBe(5);
-      result.value.forEach((res: Result<number>, i: number) => {
+      result.value.forEach((res: Result<number, Error>, i: number) => {
         expectSuccessResult(res, i + 1);
       });
     }
@@ -406,5 +288,79 @@ describe('isPositiveInteger', () => {
     expect(isPositiveInteger(1.5)).toBe(false);
     expect(isPositiveInteger(0.1)).toBe(false);
     expect(isPositiveInteger(-1.5)).toBe(false);
+  });
+});
+
+describe('isNull', () => {
+  test('should return true for null', () => {
+    expect(isNull(null)).toBe(true);
+  });
+
+  test('should return false for non-null values', () => {
+    expect(isNull(undefined)).toBe(false);
+    expect(isNull(0)).toBe(false);
+    expect(isNull('')).toBe(false);
+    expect(isNull({})).toBe(false);
+    expect(isNull([])).toBe(false);
+  });
+});
+
+describe('isNotNull', () => {
+  test('should return false for null', () => {
+    expect(isNotNull(null)).toBe(false);
+  });
+
+  test('should return true for non-null values', () => {
+    expect(isNotNull(undefined)).toBe(true);
+    expect(isNotNull(0)).toBe(true);
+    expect(isNotNull('')).toBe(true);
+    expect(isNotNull({})).toBe(true);
+    expect(isNotNull([])).toBe(true);
+  });
+});
+
+describe('isDefined', () => {
+  test('should return false for undefined', () => {
+    expect(isDefined(undefined)).toBe(false);
+  });
+
+  test('should return true for non-undefined values', () => {
+    expect(isDefined(null)).toBe(true);
+    expect(isDefined(0)).toBe(true);
+    expect(isDefined('')).toBe(true);
+    expect(isDefined({})).toBe(true);
+    expect(isDefined([])).toBe(true);
+  });
+});
+
+describe('isUndefined', () => {
+  test('should return true for undefined', () => {
+    expect(isUndefined(undefined)).toBe(true);
+  });
+
+  test('should return false for non-undefined values', () => {
+    expect(isUndefined(null)).toBe(false);
+    expect(isUndefined(0)).toBe(false);
+    expect(isUndefined('')).toBe(false);
+    expect(isUndefined({})).toBe(false);
+    expect(isUndefined([])).toBe(false);
+  });
+});
+
+describe('noop', () => {
+  test('should do nothing and return undefined', () => {
+    expect(noop()).toBeUndefined();
+  });
+});
+
+describe('noopTrue', () => {
+  test('should return true', () => {
+    expect(noopTrue()).toBe(true);
+  });
+});
+
+describe('noopFalse', () => {
+  test('should return false', () => {
+    expect(noopFalse()).toBe(false);
   });
 });

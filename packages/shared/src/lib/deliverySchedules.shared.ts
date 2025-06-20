@@ -26,7 +26,7 @@ export const NEVER_DELIVERY_SCHEDULE: NeverDeliverySchedule = {
 export function makeDaysAndTimesOfWeekDeliverySchedule(args: {
   days: DayOfWeek[];
   times: TimeOfDay[];
-}): Result<DaysAndTimesOfWeekDeliverySchedule> {
+}): Result<DaysAndTimesOfWeekDeliverySchedule, Error> {
   const {days, times} = args;
 
   if (days.length === 0) {
@@ -55,7 +55,7 @@ export function makeDaysAndTimesOfWeekDeliverySchedule(args: {
 
 export function makeEveryNHoursDeliverySchedule(args: {
   hours: number;
-}): Result<EveryNHoursDeliverySchedule> {
+}): Result<EveryNHoursDeliverySchedule, Error> {
   const {hours} = args;
 
   // For now, this schedule only supports hour increments within a single day.
