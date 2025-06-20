@@ -11,6 +11,7 @@ import {
   objectMapKeys,
   objectMapValues,
   objectOmitUndefined,
+  objectReduceValues,
   objectValues,
 } from '@shared/lib/objectUtils.shared';
 
@@ -296,5 +297,43 @@ describe('objectMapEntries', () => {
       {key: 'b', value: 'two'},
       {key: 'c', value: true},
     ]);
+  });
+});
+
+describe('objectReduceValues', () => {
+  test('should reduce numeric values to a single sum', () => {
+    const obj = {a: 1, b: 2, c: 3};
+    const result = objectReduceValues(obj, (acc, value) => acc + value, 0);
+    expect(result).toBe(6);
+  });
+
+  test('should concatenate string values', () => {
+    const obj = {a: 'hello', b: ' ', c: 'world'};
+    const result = objectReduceValues(obj, (acc, value) => acc + value, '');
+    expect(result).toBe('hello world');
+  });
+
+  test('should return the initial value for an empty object', () => {
+    const obj = {};
+    const result = objectReduceValues(obj, (acc, value) => acc + value, 100);
+    expect(result).toBe(100);
+  });
+
+  test('should handle reducing to a different type', () => {
+    const obj = {a: 1, b: 2, c: 3};
+    const result = objectReduceValues(obj, (acc, value) => acc + String(value), '');
+    expect(result).toBe('123');
+  });
+
+  test('reducer should receive correct parameters', () => {
+    const obj = {a: 10, b: 20};
+    const values = objectValues(obj);
+    const mockReducer = jest.fn((acc, val) => acc + val);
+
+    objectReduceValues(obj, mockReducer, 0);
+
+    expect(mockReducer).toHaveBeenCalledTimes(2);
+    expect(mockReducer).toHaveBeenNthCalledWith(1, 0, 10, 0, values);
+    expect(mockReducer).toHaveBeenNthCalledWith(2, 10, 20, 1, values);
   });
 });
