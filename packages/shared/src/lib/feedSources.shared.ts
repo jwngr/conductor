@@ -35,8 +35,6 @@ export function makeRssFeedSource(args: {
   const {userFeedSubscription} = args;
   return {
     feedSourceType: FeedSourceType.RSS,
-    url: userFeedSubscription.url,
-    title: userFeedSubscription.title,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
   };
 }
@@ -47,7 +45,6 @@ export function makeYouTubeChannelFeedSource(args: {
   const {userFeedSubscription} = args;
   return {
     feedSourceType: FeedSourceType.YouTubeChannel,
-    channelId: userFeedSubscription.channelId,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
   };
 }
