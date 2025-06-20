@@ -108,7 +108,7 @@ function useFilteredFeedItems(
     return arrayFilter(feedItems, (item) => {
       const passesSourceTypeFilter =
         filterByOptions.sourceTypesToFilterBy.size === 0 ||
-        filterByOptions.sourceTypesToFilterBy.has(item.feedSource.feedSourceType);
+        filterByOptions.sourceTypesToFilterBy.has(item.feedSource.feedType);
 
       const passesContentTypeFilter =
         filterByOptions.contentTypesToFilterBy.size === 0 ||
@@ -212,9 +212,9 @@ function useGroupedFeedItems(
         }
         return groupedItems;
 
-      case ViewGroupByField.FeedSourceType:
+      case ViewGroupByField.FeedType:
         for (const item of feedItems) {
-          const groupKey = item.feedSource.feedSourceType;
+          const groupKey = item.feedSource.feedType;
           if (!groupedItems[groupKey]) {
             groupedItems[groupKey] = [];
           }

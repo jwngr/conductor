@@ -4,7 +4,7 @@ import {arrayReduce} from '@shared/lib/arrayUtils.shared';
 import {getFeedItemContentTypeText} from '@shared/lib/feedItems.shared';
 import {
   getFeedSubscriptionIdForFeedSource,
-  getNameForFeedSourceType,
+  getNameForFeedType,
 } from '@shared/lib/feedSources.shared';
 import {
   objectForEachEntry,
@@ -116,10 +116,10 @@ const ControlsSidebarFeedSourcesSection: React.FC<{
       feedItems={feedItems}
       activeCriteria={sourceTypesToFilterBy}
       reducer={(acc, item) => {
-        acc[item.feedSource.feedSourceType] = (acc[item.feedSource.feedSourceType] ?? 0) + 1;
+        acc[item.feedSource.feedType] = (acc[item.feedSource.feedType] ?? 0) + 1;
         return acc;
       }}
-      getCriteriaName={getNameForFeedSourceType}
+      getCriteriaName={getNameForFeedType}
       onCriteriaClick={onFeedSourceClick}
     />
   );
@@ -135,7 +135,7 @@ const ControlsSidebarFeedSubscriptionsSection: React.FC<{
   const getCriteriaName = (feedSubscriptionId: UserFeedSubscriptionId): string => {
     const feedSubscription = getFeedSubscription(feedSubscriptionId);
     if (!feedSubscription) return feedSubscriptionId;
-    switch (feedSubscription.feedSourceType) {
+    switch (feedSubscription.feedType) {
       case FeedType.RSS:
         return feedSubscription.title;
       case FeedType.YouTubeChannel:
@@ -192,7 +192,7 @@ const ControlsSidebarGroupBySection: React.FC<{
   const groupByFields = [
     ViewGroupByField.CreatedTime,
     ViewGroupByField.LastUpdatedTime,
-    ViewGroupByField.FeedSourceType,
+    ViewGroupByField.FeedType,
     ViewGroupByField.FeedItemContentType,
     ViewGroupByField.TriageStatus,
     ViewGroupByField.ImportState,

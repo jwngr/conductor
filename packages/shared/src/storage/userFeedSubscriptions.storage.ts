@@ -30,10 +30,10 @@ import {toStorageDeliverySchedule} from '@shared/storage/deliverySchedules.stora
 export function toStorageUserFeedSubscription(
   userFeedSubscription: UserFeedSubscription
 ): UserFeedSubscriptionFromStorage {
-  switch (userFeedSubscription.feedSourceType) {
+  switch (userFeedSubscription.feedType) {
     case FeedType.RSS:
       return {
-        feedSourceType: FeedType.RSS,
+        feedType: FeedType.RSS,
         userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
         url: userFeedSubscription.url,
         title: userFeedSubscription.title,
@@ -46,7 +46,7 @@ export function toStorageUserFeedSubscription(
       };
     case FeedType.YouTubeChannel:
       return {
-        feedSourceType: FeedType.YouTubeChannel,
+        feedType: FeedType.YouTubeChannel,
         userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
         channelId: userFeedSubscription.channelId,
         accountId: userFeedSubscription.accountId,
@@ -58,7 +58,7 @@ export function toStorageUserFeedSubscription(
       };
     case FeedType.Interval:
       return {
-        feedSourceType: FeedType.Interval,
+        feedType: FeedType.Interval,
         intervalSeconds: userFeedSubscription.intervalSeconds,
         userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
         accountId: userFeedSubscription.accountId,
@@ -79,7 +79,7 @@ export function toStorageUserFeedSubscription(
 export function fromStorageUserFeedSubscription(
   userFeedSubscriptionFromStorage: UserFeedSubscriptionFromStorage
 ): Result<UserFeedSubscription, Error> {
-  switch (userFeedSubscriptionFromStorage.feedSourceType) {
+  switch (userFeedSubscriptionFromStorage.feedType) {
     case FeedType.RSS:
       return fromStorageRssUserFeedSubscription(userFeedSubscriptionFromStorage);
     case FeedType.YouTubeChannel:
@@ -108,7 +108,7 @@ function fromStorageRssUserFeedSubscription(
   if (!parsedDeliveryScheduleResult.success) return parsedDeliveryScheduleResult;
 
   return makeSuccessResult({
-    feedSourceType: FeedType.RSS,
+    feedType: FeedType.RSS,
     url: userFeedSubscriptionFromStorage.url,
     title: userFeedSubscriptionFromStorage.title,
     userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
@@ -143,7 +143,7 @@ function fromStorageYouTubeChannelUserFeedSubscription(
   if (!parsedChannelIdResult.success) return parsedChannelIdResult;
 
   return makeSuccessResult({
-    feedSourceType: FeedType.YouTubeChannel,
+    feedType: FeedType.YouTubeChannel,
     channelId: parsedChannelIdResult.value,
     userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
     accountId: parsedAccountIdResult.value,
@@ -174,7 +174,7 @@ function fromStorageIntervalUserFeedSubscription(
   if (!parsedDeliveryScheduleResult.success) return parsedDeliveryScheduleResult;
 
   return makeSuccessResult({
-    feedSourceType: FeedType.Interval,
+    feedType: FeedType.Interval,
     intervalSeconds: userFeedSubscriptionFromStorage.intervalSeconds,
     userFeedSubscriptionId: parsedUserFeedSubscriptionIdResult.value,
     accountId: parsedAccountIdResult.value,

@@ -68,7 +68,7 @@ export class ServerUserFeedSubscriptionsService {
   > {
     const query = this.collectionService
       .getCollectionRef()
-      .where('feedSourceType', '==', FeedType.Interval)
+      .where('feedType', '==', FeedType.Interval)
       .where('isActive', '==', true);
     const queryResult = await this.collectionService.fetchQueryDocs(query);
     if (!queryResult.success) return queryResult;
@@ -80,7 +80,7 @@ export class ServerUserFeedSubscriptionsService {
   ): AsyncResult<RssUserFeedSubscription[], Error> {
     const query = this.collectionService
       .getCollectionRef()
-      .where('feedSourceType', '==', FeedType.RSS)
+      .where('feedType', '==', FeedType.RSS)
       .where('url', '==', url);
 
     const queryResult = await this.collectionService.fetchQueryDocs(query);

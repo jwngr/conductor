@@ -26,7 +26,7 @@ export function makeRssUserFeedSubscription(args: {
   const {accountId, url, title} = args;
 
   return {
-    feedSourceType: FeedType.RSS,
+    feedType: FeedType.RSS,
     url,
     title,
     userFeedSubscriptionId: makeUserFeedSubscriptionId(),
@@ -46,7 +46,7 @@ export function makeYouTubeChannelUserFeedSubscription(args: {
   const {accountId, channelId} = args;
 
   return {
-    feedSourceType: FeedType.YouTubeChannel,
+    feedType: FeedType.YouTubeChannel,
     channelId,
     userFeedSubscriptionId: makeUserFeedSubscriptionId(),
     accountId,
@@ -65,7 +65,7 @@ export function makeIntervalUserFeedSubscription(args: {
   const {accountId, intervalSeconds} = args;
 
   return {
-    feedSourceType: FeedType.Interval,
+    feedType: FeedType.Interval,
     intervalSeconds,
     userFeedSubscriptionId: makeUserFeedSubscriptionId(),
     accountId,

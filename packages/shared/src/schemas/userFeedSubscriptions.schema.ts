@@ -10,7 +10,7 @@ import {YouTubeChannelIdSchema} from '@shared/schemas/youtube.schema';
 export const UserFeedSubscriptionIdSchema = z.uuid();
 
 const BaseUserFeedSubscriptionSchema = z.object({
-  feedSourceType: z.enum(FEED_TYPES_WITH_SUBSCRIPTIONS),
+  feedType: z.enum(FEED_TYPES_WITH_SUBSCRIPTIONS),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
   accountId: AccountIdSchema,
   isActive: z.boolean(),
@@ -22,7 +22,7 @@ const BaseUserFeedSubscriptionSchema = z.object({
 });
 
 const RssUserFeedSubscriptionSchema = BaseUserFeedSubscriptionSchema.extend({
-  feedSourceType: z.literal(FeedType.RSS),
+  feedType: z.literal(FeedType.RSS),
   url: z.url(),
   title: z.string(),
 });
@@ -30,7 +30,7 @@ const RssUserFeedSubscriptionSchema = BaseUserFeedSubscriptionSchema.extend({
 export type RssUserFeedSubscriptionFromStorage = z.infer<typeof RssUserFeedSubscriptionSchema>;
 
 const YouTubeChannelUserFeedSubscriptionSchema = BaseUserFeedSubscriptionSchema.extend({
-  feedSourceType: z.literal(FeedType.YouTubeChannel),
+  feedType: z.literal(FeedType.YouTubeChannel),
   channelId: YouTubeChannelIdSchema,
 });
 
@@ -39,7 +39,7 @@ export type YouTubeChannelUserFeedSubscriptionFromStorage = z.infer<
 >;
 
 const IntervalUserFeedSubscriptionSchema = BaseUserFeedSubscriptionSchema.extend({
-  feedSourceType: z.literal(FeedType.Interval),
+  feedType: z.literal(FeedType.Interval),
   intervalSeconds: z.number().positive().int(),
 });
 
@@ -47,7 +47,7 @@ export type IntervalUserFeedSubscriptionFromStorage = z.infer<
   typeof IntervalUserFeedSubscriptionSchema
 >;
 
-export const UserFeedSubscriptionSchema = z.discriminatedUnion('feedSourceType', [
+export const UserFeedSubscriptionSchema = z.discriminatedUnion('feedType', [
   RssUserFeedSubscriptionSchema,
   YouTubeChannelUserFeedSubscriptionSchema,
   IntervalUserFeedSubscriptionSchema,

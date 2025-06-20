@@ -113,27 +113,27 @@ export function makeStringExperimentValueChangedEventLogItemData(args: {
 }
 
 export function makeSubscribedToFeedSourceEventLogItemData(args: {
-  readonly feedSourceType: FeedType;
+  readonly feedType: FeedType;
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
   readonly isNewSubscription: boolean;
 }): SubscribedToFeedSourceEventLogItemData {
-  const {feedSourceType, userFeedSubscriptionId, isNewSubscription} = args;
+  const {feedType, userFeedSubscriptionId, isNewSubscription} = args;
   return {
     eventType: EventType.SubscribedToFeedSource,
-    feedSourceType,
+    feedType,
     userFeedSubscriptionId,
     isNewSubscription,
   };
 }
 
 export function makeUnsubscribedFromFeedSourceEventLogItemData(args: {
-  readonly feedSourceType: FeedType;
+  readonly feedType: FeedType;
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
 }): UnsubscribedFromFeedSourceEventLogItemData {
-  const {feedSourceType, userFeedSubscriptionId} = args;
+  const {feedType, userFeedSubscriptionId} = args;
   return {
     eventType: EventType.UnsubscribedFromFeedSource,
-    feedSourceType,
+    feedType,
     userFeedSubscriptionId,
   };
 }

@@ -21,7 +21,7 @@ import type {
   FeedItemId,
   NewFeedItemImportState,
 } from '@shared/types/feedItems.types';
-import type {FeedSource} from '@shared/types/feedSources.types';
+import type {Feed} from '@shared/types/feeds.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/results.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
@@ -151,7 +151,7 @@ export class SharedFeedItemHelpers {
 }
 
 export function makeFeedItem(args: {
-  feedSource: FeedSource;
+  feedSource: Feed;
   accountId: AccountId;
   content: FeedItemContent;
 }): FeedItem {

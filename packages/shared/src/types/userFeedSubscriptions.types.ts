@@ -23,7 +23,7 @@ interface BaseUserFeedSubscription extends BaseStoreItem {
   /** The unique identifier for this subscription. */
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
   /** The type of feed source this subscription is for. */
-  readonly feedSourceType: FeedTypeWithSubscription;
+  readonly feedType: FeedTypeWithSubscription;
   /** The account that owns this subscription. */
   readonly accountId: AccountId;
   /** Whether this subscription is active. Inactive subscriptions do not generate new feed items. */
@@ -35,18 +35,18 @@ interface BaseUserFeedSubscription extends BaseStoreItem {
 }
 
 export interface RssUserFeedSubscription extends BaseUserFeedSubscription {
-  readonly feedSourceType: FeedType.RSS;
+  readonly feedType: FeedType.RSS;
   readonly url: string;
   readonly title: string;
 }
 
 export interface YouTubeChannelUserFeedSubscription extends BaseUserFeedSubscription {
-  readonly feedSourceType: FeedType.YouTubeChannel;
+  readonly feedType: FeedType.YouTubeChannel;
   readonly channelId: YouTubeChannelId;
 }
 
 export interface IntervalUserFeedSubscription extends BaseUserFeedSubscription {
-  readonly feedSourceType: FeedType.Interval;
+  readonly feedType: FeedType.Interval;
   readonly intervalSeconds: number;
 }
 

@@ -65,7 +65,7 @@ export type SubscribedToFeedSourceEventLogItemDataFromStorage = z.infer<
 
 const SubscribedToFeedSourceEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
   eventType: z.literal(EventType.SubscribedToFeedSource),
-  feedSourceType: z.enum(FeedType),
+  feedType: z.enum(FeedType),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
   isNewSubscription: z.boolean(),
 });
@@ -76,7 +76,7 @@ export type UnsubscribedFromFeedSourceEventLogItemDataFromStorage = z.infer<
 
 export const UnsubscribedFromFeedSourceEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
   eventType: z.literal(EventType.UnsubscribedFromFeedSource),
-  feedSourceType: z.enum(FeedType),
+  feedType: z.enum(FeedType),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
 });
 

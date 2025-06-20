@@ -26,7 +26,7 @@ import type {
   XkcdFeedItemContent,
   YouTubeFeedItemContent,
 } from '@shared/types/feedItems.types';
-import type {FeedSource} from '@shared/types/feedSources.types';
+import type {Feed} from '@shared/types/feeds.types';
 import type {AsyncResult, Result} from '@shared/types/results.types';
 import type {IntervalUserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
@@ -90,7 +90,7 @@ export class ServerFeedItemsService {
   }
 
   public async createFeedItemFromUrl(args: {
-    readonly feedSource: FeedSource;
+    readonly feedSource: Feed;
     readonly accountId: AccountId;
     readonly url: string;
     readonly title: string;

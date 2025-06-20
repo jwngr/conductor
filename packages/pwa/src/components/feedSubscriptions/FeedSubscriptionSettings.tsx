@@ -181,7 +181,7 @@ const FeedSubscriptionUnsubscribeButton: React.FC<{
 
       // Log.
       void eventLogService.logUnsubscribedFromFeedSourceEvent({
-        feedSourceType: userFeedSubscription.feedSourceType,
+        feedType: userFeedSubscription.feedType,
         userFeedSubscriptionId: userFeedSubscriptionId,
       });
     } else {
@@ -190,7 +190,7 @@ const FeedSubscriptionUnsubscribeButton: React.FC<{
 
       // Log.
       void eventLogService.logSubscribedToFeedSourceEvent({
-        feedSourceType: userFeedSubscription.feedSourceType,
+        feedType: userFeedSubscription.feedType,
         userFeedSubscriptionId: userFeedSubscriptionId,
         isNewSubscription: false,
       });
@@ -200,7 +200,7 @@ const FeedSubscriptionUnsubscribeButton: React.FC<{
   }, [
     setPending,
     userFeedSubscription.isActive,
-    userFeedSubscription.feedSourceType,
+    userFeedSubscription.feedType,
     setSuccess,
     userFeedSubscriptionsService,
     userFeedSubscriptionId,
@@ -252,7 +252,7 @@ const FeedSubscriptionSettingsPopoverContent: React.FC<{
       <FlexColumn gap={4} padding={4}>
         <FeedSubscriptionDeliveryScheduleSetting userFeedSubscription={userFeedSubscription} />
         <FeedSubscriptionUnsubscribeButton userFeedSubscription={userFeedSubscription} />
-        {userFeedSubscription.feedSourceType === FeedType.Interval ? (
+        {userFeedSubscription.feedType === FeedType.Interval ? (
           <FeedSubscriptionIntervalSetting userFeedSubscription={userFeedSubscription} />
         ) : null}
       </FlexColumn>

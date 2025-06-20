@@ -24,8 +24,8 @@ service cloud.firestore {
     ///////////////////////
     //  ENUM VALIDATORS  //
     ///////////////////////
-    function isValidFeedSourceType(maybeFeedSourceType) {
-      return maybeFeedSourceType in ['RSS', 'YOUTUBE_CHANNEL', 'INTERVAL', 'PWA', 'EXTENSION', 'POCKET_EXPORT'];
+    function isValidFeedType(feedType) {
+      return feedType in ['RSS', 'YOUTUBE_CHANNEL', 'INTERVAL', 'PWA', 'EXTENSION', 'POCKET_EXPORT'];
     }
 
     function isValidDeliveryScheduleType(maybeDeliveryScheduleType) {
@@ -48,8 +48,8 @@ service cloud.firestore {
     //  TYPE VALIDATORS  //
     ///////////////////////
     function isValidFeedSource(maybeFeedSource) {
-      return maybeFeedSource.keys().hasAll(['feedSourceType']) &&
-        isValidFeedSourceType(maybeFeedSource.feedSourceType);
+      return maybeFeedSource.keys().hasAll(['feedType']) &&
+        isValidFeedType(maybeFeedSource.feedType);
     }
 
     function isValidDeliverySchedule(maybeDeliverySchedule) {
@@ -166,7 +166,7 @@ service cloud.firestore {
         isCreate || (
           request.resource.data.feedItemId == resource.data.feedItemId &&
           request.resource.data.feedItemContentType == resource.data.feedItemContentType &&
-          request.resource.data.feedSource.feedSourceType == resource.data.feedSource.feedSourceType &&
+          request.resource.data.feedSource.feedType == resource.data.feedSource.feedType &&
           request.resource.data.createdTime == resource.data.createdTime
         )
       );
@@ -175,7 +175,7 @@ service cloud.firestore {
     function isValidUserFeedSubscriptionDoc(userFeedSubscriptionId, isCreate) {
       return request.resource.data.keys().hasAll([
         'userFeedSubscriptionId',
-        'feedSourceType',
+        'feedType',
         'accountId',
         'isActive',
         'deliverySchedule',
@@ -183,7 +183,7 @@ service cloud.firestore {
         'lastUpdatedTime'
       ]) &&
       request.resource.data.userFeedSubscriptionId == userFeedSubscriptionId &&
-      isValidFeedSourceType(request.resource.data.feedSourceType) &&
+      isValidFeedType(request.resource.data.feedType) &&
       request.resource.data.accountId is string &&
       request.resource.data.isActive is bool &&
       isValidDeliverySchedule(request.resource.data.deliverySchedule) &&
@@ -193,7 +193,7 @@ service cloud.firestore {
       ( 
         isCreate || (
           request.resource.data.userFeedSubscriptionId == resource.data.userFeedSubscriptionId &&
-          request.resource.data.feedSourceType == resource.data.feedSourceType &&
+          request.resource.data.feedType == resource.data.feedType &&
           request.resource.data.accountId == resource.data.accountId &&
           request.resource.data.createdTime == resource.data.createdTime
         )

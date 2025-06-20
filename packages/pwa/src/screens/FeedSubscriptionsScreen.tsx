@@ -199,7 +199,7 @@ const FeedSubscriptionItem: React.FC<{
   let primaryRowText: string;
   let secondaryRowText: string | null;
 
-  switch (subscription.feedSourceType) {
+  switch (subscription.feedType) {
     case FeedType.RSS:
       primaryRowText = `RSS (${subscription.title ?? subscription.url})`;
       secondaryRowText = subscription.title ?? null;

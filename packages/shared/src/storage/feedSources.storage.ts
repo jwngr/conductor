@@ -8,12 +8,7 @@ import {assertNever} from '@shared/lib/utils.shared';
 
 import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions.parser';
 
-import type {
-  FeedSource,
-  IntervalFeedSource,
-  RssFeedSource,
-  YouTubeChannelFeedSource,
-} from '@shared/types/feedSources.types';
+import type {Feed, IntervalFeed, RssFeed, YouTubeChannelFeed} from '@shared/types/feeds.types';
 import {FeedType} from '@shared/types/feedSourceTypes.types';
 import type {Result} from '@shared/types/results.types';
 
@@ -25,10 +20,10 @@ import type {
 } from '@shared/schemas/feedSources.schema';
 
 /**
- * Converts a {@link FeedSource} into a {@link FeedSourceFromStorage}.
+ * Converts a {@link Feed} into a {@link FeedSourceFromStorage}.
  */
-export function toStorageFeedSource(feedSource: FeedSource): FeedSourceFromStorage {
-  switch (feedSource.feedSourceType) {
+export function toStorageFeedSource(feedSource: Feed): FeedSourceFromStorage {
+  switch (feedSource.feedType) {
     case FeedType.RSS:
       return toStorageRssFeedSource(feedSource);
     case FeedType.YouTubeChannel:
@@ -46,38 +41,36 @@ export function toStorageFeedSource(feedSource: FeedSource): FeedSourceFromStora
   }
 }
 
-function toStorageRssFeedSource(feedSource: RssFeedSource): RssFeedSourceFromStorage {
+function toStorageRssFeedSource(feedSource: RssFeed): RssFeedSourceFromStorage {
   return {
-    feedSourceType: FeedType.RSS,
+    feedType: FeedType.RSS,
     userFeedSubscriptionId: feedSource.userFeedSubscriptionId,
   };
 }
 
 function toStorageYouTubeChannelFeedSource(
-  feedSource: YouTubeChannelFeedSource
+  feedSource: YouTubeChannelFeed
 ): YouTubeChannelFeedSourceFromStorage {
   return {
-    feedSourceType: FeedType.YouTubeChannel,
+    feedType: FeedType.YouTubeChannel,
     userFeedSubscriptionId: feedSource.userFeedSubscriptionId,
   };
 }
 
-function toStorageIntervalFeedSource(
-  feedSource: IntervalFeedSource
-): IntervalFeedSourceFromStorage {
+function toStorageIntervalFeedSource(feedSource: IntervalFeed): IntervalFeedSourceFromStorage {
   return {
-    feedSourceType: FeedType.Interval,
+    feedType: FeedType.Interval,
     userFeedSubscriptionId: feedSource.userFeedSubscriptionId,
   };
 }
 
 /**
- * Converts a {@link FeedSourceFromStorage} into a {@link FeedSource}.
+ * Converts a {@link FeedSourceFromStorage} into a {@link Feed}.
  */
 export function fromStorageFeedSource(
   feedSourceFromStorage: FeedSourceFromStorage
-): Result<FeedSource, Error> {
-  switch (feedSourceFromStorage.feedSourceType) {
+): Result<Feed, Error> {
+  switch (feedSourceFromStorage.feedType) {
     case FeedType.RSS:
       return fromStorageRssFeedSource(feedSourceFromStorage);
     case FeedType.YouTubeChannel:
@@ -97,42 +90,42 @@ export function fromStorageFeedSource(
 
 function fromStorageRssFeedSource(
   feedSourceFromStorage: RssFeedSourceFromStorage
-): Result<RssFeedSource, Error> {
+): Result<RssFeed, Error> {
   const parsedFeedSubIdResult = parseUserFeedSubscriptionId(
     feedSourceFromStorage.userFeedSubscriptionId
   );
   if (!parsedFeedSubIdResult.success) return parsedFeedSubIdResult;
 
   return makeSuccessResult({
-    feedSourceType: FeedType.RSS,
+    feedType: FeedType.RSS,
     userFeedSubscriptionId: parsedFeedSubIdResult.value,
   });
 }
 
 function fromStorageYouTubeChannelFeedSource(
   feedSourceFromStorage: YouTubeChannelFeedSourceFromStorage
-): Result<YouTubeChannelFeedSource, Error> {
+): Result<YouTubeChannelFeed, Error> {
   const parsedFeedSubIdResult = parseUserFeedSubscriptionId(
     feedSourceFromStorage.userFeedSubscriptionId
   );
   if (!parsedFeedSubIdResult.success) return parsedFeedSubIdResult;
 
   return makeSuccessResult({
-    feedSourceType: FeedType.YouTubeChannel,
+    feedType: FeedType.YouTubeChannel,
     userFeedSubscriptionId: parsedFeedSubIdResult.value,
   });
 }
 
 function fromStorageIntervalFeedSource(
   feedSourceFromStorage: IntervalFeedSourceFromStorage
-): Result<IntervalFeedSource, Error> {
+): Result<IntervalFeed, Error> {
   const parsedFeedSubIdResult = parseUserFeedSubscriptionId(
     feedSourceFromStorage.userFeedSubscriptionId
   );
   if (!parsedFeedSubIdResult.success) return parsedFeedSubIdResult;
 
   return makeSuccessResult({
-    feedSourceType: FeedType.Interval,
+    feedType: FeedType.Interval,
     userFeedSubscriptionId: parsedFeedSubIdResult.value,
   });
 }

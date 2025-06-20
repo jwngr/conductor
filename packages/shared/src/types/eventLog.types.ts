@@ -63,7 +63,7 @@ export interface StringExperimentValueChangedEventLogItemData extends BaseEventL
 
 export interface SubscribedToFeedSourceEventLogItemData extends BaseEventLogItemData {
   readonly eventType: EventType.SubscribedToFeedSource;
-  readonly feedSourceType: FeedType;
+  readonly feedType: FeedType;
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
   /** Whether this is a new subscription or resubscribing to an inactive one. */
   readonly isNewSubscription: boolean;
@@ -71,7 +71,7 @@ export interface SubscribedToFeedSourceEventLogItemData extends BaseEventLogItem
 
 export interface UnsubscribedFromFeedSourceEventLogItemData extends BaseEventLogItemData {
   readonly eventType: EventType.UnsubscribedFromFeedSource;
-  readonly feedSourceType: FeedType;
+  readonly feedType: FeedType;
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
 }
 

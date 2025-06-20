@@ -29,7 +29,7 @@ import type {
   YouTubeFeedItemContent,
 } from '@shared/types/feedItems.types';
 import {FeedItemContentType, FeedItemImportStatus} from '@shared/types/feedItems.types';
-import type {FeedSource} from '@shared/types/feedSources.types';
+import type {Feed} from '@shared/types/feeds.types';
 import type {Result} from '@shared/types/results.types';
 
 import type {
@@ -215,7 +215,7 @@ function fromStorageFeedItemShared(feedItemFromStorage: FeedItemFromStorage): Re
     readonly feedItemId: FeedItemId;
     readonly accountId: AccountId;
     readonly importState: FeedItemImportState;
-    readonly feedSource: FeedSource;
+    readonly feedSource: Feed;
     readonly feedItemContentType: FeedItemContentType;
     readonly triageStatus: TriageStatus;
   },

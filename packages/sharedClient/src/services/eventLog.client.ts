@@ -189,13 +189,13 @@ export class ClientEventLogService {
   }
 
   public async logSubscribedToFeedSourceEvent(args: {
-    readonly feedSourceType: FeedType;
+    readonly feedType: FeedType;
     readonly userFeedSubscriptionId: UserFeedSubscriptionId;
     readonly isNewSubscription: boolean;
   }): AsyncResult<EventLogItem, Error> {
-    const {feedSourceType, userFeedSubscriptionId, isNewSubscription} = args;
+    const {feedType, userFeedSubscriptionId, isNewSubscription} = args;
     const eventLogItemData = makeSubscribedToFeedSourceEventLogItemData({
-      feedSourceType,
+      feedType,
       userFeedSubscriptionId,
       isNewSubscription,
     });
@@ -204,12 +204,12 @@ export class ClientEventLogService {
   }
 
   public async logUnsubscribedFromFeedSourceEvent(args: {
-    readonly feedSourceType: FeedType;
+    readonly feedType: FeedType;
     readonly userFeedSubscriptionId: UserFeedSubscriptionId;
   }): AsyncResult<EventLogItem, Error> {
-    const {feedSourceType, userFeedSubscriptionId} = args;
+    const {feedType, userFeedSubscriptionId} = args;
     const eventLogItemData = makeUnsubscribedFromFeedSourceEventLogItemData({
-      feedSourceType,
+      feedType,
       userFeedSubscriptionId,
     });
     const eventLogItem = this.makeEventLogItem(eventLogItemData);

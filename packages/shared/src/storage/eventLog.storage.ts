@@ -144,7 +144,7 @@ function fromStorageSubscribedToFeedSourceEventLogItemData(
 
   return makeSuccessResult({
     eventType: EventType.SubscribedToFeedSource,
-    feedSourceType: eventLogItemData.feedSourceType,
+    feedType: eventLogItemData.feedType,
     userFeedSubscriptionId: parsedSubIdResult.value,
     isNewSubscription: eventLogItemData.isNewSubscription,
   });
@@ -158,7 +158,7 @@ function fromStorageUnsubscribedFromFeedSourceEventLogItemData(
 
   return makeSuccessResult({
     eventType: EventType.UnsubscribedFromFeedSource,
-    feedSourceType: eventLogItemData.feedSourceType,
+    feedType: eventLogItemData.feedType,
     userFeedSubscriptionId: parsedSubIdResult.value,
   });
 }

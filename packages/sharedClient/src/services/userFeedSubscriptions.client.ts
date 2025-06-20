@@ -169,7 +169,7 @@ export class ClientUserFeedSubscriptionsService {
   ): AsyncResult<RssUserFeedSubscription | null, Error> {
     const result = await this.collectionService.fetchFirstQueryDoc([
       firestoreWhere('accountId', '==', this.accountId),
-      firestoreWhere('feedSourceType', '==', FeedType.RSS),
+      firestoreWhere('feedType', '==', FeedType.RSS),
       firestoreWhere('url', '==', url.href),
     ]);
     if (!result.success) return result;
@@ -183,7 +183,7 @@ export class ClientUserFeedSubscriptionsService {
   ): AsyncResult<YouTubeChannelUserFeedSubscription | null, Error> {
     const result = await this.collectionService.fetchFirstQueryDoc([
       firestoreWhere('accountId', '==', this.accountId),
-      firestoreWhere('feedSourceType', '==', FeedType.YouTubeChannel),
+      firestoreWhere('feedType', '==', FeedType.YouTubeChannel),
       firestoreWhere('channelId', '==', channelId),
     ]);
     if (!result.success) return result;
@@ -220,7 +220,7 @@ export class ClientUserFeedSubscriptionsService {
     readonly toastMessage: string;
   }): AsyncResult<T, Error> {
     const {userFeedSubscription, toastMessage} = args;
-    const {accountId, feedSourceType, userFeedSubscriptionId} = userFeedSubscription;
+    const {accountId, feedType, userFeedSubscriptionId} = userFeedSubscription;
 
     // Save to Firestore.
     const saveResult = await this.collectionService.setDoc(
@@ -229,7 +229,7 @@ export class ClientUserFeedSubscriptionsService {
     );
     if (!saveResult.success) {
       const betterError = prefixErrorResult(saveResult, 'Error saving feed subscription');
-      logger.error(betterError.error, {userFeedSubscriptionId, accountId, feedSourceType});
+      logger.error(betterError.error, {userFeedSubscriptionId, accountId, feedType});
       return betterError;
     }
 
@@ -238,7 +238,7 @@ export class ClientUserFeedSubscriptionsService {
 
     // Log.
     void this.eventLogService.logSubscribedToFeedSourceEvent({
-      feedSourceType,
+      feedType,
       userFeedSubscriptionId,
       isNewSubscription: true,
     });
