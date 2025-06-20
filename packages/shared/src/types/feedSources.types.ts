@@ -1,6 +1,5 @@
 import type {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
-import type {YouTubeChannelId} from '@shared/types/youtube.types';
 
 interface BaseFeedSource {
   readonly feedSourceType: FeedSourceType;
@@ -9,14 +8,11 @@ interface BaseFeedSource {
 export interface RssFeedSource extends BaseFeedSource {
   readonly feedSourceType: FeedSourceType.RSS;
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-  readonly url: string;
-  readonly title: string;
 }
 
 export interface YouTubeChannelFeedSource extends BaseFeedSource {
   readonly feedSourceType: FeedSourceType.YouTubeChannel;
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-  readonly channelId: YouTubeChannelId;
 }
 
 export interface IntervalFeedSource extends BaseFeedSource {

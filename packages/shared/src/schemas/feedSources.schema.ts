@@ -3,7 +3,6 @@ import {z} from 'zod/v4';
 import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 
 import {UserFeedSubscriptionIdSchema} from '@shared/schemas/userFeedSubscriptions.schema';
-import {YouTubeChannelIdSchema} from '@shared/schemas/youtube.schema';
 
 const BaseFeedSourceSchema = z.object({
   feedSourceType: z.enum(FeedSourceType),
@@ -12,8 +11,6 @@ const BaseFeedSourceSchema = z.object({
 const RssFeedSourceSchema = BaseFeedSourceSchema.extend({
   feedSourceType: z.literal(FeedSourceType.RSS),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
-  url: z.url(),
-  title: z.string(),
 });
 
 export type RssFeedSourceFromStorage = z.infer<typeof RssFeedSourceSchema>;
@@ -21,7 +18,6 @@ export type RssFeedSourceFromStorage = z.infer<typeof RssFeedSourceSchema>;
 const YouTubeChannelFeedSourceSchema = BaseFeedSourceSchema.extend({
   feedSourceType: z.literal(FeedSourceType.YouTubeChannel),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
-  channelId: YouTubeChannelIdSchema,
 });
 
 export type YouTubeChannelFeedSourceFromStorage = z.infer<typeof YouTubeChannelFeedSourceSchema>;

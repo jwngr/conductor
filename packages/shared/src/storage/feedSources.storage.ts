@@ -7,7 +7,6 @@ import {makeSuccessResult} from '@shared/lib/results.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions.parser';
-import {parseYouTubeChannelId} from '@shared/parsers/youtube.parser';
 
 import type {
   FeedSource,
@@ -51,8 +50,6 @@ function toStorageRssFeedSource(feedSource: RssFeedSource): RssFeedSourceFromSto
   return {
     feedSourceType: FeedSourceType.RSS,
     userFeedSubscriptionId: feedSource.userFeedSubscriptionId,
-    url: feedSource.url,
-    title: feedSource.title,
   };
 }
 
@@ -62,7 +59,6 @@ function toStorageYouTubeChannelFeedSource(
   return {
     feedSourceType: FeedSourceType.YouTubeChannel,
     userFeedSubscriptionId: feedSource.userFeedSubscriptionId,
-    channelId: feedSource.channelId,
   };
 }
 
@@ -110,8 +106,6 @@ function fromStorageRssFeedSource(
   return makeSuccessResult({
     feedSourceType: FeedSourceType.RSS,
     userFeedSubscriptionId: parsedFeedSubIdResult.value,
-    url: feedSourceFromStorage.url,
-    title: feedSourceFromStorage.title,
   });
 }
 
@@ -123,13 +117,9 @@ function fromStorageYouTubeChannelFeedSource(
   );
   if (!parsedFeedSubIdResult.success) return parsedFeedSubIdResult;
 
-  const parsedChannelIdResult = parseYouTubeChannelId(feedSourceFromStorage.channelId);
-  if (!parsedChannelIdResult.success) return parsedChannelIdResult;
-
   return makeSuccessResult({
     feedSourceType: FeedSourceType.YouTubeChannel,
     userFeedSubscriptionId: parsedFeedSubIdResult.value,
-    channelId: parsedChannelIdResult.value,
   });
 }
 
