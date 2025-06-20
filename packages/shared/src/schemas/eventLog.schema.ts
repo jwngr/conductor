@@ -3,7 +3,7 @@ import {z} from 'zod/v4';
 import {Environment} from '@shared/types/environment.types';
 import {EventType} from '@shared/types/eventLog.types';
 import {FeedItemActionType} from '@shared/types/feedItems.types';
-import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import {FeedType} from '@shared/types/feedSourceTypes.types';
 
 import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 import {ActorSchema} from '@shared/schemas/actors.schema';
@@ -59,26 +59,26 @@ const StringExperimentValueChangedEventLogItemDataSchema = BaseEventLogItemDataS
   value: z.string(),
 });
 
-export type SubscribedToFeedSourceEventLogItemDataFromStorage = z.infer<
-  typeof SubscribedToFeedSourceEventLogItemDataSchema
->;
-
-const SubscribedToFeedSourceEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
-  eventType: z.literal(EventType.SubscribedToFeedSource),
-  feedSourceType: z.enum(FeedSourceType),
+const SubscribedToFeedEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
+  eventType: z.literal(EventType.SubscribedToFeed),
+  feedType: z.enum(FeedType),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
   isNewSubscription: z.boolean(),
 });
 
-export type UnsubscribedFromFeedSourceEventLogItemDataFromStorage = z.infer<
-  typeof UnsubscribedFromFeedSourceEventLogItemDataSchema
+export type SubscribedToFeedEventLogItemDataFromStorage = z.infer<
+  typeof SubscribedToFeedEventLogItemDataSchema
 >;
 
-export const UnsubscribedFromFeedSourceEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
-  eventType: z.literal(EventType.UnsubscribedFromFeedSource),
-  feedSourceType: z.enum(FeedSourceType),
+export const UnsubscribedFromFeedEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
+  eventType: z.literal(EventType.UnsubscribedFromFeed),
+  feedType: z.enum(FeedType),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
 });
+
+export type UnsubscribedFromFeedEventLogItemDataFromStorage = z.infer<
+  typeof UnsubscribedFromFeedEventLogItemDataSchema
+>;
 
 const ThemePreferenceChangedEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
   eventType: z.literal(EventType.ThemePreferenceChanged),
@@ -91,8 +91,8 @@ const EventLogItemDataSchema = z.discriminatedUnion('eventType', [
   ExperimentEnabledEventLogItemDataSchema,
   ExperimentDisabledEventLogItemDataSchema,
   StringExperimentValueChangedEventLogItemDataSchema,
-  SubscribedToFeedSourceEventLogItemDataSchema,
-  UnsubscribedFromFeedSourceEventLogItemDataSchema,
+  SubscribedToFeedEventLogItemDataSchema,
+  UnsubscribedFromFeedEventLogItemDataSchema,
   ThemePreferenceChangedEventLogItemDataSchema,
 ]);
 

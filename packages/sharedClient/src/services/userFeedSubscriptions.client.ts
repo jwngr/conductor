@@ -29,7 +29,7 @@ import {
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import {FeedType} from '@shared/types/feedSourceTypes.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {
   IntervalUserFeedSubscription,
@@ -169,7 +169,7 @@ export class ClientUserFeedSubscriptionsService {
   ): AsyncResult<RssUserFeedSubscription | null, Error> {
     const result = await this.collectionService.fetchFirstQueryDoc([
       firestoreWhere('accountId', '==', this.accountId),
-      firestoreWhere('feedSourceType', '==', FeedSourceType.RSS),
+      firestoreWhere('feedType', '==', FeedType.RSS),
       firestoreWhere('url', '==', url.href),
     ]);
     if (!result.success) return result;
@@ -183,7 +183,7 @@ export class ClientUserFeedSubscriptionsService {
   ): AsyncResult<YouTubeChannelUserFeedSubscription | null, Error> {
     const result = await this.collectionService.fetchFirstQueryDoc([
       firestoreWhere('accountId', '==', this.accountId),
-      firestoreWhere('feedSourceType', '==', FeedSourceType.YouTubeChannel),
+      firestoreWhere('feedType', '==', FeedType.YouTubeChannel),
       firestoreWhere('channelId', '==', channelId),
     ]);
     if (!result.success) return result;
@@ -220,7 +220,7 @@ export class ClientUserFeedSubscriptionsService {
     readonly toastMessage: string;
   }): AsyncResult<T, Error> {
     const {userFeedSubscription, toastMessage} = args;
-    const {accountId, feedSourceType, userFeedSubscriptionId} = userFeedSubscription;
+    const {accountId, feedType, userFeedSubscriptionId} = userFeedSubscription;
 
     // Save to Firestore.
     const saveResult = await this.collectionService.setDoc(
@@ -229,7 +229,7 @@ export class ClientUserFeedSubscriptionsService {
     );
     if (!saveResult.success) {
       const betterError = prefixErrorResult(saveResult, 'Error saving feed subscription');
-      logger.error(betterError.error, {userFeedSubscriptionId, accountId, feedSourceType});
+      logger.error(betterError.error, {userFeedSubscriptionId, accountId, feedType});
       return betterError;
     }
 
@@ -237,8 +237,8 @@ export class ClientUserFeedSubscriptionsService {
     toast(toastMessage);
 
     // Log.
-    void this.eventLogService.logSubscribedToFeedSourceEvent({
-      feedSourceType,
+    void this.eventLogService.logSubscribedToFeedEvent({
+      feedType,
       userFeedSubscriptionId,
       isNewSubscription: true,
     });

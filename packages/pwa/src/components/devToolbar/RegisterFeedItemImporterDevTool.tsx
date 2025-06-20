@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useState} from 'react';
 
-import {PWA_FEED_SOURCE} from '@shared/lib/feedSources.shared';
+import {PWA_FEED} from '@shared/lib/feeds.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
@@ -46,7 +46,7 @@ const FeedItemImporter: React.FC = () => {
       setPending();
 
       const addFeedItemResult = await feedItemsService.createFeedItemFromUrl({
-        feedSource: PWA_FEED_SOURCE,
+        origin: PWA_FEED,
         url: trimmedUrl,
         title: trimmedUrl,
         // These values are not provided in the dev toolbar importer.

@@ -78,7 +78,7 @@ export async function createSampleUserFeedSubscriptions(
     if (!saveResult.success) {
       logger.error(saveResult.error, {
         subscriptionId: subscription.userFeedSubscriptionId,
-        feedSourceType: subscription.feedSourceType,
+        feedType: subscription.feedType,
       });
     }
     return saveResult;

@@ -27,7 +27,7 @@ interface ViewFilter<T> {
 }
 
 export enum ViewGroupByField {
-  FeedSourceType = 'FEED_SOURCE_TYPE',
+  FeedType = 'FEED_TYPE',
   FeedItemContentType = 'FEED_ITEM_CONTENT_TYPE',
   TriageStatus = 'TRIAGE_STATUS',
   ImportState = 'IMPORT_STATE',

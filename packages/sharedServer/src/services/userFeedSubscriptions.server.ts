@@ -10,7 +10,7 @@ import {
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import {FeedType} from '@shared/types/feedSourceTypes.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {
   IntervalUserFeedSubscription,
@@ -68,19 +68,17 @@ export class ServerUserFeedSubscriptionsService {
   > {
     const query = this.collectionService
       .getCollectionRef()
-      .where('feedSourceType', '==', FeedSourceType.Interval)
+      .where('feedType', '==', FeedType.Interval)
       .where('isActive', '==', true);
     const queryResult = await this.collectionService.fetchQueryDocs(query);
     if (!queryResult.success) return queryResult;
     return makeSuccessResult(queryResult.value as IntervalUserFeedSubscription[]);
   }
 
-  public async fetchForRssFeedSourceByUrl(
-    url: string
-  ): AsyncResult<RssUserFeedSubscription[], Error> {
+  public async fetchForRssFeedByUrl(url: string): AsyncResult<RssUserFeedSubscription[], Error> {
     const query = this.collectionService
       .getCollectionRef()
-      .where('feedSourceType', '==', FeedSourceType.RSS)
+      .where('feedType', '==', FeedType.RSS)
       .where('url', '==', url);
 
     const queryResult = await this.collectionService.fetchQueryDocs(query);

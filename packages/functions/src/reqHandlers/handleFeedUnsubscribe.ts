@@ -3,7 +3,7 @@ import {assertNever} from '@shared/lib/utils.shared';
 
 import {parseUserFeedSubscription} from '@shared/parsers/userFeedSubscriptions.parser';
 
-import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import {FeedType} from '@shared/types/feedSourceTypes.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
@@ -37,11 +37,11 @@ export async function handleFeedUnsubscribe(args: {
   if (!becameInactive) return makeSuccessResult(undefined);
 
   // Run unsubscribing behavior for the feed source.
-  switch (after.feedSourceType) {
-    case FeedSourceType.RSS:
+  switch (after.feedType) {
+    case FeedType.RSS:
       return await rssFeedService.unsubscribeFromUrl(after.url);
-    case FeedSourceType.YouTubeChannel:
-    case FeedSourceType.Interval:
+    case FeedType.YouTubeChannel:
+    case FeedType.Interval:
       // Feed sources with no unsubscribing required.
       return makeSuccessResult(undefined);
     default:

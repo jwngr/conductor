@@ -12,14 +12,14 @@ import type {
   FeedItemActionEventLogItemData,
   FeedItemImportedEventLogItemData,
   StringExperimentValueChangedEventLogItemData,
-  SubscribedToFeedSourceEventLogItemData,
+  SubscribedToFeedEventLogItemData,
   ThemePreferenceChangedEventLogItemData,
-  UnsubscribedFromFeedSourceEventLogItemData,
+  UnsubscribedFromFeedEventLogItemData,
 } from '@shared/types/eventLog.types';
 import {EventType} from '@shared/types/eventLog.types';
 import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
-import type {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import type {FeedType} from '@shared/types/feedSourceTypes.types';
 import type {ThemePreference} from '@shared/types/theme.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 
@@ -112,28 +112,28 @@ export function makeStringExperimentValueChangedEventLogItemData(args: {
   };
 }
 
-export function makeSubscribedToFeedSourceEventLogItemData(args: {
-  readonly feedSourceType: FeedSourceType;
+export function makeSubscribedToFeedEventLogItemData(args: {
+  readonly feedType: FeedType;
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
   readonly isNewSubscription: boolean;
-}): SubscribedToFeedSourceEventLogItemData {
-  const {feedSourceType, userFeedSubscriptionId, isNewSubscription} = args;
+}): SubscribedToFeedEventLogItemData {
+  const {feedType, userFeedSubscriptionId, isNewSubscription} = args;
   return {
-    eventType: EventType.SubscribedToFeedSource,
-    feedSourceType,
+    eventType: EventType.SubscribedToFeed,
+    feedType,
     userFeedSubscriptionId,
     isNewSubscription,
   };
 }
 
-export function makeUnsubscribedFromFeedSourceEventLogItemData(args: {
-  readonly feedSourceType: FeedSourceType;
+export function makeUnsubscribedFromFeedEventLogItemData(args: {
+  readonly feedType: FeedType;
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-}): UnsubscribedFromFeedSourceEventLogItemData {
-  const {feedSourceType, userFeedSubscriptionId} = args;
+}): UnsubscribedFromFeedEventLogItemData {
+  const {feedType, userFeedSubscriptionId} = args;
   return {
-    eventType: EventType.UnsubscribedFromFeedSource,
-    feedSourceType,
+    eventType: EventType.UnsubscribedFromFeed,
+    feedType,
     userFeedSubscriptionId,
   };
 }

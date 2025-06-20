@@ -18,7 +18,7 @@ import {parseFeedItem, parseFeedItemId} from '@shared/parsers/feedItems.parser';
 import type {AccountId} from '@shared/types/accounts.types';
 import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
 import {FeedItemActionType, TriageStatus} from '@shared/types/feedItems.types';
-import type {FeedSource} from '@shared/types/feedSources.types';
+import type {Feed} from '@shared/types/feeds.types';
 import {fromQueryFilterOp} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import {SystemTagId} from '@shared/types/tags.types';
@@ -108,18 +108,18 @@ export class ClientFeedItemsService {
   }
 
   public async createFeedItemFromUrl(args: {
-    readonly feedSource: FeedSource;
+    readonly origin: Feed;
     readonly url: string;
     readonly title: string;
     readonly description: string | null;
     readonly outgoingLinks: string[];
     readonly summary: string | null;
   }): AsyncResult<FeedItem, Error> {
-    const {feedSource, url, title, description, outgoingLinks, summary} = args;
+    const {origin, url, title, description, outgoingLinks, summary} = args;
     const accountId = this.accountId;
 
     const content = makeFeedItemContentFromUrl({url, title, description, outgoingLinks, summary});
-    const feedItem = makeFeedItem({feedSource, content, accountId});
+    const feedItem = makeFeedItem({origin, content, accountId});
 
     const saveResult = await this.collectionService.setDoc(feedItem.feedItemId, feedItem);
     if (!saveResult.success) return saveResult;

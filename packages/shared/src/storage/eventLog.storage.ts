@@ -13,8 +13,8 @@ import type {
   EventLogItemData,
   FeedItemActionEventLogItemData,
   FeedItemImportedEventLogItemData,
-  SubscribedToFeedSourceEventLogItemData,
-  UnsubscribedFromFeedSourceEventLogItemData,
+  SubscribedToFeedEventLogItemData,
+  UnsubscribedFromFeedEventLogItemData,
 } from '@shared/types/eventLog.types';
 import type {Result} from '@shared/types/results.types';
 
@@ -23,8 +23,8 @@ import type {
   EventLogItemFromStorage,
   FeedItemActionEventLogItemDataFromStorage,
   FeedItemImportedEventLogItemDataFromStorage,
-  SubscribedToFeedSourceEventLogItemDataFromStorage,
-  UnsubscribedFromFeedSourceEventLogItemDataFromStorage,
+  SubscribedToFeedEventLogItemDataFromStorage,
+  UnsubscribedFromFeedEventLogItemDataFromStorage,
 } from '@shared/schemas/eventLog.schema';
 import {fromStorageActor, toStorageActor} from '@shared/storage/actor.storage';
 
@@ -100,10 +100,10 @@ function fromStorageEventLogItemData(
       return fromStorageFeedItemActionEventLogItemData(eventLogItemDataFromStorage);
     case EventType.FeedItemImported:
       return fromStorageFeedItemImportedEventLogItemData(eventLogItemDataFromStorage);
-    case EventType.SubscribedToFeedSource:
-      return fromStorageSubscribedToFeedSourceEventLogItemData(eventLogItemDataFromStorage);
-    case EventType.UnsubscribedFromFeedSource:
-      return fromStorageUnsubscribedFromFeedSourceEventLogItemData(eventLogItemDataFromStorage);
+    case EventType.SubscribedToFeed:
+      return fromStorageSubscribedToFeedEventLogItemData(eventLogItemDataFromStorage);
+    case EventType.UnsubscribedFromFeed:
+      return fromStorageUnsubscribedFromFeedEventLogItemData(eventLogItemDataFromStorage);
     default: {
       assertNever(eventLogItemDataFromStorage);
     }
@@ -136,29 +136,29 @@ function fromStorageFeedItemImportedEventLogItemData(
   });
 }
 
-function fromStorageSubscribedToFeedSourceEventLogItemData(
-  eventLogItemData: SubscribedToFeedSourceEventLogItemDataFromStorage
-): Result<SubscribedToFeedSourceEventLogItemData, Error> {
+function fromStorageSubscribedToFeedEventLogItemData(
+  eventLogItemData: SubscribedToFeedEventLogItemDataFromStorage
+): Result<SubscribedToFeedEventLogItemData, Error> {
   const parsedSubIdResult = parseUserFeedSubscriptionId(eventLogItemData.userFeedSubscriptionId);
   if (!parsedSubIdResult.success) return parsedSubIdResult;
 
   return makeSuccessResult({
-    eventType: EventType.SubscribedToFeedSource,
-    feedSourceType: eventLogItemData.feedSourceType,
+    eventType: EventType.SubscribedToFeed,
+    feedType: eventLogItemData.feedType,
     userFeedSubscriptionId: parsedSubIdResult.value,
     isNewSubscription: eventLogItemData.isNewSubscription,
   });
 }
 
-function fromStorageUnsubscribedFromFeedSourceEventLogItemData(
-  eventLogItemData: UnsubscribedFromFeedSourceEventLogItemDataFromStorage
-): Result<UnsubscribedFromFeedSourceEventLogItemData, Error> {
+function fromStorageUnsubscribedFromFeedEventLogItemData(
+  eventLogItemData: UnsubscribedFromFeedEventLogItemDataFromStorage
+): Result<UnsubscribedFromFeedEventLogItemData, Error> {
   const parsedSubIdResult = parseUserFeedSubscriptionId(eventLogItemData.userFeedSubscriptionId);
   if (!parsedSubIdResult.success) return parsedSubIdResult;
 
   return makeSuccessResult({
-    eventType: EventType.UnsubscribedFromFeedSource,
-    feedSourceType: eventLogItemData.feedSourceType,
+    eventType: EventType.UnsubscribedFromFeed,
+    feedType: eventLogItemData.feedType,
     userFeedSubscriptionId: parsedSubIdResult.value,
   });
 }

@@ -15,7 +15,7 @@ import {AsyncStatus} from '@shared/types/asyncState.types';
 import {DayOfWeek} from '@shared/types/datetime.types';
 import {DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
-import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import {FeedType} from '@shared/types/feedSourceTypes.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/results.types';
 import type {
@@ -180,8 +180,8 @@ const FeedSubscriptionUnsubscribeButton: React.FC<{
       toast('Unsubscribed from feed');
 
       // Log.
-      void eventLogService.logUnsubscribedFromFeedSourceEvent({
-        feedSourceType: userFeedSubscription.feedSourceType,
+      void eventLogService.logUnsubscribedFromFeedEvent({
+        feedType: userFeedSubscription.feedType,
         userFeedSubscriptionId: userFeedSubscriptionId,
       });
     } else {
@@ -189,8 +189,8 @@ const FeedSubscriptionUnsubscribeButton: React.FC<{
       toast('Re-subscribed to feed');
 
       // Log.
-      void eventLogService.logSubscribedToFeedSourceEvent({
-        feedSourceType: userFeedSubscription.feedSourceType,
+      void eventLogService.logSubscribedToFeedEvent({
+        feedType: userFeedSubscription.feedType,
         userFeedSubscriptionId: userFeedSubscriptionId,
         isNewSubscription: false,
       });
@@ -200,7 +200,7 @@ const FeedSubscriptionUnsubscribeButton: React.FC<{
   }, [
     setPending,
     userFeedSubscription.isActive,
-    userFeedSubscription.feedSourceType,
+    userFeedSubscription.feedType,
     setSuccess,
     userFeedSubscriptionsService,
     userFeedSubscriptionId,
@@ -252,7 +252,7 @@ const FeedSubscriptionSettingsPopoverContent: React.FC<{
       <FlexColumn gap={4} padding={4}>
         <FeedSubscriptionDeliveryScheduleSetting userFeedSubscription={userFeedSubscription} />
         <FeedSubscriptionUnsubscribeButton userFeedSubscription={userFeedSubscription} />
-        {userFeedSubscription.feedSourceType === FeedSourceType.Interval ? (
+        {userFeedSubscription.feedType === FeedType.Interval ? (
           <FeedSubscriptionIntervalSetting userFeedSubscription={userFeedSubscription} />
         ) : null}
       </FlexColumn>
