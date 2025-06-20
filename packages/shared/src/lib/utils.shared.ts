@@ -51,20 +51,6 @@ export function safeAssertNever(val: never): void {
 }
 
 /**
- * Filters out all null values from the provided array.
- */
-export function filterNull<T>(arr: Array<T | null>): T[] {
-  return arr.filter(Boolean) as T[];
-}
-
-/**
- * Filters out all undefined values from the provided array.
- */
-export function filterUndefined<T>(arr: Array<T | undefined>): T[] {
-  return arr.filter(Boolean) as T[];
-}
-
-/**
  * Runs all of the provided sync task suppliers in batches of a given size. If the number of tasks
  * is less than the batch size, all tasks are run in parallel. Tasks are not executed until this
  * function is called.
@@ -218,6 +204,30 @@ export function isPositiveInteger(value: number): boolean {
   return isInteger(value) && value > 0;
 }
 
+/**
+ * Returns `true` if the provided value is `null`. Useful for type narrowing or chaining.
+ */
+export function isNull<T>(val: T | null): val is null {
+  return val === null;
+}
+
+/**
+ * Returns `true` if the provided value is not `null`. Useful for type narrowing or chaining.
+ */
+export function isNotNull<T>(val: T | null): val is T {
+  return val !== null;
+}
+
+/**
+ * Returns `true` if the provided value is not `undefined`. Useful for type narrowing or chaining.
+ */
 export function isDefined<T>(val: T | undefined): val is T {
   return val !== undefined;
+}
+
+/**
+ * Returns `true` if the provided value is `undefined`. Useful for type narrowing or chaining.
+ */
+export function isUndefined<T>(val: T | undefined): val is undefined {
+  return val === undefined;
 }

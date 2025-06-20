@@ -8,7 +8,7 @@ import {httpsCallable} from 'firebase/functions';
 
 import {logger} from '@shared/services/logger.shared';
 
-import {arrayToRecord} from '@shared/lib/arrayUtils.shared';
+import {arrayFilterNull, arrayToRecord} from '@shared/lib/arrayUtils.shared';
 import {
   DEFAULT_FEED_TITLE,
   USER_FEED_SUBSCRIPTIONS_CACHE_LIMIT,
@@ -27,7 +27,7 @@ import {
   makeRssUserFeedSubscription,
   makeYouTubeChannelUserFeedSubscription,
 } from '@shared/lib/userFeedSubscriptions.shared';
-import {filterNull, isDefined, isPositiveInteger} from '@shared/lib/utils.shared';
+import {isDefined, isPositiveInteger} from '@shared/lib/utils.shared';
 import {getYouTubeChannelId} from '@shared/lib/youtube.shared';
 
 import {
@@ -329,14 +329,14 @@ export class ClientUserFeedSubscriptionsService {
       }
     }
 
-    const itemsQuery = this.collectionService.query(
-      filterNull([
-        firestoreWhere('accountId', '==', this.accountId),
-        // Default to sorting by last updated time, given it is a decent proxy for most recent.
-        firestoreOrderBy('lastUpdatedTime', 'desc'),
-        limit ? firestoreLimit(limit) : null,
-      ])
-    );
+    const queryClauses = arrayFilterNull([
+      firestoreWhere('accountId', '==', this.accountId),
+      // Default to sorting by last updated time, given it is a decent proxy for most recent.
+      firestoreOrderBy('lastUpdatedTime', 'desc'),
+      limit ? firestoreLimit(limit) : null,
+    ]);
+
+    const itemsQuery = this.collectionService.query(queryClauses);
 
     const unsubscribe = this.collectionService.watchDocs(
       itemsQuery,

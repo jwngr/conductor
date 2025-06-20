@@ -1,3 +1,5 @@
+import {isDefined, isNotNull} from '@shared/lib/utils.shared';
+
 import type {Func} from '@shared/types/utils.types';
 
 /**
@@ -18,6 +20,20 @@ export function arrayFilter<T>(
   predicate: (value: T, index: number, array: T[]) => boolean
 ): T[] {
   return arr.filter(predicate);
+}
+
+/**
+ * Typed helper for filtering an array to only include values that are not `null`.
+ */
+export function arrayFilterNull<T>(arr: Array<T | null>): T[] {
+  return arr.filter(isNotNull);
+}
+
+/**
+ * Typed helper for filtering an array to only include values that are not `undefined`.
+ */
+export function arrayFilterUndefined<T>(arr: Array<T | undefined>): T[] {
+  return arr.filter(isDefined);
 }
 
 /**

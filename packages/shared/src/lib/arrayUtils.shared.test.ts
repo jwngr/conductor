@@ -1,5 +1,7 @@
 import {
   arrayFilter,
+  arrayFilterNull,
+  arrayFilterUndefined,
   arrayForEach,
   arrayMap,
   arrayReduce,
@@ -66,6 +68,42 @@ describe('arrayFilter', () => {
     expect(mockPredicate).toHaveBeenCalledTimes(2);
     expect(mockPredicate).toHaveBeenCalledWith('a', 0, arr);
     expect(mockPredicate).toHaveBeenCalledWith('b', 1, arr);
+  });
+});
+
+describe('arrayFilterNull', () => {
+  test('should remove null values from array', () => {
+    expect(arrayFilterNull([1, null, 2, null, 3])).toEqual([1, 2, 3]);
+  });
+
+  test('should return empty array if all values are null', () => {
+    expect(arrayFilterNull([null, null])).toEqual([]);
+  });
+
+  test('should return same array if no null values', () => {
+    expect(arrayFilterNull([1, 2, 3])).toEqual([1, 2, 3]);
+  });
+
+  test('should handle empty array', () => {
+    expect(arrayFilterNull([])).toEqual([]);
+  });
+});
+
+describe('arrayFilterUndefined', () => {
+  test('should remove undefined values from array', () => {
+    expect(arrayFilterUndefined([1, undefined, 2, undefined, 3])).toEqual([1, 2, 3]);
+  });
+
+  test('should return empty array if all values are undefined', () => {
+    expect(arrayFilterUndefined([undefined, undefined])).toEqual([]);
+  });
+
+  test('should return same array if no undefined values', () => {
+    expect(arrayFilterUndefined([1, 2, 3])).toEqual([1, 2, 3]);
+  });
+
+  test('should handle empty array', () => {
+    expect(arrayFilterUndefined([])).toEqual([]);
   });
 });
 
