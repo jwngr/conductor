@@ -16,7 +16,6 @@ import {
   noop,
   noopFalse,
   noopTrue,
-  partition,
   pluralize,
   pluralizeWithCount,
 } from '@shared/lib/utils.shared';
@@ -39,42 +38,6 @@ describe('formatWithCommas', () => {
   test('should handle decimal numbers correctly', () => {
     expect(formatWithCommas(1000.5)).toBe('1,000.5');
     expect(formatWithCommas(1234567.89)).toBe('1,234,567.89');
-  });
-});
-
-describe('partition', () => {
-  test('should partition array based on predicate', () => {
-    const numbers = [1, 2, 3, 4, 5, 6];
-    const [evens, odds] = partition(numbers, (n) => n % 2 === 0);
-    expect(evens).toEqual([2, 4, 6]);
-    expect(odds).toEqual([1, 3, 5]);
-  });
-
-  test('should handle empty array', () => {
-    const [trueValues, falseValues] = partition([], noopTrue);
-    expect(trueValues).toEqual([]);
-    expect(falseValues).toEqual([]);
-  });
-
-  test('should handle array with only matching elements', () => {
-    const numbers = [2, 4, 6, 8];
-    const [evens, odds] = partition(numbers, (n) => n % 2 === 0);
-    expect(evens).toEqual([2, 4, 6, 8]);
-    expect(odds).toEqual([]);
-  });
-
-  test('should handle array with no matching elements', () => {
-    const numbers = [1, 3, 5, 7];
-    const [evens, odds] = partition(numbers, (n) => n % 2 === 0);
-    expect(evens).toEqual([]);
-    expect(odds).toEqual([1, 3, 5, 7]);
-  });
-
-  test('should work with different types', () => {
-    const mixed = [1, 'a', 2, 'b', 3];
-    const [numbers, strings] = partition(mixed, (item) => typeof item === 'number');
-    expect(numbers).toEqual([1, 2, 3]);
-    expect(strings).toEqual(['a', 'b']);
   });
 });
 

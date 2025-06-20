@@ -4,10 +4,12 @@ import {
   arrayFilterUndefined,
   arrayForEach,
   arrayMap,
+  arrayPartition,
   arrayReduce,
   arraySort,
   arrayToRecord,
 } from '@shared/lib/arrayUtils.shared';
+import {noopTrue} from '@shared/lib/utils.shared';
 
 describe('arrayForEach', () => {
   test('should call callback for each element', () => {
@@ -236,5 +238,41 @@ describe('arrayToRecord', () => {
       '10': {id: 10, name: 'ten'},
       '20': {id: 20, name: 'twenty'},
     });
+  });
+});
+
+describe('arrayPartition', () => {
+  test('should partition array based on predicate', () => {
+    const numbers = [1, 2, 3, 4, 5, 6];
+    const [evens, odds] = arrayPartition(numbers, (n) => n % 2 === 0);
+    expect(evens).toEqual([2, 4, 6]);
+    expect(odds).toEqual([1, 3, 5]);
+  });
+
+  test('should handle empty array', () => {
+    const [trueValues, falseValues] = arrayPartition([], noopTrue);
+    expect(trueValues).toEqual([]);
+    expect(falseValues).toEqual([]);
+  });
+
+  test('should handle array with only matching elements', () => {
+    const numbers = [2, 4, 6, 8];
+    const [evens, odds] = arrayPartition(numbers, (n) => n % 2 === 0);
+    expect(evens).toEqual([2, 4, 6, 8]);
+    expect(odds).toEqual([]);
+  });
+
+  test('should handle array with no matching elements', () => {
+    const numbers = [1, 3, 5, 7];
+    const [evens, odds] = arrayPartition(numbers, (n) => n % 2 === 0);
+    expect(evens).toEqual([]);
+    expect(odds).toEqual([1, 3, 5, 7]);
+  });
+
+  test('should work with different types', () => {
+    const mixed = [1, 'a', 2, 'b', 3];
+    const [numbers, strings] = arrayPartition(mixed, (item) => typeof item === 'number');
+    expect(numbers).toEqual([1, 2, 3]);
+    expect(strings).toEqual(['a', 'b']);
   });
 });

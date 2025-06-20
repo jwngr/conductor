@@ -5,7 +5,7 @@ import {logger} from '@shared/services/logger.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AsyncResult, Result} from '@shared/types/results.types';
-import type {Func, Supplier, UUID} from '@shared/types/utils.types';
+import type {Supplier, UUID} from '@shared/types/utils.types';
 
 /**
  * Formats a number with commas.
@@ -91,26 +91,6 @@ export async function batchAsyncResults<T>(
     allResults.push(...currentResults);
   }
   return makeSuccessResult(allResults);
-}
-
-/**
- * Partitions an array into two arrays based on the provided predicate.
- */
-export function partition<T, U>(
-  arr: ReadonlyArray<T | U>,
-  predicate: Func<T | U, boolean>
-): [T[], U[]] {
-  return arr.reduce(
-    (acc, item) => {
-      if (predicate(item)) {
-        acc[0].push(item as T);
-      } else {
-        acc[1].push(item as U);
-      }
-      return acc;
-    },
-    [[], []] as [T[], U[]]
-  );
 }
 
 /**

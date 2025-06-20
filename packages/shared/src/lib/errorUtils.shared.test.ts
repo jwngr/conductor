@@ -127,7 +127,7 @@ describe('syncTryAll', () => {
     // Using 'unknown' as a type assertion first before asserting as Array to fix TS error
     const combinedResult = syncTryAll(errorArray as unknown as Array<Result<unknown, Error>>);
 
-    expectErrorResult(combinedResult, 'arr.reduce is not a function');
+    expectErrorResult(combinedResult, 'Mock error message');
   });
 });
 

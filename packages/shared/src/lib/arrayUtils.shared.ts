@@ -85,3 +85,21 @@ export function arrayToRecord<Item, Key extends string | number | symbol>(
     {} as Record<Key, Item>
   );
 }
+
+/**
+ * Partitions an array into two arrays based on the provided predicate.
+ */
+export function arrayPartition<T, U>(
+  arr: ReadonlyArray<T | U>,
+  predicate: (value: T | U) => boolean
+): [T[], U[]] {
+  const original: [T[], U[]] = [[], []];
+  for (const item of arr) {
+    if (predicate(item)) {
+      original[0].push(item as T);
+    } else {
+      original[1].push(item as U);
+    }
+  }
+  return original;
+}
