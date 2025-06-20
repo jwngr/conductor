@@ -34,7 +34,7 @@ import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 import {useEventLogService} from '@sharedClient/hooks/eventLog.hooks';
 import {useIsMounted} from '@sharedClient/hooks/lifecycle.hooks';
-import {useUserFeedSubscriptions} from '@sharedClient/hooks/userFeedSubscriptions.hooks';
+import {useLoggedInUserFeedSubscriptions} from '@sharedClient/hooks/userFeedSubscriptions.hooks';
 
 export function useFeedItemsService(args: {
   readonly firebaseService: ClientFirebaseService;
@@ -167,7 +167,7 @@ export function useFeedItemsRespectingDelivery(args: {
   const {viewType, firebaseService} = args;
 
   const feedItemsState = useFeedItemsInternal({viewType, firebaseService});
-  const userFeedSubscriptionsState = useUserFeedSubscriptions({firebaseService});
+  const userFeedSubscriptionsState = useLoggedInUserFeedSubscriptions({firebaseService});
 
   const filteredFeedItemsState: AsyncState<FeedItem[]> = useMemo(() => {
     // Do not consider loaded until both the feed items and the user feed subscriptions are loaded. filtering.
