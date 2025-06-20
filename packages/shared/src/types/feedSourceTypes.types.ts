@@ -1,7 +1,8 @@
 /**
  * Note: This file exists to avoid circular dependencies between `feeds.types.ts` and
- * `userFeedSubscriptions.types.ts`. Alternatively, we could consider introducing a new
- * `FeedSubscriptionType` that is a mirror of `FeedType` but used on `UserFeedSubscription`.
+ * `userFeedSubscriptions.types.ts`. `Feed`s store a `UserFeedSubscriptionId` and
+ * `UserFeedSubscription`s store a `FeedType`. Alternatively, we could consider moving IDs into a
+ * separate file to eliminate the dependency from `feeds.types.ts`.
  */
 
 /**

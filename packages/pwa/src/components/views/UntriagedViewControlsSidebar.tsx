@@ -1,11 +1,11 @@
 import type React from 'react';
 
 import {arrayReduce} from '@shared/lib/arrayUtils.shared';
-import {getFeedItemContentTypeText} from '@shared/lib/feedItems.shared';
 import {
-  getFeedSubscriptionIdForFeedSource,
-  getNameForFeedType,
-} from '@shared/lib/feedSources.shared';
+  getFeedItemContentTypeText,
+  getFeedSubscriptionIdForItem,
+} from '@shared/lib/feedItems.shared';
+import {getNameForFeedType} from '@shared/lib/feeds.shared';
 import {
   objectForEachEntry,
   objectMapEntries,
@@ -105,22 +105,22 @@ const ControlsSidebarTagsSection: React.FC<{
   );
 };
 
-const ControlsSidebarFeedSourcesSection: React.FC<{
+const ControlsSidebarFeedsSection: React.FC<{
   readonly feedItems: readonly FeedItem[];
-  readonly sourceTypesToFilterBy: Set<FeedType>;
-  readonly onFeedSourceClick: Consumer<FeedType>;
-}> = ({feedItems, sourceTypesToFilterBy, onFeedSourceClick}) => {
+  readonly feedTypesToFilterBy: Set<FeedType>;
+  readonly onFeedClick: Consumer<FeedType>;
+}> = ({feedItems, feedTypesToFilterBy, onFeedClick}) => {
   return (
     <ControlsSidebarFilterCriteriaSection<FeedType>
       title="Sources"
       feedItems={feedItems}
-      activeCriteria={sourceTypesToFilterBy}
+      activeCriteria={feedTypesToFilterBy}
       reducer={(acc, item) => {
-        acc[item.feedSource.feedType] = (acc[item.feedSource.feedType] ?? 0) + 1;
+        acc[item.origin.feedType] = (acc[item.origin.feedType] ?? 0) + 1;
         return acc;
       }}
       getCriteriaName={getNameForFeedType}
-      onCriteriaClick={onFeedSourceClick}
+      onCriteriaClick={onFeedClick}
     />
   );
 };
@@ -153,7 +153,7 @@ const ControlsSidebarFeedSubscriptionsSection: React.FC<{
       feedItems={feedItems}
       activeCriteria={subscriptionIdsToFilterBy}
       reducer={(acc, item) => {
-        const feedSubscriptionId = getFeedSubscriptionIdForFeedSource(item.feedSource);
+        const feedSubscriptionId = getFeedSubscriptionIdForItem(item);
         if (feedSubscriptionId) {
           acc[feedSubscriptionId] = (acc[feedSubscriptionId] ?? 0) + 1;
         }
@@ -290,7 +290,7 @@ export const UntriagedViewControlsSidebar: React.FC<{
   readonly feedItems: readonly FeedItem[];
   readonly sortBy: readonly ViewSortByOption[];
   readonly groupBy: readonly ViewGroupByOption[];
-  readonly sourceTypesToFilterBy: Set<FeedType>;
+  readonly feedTypesToFilterBy: Set<FeedType>;
   readonly contentTypesToFilterBy: Set<FeedItemContentType>;
   readonly tagIdsToFilterBy: Set<TagId>;
   readonly subscriptionIdsToFilterBy: Set<UserFeedSubscriptionId>;
@@ -304,7 +304,7 @@ export const UntriagedViewControlsSidebar: React.FC<{
   feedItems,
   sortBy,
   groupBy,
-  sourceTypesToFilterBy,
+  feedTypesToFilterBy,
   contentTypesToFilterBy,
   tagIdsToFilterBy,
   subscriptionIdsToFilterBy,
@@ -327,10 +327,10 @@ export const UntriagedViewControlsSidebar: React.FC<{
         subscriptionIdsToFilterBy={subscriptionIdsToFilterBy}
         onFeedSubscriptionClick={onSubscriptionClick}
       />
-      <ControlsSidebarFeedSourcesSection
+      <ControlsSidebarFeedsSection
         feedItems={feedItems}
-        sourceTypesToFilterBy={sourceTypesToFilterBy}
-        onFeedSourceClick={onSourceTypeClick}
+        feedTypesToFilterBy={feedTypesToFilterBy}
+        onFeedClick={onSourceTypeClick}
       />
       <ControlsSidebarContentTypesSection
         feedItems={feedItems}

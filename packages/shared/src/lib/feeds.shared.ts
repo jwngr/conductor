@@ -2,7 +2,6 @@ import {assertNever} from '@shared/lib/utils.shared';
 
 import type {
   ExtensionFeed,
-  Feed,
   IntervalFeed,
   PocketExportFeed,
   PwaFeed,
@@ -13,23 +12,22 @@ import {FeedType} from '@shared/types/feedSourceTypes.types';
 import type {
   IntervalUserFeedSubscription,
   RssUserFeedSubscription,
-  UserFeedSubscriptionId,
   YouTubeChannelUserFeedSubscription,
 } from '@shared/types/userFeedSubscriptions.types';
 
-export const PWA_FEED_SOURCE: PwaFeed = {
+export const PWA_FEED: PwaFeed = {
   feedType: FeedType.PWA,
 };
 
-export const EXTENSION_FEED_SOURCE: ExtensionFeed = {
+export const EXTENSION_FEED: ExtensionFeed = {
   feedType: FeedType.Extension,
 };
 
-export const POCKET_EXPORT_FEED_SOURCE: PocketExportFeed = {
+export const POCKET_EXPORT_FEED: PocketExportFeed = {
   feedType: FeedType.PocketExport,
 };
 
-export function makeRssFeedSource(args: {
+export function makeRssFeed(args: {
   readonly userFeedSubscription: RssUserFeedSubscription;
 }): RssFeed {
   const {userFeedSubscription} = args;
@@ -39,7 +37,7 @@ export function makeRssFeedSource(args: {
   };
 }
 
-export function makeYouTubeChannelFeedSource(args: {
+export function makeYouTubeChannelFeed(args: {
   readonly userFeedSubscription: YouTubeChannelUserFeedSubscription;
 }): YouTubeChannelFeed {
   const {userFeedSubscription} = args;
@@ -49,7 +47,7 @@ export function makeYouTubeChannelFeedSource(args: {
   };
 }
 
-export function makeIntervalFeedSource(args: {
+export function makeIntervalFeed(args: {
   readonly userFeedSubscription: IntervalUserFeedSubscription;
 }): IntervalFeed {
   const {userFeedSubscription} = args;
@@ -75,22 +73,5 @@ export function getNameForFeedType(feedType: FeedType): string {
       return 'Pocket';
     default:
       assertNever(feedType);
-  }
-}
-
-export function getFeedSubscriptionIdForFeedSource(
-  feedSource: Feed
-): UserFeedSubscriptionId | null {
-  switch (feedSource.feedType) {
-    case FeedType.RSS:
-    case FeedType.YouTubeChannel:
-    case FeedType.Interval:
-      return feedSource.userFeedSubscriptionId;
-    case FeedType.PWA:
-    case FeedType.Extension:
-    case FeedType.PocketExport:
-      return null;
-    default:
-      assertNever(feedSource);
   }
 }

@@ -75,9 +75,7 @@ export class ServerUserFeedSubscriptionsService {
     return makeSuccessResult(queryResult.value as IntervalUserFeedSubscription[]);
   }
 
-  public async fetchForRssFeedSourceByUrl(
-    url: string
-  ): AsyncResult<RssUserFeedSubscription[], Error> {
+  public async fetchForRssFeedByUrl(url: string): AsyncResult<RssUserFeedSubscription[], Error> {
     const query = this.collectionService
       .getCollectionRef()
       .where('feedType', '==', FeedType.RSS)

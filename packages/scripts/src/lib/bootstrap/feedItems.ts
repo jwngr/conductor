@@ -1,7 +1,7 @@
 import {logger} from '@shared/services/logger.shared';
 
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {makeRssFeedSource} from '@shared/lib/feedSources.shared';
+import {makeRssFeed} from '@shared/lib/feeds.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
@@ -61,7 +61,7 @@ export async function createSampleFeedItems(args: {
 
   for (const item of rssFeedItems) {
     const saveResult = await feedItemsService.createFeedItemFromUrl({
-      feedSource: makeRssFeedSource({userFeedSubscription: rssSubscriptions[0]}),
+      origin: makeRssFeed({userFeedSubscription: rssSubscriptions[0]}),
       accountId,
       url: item.url,
       title: item.title,

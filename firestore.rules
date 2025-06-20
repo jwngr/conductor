@@ -47,9 +47,9 @@ service cloud.firestore {
     ///////////////////////
     //  TYPE VALIDATORS  //
     ///////////////////////
-    function isValidFeedSource(maybeFeedSource) {
-      return maybeFeedSource.keys().hasAll(['feedType']) &&
-        isValidFeedType(maybeFeedSource.feedType);
+    function isValidFeed(maybeFeed) {
+      return maybeFeed.keys().hasAll(['feedType']) &&
+        isValidFeedType(maybeFeed.feedType);
     }
 
     function isValidDeliverySchedule(maybeDeliverySchedule) {
@@ -147,7 +147,7 @@ service cloud.firestore {
         'feedItemId',
         'feedItemContentType',
         'content',
-        'feedSource',
+        'origin',
         'importState',
         'triageStatus',
         'tagIds',
@@ -166,7 +166,7 @@ service cloud.firestore {
         isCreate || (
           request.resource.data.feedItemId == resource.data.feedItemId &&
           request.resource.data.feedItemContentType == resource.data.feedItemContentType &&
-          request.resource.data.feedSource.feedType == resource.data.feedSource.feedType &&
+          request.resource.data.origin.feedType == resource.data.origin.feedType &&
           request.resource.data.createdTime == resource.data.createdTime
         )
       );

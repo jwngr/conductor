@@ -59,26 +59,26 @@ const StringExperimentValueChangedEventLogItemDataSchema = BaseEventLogItemDataS
   value: z.string(),
 });
 
-export type SubscribedToFeedSourceEventLogItemDataFromStorage = z.infer<
-  typeof SubscribedToFeedSourceEventLogItemDataSchema
->;
-
-const SubscribedToFeedSourceEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
-  eventType: z.literal(EventType.SubscribedToFeedSource),
+const SubscribedToFeedEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
+  eventType: z.literal(EventType.SubscribedToFeed),
   feedType: z.enum(FeedType),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
   isNewSubscription: z.boolean(),
 });
 
-export type UnsubscribedFromFeedSourceEventLogItemDataFromStorage = z.infer<
-  typeof UnsubscribedFromFeedSourceEventLogItemDataSchema
+export type SubscribedToFeedEventLogItemDataFromStorage = z.infer<
+  typeof SubscribedToFeedEventLogItemDataSchema
 >;
 
-export const UnsubscribedFromFeedSourceEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
-  eventType: z.literal(EventType.UnsubscribedFromFeedSource),
+export const UnsubscribedFromFeedEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
+  eventType: z.literal(EventType.UnsubscribedFromFeed),
   feedType: z.enum(FeedType),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
 });
+
+export type UnsubscribedFromFeedEventLogItemDataFromStorage = z.infer<
+  typeof UnsubscribedFromFeedEventLogItemDataSchema
+>;
 
 const ThemePreferenceChangedEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
   eventType: z.literal(EventType.ThemePreferenceChanged),
@@ -91,8 +91,8 @@ const EventLogItemDataSchema = z.discriminatedUnion('eventType', [
   ExperimentEnabledEventLogItemDataSchema,
   ExperimentDisabledEventLogItemDataSchema,
   StringExperimentValueChangedEventLogItemDataSchema,
-  SubscribedToFeedSourceEventLogItemDataSchema,
-  UnsubscribedFromFeedSourceEventLogItemDataSchema,
+  SubscribedToFeedEventLogItemDataSchema,
+  UnsubscribedFromFeedEventLogItemDataSchema,
   ThemePreferenceChangedEventLogItemDataSchema,
 ]);
 

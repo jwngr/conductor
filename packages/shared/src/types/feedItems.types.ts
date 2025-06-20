@@ -32,8 +32,8 @@ export enum FeedItemContentType {
 interface BaseFeedItem extends BaseStoreItem {
   /** Unique ID for this feed item. */
   readonly feedItemId: FeedItemId;
-  /** Source of the feed item (e.g. RSS feed, YouTube channel, extension, ). */
-  readonly feedSource: Feed;
+  /** Origin of the feed item (e.g. RSS feed, YouTube channel, extension, ). */
+  readonly origin: Feed;
   /** Type of feed item content (e.g. article, video, website). */
   readonly feedItemContentType: FeedItemContentType;
   /** ID of the account that owns the feed item. */
@@ -92,7 +92,7 @@ export type XkcdFeedItem = BaseFeedItem & {
 export type IntervalFeedItem = BaseFeedItem & {
   readonly feedItemContentType: FeedItemContentType.Interval;
   readonly content: IntervalFeedItemContent;
-  // TODO: Enforce `feedSource` is an `IntervalFeedSource`.
+  // TODO: Enforce `origin` is an `IntervalFeed`.
 };
 
 export type FeedItem =

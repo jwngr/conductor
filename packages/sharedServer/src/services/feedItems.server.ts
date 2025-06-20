@@ -4,7 +4,7 @@ import type {DocumentData} from 'firebase-admin/firestore';
 import {FEED_ITEMS_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {asyncTry, prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {makeFeedItem, makeFeedItemContentFromUrl} from '@shared/lib/feedItems.shared';
-import {makeIntervalFeedSource} from '@shared/lib/feedSources.shared';
+import {makeIntervalFeed} from '@shared/lib/feeds.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
@@ -90,7 +90,7 @@ export class ServerFeedItemsService {
   }
 
   public async createFeedItemFromUrl(args: {
-    readonly feedSource: Feed;
+    readonly origin: Feed;
     readonly accountId: AccountId;
     readonly url: string;
     readonly title: string;
@@ -98,10 +98,10 @@ export class ServerFeedItemsService {
     readonly outgoingLinks: string[];
     readonly summary: string | null;
   }): AsyncResult<FeedItem, Error> {
-    const {feedSource, accountId, url, title, description, outgoingLinks, summary} = args;
+    const {origin, accountId, url, title, description, outgoingLinks, summary} = args;
 
     const content = makeFeedItemContentFromUrl({url, title, description, outgoingLinks, summary});
-    const feedItem = makeFeedItem({feedSource, content, accountId});
+    const feedItem = makeFeedItem({origin, content, accountId});
 
     const saveResult = await this.collectionService.setDoc(feedItem.feedItemId, feedItem);
     if (!saveResult.success) return saveResult;
@@ -118,7 +118,7 @@ export class ServerFeedItemsService {
     const {userFeedSubscription, accountId} = args;
 
     const feedItem = makeFeedItem({
-      feedSource: makeIntervalFeedSource({userFeedSubscription}),
+      origin: makeIntervalFeed({userFeedSubscription}),
       accountId,
       content: {
         feedItemContentType: FeedItemContentType.Interval,

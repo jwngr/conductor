@@ -22,10 +22,12 @@ import type {
   NewFeedItemImportState,
 } from '@shared/types/feedItems.types';
 import type {Feed} from '@shared/types/feeds.types';
+import {FeedType} from '@shared/types/feedSourceTypes.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/results.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
+import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 
 export const DEFAULT_FEED_ITEM_CONTENT_TYPE = FeedItemContentType.Article;
 
@@ -151,17 +153,17 @@ export class SharedFeedItemHelpers {
 }
 
 export function makeFeedItem(args: {
-  feedSource: Feed;
+  origin: Feed;
   accountId: AccountId;
   content: FeedItemContent;
 }): FeedItem {
-  const {feedSource, accountId, content} = args;
+  const {origin, accountId, content} = args;
 
   return {
     feedItemContentType: content.feedItemContentType,
     feedItemId: makeFeedItemId(),
     content,
-    feedSource,
+    origin,
     accountId,
     importState: makeNewFeedItemImportState(),
     triageStatus: TriageStatus.Untriaged,
@@ -269,5 +271,20 @@ export function getFeedItemContentTypeText(feedItemContentType: FeedItemContentT
       return 'Interval';
     default:
       assertNever(feedItemContentType);
+  }
+}
+
+export function getFeedSubscriptionIdForItem(feedItem: FeedItem): UserFeedSubscriptionId | null {
+  switch (feedItem.origin.feedType) {
+    case FeedType.RSS:
+    case FeedType.YouTubeChannel:
+    case FeedType.Interval:
+      return feedItem.origin.userFeedSubscriptionId;
+    case FeedType.PWA:
+    case FeedType.Extension:
+    case FeedType.PocketExport:
+      return null;
+    default:
+      assertNever(feedItem.origin);
   }
 }

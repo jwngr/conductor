@@ -86,7 +86,7 @@ function filterFeedItemsByDeliverySchedules(args: {
   const {feedItems, getFeedSubscription} = args;
 
   return feedItems.filter((feedItem) => {
-    switch (feedItem.feedSource.feedType) {
+    switch (feedItem.origin.feedType) {
       case FeedType.PWA:
       case FeedType.Extension:
       case FeedType.PocketExport:
@@ -96,7 +96,7 @@ function filterFeedItemsByDeliverySchedules(args: {
       case FeedType.Interval:
       case FeedType.RSS: {
         // Some sources have delivery schedules which determine when they are shown.
-        const feedSubscription = getFeedSubscription(feedItem.feedSource.userFeedSubscriptionId);
+        const feedSubscription = getFeedSubscription(feedItem.origin.userFeedSubscriptionId);
 
         return isDeliveredAccordingToSchedule({
           createdTime: feedItem.createdTime,
@@ -104,7 +104,7 @@ function filterFeedItemsByDeliverySchedules(args: {
         });
       }
       default:
-        assertNever(feedItem.feedSource);
+        assertNever(feedItem.origin);
     }
   });
 }

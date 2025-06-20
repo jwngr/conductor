@@ -180,7 +180,7 @@ const FeedSubscriptionUnsubscribeButton: React.FC<{
       toast('Unsubscribed from feed');
 
       // Log.
-      void eventLogService.logUnsubscribedFromFeedSourceEvent({
+      void eventLogService.logUnsubscribedFromFeedEvent({
         feedType: userFeedSubscription.feedType,
         userFeedSubscriptionId: userFeedSubscriptionId,
       });
@@ -189,7 +189,7 @@ const FeedSubscriptionUnsubscribeButton: React.FC<{
       toast('Re-subscribed to feed');
 
       // Log.
-      void eventLogService.logSubscribedToFeedSourceEvent({
+      void eventLogService.logSubscribedToFeedEvent({
         feedType: userFeedSubscription.feedType,
         userFeedSubscriptionId: userFeedSubscriptionId,
         isNewSubscription: false,

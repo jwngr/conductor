@@ -3,7 +3,7 @@ import path from 'path';
 import {logger} from '@shared/services/logger.shared';
 
 import {asyncTry, prefixError, prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {POCKET_EXPORT_FEED_SOURCE} from '@shared/lib/feedSources.shared';
+import {POCKET_EXPORT_FEED} from '@shared/lib/feeds.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {pluralizeWithCount} from '@shared/lib/utils.shared';
 
@@ -108,7 +108,7 @@ async function main(): AsyncResult<string, Error> {
     }
 
     const createFeedItemResult = await feedItemsService.createFeedItemFromUrl({
-      feedSource: POCKET_EXPORT_FEED_SOURCE,
+      origin: POCKET_EXPORT_FEED,
       accountId,
       url: pocketItem.url,
       title: pocketItem.title,

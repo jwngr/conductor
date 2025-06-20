@@ -7,7 +7,7 @@ import {
 } from '@shared/types/feedItems.types';
 
 import {AccountIdSchema} from '@shared/schemas/accounts.schema';
-import {FeedSourceSchema} from '@shared/schemas/feedSources.schema';
+import {FeedSchema} from '@shared/schemas/feeds.schema';
 import {FirestoreTimestampSchema} from '@shared/schemas/firebase.schema';
 import {BaseStoreItemSchema} from '@shared/schemas/utils.schema';
 
@@ -130,7 +130,7 @@ export type IntervalFeedItemContentFromStorage = z.infer<typeof IntervalFeedItem
 //  FEED ITEM  //
 /////////////////
 const BaseFeedItemSchema = BaseStoreItemSchema.extend({
-  feedSource: FeedSourceSchema,
+  origin: FeedSchema,
   feedItemId: FeedItemIdSchema,
   feedItemContentType: z.enum(FeedItemContentType),
   accountId: AccountIdSchema,

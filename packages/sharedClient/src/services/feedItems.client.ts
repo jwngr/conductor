@@ -108,18 +108,18 @@ export class ClientFeedItemsService {
   }
 
   public async createFeedItemFromUrl(args: {
-    readonly feedSource: Feed;
+    readonly origin: Feed;
     readonly url: string;
     readonly title: string;
     readonly description: string | null;
     readonly outgoingLinks: string[];
     readonly summary: string | null;
   }): AsyncResult<FeedItem, Error> {
-    const {feedSource, url, title, description, outgoingLinks, summary} = args;
+    const {origin, url, title, description, outgoingLinks, summary} = args;
     const accountId = this.accountId;
 
     const content = makeFeedItemContentFromUrl({url, title, description, outgoingLinks, summary});
-    const feedItem = makeFeedItem({feedSource, content, accountId});
+    const feedItem = makeFeedItem({origin, content, accountId});
 
     const saveResult = await this.collectionService.setDoc(feedItem.feedItemId, feedItem);
     if (!saveResult.success) return saveResult;

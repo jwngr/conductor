@@ -4,7 +4,7 @@ import {logger} from '@shared/services/logger.shared';
 
 import {arrayPartition} from '@shared/lib/arrayUtils.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
-import {makeRssFeedSource} from '@shared/lib/feedSources.shared';
+import {makeRssFeed} from '@shared/lib/feeds.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {assertNever, batchAsyncResults} from '@shared/lib/utils.shared';
 
@@ -73,7 +73,7 @@ export async function handleSuperfeedrWebhookHelper(args: {
 
   // Fetch all users subscribed to this RSS feed URL.
   const feedUrl = body.status.feed;
-  const fetchSubsResult = await userFeedSubscriptionsService.fetchForRssFeedSourceByUrl(feedUrl);
+  const fetchSubsResult = await userFeedSubscriptionsService.fetchForRssFeedByUrl(feedUrl);
   if (!fetchSubsResult.success) {
     const message = 'Error fetching subscribed accounts for RSS feed source';
     return makeErrorResult(prefixError(fetchSubsResult.error, message));
@@ -89,7 +89,7 @@ export async function handleSuperfeedrWebhookHelper(args: {
     userFeedSubscriptions.forEach((userFeedSubscription) => {
       const newFeedItemResult = async (): AsyncResult<FeedItem, Error> => {
         return await feedItemsService.createFeedItemFromUrl({
-          feedSource: makeRssFeedSource({userFeedSubscription}),
+          origin: makeRssFeed({userFeedSubscription}),
           url: item.permalinkUrl,
           title: item.title,
           description: item.summary,

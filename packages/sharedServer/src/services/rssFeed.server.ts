@@ -39,7 +39,7 @@ export class ServerRssFeedService {
    */
   async unsubscribeFromUrl(url: string): AsyncResult<void, Error> {
     // Fetch all active subscriptions for the feed source.
-    const fetchSubsResult = await this.userFeedSubscriptionsService.fetchForRssFeedSourceByUrl(url);
+    const fetchSubsResult = await this.userFeedSubscriptionsService.fetchForRssFeedByUrl(url);
     if (!fetchSubsResult.success) {
       const message =
         '[UNSUBSCRIBE] Error fetching other subscriptions while unsubscribing from feed';
