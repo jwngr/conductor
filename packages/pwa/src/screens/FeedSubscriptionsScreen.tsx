@@ -9,7 +9,7 @@ import {assertNever} from '@shared/lib/utils.shared';
 import {makeYouTubeChannelUrl} from '@shared/lib/youtube.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
-import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import {FeedType} from '@shared/types/feedSourceTypes.types';
 import {NavItemId} from '@shared/types/urls.types';
 import type {
   UserFeedSubscription,
@@ -200,15 +200,15 @@ const FeedSubscriptionItem: React.FC<{
   let secondaryRowText: string | null;
 
   switch (subscription.feedSourceType) {
-    case FeedSourceType.RSS:
+    case FeedType.RSS:
       primaryRowText = `RSS (${subscription.title ?? subscription.url})`;
       secondaryRowText = subscription.title ?? null;
       break;
-    case FeedSourceType.YouTubeChannel:
+    case FeedType.YouTubeChannel:
       primaryRowText = 'YouTube';
       secondaryRowText = subscription.channelId;
       break;
-    case FeedSourceType.Interval:
+    case FeedType.Interval:
       primaryRowText = 'Interval';
       secondaryRowText = null;
       break;

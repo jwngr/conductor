@@ -19,7 +19,7 @@ import type {
 import {EventType} from '@shared/types/eventLog.types';
 import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
-import type {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import type {FeedType} from '@shared/types/feedSourceTypes.types';
 import type {ThemePreference} from '@shared/types/theme.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 
@@ -113,7 +113,7 @@ export function makeStringExperimentValueChangedEventLogItemData(args: {
 }
 
 export function makeSubscribedToFeedSourceEventLogItemData(args: {
-  readonly feedSourceType: FeedSourceType;
+  readonly feedSourceType: FeedType;
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
   readonly isNewSubscription: boolean;
 }): SubscribedToFeedSourceEventLogItemData {
@@ -127,7 +127,7 @@ export function makeSubscribedToFeedSourceEventLogItemData(args: {
 }
 
 export function makeUnsubscribedFromFeedSourceEventLogItemData(args: {
-  readonly feedSourceType: FeedSourceType;
+  readonly feedSourceType: FeedType;
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
 }): UnsubscribedFromFeedSourceEventLogItemData {
   const {feedSourceType, userFeedSubscriptionId} = args;

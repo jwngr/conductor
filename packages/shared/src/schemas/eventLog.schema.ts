@@ -3,7 +3,7 @@ import {z} from 'zod/v4';
 import {Environment} from '@shared/types/environment.types';
 import {EventType} from '@shared/types/eventLog.types';
 import {FeedItemActionType} from '@shared/types/feedItems.types';
-import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import {FeedType} from '@shared/types/feedSourceTypes.types';
 
 import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 import {ActorSchema} from '@shared/schemas/actors.schema';
@@ -65,7 +65,7 @@ export type SubscribedToFeedSourceEventLogItemDataFromStorage = z.infer<
 
 const SubscribedToFeedSourceEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
   eventType: z.literal(EventType.SubscribedToFeedSource),
-  feedSourceType: z.enum(FeedSourceType),
+  feedSourceType: z.enum(FeedType),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
   isNewSubscription: z.boolean(),
 });
@@ -76,7 +76,7 @@ export type UnsubscribedFromFeedSourceEventLogItemDataFromStorage = z.infer<
 
 export const UnsubscribedFromFeedSourceEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
   eventType: z.literal(EventType.UnsubscribedFromFeedSource),
-  feedSourceType: z.enum(FeedSourceType),
+  feedSourceType: z.enum(FeedType),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
 });
 

@@ -14,7 +14,7 @@ import type {
   RssFeedSource,
   YouTubeChannelFeedSource,
 } from '@shared/types/feedSources.types';
-import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import {FeedType} from '@shared/types/feedSourceTypes.types';
 import type {Result} from '@shared/types/results.types';
 
 import type {
@@ -29,17 +29,17 @@ import type {
  */
 export function toStorageFeedSource(feedSource: FeedSource): FeedSourceFromStorage {
   switch (feedSource.feedSourceType) {
-    case FeedSourceType.RSS:
+    case FeedType.RSS:
       return toStorageRssFeedSource(feedSource);
-    case FeedSourceType.YouTubeChannel:
+    case FeedType.YouTubeChannel:
       return toStorageYouTubeChannelFeedSource(feedSource);
-    case FeedSourceType.Interval:
+    case FeedType.Interval:
       return toStorageIntervalFeedSource(feedSource);
-    case FeedSourceType.Extension:
+    case FeedType.Extension:
       return EXTENSION_FEED_SOURCE;
-    case FeedSourceType.PocketExport:
+    case FeedType.PocketExport:
       return POCKET_EXPORT_FEED_SOURCE;
-    case FeedSourceType.PWA:
+    case FeedType.PWA:
       return PWA_FEED_SOURCE;
     default:
       assertNever(feedSource);
@@ -48,7 +48,7 @@ export function toStorageFeedSource(feedSource: FeedSource): FeedSourceFromStora
 
 function toStorageRssFeedSource(feedSource: RssFeedSource): RssFeedSourceFromStorage {
   return {
-    feedSourceType: FeedSourceType.RSS,
+    feedSourceType: FeedType.RSS,
     userFeedSubscriptionId: feedSource.userFeedSubscriptionId,
   };
 }
@@ -57,7 +57,7 @@ function toStorageYouTubeChannelFeedSource(
   feedSource: YouTubeChannelFeedSource
 ): YouTubeChannelFeedSourceFromStorage {
   return {
-    feedSourceType: FeedSourceType.YouTubeChannel,
+    feedSourceType: FeedType.YouTubeChannel,
     userFeedSubscriptionId: feedSource.userFeedSubscriptionId,
   };
 }
@@ -66,7 +66,7 @@ function toStorageIntervalFeedSource(
   feedSource: IntervalFeedSource
 ): IntervalFeedSourceFromStorage {
   return {
-    feedSourceType: FeedSourceType.Interval,
+    feedSourceType: FeedType.Interval,
     userFeedSubscriptionId: feedSource.userFeedSubscriptionId,
   };
 }
@@ -78,17 +78,17 @@ export function fromStorageFeedSource(
   feedSourceFromStorage: FeedSourceFromStorage
 ): Result<FeedSource, Error> {
   switch (feedSourceFromStorage.feedSourceType) {
-    case FeedSourceType.RSS:
+    case FeedType.RSS:
       return fromStorageRssFeedSource(feedSourceFromStorage);
-    case FeedSourceType.YouTubeChannel:
+    case FeedType.YouTubeChannel:
       return fromStorageYouTubeChannelFeedSource(feedSourceFromStorage);
-    case FeedSourceType.Interval:
+    case FeedType.Interval:
       return fromStorageIntervalFeedSource(feedSourceFromStorage);
-    case FeedSourceType.Extension:
+    case FeedType.Extension:
       return makeSuccessResult(EXTENSION_FEED_SOURCE);
-    case FeedSourceType.PocketExport:
+    case FeedType.PocketExport:
       return makeSuccessResult(POCKET_EXPORT_FEED_SOURCE);
-    case FeedSourceType.PWA:
+    case FeedType.PWA:
       return makeSuccessResult(PWA_FEED_SOURCE);
     default:
       assertNever(feedSourceFromStorage);
@@ -104,7 +104,7 @@ function fromStorageRssFeedSource(
   if (!parsedFeedSubIdResult.success) return parsedFeedSubIdResult;
 
   return makeSuccessResult({
-    feedSourceType: FeedSourceType.RSS,
+    feedSourceType: FeedType.RSS,
     userFeedSubscriptionId: parsedFeedSubIdResult.value,
   });
 }
@@ -118,7 +118,7 @@ function fromStorageYouTubeChannelFeedSource(
   if (!parsedFeedSubIdResult.success) return parsedFeedSubIdResult;
 
   return makeSuccessResult({
-    feedSourceType: FeedSourceType.YouTubeChannel,
+    feedSourceType: FeedType.YouTubeChannel,
     userFeedSubscriptionId: parsedFeedSubIdResult.value,
   });
 }
@@ -132,7 +132,7 @@ function fromStorageIntervalFeedSource(
   if (!parsedFeedSubIdResult.success) return parsedFeedSubIdResult;
 
   return makeSuccessResult({
-    feedSourceType: FeedSourceType.Interval,
+    feedSourceType: FeedType.Interval,
     userFeedSubscriptionId: parsedFeedSubIdResult.value,
   });
 }

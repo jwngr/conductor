@@ -1,35 +1,35 @@
-import type {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import type {FeedType} from '@shared/types/feedSourceTypes.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 
 interface BaseFeedSource {
-  readonly feedSourceType: FeedSourceType;
+  readonly feedSourceType: FeedType;
 }
 
 export interface RssFeedSource extends BaseFeedSource {
-  readonly feedSourceType: FeedSourceType.RSS;
+  readonly feedSourceType: FeedType.RSS;
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
 }
 
 export interface YouTubeChannelFeedSource extends BaseFeedSource {
-  readonly feedSourceType: FeedSourceType.YouTubeChannel;
+  readonly feedSourceType: FeedType.YouTubeChannel;
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
 }
 
 export interface IntervalFeedSource extends BaseFeedSource {
-  readonly feedSourceType: FeedSourceType.Interval;
+  readonly feedSourceType: FeedType.Interval;
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
 }
 
 export interface PwaFeedSource extends BaseFeedSource {
-  readonly feedSourceType: FeedSourceType.PWA;
+  readonly feedSourceType: FeedType.PWA;
 }
 
 export interface ExtensionFeedSource extends BaseFeedSource {
-  readonly feedSourceType: FeedSourceType.Extension;
+  readonly feedSourceType: FeedType.Extension;
 }
 
 export interface PocketExportFeedSource extends BaseFeedSource {
-  readonly feedSourceType: FeedSourceType.PocketExport;
+  readonly feedSourceType: FeedType.PocketExport;
 }
 
 export type FeedSource =

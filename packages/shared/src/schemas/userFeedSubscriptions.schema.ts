@@ -1,6 +1,6 @@
 import {z} from 'zod/v4';
 
-import {FeedSourceType, PERSISTED_FEED_SOURCE_TYPES} from '@shared/types/feedSourceTypes.types';
+import {FEED_TYPES_WITH_SUBSCRIPTIONS, FeedType} from '@shared/types/feedSourceTypes.types';
 
 import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 import {DeliveryScheduleSchema} from '@shared/schemas/deliverySchedules.schema';
@@ -10,7 +10,7 @@ import {YouTubeChannelIdSchema} from '@shared/schemas/youtube.schema';
 export const UserFeedSubscriptionIdSchema = z.uuid();
 
 const BaseUserFeedSubscriptionSchema = z.object({
-  feedSourceType: z.enum(PERSISTED_FEED_SOURCE_TYPES),
+  feedSourceType: z.enum(FEED_TYPES_WITH_SUBSCRIPTIONS),
   userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
   accountId: AccountIdSchema,
   isActive: z.boolean(),
@@ -22,7 +22,7 @@ const BaseUserFeedSubscriptionSchema = z.object({
 });
 
 const RssUserFeedSubscriptionSchema = BaseUserFeedSubscriptionSchema.extend({
-  feedSourceType: z.literal(FeedSourceType.RSS),
+  feedSourceType: z.literal(FeedType.RSS),
   url: z.url(),
   title: z.string(),
 });
@@ -30,7 +30,7 @@ const RssUserFeedSubscriptionSchema = BaseUserFeedSubscriptionSchema.extend({
 export type RssUserFeedSubscriptionFromStorage = z.infer<typeof RssUserFeedSubscriptionSchema>;
 
 const YouTubeChannelUserFeedSubscriptionSchema = BaseUserFeedSubscriptionSchema.extend({
-  feedSourceType: z.literal(FeedSourceType.YouTubeChannel),
+  feedSourceType: z.literal(FeedType.YouTubeChannel),
   channelId: YouTubeChannelIdSchema,
 });
 
@@ -39,7 +39,7 @@ export type YouTubeChannelUserFeedSubscriptionFromStorage = z.infer<
 >;
 
 const IntervalUserFeedSubscriptionSchema = BaseUserFeedSubscriptionSchema.extend({
-  feedSourceType: z.literal(FeedSourceType.Interval),
+  feedSourceType: z.literal(FeedType.Interval),
   intervalSeconds: z.number().positive().int(),
 });
 

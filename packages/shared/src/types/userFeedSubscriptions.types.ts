@@ -1,6 +1,6 @@
 import type {AccountId} from '@shared/types/accounts.types';
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
-import type {FeedSourceType, PersistedFeedSourceType} from '@shared/types/feedSourceTypes.types';
+import type {FeedType, FeedTypeWithSubscription} from '@shared/types/feedSourceTypes.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 import type {YouTubeChannelId} from '@shared/types/youtube.types';
 
@@ -23,7 +23,7 @@ interface BaseUserFeedSubscription extends BaseStoreItem {
   /** The unique identifier for this subscription. */
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
   /** The type of feed source this subscription is for. */
-  readonly feedSourceType: PersistedFeedSourceType;
+  readonly feedSourceType: FeedTypeWithSubscription;
   /** The account that owns this subscription. */
   readonly accountId: AccountId;
   /** Whether this subscription is active. Inactive subscriptions do not generate new feed items. */
@@ -35,18 +35,18 @@ interface BaseUserFeedSubscription extends BaseStoreItem {
 }
 
 export interface RssUserFeedSubscription extends BaseUserFeedSubscription {
-  readonly feedSourceType: FeedSourceType.RSS;
+  readonly feedSourceType: FeedType.RSS;
   readonly url: string;
   readonly title: string;
 }
 
 export interface YouTubeChannelUserFeedSubscription extends BaseUserFeedSubscription {
-  readonly feedSourceType: FeedSourceType.YouTubeChannel;
+  readonly feedSourceType: FeedType.YouTubeChannel;
   readonly channelId: YouTubeChannelId;
 }
 
 export interface IntervalUserFeedSubscription extends BaseUserFeedSubscription {
-  readonly feedSourceType: FeedSourceType.Interval;
+  readonly feedSourceType: FeedType.Interval;
   readonly intervalSeconds: number;
 }
 

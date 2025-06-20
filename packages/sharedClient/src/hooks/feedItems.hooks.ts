@@ -17,7 +17,7 @@ import {assertNever} from '@shared/lib/utils.shared';
 import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {AsyncState} from '@shared/types/asyncState.types';
 import type {FeedItem, FeedItemId, XkcdFeedItem} from '@shared/types/feedItems.types';
-import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import {FeedType} from '@shared/types/feedSourceTypes.types';
 import type {
   UserFeedSubscription,
   UserFeedSubscriptionId,
@@ -87,14 +87,14 @@ function filterFeedItemsByDeliverySchedules(args: {
 
   return feedItems.filter((feedItem) => {
     switch (feedItem.feedSource.feedSourceType) {
-      case FeedSourceType.PWA:
-      case FeedSourceType.Extension:
-      case FeedSourceType.PocketExport:
+      case FeedType.PWA:
+      case FeedType.Extension:
+      case FeedType.PocketExport:
         // These sources are always shown.
         return true;
-      case FeedSourceType.YouTubeChannel:
-      case FeedSourceType.Interval:
-      case FeedSourceType.RSS: {
+      case FeedType.YouTubeChannel:
+      case FeedType.Interval:
+      case FeedType.RSS: {
         // Some sources have delivery schedules which determine when they are shown.
         const feedSubscription = getFeedSubscription(feedItem.feedSource.userFeedSubscriptionId);
 

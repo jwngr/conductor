@@ -9,7 +9,7 @@ import type {
   RssFeedSource,
   YouTubeChannelFeedSource,
 } from '@shared/types/feedSources.types';
-import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import {FeedType} from '@shared/types/feedSourceTypes.types';
 import type {
   IntervalUserFeedSubscription,
   RssUserFeedSubscription,
@@ -18,15 +18,15 @@ import type {
 } from '@shared/types/userFeedSubscriptions.types';
 
 export const PWA_FEED_SOURCE: PwaFeedSource = {
-  feedSourceType: FeedSourceType.PWA,
+  feedSourceType: FeedType.PWA,
 };
 
 export const EXTENSION_FEED_SOURCE: ExtensionFeedSource = {
-  feedSourceType: FeedSourceType.Extension,
+  feedSourceType: FeedType.Extension,
 };
 
 export const POCKET_EXPORT_FEED_SOURCE: PocketExportFeedSource = {
-  feedSourceType: FeedSourceType.PocketExport,
+  feedSourceType: FeedType.PocketExport,
 };
 
 export function makeRssFeedSource(args: {
@@ -34,7 +34,7 @@ export function makeRssFeedSource(args: {
 }): RssFeedSource {
   const {userFeedSubscription} = args;
   return {
-    feedSourceType: FeedSourceType.RSS,
+    feedSourceType: FeedType.RSS,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
   };
 }
@@ -44,7 +44,7 @@ export function makeYouTubeChannelFeedSource(args: {
 }): YouTubeChannelFeedSource {
   const {userFeedSubscription} = args;
   return {
-    feedSourceType: FeedSourceType.YouTubeChannel,
+    feedSourceType: FeedType.YouTubeChannel,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
   };
 }
@@ -54,24 +54,24 @@ export function makeIntervalFeedSource(args: {
 }): IntervalFeedSource {
   const {userFeedSubscription} = args;
   return {
-    feedSourceType: FeedSourceType.Interval,
+    feedSourceType: FeedType.Interval,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
   };
 }
 
-export function getNameForFeedSourceType(feedSourceType: FeedSourceType): string {
+export function getNameForFeedSourceType(feedSourceType: FeedType): string {
   switch (feedSourceType) {
-    case FeedSourceType.RSS:
+    case FeedType.RSS:
       return 'RSS';
-    case FeedSourceType.YouTubeChannel:
+    case FeedType.YouTubeChannel:
       return 'YouTube';
-    case FeedSourceType.Interval:
+    case FeedType.Interval:
       return 'Interval';
-    case FeedSourceType.PWA:
+    case FeedType.PWA:
       return 'PWA';
-    case FeedSourceType.Extension:
+    case FeedType.Extension:
       return 'Extension';
-    case FeedSourceType.PocketExport:
+    case FeedType.PocketExport:
       return 'Pocket';
     default:
       assertNever(feedSourceType);
@@ -82,13 +82,13 @@ export function getFeedSubscriptionIdForFeedSource(
   feedSource: FeedSource
 ): UserFeedSubscriptionId | null {
   switch (feedSource.feedSourceType) {
-    case FeedSourceType.RSS:
-    case FeedSourceType.YouTubeChannel:
-    case FeedSourceType.Interval:
+    case FeedType.RSS:
+    case FeedType.YouTubeChannel:
+    case FeedType.Interval:
       return feedSource.userFeedSubscriptionId;
-    case FeedSourceType.PWA:
-    case FeedSourceType.Extension:
-    case FeedSourceType.PocketExport:
+    case FeedType.PWA:
+    case FeedType.Extension:
+    case FeedType.PocketExport:
       return null;
     default:
       assertNever(feedSource);

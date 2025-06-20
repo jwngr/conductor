@@ -7,7 +7,7 @@
 /**
  * The origin of the feed item. Where the feed item came from.
  */
-export enum FeedSourceType {
+export enum FeedType {
   /** RSS feeds. */
   RSS = 'RSS',
   /** YouTube channels. */
@@ -23,15 +23,15 @@ export enum FeedSourceType {
 }
 
 /**
- * List of {@link FeedSourceType} that have additional state persisted along with the type.
+ * List of {@link FeedType} that have a {@link UserFeedSubscription} associated with them.
  */
-export const PERSISTED_FEED_SOURCE_TYPES = [
-  FeedSourceType.RSS,
-  FeedSourceType.YouTubeChannel,
-  FeedSourceType.Interval,
+export const FEED_TYPES_WITH_SUBSCRIPTIONS = [
+  FeedType.RSS,
+  FeedType.YouTubeChannel,
+  FeedType.Interval,
 ] as const;
 
 /**
- * Subset of {@link FeedSourceType} that have additional state persisted along with the type.
+ * Subset of {@link FeedType} that have a {@link UserFeedSubscription} associated with them.
  */
-export type PersistedFeedSourceType = (typeof PERSISTED_FEED_SOURCE_TYPES)[number];
+export type FeedTypeWithSubscription = (typeof FEED_TYPES_WITH_SUBSCRIPTIONS)[number];

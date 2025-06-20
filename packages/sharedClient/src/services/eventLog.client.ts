@@ -25,7 +25,7 @@ import type {Environment} from '@shared/types/environment.types';
 import type {EventId, EventLogItem, EventLogItemData} from '@shared/types/eventLog.types';
 import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
-import type {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import type {FeedType} from '@shared/types/feedSourceTypes.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {ThemePreference} from '@shared/types/theme.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
@@ -189,7 +189,7 @@ export class ClientEventLogService {
   }
 
   public async logSubscribedToFeedSourceEvent(args: {
-    readonly feedSourceType: FeedSourceType;
+    readonly feedSourceType: FeedType;
     readonly userFeedSubscriptionId: UserFeedSubscriptionId;
     readonly isNewSubscription: boolean;
   }): AsyncResult<EventLogItem, Error> {
@@ -204,7 +204,7 @@ export class ClientEventLogService {
   }
 
   public async logUnsubscribedFromFeedSourceEvent(args: {
-    readonly feedSourceType: FeedSourceType;
+    readonly feedSourceType: FeedType;
     readonly userFeedSubscriptionId: UserFeedSubscriptionId;
   }): AsyncResult<EventLogItem, Error> {
     const {feedSourceType, userFeedSubscriptionId} = args;

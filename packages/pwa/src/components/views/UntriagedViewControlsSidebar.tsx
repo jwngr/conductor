@@ -20,7 +20,7 @@ import {
 } from '@shared/lib/views.shared';
 
 import type {FeedItem, FeedItemContentType} from '@shared/types/feedItems.types';
-import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import {FeedType} from '@shared/types/feedSourceTypes.types';
 import {IconName} from '@shared/types/icons.types';
 import type {TagId} from '@shared/types/tags.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
@@ -107,11 +107,11 @@ const ControlsSidebarTagsSection: React.FC<{
 
 const ControlsSidebarFeedSourcesSection: React.FC<{
   readonly feedItems: readonly FeedItem[];
-  readonly sourceTypesToFilterBy: Set<FeedSourceType>;
-  readonly onFeedSourceClick: Consumer<FeedSourceType>;
+  readonly sourceTypesToFilterBy: Set<FeedType>;
+  readonly onFeedSourceClick: Consumer<FeedType>;
 }> = ({feedItems, sourceTypesToFilterBy, onFeedSourceClick}) => {
   return (
-    <ControlsSidebarFilterCriteriaSection<FeedSourceType>
+    <ControlsSidebarFilterCriteriaSection<FeedType>
       title="Sources"
       feedItems={feedItems}
       activeCriteria={sourceTypesToFilterBy}
@@ -136,11 +136,11 @@ const ControlsSidebarFeedSubscriptionsSection: React.FC<{
     const feedSubscription = getFeedSubscription(feedSubscriptionId);
     if (!feedSubscription) return feedSubscriptionId;
     switch (feedSubscription.feedSourceType) {
-      case FeedSourceType.RSS:
+      case FeedType.RSS:
         return feedSubscription.title;
-      case FeedSourceType.YouTubeChannel:
+      case FeedType.YouTubeChannel:
         return feedSubscription.channelId;
-      case FeedSourceType.Interval:
+      case FeedType.Interval:
         return `Interval (${feedSubscription.intervalSeconds}s)`;
       default:
         assertNever(feedSubscription);
@@ -290,13 +290,13 @@ export const UntriagedViewControlsSidebar: React.FC<{
   readonly feedItems: readonly FeedItem[];
   readonly sortBy: readonly ViewSortByOption[];
   readonly groupBy: readonly ViewGroupByOption[];
-  readonly sourceTypesToFilterBy: Set<FeedSourceType>;
+  readonly sourceTypesToFilterBy: Set<FeedType>;
   readonly contentTypesToFilterBy: Set<FeedItemContentType>;
   readonly tagIdsToFilterBy: Set<TagId>;
   readonly subscriptionIdsToFilterBy: Set<UserFeedSubscriptionId>;
   readonly onSortByChange: Consumer<ViewSortByOption>;
   readonly onGroupByChange: Consumer<ViewGroupByField>;
-  readonly onSourceTypeClick: Consumer<FeedSourceType>;
+  readonly onSourceTypeClick: Consumer<FeedType>;
   readonly onContentTypeClick: Consumer<FeedItemContentType>;
   readonly onTagClick: Consumer<TagId>;
   readonly onSubscriptionClick: Consumer<UserFeedSubscriptionId>;

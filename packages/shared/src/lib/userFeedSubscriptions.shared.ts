@@ -2,7 +2,7 @@ import {IMMEDIATE_DELIVERY_SCHEDULE} from '@shared/lib/deliverySchedules.shared'
 import {makeUuid} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import {FeedType} from '@shared/types/feedSourceTypes.types';
 import type {
   IntervalUserFeedSubscription,
   RssUserFeedSubscription,
@@ -26,7 +26,7 @@ export function makeRssUserFeedSubscription(args: {
   const {accountId, url, title} = args;
 
   return {
-    feedSourceType: FeedSourceType.RSS,
+    feedSourceType: FeedType.RSS,
     url,
     title,
     userFeedSubscriptionId: makeUserFeedSubscriptionId(),
@@ -46,7 +46,7 @@ export function makeYouTubeChannelUserFeedSubscription(args: {
   const {accountId, channelId} = args;
 
   return {
-    feedSourceType: FeedSourceType.YouTubeChannel,
+    feedSourceType: FeedType.YouTubeChannel,
     channelId,
     userFeedSubscriptionId: makeUserFeedSubscriptionId(),
     accountId,
@@ -65,7 +65,7 @@ export function makeIntervalUserFeedSubscription(args: {
   const {accountId, intervalSeconds} = args;
 
   return {
-    feedSourceType: FeedSourceType.Interval,
+    feedSourceType: FeedType.Interval,
     intervalSeconds,
     userFeedSubscriptionId: makeUserFeedSubscriptionId(),
     accountId,

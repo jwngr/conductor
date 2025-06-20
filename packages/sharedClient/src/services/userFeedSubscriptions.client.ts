@@ -29,7 +29,7 @@ import {
 } from '@shared/parsers/userFeedSubscriptions.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import {FeedType} from '@shared/types/feedSourceTypes.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {
   IntervalUserFeedSubscription,
@@ -169,7 +169,7 @@ export class ClientUserFeedSubscriptionsService {
   ): AsyncResult<RssUserFeedSubscription | null, Error> {
     const result = await this.collectionService.fetchFirstQueryDoc([
       firestoreWhere('accountId', '==', this.accountId),
-      firestoreWhere('feedSourceType', '==', FeedSourceType.RSS),
+      firestoreWhere('feedSourceType', '==', FeedType.RSS),
       firestoreWhere('url', '==', url.href),
     ]);
     if (!result.success) return result;
@@ -183,7 +183,7 @@ export class ClientUserFeedSubscriptionsService {
   ): AsyncResult<YouTubeChannelUserFeedSubscription | null, Error> {
     const result = await this.collectionService.fetchFirstQueryDoc([
       firestoreWhere('accountId', '==', this.accountId),
-      firestoreWhere('feedSourceType', '==', FeedSourceType.YouTubeChannel),
+      firestoreWhere('feedSourceType', '==', FeedType.YouTubeChannel),
       firestoreWhere('channelId', '==', channelId),
     ]);
     if (!result.success) return result;

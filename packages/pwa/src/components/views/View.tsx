@@ -14,7 +14,7 @@ import {Views} from '@shared/lib/views.shared';
 import {AsyncStatus} from '@shared/types/asyncState.types';
 import {FeedItemContentType} from '@shared/types/feedItems.types';
 import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
-import type {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import type {FeedType} from '@shared/types/feedSourceTypes.types';
 import type {TagId} from '@shared/types/tags.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {Supplier} from '@shared/types/utils.types';
@@ -98,7 +98,7 @@ function compareFeedItems(args: {
 function useFilteredFeedItems(
   feedItems: FeedItem[],
   filterByOptions: {
-    readonly sourceTypesToFilterBy: Set<FeedSourceType>;
+    readonly sourceTypesToFilterBy: Set<FeedType>;
     readonly contentTypesToFilterBy: Set<FeedItemContentType>;
     readonly tagIdsToFilterBy: Set<TagId>;
     readonly subscriptionIdsToFilterBy: Set<UserFeedSubscriptionId>;
@@ -326,7 +326,7 @@ const ViewListItem: React.FC<{
 interface LoadedViewListState {
   readonly sortBy: ViewSortByOption[];
   readonly groupBy: ViewGroupByOption[];
-  readonly sourceTypesToFilterBy: Set<FeedSourceType>;
+  readonly sourceTypesToFilterBy: Set<FeedType>;
   readonly contentTypesToFilterBy: Set<FeedItemContentType>;
   readonly tagIdsToFilterBy: Set<TagId>;
   readonly subscriptionIdsToFilterBy: Set<UserFeedSubscriptionId>;
@@ -345,7 +345,7 @@ const LoadedViewList: React.FC<{
     return {
       sortBy: [...defaultViewConfig.sortBy],
       groupBy: [...defaultViewConfig.groupBy],
-      sourceTypesToFilterBy: new Set<FeedSourceType>(),
+      sourceTypesToFilterBy: new Set<FeedType>(),
       contentTypesToFilterBy: new Set<FeedItemContentType>(),
       tagIdsToFilterBy: new Set<TagId>(),
       subscriptionIdsToFilterBy: new Set<UserFeedSubscriptionId>(),
@@ -357,7 +357,7 @@ const LoadedViewList: React.FC<{
   const groupByField = viewOptions.groupBy.length === 0 ? null : viewOptions.groupBy[0].field;
   const groupedItems = useGroupedFeedItems(sortedItems, groupByField);
 
-  const handleFilterBySourceTypeChange = (criteria: FeedSourceType): void => {
+  const handleFilterBySourceTypeChange = (criteria: FeedType): void => {
     setViewOptions((prev: LoadedViewListState) => {
       const newSet = new Set(prev.sourceTypesToFilterBy);
       if (newSet.has(criteria)) {

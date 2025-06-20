@@ -3,7 +3,7 @@ import type {Actor} from '@shared/types/actors.types';
 import type {Environment} from '@shared/types/environment.types';
 import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
-import type {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import type {FeedType} from '@shared/types/feedSourceTypes.types';
 import type {ThemePreference} from '@shared/types/theme.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
@@ -63,7 +63,7 @@ export interface StringExperimentValueChangedEventLogItemData extends BaseEventL
 
 export interface SubscribedToFeedSourceEventLogItemData extends BaseEventLogItemData {
   readonly eventType: EventType.SubscribedToFeedSource;
-  readonly feedSourceType: FeedSourceType;
+  readonly feedSourceType: FeedType;
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
   /** Whether this is a new subscription or resubscribing to an inactive one. */
   readonly isNewSubscription: boolean;
@@ -71,7 +71,7 @@ export interface SubscribedToFeedSourceEventLogItemData extends BaseEventLogItem
 
 export interface UnsubscribedFromFeedSourceEventLogItemData extends BaseEventLogItemData {
   readonly eventType: EventType.UnsubscribedFromFeedSource;
-  readonly feedSourceType: FeedSourceType;
+  readonly feedSourceType: FeedType;
   readonly userFeedSubscriptionId: UserFeedSubscriptionId;
 }
 
