@@ -202,11 +202,6 @@ function fromStorageYouTubeChannelFeedSubscription(args: {
   const parsedChannelIdResult = parseYouTubeChannelId(feedSubscriptionFromStorage.channelId);
   if (!parsedChannelIdResult.success) return parsedChannelIdResult;
 
-  const parsedLifecycleStateResult = parseFeedSubscriptionLifecycleState(
-    feedSubscriptionFromStorage.lifecycleState
-  );
-  if (!parsedLifecycleStateResult.success) return parsedLifecycleStateResult;
-
   return makeSuccessResult({
     feedType: FeedType.YouTubeChannel,
     channelId: parsedChannelIdResult.value,
@@ -233,11 +228,6 @@ function fromStorageIntervalFeedSubscription(args: {
     deliverySchedule,
     lifecycleState,
   } = args;
-
-  const parsedLifecycleStateResult = parseFeedSubscriptionLifecycleState(
-    feedSubscriptionFromStorage.lifecycleState
-  );
-  if (!parsedLifecycleStateResult.success) return parsedLifecycleStateResult;
 
   return makeSuccessResult({
     feedType: FeedType.Interval,
