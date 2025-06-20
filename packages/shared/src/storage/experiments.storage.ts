@@ -1,11 +1,5 @@
-import {arrayToRecord} from '@shared/lib/arrayUtils.shared';
 import {ALL_EXPERIMENT_DEFINITIONS} from '@shared/lib/experimentDefinitions.shared';
-import {
-  objectEntries,
-  objectFilterKeys,
-  objectFromEntries,
-  objectMapValues,
-} from '@shared/lib/objectUtils.shared';
+import {objectFilterKeys, objectMapValues} from '@shared/lib/objectUtils.shared';
 import {parseStorageTimestamp} from '@shared/lib/parser.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {assertNever} from '@shared/lib/utils.shared';
@@ -160,16 +154,19 @@ export function fromStorageAccountExperimentsState(
   if (!parsedAccountId.success) return parsedAccountId;
   const accountId = parsedAccountId.value;
 
-  const filteredOverrides = objectFilterKeys(
+  const filteredOverrides = objectFilterKeys<string, ExperimentOverrideFromStorage>(
     accountExperimentsStateFromStorage.experimentOverrides,
     (key) => key in ALL_EXPERIMENT_DEFINITIONS
   );
 
-  const experimentOverrides = objectMapValues(filteredOverrides, fromStorageExperimentOverride);
+  const finalExperimentOverrides = objectMapValues(
+    filteredOverrides,
+    fromStorageExperimentOverride
+  );
 
   return makeSuccessResult({
     accountId,
-    experimentOverrides,
+    experimentOverrides: finalExperimentOverrides,
     accountVisibility: accountExperimentsStateFromStorage.accountVisibility,
     createdTime: parseStorageTimestamp(accountExperimentsStateFromStorage.createdTime),
     lastUpdatedTime: parseStorageTimestamp(accountExperimentsStateFromStorage.lastUpdatedTime),
