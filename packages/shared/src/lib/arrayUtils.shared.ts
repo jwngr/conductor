@@ -24,22 +24,11 @@ export function arrayFilter<T>(
  * Typed helper for mapping over an array and returning a new array of values transformed by
  * `mapper`.
  */
-export function arrayMap<Start, End>(arr: Start[], mapper: Func<Start, End>): End[] {
+export function arrayMap<Start, End>(
+  arr: Start[],
+  mapper: (value: Start, index: number, array: Start[]) => End
+): End[] {
   return arr.map(mapper);
-}
-
-/**
- * Typed helper for checking if any values in an array pass the `predicate`.
- */
-export function arraySome<T>(arr: T[], predicate: Func<T, boolean>): boolean {
-  return arr.some(predicate);
-}
-
-/**
- * Typed helper for checking if all values in an array pass the `predicate`.
- */
-export function arrayEvery<T>(arr: T[], predicate: Func<T, boolean>): boolean {
-  return arr.every(predicate);
 }
 
 /**
