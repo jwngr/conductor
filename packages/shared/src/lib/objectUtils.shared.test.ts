@@ -84,7 +84,7 @@ describe('objectOmitUndefined', () => {
   });
 
   test('should return same object if no undefined values', () => {
-    const obj: Record<string, unknown> = {
+    const obj = {
       a: 1,
       b: 2,
       c: 'test',
@@ -119,7 +119,7 @@ describe('objectOmitUndefined', () => {
 
 describe('objectKeys', () => {
   test('should return an array of keys', () => {
-    const obj: Record<string, unknown> = {a: 1, b: 'two', c: true};
+    const obj = {a: 1, b: 'two', c: true};
     expect(objectKeys(obj)).toEqual(['a', 'b', 'c']);
   });
 
@@ -136,7 +136,7 @@ describe('objectKeys', () => {
 
 describe('objectValues', () => {
   test('should return an array of values', () => {
-    const obj: Record<string, unknown> = {a: 1, b: 'two', c: true};
+    const obj = {a: 1, b: 'two', c: true};
     expect(objectValues(obj)).toEqual([1, 'two', true]);
   });
 
@@ -146,14 +146,14 @@ describe('objectValues', () => {
   });
 
   test('should handle objects with undefined and null values', () => {
-    const obj: Record<string, unknown> = {a: undefined, b: null, c: 0};
+    const obj = {a: undefined, b: null, c: 0};
     expect(objectValues(obj)).toEqual([undefined, null, 0]);
   });
 });
 
 describe('objectEntries', () => {
   test('should return an array of [key, value] pairs', () => {
-    const obj: Record<string, unknown> = {a: 1, b: 'two', c: true};
+    const obj = {a: 1, b: 'two', c: true};
     expect(objectEntries(obj)).toEqual([
       ['a', 1],
       ['b', 'two'],
@@ -195,7 +195,7 @@ describe('objectForEachKey', () => {
 
 describe('objectForEachValue', () => {
   test('should call callback for each value', () => {
-    const obj: Record<string, unknown> = {a: 1, b: 'two'};
+    const obj = {a: 1, b: 'two'};
     const mockCallback = jest.fn();
     objectForEachValue(obj, mockCallback);
     expect(mockCallback).toHaveBeenCalledTimes(2);
@@ -213,7 +213,7 @@ describe('objectForEachValue', () => {
 
 describe('objectForEachEntry', () => {
   test('should call callback for each key-value pair', () => {
-    const obj: Record<string, unknown> = {a: 1, b: 'two'};
+    const obj = {a: 1, b: 'two'};
     const mockCallback = jest.fn();
     objectForEachEntry(obj, mockCallback);
     expect(mockCallback).toHaveBeenCalledTimes(2);
@@ -344,7 +344,7 @@ describe('objectMapEntries', () => {
   });
 
   test('should handle different value types', () => {
-    const obj: Record<string, unknown> = {a: 1, b: 'two', c: true};
+    const obj = {a: 1, b: 'two', c: true};
     const result = objectMapEntries(obj, (key, value) => ({key, value}));
     expect(result).toEqual([
       {key: 'a', value: 1},

@@ -16,9 +16,9 @@ export function objectFromEntries<Key extends ObjectKey, Value>(
 /**
  * Omits all undefined values from the provided object.
  */
-export function objectOmitUndefined<Key extends ObjectKey, Value>(
-  obj: Partial<Record<Key, Value>>
-): Partial<Record<Key, Value>> {
+export function objectOmitUndefined<T extends object>(
+  obj: T
+): Record<keyof T, Exclude<T[keyof T], undefined>> {
   const originalEntries = objectEntries(obj);
   const filteredEntries = originalEntries.filter(isDefined);
   return objectFromEntries(filteredEntries);
@@ -41,10 +41,10 @@ export function objectValues<Value>(obj: Partial<Record<ObjectKey, Value>>): Val
 /**
  * Typed helper for getting all entries from an object.
  */
-export function objectEntries<Key extends ObjectKey, Value>(
-  obj: Partial<Record<Key, Value>>
-): Array<[Key, Value]> {
-  return Object.entries(obj) as Array<[Key, Value]>;
+export function objectEntries<T extends object>(
+  obj: T
+): Array<[keyof T, Exclude<T[keyof T], undefined>]> {
+  return Object.entries(obj) as Array<[keyof T, Exclude<T[keyof T], undefined>]>;
 }
 
 /**
@@ -145,9 +145,9 @@ export function objectMapValues<StartValue, EndValue>(
  * Typed helper for mapping over object entries and returning an array of values transformed by
  * `mapper`.
  */
-export function objectMapEntries<Key extends ObjectKey, Value, Result>(
-  obj: Partial<Record<Key, Value>>,
-  mapper: (key: Key, value: Value) => Result
+export function objectMapEntries<T extends object, Result>(
+  obj: T,
+  mapper: (key: keyof T, value: T[keyof T]) => Result
 ): Result[] {
   const entries = objectEntries(obj);
   return entries.map(([key, value]) => mapper(key, value));
