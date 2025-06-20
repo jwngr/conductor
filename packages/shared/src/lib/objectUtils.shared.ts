@@ -1,5 +1,10 @@
-import {arrayFilter, arrayForEach, arrayMap, arrayReduce} from '@shared/lib/arrayUtils.shared';
-import {isDefined} from '@shared/lib/utils.shared';
+import {
+  arrayFilter,
+  arrayFilterUndefined,
+  arrayForEach,
+  arrayMap,
+  arrayReduce,
+} from '@shared/lib/arrayUtils.shared';
 
 import type {Func} from '@shared/types/utils.types';
 
@@ -12,7 +17,7 @@ export function objectOmitUndefined<T extends object>(
   obj: T
 ): Record<keyof T, Exclude<T[keyof T], undefined>> {
   const originalEntries = objectEntries(obj);
-  const filteredEntries = originalEntries.filter(isDefined);
+  const filteredEntries = arrayFilterUndefined(originalEntries);
   return Object.fromEntries(filteredEntries) as Record<keyof T, Exclude<T[keyof T], undefined>>;
 }
 
