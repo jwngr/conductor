@@ -43,14 +43,6 @@ export function assertNever(
 }
 
 /**
- * Logs an error if the provided value is not of type `never`. This is useful for exhaustive
- * switch statements. In most cases, use {@link assertNever} instead.
- */
-export function safeAssertNever(val: never): void {
-  logger.error(new Error('safeAssertNever received non-empty value'), {val});
-}
-
-/**
  * Runs all of the provided sync task suppliers in batches of a given size. If the number of tasks
  * is less than the batch size, all tasks are run in parallel. Tasks are not executed until this
  * function is called.
