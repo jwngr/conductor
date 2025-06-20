@@ -1,3 +1,5 @@
+import {isDefined} from '@shared/lib/utils.shared';
+
 import type {Func} from '@shared/types/utils.types';
 
 type ObjectKey = string | number | symbol;
@@ -9,6 +11,17 @@ export function objectFromEntries<Key extends ObjectKey, Value>(
   entries: Array<[Key, Value]>
 ): Record<Key, Value> {
   return Object.fromEntries(entries) as Record<Key, Value>;
+}
+
+/**
+ * Omits all undefined values from the provided object.
+ */
+export function objectOmitUndefined<Key extends ObjectKey, Value>(
+  obj: Partial<Record<Key, Value>>
+): Partial<Record<Key, Value>> {
+  const originalEntries = objectEntries(obj);
+  const filteredEntries = originalEntries.filter(isDefined);
+  return objectFromEntries(filteredEntries);
 }
 
 /**
@@ -100,15 +113,16 @@ export function objectFilterEntries<Key extends ObjectKey, Value>(
 /**
  * Typed helper for mapping over object keys and returning a new object with transformed keys.
  */
-export function objectMapKeys<Key extends ObjectKey, Value, NewKey extends ObjectKey>(
-  obj: Partial<Record<Key, Value>>,
-  mapper: (key: Key) => NewKey
-): Record<NewKey, Value> {
-  const entries = objectEntries(obj);
-  return objectFromEntries(entries.map(([key, value]) => [mapper(key), value])) as Record<
-    NewKey,
-    Value
-  >;
+export function objectMapKeys<StartKey extends ObjectKey, Value, EndKey extends ObjectKey>(
+  obj: Partial<Record<StartKey, Value>>,
+  mapper: Func<StartKey, EndKey>
+): Record<EndKey, Value> {
+  const originalEntries = objectEntries(obj);
+  const updatedEntries: Array<[EndKey, Value]> = originalEntries.map(([key, value]) => [
+    mapper(key),
+    value,
+  ]);
+  return objectFromEntries(updatedEntries);
 }
 
 /**
@@ -119,11 +133,12 @@ export function objectMapValues<StartValue, EndValue>(
   obj: Partial<Record<ObjectKey, StartValue>>,
   mapper: Func<StartValue, EndValue>
 ): Record<ObjectKey, EndValue> {
-  const entries = Object.entries(obj).map(([key, value]) => [
-    key as ObjectKey,
-    mapper(value as StartValue),
+  const originalEntries = objectEntries(obj);
+  const updatedEntries: Array<[ObjectKey, EndValue]> = originalEntries.map(([key, value]) => [
+    key,
+    mapper(value),
   ]);
-  return Object.fromEntries(entries);
+  return objectFromEntries(updatedEntries);
 }
 
 /**
@@ -136,13 +151,6 @@ export function objectMapEntries<Key extends ObjectKey, Value, Result>(
 ): Result[] {
   const entries = objectEntries(obj);
   return entries.map(([key, value]) => mapper(key, value));
-}
-
-/**
- * Omits all undefined values from the provided object.
- */
-export function objectOmitUndefined<T extends object>(obj: T): T {
-  return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined)) as T;
 }
 
 /**
