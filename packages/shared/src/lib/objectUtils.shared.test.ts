@@ -12,6 +12,7 @@ import {
   objectMapValues,
   objectOmitUndefined,
   objectReduceValues,
+  objectSize,
   objectValues,
 } from '@shared/lib/objectUtils.shared';
 
@@ -60,6 +61,23 @@ describe('objectOmitUndefined', () => {
       a: 1,
       b: null,
     });
+  });
+});
+
+describe('objectSize', () => {
+  test('should return zero for an empty object', () => {
+    const obj = {};
+    expect(objectSize(obj)).toEqual(0);
+  });
+
+  test('should return the size of the object', () => {
+    const obj = {a: 1, b: 'two', c: true};
+    expect(objectSize(obj)).toEqual(3);
+  });
+
+  test('should handle mixed keys and values', () => {
+    const obj = {1: 'one', 2: null, 3: undefined, a: 1, b: ['two', 8], c: true};
+    expect(objectSize(obj)).toEqual(6);
   });
 });
 

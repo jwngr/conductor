@@ -29,14 +29,12 @@ import type {Consumer} from '@shared/types/utils.types';
 import type {ViewGroupByOption, ViewSortByOption} from '@shared/types/views.types';
 import {ViewGroupByField, ViewSortByField} from '@shared/types/views.types';
 
-import {useLoggedInUserFeedSubscriptions} from '@sharedClient/hooks/userFeedSubscriptions.hooks';
+import {useUserFeedSubscriptionsStore} from '@sharedClient/stores/UserFeedSubscriptionsStore';
 
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {H6, P} from '@src/components/atoms/Text';
 import * as styles from '@src/components/views/UntriagedViewControlsSidebar.css';
-
-import {firebaseService} from '@src/lib/firebase.pwa';
 
 const ControlsSidebarFilterCriteriaSection = <T extends string>(args: {
   readonly title: string;
@@ -133,16 +131,15 @@ const ControlsSidebarFeedSubscriptionsSection: React.FC<{
   readonly subscriptionIdsToFilterBy: Set<UserFeedSubscriptionId>;
   readonly onFeedSubscriptionClick: Consumer<UserFeedSubscriptionId>;
 }> = ({feedItems, subscriptionIdsToFilterBy, onFeedSubscriptionClick}) => {
-  const feedSubscriptionsState = useLoggedInUserFeedSubscriptions({firebaseService});
+  const {recentSubscriptionsCacheState} = useUserFeedSubscriptionsStore();
 
   const getCriteriaName = (feedSubscriptionId: UserFeedSubscriptionId): string => {
-    // TODO: Get feed subscription name from store.
-    switch (feedSubscriptionsState.status) {
+    switch (recentSubscriptionsCacheState.status) {
       case AsyncStatus.Idle:
       case AsyncStatus.Pending:
         return 'Loading...';
       case AsyncStatus.Success: {
-        const allFeedSubscriptions = feedSubscriptionsState.value;
+        const allFeedSubscriptions = recentSubscriptionsCacheState.value;
         const feedSubscription = allFeedSubscriptions[feedSubscriptionId];
         if (!feedSubscription) return feedSubscriptionId;
         switch (feedSubscription.feedSourceType) {
@@ -160,7 +157,7 @@ const ControlsSidebarFeedSubscriptionsSection: React.FC<{
       case AsyncStatus.Error:
         return feedSubscriptionId;
       default:
-        assertNever(feedSubscriptionsState);
+        assertNever(recentSubscriptionsCacheState);
     }
   };
 

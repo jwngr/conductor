@@ -27,6 +27,8 @@ import type {
 } from '@shared/types/userFeedSubscriptions.types';
 import type {ViewType} from '@shared/types/views.types';
 
+import {useUserFeedSubscriptionsStore} from '@sharedClient/stores/UserFeedSubscriptionsStore';
+
 import {ClientFeedItemsService} from '@sharedClient/services/feedItems.client';
 import type {ClientFirebaseService} from '@sharedClient/services/firebase.client';
 
@@ -34,7 +36,6 @@ import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 import {useEventLogService} from '@sharedClient/hooks/eventLog.hooks';
 import {useIsMounted} from '@sharedClient/hooks/lifecycle.hooks';
-import {useLoggedInUserFeedSubscriptions} from '@sharedClient/hooks/userFeedSubscriptions.hooks';
 
 export function useFeedItemsService(args: {
   readonly firebaseService: ClientFirebaseService;
@@ -167,7 +168,7 @@ export function useFeedItemsRespectingDelivery(args: {
   const {viewType, firebaseService} = args;
 
   const feedItemsState = useFeedItemsInternal({viewType, firebaseService});
-  const userFeedSubscriptionsState = useLoggedInUserFeedSubscriptions({firebaseService});
+  const {recentSubscriptionsCacheState} = useUserFeedSubscriptionsStore();
 
   const filteredFeedItemsState: AsyncState<FeedItem[]> = useMemo(() => {
     // Do not consider loaded until both the feed items and the user feed subscriptions are loaded. filtering.
@@ -176,18 +177,18 @@ export function useFeedItemsRespectingDelivery(args: {
       return feedItemsState;
     }
 
-    if (userFeedSubscriptionsState.status !== AsyncStatus.Success) {
-      return userFeedSubscriptionsState;
+    if (recentSubscriptionsCacheState.status !== AsyncStatus.Success) {
+      return recentSubscriptionsCacheState;
     }
 
     // Filter the feed items based on delivery schedules.
     const filteredFeedItems = filterFeedItemsByDeliverySchedules({
       feedItems: feedItemsState.value,
-      userFeedSubscriptions: userFeedSubscriptionsState.value,
+      userFeedSubscriptions: recentSubscriptionsCacheState.value,
     });
 
     return makeSuccessAsyncState(filteredFeedItems);
-  }, [feedItemsState, userFeedSubscriptionsState]);
+  }, [feedItemsState, recentSubscriptionsCacheState]);
 
   return filteredFeedItemsState;
 }

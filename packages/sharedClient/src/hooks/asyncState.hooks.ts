@@ -47,6 +47,7 @@ export function useAsyncState<T>(): {
   readonly setPending: Consumer<void>;
   readonly setError: Consumer<Error>;
   readonly setSuccess: Consumer<T>;
+  readonly setAsyncState: Consumer<AsyncState<T>>;
 } {
   const [asyncState, setAsyncState] = useState<AsyncState<T>>(IDLE_ASYNC_STATE);
 
@@ -54,5 +55,5 @@ export function useAsyncState<T>(): {
   const setError = useCallback((error: Error) => setAsyncState(makeErrorAsyncState(error)), []);
   const setSuccess = useCallback((value: T) => setAsyncState(makeSuccessAsyncState(value)), []);
 
-  return {asyncState, setPending, setError, setSuccess};
+  return {asyncState, setPending, setError, setSuccess, setAsyncState};
 }
