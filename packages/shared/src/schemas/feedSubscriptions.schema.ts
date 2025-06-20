@@ -1,6 +1,7 @@
 import {z} from 'zod/v4';
 
 import {FEED_TYPES_WITH_SUBSCRIPTIONS, FeedType} from '@shared/types/feedSourceTypes.types';
+import {FeedSubscriptionActivityStatus} from '@shared/types/feedSubscriptions.types';
 
 import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 import {DeliveryScheduleSchema} from '@shared/schemas/deliverySchedules.schema';
@@ -9,13 +10,36 @@ import {YouTubeChannelIdSchema} from '@shared/schemas/youtube.schema';
 
 export const FeedSubscriptionIdSchema = z.uuid();
 
+const FeedSubscriptionActivityStatusSchema = z.enum(FeedSubscriptionActivityStatus);
+
+const BaseFeedSubscriptionLifecycleSchema = z.object({
+  status: FeedSubscriptionActivityStatusSchema,
+});
+
+const ActiveFeedSubscriptionLifecycleSchema = BaseFeedSubscriptionLifecycleSchema.extend({
+  status: z.literal(FeedSubscriptionActivityStatus.Active),
+});
+
+const InactiveFeedSubscriptionLifecycleSchema = BaseFeedSubscriptionLifecycleSchema.extend({
+  status: z.literal(FeedSubscriptionActivityStatus.Inactive),
+  unsubscribedTime: FirestoreTimestampSchema.or(z.date()),
+});
+
+export const FeedSubscriptionLifecycleSchema = z.discriminatedUnion('status', [
+  ActiveFeedSubscriptionLifecycleSchema,
+  InactiveFeedSubscriptionLifecycleSchema,
+]);
+
+export type FeedSubscriptionLifecycleStateFromStorage = z.infer<
+  typeof FeedSubscriptionLifecycleSchema
+>;
+
 const BaseFeedSubscriptionSchema = z.object({
   feedType: z.enum(FEED_TYPES_WITH_SUBSCRIPTIONS),
   feedSubscriptionId: FeedSubscriptionIdSchema,
   accountId: AccountIdSchema,
-  isActive: z.boolean(),
   deliverySchedule: DeliveryScheduleSchema,
-  unsubscribedTime: FirestoreTimestampSchema.or(z.date()).optional(),
+  lifecycleState: FeedSubscriptionLifecycleSchema,
   // TODO: These should not need to be nullable.
   createdTime: FirestoreTimestampSchema.or(z.date()).or(z.null()),
   lastUpdatedTime: FirestoreTimestampSchema.or(z.date()).or(z.null()),

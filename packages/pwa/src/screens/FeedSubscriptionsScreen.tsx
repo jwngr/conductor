@@ -10,7 +10,11 @@ import {makeYouTubeChannelUrl} from '@shared/lib/youtube.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
 import {FeedType} from '@shared/types/feedSourceTypes.types';
-import type {FeedSubscription, FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
+import {
+  FeedSubscriptionActivityStatus,
+  type FeedSubscription,
+  type FeedSubscriptionId,
+} from '@shared/types/feedSubscriptions.types';
 import {NavItemId} from '@shared/types/urls.types';
 
 import {useFeedSubscriptionsStore} from '@sharedClient/stores/FeedSubscriptionsStore';
@@ -216,7 +220,10 @@ const FeedSubscriptionItem: React.FC<{
   return (
     <FlexRow gap={3} padding={3} className="border-neutral-2 rounded-lg border">
       <FlexColumn flex gap={1}>
-        <P bold error={!subscription.isActive}>
+        <P
+          bold
+          error={subscription.lifecycleState.status === FeedSubscriptionActivityStatus.Inactive}
+        >
           {primaryRowText}
         </P>
         {secondaryRowText ? <P light>{secondaryRowText}</P> : null}

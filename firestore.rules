@@ -75,6 +75,15 @@ service cloud.firestore {
       return maybeEventLogItemData.keys().hasAll(['eventType']);
     }
 
+    function isValidFeedSubscriptionLifecycleState(maybeFeedSubscriptionLifecycleState) {
+      return maybeFeedSubscriptionLifecycleState.keys().hasAll(['status']) &&
+        isValidFeedSubscriptionActivityStatus(maybeFeedSubscriptionLifecycleState.status);
+    }
+
+    function isValidFeedSubscriptionActivityStatus(maybeFeedSubscriptionActivityStatus) {
+      return maybeFeedSubscriptionActivityStatus in ['ACTIVE', 'INACTIVE'];
+    }
+
     //////////////////////
     //  DOC VALIDATORS  //
     //////////////////////
@@ -177,7 +186,7 @@ service cloud.firestore {
         'feedSubscriptionId',
         'feedType',
         'accountId',
-        'isActive',
+        'lifecycleState',
         'deliverySchedule',
         'createdTime',
         'lastUpdatedTime'
@@ -185,7 +194,7 @@ service cloud.firestore {
       request.resource.data.feedSubscriptionId == feedSubscriptionId &&
       isValidFeedType(request.resource.data.feedType) &&
       request.resource.data.accountId is string &&
-      request.resource.data.isActive is bool &&
+      isValidFeedSubscriptionLifecycleState(request.resource.data.lifecycleState) &&
       isValidDeliverySchedule(request.resource.data.deliverySchedule) &&
       request.resource.data.createdTime is timestamp &&
       request.resource.data.lastUpdatedTime is timestamp &&

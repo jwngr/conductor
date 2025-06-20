@@ -4,12 +4,20 @@ import {assertNever} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseDeliverySchedule} from '@shared/parsers/deliverySchedules.parser';
-import {parseFeedSubscriptionId} from '@shared/parsers/feedSubscriptions.parser';
+import {
+  parseFeedSubscriptionId,
+  parseFeedSubscriptionLifecycleState,
+} from '@shared/parsers/feedSubscriptions.parser';
 import {parseYouTubeChannelId} from '@shared/parsers/youtube.parser';
 
+import type {AccountId} from '@shared/types/accounts.types';
+import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
 import {FeedType} from '@shared/types/feedSourceTypes.types';
+import {FeedSubscriptionActivityStatus} from '@shared/types/feedSubscriptions.types';
 import type {
   FeedSubscription,
+  FeedSubscriptionId,
+  FeedSubscriptionLifecycleState,
   IntervalFeedSubscription,
   RssFeedSubscription,
   YouTubeChannelFeedSubscription,
@@ -18,6 +26,7 @@ import type {Result} from '@shared/types/results.types';
 
 import type {
   FeedSubscriptionFromStorage,
+  FeedSubscriptionLifecycleStateFromStorage,
   IntervalFeedSubscriptionFromStorage,
   RssFeedSubscriptionFromStorage,
   YouTubeChannelFeedSubscriptionFromStorage,
@@ -30,6 +39,8 @@ import {toStorageDeliverySchedule} from '@shared/storage/deliverySchedules.stora
 export function toStorageFeedSubscription(
   feedSubscription: FeedSubscription
 ): FeedSubscriptionFromStorage {
+  const lifecycleState = toStorageFeedSubscriptionLifecycleState(feedSubscription.lifecycleState);
+
   switch (feedSubscription.feedType) {
     case FeedType.RSS:
       return {
@@ -38,8 +49,7 @@ export function toStorageFeedSubscription(
         url: feedSubscription.url,
         title: feedSubscription.title,
         accountId: feedSubscription.accountId,
-        isActive: feedSubscription.isActive,
-        unsubscribedTime: feedSubscription.unsubscribedTime,
+        lifecycleState,
         createdTime: feedSubscription.createdTime,
         lastUpdatedTime: feedSubscription.lastUpdatedTime,
         deliverySchedule: toStorageDeliverySchedule(feedSubscription.deliverySchedule),
@@ -50,8 +60,7 @@ export function toStorageFeedSubscription(
         feedSubscriptionId: feedSubscription.feedSubscriptionId,
         channelId: feedSubscription.channelId,
         accountId: feedSubscription.accountId,
-        isActive: feedSubscription.isActive,
-        unsubscribedTime: feedSubscription.unsubscribedTime,
+        lifecycleState,
         createdTime: feedSubscription.createdTime,
         lastUpdatedTime: feedSubscription.lastUpdatedTime,
         deliverySchedule: toStorageDeliverySchedule(feedSubscription.deliverySchedule),
@@ -62,8 +71,7 @@ export function toStorageFeedSubscription(
         intervalSeconds: feedSubscription.intervalSeconds,
         feedSubscriptionId: feedSubscription.feedSubscriptionId,
         accountId: feedSubscription.accountId,
-        isActive: feedSubscription.isActive,
-        unsubscribedTime: feedSubscription.unsubscribedTime,
+        lifecycleState,
         createdTime: feedSubscription.createdTime,
         lastUpdatedTime: feedSubscription.lastUpdatedTime,
         deliverySchedule: toStorageDeliverySchedule(feedSubscription.deliverySchedule),
@@ -74,116 +82,171 @@ export function toStorageFeedSubscription(
 }
 
 /**
+ * Converts a {@link FeedSubscriptionLifecycleState} into a {@link FeedSubscriptionLifecycleStateFromStorage}.
+ */
+function toStorageFeedSubscriptionLifecycleState(
+  lifecycleState: FeedSubscriptionLifecycleState
+): FeedSubscriptionLifecycleStateFromStorage {
+  switch (lifecycleState.status) {
+    case FeedSubscriptionActivityStatus.Active:
+      return {
+        status: FeedSubscriptionActivityStatus.Active,
+      };
+    case FeedSubscriptionActivityStatus.Inactive:
+      return {
+        status: FeedSubscriptionActivityStatus.Inactive,
+        unsubscribedTime: lifecycleState.unsubscribedTime,
+      };
+    default:
+      assertNever(lifecycleState);
+  }
+}
+
+/**
  * Converts a {@link FeedSubscriptionFromStorage} into a {@link FeedSubscription}.
  */
 export function fromStorageFeedSubscription(
   feedSubscriptionFromStorage: FeedSubscriptionFromStorage
 ): Result<FeedSubscription, Error> {
+  const parsedAccountIdResult = parseAccountId(feedSubscriptionFromStorage.accountId);
+  if (!parsedAccountIdResult.success) return parsedAccountIdResult;
+
+  const parsedFeedSubscriptionIdResult = parseFeedSubscriptionId(
+    feedSubscriptionFromStorage.feedSubscriptionId
+  );
+  if (!parsedFeedSubscriptionIdResult.success) return parsedFeedSubscriptionIdResult;
+
+  const parsedDeliveryScheduleResult = parseDeliverySchedule(
+    feedSubscriptionFromStorage.deliverySchedule
+  );
+  if (!parsedDeliveryScheduleResult.success) return parsedDeliveryScheduleResult;
+
+  const parsedLifecycleStateResult = parseFeedSubscriptionLifecycleState(
+    feedSubscriptionFromStorage.lifecycleState
+  );
+  if (!parsedLifecycleStateResult.success) return parsedLifecycleStateResult;
+
   switch (feedSubscriptionFromStorage.feedType) {
     case FeedType.RSS:
-      return fromStorageRssFeedSubscription(feedSubscriptionFromStorage);
+      return fromStorageRssFeedSubscription({
+        feedSubscriptionFromStorage,
+        accountId: parsedAccountIdResult.value,
+        feedSubscriptionId: parsedFeedSubscriptionIdResult.value,
+        deliverySchedule: parsedDeliveryScheduleResult.value,
+        lifecycleState: parsedLifecycleStateResult.value,
+      });
     case FeedType.YouTubeChannel:
-      return fromStorageYouTubeChannelFeedSubscription(feedSubscriptionFromStorage);
+      return fromStorageYouTubeChannelFeedSubscription({
+        feedSubscriptionFromStorage,
+        accountId: parsedAccountIdResult.value,
+        feedSubscriptionId: parsedFeedSubscriptionIdResult.value,
+        deliverySchedule: parsedDeliveryScheduleResult.value,
+        lifecycleState: parsedLifecycleStateResult.value,
+      });
     case FeedType.Interval:
-      return fromStorageIntervalFeedSubscription(feedSubscriptionFromStorage);
+      return fromStorageIntervalFeedSubscription({
+        feedSubscriptionFromStorage,
+        accountId: parsedAccountIdResult.value,
+        feedSubscriptionId: parsedFeedSubscriptionIdResult.value,
+        deliverySchedule: parsedDeliveryScheduleResult.value,
+        lifecycleState: parsedLifecycleStateResult.value,
+      });
     default:
       assertNever(feedSubscriptionFromStorage);
   }
 }
 
-function fromStorageRssFeedSubscription(
-  feedSubscriptionFromStorage: RssFeedSubscriptionFromStorage
-): Result<RssFeedSubscription, Error> {
-  const parsedAccountIdResult = parseAccountId(feedSubscriptionFromStorage.accountId);
-  if (!parsedAccountIdResult.success) return parsedAccountIdResult;
-
-  const parsedFeedSubscriptionIdResult = parseFeedSubscriptionId(
-    feedSubscriptionFromStorage.feedSubscriptionId
-  );
-  if (!parsedFeedSubscriptionIdResult.success) return parsedFeedSubscriptionIdResult;
-
-  const parsedDeliveryScheduleResult = parseDeliverySchedule(
-    feedSubscriptionFromStorage.deliverySchedule
-  );
-  if (!parsedDeliveryScheduleResult.success) return parsedDeliveryScheduleResult;
+function fromStorageRssFeedSubscription(args: {
+  readonly feedSubscriptionFromStorage: RssFeedSubscriptionFromStorage;
+  readonly accountId: AccountId;
+  readonly feedSubscriptionId: FeedSubscriptionId;
+  readonly deliverySchedule: DeliverySchedule;
+  readonly lifecycleState: FeedSubscriptionLifecycleState;
+}): Result<RssFeedSubscription, Error> {
+  const {
+    feedSubscriptionFromStorage,
+    accountId,
+    feedSubscriptionId,
+    deliverySchedule,
+    lifecycleState,
+  } = args;
 
   return makeSuccessResult({
     feedType: FeedType.RSS,
+    feedSubscriptionId,
+    accountId,
+    lifecycleState,
+    deliverySchedule,
     url: feedSubscriptionFromStorage.url,
     title: feedSubscriptionFromStorage.title,
-    feedSubscriptionId: parsedFeedSubscriptionIdResult.value,
-    accountId: parsedAccountIdResult.value,
-    isActive: feedSubscriptionFromStorage.isActive,
-    deliverySchedule: parsedDeliveryScheduleResult.value,
     createdTime: parseStorageTimestamp(feedSubscriptionFromStorage.createdTime),
     lastUpdatedTime: parseStorageTimestamp(feedSubscriptionFromStorage.lastUpdatedTime),
-    unsubscribedTime: feedSubscriptionFromStorage.unsubscribedTime
-      ? parseStorageTimestamp(feedSubscriptionFromStorage.unsubscribedTime)
-      : undefined,
   });
 }
 
-function fromStorageYouTubeChannelFeedSubscription(
-  feedSubscriptionFromStorage: YouTubeChannelFeedSubscriptionFromStorage
-): Result<YouTubeChannelFeedSubscription, Error> {
-  const parsedAccountIdResult = parseAccountId(feedSubscriptionFromStorage.accountId);
-  if (!parsedAccountIdResult.success) return parsedAccountIdResult;
-
-  const parsedFeedSubscriptionIdResult = parseFeedSubscriptionId(
-    feedSubscriptionFromStorage.feedSubscriptionId
-  );
-  if (!parsedFeedSubscriptionIdResult.success) return parsedFeedSubscriptionIdResult;
-
-  const parsedDeliveryScheduleResult = parseDeliverySchedule(
-    feedSubscriptionFromStorage.deliverySchedule
-  );
-  if (!parsedDeliveryScheduleResult.success) return parsedDeliveryScheduleResult;
+function fromStorageYouTubeChannelFeedSubscription(args: {
+  readonly feedSubscriptionFromStorage: YouTubeChannelFeedSubscriptionFromStorage;
+  readonly accountId: AccountId;
+  readonly feedSubscriptionId: FeedSubscriptionId;
+  readonly deliverySchedule: DeliverySchedule;
+  readonly lifecycleState: FeedSubscriptionLifecycleState;
+}): Result<YouTubeChannelFeedSubscription, Error> {
+  const {
+    feedSubscriptionFromStorage,
+    accountId,
+    feedSubscriptionId,
+    deliverySchedule,
+    lifecycleState,
+  } = args;
 
   const parsedChannelIdResult = parseYouTubeChannelId(feedSubscriptionFromStorage.channelId);
   if (!parsedChannelIdResult.success) return parsedChannelIdResult;
 
+  const parsedLifecycleStateResult = parseFeedSubscriptionLifecycleState(
+    feedSubscriptionFromStorage.lifecycleState
+  );
+  if (!parsedLifecycleStateResult.success) return parsedLifecycleStateResult;
+
   return makeSuccessResult({
     feedType: FeedType.YouTubeChannel,
     channelId: parsedChannelIdResult.value,
-    feedSubscriptionId: parsedFeedSubscriptionIdResult.value,
-    accountId: parsedAccountIdResult.value,
-    isActive: feedSubscriptionFromStorage.isActive,
-    deliverySchedule: parsedDeliveryScheduleResult.value,
+    feedSubscriptionId,
+    accountId,
+    lifecycleState,
+    deliverySchedule,
     createdTime: parseStorageTimestamp(feedSubscriptionFromStorage.createdTime),
     lastUpdatedTime: parseStorageTimestamp(feedSubscriptionFromStorage.lastUpdatedTime),
-    unsubscribedTime: feedSubscriptionFromStorage.unsubscribedTime
-      ? parseStorageTimestamp(feedSubscriptionFromStorage.unsubscribedTime)
-      : undefined,
   });
 }
 
-function fromStorageIntervalFeedSubscription(
-  feedSubscriptionFromStorage: IntervalFeedSubscriptionFromStorage
-): Result<IntervalFeedSubscription, Error> {
-  const parsedAccountIdResult = parseAccountId(feedSubscriptionFromStorage.accountId);
-  if (!parsedAccountIdResult.success) return parsedAccountIdResult;
+function fromStorageIntervalFeedSubscription(args: {
+  readonly feedSubscriptionFromStorage: IntervalFeedSubscriptionFromStorage;
+  readonly accountId: AccountId;
+  readonly feedSubscriptionId: FeedSubscriptionId;
+  readonly deliverySchedule: DeliverySchedule;
+  readonly lifecycleState: FeedSubscriptionLifecycleState;
+}): Result<IntervalFeedSubscription, Error> {
+  const {
+    feedSubscriptionFromStorage,
+    accountId,
+    feedSubscriptionId,
+    deliverySchedule,
+    lifecycleState,
+  } = args;
 
-  const parsedFeedSubscriptionIdResult = parseFeedSubscriptionId(
-    feedSubscriptionFromStorage.feedSubscriptionId
+  const parsedLifecycleStateResult = parseFeedSubscriptionLifecycleState(
+    feedSubscriptionFromStorage.lifecycleState
   );
-  if (!parsedFeedSubscriptionIdResult.success) return parsedFeedSubscriptionIdResult;
-
-  const parsedDeliveryScheduleResult = parseDeliverySchedule(
-    feedSubscriptionFromStorage.deliverySchedule
-  );
-  if (!parsedDeliveryScheduleResult.success) return parsedDeliveryScheduleResult;
+  if (!parsedLifecycleStateResult.success) return parsedLifecycleStateResult;
 
   return makeSuccessResult({
     feedType: FeedType.Interval,
     intervalSeconds: feedSubscriptionFromStorage.intervalSeconds,
-    feedSubscriptionId: parsedFeedSubscriptionIdResult.value,
-    accountId: parsedAccountIdResult.value,
-    isActive: feedSubscriptionFromStorage.isActive,
-    deliverySchedule: parsedDeliveryScheduleResult.value,
+    feedSubscriptionId,
+    accountId,
+    lifecycleState,
+    deliverySchedule,
     createdTime: parseStorageTimestamp(feedSubscriptionFromStorage.createdTime),
     lastUpdatedTime: parseStorageTimestamp(feedSubscriptionFromStorage.lastUpdatedTime),
-    unsubscribedTime: feedSubscriptionFromStorage.unsubscribedTime
-      ? parseStorageTimestamp(feedSubscriptionFromStorage.unsubscribedTime)
-      : undefined,
   });
 }

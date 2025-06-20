@@ -2,11 +2,16 @@ import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseZodResult} from '@shared/lib/parser.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
-import type {FeedSubscription, FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
+import type {
+  FeedSubscription,
+  FeedSubscriptionId,
+  FeedSubscriptionLifecycleState,
+} from '@shared/types/feedSubscriptions.types';
 import type {Result} from '@shared/types/results.types';
 
 import {
   FeedSubscriptionIdSchema,
+  FeedSubscriptionLifecycleSchema,
   FeedSubscriptionSchema,
 } from '@shared/schemas/feedSubscriptions.schema';
 import {fromStorageFeedSubscription} from '@shared/storage/feedSubscriptions.storage';
@@ -36,4 +41,17 @@ export function parseFeedSubscription(
   }
   const feedSubscriptionFromStorage = parsedResult.value;
   return fromStorageFeedSubscription(feedSubscriptionFromStorage);
+}
+
+export function parseFeedSubscriptionLifecycleState(
+  maybeFeedSubscriptionLifecycleState: unknown
+): Result<FeedSubscriptionLifecycleState, Error> {
+  const parsedResult = parseZodResult(
+    FeedSubscriptionLifecycleSchema,
+    maybeFeedSubscriptionLifecycleState
+  );
+  if (!parsedResult.success) {
+    return prefixErrorResult(parsedResult, 'Invalid feed subscription lifecycle state');
+  }
+  return makeSuccessResult(parsedResult.value);
 }

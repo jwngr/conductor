@@ -16,9 +16,10 @@ import {DayOfWeek} from '@shared/types/datetime.types';
 import {DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
 import {FeedType} from '@shared/types/feedSourceTypes.types';
-import type {
-  FeedSubscription,
-  IntervalFeedSubscription,
+import {
+  FeedSubscriptionActivityStatus,
+  type FeedSubscription,
+  type IntervalFeedSubscription,
 } from '@shared/types/feedSubscriptions.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/results.types';
@@ -159,15 +160,24 @@ const FeedSubscriptionUnsubscribeButton: React.FC<{
     setPending();
 
     let result: Result<void, Error>;
-    if (feedSubscription.isActive) {
-      result = await feedSubscriptionsService.updateSubscription(feedSubscriptionId, {
-        isActive: false,
-        unsubscribedTime: new Date(),
-      });
-    } else {
-      result = await feedSubscriptionsService.updateSubscription(feedSubscriptionId, {
-        isActive: true,
-      });
+    switch (feedSubscription.lifecycleState.status) {
+      case FeedSubscriptionActivityStatus.Active:
+        result = await feedSubscriptionsService.updateSubscription(feedSubscriptionId, {
+          lifecycleState: {
+            status: FeedSubscriptionActivityStatus.Inactive,
+            unsubscribedTime: new Date(),
+          },
+        });
+        break;
+      case FeedSubscriptionActivityStatus.Inactive:
+        result = await feedSubscriptionsService.updateSubscription(feedSubscriptionId, {
+          lifecycleState: {
+            status: FeedSubscriptionActivityStatus.Active,
+          },
+        });
+        break;
+      default:
+        assertNever(feedSubscription.lifecycleState);
     }
 
     if (!result.success) {
@@ -175,36 +185,41 @@ const FeedSubscriptionUnsubscribeButton: React.FC<{
       return;
     }
 
-    if (feedSubscription.isActive) {
-      // Toast.
-      toast('Unsubscribed from feed');
+    switch (feedSubscription.lifecycleState.status) {
+      case FeedSubscriptionActivityStatus.Active:
+        // Toast.
+        toast('Unsubscribed from feed');
 
-      // Log.
-      void eventLogService.logUnsubscribedFromFeedEvent({
-        feedType: feedSubscription.feedType,
-        feedSubscriptionId,
-      });
-    } else {
-      // Toast.
-      toast('Re-subscribed to feed');
+        // Log.
+        void eventLogService.logUnsubscribedFromFeedEvent({
+          feedType: feedSubscription.feedType,
+          feedSubscriptionId,
+        });
+        break;
+      case FeedSubscriptionActivityStatus.Inactive:
+        // Toast.
+        toast('Re-subscribed to feed');
 
-      // Log.
-      void eventLogService.logSubscribedToFeedEvent({
-        feedType: feedSubscription.feedType,
-        feedSubscriptionId,
-        isNewSubscription: false,
-      });
+        // Log.
+        void eventLogService.logSubscribedToFeedEvent({
+          feedType: feedSubscription.feedType,
+          feedSubscriptionId,
+          isNewSubscription: false,
+        });
+        break;
+      default:
+        assertNever(feedSubscription.lifecycleState);
     }
 
     setSuccess(undefined);
   }, [
+    feedSubscriptionsService,
     setPending,
-    feedSubscription.isActive,
+    feedSubscription.lifecycleState,
     feedSubscription.feedType,
     setSuccess,
-    feedSubscriptionsService,
-    feedSubscriptionId,
     setError,
+    feedSubscriptionId,
     eventLogService,
   ]);
 
@@ -222,14 +237,34 @@ const FeedSubscriptionUnsubscribeButton: React.FC<{
       assertNever(asyncState);
   }
 
+  const titleText = (() => {
+    switch (feedSubscription.lifecycleState.status) {
+      case FeedSubscriptionActivityStatus.Active:
+        return 'Subscription active';
+      case FeedSubscriptionActivityStatus.Inactive:
+        return 'Subscription inactive';
+      default:
+        assertNever(feedSubscription.lifecycleState);
+    }
+  })();
+
+  const buttonText = (() => {
+    switch (feedSubscription.lifecycleState.status) {
+      case FeedSubscriptionActivityStatus.Active:
+        return 'Unsubscribe';
+      case FeedSubscriptionActivityStatus.Inactive:
+        return 'Subscribe';
+      default:
+        assertNever(feedSubscription.lifecycleState);
+    }
+  })();
+
   return (
     <FlexRow gap={2} justify="between">
-      <Label htmlFor="deliverySchedule">
-        Subscription {feedSubscription.isActive ? 'active' : 'inactive'}
-      </Label>
+      <Label htmlFor="deliverySchedule">{titleText}</Label>
 
       <Button variant="outline" onClick={handleToggleSubscription}>
-        {feedSubscription.isActive ? 'Unsubscribe' : 'Subscribe'}
+        {buttonText}
       </Button>
 
       {footer}

@@ -5,6 +5,7 @@ import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {batchAsyncResults} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
+import {FeedSubscriptionActivityStatus} from '@shared/types/feedSubscriptions.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {Supplier} from '@shared/types/utils.types';
 
@@ -52,7 +53,7 @@ export class WipeoutService {
 
     if (feedSubscriptionsResult.success) {
       const activeFeedSubscriptions = feedSubscriptionsResult.value.filter(
-        ({isActive}) => isActive
+        ({lifecycleState}) => lifecycleState.status === FeedSubscriptionActivityStatus.Active
       );
       const activeFeedSubscriptionIds = activeFeedSubscriptions.map(
         ({feedSubscriptionId}) => feedSubscriptionId

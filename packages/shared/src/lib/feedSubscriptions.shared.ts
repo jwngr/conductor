@@ -3,7 +3,9 @@ import {makeUuid} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import {FeedType} from '@shared/types/feedSourceTypes.types';
+import {FeedSubscriptionActivityStatus} from '@shared/types/feedSubscriptions.types';
 import type {
+  ActiveFeedSubscriptionLifecycleState,
   FeedSubscriptionId,
   IntervalFeedSubscription,
   RssFeedSubscription,
@@ -31,7 +33,7 @@ export function makeRssFeedSubscription(args: {
     title,
     feedSubscriptionId: makeFeedSubscriptionId(),
     accountId,
-    isActive: true,
+    lifecycleState: ACTIVE_FEED_SUBSCRIPTION_LIFECYCLE_STATE,
     deliverySchedule: IMMEDIATE_DELIVERY_SCHEDULE,
     // TODO(timestamps): Use server timestamps instead.
     createdTime: new Date(),
@@ -50,7 +52,7 @@ export function makeYouTubeChannelFeedSubscription(args: {
     channelId,
     feedSubscriptionId: makeFeedSubscriptionId(),
     accountId,
-    isActive: true,
+    lifecycleState: ACTIVE_FEED_SUBSCRIPTION_LIFECYCLE_STATE,
     deliverySchedule: IMMEDIATE_DELIVERY_SCHEDULE,
     // TODO(timestamps): Use server timestamps instead.
     createdTime: new Date(),
@@ -69,10 +71,14 @@ export function makeIntervalFeedSubscription(args: {
     intervalSeconds,
     feedSubscriptionId: makeFeedSubscriptionId(),
     accountId,
-    isActive: true,
+    lifecycleState: ACTIVE_FEED_SUBSCRIPTION_LIFECYCLE_STATE,
     deliverySchedule: IMMEDIATE_DELIVERY_SCHEDULE,
     // TODO(timestamps): Use server timestamps instead.
     createdTime: new Date(),
     lastUpdatedTime: new Date(),
   };
 }
+
+export const ACTIVE_FEED_SUBSCRIPTION_LIFECYCLE_STATE: ActiveFeedSubscriptionLifecycleState = {
+  status: FeedSubscriptionActivityStatus.Active,
+};

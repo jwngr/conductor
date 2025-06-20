@@ -17,6 +17,7 @@ import type {
   IntervalFeedSubscription,
   RssFeedSubscription,
 } from '@shared/types/feedSubscriptions.types';
+import {FeedSubscriptionActivityStatus} from '@shared/types/feedSubscriptions.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {FeedSubscriptionFromStorage} from '@shared/schemas/feedSubscriptions.schema';
@@ -64,7 +65,7 @@ export class ServerFeedSubscriptionsService {
     const query = this.collectionService
       .getCollectionRef()
       .where('feedType', '==', FeedType.Interval)
-      .where('isActive', '==', true);
+      .where('lifecycleState.status', '==', FeedSubscriptionActivityStatus.Active);
     const queryResult = await this.collectionService.fetchQueryDocs(query);
     if (!queryResult.success) return queryResult;
     return makeSuccessResult(queryResult.value as IntervalFeedSubscription[]);
@@ -94,8 +95,10 @@ export class ServerFeedSubscriptionsService {
     feedSubscriptionId: FeedSubscriptionId
   ): AsyncResult<void, Error> {
     return this.update(feedSubscriptionId, {
-      isActive: false,
-      unsubscribedTime: serverTimestampSupplier(),
+      lifecycleState: {
+        status: FeedSubscriptionActivityStatus.Inactive,
+        unsubscribedTime: serverTimestampSupplier(),
+      },
     });
   }
 
@@ -104,7 +107,7 @@ export class ServerFeedSubscriptionsService {
    */
   public async update(
     feedSubscriptionId: FeedSubscriptionId,
-    update: Partial<WithFieldValue<Pick<FeedSubscription, 'isActive' | 'unsubscribedTime'>>>
+    update: Partial<WithFieldValue<Pick<FeedSubscription, 'lifecycleState' | 'deliverySchedule'>>>
   ): AsyncResult<void, Error> {
     const updateResult = await this.collectionService.updateDoc(feedSubscriptionId, update);
     return prefixResultIfError(updateResult, 'Error updating feed subscription in Firestore');
