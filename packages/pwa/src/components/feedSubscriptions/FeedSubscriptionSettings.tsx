@@ -23,11 +23,12 @@ import type {
   UserFeedSubscription,
 } from '@shared/types/userFeedSubscriptions.types';
 
+import {useUserFeedSubscriptionsStore} from '@sharedClient/stores/UserFeedSubscriptionsStore';
+
 import {toast} from '@sharedClient/lib/toasts.client';
 
 import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {useEventLogService} from '@sharedClient/hooks/eventLog.hooks';
-import {useUserFeedSubscriptionsService} from '@sharedClient/hooks/userFeedSubscriptions.hooks';
 
 import {Button} from '@src/components/atoms/Button';
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
@@ -41,12 +42,17 @@ import {firebaseService} from '@src/lib/firebase.pwa';
 const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
   readonly userFeedSubscription: UserFeedSubscription;
 }> = ({userFeedSubscription}) => {
-  const feedSubscriptionsService = useUserFeedSubscriptionsService({firebaseService});
+  const {userFeedSubscriptionsService} = useUserFeedSubscriptionsStore();
   const {asyncState, setPending, setError, setSuccess} = useAsyncState<undefined>();
 
   const handleDeliveryScheduleChange = async (
     event: React.ChangeEvent<HTMLSelectElement>
   ): Promise<void> => {
+    if (!userFeedSubscriptionsService) {
+      setError(new Error('User feed subscriptions service not found'));
+      return;
+    }
+
     setPending();
 
     const deliveryScheduleTypeResult = parseDeliveryScheduleType(event.target.value);
@@ -89,7 +95,7 @@ const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
       return;
     }
 
-    const updateDeliveryScheduleResult = await feedSubscriptionsService.updateSubscription(
+    const updateDeliveryScheduleResult = await userFeedSubscriptionsService.updateSubscription(
       userFeedSubscription.userFeedSubscriptionId,
       {deliverySchedule: makeDeliveryScheduleResult.value}
     );
@@ -139,12 +145,17 @@ const FeedSubscriptionUnsubscribeButton: React.FC<{
   readonly userFeedSubscription: UserFeedSubscription;
 }> = ({userFeedSubscription}) => {
   const eventLogService = useEventLogService({firebaseService});
-  const userFeedSubscriptionsService = useUserFeedSubscriptionsService({firebaseService});
+  const {userFeedSubscriptionsService} = useUserFeedSubscriptionsStore();
 
   const {userFeedSubscriptionId} = userFeedSubscription;
   const {asyncState, setPending, setError, setSuccess} = useAsyncState<undefined>();
 
   const handleToggleSubscription = useCallback(async (): Promise<void> => {
+    if (!userFeedSubscriptionsService) {
+      setError(new Error('User feed subscriptions service not found'));
+      return;
+    }
+
     setPending();
 
     let result: Result<void, Error>;

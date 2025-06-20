@@ -22,6 +22,13 @@ export function objectOmitUndefined<T extends object>(
 }
 
 /**
+ * Typed helper for getting the size of an object.
+ */
+export function objectSize<T extends object>(obj: T): number {
+  return Object.keys(obj).length;
+}
+
+/**
  * Typed helper for getting all keys from an object.
  */
 export function objectKeys<T extends object>(obj: T): Array<keyof T> {

@@ -11,23 +11,16 @@ import {logger} from '@shared/services/logger.shared';
 import {arrayFilterNull, arrayToRecord} from '@shared/lib/arrayUtils.shared';
 import {
   DEFAULT_FEED_TITLE,
-  USER_FEED_SUBSCRIPTIONS_CACHE_LIMIT,
   USER_FEED_SUBSCRIPTIONS_DB_COLLECTION,
 } from '@shared/lib/constants.shared';
-import {
-  asyncTry,
-  prefixError,
-  prefixErrorResult,
-  prefixResultIfError,
-} from '@shared/lib/errorUtils.shared';
-import {objectKeys} from '@shared/lib/objectUtils.shared';
+import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {
   makeIntervalUserFeedSubscription,
   makeRssUserFeedSubscription,
   makeYouTubeChannelUserFeedSubscription,
 } from '@shared/lib/userFeedSubscriptions.shared';
-import {isDefined, isPositiveInteger} from '@shared/lib/utils.shared';
+import {isPositiveInteger} from '@shared/lib/utils.shared';
 import {getYouTubeChannelId} from '@shared/lib/youtube.shared';
 
 import {
@@ -76,9 +69,6 @@ export class ClientUserFeedSubscriptionsService {
   private readonly eventLogService: ClientEventLogService;
   private readonly collectionService: UserFeedSubscriptionsCollectionService;
 
-  private allSubscriptions: Record<UserFeedSubscriptionId, UserFeedSubscription> | null = null;
-  private readonly unsubscribeWatcher: Unsubscribe;
-
   constructor(args: {
     readonly accountId: AccountId;
     readonly firebaseService: ClientFirebaseService;
@@ -95,25 +85,6 @@ export class ClientUserFeedSubscriptionsService {
       fromStorage: parseUserFeedSubscription,
       parseId: parseUserFeedSubscriptionId,
     });
-
-    // Load and maintain a local cache of the logged-in user's feed subscriptions. The local cache
-    // means queries for names and other metadata will be returned instantly using cached values.
-    this.unsubscribeWatcher = this.watchAllSubscriptions({
-      onData: (allSubscriptions) => {
-        this.allSubscriptions = allSubscriptions;
-      },
-      onError: (error) => {
-        const message = 'Failed to fetch user feed subscriptions for account';
-        const betterError = prefixError(error, message);
-        logger.error(betterError);
-      },
-      // Limit the maximum number of subscriptions to keep in memory.
-      limit: USER_FEED_SUBSCRIPTIONS_CACHE_LIMIT,
-    });
-  }
-
-  public destroy(): void {
-    this.unsubscribeWatcher();
   }
 
   /**
@@ -298,36 +269,19 @@ export class ClientUserFeedSubscriptionsService {
   }): Unsubscribe {
     const {userFeedSubscriptionId, onData, onError} = args;
 
-    const cachedSubscription = this.allSubscriptions?.[userFeedSubscriptionId];
-    if (cachedSubscription) {
-      onData(cachedSubscription);
-    }
-
     const unsubscribe = this.collectionService.watchDoc(userFeedSubscriptionId, onData, onError);
     return unsubscribe;
   }
 
   /**
-   * Watches updates for all user feed subscriptions.
+   * Watches updates for multiple user feed subscriptions, up to the limit.
    */
-  public watchAllSubscriptions(args: {
+  public watchSubscriptions(args: {
     readonly onData: Consumer<Record<UserFeedSubscriptionId, UserFeedSubscription>>;
     readonly onError: Consumer<Error>;
     readonly limit?: number;
   }): Unsubscribe {
     const {onData, onError, limit} = args;
-
-    // If the local cache can satisfy the limit, return it immediately. Otherwise, wait for the
-    // query to complete.
-    if (this.allSubscriptions) {
-      const cacheSize = objectKeys(this.allSubscriptions).length;
-      const isCacheUnderLimit = cacheSize < USER_FEED_SUBSCRIPTIONS_CACHE_LIMIT;
-      const doesCacheSatisfyLimit = isDefined(limit) && limit <= cacheSize;
-      const isCacheFullyPopulated = isCacheUnderLimit || doesCacheSatisfyLimit;
-      if (isCacheFullyPopulated) {
-        onData(this.allSubscriptions);
-      }
-    }
 
     const queryClauses = arrayFilterNull([
       firestoreWhere('accountId', '==', this.accountId),
