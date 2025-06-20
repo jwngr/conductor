@@ -75,10 +75,15 @@ async function bootstrapLocalEnv(args: {
   }
   logger.log('[BOOTSTRAP] Created user feed subscriptions', {accountId});
 
+  const {rssSubscriptions, intervalSubscriptions, youtubeSubscriptions} = subscriptionsResult.value;
+
   // Create feed items.
   logger.log('[BOOTSTRAP] Creating feed items...', {accountId});
   const feedItemsResult = await createSampleFeedItems({
     accountId,
+    rssSubscriptions,
+    intervalSubscriptions,
+    youtubeSubscriptions,
     feedItemsService,
   });
   if (!feedItemsResult.success) {

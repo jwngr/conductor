@@ -11,6 +11,7 @@ import {
   objectMapEntries,
   objectReduceValues,
 } from '@shared/lib/objectUtils.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 import {
   getViewGroupByFieldText,
   getViewSortByFieldText,
@@ -18,8 +19,9 @@ import {
   SORT_BY_CREATED_TIME_DESC_OPTION,
 } from '@shared/lib/views.shared';
 
+import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {FeedItem, FeedItemContentType} from '@shared/types/feedItems.types';
-import type {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import {IconName} from '@shared/types/icons.types';
 import type {TagId} from '@shared/types/tags.types';
 import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
@@ -27,10 +29,14 @@ import type {Consumer} from '@shared/types/utils.types';
 import type {ViewGroupByOption, ViewSortByOption} from '@shared/types/views.types';
 import {ViewGroupByField, ViewSortByField} from '@shared/types/views.types';
 
+import {useLoggedInUserFeedSubscriptions} from '@sharedClient/hooks/userFeedSubscriptions.hooks';
+
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
 import {H6, P} from '@src/components/atoms/Text';
 import * as styles from '@src/components/views/UntriagedViewControlsSidebar.css';
+
+import {firebaseService} from '@src/lib/firebase.pwa';
 
 const ControlsSidebarFilterCriteriaSection = <T extends string>(args: {
   readonly title: string;
@@ -127,6 +133,37 @@ const ControlsSidebarFeedSubscriptionsSection: React.FC<{
   readonly subscriptionIdsToFilterBy: Set<UserFeedSubscriptionId>;
   readonly onFeedSubscriptionClick: Consumer<UserFeedSubscriptionId>;
 }> = ({feedItems, subscriptionIdsToFilterBy, onFeedSubscriptionClick}) => {
+  const feedSubscriptionsState = useLoggedInUserFeedSubscriptions({firebaseService});
+
+  const getCriteriaName = (feedSubscriptionId: UserFeedSubscriptionId): string => {
+    // TODO: Get feed subscription name from store.
+    switch (feedSubscriptionsState.status) {
+      case AsyncStatus.Idle:
+      case AsyncStatus.Pending:
+        return 'Loading...';
+      case AsyncStatus.Success: {
+        const allFeedSubscriptions = feedSubscriptionsState.value;
+        const feedSubscription = allFeedSubscriptions[feedSubscriptionId];
+        if (!feedSubscription) return feedSubscriptionId;
+        switch (feedSubscription.feedSourceType) {
+          case FeedSourceType.RSS:
+            return feedSubscription.title;
+          case FeedSourceType.YouTubeChannel:
+            return feedSubscription.channelId;
+          case FeedSourceType.Interval:
+            return `Interval (${feedSubscription.intervalSeconds}s)`;
+          default:
+            assertNever(feedSubscription);
+        }
+        break;
+      }
+      case AsyncStatus.Error:
+        return feedSubscriptionId;
+      default:
+        assertNever(feedSubscriptionsState);
+    }
+  };
+
   return (
     <ControlsSidebarFilterCriteriaSection<UserFeedSubscriptionId>
       title="Subscriptions"
@@ -139,10 +176,7 @@ const ControlsSidebarFeedSubscriptionsSection: React.FC<{
         }
         return acc;
       }}
-      getCriteriaName={(feedSubscriptionId) => {
-        // TODO: Get feed subscription name from store.
-        return feedSubscriptionId;
-      }}
+      getCriteriaName={getCriteriaName}
       onCriteriaClick={onFeedSubscriptionClick}
     />
   );

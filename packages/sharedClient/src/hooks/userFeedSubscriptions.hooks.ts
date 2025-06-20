@@ -57,7 +57,7 @@ export function useUserFeedSubscription(args: {
   return asyncState;
 }
 
-export function useUserFeedSubscriptions(args: {
+export function useLoggedInUserFeedSubscriptions(args: {
   readonly firebaseService: ClientFirebaseService;
 }): AsyncState<Record<UserFeedSubscriptionId, UserFeedSubscription>> {
   const {firebaseService} = args;

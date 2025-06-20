@@ -24,7 +24,7 @@ import {toast} from '@sharedClient/lib/toasts.client';
 
 import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {
-  useUserFeedSubscriptions,
+  useLoggedInUserFeedSubscriptions,
   useUserFeedSubscriptionsService,
 } from '@sharedClient/hooks/userFeedSubscriptions.hooks';
 
@@ -244,7 +244,7 @@ const LoadedFeedSubscriptionsListMainContent: React.FC<{
 };
 
 const FeedSubscriptionsList: React.FC = () => {
-  const userFeedSubscriptionsState = useUserFeedSubscriptions({firebaseService});
+  const userFeedSubscriptionsState = useLoggedInUserFeedSubscriptions({firebaseService});
 
   const renderMainContent = (): React.ReactNode => {
     switch (userFeedSubscriptionsState.status) {

@@ -11,7 +11,11 @@ import {
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {AsyncResult} from '@shared/types/results.types';
-import type {UserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
+import type {
+  IntervalUserFeedSubscription,
+  RssUserFeedSubscription,
+  YouTubeChannelUserFeedSubscription,
+} from '@shared/types/userFeedSubscriptions.types';
 
 import type {ServerFirebaseService} from '@sharedServer/services/firebase.server';
 import {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
@@ -23,7 +27,9 @@ interface CreateSampleUserFeedSubscriptionsArgs {
 
 interface CreateSampleUserFeedSubscriptionsResult {
   readonly count: number;
-  readonly subscriptions: readonly UserFeedSubscription[];
+  readonly rssSubscriptions: readonly RssUserFeedSubscription[];
+  readonly youtubeSubscriptions: readonly YouTubeChannelUserFeedSubscription[];
+  readonly intervalSubscriptions: readonly IntervalUserFeedSubscription[];
 }
 
 export async function createSampleUserFeedSubscriptions(
@@ -93,6 +99,8 @@ export async function createSampleUserFeedSubscriptions(
 
   return makeSuccessResult({
     count: allSubscriptions.length,
-    subscriptions: allSubscriptions,
+    rssSubscriptions: rssSubscriptions,
+    youtubeSubscriptions: [youtubeSubscription],
+    intervalSubscriptions: [intervalSubscription],
   });
 }
