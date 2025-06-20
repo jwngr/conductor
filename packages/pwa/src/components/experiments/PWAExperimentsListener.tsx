@@ -1,6 +1,8 @@
 import {useEffect} from 'react';
 
-import {isInternalAccount} from '@shared/lib/accounts.shared';
+import {logger} from '@shared/services/logger.shared';
+
+import {prefixError} from '@shared/lib/errorUtils.shared';
 
 import {Environment} from '@shared/types/environment.types';
 
@@ -11,6 +13,7 @@ import {ClientExperimentsService} from '@sharedClient/services/experiments.clien
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 import {useEventLogService} from '@sharedClient/hooks/eventLog.hooks';
 
+import {env} from '@src/lib/environment.pwa';
 import {firebaseService} from '@src/lib/firebase.pwa';
 
 export const PWAExperimentsListener: React.FC = () => {
@@ -22,14 +25,20 @@ export const PWAExperimentsListener: React.FC = () => {
     const pwaExperimentsService = new ClientExperimentsService({
       environment: Environment.PWA,
       accountId: loggedInAccount.accountId,
-      isInternalAccount: isInternalAccount({email: loggedInAccount.email}),
+      isInternalAccount: loggedInAccount.email === env.defaultPasswordlessEmailAddress,
       eventLogService,
       firebaseService,
     });
 
     setExperimentsService(pwaExperimentsService);
 
-    const unsubscribe = pwaExperimentsService.watchAccountExperiments(setExperiments);
+    const unsubscribe = pwaExperimentsService.watchExperimentsForAccount({
+      onData: setExperiments,
+      onError: (error) => {
+        const betterError = prefixError(error, 'Failed to fetch experiments for account');
+        logger.error(betterError);
+      },
+    });
 
     return () => {
       unsubscribe();

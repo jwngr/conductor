@@ -65,8 +65,19 @@ export class ClientExperimentsService {
       parseId: parseAccountId,
     });
 
-    this.unsubscribeWatcher = this.watchAccountExperimentsState((accountExperimentsState) => {
-      this.accountExperimentsState = accountExperimentsState;
+    this.unsubscribeWatcher = this.watchAccountExperimentsStateDoc({
+      onData: (accountExperimentsState) => {
+        this.accountExperimentsState = accountExperimentsState;
+      },
+      onError: (error) => {
+        const message =
+          'Failed to fetch account experiments state. Using default experiment values.';
+        logger.error(prefixError(error, message));
+        this.accountExperimentsState = makeDefaultAccountExperimentsState({
+          accountId: this.accountId,
+          isInternalAccount: this.isInternalAccount,
+        });
+      },
     });
   }
 
@@ -74,10 +85,15 @@ export class ClientExperimentsService {
     this.unsubscribeWatcher();
   }
 
-  private watchAccountExperimentsState(callback: Consumer<AccountExperimentsState>): Unsubscribe {
+  private watchAccountExperimentsStateDoc(args: {
+    readonly onData: Consumer<AccountExperimentsState>;
+    readonly onError: Consumer<Error>;
+  }): Unsubscribe {
+    const {onData, onError} = args;
+
     // If the account experiments state is already set, call the callback with the current state.
     if (this.accountExperimentsState) {
-      callback(this.accountExperimentsState);
+      onData(this.accountExperimentsState);
     }
 
     return this.collectionService.watchDoc(
@@ -85,7 +101,7 @@ export class ClientExperimentsService {
       (accountExperimentsState) => {
         if (!accountExperimentsState) {
           // If no account experiments state is found, assume default state.
-          callback(
+          onData(
             makeDefaultAccountExperimentsState({
               accountId: this.accountId,
               isInternalAccount: this.isInternalAccount,
@@ -94,7 +110,7 @@ export class ClientExperimentsService {
           return;
         }
 
-        callback({
+        onData({
           accountId: this.accountId,
           accountVisibility: accountExperimentsState.accountVisibility,
           experimentOverrides: accountExperimentsState.experimentOverrides,
@@ -102,30 +118,26 @@ export class ClientExperimentsService {
           lastUpdatedTime: accountExperimentsState.lastUpdatedTime,
         });
       },
-      (error) => {
-        const message =
-          'Failed to fetch account experiments state. Using default experiment values.';
-        logger.error(prefixError(error, message));
-
-        // Assume default experiment values in error case.
-        callback(
-          makeDefaultAccountExperimentsState({
-            accountId: this.accountId,
-            isInternalAccount: this.isInternalAccount,
-          })
-        );
-      }
+      onError
     );
   }
 
-  public watchAccountExperiments(callback: Consumer<readonly AccountExperiment[]>): Unsubscribe {
-    return this.watchAccountExperimentsState((accountExperimentsState) => {
-      const accountExperiments = getExperimentsForAccount({
-        environment: this.environment,
-        accountVisibility: accountExperimentsState.accountVisibility,
-        accountOverrides: accountExperimentsState.experimentOverrides,
-      });
-      callback(accountExperiments);
+  public watchExperimentsForAccount(args: {
+    readonly onData: Consumer<readonly AccountExperiment[]>;
+    readonly onError: Consumer<Error>;
+  }): Unsubscribe {
+    const {onData, onError} = args;
+
+    return this.watchAccountExperimentsStateDoc({
+      onData: (accountExperimentsState) => {
+        const accountExperiments = getExperimentsForAccount({
+          environment: this.environment,
+          accountVisibility: accountExperimentsState.accountVisibility,
+          accountOverrides: accountExperimentsState.experimentOverrides,
+        });
+        onData(accountExperiments);
+      },
+      onError,
     });
   }
 

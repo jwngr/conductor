@@ -21,7 +21,7 @@ export const NotFoundScreen: React.FC<{
   const isLoggedIn = loggedInAccount !== null;
 
   return (
-    <Screen withHeader={isLoggedIn} withLeftSidebar={isLoggedIn} align="center" justify="center">
+    <Screen selectedNavItemId={null} withHeader={isLoggedIn} align="center" justify="center">
       <HeroArea
         title={title ?? DEFAULT_NOT_FOUND_TITLE}
         subtitle={subtitle ?? DEFAULT_NOT_FOUND_SUBTITLE}

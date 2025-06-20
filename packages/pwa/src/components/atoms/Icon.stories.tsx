@@ -1,3 +1,5 @@
+import {objectValues} from '@shared/lib/objectUtils.shared';
+
 import {IconName} from '@shared/types/icons.types';
 
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
@@ -10,7 +12,7 @@ export const IconStories: React.FC = () => {
     <>
       <StorySection title="All icons">
         <FlexRow gap={4} wrap>
-          {Object.values(IconName).map((name) => (
+          {objectValues(IconName).map((name) => (
             <FlexColumn key={name} gap={2} align="center">
               <Icon name={name} size={24} />
               <P monospace>{name}</P>

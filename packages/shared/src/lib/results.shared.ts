@@ -1,4 +1,4 @@
-import {partition} from '@shared/lib/utils.shared';
+import {arrayPartition} from '@shared/lib/arrayUtils.shared';
 
 import type {ErrorResult, Result, SuccessResult} from '@shared/types/results.types';
 
@@ -25,7 +25,7 @@ export function partitionResults<T, E>(
   readonly successes: ReadonlyArray<SuccessResult<T>>;
   readonly errors: ReadonlyArray<ErrorResult<E>>;
 } {
-  const [successes, errors] = partition<SuccessResult<T>, ErrorResult<E>>(
+  const [successes, errors] = arrayPartition<SuccessResult<T>, ErrorResult<E>>(
     results,
     (result) => result.success
   );

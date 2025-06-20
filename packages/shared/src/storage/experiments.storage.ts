@@ -1,7 +1,8 @@
 import {ALL_EXPERIMENT_DEFINITIONS} from '@shared/lib/experimentDefinitions.shared';
+import {objectFilterKeys, objectMapValues} from '@shared/lib/objectUtils.shared';
 import {parseStorageTimestamp} from '@shared/lib/parser.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
-import {assertNever, mapObjectValues} from '@shared/lib/utils.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 
@@ -95,7 +96,7 @@ export function fromStorageExperimentDefinition(
 export function toStorageAccountExperimentsState(
   accountExperimentsState: AccountExperimentsState
 ): AccountExperimentsStateFromStorage {
-  const experimentOverridesFromStorage = mapObjectValues(
+  const experimentOverridesFromStorage = objectMapValues<ExperimentOverrideFromStorage>(
     accountExperimentsState.experimentOverrides,
     toStorageExperimentOverride
   );
@@ -151,17 +152,22 @@ export function fromStorageAccountExperimentsState(
 ): Result<AccountExperimentsState, Error> {
   const parsedAccountId = parseAccountId(accountExperimentsStateFromStorage.accountId);
   if (!parsedAccountId.success) return parsedAccountId;
+  const accountId = parsedAccountId.value;
 
-  const experimentOverrides = mapObjectValues(
+  const filteredOverrides = objectFilterKeys(
     accountExperimentsStateFromStorage.experimentOverrides,
-    fromStorageExperimentOverride,
     (key) => key in ALL_EXPERIMENT_DEFINITIONS
   );
 
+  const finalExperimentOverrides = objectMapValues(
+    filteredOverrides,
+    fromStorageExperimentOverride
+  );
+
   return makeSuccessResult({
-    accountId: parsedAccountId.value,
+    accountId,
+    experimentOverrides: finalExperimentOverrides,
     accountVisibility: accountExperimentsStateFromStorage.accountVisibility,
-    experimentOverrides,
     createdTime: parseStorageTimestamp(accountExperimentsStateFromStorage.createdTime),
     lastUpdatedTime: parseStorageTimestamp(accountExperimentsStateFromStorage.lastUpdatedTime),
   });

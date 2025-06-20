@@ -1,30 +1,52 @@
 import path from 'path';
-import {fileURLToPath} from 'url';
 
 import {logger} from '@shared/services/logger.shared';
 
-import {prefixError} from '@shared/lib/errorUtils.shared';
+import {asyncTry, prefixError, prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {POCKET_EXPORT_FEED_SOURCE} from '@shared/lib/feedSources.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
 import {pluralizeWithCount} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 
+import type {AccountId} from '@shared/types/accounts.types';
+import type {EmailAddress} from '@shared/types/emails.types';
 import type {PocketImportItem} from '@shared/types/pocket.types';
+import type {AsyncResult} from '@shared/types/results.types';
 
 import {ServerPocketService} from '@sharedServer/lib/pocket.server';
 
 import {env} from '@src/lib/environment.scripts';
+import {firebaseService} from '@src/lib/firebase.scripts';
 import {initServices} from '@src/lib/initServices.scripts';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+async function getAccountId(args: {readonly email: EmailAddress}): AsyncResult<AccountId, Error> {
+  const {email} = args;
 
-const accountIdResult = parseAccountId(env.firebaseUserId);
-if (!accountIdResult.success) {
-  logger.error(prefixError(accountIdResult.error, 'Invalid FIREBASE_USER_ID environment variable'));
-  process.exit(1);
+  // Log the Firebase project info for debugging.
+  logger.log('[BOOTSTRAP] Firebase project info', {
+    GOOGLE_CLOUD_PROJECT: env.googleCloudProject,
+    FIREBASE_PROJECT_ID: env.firebaseProjectId,
+  });
+
+  // Look up the Firebase user by email
+  const userResult = await asyncTry(async () => firebaseService.auth.getUserByEmail(email));
+
+  if (!userResult.success) {
+    const message =
+      `No Firebase user exists with email ${email}. Make sure the user exists and you ` +
+      `have authenticated to Firebase.`;
+    return prefixErrorResult(userResult, message);
+  }
+
+  const firebaseUid = userResult.value.uid;
+
+  // Parse account ID from the Firebase UID.
+  const accountIdResult = parseAccountId(firebaseUid);
+  if (!accountIdResult.success) return accountIdResult;
+
+  return makeSuccessResult(accountIdResult.value);
 }
-const accountId = accountIdResult.value;
 
 const args = process.argv.slice(2);
 if (args.length === 0) {
@@ -49,14 +71,24 @@ function validateFirecrawlApiKey(): string {
   return firecrawlApiKey;
 }
 
-async function main(): Promise<void> {
+async function main(): AsyncResult<string, Error> {
   const firecrawlApiKey = validateFirecrawlApiKey();
   const {feedItemsService} = initServices({firecrawlApiKey});
 
+  const accountIdResult = await getAccountId({email: env.localEmailAddress});
+  if (!accountIdResult.success) {
+    const betterErrorResult = prefixErrorResult(accountIdResult, 'Error getting account ID');
+    logger.error(betterErrorResult.error);
+    return betterErrorResult;
+  }
+  const accountId = accountIdResult.value;
+
   const pocketItemsResult = await ServerPocketService.parseHtmlExportFile(POCKET_EXPORT_FILE_PATH);
   if (!pocketItemsResult.success) {
-    logger.error(prefixError(pocketItemsResult.error, 'Error parsing Pocket export file'));
-    process.exit(1);
+    const message = 'Error parsing Pocket export file';
+    const betterErrorResult = prefixErrorResult(pocketItemsResult, message);
+    logger.error(betterErrorResult.error);
+    return betterErrorResult;
   }
 
   const itemsWithCount = pluralizeWithCount(pocketItemsResult.value.length, 'item', 'items');
@@ -88,9 +120,8 @@ async function main(): Promise<void> {
 
     if (!createFeedItemResult.success) {
       // Treat individual errors as non-fatal.
-      logger.error(
-        prefixError(createFeedItemResult.error, `Error creating feed item for ${pocketItem.url}`)
-      );
+      const message = `Error creating feed item for ${pocketItem.url}`;
+      logger.error(prefixError(createFeedItemResult.error, message));
       continue;
     }
   }
@@ -105,8 +136,7 @@ async function main(): Promise<void> {
     )
     .join('\n');
 
-  // Output to stdout instead of writing to a file
-  process.stdout.write(tsvFields);
+  return makeSuccessResult(tsvFields);
 }
 
 /** Escapes a field so it can be safely written to a TSV file. */
@@ -114,4 +144,14 @@ function escapeFieldForTsv(field: string): string {
   return field.replace(/\t/g, ' ').replace(/\n/g, ' ');
 }
 
-void main();
+const result = await main();
+if (!result.success) {
+  logger.error(result.error);
+  process.exit(1);
+}
+
+// Output to stdout instead of writing to a file
+process.stdout.write(result.value);
+
+logger.log('\n✅ Successfully output Pocket export to stdout');
+process.exit(0);

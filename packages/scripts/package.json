@@ -7,6 +7,7 @@
     "@conductor/shared": "workspace:*",
     "@conductor/shared-server": "workspace:*",
     "@mendable/firecrawl-js": "^1.25.2",
+    "arg": "^5.0.2",
     "dotenv": "^16.5.0"
   },
   "scripts": {
@@ -15,6 +16,8 @@
     "validate:lint:fix": "eslint src --fix",
     "validate:types": "tsc --build",
     "validate:format": "prettier --check 'src/**/*.{js,ts,json}'",
+    "bootstrap": "npx tsx src/lib/bootstrap/bootstrapLocalEnv.ts",
+    "bootstrap:emulator": "FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 FIREBASE_STORAGE_EMULATOR_HOST=127.0.0.1:9199 npx tsx src/lib/bootstrap/bootstrapLocalEnv.ts",
     "format": "prettier --write 'src/**/*.{js,ts,json}'",
     "ci": "rm -rf node_modules/ && yarn install",
     "build": "exit 0",

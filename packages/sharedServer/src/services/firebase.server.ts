@@ -1,5 +1,6 @@
 import {enableFirebaseTelemetry} from '@genkit-ai/firebase';
 import admin from 'firebase-admin';
+import type {Auth} from 'firebase-admin/auth';
 import {FieldValue} from 'firebase-admin/firestore';
 import type {Firestore} from 'firebase-admin/firestore';
 import type {Storage} from 'firebase-admin/storage';
@@ -24,6 +25,7 @@ async function enableTelemetry(): AsyncResult<void, Error> {
 }
 
 export class ServerFirebaseService {
+  private authInstance: Auth;
   private storageInstance: Storage;
   private firestoreInstance: Firestore;
 
@@ -42,10 +44,23 @@ export class ServerFirebaseService {
     // Enable telemetry, ignoring errors.
     void enableTelemetry();
 
+    // Create references to Firebase services.
+    this.authInstance = admin.auth();
     this.storageInstance = admin.storage();
-
     this.firestoreInstance = admin.firestore();
+
+    // Firestore settings.
     this.firestoreInstance.settings({ignoreUndefinedProperties: true});
+
+    // To run against the Firebase emulators, set the following environment variables:
+    //  - `FIREBASE_AUTH_EMULATOR_HOST`
+    //  - `FIREBASE_STORAGE_EMULATOR_HOST`
+    //  - `FIRESTORE_EMULATOR_HOST`
+    // This is done automatically in the `yarn bootstrap:emulator` script.
+  }
+
+  public get auth(): Auth {
+    return this.authInstance;
   }
 
   public get storage(): Storage {

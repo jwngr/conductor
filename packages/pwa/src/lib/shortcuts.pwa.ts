@@ -3,17 +3,12 @@ import {useCallback, useEffect} from 'react';
 
 import {SharedKeyboardShortcutsService} from '@shared/services/keyboardShortcuts.shared';
 
-import type {KeyboardShortcut, ShortcutHandler} from '@shared/types/shortcuts.types';
+import type {KeyboardShortcut, ShortcutWithHandler} from '@shared/types/shortcuts.types';
 import type {NavItemId} from '@shared/types/urls.types';
 
 import {IS_MAC} from '@sharedClient/lib/environment.client';
 
-import {getNavItemRoute} from '@src/lib/router.pwa';
-
-interface ShortcutWithHandler {
-  readonly shortcut: KeyboardShortcut;
-  readonly handler: ShortcutHandler;
-}
+import {getRouteFromNavItemId} from '@src/lib/router.pwa';
 
 export const keyboardShortcutsService = new SharedKeyboardShortcutsService({isMac: IS_MAC});
 
@@ -33,14 +28,15 @@ export function useShortcuts(shortcutsWithHandlers: ShortcutWithHandler[]): void
 }
 
 /**
- * Navigates to a URL when a shortcut is triggered. Included as a helper for a common use case.
+ * Navigates to a nav item route when a shortcut is triggered. Included as a helper for a common use
+ * case of navigating to nav items.
  */
 export function useNavShortcut(shortcut: KeyboardShortcut, navItemId: NavItemId): void {
   const navigate = useNavigate();
 
   const handleShortcut = useCallback(async (): Promise<void> => {
-    const route = getNavItemRoute(navItemId);
-    void navigate({to: route});
+    const route = getRouteFromNavItemId(navItemId);
+    void navigate({to: route.to});
   }, [navigate, navItemId]);
 
   useShortcuts([{shortcut, handler: handleShortcut}]);

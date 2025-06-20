@@ -5,7 +5,7 @@ import {logger} from '@shared/services/logger.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AsyncResult, Result} from '@shared/types/results.types';
-import type {Func, Supplier, UUID} from '@shared/types/utils.types';
+import type {Supplier, UUID} from '@shared/types/utils.types';
 
 /**
  * Formats a number with commas.
@@ -27,8 +27,7 @@ const DEFAULT_ASSERT_NEVER_OPTIONS: AssertNeverOptions = {
 
 /**
  * Throws an error and throws if the provided value is not of type `never`. This is useful for
- * exhaustive switch statements. In rare scenarios where input is untrusted and throwing is unsafe
- * (e.g. parsers), use {@link safeAssertNever} instead.
+ * exhaustive switch statements.
  */
 export function assertNever(
   val: never,
@@ -40,35 +39,6 @@ export function assertNever(
   }
   // eslint-disable-next-line no-restricted-syntax
   throw new Error(`Unexpected value: ${val}`);
-}
-
-/**
- * Logs an error if the provided value is not of type `never`. This is useful for exhaustive
- * switch statements. In most cases, use {@link assertNever} instead.
- */
-export function safeAssertNever(val: never): void {
-  logger.error(new Error('safeAssertNever received non-empty value'), {val});
-}
-
-/**
- * Filters out all null values from the provided array.
- */
-export function filterNull<T>(arr: Array<T | null>): T[] {
-  return arr.filter(Boolean) as T[];
-}
-
-/**
- * Filters out all undefined values from the provided array.
- */
-export function filterUndefined<T>(arr: Array<T | undefined>): T[] {
-  return arr.filter(Boolean) as T[];
-}
-
-/**
- * Omits all undefined values from the provided object.
- */
-export function omitUndefined<T extends object>(obj: T): T {
-  return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined)) as T;
 }
 
 /**
@@ -121,26 +91,6 @@ export async function batchAsyncResults<T>(
     allResults.push(...currentResults);
   }
   return makeSuccessResult(allResults);
-}
-
-/**
- * Partitions an array into two arrays based on the provided predicate.
- */
-export function partition<T, U>(
-  arr: ReadonlyArray<T | U>,
-  predicate: Func<T | U, boolean>
-): [T[], U[]] {
-  return arr.reduce(
-    (acc, item) => {
-      if (predicate(item)) {
-        acc[0].push(item as T);
-      } else {
-        acc[1].push(item as U);
-      }
-      return acc;
-    },
-    [[], []] as [T[], U[]]
-  );
 }
 
 /**
@@ -226,30 +176,29 @@ export function isPositiveInteger(value: number): boolean {
 }
 
 /**
- * Returns a new typed array with the same length, but each value having been filtered by `filter`.
+ * Returns `true` if the provided value is `null`. Useful for type narrowing or chaining.
  */
-export function filterArray<T>(arr: T[], filter: Func<T, boolean>): T[] {
-  return arr.filter(filter);
+export function isNull<T>(val: T | null): val is null {
+  return val === null;
 }
 
 /**
- * Returns a new typed array with the same length, but each value having been transformed by
- * `mapper`.
+ * Returns `true` if the provided value is not `null`. Useful for type narrowing or chaining.
  */
-export function mapArray<Start, End>(arr: Start[], mapper: Func<Start, End>): End[] {
-  return arr.map(mapper);
+export function isNotNull<T>(val: T | null): val is T {
+  return val !== null;
 }
 
 /**
- * Returns a new typed object with the same keys, but each value having been transformed by
- * `mapper`.
+ * Returns `true` if the provided value is not `undefined`. Useful for type narrowing or chaining.
  */
-export function mapObjectValues<Key extends string, Start, End>(
-  obj: Partial<Record<Key, Start>>,
-  mapper: Func<Start, End>,
-  filter?: Func<Key, boolean>
-): Record<Key, End> {
-  const entries = Object.entries(obj).map(([key, value]) => [key as Key, mapper(value as Start)]);
-  const filteredEntries = filter ? filterArray(entries, ([key]) => filter(key as Key)) : entries;
-  return Object.fromEntries(filteredEntries);
+export function isDefined<T>(val: T | undefined): val is T {
+  return val !== undefined;
+}
+
+/**
+ * Returns `true` if the provided value is `undefined`. Useful for type narrowing or chaining.
+ */
+export function isUndefined<T>(val: T | undefined): val is undefined {
+  return val === undefined;
 }

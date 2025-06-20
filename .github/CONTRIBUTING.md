@@ -60,22 +60,19 @@ The packages are:
 
     **Note:** Enabling Analytics is not required for local development.
 
-1.  Populate a `.env` file at the root of the repo:
-
-    ```bash
-    $ cp dot-env.example .env
-    # Open `.env` and add config.
-    ```
-
 1.  [Firecrawl](https://www.firecrawl.dev/) is used to convert websites into LLM-friendly content.
     Create a Firecrawl account and generate an API key for local development.
 
-1.  Populate a `.env.<FIREBASE_PROJECT_ID>` file inside of `/packages/functions`:
+1.  Copy all `.env` files from the `dot-env` directory:
 
     ```bash
-    $ cp /packages/functions/dot-env.example /packages/functions/.env.<FIREBASE_PROJECT_ID>
-    # Open `.env.<FIREBASE_PROJECT_ID>` and add config.
+    $ cp dot-env/shared.env .env
+    $ cp dot-env/functions.env packages/functions/.env.<FIREBASE_PROJECT_ID>
+    $ cp dot-env/rssServer.env packages/rssServer/.env
+    $ cp dot-env/scripts.env packages/scripts/.env
     ```
+
+1.  Open each `.env` file and add required config.
 
 ## Recurring setup (PWA)
 
@@ -90,6 +87,33 @@ By default, the PWA runs against a local emulator (server functions) and in-memo
 
 - [Server functions local development](#server-functions-local-development)
 - [RSS feed provider local development](#rss-feed-provider-local-development)
+
+## Bootstrap local environment
+
+A script to bootstrap your local environment with test data can be run against a live
+Firebase project or against the Firebase emulator suite.
+
+1. Start all local services:
+
+   ```bash
+   $ yarn run dev:functions
+   $ yarn run dev:rss
+   $ yarn run dev:pwa
+   ```
+
+1. Sign in to Conductor locally to create an account.
+
+1. Run the bootstrap script:
+
+   ```bash
+   # Run against a live Firebase project
+   $ yarn bootstrap
+
+   # Run against the Firebase emulator suite
+   $ yarn bootstrap:emulator
+   ```
+
+You should see items in your inbox.
 
 ## Server functions local development
 

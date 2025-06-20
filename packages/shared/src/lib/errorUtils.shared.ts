@@ -1,5 +1,5 @@
+import {arrayPartition} from '@shared/lib/arrayUtils.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
-import {partition} from '@shared/lib/utils.shared';
 
 import type {AsyncResult, ErrorResult, Result, SuccessResult} from '@shared/types/results.types';
 import type {Supplier} from '@shared/types/utils.types';
@@ -114,7 +114,7 @@ export function syncTryAll<T>(allResults: Array<Result<T, Error>>): Result<T[], 
   // Allow `try` / `catch` block here.
   // eslint-disable-next-line no-restricted-syntax
   try {
-    const [successResults, failedResults] = partition<SuccessResult<T>, ErrorResult<Error>>(
+    const [successResults, failedResults] = arrayPartition<SuccessResult<T>, ErrorResult<Error>>(
       allResults,
       (result) => result.success
     );

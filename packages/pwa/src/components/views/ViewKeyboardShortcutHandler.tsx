@@ -46,7 +46,7 @@ export const ViewKeyboardShortcutHandler: React.FC<{
     if (!feedItems.length) return;
     if (!focusedFeedItemId) return;
 
-    await navigate({to: feedItemRoute.fullPath, params: {feedItemId: focusedFeedItemId}});
+    await navigate({to: feedItemRoute.to, params: {feedItemId: focusedFeedItemId}});
   }, [feedItems, focusedFeedItemId, navigate]);
 
   useShortcuts([

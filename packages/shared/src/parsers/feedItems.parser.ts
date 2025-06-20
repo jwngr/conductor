@@ -9,9 +9,9 @@ import {FeedItemIdSchema, FeedItemSchema} from '@shared/schemas/feedItems.schema
 import {fromStorageFeedItem} from '@shared/storage/feedItems.storage';
 
 /**
- * Attempts to parse a plain string into a {@link FeedItemId}.
+ * Attempts to parse an unknown value into a {@link FeedItemId}.
  */
-export function parseFeedItemId(maybeFeedItemId: string): Result<FeedItemId, Error> {
+export function parseFeedItemId(maybeFeedItemId: unknown): Result<FeedItemId, Error> {
   const parsedResult = parseZodResult(FeedItemIdSchema, maybeFeedItemId);
   if (!parsedResult.success) return prefixErrorResult(parsedResult, 'Invalid feed item ID');
   return makeSuccessResult(parsedResult.value as FeedItemId);

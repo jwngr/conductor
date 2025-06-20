@@ -1,7 +1,9 @@
 import {makeEmojiIcon} from '@shared/lib/customIcons.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 
 import type {NavItem} from '@shared/types/urls.types';
 import {NavItemId} from '@shared/types/urls.types';
+import {ViewType} from '@shared/types/views.types';
 
 const ALL_NAV_ITEMS: Record<NavItemId, NavItem> = {
   [NavItemId.Untriaged]: {
@@ -67,8 +69,6 @@ export class NavItems {
   }
 }
 
-export const DEFAULT_NAV_ITEM: NavItem = NavItems.fromId(NavItemId.Untriaged);
-
 export const ORDERED_VIEW_NAV_ITEMS: NavItem[] = [
   NavItems.fromId(NavItemId.Untriaged),
   NavItems.fromId(NavItemId.Saved),
@@ -85,3 +85,26 @@ export const ORDERED_SOURCE_NAV_ITEMS: NavItem[] = [
   NavItems.fromId(NavItemId.Import),
   NavItems.fromId(NavItemId.Experiments),
 ];
+
+export function getNavItemIdFromViewType(viewType: ViewType): NavItemId {
+  switch (viewType) {
+    case ViewType.Untriaged:
+      return NavItemId.Untriaged;
+    case ViewType.Saved:
+      return NavItemId.Saved;
+    case ViewType.Done:
+      return NavItemId.Done;
+    case ViewType.Unread:
+      return NavItemId.Unread;
+    case ViewType.Starred:
+      return NavItemId.Starred;
+    case ViewType.All:
+      return NavItemId.All;
+    case ViewType.Today:
+      return NavItemId.Today;
+    case ViewType.Trashed:
+      return NavItemId.Trashed;
+    default:
+      assertNever(viewType);
+  }
+}
