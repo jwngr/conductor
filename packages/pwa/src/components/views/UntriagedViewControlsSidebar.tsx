@@ -1,16 +1,16 @@
 import type React from 'react';
 
+import {arrayReduce} from '@shared/lib/arrayUtils.shared';
 import {getFeedItemContentTypeText} from '@shared/lib/feedItems.shared';
 import {
   getFeedSubscriptionIdForFeedSource,
   getNameForFeedSourceType,
 } from '@shared/lib/feedSources.shared';
 import {
-  arrayReduce,
   objectForEachEntry,
   objectMapEntries,
   objectReduceValues,
-} from '@shared/lib/utils.shared';
+} from '@shared/lib/objectUtils.shared';
 import {
   getViewGroupByFieldText,
   getViewSortByFieldText,

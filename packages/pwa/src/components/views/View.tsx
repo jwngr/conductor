@@ -2,17 +2,13 @@ import React, {useEffect, useMemo, useRef, useState} from 'react';
 
 import {logger} from '@shared/services/logger.shared';
 
+import {arrayFilter, arraySome} from '@shared/lib/arrayUtils.shared';
 import {isDate} from '@shared/lib/datetime.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {getFeedSubscriptionIdForFeedSource} from '@shared/lib/feedSources.shared';
-import {
-  arrayFilter,
-  arraySome,
-  assertNever,
-  objectKeys,
-  objectMapEntries,
-} from '@shared/lib/utils.shared';
+import {objectKeys, objectMapEntries} from '@shared/lib/objectUtils.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';

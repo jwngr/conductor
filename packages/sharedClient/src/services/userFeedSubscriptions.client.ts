@@ -8,6 +8,7 @@ import {httpsCallable} from 'firebase/functions';
 
 import {logger} from '@shared/services/logger.shared';
 
+import {arrayToRecord} from '@shared/lib/arrayUtils.shared';
 import {
   DEFAULT_FEED_TITLE,
   USER_FEED_SUBSCRIPTIONS_CACHE_LIMIT,
@@ -19,19 +20,14 @@ import {
   prefixErrorResult,
   prefixResultIfError,
 } from '@shared/lib/errorUtils.shared';
+import {objectKeys} from '@shared/lib/objectUtils.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {
   makeIntervalUserFeedSubscription,
   makeRssUserFeedSubscription,
   makeYouTubeChannelUserFeedSubscription,
 } from '@shared/lib/userFeedSubscriptions.shared';
-import {
-  arrayToRecord,
-  filterNull,
-  isDefined,
-  isPositiveInteger,
-  objectKeys,
-} from '@shared/lib/utils.shared';
+import {filterNull, isDefined, isPositiveInteger} from '@shared/lib/utils.shared';
 import {getYouTubeChannelId} from '@shared/lib/youtube.shared';
 
 import {
@@ -302,8 +298,9 @@ export class ClientUserFeedSubscriptionsService {
   }): Unsubscribe {
     const {userFeedSubscriptionId, onData, onError} = args;
 
-    if (this.allSubscriptions?.[userFeedSubscriptionId]) {
-      onData(this.allSubscriptions[userFeedSubscriptionId]);
+    const cachedSubscription = this.allSubscriptions?.[userFeedSubscriptionId];
+    if (cachedSubscription) {
+      onData(cachedSubscription);
     }
 
     const unsubscribe = this.collectionService.watchDoc(userFeedSubscriptionId, onData, onError);

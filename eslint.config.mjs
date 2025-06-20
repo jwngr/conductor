@@ -336,7 +336,7 @@ export default tseslint.config(
 
   // Allow usage of Object.* methods in the file that defines the utils.
   {
-    files: ['packages/shared/src/lib/utils.shared.ts'],
+    files: ['packages/shared/src/lib/objectUtils.shared.ts'],
     rules: {
       'no-restricted-syntax': ['error', ...BASE_RESTRICTED_SYNTAX],
     },

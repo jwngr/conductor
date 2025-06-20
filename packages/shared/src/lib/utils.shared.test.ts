@@ -12,7 +12,6 @@ import {
   isValidPort,
   makeUuid,
   noopTrue,
-  omitUndefined,
   partition,
   pluralize,
   pluralizeWithCount,
@@ -72,54 +71,6 @@ describe('filterUndefined', () => {
 
   test('should handle empty array', () => {
     expect(filterUndefined([])).toEqual([]);
-  });
-});
-
-describe('omitUndefined', () => {
-  test('should remove properties with undefined values', () => {
-    const obj = {
-      a: 1,
-      b: undefined,
-      c: 'test',
-      d: undefined,
-    };
-    expect(omitUndefined(obj)).toEqual({
-      a: 1,
-      c: 'test',
-    });
-  });
-
-  test('should return same object if no undefined values', () => {
-    const obj = {
-      a: 1,
-      b: 2,
-      c: 'test',
-    };
-    expect(omitUndefined(obj)).toEqual(obj);
-  });
-
-  test('should return empty object if all values are undefined', () => {
-    const obj = {
-      a: undefined,
-      b: undefined,
-    };
-    expect(omitUndefined(obj)).toEqual({});
-  });
-
-  test('should handle empty object', () => {
-    expect(omitUndefined({})).toEqual({});
-  });
-
-  test('should handle null values (preserving them)', () => {
-    const obj = {
-      a: 1,
-      b: null,
-      c: undefined,
-    };
-    expect(omitUndefined(obj)).toEqual({
-      a: 1,
-      b: null,
-    });
   });
 });
 

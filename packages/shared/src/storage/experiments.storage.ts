@@ -1,7 +1,8 @@
 import {ALL_EXPERIMENT_DEFINITIONS} from '@shared/lib/experimentDefinitions.shared';
+import {objectMapValues} from '@shared/lib/objectUtils.shared';
 import {parseStorageTimestamp} from '@shared/lib/parser.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
-import {assertNever, objectMapValues} from '@shared/lib/utils.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 
