@@ -6,7 +6,6 @@ import {
   objectForEachEntry,
   objectForEachKey,
   objectForEachValue,
-  objectFromEntries,
   objectKeys,
   objectMapEntries,
   objectMapKeys,
@@ -14,60 +13,6 @@ import {
   objectOmitUndefined,
   objectValues,
 } from '@shared/lib/objectUtils.shared';
-
-describe('objectFromEntries', () => {
-  test('should create an object from an array of entries', () => {
-    const entries: Array<[string, unknown]> = [
-      ['a', 1],
-      ['b', 'two'],
-      ['c', true],
-    ];
-    expect(objectFromEntries(entries)).toEqual({
-      a: 1,
-      b: 'two',
-      c: true,
-    });
-  });
-
-  test('should return an empty object for an empty array', () => {
-    const entries: Array<[string, unknown]> = [];
-    expect(objectFromEntries(entries)).toEqual({});
-  });
-
-  test('should handle numeric keys by converting them to strings', () => {
-    const entries: Array<[number, string]> = [
-      [1, 'one'],
-      [2, 'two'],
-    ];
-    expect(objectFromEntries(entries)).toEqual({
-      '1': 'one',
-      '2': 'two',
-    });
-  });
-
-  test('should preserve symbol keys', () => {
-    const symbolKey = Symbol('key');
-    const entries: Array<[string | symbol, unknown]> = [
-      ['a', 1],
-      [symbolKey, true],
-    ];
-    expect(objectFromEntries(entries)).toEqual({
-      a: 1,
-      [symbolKey]: true,
-    });
-  });
-
-  test('should handle null and undefined values', () => {
-    const entries: Array<[string, unknown]> = [
-      ['a', null],
-      ['b', undefined],
-    ];
-    expect(objectFromEntries(entries)).toEqual({
-      a: null,
-      b: undefined,
-    });
-  });
-});
 
 describe('objectOmitUndefined', () => {
   test('should remove properties with undefined values', () => {

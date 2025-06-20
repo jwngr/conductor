@@ -96,7 +96,7 @@ export function fromStorageExperimentDefinition(
 export function toStorageAccountExperimentsState(
   accountExperimentsState: AccountExperimentsState
 ): AccountExperimentsStateFromStorage {
-  const experimentOverridesFromStorage = objectMapValues(
+  const experimentOverridesFromStorage = objectMapValues<ExperimentOverrideFromStorage>(
     accountExperimentsState.experimentOverrides,
     toStorageExperimentOverride
   );
@@ -154,7 +154,7 @@ export function fromStorageAccountExperimentsState(
   if (!parsedAccountId.success) return parsedAccountId;
   const accountId = parsedAccountId.value;
 
-  const filteredOverrides = objectFilterKeys<string, ExperimentOverrideFromStorage>(
+  const filteredOverrides = objectFilterKeys(
     accountExperimentsStateFromStorage.experimentOverrides,
     (key) => key in ALL_EXPERIMENT_DEFINITIONS
   );

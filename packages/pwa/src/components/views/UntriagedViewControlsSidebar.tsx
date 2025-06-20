@@ -45,8 +45,7 @@ const ControlsSidebarFilterCriteriaSection = <T extends string>(args: {
   const itemCountByCategory = {} as Record<T, number>;
   arrayReduce(feedItems, reducer, itemCountByCategory);
 
-  // TODO: The explicit type here should be unnecessary.
-  const totalItemCount = objectReduceValues<number, number>(
+  const totalItemCount = objectReduceValues(
     itemCountByCategory,
     (acc, itemCount) => acc + itemCount,
     0

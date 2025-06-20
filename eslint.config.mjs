@@ -82,10 +82,6 @@ const OBJECT_RESTRICTED_SYNTAX = [
     selector: "CallExpression[callee.object.name='Object'][callee.property.name='entries']",
     message: 'Use `objectEntries` or similar helper from `@shared/lib/objectUtils.shared` instead.',
   },
-  {
-    selector: "CallExpression[callee.object.name='Object'][callee.property.name='fromEntries']",
-    message: 'Use `objectFromEntries` from `@shared/lib/objectUtils.shared` instead.',
-  },
 ];
 
 function makeSharedRules({

@@ -3,15 +3,21 @@ import type {Func} from '@shared/types/utils.types';
 /**
  * Typed helper for iterating over an array and calling `callback` for each value.
  */
-export function arrayForEach<T>(arr: T[], callback: Func<T, void>): void {
+export function arrayForEach<T>(
+  arr: T[],
+  callback: (value: T, index: number, array: T[]) => void
+): void {
   arr.forEach(callback);
 }
 
 /**
  * Typed helper for filtering an array to only include values that pass the `filter` predicate.
  */
-export function arrayFilter<T>(arr: T[], filter: Func<T, boolean>): T[] {
-  return arr.filter(filter);
+export function arrayFilter<T>(
+  arr: T[],
+  predicate: (value: T, index: number, array: T[]) => boolean
+): T[] {
+  return arr.filter(predicate);
 }
 
 /**
