@@ -2,17 +2,13 @@ import React, {useEffect, useMemo, useRef, useState} from 'react';
 
 import {logger} from '@shared/services/logger.shared';
 
+import {arrayFilter} from '@shared/lib/arrayUtils.shared';
 import {isDate} from '@shared/lib/datetime.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {getFeedSubscriptionIdForFeedSource} from '@shared/lib/feedSources.shared';
-import {
-  arrayFilter,
-  arraySome,
-  assertNever,
-  objectKeys,
-  objectMapEntries,
-} from '@shared/lib/utils.shared';
+import {objectKeys, objectMapEntries} from '@shared/lib/objectUtils.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
@@ -130,7 +126,7 @@ function useFilteredFeedItems(
       const feedItemTagIds = objectKeys(item.tagIds);
       const passesTagFilter =
         filterByOptions.tagIdsToFilterBy.size === 0 ||
-        arraySome(feedItemTagIds, (tagId) => filterByOptions.tagIdsToFilterBy.has(tagId));
+        feedItemTagIds.some((tagId) => filterByOptions.tagIdsToFilterBy.has(tagId));
 
       // Only include feed items that pass all filters. If no items are active for a filter, it is
       // considered passed.

@@ -2,10 +2,11 @@ import type {Request} from 'firebase-functions/v2/https';
 
 import {logger} from '@shared/services/logger.shared';
 
+import {arrayPartition} from '@shared/lib/arrayUtils.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
 import {makeRssFeedSource} from '@shared/lib/feedSources.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
-import {assertNever, batchAsyncResults, partition} from '@shared/lib/utils.shared';
+import {assertNever, batchAsyncResults} from '@shared/lib/utils.shared';
 
 import {parseSuperfeedrWebhookRequestBody} from '@shared/parsers/superfeedr.parser';
 
@@ -111,10 +112,10 @@ export async function handleSuperfeedrWebhookHelper(args: {
 
   // Log successes and errors.
   const newFeedItemResults = batchResult.value;
-  const [newFeedItemSuccesses, newFeedItemErrors] = partition<
+  const [newFeedItemSuccesses, newFeedItemErrors] = arrayPartition<
     SuccessResult<FeedItem>,
     ErrorResult<Error>
-  >(newFeedItemResults, (result): result is SuccessResult<FeedItem> => result.success);
+  >(newFeedItemResults, (result) => result.success);
   logger.log(
     `[SUPERFEEDR] Successfully created ${newFeedItemSuccesses.length} feed items, encountered ${newFeedItemErrors.length} errors`,
     {

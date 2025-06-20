@@ -72,23 +72,15 @@ const BASE_RESTRICTED_SYNTAX = [
 const OBJECT_RESTRICTED_SYNTAX = [
   {
     selector: "CallExpression[callee.object.name='Object'][callee.property.name='keys']",
-    message:
-      'Using `Object.keys` is discouraged. Use `objectKeys` from `@shared/lib/utils.shared` instead.',
+    message: 'Use `objectKeys` or similar helper from `@shared/lib/objectUtils.shared` instead.',
   },
   {
     selector: "CallExpression[callee.object.name='Object'][callee.property.name='values']",
-    message:
-      'Using `Object.values` is discouraged. Use an appropriate helper from `@shared/lib/utils.shared` instead (e.g. `objectForEachValue`, `objectMapEntries`, `objectReduceValues`).',
+    message: 'Use `objectValues` or similar helper from `@shared/lib/objectUtils.shared` instead.',
   },
   {
     selector: "CallExpression[callee.object.name='Object'][callee.property.name='entries']",
-    message:
-      'Using `Object.entries` is discouraged. Use an appropriate helper from `@shared/lib/utils.shared` instead (e.g. `objectForEachEntry`, `objectMapEntries`).',
-  },
-  {
-    selector: "CallExpression[callee.object.name='Object'][callee.property.name='fromEntries']",
-    message:
-      'Using `Object.fromEntries` is discouraged. Use `objectMapValues` or `arrayToRecord` from `@shared/lib/utils.shared` instead.',
+    message: 'Use `objectEntries` or similar helper from `@shared/lib/objectUtils.shared` instead.',
   },
 ];
 
@@ -336,7 +328,7 @@ export default tseslint.config(
 
   // Allow usage of Object.* methods in the file that defines the utils.
   {
-    files: ['packages/shared/src/lib/utils.shared.ts'],
+    files: ['packages/shared/src/lib/objectUtils.shared.ts'],
     rules: {
       'no-restricted-syntax': ['error', ...BASE_RESTRICTED_SYNTAX],
     },

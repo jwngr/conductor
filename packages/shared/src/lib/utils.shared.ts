@@ -5,7 +5,7 @@ import {logger} from '@shared/services/logger.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AsyncResult, Result} from '@shared/types/results.types';
-import type {Func, Supplier, UUID} from '@shared/types/utils.types';
+import type {Supplier, UUID} from '@shared/types/utils.types';
 
 /**
  * Formats a number with commas.
@@ -27,8 +27,7 @@ const DEFAULT_ASSERT_NEVER_OPTIONS: AssertNeverOptions = {
 
 /**
  * Throws an error and throws if the provided value is not of type `never`. This is useful for
- * exhaustive switch statements. In rare scenarios where input is untrusted and throwing is unsafe
- * (e.g. parsers), use {@link safeAssertNever} instead.
+ * exhaustive switch statements.
  */
 export function assertNever(
   val: never,
@@ -40,35 +39,6 @@ export function assertNever(
   }
   // eslint-disable-next-line no-restricted-syntax
   throw new Error(`Unexpected value: ${val}`);
-}
-
-/**
- * Logs an error if the provided value is not of type `never`. This is useful for exhaustive
- * switch statements. In most cases, use {@link assertNever} instead.
- */
-export function safeAssertNever(val: never): void {
-  logger.error(new Error('safeAssertNever received non-empty value'), {val});
-}
-
-/**
- * Filters out all null values from the provided array.
- */
-export function filterNull<T>(arr: Array<T | null>): T[] {
-  return arr.filter(Boolean) as T[];
-}
-
-/**
- * Filters out all undefined values from the provided array.
- */
-export function filterUndefined<T>(arr: Array<T | undefined>): T[] {
-  return arr.filter(Boolean) as T[];
-}
-
-/**
- * Omits all undefined values from the provided object.
- */
-export function omitUndefined<T extends object>(obj: T): T {
-  return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined)) as T;
 }
 
 /**
@@ -121,26 +91,6 @@ export async function batchAsyncResults<T>(
     allResults.push(...currentResults);
   }
   return makeSuccessResult(allResults);
-}
-
-/**
- * Partitions an array into two arrays based on the provided predicate.
- */
-export function partition<T, U>(
-  arr: ReadonlyArray<T | U>,
-  predicate: Func<T | U, boolean>
-): [T[], U[]] {
-  return arr.reduce(
-    (acc, item) => {
-      if (predicate(item)) {
-        acc[0].push(item as T);
-      } else {
-        acc[1].push(item as U);
-      }
-      return acc;
-    },
-    [[], []] as [T[], U[]]
-  );
 }
 
 /**
@@ -226,171 +176,29 @@ export function isPositiveInteger(value: number): boolean {
 }
 
 /**
- * Typed helper for iterating over an array and calling `callback` for each value.
+ * Returns `true` if the provided value is `null`. Useful for type narrowing or chaining.
  */
-export function arrayForEach<T>(arr: T[], callback: Func<T, void>): void {
-  arr.forEach(callback);
+export function isNull<T>(val: T | null): val is null {
+  return val === null;
 }
 
 /**
- * Typed helper for filtering an array to only include values that pass the `filter` predicate.
+ * Returns `true` if the provided value is not `null`. Useful for type narrowing or chaining.
  */
-export function arrayFilter<T>(arr: T[], filter: Func<T, boolean>): T[] {
-  return arr.filter(filter);
+export function isNotNull<T>(val: T | null): val is T {
+  return val !== null;
 }
 
 /**
- * Typed helper for mapping over an array and returning a new array of values transformed by
- * `mapper`.
+ * Returns `true` if the provided value is not `undefined`. Useful for type narrowing or chaining.
  */
-export function arrayMap<Start, End>(arr: Start[], mapper: Func<Start, End>): End[] {
-  return arr.map(mapper);
-}
-
-/**
- * Typed helper for checking if any values in an array pass the `predicate`.
- */
-export function arraySome<T>(arr: T[], predicate: Func<T, boolean>): boolean {
-  return arr.some(predicate);
-}
-
-/**
- * Typed helper for checking if all values in an array pass the `predicate`.
- */
-export function arrayEvery<T>(arr: T[], predicate: Func<T, boolean>): boolean {
-  return arr.every(predicate);
-}
-
-/**
- * Typed helper for reducing an array to a single value.
- */
-export function arrayReduce<Start, Accumulator>(
-  arr: readonly Start[],
-  reducer: (
-    accumulator: Accumulator,
-    currentValue: Start,
-    currentIndex: number,
-    array: readonly Start[]
-  ) => Accumulator,
-  initialValue: Accumulator
-): Accumulator {
-  return (arr as Start[]).reduce(reducer, initialValue);
-}
-
-/**
- * Typed helper for sorting an array.
- */
-export function arraySort<T>(arr: T[], comparator: (a: T, b: T) => number): T[] {
-  return arr.sort(comparator);
-}
-
-/**
- * Typed helper for converting an array of items into a record.
- */
-export function arrayToRecord<Item, Key extends string | number | symbol>(
-  items: readonly Item[],
-  getKey: Func<Item, Key>
-): Record<Key, Item> {
-  return items.reduce(
-    (acc, item) => {
-      acc[getKey(item)] = item;
-      return acc;
-    },
-    {} as Record<Key, Item>
-  );
-}
-
-type ObjectKey = string | number | symbol;
-
-/**
- * Typed helper for converting an object's keys to an array.
- */
-export function objectKeys<Key extends ObjectKey>(obj: Partial<Record<Key, unknown>>): Key[] {
-  return Object.keys(obj) as Key[];
-}
-
-/**
- * Typed helper for iterating over object entries and calling `callback` for each key-value pair.
- */
-export function objectForEachEntry<Key extends ObjectKey, Value>(
-  obj: Partial<Record<Key, Value>>,
-  callback: (key: Key, value: Value) => void
-): void {
-  (Object.entries(obj) as Array<[Key, Value]>).forEach(([key, value]) => callback(key, value));
-}
-
-/**
- * Typed helper for iterating over object values and calling `callback` for each value.
- */
-export function objectForEachValue<Key extends ObjectKey, Value>(
-  obj: Partial<Record<Key, Value>>,
-  callback: (value: Value) => void
-): void {
-  (Object.values(obj) as Value[]).forEach(callback);
-}
-
-/**
- * Typed helper for mapping over object entries and returning an array of values transformed by
- * `mapper`.
- */
-export function objectMapEntries<Key extends ObjectKey, Value, Result>(
-  obj: Partial<Record<Key, Value>>,
-  mapper: (key: Key, value: Value) => Result
-): Result[] {
-  return (Object.entries(obj) as Array<[Key, Value]>).map(([key, value]) => mapper(key, value));
-}
-
-/**
- * Typed helper for converting an array of entries into a record.
- */
-export function objectFromEntries<Key extends ObjectKey, Value>(
-  entries: Array<[Key, Value]>
-): Record<Key, Value> {
-  return Object.fromEntries(entries) as Record<Key, Value>;
-}
-
-/**
- * Typed helper for getting all values from an object.
- */
-export function objectValues<Value>(obj: Partial<Record<ObjectKey, Value>>): Value[] {
-  return Object.values(obj) as Value[];
-}
-
-/**
- * Typed helper for mapping over object values and returning a new object with the same keys, but
- * each value having been transformed by `mapper`.
- */
-export function objectMapValues<StartValue, EndValue>(
-  obj: Partial<Record<ObjectKey, StartValue>>,
-  mapper: Func<StartValue, EndValue>,
-  filter?: Func<ObjectKey, boolean>
-): Record<ObjectKey, EndValue> {
-  const entries = Object.entries(obj).map(([key, value]) => [
-    key as ObjectKey,
-    mapper(value as StartValue),
-  ]);
-  const filteredEntries = filter
-    ? arrayFilter(entries, ([key]) => filter(key as ObjectKey))
-    : entries;
-  return Object.fromEntries(filteredEntries);
-}
-
-/**
- * Typed helper for reducing all values in an object into a single value.
- */
-export function objectReduceValues<Value, Accumulator>(
-  obj: Partial<Record<ObjectKey, Value>>,
-  reducer: (
-    accumulator: Accumulator,
-    currentValue: Value,
-    currentIndex: number,
-    array: readonly Value[]
-  ) => Accumulator,
-  initialValue: Accumulator
-): Accumulator {
-  return objectValues(obj).reduce(reducer, initialValue);
-}
-
 export function isDefined<T>(val: T | undefined): val is T {
   return val !== undefined;
+}
+
+/**
+ * Returns `true` if the provided value is `undefined`. Useful for type narrowing or chaining.
+ */
+export function isUndefined<T>(val: T | undefined): val is undefined {
+  return val === undefined;
 }

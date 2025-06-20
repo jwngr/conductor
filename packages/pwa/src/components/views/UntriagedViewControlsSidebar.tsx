@@ -1,16 +1,16 @@
 import type React from 'react';
 
+import {arrayReduce} from '@shared/lib/arrayUtils.shared';
 import {getFeedItemContentTypeText} from '@shared/lib/feedItems.shared';
 import {
   getFeedSubscriptionIdForFeedSource,
   getNameForFeedSourceType,
 } from '@shared/lib/feedSources.shared';
 import {
-  arrayReduce,
   objectForEachEntry,
   objectMapEntries,
   objectReduceValues,
-} from '@shared/lib/utils.shared';
+} from '@shared/lib/objectUtils.shared';
 import {
   getViewGroupByFieldText,
   getViewSortByFieldText,
@@ -45,8 +45,7 @@ const ControlsSidebarFilterCriteriaSection = <T extends string>(args: {
   const itemCountByCategory = {} as Record<T, number>;
   arrayReduce(feedItems, reducer, itemCountByCategory);
 
-  // TODO: The explicit type here should be unnecessary.
-  const totalItemCount = objectReduceValues<number, number>(
+  const totalItemCount = objectReduceValues(
     itemCountByCategory,
     (acc, itemCount) => acc + itemCount,
     0

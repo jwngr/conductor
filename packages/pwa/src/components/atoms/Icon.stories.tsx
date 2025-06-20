@@ -1,4 +1,4 @@
-import {objectValues} from '@shared/lib/utils.shared';
+import {objectValues} from '@shared/lib/objectUtils.shared';
 
 import {IconName} from '@shared/types/icons.types';
 

@@ -1,7 +1,7 @@
 import {logger} from '@shared/services/logger.shared';
 
 import {asyncTry, prefixError, upgradeUnknownError} from '@shared/lib/errorUtils.shared';
-import {objectKeys} from '@shared/lib/utils.shared';
+import {objectKeys} from '@shared/lib/objectUtils.shared';
 
 import type {AsyncResponseResult, RequestBody, RequestOptions} from '@shared/types/requests.types';
 import {

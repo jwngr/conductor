@@ -1,9 +1,11 @@
 import {useCallback, useState} from 'react';
 
+import {arraySort} from '@shared/lib/arrayUtils.shared';
 import {PERSONAL_YOUTUBE_CHANNEL_ID} from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
+import {objectValues} from '@shared/lib/objectUtils.shared';
 import {parseUrl} from '@shared/lib/urls.shared';
-import {arraySort, assertNever, objectValues} from '@shared/lib/utils.shared';
+import {assertNever} from '@shared/lib/utils.shared';
 import {makeYouTubeChannelUrl} from '@shared/lib/youtube.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
