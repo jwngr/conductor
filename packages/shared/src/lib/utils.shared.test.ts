@@ -19,7 +19,6 @@ import {
   partition,
   pluralize,
   pluralizeWithCount,
-  safeAssertNever,
 } from '@shared/lib/utils.shared';
 
 import type {Result} from '@shared/types/results.types';
