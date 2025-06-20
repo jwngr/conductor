@@ -1,20 +1,20 @@
 import type {FlexAlign, FlexGap, FlexJustify} from '@shared/types/flex.types';
+import type {NavItemId} from '@shared/types/urls.types';
 
 import type {WithChildren} from '@sharedClient/types/utils.client.types';
 
-import {AppHeader} from '@src/components/AppHeader';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
-import {LeftSidebar} from '@src/components/nav/LeftSidebar';
+import {TopBar} from '@src/components/TopBar';
 
 import * as styles from '@src/screens/Screen.css';
 
 interface ScreenProps extends WithChildren {
+  readonly selectedNavItemId: NavItemId | null;
   readonly align?: FlexAlign;
   readonly justify?: FlexJustify;
   readonly gap?: FlexGap;
   readonly maxWidth?: number;
   readonly withHeader?: boolean;
-  readonly withLeftSidebar?: boolean;
 }
 
 export const Screen: React.FC<ScreenProps> = ({
@@ -23,14 +23,13 @@ export const Screen: React.FC<ScreenProps> = ({
   align,
   justify,
   maxWidth,
+  selectedNavItemId,
   withHeader = false,
-  withLeftSidebar = false,
 }) => {
   return (
     <FlexColumn className={styles.screenWrapper}>
-      {withHeader ? <AppHeader /> : null}
+      {withHeader ? <TopBar selectedNavItemId={selectedNavItemId} /> : null}
       <FlexRow flex align="stretch" overflow="auto">
-        {withLeftSidebar ? <LeftSidebar /> : null}
         <FlexColumn
           flex
           overflow="auto"

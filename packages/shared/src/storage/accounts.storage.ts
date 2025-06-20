@@ -1,3 +1,4 @@
+import {parseStorageTimestamp} from '@shared/lib/parser.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
@@ -16,6 +17,8 @@ export function toStorageAccount(account: Account): AccountFromStorage {
     accountId: account.accountId,
     email: account.email,
     displayName: account.displayName,
+    createdTime: account.createdTime,
+    lastUpdatedTime: account.lastUpdatedTime,
   };
 }
 
@@ -33,5 +36,7 @@ export function fromStorageAccount(accountFromStorage: AccountFromStorage): Resu
     accountId: parsedAccountIdResult.value,
     email: parsedEmailResult.value,
     displayName: accountFromStorage.displayName,
+    createdTime: parseStorageTimestamp(accountFromStorage.createdTime),
+    lastUpdatedTime: parseStorageTimestamp(accountFromStorage.lastUpdatedTime),
   });
 }

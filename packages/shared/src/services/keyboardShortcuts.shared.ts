@@ -3,9 +3,9 @@ import {assertNever} from '@shared/lib/utils.shared';
 import type {
   KeyboardShortcut,
   KeyboardShortcutsAdapter,
-  RegisteredShortcut,
   ShortcutHandler,
   ShortcutKey,
+  ShortcutWithHandler,
 } from '@shared/types/shortcuts.types';
 import {isModifierKey, KeyboardShortcutId, ModifierKey} from '@shared/types/shortcuts.types';
 import type {Unsubscribe} from '@shared/types/utils.types';
@@ -13,7 +13,7 @@ import type {Unsubscribe} from '@shared/types/utils.types';
 export class SharedKeyboardShortcutsService {
   private readonly isMac: boolean;
   private readonly adapter: KeyboardShortcutsAdapter;
-  private readonly registeredShortcuts = new Map<KeyboardShortcutId, RegisteredShortcut>();
+  private readonly registeredShortcuts = new Map<KeyboardShortcutId, ShortcutWithHandler>();
 
   constructor(args: {readonly adapter: KeyboardShortcutsAdapter; readonly isMac: boolean}) {
     this.adapter = args.adapter;

@@ -6,22 +6,20 @@ export enum CustomIconType {
   CustomFile = 'CUSTOM_FILE',
 }
 
-interface EmojiIcon {
+export interface EmojiIcon {
   readonly type: CustomIconType.Emoji;
   readonly emoji: string;
 }
 
-interface SystemIcon {
+export interface SystemIcon {
   readonly type: CustomIconType.Icon;
   readonly iconName: IconName;
 }
 
-interface CustomFileIcon {
+export interface CustomFileIcon {
   readonly type: CustomIconType.CustomFile;
   readonly srcUrl: string;
 }
-
-export type CustomIcon = EmojiIcon | SystemIcon | CustomFileIcon;
 
 export const makeEmojiIcon = (emoji: string): EmojiIcon => {
   return {type: CustomIconType.Emoji, emoji};

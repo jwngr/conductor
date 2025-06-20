@@ -1,25 +1,45 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "workspaces": {
-    ".": {
-      "entry": [
-        "packages/pwa/src/index.tsx",
-        "packages/extension/src/index.tsx",
-        "packages/extension/src/background.ts",
-        "packages/functions/src/index.ts",
-        "packages/rssServer/src/server.ts"
-      ],
-      "project": "packages/{pwa,extension,functions,rssServer,shared,sharedClient,sharedServer}/src/**/*.{ts,tsx,js,jsx}",
-      "ignoreDependencies": [
-        "@types/chrome",
-        "@conductor/shared",
-        "@conductor/shared-client",
-        "@conductor/shared-server"
-      ]
+    "packages/shared": {
+      "entry": [],
+      "project": "src/**/*.{ts,js}",
+      "ignoreDependencies": []
+    },
+    "packages/sharedClient": {
+      "entry": [],
+      "project": "src/**/*.{ts,tsx,js,jsx}",
+      "ignoreDependencies": []
+    },
+    "packages/sharedServer": {
+      "entry": [],
+      "project": "src/**/*.{ts,js}",
+      "ignoreDependencies": ["@types/turndown"]
+    },
+    "packages/pwa": {
+      "entry": ["src/index.tsx", "index.html"],
+      "project": "src/**/*.{ts,tsx,js,jsx}",
+      "ignoreDependencies": ["tailwindcss", "@tailwindcss/typography"]
+    },
+    "packages/extension": {
+      "entry": ["src/index.tsx", "src/background.ts"],
+      "project": "src/**/*.{ts,tsx,js,jsx}",
+      "ignoreDependencies": ["@types/chrome"]
+    },
+    "packages/functions": {
+      "entry": ["src/index.ts"],
+      "project": "src/**/*.{ts,js}",
+      "ignoreDependencies": ["@types/jsdom"]
+    },
+    "packages/rssServer": {
+      "entry": ["src/server.ts"],
+      "project": "src/**/*.{ts,js}",
+      "ignoreDependencies": []
     },
     "packages/scripts": {
-      "entry": "src/scripts/**/*.{ts,js}",
-      "project": "src/**/*.{ts,js}"
+      "entry": "src/**/*.{ts,js}",
+      "project": "src/**/*.{ts,js}",
+      "ignoreDependencies": []
     }
   }
 }

@@ -1,4 +1,3 @@
-import {Navigate} from '@tanstack/react-router';
 import type {ActionCodeSettings} from 'firebase/auth';
 import {useCallback, useState} from 'react';
 
@@ -20,7 +19,7 @@ import {env, IS_DEVELOPMENT} from '@src/lib/environment.pwa';
 
 import type {OnClick} from '@src/types/utils.pwa.types';
 
-import {rootRoute} from '@src/routes/__root';
+import {DefaultRouteRedirect} from '@src/routes/Redirects';
 import {Screen} from '@src/screens/Screen';
 
 const PASSWORDLESS_AUTH_ACTION_CODE_SETTINGS: ActionCodeSettings = {
@@ -118,11 +117,11 @@ export const SignInScreen: React.FC = () => {
 
   // Redirect to root if already logged in.
   if (loggedInAccount) {
-    return <Navigate to={rootRoute.fullPath} replace />;
+    return <DefaultRouteRedirect />;
   }
 
   return (
-    <Screen align="center" justify="center" gap={4} maxWidth={480}>
+    <Screen selectedNavItemId={null} align="center" justify="center" gap={4} maxWidth={480}>
       <H1 bold align="center">
         Conductor
       </H1>
@@ -145,8 +144,7 @@ export const SignInScreen: React.FC = () => {
 
       {IS_DEVELOPMENT
         ? renderPasswordlessAuthButton({
-            // TODO: Move to enviroment variable.
-            maybeEmail: 'wenger.jacob@gmail.com',
+            maybeEmail: env.defaultPasswordlessEmailAddress,
             text: 'Send link to myself',
           })
         : null}

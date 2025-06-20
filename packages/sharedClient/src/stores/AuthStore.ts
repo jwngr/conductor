@@ -1,12 +1,13 @@
 import {create} from 'zustand';
 
-import type {Account} from '@shared/types/accounts.types';
 import type {Consumer} from '@shared/types/utils.types';
 
+import type {LoggedInAccount} from '@sharedClient/types/accounts.client.types';
+
 interface AuthStoreState {
-  readonly loggedInAccount: Account | null;
+  readonly loggedInAccount: LoggedInAccount | null;
   readonly isLoading: boolean;
-  readonly setLoggedInAccount: Consumer<Account | null>;
+  readonly setLoggedInAccount: Consumer<LoggedInAccount | null>;
 }
 
 export const useAuthStore = create<AuthStoreState>((set) => ({

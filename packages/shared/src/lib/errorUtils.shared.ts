@@ -1,5 +1,5 @@
+import {arrayPartition} from '@shared/lib/arrayUtils.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
-import {partition} from '@shared/lib/utils.shared';
 
 import type {AsyncResult, ErrorResult, Result, SuccessResult} from '@shared/types/results.types';
 import type {Supplier} from '@shared/types/utils.types';
@@ -8,7 +8,7 @@ import type {Supplier} from '@shared/types/utils.types';
 export const DEFAULT_ERROR_TITLE = 'Something went wrong';
 
 /** Default error message when one cannot be parsed otherwise. */
-export const UNEXPECTED_ERROR_DEFAULT_MESSAGE = 'An unexpected error occurred';
+const UNKNOWN_ERROR_DEFAULT_MESSAGE = 'An unexpected error occurred';
 
 /**
  * Upgrades an unknown error into a proper `Error` object with the best message possible.
@@ -16,7 +16,7 @@ export const UNEXPECTED_ERROR_DEFAULT_MESSAGE = 'An unexpected error occurred';
 export function upgradeUnknownError(unknownError: unknown): Error {
   // Unknown error is already an `Error` object.
   if (unknownError instanceof Error) {
-    return new Error(unknownError.message || UNEXPECTED_ERROR_DEFAULT_MESSAGE, {
+    return new Error(unknownError.message || UNKNOWN_ERROR_DEFAULT_MESSAGE, {
       cause: unknownError.cause instanceof Error ? unknownError.cause : unknownError,
     });
   }
@@ -114,7 +114,7 @@ export function syncTryAll<T>(allResults: Array<Result<T, Error>>): Result<T[], 
   // Allow `try` / `catch` block here.
   // eslint-disable-next-line no-restricted-syntax
   try {
-    const [successResults, failedResults] = partition<SuccessResult<T>, ErrorResult<Error>>(
+    const [successResults, failedResults] = arrayPartition<SuccessResult<T>, ErrorResult<Error>>(
       allResults,
       (result) => result.success
     );

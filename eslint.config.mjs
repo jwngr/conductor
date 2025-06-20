@@ -52,6 +52,38 @@ const NO_TEST_UTILS_IMPORT_PATTERN = {
   message: 'Test utils can only be imported in test files.',
 };
 
+const BASE_RESTRICTED_SYNTAX = [
+  {
+    selector: 'TryStatement',
+    message:
+      'Using a `try` / `catch` block directly is discouraged. Use `syncTry` or `asyncTry` helpers instead.',
+  },
+  {
+    selector: 'Identifier[name="fetch"]',
+    message:
+      'Using `fetch` directly is discouraged. Use `request*` helpers like `requestGet` or `requestPost` instead.',
+  },
+  {
+    selector: 'ThrowStatement',
+    message: 'Throwing errors directly is discouraged. Use `ErrorResult` instead.',
+  },
+];
+
+const OBJECT_RESTRICTED_SYNTAX = [
+  {
+    selector: "CallExpression[callee.object.name='Object'][callee.property.name='keys']",
+    message: 'Use `objectKeys` or similar helper from `@shared/lib/objectUtils.shared` instead.',
+  },
+  {
+    selector: "CallExpression[callee.object.name='Object'][callee.property.name='values']",
+    message: 'Use `objectValues` or similar helper from `@shared/lib/objectUtils.shared` instead.',
+  },
+  {
+    selector: "CallExpression[callee.object.name='Object'][callee.property.name='entries']",
+    message: 'Use `objectEntries` or similar helper from `@shared/lib/objectUtils.shared` instead.',
+  },
+];
+
 function makeSharedRules({
   disallowFirebaseAdminImports,
   disallowFirebaseClientImports,
@@ -83,23 +115,7 @@ function makeSharedRules({
     '@typescript-eslint/no-floating-promises': 'error',
     '@typescript-eslint/no-extraneous-class': 'off',
     '@typescript-eslint/promise-function-async': 'error',
-    'no-restricted-syntax': [
-      'error',
-      {
-        selector: 'TryStatement',
-        message:
-          'Using a `try` / `catch` block directly is discouraged. Use `syncTry` or `asyncTry` helpers instead.',
-      },
-      {
-        selector: 'Identifier[name="fetch"]',
-        message:
-          'Using `fetch` directly is discouraged. Use `request*` helpers like `requestGet` or `requestPost` instead.',
-      },
-      {
-        selector: 'ThrowStatement',
-        message: 'Throwing errors directly is discouraged. Use `ErrorResult` instead.',
-      },
-    ],
+    'no-restricted-syntax': ['error', ...BASE_RESTRICTED_SYNTAX, ...OBJECT_RESTRICTED_SYNTAX],
     'no-restricted-imports': [
       'error',
       {
@@ -170,6 +186,8 @@ export default tseslint.config(
     rules: {
       'no-restricted-syntax': [
         'error',
+        ...BASE_RESTRICTED_SYNTAX,
+        ...OBJECT_RESTRICTED_SYNTAX,
         {
           selector: 'ImportSpecifier[imported.name="assertNever"]',
           message:
@@ -305,6 +323,14 @@ export default tseslint.config(
     files: ['**/*.test.ts', '**/*.test.tsx'],
     rules: {
       'no-restricted-imports': ['error', {paths: []}],
+    },
+  },
+
+  // Allow usage of Object.* methods in the file that defines the utils.
+  {
+    files: ['packages/shared/src/lib/objectUtils.shared.ts'],
+    rules: {
+      'no-restricted-syntax': ['error', ...BASE_RESTRICTED_SYNTAX],
     },
   }
 );

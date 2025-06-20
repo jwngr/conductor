@@ -1,8 +1,10 @@
-import {prettifyError} from 'zod/v4';
-
 import {logger} from '@shared/services/logger.shared';
 
-import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
+import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
+import {parseZodResult} from '@shared/lib/parser.shared';
+import {makeSuccessResult} from '@shared/lib/results.shared';
+
+import {parseEmailAddress} from '@shared/parsers/emails.parser';
 
 import type {Result} from '@shared/types/results.types';
 
@@ -10,22 +12,31 @@ import type {ExtensionEnvironmentVariables} from '@src/types/environment.ext.typ
 import {ExtensionEnvironmentVariablesSchema} from '@src/types/environment.ext.types';
 
 function getEnvironmentVariables(): Result<ExtensionEnvironmentVariables, Error> {
-  const parsedEnvResult = ExtensionEnvironmentVariablesSchema.safeParse(import.meta.env);
+  const parsedEnvResult = parseZodResult(ExtensionEnvironmentVariablesSchema, import.meta.env);
   if (!parsedEnvResult.success) {
-    const zodErrorMessage = prettifyError(parsedEnvResult.error);
-    return makeErrorResult(new Error(`Failed to parse environment variables: ${zodErrorMessage}`));
+    return prefixErrorResult(parsedEnvResult, 'Failed to parse environment variables');
   }
+  const env = parsedEnvResult.value;
+
+  const parsedEmailAddressResult = parseEmailAddress(env.VITE_DEFAULT_PASSWORDLESS_EMAIL_ADDRESS);
+  if (!parsedEmailAddressResult.success) {
+    const message = 'VITE_DEFAULT_PASSWORDLESS_EMAIL_ADDRESS is not a valid email address';
+    return prefixErrorResult(parsedEmailAddressResult, message);
+  }
+  const defaultPasswordlessEmailAddress = parsedEmailAddressResult.value;
+
   return makeSuccessResult({
-    mode: parsedEnvResult.data.MODE,
-    conductorUrl: parsedEnvResult.data.VITE_CONDUCTOR_URL,
-    firebaseApiKey: parsedEnvResult.data.VITE_FIREBASE_API_KEY,
-    firebaseAuthDomain: parsedEnvResult.data.VITE_FIREBASE_AUTH_DOMAIN,
-    firebaseProjectId: parsedEnvResult.data.VITE_FIREBASE_PROJECT_ID,
-    firebaseStorageBucket: parsedEnvResult.data.VITE_FIREBASE_STORAGE_BUCKET,
-    firebaseMessagingSenderId: parsedEnvResult.data.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    firebaseAppId: parsedEnvResult.data.VITE_FIREBASE_APP_ID,
-    firebaseMeasurementId: parsedEnvResult.data.VITE_FIREBASE_MEASUREMENT_ID ?? null,
-    firebaseUseEmulator: parsedEnvResult.data.VITE_FIREBASE_USE_EMULATOR,
+    defaultPasswordlessEmailAddress,
+    mode: env.MODE,
+    conductorUrl: env.VITE_CONDUCTOR_URL,
+    firebaseApiKey: env.VITE_FIREBASE_API_KEY,
+    firebaseAuthDomain: env.VITE_FIREBASE_AUTH_DOMAIN,
+    firebaseProjectId: env.VITE_FIREBASE_PROJECT_ID,
+    firebaseStorageBucket: env.VITE_FIREBASE_STORAGE_BUCKET,
+    firebaseMessagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    firebaseAppId: env.VITE_FIREBASE_APP_ID,
+    firebaseMeasurementId: env.VITE_FIREBASE_MEASUREMENT_ID ?? null,
+    firebaseUseEmulator: env.VITE_FIREBASE_USE_EMULATOR,
   });
 }
 

@@ -34,7 +34,7 @@ import {
 } from '@shared/lib/firebase.shared';
 
 import type {AsyncResult, Result} from '@shared/types/results.types';
-import type {Consumer, Func, Unsubscribe} from '@shared/types/utils.types';
+import type {BaseStoreItem, Consumer, Func, Unsubscribe} from '@shared/types/utils.types';
 
 import {clientTimestampSupplier} from '@sharedClient/services/firebase.client';
 import type {ClientFirebaseService} from '@sharedClient/services/firebase.client';
@@ -42,14 +42,17 @@ import type {ClientFirebaseService} from '@sharedClient/services/firebase.client
 /**
  * Creates a strongly-typed converter between a Firestore data type and a client data type.
  */
-function makeFirestoreDataConverter<ItemData, FirestoreItemData extends DocumentData>(
-  toFirestore: Func<ItemData, FirestoreItemData>,
-  fromFirestore: Func<FirestoreItemData, Result<ItemData, Error>>
-): FirestoreDataConverter<ItemData, FirestoreItemData> {
+function makeFirestoreDataConverter<
+  ItemData extends BaseStoreItem,
+  ItemDataFromStorage extends DocumentData,
+>(
+  toFirestore: Func<ItemData, ItemDataFromStorage>,
+  fromFirestore: Func<ItemDataFromStorage, Result<ItemData, Error>>
+): FirestoreDataConverter<ItemData, ItemDataFromStorage> {
   return {
     toFirestore,
     fromFirestore: (snapshot: QueryDocumentSnapshot, options: SnapshotOptions): ItemData => {
-      const data = snapshot.data(options) as FirestoreItemData;
+      const data = snapshot.data(options) as ItemDataFromStorage;
 
       const parseDataResult = fromFirestore(data);
       if (!parseDataResult.success) {
@@ -68,7 +71,7 @@ function makeFirestoreDataConverter<ItemData, FirestoreItemData extends Document
 
 export class ClientFirestoreCollectionService<
   ItemId extends string,
-  ItemData extends DocumentData,
+  ItemData extends BaseStoreItem,
   ItemDataFromStorage extends DocumentData,
 > {
   private readonly firebaseService: ClientFirebaseService;
@@ -305,7 +308,7 @@ export class ClientFirestoreCollectionService<
 
 export function makeClientFirestoreCollectionService<
   ItemId extends string,
-  ItemData extends DocumentData,
+  ItemData extends BaseStoreItem,
   ItemDataFromStorage extends DocumentData,
 >(args: {
   readonly firebaseService: ClientFirebaseService;

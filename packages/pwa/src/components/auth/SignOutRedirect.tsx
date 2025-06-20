@@ -27,7 +27,7 @@ export const SignOutRedirect: React.FC = () => {
       }
 
       // Don't strand the user on a page they no longer have access to view.
-      await navigate({to: signInRoute.fullPath, replace: true});
+      await navigate({to: signInRoute.to, replace: true});
 
       // TODO: Clear other stuff from local storage.
     };

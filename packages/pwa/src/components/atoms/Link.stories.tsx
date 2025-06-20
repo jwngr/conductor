@@ -13,7 +13,7 @@ export const LinkStories: React.FC = () => {
         <FlexColumn gap={8}>
           <FlexRow gap={4}>
             <P light>Default:</P>
-            <Link to={rootRoute.fullPath}>
+            <Link to={rootRoute.to}>
               <P underline="always">Click to navigate</P>
             </Link>
           </FlexRow>
@@ -21,7 +21,7 @@ export const LinkStories: React.FC = () => {
           {/* Interactive hover underline */}
           <FlexRow gap={4}>
             <P light>Hover underline:</P>
-            <Link to={rootRoute.fullPath}>
+            <Link to={rootRoute.to}>
               <P underline="hover">Hover me</P>
             </Link>
           </FlexRow>
@@ -29,7 +29,7 @@ export const LinkStories: React.FC = () => {
           {/* Colored link */}
           <FlexRow gap={4}>
             <P light>Colored:</P>
-            <Link to={rootRoute.fullPath}>
+            <Link to={rootRoute.to}>
               <P underline="hover">Blue link</P>
             </Link>
           </FlexRow>
@@ -37,7 +37,7 @@ export const LinkStories: React.FC = () => {
           {/* Bold link */}
           <FlexRow gap={4}>
             <P light>Bold:</P>
-            <Link to={rootRoute.fullPath}>
+            <Link to={rootRoute.to}>
               <P bold underline="hover">
                 Bold link
               </P>
@@ -47,7 +47,7 @@ export const LinkStories: React.FC = () => {
           {/* Disabled style */}
           <FlexRow gap={4}>
             <P light>Disabled style:</P>
-            <Link to={rootRoute.fullPath} disabled>
+            <Link to={rootRoute.to} disabled>
               <P>Disabled-looking link</P>
             </Link>
           </FlexRow>
@@ -58,7 +58,7 @@ export const LinkStories: React.FC = () => {
         <div className="border-neutral-2 rounded-lg border bg-white p-4">
           <P>
             This is a paragraph with an{' '}
-            <Link to={rootRoute.fullPath}>
+            <Link to={rootRoute.to}>
               <Span underline="hover" className="text-text-link">
                 embedded link
               </Span>

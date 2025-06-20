@@ -53,7 +53,7 @@ export interface KeyboardShortcut {
 
 export type ShortcutHandler = Supplier<Promise<void>>;
 
-export interface RegisteredShortcut {
+export interface ShortcutWithHandler {
   readonly shortcut: KeyboardShortcut;
   readonly handler: ShortcutHandler;
 }

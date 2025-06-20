@@ -4,9 +4,10 @@ import {isDate} from '@shared/lib/datetime.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {Result} from '@shared/types/results.types';
-import type {BaseStoreItem, Supplier} from '@shared/types/utils.types';
 
 import type {FirestoreTimestamp} from '@shared/schemas/firebase.schema';
+
+export const PARSING_FAILURE_SENTINEL = 'PARSING_FAILURE';
 
 /**
  * Attempts to parse a value using a Zod schema.
@@ -34,46 +35,4 @@ export function parseStorageTimestamp(firestoreDate: FirestoreTimestamp | Date):
   if (isDate(firestoreDate)) return firestoreDate;
 
   return firestoreDate.toDate();
-}
-
-/**
- * Returns the provided item with `createdTime` and `lastUpdatedTime` replaced with the provided
- * Firestore timestamp factory.
- */
-export function withFirestoreTimestamps<ItemData extends BaseStoreItem, Timestamp>(
-  item: ItemData,
-  timestampFactory: Supplier<Timestamp>
-): Omit<ItemData, 'createdTime' | 'lastUpdatedTime'> & {
-  createdTime: Timestamp;
-  lastUpdatedTime: Timestamp;
-} {
-  return {
-    ...item,
-    createdTime: timestampFactory(),
-    lastUpdatedTime: timestampFactory(),
-  };
-}
-
-/**
- * Returns the provided item with `createdTime`, `lastUpdatedTime`, and an additional timestamp
- * field replaced with the provided Firestore timestamp factory.
- */
-export function withFirestoreTimestampsExtended<
-  ItemData extends BaseStoreItem,
-  Timestamp,
-  AdditionalTimestampField extends string = never,
->(
-  item: ItemData & Partial<Record<AdditionalTimestampField, Date>>,
-  timestampFactory: Supplier<Timestamp>,
-  additionalTimestampField: AdditionalTimestampField
-): Omit<ItemData, 'createdTime' | 'lastUpdatedTime' | AdditionalTimestampField> & {
-  createdTime: Timestamp;
-  lastUpdatedTime: Timestamp;
-} {
-  return {
-    ...item,
-    createdTime: timestampFactory(),
-    lastUpdatedTime: timestampFactory(),
-    [additionalTimestampField]: timestampFactory(),
-  };
 }

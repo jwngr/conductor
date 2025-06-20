@@ -3,6 +3,7 @@ import {limit as firestoreLimit, orderBy, where} from 'firebase/firestore';
 import {logger} from '@shared/services/logger.shared';
 
 import {makeAccountActor} from '@shared/lib/actors.shared';
+import {arrayFilterNull} from '@shared/lib/arrayUtils.shared';
 import {EVENT_LOG_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {
@@ -16,7 +17,6 @@ import {
   makeUnsubscribedFromFeedSourceEventLogItemData,
 } from '@shared/lib/eventLog.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
-import {filterNull} from '@shared/lib/utils.shared';
 
 import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
 
@@ -86,13 +86,13 @@ export class ClientEventLogService {
   }): Unsubscribe {
     const {successCallback, errorCallback, limit} = args;
 
-    const itemsQuery = this.collectionService.query(
-      filterNull([
-        where('accountId', '==', this.accountId),
-        limit ? firestoreLimit(limit) : null,
-        orderBy('createdTime', 'desc'),
-      ])
-    );
+    const queryClauses = arrayFilterNull([
+      where('accountId', '==', this.accountId),
+      limit ? firestoreLimit(limit) : null,
+      orderBy('createdTime', 'desc'),
+    ]);
+
+    const itemsQuery = this.collectionService.query(queryClauses);
 
     const unsubscribe = this.collectionService.watchDocs(
       itemsQuery,

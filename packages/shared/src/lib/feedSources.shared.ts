@@ -1,5 +1,8 @@
+import {assertNever} from '@shared/lib/utils.shared';
+
 import type {
   ExtensionFeedSource,
+  FeedSource,
   IntervalFeedSource,
   PocketExportFeedSource,
   PwaFeedSource,
@@ -10,6 +13,7 @@ import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import type {
   IntervalUserFeedSubscription,
   RssUserFeedSubscription,
+  UserFeedSubscriptionId,
   YouTubeChannelUserFeedSubscription,
 } from '@shared/types/userFeedSubscriptions.types';
 
@@ -56,4 +60,40 @@ export function makeIntervalFeedSource(args: {
     feedSourceType: FeedSourceType.Interval,
     userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
   };
+}
+
+export function getNameForFeedSourceType(feedSourceType: FeedSourceType): string {
+  switch (feedSourceType) {
+    case FeedSourceType.RSS:
+      return 'RSS';
+    case FeedSourceType.YouTubeChannel:
+      return 'YouTube';
+    case FeedSourceType.Interval:
+      return 'Interval';
+    case FeedSourceType.PWA:
+      return 'PWA';
+    case FeedSourceType.Extension:
+      return 'Extension';
+    case FeedSourceType.PocketExport:
+      return 'Pocket';
+    default:
+      assertNever(feedSourceType);
+  }
+}
+
+export function getFeedSubscriptionIdForFeedSource(
+  feedSource: FeedSource
+): UserFeedSubscriptionId | null {
+  switch (feedSource.feedSourceType) {
+    case FeedSourceType.RSS:
+    case FeedSourceType.YouTubeChannel:
+    case FeedSourceType.Interval:
+      return feedSource.userFeedSubscriptionId;
+    case FeedSourceType.PWA:
+    case FeedSourceType.Extension:
+    case FeedSourceType.PocketExport:
+      return null;
+    default:
+      assertNever(feedSource);
+  }
 }

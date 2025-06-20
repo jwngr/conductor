@@ -1,6 +1,6 @@
+import {Link} from '@tanstack/react-router';
 import type React from 'react';
 
-import {DEFAULT_NAV_ITEM} from '@shared/lib/navItems.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import type {Task} from '@shared/types/utils.types';
@@ -10,7 +10,8 @@ import {HeroActionType} from '@sharedClient/types/heroActions.client.types';
 
 import {Button} from '@src/components/atoms/Button';
 import {FlexRow} from '@src/components/atoms/Flex';
-import {NavItemLink} from '@src/components/nav/NavItemLink';
+
+import {DEFAULT_ROUTE} from '@src/routes';
 
 const RefreshActionButton: React.FC = () => {
   const handleRefresh: Task = () => window.location.reload();
@@ -24,9 +25,11 @@ const RefreshActionButton: React.FC = () => {
 
 const DefaultRouteNavActionButton: React.FC = () => {
   return (
-    <NavItemLink navItemId={DEFAULT_NAV_ITEM.id}>
-      <Button variant="outline">Back to {DEFAULT_NAV_ITEM.title}</Button>
-    </NavItemLink>
+    <Button variant="outline" asChild>
+      <Link to={DEFAULT_ROUTE.to} search={{feedItemId: undefined}}>
+        Back to default view
+      </Link>
+    </Button>
   );
 };
 
