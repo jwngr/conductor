@@ -70,7 +70,7 @@ const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
         makeDeliveryScheduleResult = makeSuccessResult(NEVER_DELIVERY_SCHEDULE);
         break;
       case DeliveryScheduleType.DaysAndTimesOfWeek:
-        // TODO: Allow user to specify days and times.
+        // TODO: Allow specifying days and times.
         makeDeliveryScheduleResult = makeDaysAndTimesOfWeekDeliverySchedule({
           days: [DayOfWeek.Monday, DayOfWeek.Tuesday],
           times: [
@@ -81,7 +81,7 @@ const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
         });
         break;
       case DeliveryScheduleType.EveryNHours:
-        // TODO: Allow user to specify hours.
+        // TODO: Allow specifying hours.
         makeDeliveryScheduleResult = makeEveryNHoursDeliverySchedule({
           hours: 12,
         });

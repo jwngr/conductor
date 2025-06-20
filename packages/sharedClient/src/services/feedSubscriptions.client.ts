@@ -91,7 +91,7 @@ export class ClientFeedSubscriptionsService {
    * provider (e.g. Superfeedr), which is responsible for managing RSS feed subscriptions.
    */
   public async subscribeToRssFeed(url: URL): AsyncResult<RssFeedSubscription, Error> {
-    // Check if the user is already subscribed to this RSS feed.
+    // Check if the account is already subscribed to this RSS feed.
     const existingSubResult = await this.fetchExistingRssFeedSubscription(url);
     if (!existingSubResult.success) return existingSubResult;
 
@@ -140,7 +140,7 @@ export class ClientFeedSubscriptionsService {
     const channelId = channelIdResult.value;
     if (channelId === null) return makeErrorResult(new Error('Channel ID not found in URL'));
 
-    // Check if the user is already subscribed to this YouTube channel.
+    // Check if the account is already subscribed to this YouTube channel.
     const existingSubResult = await this.fetchExistingYouTubeChannelSubscription(channelId);
     if (!existingSubResult.success) return existingSubResult;
 

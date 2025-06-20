@@ -1,7 +1,7 @@
 import type {BaseStoreItem} from '@shared/types/utils.types';
 
 export enum TagType {
-  /** A tag whose lifecycle is managed by the user. */
+  /** A tag whose lifecycle is managed by the end user. */
   User = 'USER',
   /** A tag whose lifecycle is managed by the system. */
   System = 'SYSTEM',
@@ -40,7 +40,7 @@ interface BaseTag {
 }
 
 /**
- * A tag whose lifecycle is managed by the user.
+ * A tag whose lifecycle is managed by the end user.
  */
 export interface UserTag extends BaseTag, BaseStoreItem {
   readonly tagType: TagType.User;

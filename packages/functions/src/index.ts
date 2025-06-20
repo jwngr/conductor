@@ -193,8 +193,8 @@ export const importFeedItemOnCreate = onDocumentCreated(
 );
 
 /**
- * Every time a feed item is updated, checks to see if it should be re-imported. The UI allows users
- * to manually re-import a feed item.
+ * Every time a feed item is updated, checks to see if it should be re-imported. The UI allows
+ * manually re-importing a feed item.
  */
 export const importFeedItemOnUpdate = onDocumentUpdated(
   `${FEED_ITEMS_DB_COLLECTION}/{feedItemId}`,

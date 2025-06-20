@@ -71,7 +71,7 @@ export async function handleSuperfeedrWebhookHelper(args: {
     return makeErrorResult(prefixError(validateResult.error, message));
   }
 
-  // Fetch all users subscribed to this RSS feed URL.
+  // Fetch all subscriptions to this RSS feed URL.
   const feedUrl = body.status.feed;
   const fetchSubsResult = await feedSubscriptionsService.fetchForRssFeedByUrl(feedUrl);
   if (!fetchSubsResult.success) {

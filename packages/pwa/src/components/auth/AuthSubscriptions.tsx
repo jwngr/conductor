@@ -14,8 +14,7 @@ import {authService} from '@src/lib/auth.pwa';
 import {signInRoute} from '@src/routes';
 
 /**
- * Listener which updates the auth store when the user's authentication state changes in the auth
- * service.
+ * Listener which updates the auth store when the authentication state changes in the auth service.
  */
 const AuthServiceSubscription: React.FC = () => {
   const {setLoggedInAccount} = useAuthStore();
@@ -35,7 +34,7 @@ const AuthServiceSubscription: React.FC = () => {
 };
 
 /**
- * Listener which signs in the user when they visit a passwordless email link.
+ * Listener which signs in the account when they visit a passwordless email link.
  */
 const PasswordlessAuthSubscription: React.FC = () => {
   const navigate = useNavigate();

@@ -46,7 +46,7 @@ export async function handleEmitIntervalFeeds(args: {
     {intervalSubscriptions}
   );
 
-  // TODO: Use a time relative to the user's timezone.
+  // TODO: Use a time relative to the account's timezone.
   const now = new Date();
   const minutesSinceMidnight = now.getUTCHours() * 60 + now.getUTCMinutes();
   const roundedMinutesSinceMidnight =
