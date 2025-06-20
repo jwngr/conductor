@@ -405,11 +405,6 @@ const LoadedViewList: React.FC<{
     });
   };
 
-  if (feedItems.length === 0) {
-    // TODO: Introduce proper empty state.
-    return <div>No items</div>;
-  }
-
   let mainContent: React.ReactNode;
   if (selectedFeedItemId) {
     // If a feed item is selected, render the feed item screen.
@@ -420,6 +415,12 @@ const LoadedViewList: React.FC<{
         <FeedItemKeyboardShortcutHandler currentRoute={currentRoute} />
       </>
     );
+  } else if (feedItems.length === 0) {
+    // TODO: Introduce proper empty state.
+    mainContent = <div>No items</div>;
+  } else if (filteredItems.length === 0) {
+    // TODO: Introduce proper empty state.
+    mainContent = <div>No items matching filters</div>;
   } else if (groupedItems === null) {
     // If no grouping is applied, just render the list of items.
     mainContent = (
