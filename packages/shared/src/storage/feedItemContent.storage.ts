@@ -20,7 +20,7 @@ import type {
   WebsiteFeedItemContentFromStorage,
   XkcdFeedItemContentFromStorage,
   YouTubeFeedItemContentFromStorage,
-} from '@shared/schemas/feedItems.schema';
+} from '@shared/schemas/feedItemContent.schema';
 
 export function toStorageArticleFeedItemContent(
   feedItemContent: ArticleFeedItemContent
