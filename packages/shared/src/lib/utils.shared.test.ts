@@ -13,6 +13,8 @@ import {
   isUndefined,
   isValidPort,
   makeUuid,
+  noop,
+  noopFalse,
   noopTrue,
   partition,
   pluralize,
@@ -379,5 +381,23 @@ describe('isUndefined', () => {
     expect(isUndefined('')).toBe(false);
     expect(isUndefined({})).toBe(false);
     expect(isUndefined([])).toBe(false);
+  });
+});
+
+describe('noop', () => {
+  test('should do nothing and return undefined', () => {
+    expect(noop()).toBeUndefined();
+  });
+});
+
+describe('noopTrue', () => {
+  test('should return true', () => {
+    expect(noopTrue()).toBe(true);
+  });
+});
+
+describe('noopFalse', () => {
+  test('should return false', () => {
+    expect(noopFalse()).toBe(false);
   });
 });
