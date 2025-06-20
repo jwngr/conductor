@@ -172,9 +172,9 @@ service cloud.firestore {
       );
     }
 
-    function isValidUserFeedSubscriptionDoc(userFeedSubscriptionId, isCreate) {
+    function isValidFeedSubscriptionDoc(feedSubscriptionId, isCreate) {
       return request.resource.data.keys().hasAll([
-        'userFeedSubscriptionId',
+        'feedSubscriptionId',
         'feedType',
         'accountId',
         'isActive',
@@ -182,7 +182,7 @@ service cloud.firestore {
         'createdTime',
         'lastUpdatedTime'
       ]) &&
-      request.resource.data.userFeedSubscriptionId == userFeedSubscriptionId &&
+      request.resource.data.feedSubscriptionId == feedSubscriptionId &&
       isValidFeedType(request.resource.data.feedType) &&
       request.resource.data.accountId is string &&
       request.resource.data.isActive is bool &&
@@ -192,7 +192,7 @@ service cloud.firestore {
       // Validate readonly fields on update.
       ( 
         isCreate || (
-          request.resource.data.userFeedSubscriptionId == resource.data.userFeedSubscriptionId &&
+          request.resource.data.feedSubscriptionId == resource.data.feedSubscriptionId &&
           request.resource.data.feedType == resource.data.feedType &&
           request.resource.data.accountId == resource.data.accountId &&
           request.resource.data.createdTime == resource.data.createdTime
@@ -263,12 +263,12 @@ service cloud.firestore {
       allow delete: if isResourceOwner();
     }
 
-    match /userFeedSubscriptions/{userFeedSubscriptionId} {
+    match /feedSubscriptions/{feedSubscriptionId} {
       // Allow accounts to manage their own feed subscriptions.
       allow read: if isResourceOwner();
       // Allow accounts to manage their own feed subscriptions.
-      allow create: if isNewResourceOwner() && isValidUserFeedSubscriptionDoc(userFeedSubscriptionId, true);
-      allow update: if isResourceOwner() && isNewResourceOwner() && isValidUserFeedSubscriptionDoc(userFeedSubscriptionId, false);
+      allow create: if isNewResourceOwner() && isValidFeedSubscriptionDoc(feedSubscriptionId, true);
+      allow update: if isResourceOwner() && isNewResourceOwner() && isValidFeedSubscriptionDoc(feedSubscriptionId, false);
       // Allow accounts to delete their own feed subscriptions.
       allow delete: if isResourceOwner();
     }

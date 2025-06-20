@@ -18,14 +18,11 @@ import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {AsyncState} from '@shared/types/asyncState.types';
 import type {FeedItem, FeedItemId, XkcdFeedItem} from '@shared/types/feedItems.types';
 import {FeedType} from '@shared/types/feedSourceTypes.types';
-import type {
-  UserFeedSubscription,
-  UserFeedSubscriptionId,
-} from '@shared/types/userFeedSubscriptions.types';
+import type {FeedSubscription, FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
 import type {Func} from '@shared/types/utils.types';
 import type {ViewType} from '@shared/types/views.types';
 
-import {useUserFeedSubscriptionsStore} from '@sharedClient/stores/UserFeedSubscriptionsStore';
+import {useFeedSubscriptionsStore} from '@sharedClient/stores/FeedSubscriptionsStore';
 
 import {ClientFeedItemsService} from '@sharedClient/services/feedItems.client';
 import type {ClientFirebaseService} from '@sharedClient/services/firebase.client';
@@ -81,7 +78,7 @@ export function useFeedItem(args: {
  */
 function filterFeedItemsByDeliverySchedules(args: {
   readonly feedItems: FeedItem[];
-  readonly getFeedSubscription: Func<UserFeedSubscriptionId, UserFeedSubscription | null>;
+  readonly getFeedSubscription: Func<FeedSubscriptionId, FeedSubscription | null>;
 }): FeedItem[] {
   const {feedItems, getFeedSubscription} = args;
 
@@ -96,7 +93,7 @@ function filterFeedItemsByDeliverySchedules(args: {
       case FeedType.Interval:
       case FeedType.RSS: {
         // Some sources have delivery schedules which determine when they are shown.
-        const feedSubscription = getFeedSubscription(feedItem.origin.userFeedSubscriptionId);
+        const feedSubscription = getFeedSubscription(feedItem.origin.feedSubscriptionId);
 
         return isDeliveredAccordingToSchedule({
           createdTime: feedItem.createdTime,
@@ -163,11 +160,11 @@ export function useFeedItemsRespectingDelivery(args: {
   const {viewType, firebaseService} = args;
 
   const feedItemsState = useFeedItemsInternal({viewType, firebaseService});
-  const {isCacheReady, getFeedSubscription} = useUserFeedSubscriptionsStore();
+  const {isCacheReady, getFeedSubscription} = useFeedSubscriptionsStore();
 
   const filteredFeedItemsState: AsyncState<FeedItem[]> = useMemo(() => {
-    // Do not consider loaded until both the feed items and the user feed subscriptions are loaded. filtering.
-    // Favor the feed items state over the user feed subscriptions state.
+    // Do not consider loaded until both the feed items and the feed subscriptions are loaded. Favor
+    // the feed items state over the feed subscriptions state.
     if (feedItemsState.status !== AsyncStatus.Success) {
       return feedItemsState;
     }

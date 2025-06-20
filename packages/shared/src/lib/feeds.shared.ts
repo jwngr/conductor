@@ -10,10 +10,10 @@ import type {
 } from '@shared/types/feeds.types';
 import {FeedType} from '@shared/types/feedSourceTypes.types';
 import type {
-  IntervalUserFeedSubscription,
-  RssUserFeedSubscription,
-  YouTubeChannelUserFeedSubscription,
-} from '@shared/types/userFeedSubscriptions.types';
+  IntervalFeedSubscription,
+  RssFeedSubscription,
+  YouTubeChannelFeedSubscription,
+} from '@shared/types/feedSubscriptions.types';
 
 export const PWA_FEED: PwaFeed = {
   feedType: FeedType.PWA,
@@ -27,33 +27,31 @@ export const POCKET_EXPORT_FEED: PocketExportFeed = {
   feedType: FeedType.PocketExport,
 };
 
-export function makeRssFeed(args: {
-  readonly userFeedSubscription: RssUserFeedSubscription;
-}): RssFeed {
-  const {userFeedSubscription} = args;
+export function makeRssFeed(args: {readonly subscription: RssFeedSubscription}): RssFeed {
+  const {subscription} = args;
   return {
     feedType: FeedType.RSS,
-    userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
+    feedSubscriptionId: subscription.feedSubscriptionId,
   };
 }
 
 export function makeYouTubeChannelFeed(args: {
-  readonly userFeedSubscription: YouTubeChannelUserFeedSubscription;
+  readonly subscription: YouTubeChannelFeedSubscription;
 }): YouTubeChannelFeed {
-  const {userFeedSubscription} = args;
+  const {subscription} = args;
   return {
     feedType: FeedType.YouTubeChannel,
-    userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
+    feedSubscriptionId: subscription.feedSubscriptionId,
   };
 }
 
 export function makeIntervalFeed(args: {
-  readonly userFeedSubscription: IntervalUserFeedSubscription;
+  readonly subscription: IntervalFeedSubscription;
 }): IntervalFeed {
-  const {userFeedSubscription} = args;
+  const {subscription} = args;
   return {
     feedType: FeedType.Interval,
-    userFeedSubscriptionId: userFeedSubscription.userFeedSubscriptionId,
+    feedSubscriptionId: subscription.feedSubscriptionId,
   };
 }
 

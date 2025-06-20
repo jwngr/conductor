@@ -26,9 +26,9 @@ import type {EventId, EventLogItem, EventLogItemData} from '@shared/types/eventL
 import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
 import type {FeedType} from '@shared/types/feedSourceTypes.types';
+import type {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {ThemePreference} from '@shared/types/theme.types';
-import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
 import type {EventLogItemFromStorage} from '@shared/schemas/eventLog.schema';
@@ -190,13 +190,13 @@ export class ClientEventLogService {
 
   public async logSubscribedToFeedEvent(args: {
     readonly feedType: FeedType;
-    readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+    readonly feedSubscriptionId: FeedSubscriptionId;
     readonly isNewSubscription: boolean;
   }): AsyncResult<EventLogItem, Error> {
-    const {feedType, userFeedSubscriptionId, isNewSubscription} = args;
+    const {feedType, feedSubscriptionId, isNewSubscription} = args;
     const eventLogItemData = makeSubscribedToFeedEventLogItemData({
       feedType,
-      userFeedSubscriptionId,
+      feedSubscriptionId,
       isNewSubscription,
     });
     const eventLogItem = this.makeEventLogItem(eventLogItemData);
@@ -205,12 +205,12 @@ export class ClientEventLogService {
 
   public async logUnsubscribedFromFeedEvent(args: {
     readonly feedType: FeedType;
-    readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+    readonly feedSubscriptionId: FeedSubscriptionId;
   }): AsyncResult<EventLogItem, Error> {
-    const {feedType, userFeedSubscriptionId} = args;
+    const {feedType, feedSubscriptionId} = args;
     const eventLogItemData = makeUnsubscribedFromFeedEventLogItemData({
       feedType,
-      userFeedSubscriptionId,
+      feedSubscriptionId,
     });
     const eventLogItem = this.makeEventLogItem(eventLogItemData);
     return this.logEvent(eventLogItem);

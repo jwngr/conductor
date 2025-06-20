@@ -9,8 +9,8 @@ import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 import {ActorSchema} from '@shared/schemas/actors.schema';
 import {ExperimentIdSchema, ExperimentTypeSchema} from '@shared/schemas/experiments.schema';
 import {FeedItemIdSchema} from '@shared/schemas/feedItems.schema';
+import {FeedSubscriptionIdSchema} from '@shared/schemas/feedSubscriptions.schema';
 import {ThemePreferenceSchema} from '@shared/schemas/theme.schema';
-import {UserFeedSubscriptionIdSchema} from '@shared/schemas/userFeedSubscriptions.schema';
 import {BaseStoreItemSchema} from '@shared/schemas/utils.schema';
 
 // TODO: Consider adding `brand()` and defining `EventId` based on this schema.
@@ -62,7 +62,7 @@ const StringExperimentValueChangedEventLogItemDataSchema = BaseEventLogItemDataS
 const SubscribedToFeedEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
   eventType: z.literal(EventType.SubscribedToFeed),
   feedType: z.enum(FeedType),
-  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
+  feedSubscriptionId: FeedSubscriptionIdSchema,
   isNewSubscription: z.boolean(),
 });
 
@@ -73,7 +73,7 @@ export type SubscribedToFeedEventLogItemDataFromStorage = z.infer<
 export const UnsubscribedFromFeedEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
   eventType: z.literal(EventType.UnsubscribedFromFeed),
   feedType: z.enum(FeedType),
-  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
+  feedSubscriptionId: FeedSubscriptionIdSchema,
 });
 
 export type UnsubscribedFromFeedEventLogItemDataFromStorage = z.infer<

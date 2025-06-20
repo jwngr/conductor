@@ -14,8 +14,8 @@ import {AsyncStatus} from '@shared/types/asyncState.types';
 import {FeedItemContentType} from '@shared/types/feedItems.types';
 import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
 import type {FeedType} from '@shared/types/feedSourceTypes.types';
+import type {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
 import type {TagId} from '@shared/types/tags.types';
-import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {Supplier} from '@shared/types/utils.types';
 import type {ViewGroupByOption, ViewSortByOption, ViewType} from '@shared/types/views.types';
 import {ViewGroupByField, ViewSortByField} from '@shared/types/views.types';
@@ -100,7 +100,7 @@ function useFilteredFeedItems(
     readonly feedTypesToFilterBy: Set<FeedType>;
     readonly contentTypesToFilterBy: Set<FeedItemContentType>;
     readonly tagIdsToFilterBy: Set<TagId>;
-    readonly subscriptionIdsToFilterBy: Set<UserFeedSubscriptionId>;
+    readonly subscriptionIdsToFilterBy: Set<FeedSubscriptionId>;
   }
 ): FeedItem[] {
   return useMemo(() => {
@@ -328,7 +328,7 @@ interface LoadedViewListState {
   readonly feedTypesToFilterBy: Set<FeedType>;
   readonly contentTypesToFilterBy: Set<FeedItemContentType>;
   readonly tagIdsToFilterBy: Set<TagId>;
-  readonly subscriptionIdsToFilterBy: Set<UserFeedSubscriptionId>;
+  readonly subscriptionIdsToFilterBy: Set<FeedSubscriptionId>;
 }
 
 const LoadedViewList: React.FC<{
@@ -347,7 +347,7 @@ const LoadedViewList: React.FC<{
       feedTypesToFilterBy: new Set<FeedType>(),
       contentTypesToFilterBy: new Set<FeedItemContentType>(),
       tagIdsToFilterBy: new Set<TagId>(),
-      subscriptionIdsToFilterBy: new Set<UserFeedSubscriptionId>(),
+      subscriptionIdsToFilterBy: new Set<FeedSubscriptionId>(),
     };
   });
 
@@ -392,7 +392,7 @@ const LoadedViewList: React.FC<{
     });
   };
 
-  const handleFilterBySubscriptionChange = (criteria: UserFeedSubscriptionId): void => {
+  const handleFilterBySubscriptionChange = (criteria: FeedSubscriptionId): void => {
     setViewOptions((prev: LoadedViewListState) => {
       const newSet = new Set(prev.subscriptionIdsToFilterBy);
       if (newSet.has(criteria)) {

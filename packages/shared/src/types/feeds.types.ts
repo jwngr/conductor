@@ -1,5 +1,5 @@
 import type {FeedType} from '@shared/types/feedSourceTypes.types';
-import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
+import type {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
 
 interface BaseFeed {
   readonly feedType: FeedType;
@@ -7,17 +7,17 @@ interface BaseFeed {
 
 export interface RssFeed extends BaseFeed {
   readonly feedType: FeedType.RSS;
-  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+  readonly feedSubscriptionId: FeedSubscriptionId;
 }
 
 export interface YouTubeChannelFeed extends BaseFeed {
   readonly feedType: FeedType.YouTubeChannel;
-  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+  readonly feedSubscriptionId: FeedSubscriptionId;
 }
 
 export interface IntervalFeed extends BaseFeed {
   readonly feedType: FeedType.Interval;
-  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+  readonly feedSubscriptionId: FeedSubscriptionId;
 }
 
 export interface PwaFeed extends BaseFeed {

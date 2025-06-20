@@ -5,7 +5,7 @@ import {assertNever} from '@shared/lib/utils.shared';
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseEventId} from '@shared/parsers/eventLog.parser';
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
-import {parseUserFeedSubscriptionId} from '@shared/parsers/userFeedSubscriptions.parser';
+import {parseFeedSubscriptionId} from '@shared/parsers/feedSubscriptions.parser';
 
 import {EventType} from '@shared/types/eventLog.types';
 import type {
@@ -139,13 +139,13 @@ function fromStorageFeedItemImportedEventLogItemData(
 function fromStorageSubscribedToFeedEventLogItemData(
   eventLogItemData: SubscribedToFeedEventLogItemDataFromStorage
 ): Result<SubscribedToFeedEventLogItemData, Error> {
-  const parsedSubIdResult = parseUserFeedSubscriptionId(eventLogItemData.userFeedSubscriptionId);
+  const parsedSubIdResult = parseFeedSubscriptionId(eventLogItemData.feedSubscriptionId);
   if (!parsedSubIdResult.success) return parsedSubIdResult;
 
   return makeSuccessResult({
     eventType: EventType.SubscribedToFeed,
     feedType: eventLogItemData.feedType,
-    userFeedSubscriptionId: parsedSubIdResult.value,
+    feedSubscriptionId: parsedSubIdResult.value,
     isNewSubscription: eventLogItemData.isNewSubscription,
   });
 }
@@ -153,12 +153,12 @@ function fromStorageSubscribedToFeedEventLogItemData(
 function fromStorageUnsubscribedFromFeedEventLogItemData(
   eventLogItemData: UnsubscribedFromFeedEventLogItemDataFromStorage
 ): Result<UnsubscribedFromFeedEventLogItemData, Error> {
-  const parsedSubIdResult = parseUserFeedSubscriptionId(eventLogItemData.userFeedSubscriptionId);
+  const parsedSubIdResult = parseFeedSubscriptionId(eventLogItemData.feedSubscriptionId);
   if (!parsedSubIdResult.success) return parsedSubIdResult;
 
   return makeSuccessResult({
     eventType: EventType.UnsubscribedFromFeed,
     feedType: eventLogItemData.feedType,
-    userFeedSubscriptionId: parsedSubIdResult.value,
+    feedSubscriptionId: parsedSubIdResult.value,
   });
 }

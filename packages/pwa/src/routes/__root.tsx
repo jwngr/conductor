@@ -5,7 +5,7 @@ import {useDevToolbarStore} from '@sharedClient/stores/DevToolbarStore';
 
 import {useMaybeLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 
-import {UserFeedSubscriptionsListener} from '@sharedClient/components/UserFeedSubscriptionsListener';
+import {FeedSubscriptionsListener} from '@sharedClient/components/FeedSubscriptionsListener';
 
 import {PWAAccountSettingsListener} from '@src/components/accountSettings/PWAAccountSettingsListener';
 import {Toaster} from '@src/components/atoms/Toaster';
@@ -49,7 +49,7 @@ const LoggedInGlobalSubscriptions: React.FC = () => {
       <RegisterFeedItemImporterDevToolbarSection />
       <PWAExperimentsListener />
       <PWAAccountSettingsListener />
-      <UserFeedSubscriptionsListener firebaseService={firebaseService} />
+      <FeedSubscriptionsListener firebaseService={firebaseService} />
     </RequireLoggedInAccount>
   );
 };

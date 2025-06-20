@@ -8,13 +8,13 @@ import type {IntervalFeedItem} from '@shared/types/feedItems.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
-import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
+import type {ServerFeedSubscriptionsService} from '@sharedServer/services/feedSubscriptions.server';
 
 export const INTERVAL_FEED_EMISSION_INTERVAL_MINUTES = 5;
 
 export async function handleEmitIntervalFeeds(args: {
   feedItemsService: ServerFeedItemsService;
-  userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
+  feedSubscriptionsService: ServerFeedSubscriptionsService;
 }): AsyncResult<
   {
     readonly totalCount: number;
@@ -23,7 +23,7 @@ export async function handleEmitIntervalFeeds(args: {
   },
   Error
 > {
-  const {feedItemsService, userFeedSubscriptionsService} = args;
+  const {feedItemsService, feedSubscriptionsService} = args;
 
   const innerLog = (message: string, details: Record<string, unknown> = {}): void => {
     logger.log(`[INTERVAL FEEDS] ${message}`, details);
@@ -34,7 +34,7 @@ export async function handleEmitIntervalFeeds(args: {
   };
 
   // Fetch all interval feed subscriptions.
-  const intervalSubsResult = await userFeedSubscriptionsService.fetchActiveIntervalSubscriptions();
+  const intervalSubsResult = await feedSubscriptionsService.fetchActiveIntervalSubscriptions();
   if (!intervalSubsResult.success) {
     return prefixErrorResult(intervalSubsResult, 'Error fetching interval feed subscriptions');
   }
@@ -56,7 +56,7 @@ export async function handleEmitIntervalFeeds(args: {
   // Loop through each interval subscription and emit a new feed item if the time has come.
   const feedItemEmitAsyncResults: Array<AsyncResult<IntervalFeedItem, Error>> = [];
   for (const currentIntervalSub of intervalSubscriptions) {
-    const {intervalSeconds, accountId, userFeedSubscriptionId} = currentIntervalSub;
+    const {intervalSeconds, accountId, feedSubscriptionId} = currentIntervalSub;
 
     // Emit if the emit time is within the last time the interval was checked. Ensure we do not
     // emit more than once per interval.
@@ -64,16 +64,16 @@ export async function handleEmitIntervalFeeds(args: {
     const shouldEmit = roundedMinutesSinceMidnight % intervalMinutes === 0;
 
     if (!shouldEmit) {
-      innerLog('Skipping emission of interval feed item', {accountId, userFeedSubscriptionId});
+      innerLog('Skipping emission of interval feed item', {accountId, feedSubscriptionId});
       continue;
     }
 
-    innerLog('Creating interval feed item', {accountId, userFeedSubscriptionId, intervalSeconds});
+    innerLog('Creating interval feed item', {accountId, feedSubscriptionId, intervalSeconds});
 
     feedItemEmitAsyncResults.push(
       feedItemsService.createIntervalFeedItem({
         accountId,
-        userFeedSubscription: currentIntervalSub,
+        subscription: currentIntervalSub,
       })
     );
   }

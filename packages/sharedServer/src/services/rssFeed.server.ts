@@ -6,20 +6,20 @@ import {makeSuccessResult} from '@shared/lib/results.shared';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {RssFeedProvider} from '@shared/types/rss.types';
 
-import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
+import type {ServerFeedSubscriptionsService} from '@sharedServer/services/feedSubscriptions.server';
 
 import {parseRssFeed} from '@sharedServer/lib/rss.server';
 
 export class ServerRssFeedService {
   private readonly rssFeedProvider: RssFeedProvider;
-  private readonly userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
+  private readonly feedSubscriptionsService: ServerFeedSubscriptionsService;
 
   constructor(args: {
     readonly rssFeedProvider: RssFeedProvider;
-    readonly userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
+    readonly feedSubscriptionsService: ServerFeedSubscriptionsService;
   }) {
     this.rssFeedProvider = args.rssFeedProvider;
-    this.userFeedSubscriptionsService = args.userFeedSubscriptionsService;
+    this.feedSubscriptionsService = args.feedSubscriptionsService;
   }
 
   async subscribeToUrl(url: string): AsyncResult<void, Error> {
@@ -39,7 +39,7 @@ export class ServerRssFeedService {
    */
   async unsubscribeFromUrl(url: string): AsyncResult<void, Error> {
     // Fetch all active subscriptions for the feed source.
-    const fetchSubsResult = await this.userFeedSubscriptionsService.fetchForRssFeedByUrl(url);
+    const fetchSubsResult = await this.feedSubscriptionsService.fetchForRssFeedByUrl(url);
     if (!fetchSubsResult.success) {
       const message =
         '[UNSUBSCRIBE] Error fetching other subscriptions while unsubscribing from feed';
