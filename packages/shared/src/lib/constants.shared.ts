@@ -27,7 +27,7 @@ export const EMPTY_ARRAY = [] as const;
 export const EMPTY_OBJECT = Object.freeze({});
 
 // Local cache limits.
-export const USER_FEED_SUBSCRIPTIONS_CACHE_LIMIT = 1;
+export const USER_FEED_SUBSCRIPTIONS_CACHE_LIMIT = 100;
 
 // Miscellaneous.
 export const DEFAULT_FEED_TITLE = '(no title)';

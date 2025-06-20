@@ -19,7 +19,6 @@ import {
   SORT_BY_CREATED_TIME_DESC_OPTION,
 } from '@shared/lib/views.shared';
 
-import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {FeedItem, FeedItemContentType} from '@shared/types/feedItems.types';
 import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
 import {IconName} from '@shared/types/icons.types';
@@ -131,33 +130,20 @@ const ControlsSidebarFeedSubscriptionsSection: React.FC<{
   readonly subscriptionIdsToFilterBy: Set<UserFeedSubscriptionId>;
   readonly onFeedSubscriptionClick: Consumer<UserFeedSubscriptionId>;
 }> = ({feedItems, subscriptionIdsToFilterBy, onFeedSubscriptionClick}) => {
-  const {recentSubscriptionsCacheState} = useUserFeedSubscriptionsStore();
+  const {getFeedSubscription} = useUserFeedSubscriptionsStore();
 
   const getCriteriaName = (feedSubscriptionId: UserFeedSubscriptionId): string => {
-    switch (recentSubscriptionsCacheState.status) {
-      case AsyncStatus.Idle:
-      case AsyncStatus.Pending:
-        return 'Loading...';
-      case AsyncStatus.Success: {
-        const allFeedSubscriptions = recentSubscriptionsCacheState.value;
-        const feedSubscription = allFeedSubscriptions[feedSubscriptionId];
-        if (!feedSubscription) return feedSubscriptionId;
-        switch (feedSubscription.feedSourceType) {
-          case FeedSourceType.RSS:
-            return feedSubscription.title;
-          case FeedSourceType.YouTubeChannel:
-            return feedSubscription.channelId;
-          case FeedSourceType.Interval:
-            return `Interval (${feedSubscription.intervalSeconds}s)`;
-          default:
-            assertNever(feedSubscription);
-        }
-        break;
-      }
-      case AsyncStatus.Error:
-        return feedSubscriptionId;
+    const feedSubscription = getFeedSubscription(feedSubscriptionId);
+    if (!feedSubscription) return feedSubscriptionId;
+    switch (feedSubscription.feedSourceType) {
+      case FeedSourceType.RSS:
+        return feedSubscription.title;
+      case FeedSourceType.YouTubeChannel:
+        return feedSubscription.channelId;
+      case FeedSourceType.Interval:
+        return `Interval (${feedSubscription.intervalSeconds}s)`;
       default:
-        assertNever(recentSubscriptionsCacheState);
+        assertNever(feedSubscription);
     }
   };
 

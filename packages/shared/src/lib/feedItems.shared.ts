@@ -8,7 +8,6 @@ import {isXkcdComicUrl} from '@shared/lib/xkcd.shared';
 import {isYouTubeVideoUrl} from '@shared/lib/youtube.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
 import {
   FeedItemActionType,
   FeedItemContentType,
@@ -27,10 +26,6 @@ import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/results.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
-import type {
-  UserFeedSubscription,
-  UserFeedSubscriptionId,
-} from '@shared/types/userFeedSubscriptions.types';
 
 export const DEFAULT_FEED_ITEM_CONTENT_TYPE = FeedItemContentType.Article;
 
@@ -153,15 +148,6 @@ export class SharedFeedItemHelpers {
   public static hasEverBeenImported(feedItem: FeedItem): boolean {
     return feedItem.importState.lastSuccessfulImportTime !== null;
   }
-}
-
-export function findDeliveryScheduleForFeedSubscription(args: {
-  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-  readonly userFeedSubscriptions: Record<UserFeedSubscriptionId, UserFeedSubscription>;
-}): DeliverySchedule | null {
-  const {userFeedSubscriptionId, userFeedSubscriptions} = args;
-  const matchingUserFeedSubscription = userFeedSubscriptions[userFeedSubscriptionId];
-  return matchingUserFeedSubscription?.deliverySchedule ?? null;
 }
 
 export function makeFeedItem(args: {
