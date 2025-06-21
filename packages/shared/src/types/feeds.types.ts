@@ -40,7 +40,7 @@ export type Feed =
   | IntervalFeed;
 
 /**
- * The origin of the feed item. Where the feed item came from.
+ * The type of feed from which a {@link FeedItem} originates. The source of the feed item.
  */
 export enum FeedType {
   /** RSS feeds. */
