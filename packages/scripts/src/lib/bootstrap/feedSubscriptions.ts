@@ -11,7 +11,7 @@ import type {AsyncResult} from '@shared/types/results.types';
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 import type {ServerFeedSubscriptionsService} from '@sharedServer/services/feedSubscriptions.server';
 
-// TODO: Rename this file.
+// TODO: Rename this file / move this helper somewhere else.
 
 export async function saveMockFeedData(args: {
   readonly feedSubscription: FeedSubscription;

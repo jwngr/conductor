@@ -4,7 +4,6 @@ import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {EmailAddress} from '@shared/types/emails.types';
-import type {AccountId} from '@shared/types/ids.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import {saveMockFeedData} from '@src/lib/bootstrap/feedSubscriptions';
@@ -12,20 +11,11 @@ import {getEmailForScript} from '@src/lib/cli.scripts';
 import {env} from '@src/lib/environment.scripts';
 import {initServices} from '@src/lib/initServices.scripts';
 
+import {makeIntervalMockFeedData} from '@src/bootstrap/feeds/interval.bootstrap';
 import {makeRssJacobWengerMockFeedData} from '@src/bootstrap/feeds/rssJacobWenger.bootstrap';
 import {makeYouTubeJacobWengerMockFeedData} from '@src/bootstrap/feeds/youTubeJacobWenger.bootstrap';
 
-interface BootstrapResult {
-  readonly accountId: AccountId;
-  readonly feedSubscriptionsCreated: number;
-  readonly feedItemsCreated: number;
-}
-
-async function bootstrapLocalEnv(args: {
-  readonly email: EmailAddress;
-}): AsyncResult<BootstrapResult, Error> {
-  const {email} = args;
-
+async function bootstrapLocalEnv(email: EmailAddress): AsyncResult<void, Error> {
   // Log the Firebase project info for debugging.
   logger.log('[BOOTSTRAP] Firebase project info', {
     GOOGLE_CLOUD_PROJECT: env.googleCloudProject,
@@ -68,41 +58,45 @@ async function bootstrapLocalEnv(args: {
   });
   if (!saveYouTubeMockFeedDataResult.success) return saveYouTubeMockFeedDataResult;
 
-  return makeSuccessResult({
-    accountId,
-    feedSubscriptionsCreated: 2,
-    feedItemsCreated: 2,
+  const intervalMockFeedData = makeIntervalMockFeedData({accountId});
+  const saveIntervalMockFeedDataResult = await saveMockFeedData({
+    feedSubscription: intervalMockFeedData.feedSubscription,
+    feedItems: intervalMockFeedData.feedItems,
+    feedItemsService,
+    feedSubscriptionsService,
   });
+  if (!saveIntervalMockFeedDataResult.success) return saveIntervalMockFeedDataResult;
+
+  // Log the bootstrap result and exit successfully.
+  // TODO: Fix these numbers.
+  const feedSubscriptionsCreated = 3;
+  const feedItemsCreated = 2;
+  logger.log('✅ Bootstrap completed successfully!');
+  logger.log(`📊 Summary:`);
+  logger.log(`   Email: ${email}`);
+  logger.log(`   Account ID: ${accountId}`);
+  logger.log(`   Feed subscriptions: ${feedSubscriptionsCreated}`);
+  logger.log(`   Feed items: ${feedItemsCreated}`);
+  logger.log('');
+  logger.log('🎉 Your development environment is now ready!');
+
+  return makeSuccessResult(undefined);
 }
 
 // Get the email from the command line or environment variable.
 const emailResult = getEmailForScript();
 if (!emailResult.success) {
-  const betterError = prefixErrorResult(emailResult, 'Failed to get email');
-  logger.error(betterError.error);
+  logger.error(emailResult.error);
   process.exit(1);
 }
 const email = emailResult.value;
 
 // Bootstrap local environment.
-const bootstrapResult = await bootstrapLocalEnv({email});
-
-// If the bootstrap fails, log an error and exit.
+const bootstrapResult = await bootstrapLocalEnv(email);
 if (!bootstrapResult.success) {
   const betterError = prefixErrorResult(bootstrapResult, 'Bootstrap failed');
   logger.error(betterError.error);
   process.exit(1);
 }
-
-// Log the bootstrap result and exit successfully.
-const {accountId, feedSubscriptionsCreated, feedItemsCreated} = bootstrapResult.value;
-logger.log('✅ Bootstrap completed successfully!');
-logger.log(`📊 Summary:`);
-logger.log(`   Email: ${email}`);
-logger.log(`   Account ID: ${accountId}`);
-logger.log(`   Feed subscriptions: ${feedSubscriptionsCreated}`);
-logger.log(`   Feed items: ${feedItemsCreated}`);
-logger.log('');
-logger.log('🎉 Your development environment is now ready!');
 
 process.exit(0);
