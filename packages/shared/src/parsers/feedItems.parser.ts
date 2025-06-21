@@ -6,7 +6,8 @@ import type {FeedItem} from '@shared/types/feedItems.types';
 import type {FeedItemId} from '@shared/types/ids.types';
 import type {Result} from '@shared/types/results.types';
 
-import {FeedItemIdSchema, FeedItemSchema} from '@shared/schemas/feedItems.schema';
+import {FeedItemSchema} from '@shared/schemas/feedItems.schema';
+import {FeedItemIdSchema} from '@shared/schemas/ids.schema';
 import {fromStorageFeedItem} from '@shared/storage/feedItems.storage';
 
 /**

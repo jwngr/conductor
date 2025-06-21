@@ -2,7 +2,7 @@ import {z} from 'zod/v4';
 
 import {ActorType} from '@shared/types/actors.types';
 
-import {AccountIdSchema} from '@shared/schemas/accounts.schema';
+import {AccountIdSchema} from '@shared/schemas/ids.schema';
 
 const AccountActorSchema = z.object({
   actorType: z.literal(ActorType.Account),

@@ -16,7 +16,7 @@ import type {
 } from '@shared/types/eventLog.types';
 import {EventType} from '@shared/types/eventLog.types';
 import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
-import type {FeedItemActionType} from '@shared/types/feedItems.types';
+import type {FeedItemActionType} from '@shared/types/feedItemActions.types';
 import type {FeedType} from '@shared/types/feeds.types';
 import type {
   AccountId,

@@ -2,14 +2,14 @@ import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {parseUrl} from '@shared/lib/urls.shared';
 import {assertNever, makeUuid} from '@shared/lib/utils.shared';
 
+import type {FeedItemAction} from '@shared/types/feedItemActions.types';
+import {FeedItemActionType} from '@shared/types/feedItemActions.types';
 import {FeedItemContentType} from '@shared/types/feedItemContent.types';
 import type {FeedItemContent} from '@shared/types/feedItemContent.types';
-import {
-  FeedItemActionType,
-  FeedItemImportStatus,
-  TriageStatus,
-} from '@shared/types/feedItems.types';
-import type {FeedItem, FeedItemAction, NewFeedItemImportState} from '@shared/types/feedItems.types';
+import {FeedItemImportStatus} from '@shared/types/feedItemImportStates';
+import type {NewFeedItemImportState} from '@shared/types/feedItemImportStates';
+import type {FeedItem} from '@shared/types/feedItems.types';
+import {TriageStatus} from '@shared/types/feedItems.types';
 import type {Feed} from '@shared/types/feeds.types';
 import {FeedType} from '@shared/types/feeds.types';
 import {IconName} from '@shared/types/icons.types';

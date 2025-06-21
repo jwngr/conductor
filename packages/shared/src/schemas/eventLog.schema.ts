@@ -2,18 +2,19 @@ import {z} from 'zod/v4';
 
 import {Environment} from '@shared/types/environment.types';
 import {EventType} from '@shared/types/eventLog.types';
-import {FeedItemActionType} from '@shared/types/feedItems.types';
+import {FeedItemActionType} from '@shared/types/feedItemActions.types';
 import {FeedType} from '@shared/types/feeds.types';
 
-import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 import {ActorSchema} from '@shared/schemas/actors.schema';
 import {ExperimentIdSchema, ExperimentTypeSchema} from '@shared/schemas/experiments.schema';
-import {FeedItemIdSchema} from '@shared/schemas/feedItems.schema';
-import {FeedSubscriptionIdSchema} from '@shared/schemas/feedSubscriptions.schema';
+import {
+  AccountIdSchema,
+  EventLogItemIdSchema,
+  FeedItemIdSchema,
+  FeedSubscriptionIdSchema,
+} from '@shared/schemas/ids.schema';
 import {ThemePreferenceSchema} from '@shared/schemas/theme.schema';
 import {BaseStoreItemSchema} from '@shared/schemas/utils.schema';
-
-export const EventLogItemIdSchema = z.uuid();
 
 const BaseEventLogItemDataSchema = z.object({
   eventType: z.enum(EventType),

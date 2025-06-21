@@ -7,12 +7,8 @@ import type {Result} from '@shared/types/results.types';
 import type {SystemTag, SystemTagId, UserTag} from '@shared/types/tags.types';
 import {TagType} from '@shared/types/tags.types';
 
-import {
-  SystemTagIdSchema,
-  SystemTagSchema,
-  UserTagIdSchema,
-  UserTagSchema,
-} from '@shared/schemas/tags.schema';
+import {UserTagIdSchema} from '@shared/schemas/ids.schema';
+import {SystemTagIdSchema, SystemTagSchema, UserTagSchema} from '@shared/schemas/tags.schema';
 
 /**
  * Parses a {@link UserTagId} from a plain string. Returns an `ErrorResult` if the string is not

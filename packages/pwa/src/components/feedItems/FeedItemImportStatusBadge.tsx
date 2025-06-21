@@ -2,7 +2,8 @@ import type React from 'react';
 
 import {assertNever} from '@shared/lib/utils.shared';
 
-import {FeedItemImportStatus, type FeedItemImportState} from '@shared/types/feedItems.types';
+import type {FeedItemImportState} from '@shared/types/feedItemImportStates';
+import {FeedItemImportStatus} from '@shared/types/feedItemImportStates';
 
 import {Badge} from '@src/components/atoms/Badge';
 
