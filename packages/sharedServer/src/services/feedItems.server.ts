@@ -22,7 +22,8 @@ import type {
   YouTubeFeedItemContent,
 } from '@shared/types/feedItemContent.types';
 import {FeedItemContentType} from '@shared/types/feedItemContent.types';
-import type {FeedItem, FeedItemImportState, IntervalFeedItem} from '@shared/types/feedItems.types';
+import type {FeedItemImportState} from '@shared/types/feedItemImportStates';
+import type {FeedItem, IntervalFeedItem} from '@shared/types/feedItems.types';
 import type {Feed} from '@shared/types/feeds.types';
 import type {IntervalFeedSubscription} from '@shared/types/feedSubscriptions.types';
 import type {AccountId, FeedItemId} from '@shared/types/ids.types';
