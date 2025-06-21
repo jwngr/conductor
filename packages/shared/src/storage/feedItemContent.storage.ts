@@ -31,7 +31,6 @@ export function toStorageArticleFeedItemContent(
     url: feedItemContent.url,
     description: feedItemContent.description,
     summary: feedItemContent.summary,
-    outgoingLinks: feedItemContent.outgoingLinks,
   };
 }
 
@@ -44,7 +43,6 @@ export function toStorageVideoFeedItemContent(
     url: feedItemContent.url,
     description: feedItemContent.description,
     summary: feedItemContent.summary,
-    outgoingLinks: feedItemContent.outgoingLinks,
   };
 }
 
@@ -57,7 +55,6 @@ export function toStorageWebsiteFeedItemContent(
     url: feedItemContent.url,
     description: feedItemContent.description,
     summary: feedItemContent.summary,
-    outgoingLinks: feedItemContent.outgoingLinks,
   };
 }
 
@@ -70,7 +67,6 @@ export function toStorageTweetFeedItemContent(
     url: feedItemContent.url,
     description: feedItemContent.description,
     summary: feedItemContent.summary,
-    outgoingLinks: feedItemContent.outgoingLinks,
   };
 }
 
@@ -83,7 +79,6 @@ export function toStorageYouTubeFeedItemContent(
     url: feedItemContent.url,
     description: feedItemContent.description,
     summary: feedItemContent.summary,
-    outgoingLinks: feedItemContent.outgoingLinks,
   };
 }
 
@@ -120,7 +115,6 @@ export function fromStorageArticleFeedItemContent(
     url: feedItemContentFromStorage.url,
     description: feedItemContentFromStorage.description,
     summary: feedItemContentFromStorage.summary,
-    outgoingLinks: feedItemContentFromStorage.outgoingLinks,
   });
 }
 
@@ -133,7 +127,6 @@ export function fromStorageVideoFeedItemContent(
     url: feedItemContentFromStorage.url,
     description: feedItemContentFromStorage.description,
     summary: feedItemContentFromStorage.summary,
-    outgoingLinks: feedItemContentFromStorage.outgoingLinks,
   });
 }
 
@@ -146,7 +139,6 @@ export function fromStorageWebsiteFeedItemContent(
     url: feedItemContentFromStorage.url,
     description: feedItemContentFromStorage.description,
     summary: feedItemContentFromStorage.summary,
-    outgoingLinks: feedItemContentFromStorage.outgoingLinks,
   });
 }
 
@@ -159,7 +151,6 @@ export function fromStorageTweetFeedItemContent(
     url: feedItemContentFromStorage.url,
     description: feedItemContentFromStorage.description,
     summary: feedItemContentFromStorage.summary,
-    outgoingLinks: feedItemContentFromStorage.outgoingLinks,
   });
 }
 
@@ -172,7 +163,6 @@ export function fromStorageYouTubeFeedItemContent(
     url: feedItemContentFromStorage.url,
     description: feedItemContentFromStorage.description,
     summary: feedItemContentFromStorage.summary,
-    outgoingLinks: feedItemContentFromStorage.outgoingLinks,
   });
 }
 

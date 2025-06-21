@@ -25,16 +25,15 @@ chrome.action.onClicked.addListener(async (tab) => {
 
   const {feedItemsService} = initServices({accountId});
 
-  const addFeedItemResult = await feedItemsService.createFeedItemFromUrl({
+  const feedItem = feedItemsService.makeFeedItemFromUrl({
     origin: EXTENSION_FEED,
     url: tabUrl,
     title: tab.title ?? DEFAULT_FEED_TITLE,
-    // TODO: Set better initial values for these fields.
     description: null,
-    outgoingLinks: [],
     summary: null,
   });
 
+  const addFeedItemResult = await feedItemsService.addFeedItem(feedItem);
   if (!addFeedItemResult.success) {
     logger.error(prefixError(addFeedItemResult.error, 'Error saving URL'));
     return;

@@ -170,7 +170,6 @@ export class WebsiteFeedItemImporter {
         contentType: 'text/markdown',
       }),
       this.feedItemService.updateFeedItemWithUrlContent(feedItemId, {
-        outgoingLinks: firecrawlData.links,
         title: firecrawlData.title,
         description: firecrawlData.description,
       }),

@@ -29,5 +29,5 @@ export async function handleCreateAccount(args: {
   }
   const parsedEmail = parsedEmailResult.value;
 
-  return accountsService.createAccount({accountId: parsedAccountId, email: parsedEmail});
+  return accountsService.addAccount({accountId: parsedAccountId, email: parsedEmail});
 }

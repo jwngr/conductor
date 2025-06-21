@@ -18,7 +18,6 @@ const BaseFeedItemContentWithUrlSchema = BaseFeedItemContentSchema.extend({
   url: z.url(),
   description: z.string().nullable(),
   summary: z.string().nullable(),
-  outgoingLinks: z.array(z.url()),
 });
 
 export const ArticleFeedItemContentSchema = BaseFeedItemContentWithUrlSchema.extend({

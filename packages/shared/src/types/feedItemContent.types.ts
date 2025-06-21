@@ -23,10 +23,9 @@ interface BaseFeedItemContentWithUrl extends BaseFeedItemContent {
   readonly url: string;
   /** Description of the content provided by the source. */
   readonly description: string | null;
-  /** Outgoing links found in the content. */
-  readonly outgoingLinks: string[];
   /** AI-generated summary of the content. */
   readonly summary: string | null;
+  // TODO: Add outgoing links.
 }
 
 export interface ArticleFeedItemContent extends BaseFeedItemContentWithUrl {

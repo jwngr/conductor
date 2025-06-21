@@ -4,7 +4,9 @@ import {
   ACTIVE_FEED_SUBSCRIPTION_LIFECYCLE_STATE,
   makeFeedSubscriptionId,
 } from '@shared/lib/feedSubscriptions.shared';
+import {objectMapValues} from '@shared/lib/objectUtils.shared';
 
+import {BootstrapFeedSubscriptionId} from '@shared/types/bootstrap.types';
 import {FeedType} from '@shared/types/feeds.types';
 import type {
   FeedSubscription,
@@ -38,16 +40,6 @@ const personalBlogRssFeedSubscription: Omit<RssFeedSubscription, 'accountId'> = 
   feedType: FeedType.RSS,
   url: 'https://jwn.gr/feed.xml',
   title: "Jacob Wenger's Blog",
-  lifecycleState: ACTIVE_FEED_SUBSCRIPTION_LIFECYCLE_STATE,
-  deliverySchedule: IMMEDIATE_DELIVERY_SCHEDULE,
-  createdTime: new Date('2025-06-20T03:30:11.282Z'),
-  lastUpdatedTime: new Date('2025-06-20T03:30:40.610Z'),
-};
-
-const personalYouTubeChannelFeedSubscription: Omit<YouTubeChannelFeedSubscription, 'accountId'> = {
-  feedSubscriptionId: PERSONAL_YOUTUBE_CHANNEL_FEED_SUBSCRIPTION_ID,
-  feedType: FeedType.YouTubeChannel,
-  channelId: PERSONAL_YOUTUBE_CHANNEL_ID,
   lifecycleState: ACTIVE_FEED_SUBSCRIPTION_LIFECYCLE_STATE,
   deliverySchedule: IMMEDIATE_DELIVERY_SCHEDULE,
   createdTime: new Date('2025-06-20T03:30:11.282Z'),
@@ -95,27 +87,31 @@ const gmtkYouTubeChannelFeedSubscription: Omit<YouTubeChannelFeedSubscription, '
   lastUpdatedTime: new Date('2025-06-20T03:30:40.610Z'),
 };
 
-const mockUserFeedSubscriptions: Array<Omit<FeedSubscription, 'accountId'>> = [
+const mockUserFeedSubscriptions: Record<
+  BootstrapFeedSubscriptionId,
+  Omit<FeedSubscription, 'accountId'>
+> = {
   // Interval feeds.
-  interval1UserFeedSubscription,
+  [BootstrapFeedSubscriptionId.Interval1]: interval1UserFeedSubscription,
 
   // RSS feeds.
-  personalBlogRssFeedSubscription,
+  [BootstrapFeedSubscriptionId.RssPersonalBlog]: personalBlogRssFeedSubscription,
 
   // YouTube channel feeds.
-  personalYouTubeChannelFeedSubscription,
-  geoWizardYouTubeChannelFeedSubscription,
-  jonnyHarrisYouTubeChannelFeedSubscription,
-  jetLagYouTubeChannelFeedSubscription,
-  gmtkYouTubeChannelFeedSubscription,
-];
+  [BootstrapFeedSubscriptionId.YoutubeChannelJacobWenger]: personalYouTubeChannelFeedSubscription,
+  [BootstrapFeedSubscriptionId.YoutubeChannelGeoWizard]: geoWizardYouTubeChannelFeedSubscription,
+  [BootstrapFeedSubscriptionId.YoutubeChannelJonnyHarris]:
+    jonnyHarrisYouTubeChannelFeedSubscription,
+  [BootstrapFeedSubscriptionId.YoutubeChannelJetLag]: jetLagYouTubeChannelFeedSubscription,
+  [BootstrapFeedSubscriptionId.YoutubeChannelGMTK]: gmtkYouTubeChannelFeedSubscription,
+};
 
 export const getMockUserFeedSubscriptions = (args: {
   readonly accountId: AccountId;
-}): FeedSubscription[] => {
+}): Record<BootstrapFeedSubscriptionId, FeedSubscription> => {
   const {accountId} = args;
 
-  return mockUserFeedSubscriptions.map((subscription) => {
+  return objectMapValues(mockUserFeedSubscriptions, (subscription) => {
     return {
       ...subscription,
       accountId,

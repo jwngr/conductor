@@ -91,20 +91,23 @@ export class ServerFeedItemsService {
     });
   }
 
-  public async createFeedItemFromUrl(args: {
+  public makeFeedItemFromUrl(args: {
     readonly origin: Feed;
     readonly accountId: AccountId;
     readonly url: string;
     readonly title: string;
     readonly description: string | null;
-    readonly outgoingLinks: string[];
     readonly summary: string | null;
-  }): AsyncResult<FeedItem, Error> {
-    const {origin, accountId, url, title, description, outgoingLinks, summary} = args;
+  }): FeedItem {
+    const {origin, accountId, url, title, description, summary} = args;
 
-    const content = makeFeedItemContentFromUrl({url, title, description, outgoingLinks, summary});
+    const content = makeFeedItemContentFromUrl({url, title, description, summary});
     const feedItem = makeFeedItem({origin, content, accountId});
 
+    return feedItem;
+  }
+
+  public async addFeedItem(feedItem: FeedItem): AsyncResult<FeedItem, Error> {
     const saveResult = await this.collectionService.setDoc(feedItem.feedItemId, feedItem);
     if (!saveResult.success) return saveResult;
 
@@ -182,7 +185,6 @@ export class ServerFeedItemsService {
       'title',
       'url',
       'description',
-      'outgoingLinks',
       'summary',
     ]);
     return await this.collectionService.updateDoc(feedItemId, dataToWrite);

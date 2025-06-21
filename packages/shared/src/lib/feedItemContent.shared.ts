@@ -6,7 +6,16 @@ import {isXkcdComicUrl} from '@shared/lib/xkcd.shared';
 import {isYouTubeVideoUrl} from '@shared/lib/youtube.shared';
 
 import {FeedItemContentType} from '@shared/types/feedItemContent.types';
-import type {FeedItemContent, IntervalFeedItemContent} from '@shared/types/feedItemContent.types';
+import type {
+  ArticleFeedItemContent,
+  FeedItemContent,
+  IntervalFeedItemContent,
+  TweetFeedItemContent,
+  VideoFeedItemContent,
+  WebsiteFeedItemContent,
+  XkcdFeedItemContent,
+  YouTubeFeedItemContent,
+} from '@shared/types/feedItemContent.types';
 import type {FeedItem} from '@shared/types/feedItems.types';
 
 export const DEFAULT_FEED_ITEM_CONTENT_TYPE = FeedItemContentType.Article;
@@ -50,40 +59,120 @@ export function makeFeedItemContentFromUrl(args: {
   readonly url: string;
   readonly title: string;
   readonly description: string | null;
-  readonly outgoingLinks: string[];
   readonly summary: string | null;
 }): Exclude<FeedItemContent, FeedItemContentType.Interval> {
-  const {url, title, description, outgoingLinks, summary} = args;
+  const {url, title, description, summary} = args;
 
   const feedItemContentType = getFeedItemContentTypeFromUrl(url);
 
   switch (feedItemContentType) {
     case FeedItemContentType.Article:
+      return makeArticleFeedItemContent({url, title, description, summary});
     case FeedItemContentType.Video:
+      return makeVideoFeedItemContent({url, title, description, summary});
     case FeedItemContentType.Website:
+      return makeWebsiteFeedItemContent({url, title, description, summary});
     case FeedItemContentType.Tweet:
+      return makeTweetFeedItemContent({url, title, description, summary});
     case FeedItemContentType.YouTube:
-      return {feedItemContentType, url, title, description, outgoingLinks, summary};
+      return makeYouTubeFeedItemContent({url, title, description, summary});
     case FeedItemContentType.Xkcd:
-      return {
-        feedItemContentType,
-        url,
-        title,
-        summary,
-        // Remaining fields will be filled in by import.
-        altText: '',
-        imageUrlSmall: '',
-        imageUrlLarge: '',
-      };
+      return makeXkcdFeedItemContent({url, title, summary});
     default:
       assertNever(feedItemContentType);
   }
 }
 
-export function makeIntervalFeedItemContent(args: {
-  readonly intervalSeconds: number;
-  readonly title: string;
-}): IntervalFeedItemContent {
+export function makeArticleFeedItemContent(
+  args: Pick<ArticleFeedItemContent, 'url' | 'title' | 'description' | 'summary'>
+): ArticleFeedItemContent {
+  const {url, title, description, summary} = args;
+
+  return {
+    feedItemContentType: FeedItemContentType.Article,
+    url,
+    title,
+    description,
+    summary,
+  };
+}
+
+export function makeVideoFeedItemContent(
+  args: Pick<VideoFeedItemContent, 'url' | 'title' | 'description' | 'summary'>
+): VideoFeedItemContent {
+  const {url, title, description, summary} = args;
+
+  return {
+    feedItemContentType: FeedItemContentType.Video,
+    url,
+    title,
+    description,
+    summary,
+  };
+}
+
+export function makeWebsiteFeedItemContent(
+  args: Pick<WebsiteFeedItemContent, 'url' | 'title' | 'description' | 'summary'>
+): WebsiteFeedItemContent {
+  const {url, title, description, summary} = args;
+
+  return {
+    feedItemContentType: FeedItemContentType.Website,
+    url,
+    title,
+    description,
+    summary,
+  };
+}
+
+export function makeTweetFeedItemContent(
+  args: Pick<TweetFeedItemContent, 'url' | 'title' | 'description' | 'summary'>
+): TweetFeedItemContent {
+  const {url, title, description, summary} = args;
+
+  return {
+    feedItemContentType: FeedItemContentType.Tweet,
+    url,
+    title,
+    description,
+    summary,
+  };
+}
+
+export function makeYouTubeFeedItemContent(
+  args: Pick<YouTubeFeedItemContent, 'url' | 'title' | 'description' | 'summary'>
+): YouTubeFeedItemContent {
+  const {url, title, description, summary} = args;
+
+  return {
+    feedItemContentType: FeedItemContentType.YouTube,
+    url,
+    title,
+    description,
+    summary,
+  };
+}
+
+export function makeXkcdFeedItemContent(
+  args: Pick<XkcdFeedItemContent, 'url' | 'title' | 'summary'>
+): XkcdFeedItemContent {
+  const {url, title, summary} = args;
+
+  return {
+    feedItemContentType: FeedItemContentType.Xkcd,
+    url,
+    title,
+    summary,
+    // Remaining fields will be filled in by import.
+    altText: '',
+    imageUrlSmall: '',
+    imageUrlLarge: '',
+  };
+}
+
+export function makeIntervalFeedItemContent(
+  args: Pick<IntervalFeedItemContent, 'intervalSeconds' | 'title'>
+): IntervalFeedItemContent {
   const {intervalSeconds, title} = args;
 
   return {

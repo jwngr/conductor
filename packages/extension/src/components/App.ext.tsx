@@ -37,16 +37,16 @@ const SaveCurrentUrlButton: React.FC = () => {
       return;
     }
 
-    const addFeedItemResult = await feedItemsService.createFeedItemFromUrl({
+    const feedItem = feedItemsService.makeFeedItemFromUrl({
       origin: EXTENSION_FEED,
       url: tabUrl,
       title: tab.title ?? DEFAULT_FEED_TITLE,
       // TODO: Set better initial values for these fields.
       description: null,
-      outgoingLinks: [],
       summary: null,
     });
 
+    const addFeedItemResult = await feedItemsService.addFeedItem(feedItem);
     if (!addFeedItemResult.success) {
       setError(prefixError(addFeedItemResult.error, 'Error creating feed item'));
       return;

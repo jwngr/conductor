@@ -1,5 +1,7 @@
+import type {UserRecord} from 'firebase-admin/auth';
+
 import {ACCOUNTS_DB_COLLECTION} from '@shared/lib/constants.shared';
-import {asyncTryAll} from '@shared/lib/errorUtils.shared';
+import {asyncTry, asyncTryAll} from '@shared/lib/errorUtils.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import {parseAccount, parseAccountId} from '@shared/parsers/accounts.parser';
@@ -27,6 +29,7 @@ type AccountsCollectionService = ServerFirestoreCollectionService<
 >;
 
 export class ServerAccountsService {
+  private readonly firebaseService: ServerFirebaseService;
   private readonly collectionService: AccountsCollectionService;
   private readonly accountSettingsService: ServerAccountSettingsService;
   private readonly experimentsService: ServerExperimentsService;
@@ -36,6 +39,7 @@ export class ServerAccountsService {
     readonly accountSettingsService: ServerAccountSettingsService;
     readonly experimentsService: ServerExperimentsService;
   }) {
+    this.firebaseService = args.firebaseService;
     this.accountSettingsService = args.accountSettingsService;
     this.experimentsService = args.experimentsService;
     this.collectionService = makeServerFirestoreCollectionService({
@@ -47,23 +51,38 @@ export class ServerAccountsService {
     });
   }
 
-  private async createAccountsDoc(args: {
-    readonly accountId: AccountId;
-    readonly email: EmailAddress;
-  }): AsyncResult<void, Error> {
-    const {accountId, email} = args;
-
-    const account = {
-      accountId,
-      email,
-      createdTime: new Date(),
-      lastUpdatedTime: new Date(),
-    };
-
-    return this.collectionService.setDoc(accountId, account);
+  /**
+   * Fetches the accounts doc for the account associated with the provided account ID.
+   */
+  public async fetchAccountById(accountId: AccountId): AsyncResult<Account | null, Error> {
+    return this.collectionService.fetchById(accountId);
   }
 
-  public async createAccount(args: {
+  /**
+   * Fetches the accounts doc for the account associated with the provided email address.
+   */
+  public async fetchAccountByEmail(email: EmailAddress): AsyncResult<Account | null, Error> {
+    // Fetch the Firebase user from the email address.
+    const userResult = await this.fetchFirebaseUserFromEmail(email);
+    if (!userResult.success) return userResult;
+    const user = userResult.value;
+
+    // If no Firebase user is found, we should not have an account.
+    if (!user) return makeSuccessResult(null);
+
+    // Parse the Firebase UID into an account ID.
+    const accountIdResult = parseAccountId(user.uid);
+    if (!accountIdResult.success) return accountIdResult;
+    const accountId = accountIdResult.value;
+
+    // Fetch the accounts doc for the account ID.
+    return this.fetchAccountById(accountId);
+  }
+
+  /**
+   * Adds a new accounts doc to Firestore.
+   */
+  public async addAccount(args: {
     readonly accountId: AccountId;
     readonly email: EmailAddress;
   }): AsyncResult<void, Error> {
@@ -92,7 +111,7 @@ export class ServerAccountsService {
    */
   public async deleteAccount(accountId: AccountId): AsyncResult<void, Error> {
     const deleteResult = await asyncTryAll([
-      this.deleteAccountDoc(accountId),
+      this.deleteAccountsDoc(accountId),
       this.accountSettingsService.deleteForAccount(accountId),
       this.experimentsService.deleteForAccount(accountId),
     ]);
@@ -109,10 +128,35 @@ export class ServerAccountsService {
     return makeSuccessResult(undefined);
   }
 
+  private async createAccountsDoc(args: {
+    readonly accountId: AccountId;
+    readonly email: EmailAddress;
+  }): AsyncResult<void, Error> {
+    const {accountId, email} = args;
+
+    const account = {
+      accountId,
+      email,
+      createdTime: new Date(),
+      lastUpdatedTime: new Date(),
+    };
+
+    return this.collectionService.setDoc(accountId, account);
+  }
+
   /**
    * Permanently deletes the `/accounts/$accountId` document from Firestore.
    */
-  private async deleteAccountDoc(accountId: AccountId): AsyncResult<void, Error> {
+  private async deleteAccountsDoc(accountId: AccountId): AsyncResult<void, Error> {
     return this.collectionService.deleteDoc(accountId);
+  }
+
+  /**
+   * Fetches the Firebase user for the account associated with the provided email address.
+   */
+  private async fetchFirebaseUserFromEmail(
+    email: EmailAddress
+  ): AsyncResult<UserRecord | null, Error> {
+    return await asyncTry(async () => this.firebaseService.auth.getUserByEmail(email));
   }
 }

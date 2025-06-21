@@ -56,7 +56,6 @@ const personalBlogRssFeedItem1: Omit<ArticleFeedItem, 'accountId'> = {
     title: 'TechCrunch',
     url: 'https://feeds.feedburner.com/TechCrunch',
     description: null,
-    outgoingLinks: [],
     summary: null,
   },
   triageStatus: TriageStatus.Untriaged,
@@ -67,7 +66,7 @@ const personalBlogRssFeedItem1: Omit<ArticleFeedItem, 'accountId'> = {
   lastUpdatedTime: new Date('2025-06-20T03:30:40.610Z'),
 };
 
-export const mockFeedItems: Array<Omit<FeedItem, 'accountId'>> = [
+export const mockFeedItems: Record<string, Omit<FeedItem, 'accountId'>> = {
   interval1FeedItem1,
   personalBlogRssFeedItem1,
-];
+};
