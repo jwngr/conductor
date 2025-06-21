@@ -11,8 +11,7 @@ import {requestGet} from '@shared/lib/requests.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {isValidUrl} from '@shared/lib/urls.shared';
 
-import type {FeedItemId} from '@shared/types/feedItems.types';
-import type {AccountId} from '@shared/types/ids.types';
+import type {AccountId, FeedItemId} from '@shared/types/ids.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';

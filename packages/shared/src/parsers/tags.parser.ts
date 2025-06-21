@@ -2,8 +2,9 @@ import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
+import type {UserTagId} from '@shared/types/ids.types';
 import type {Result} from '@shared/types/results.types';
-import type {SystemTag, SystemTagId, UserTag, UserTagId} from '@shared/types/tags.types';
+import type {SystemTag, SystemTagId, UserTag} from '@shared/types/tags.types';
 import {TagType} from '@shared/types/tags.types';
 
 import {

@@ -2,7 +2,8 @@ import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseZodResult} from '@shared/lib/parser.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
-import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
+import type {FeedItem} from '@shared/types/feedItems.types';
+import type {FeedItemId} from '@shared/types/ids.types';
 import type {Result} from '@shared/types/results.types';
 
 import {FeedItemIdSchema, FeedItemSchema} from '@shared/schemas/feedItems.schema';

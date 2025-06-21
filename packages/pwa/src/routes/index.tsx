@@ -5,7 +5,7 @@ import {PARSING_FAILURE_SENTINEL} from '@shared/lib/parser.shared';
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
 import {parseStoriesSidebarItemId} from '@shared/parsers/stories.parser';
 
-import type {FeedItemId} from '@shared/types/feedItems.types';
+import type {FeedItemId} from '@shared/types/ids.types';
 import type {StoriesSidebarItemId} from '@shared/types/stories.types';
 import {ViewType} from '@shared/types/views.types';
 

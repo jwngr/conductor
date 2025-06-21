@@ -21,11 +21,11 @@ import {makeSuccessResult} from '@shared/lib/results.shared';
 import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
 
 import type {Environment} from '@shared/types/environment.types';
-import type {EventId, EventLogItem, EventLogItemData} from '@shared/types/eventLog.types';
+import type {EventLogItem, EventLogItemData, EventLogItemId} from '@shared/types/eventLog.types';
 import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
-import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
+import type {FeedItemActionType} from '@shared/types/feedItems.types';
 import type {FeedType} from '@shared/types/feeds.types';
-import type {AccountId, FeedSubscriptionId} from '@shared/types/ids.types';
+import type {AccountId, FeedItemId, FeedSubscriptionId} from '@shared/types/ids.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {ThemePreference} from '@shared/types/theme.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
@@ -38,7 +38,7 @@ import {makeClientFirestoreCollectionService} from '@sharedClient/services/fires
 import type {ClientFirestoreCollectionService} from '@sharedClient/services/firestore.client';
 
 type ClientEventLogCollectionService = ClientFirestoreCollectionService<
-  EventId,
+  EventLogItemId,
   EventLogItem,
   EventLogItemFromStorage
 >;
@@ -65,12 +65,12 @@ export class ClientEventLogService {
     });
   }
 
-  public async fetchById(eventId: EventId): AsyncResult<EventLogItem | null, Error> {
+  public async fetchById(eventId: EventLogItemId): AsyncResult<EventLogItem | null, Error> {
     return this.collectionService.fetchById(eventId);
   }
 
   public watchById(
-    eventId: EventId,
+    eventId: EventLogItemId,
     successCallback: Consumer<EventLogItem | null>, // null means event log item does not exist.
     errorCallback: Consumer<Error>
   ): Unsubscribe {
@@ -124,14 +124,14 @@ export class ClientEventLogService {
   }
 
   public async updateEventLogItem(
-    eventId: EventId,
+    eventId: EventLogItemId,
     item: Partial<Pick<EventLogItem, 'data'>>
   ): AsyncResult<void, Error> {
     const updateResult = await this.collectionService.updateDoc(eventId, item);
     return prefixResultIfError(updateResult, 'Error updating event log item');
   }
 
-  public async deleteEventLogItem(eventId: EventId): AsyncResult<void, Error> {
+  public async deleteEventLogItem(eventId: EventLogItemId): AsyncResult<void, Error> {
     const deleteResult = await this.collectionService.deleteDoc(eventId);
     return prefixResultIfError(deleteResult, 'Error deleting event log item');
   }

@@ -11,7 +11,6 @@ import {FeedItemContentType} from '@shared/types/feedItemContent.types';
 import type {
   ArticleFeedItem,
   FeedItem,
-  FeedItemId,
   FeedItemImportState,
   IntervalFeedItem,
   TriageStatus,
@@ -23,7 +22,7 @@ import type {
 } from '@shared/types/feedItems.types';
 import {FeedItemImportStatus} from '@shared/types/feedItems.types';
 import type {Feed} from '@shared/types/feeds.types';
-import type {AccountId} from '@shared/types/ids.types';
+import type {AccountId, FeedItemId} from '@shared/types/ids.types';
 import type {Result} from '@shared/types/results.types';
 
 import type {

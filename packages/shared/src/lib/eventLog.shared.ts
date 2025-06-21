@@ -3,9 +3,9 @@ import {makeUuid} from '@shared/lib/utils.shared';
 import type {Actor} from '@shared/types/actors.types';
 import type {Environment} from '@shared/types/environment.types';
 import type {
-  EventId,
   EventLogItem,
   EventLogItemData,
+  EventLogItemId,
   ExperimentDisabledEventLogItemData,
   ExperimentEnabledEventLogItemData,
   FeedItemActionEventLogItemData,
@@ -17,16 +17,16 @@ import type {
 } from '@shared/types/eventLog.types';
 import {EventType} from '@shared/types/eventLog.types';
 import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
-import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
+import type {FeedItemActionType} from '@shared/types/feedItems.types';
 import type {FeedType} from '@shared/types/feeds.types';
-import type {AccountId, FeedSubscriptionId} from '@shared/types/ids.types';
+import type {AccountId, FeedItemId, FeedSubscriptionId} from '@shared/types/ids.types';
 import type {ThemePreference} from '@shared/types/theme.types';
 
 /**
- * Creates a new random {@link EventId}.
+ * Creates a new random {@link EventLogItemId}.
  */
-export function makeEventId(): EventId {
-  return makeUuid<EventId>();
+export function makeEventId(): EventLogItemId {
+  return makeUuid<EventLogItemId>();
 }
 
 export function makeEventLogItem(args: {

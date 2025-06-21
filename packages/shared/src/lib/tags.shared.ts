@@ -1,6 +1,7 @@
 import {makeUuid} from '@shared/lib/utils.shared';
 
-import type {SystemTag, UserTag, UserTagId} from '@shared/types/tags.types';
+import type {UserTagId} from '@shared/types/ids.types';
+import type {SystemTag, UserTag} from '@shared/types/tags.types';
 import {SystemTagId, TagType} from '@shared/types/tags.types';
 
 export function makeUserTagId(): UserTagId {

@@ -11,9 +11,8 @@ import {makeSuccessResult} from '@shared/lib/results.shared';
 import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
 
 import type {ServerEnvironment} from '@shared/types/environment.types';
-import type {EventId, EventLogItem, EventLogItemData} from '@shared/types/eventLog.types';
-import type {FeedItemId} from '@shared/types/feedItems.types';
-import type {AccountId} from '@shared/types/ids.types';
+import type {EventLogItem, EventLogItemData, EventLogItemId} from '@shared/types/eventLog.types';
+import type {AccountId, FeedItemId} from '@shared/types/ids.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {EventLogItemFromStorage} from '@shared/schemas/eventLog.schema';
@@ -24,7 +23,7 @@ import type {ServerFirestoreCollectionService} from '@sharedServer/services/fire
 import {makeServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
 type ServerEventLogCollectionService = ServerFirestoreCollectionService<
-  EventId,
+  EventLogItemId,
   EventLogItem,
   EventLogItemFromStorage
 >;
@@ -47,7 +46,7 @@ export class ServerEventLogService {
     });
   }
 
-  public async fetchById(eventId: EventId): AsyncResult<EventLogItem | null, Error> {
+  public async fetchById(eventId: EventLogItemId): AsyncResult<EventLogItem | null, Error> {
     return this.collectionService.fetchById(eventId);
   }
 
@@ -78,14 +77,14 @@ export class ServerEventLogService {
   }
 
   public async updateEventLogItem(
-    eventId: EventId,
+    eventId: EventLogItemId,
     item: Partial<WithFieldValue<Pick<EventLogItem, 'data'>>>
   ): AsyncResult<void, Error> {
     const updateResult = await this.collectionService.updateDoc(eventId, item);
     return prefixResultIfError(updateResult, 'Error updating event log item');
   }
 
-  public async deleteEventLogItem(eventId: EventId): AsyncResult<void, Error> {
+  public async deleteEventLogItem(eventId: EventLogItemId): AsyncResult<void, Error> {
     const deleteResult = await this.collectionService.deleteDoc(eventId);
     return prefixResultIfError(deleteResult, 'Error deleting event log item');
   }

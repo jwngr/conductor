@@ -9,16 +9,11 @@ import {
   FeedItemImportStatus,
   TriageStatus,
 } from '@shared/types/feedItems.types';
-import type {
-  FeedItem,
-  FeedItemAction,
-  FeedItemId,
-  NewFeedItemImportState,
-} from '@shared/types/feedItems.types';
+import type {FeedItem, FeedItemAction, NewFeedItemImportState} from '@shared/types/feedItems.types';
 import type {Feed} from '@shared/types/feeds.types';
 import {FeedType} from '@shared/types/feeds.types';
 import {IconName} from '@shared/types/icons.types';
-import type {AccountId, FeedSubscriptionId} from '@shared/types/ids.types';
+import type {AccountId, FeedItemId, FeedSubscriptionId} from '@shared/types/ids.types';
 import type {Result} from '@shared/types/results.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
