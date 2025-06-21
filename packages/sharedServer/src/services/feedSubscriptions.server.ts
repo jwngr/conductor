@@ -140,9 +140,9 @@ export class ServerFeedSubscriptionsService {
   }
 
   /**
-   * Creates a new feed subscription in Firestore.
+   * Adds a new feed subscription to Firestore.
    */
-  public async createSubscription(feedSubscription: FeedSubscription): AsyncResult<void, Error> {
+  public async addSubscription(feedSubscription: FeedSubscription): AsyncResult<void, Error> {
     const createResult = await this.collectionService.setDoc(
       feedSubscription.feedSubscriptionId,
       feedSubscription

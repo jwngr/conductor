@@ -109,23 +109,25 @@ export class ClientFeedItemsService {
     return () => unsubscribe();
   }
 
-  public async createFeedItemFromUrl(args: {
+  public makeFeedItemFromUrl(args: {
     readonly origin: Feed;
     readonly url: string;
     readonly title: string;
     readonly description: string | null;
-    readonly outgoingLinks: string[];
     readonly summary: string | null;
-  }): AsyncResult<FeedItem, Error> {
-    const {origin, url, title, description, outgoingLinks, summary} = args;
+  }): FeedItem {
+    const {origin, url, title, description, summary} = args;
     const accountId = this.accountId;
 
-    const content = makeFeedItemContentFromUrl({url, title, description, outgoingLinks, summary});
+    const content = makeFeedItemContentFromUrl({url, title, description, summary});
     const feedItem = makeFeedItem({origin, content, accountId});
 
+    return feedItem;
+  }
+
+  public async addFeedItem(feedItem: FeedItem): AsyncResult<FeedItem, Error> {
     const saveResult = await this.collectionService.setDoc(feedItem.feedItemId, feedItem);
     if (!saveResult.success) return saveResult;
-
     return makeSuccessResult(feedItem);
   }
 

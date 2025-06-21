@@ -103,25 +103,24 @@ export const ImportScreen: React.FC = () => {
   const handleImportItem = async (item: PocketImportItem, key: string): Promise<void> => {
     setImportStatus(key, PROCESSING_EXTERNAL_MIGRATION_ITEM_STATE);
 
-    const createResult = await feedItemsService.createFeedItemFromUrl({
+    const feedItem = feedItemsService.makeFeedItemFromUrl({
       origin: POCKET_EXPORT_FEED,
       url: item.url,
       title: item.title,
       // This data is not available at import time.
       description: null,
-      outgoingLinks: [],
       summary: null,
     });
 
-    if (!createResult.success) {
+    const addFeedItemResult = await feedItemsService.addFeedItem(feedItem);
+
+    if (!addFeedItemResult.success) {
       setImportStatus(key, {
         status: ExternalMigrationItemStatus.Failed,
-        error: createResult.error,
+        error: addFeedItemResult.error,
       });
       return;
     }
-
-    const feedItem = createResult.value;
 
     setImportStatus(key, {
       status: ExternalMigrationItemStatus.FeedItemExists,

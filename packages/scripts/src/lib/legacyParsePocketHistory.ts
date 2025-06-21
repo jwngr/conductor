@@ -14,14 +14,18 @@ import type {AccountId} from '@shared/types/ids.types';
 import type {PocketImportItem} from '@shared/types/pocket.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
+import type {ServerFirebaseService} from '@sharedServer/services/firebase.server';
+
 import {ServerPocketService} from '@sharedServer/lib/pocket.server';
 
 import {env} from '@src/lib/environment.scripts';
-import {firebaseService} from '@src/lib/firebase.scripts';
 import {initServices} from '@src/lib/initServices.scripts';
 
-async function getAccountId(args: {readonly email: EmailAddress}): AsyncResult<AccountId, Error> {
-  const {email} = args;
+async function getAccountId(args: {
+  readonly email: EmailAddress;
+  readonly firebaseService: ServerFirebaseService;
+}): AsyncResult<AccountId, Error> {
+  const {email, firebaseService} = args;
 
   // Log the Firebase project info for debugging.
   logger.log('[BOOTSTRAP] Firebase project info', {
@@ -57,25 +61,13 @@ if (args.length === 0) {
 
 const POCKET_EXPORT_FILE_PATH = path.resolve(args[0]);
 
-/**
- * Throws if the Firecrawl API key environment variable is not defined.
- */
-function validateFirecrawlApiKey(): string {
-  const firecrawlApiKey = env.firecrawlApiKey;
-
-  if (!firecrawlApiKey) {
-    logger.error(new Error('FIRECRAWL_API_KEY environment variable is not defined'));
-    process.exit(1);
-  }
-
-  return firecrawlApiKey;
-}
-
 async function main(): AsyncResult<string, Error> {
-  const firecrawlApiKey = validateFirecrawlApiKey();
-  const {feedItemsService} = initServices({firecrawlApiKey});
+  const {feedItemsService, firebaseService} = initServices({firecrawlApiKey: env.firecrawlApiKey});
 
-  const accountIdResult = await getAccountId({email: env.localEmailAddress});
+  const accountIdResult = await getAccountId({
+    email: env.localEmailAddress,
+    firebaseService,
+  });
   if (!accountIdResult.success) {
     const betterErrorResult = prefixErrorResult(accountIdResult, 'Error getting account ID');
     logger.error(betterErrorResult.error);
@@ -107,23 +99,23 @@ async function main(): AsyncResult<string, Error> {
       continue;
     }
 
-    const createFeedItemResult = await feedItemsService.createFeedItemFromUrl({
+    const feedItem = feedItemsService.makeFeedItemFromUrl({
       origin: POCKET_EXPORT_FEED,
       accountId,
       url: pocketItem.url,
       title: pocketItem.title,
       // These values are not provided in the Pocket export.
       description: null,
-      outgoingLinks: [],
       summary: null,
     });
 
-    if (!createFeedItemResult.success) {
-      // Treat individual errors as non-fatal.
-      const message = `Error creating feed item for ${pocketItem.url}`;
-      logger.error(prefixError(createFeedItemResult.error, message));
+    const addFeedItemResult = await feedItemsService.addFeedItem(feedItem);
+    if (!addFeedItemResult.success) {
+      logger.error(prefixError(addFeedItemResult.error, 'Error creating feed item'));
       continue;
     }
+
+    logger.log('Successfully created feed item', {feedItemId: feedItem.feedItemId});
   }
 
   const tsvFields = pocketItems
