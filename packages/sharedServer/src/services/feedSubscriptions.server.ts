@@ -10,7 +10,6 @@ import {
 } from '@shared/parsers/feedSubscriptions.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import {FeedType} from '@shared/types/feedSourceTypes.types';
 import type {
   FeedSubscription,
   FeedSubscriptionId,
@@ -18,6 +17,7 @@ import type {
   RssFeedSubscription,
 } from '@shared/types/feedSubscriptions.types';
 import {FeedSubscriptionActivityStatus} from '@shared/types/feedSubscriptions.types';
+import {FeedType} from '@shared/types/feedTypes.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {FeedSubscriptionFromStorage} from '@shared/schemas/feedSubscriptions.schema';

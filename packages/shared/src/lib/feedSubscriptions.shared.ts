@@ -2,7 +2,6 @@ import {IMMEDIATE_DELIVERY_SCHEDULE} from '@shared/lib/deliverySchedules.shared'
 import {makeUuid} from '@shared/lib/utils.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import {FeedType} from '@shared/types/feedSourceTypes.types';
 import {FeedSubscriptionActivityStatus} from '@shared/types/feedSubscriptions.types';
 import type {
   ActiveFeedSubscriptionLifecycleState,
@@ -11,6 +10,7 @@ import type {
   RssFeedSubscription,
   YouTubeChannelFeedSubscription,
 } from '@shared/types/feedSubscriptions.types';
+import {FeedType} from '@shared/types/feedTypes.types';
 import type {YouTubeChannelId} from '@shared/types/youtube.types';
 
 /**

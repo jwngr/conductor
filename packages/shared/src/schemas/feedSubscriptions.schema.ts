@@ -1,7 +1,7 @@
 import {z} from 'zod/v4';
 
-import {FEED_TYPES_WITH_SUBSCRIPTIONS, FeedType} from '@shared/types/feedSourceTypes.types';
 import {FeedSubscriptionActivityStatus} from '@shared/types/feedSubscriptions.types';
+import {FEED_TYPES_WITH_SUBSCRIPTIONS, FeedType} from '@shared/types/feedTypes.types';
 
 import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 import {DeliveryScheduleSchema} from '@shared/schemas/deliverySchedules.schema';

@@ -1,6 +1,6 @@
 import type {AccountId} from '@shared/types/accounts.types';
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
-import type {FeedType, FeedTypeWithSubscription} from '@shared/types/feedSourceTypes.types';
+import type {FeedType, FeedTypeWithSubscription} from '@shared/types/feedTypes.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 import type {YouTubeChannelId} from '@shared/types/youtube.types';
 
