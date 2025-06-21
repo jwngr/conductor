@@ -73,9 +73,10 @@ async function bootstrapLocalEnv(args: {
   if (!subscriptionsResult.success) {
     return prefixErrorResult(subscriptionsResult, 'Failed to create feed subscriptions');
   }
-  logger.log('[BOOTSTRAP] Created feed subscriptions', {accountId});
-
-  const {rssSubscriptions, intervalSubscriptions, youtubeSubscriptions} = subscriptionsResult.value;
+  logger.log('[BOOTSTRAP] Successfully created feed subscriptions', {
+    accountId,
+    count: subscriptionsResult.value.length,
+  });
 
   // Create feed items.
   logger.log('[BOOTSTRAP] Creating feed items...', {accountId});

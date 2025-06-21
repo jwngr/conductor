@@ -5,15 +5,29 @@ import {makeRssFeed} from '@shared/lib/feeds.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {FeedItem} from '@shared/types/feedItems.types';
-import type {
-  IntervalFeedSubscription,
-  RssFeedSubscription,
-  YouTubeChannelFeedSubscription,
-} from '@shared/types/feedSubscriptions.types';
+import type {Feed} from '@shared/types/feeds.types';
 import type {AccountId} from '@shared/types/ids.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
+
+interface CreateFeedItemArgs {
+  readonly origin: Feed;
+  readonly url: string;
+  readonly title: string;
+  readonly description: string | null;
+  readonly outgoingLinks: string[];
+  readonly summary: string | null;
+}
+
+const personalBlogGatsbyArticleFeedItem: CreateFeedItemArgs = {
+  origin: makeRssFeed({subscription: PERSONAL_BLOG_RSS_FEED_SUBSCRIPTION_ID}),
+  url: 'https://jwn.gr/posts/migrating-from-gatsby-to-astro/',
+  title: 'From Gatsby gridlock to Astro bliss: my personal site redesign',
+  description: 'TODO',
+  outgoingLinks: [],
+  summary: 'TODO',
+};
 
 interface CreateSampleFeedItemsResult {
   readonly count: number;
@@ -22,32 +36,25 @@ interface CreateSampleFeedItemsResult {
 
 export async function createSampleFeedItems(args: {
   readonly accountId: AccountId;
-  readonly rssSubscriptions: readonly RssFeedSubscription[];
-  readonly youtubeSubscriptions: readonly YouTubeChannelFeedSubscription[];
-  readonly intervalSubscriptions: readonly IntervalFeedSubscription[];
   readonly feedItemsService: ServerFeedItemsService;
 }): AsyncResult<CreateSampleFeedItemsResult, Error> {
-  const {accountId, rssSubscriptions, intervalSubscriptions, feedItemsService} = args;
+  const {accountId, feedItemsService} = args;
 
   const feedItems: FeedItem[] = [];
 
   // Create sample RSS feed items.
   const rssFeedItems = [
     {
-      title: 'The Future of AI: What to Expect in 2024',
-      url: 'https://techcrunch.com/2024/01/15/future-of-ai-2024/',
-      description:
-        'A comprehensive look at the latest developments in artificial intelligence and what we can expect in the coming year.',
-      summary:
-        'This article explores the major AI trends expected in 2024, including advances in large language models, AI regulation, and practical applications in various industries.',
+      title: 'From Gatsby gridlock to Astro bliss: my personal site redesign',
+      url: 'https://jwn.gr/posts/migrating-from-gatsby-to-astro/',
+      description: 'TODO',
+      summary: 'TODO',
     },
     {
-      title: 'Breaking: Major Tech Merger Announced',
-      url: 'https://techcrunch.com/2024/01/14/major-tech-merger/',
-      description:
-        'Two of the biggest names in technology have announced a historic merger that will reshape the industry.',
-      summary:
-        'A landmark merger between two tech giants is set to create the largest technology company in history, with implications for competition and innovation.',
+      title: 'Shaping tools that shape us at Notion',
+      url: 'https://www.notion.so/blog/shaping-tools-that-shape-us',
+      description: 'TODO',
+      summary: 'TODO',
     },
     {
       title: 'Startup Raises $100M in Series B Funding',
@@ -61,7 +68,7 @@ export async function createSampleFeedItems(args: {
 
   for (const item of rssFeedItems) {
     const saveResult = await feedItemsService.createFeedItemFromUrl({
-      origin: makeRssFeed({subscription: rssSubscriptions[0]}),
+      origin: makeRssFeed({subscription: PERSON}),
       accountId,
       url: item.url,
       title: item.title,
