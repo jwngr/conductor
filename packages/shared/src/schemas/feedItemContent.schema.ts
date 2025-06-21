@@ -2,11 +2,6 @@ import {z} from 'zod/v4';
 
 import {FeedItemContentType} from '@shared/types/feedItemContent.types';
 
-export const FeedItemIdSchema = z.uuid();
-
-/////////////////////////
-//  FEED ITEM CONTENT  //
-/////////////////////////
 const BaseFeedItemContentSchema = z.object({
   feedItemContentType: z.enum(FeedItemContentType),
   title: z.string(),
