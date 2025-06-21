@@ -19,8 +19,8 @@ import {
 
 import type {FeedItemContentType} from '@shared/types/feedItemContent.types';
 import type {FeedItem} from '@shared/types/feedItems.types';
-import {FeedType} from '@shared/types/feedSourceTypes.types';
 import type {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
+import {FeedType} from '@shared/types/feedTypes.types';
 import {IconName} from '@shared/types/icons.types';
 import type {TagId} from '@shared/types/tags.types';
 import type {Consumer} from '@shared/types/utils.types';

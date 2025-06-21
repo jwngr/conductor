@@ -1,5 +1,5 @@
-import type {FeedType} from '@shared/types/feedSourceTypes.types';
 import type {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
+import type {FeedType} from '@shared/types/feedTypes.types';
 
 interface BaseFeed {
   readonly feedType: FeedType;

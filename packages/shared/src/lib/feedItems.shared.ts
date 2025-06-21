@@ -17,8 +17,8 @@ import type {
   NewFeedItemImportState,
 } from '@shared/types/feedItems.types';
 import type {Feed} from '@shared/types/feeds.types';
-import {FeedType} from '@shared/types/feedSourceTypes.types';
 import type {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
+import {FeedType} from '@shared/types/feedTypes.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/results.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';

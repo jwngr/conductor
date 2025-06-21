@@ -8,12 +8,12 @@ import type {
   RssFeed,
   YouTubeChannelFeed,
 } from '@shared/types/feeds.types';
-import {FeedType} from '@shared/types/feedSourceTypes.types';
 import type {
   IntervalFeedSubscription,
   RssFeedSubscription,
   YouTubeChannelFeedSubscription,
 } from '@shared/types/feedSubscriptions.types';
+import {FeedType} from '@shared/types/feedTypes.types';
 
 export const PWA_FEED: PwaFeed = {
   feedType: FeedType.PWA,

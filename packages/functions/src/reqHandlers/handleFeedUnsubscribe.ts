@@ -3,8 +3,8 @@ import {assertNever} from '@shared/lib/utils.shared';
 
 import {parseFeedSubscription} from '@shared/parsers/feedSubscriptions.parser';
 
-import {FeedType} from '@shared/types/feedSourceTypes.types';
 import {FeedSubscriptionActivityStatus} from '@shared/types/feedSubscriptions.types';
+import {FeedType} from '@shared/types/feedTypes.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
