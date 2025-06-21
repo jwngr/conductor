@@ -4,9 +4,9 @@ import {makeDefaultAccountExperimentsState} from '@shared/lib/experiments.shared
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseAccountExperimentsState} from '@shared/parsers/experiments.parser';
 
-import type {AccountId} from '@shared/types/accounts.types';
 import type {EmailAddress} from '@shared/types/emails.types';
 import type {AccountExperimentsState} from '@shared/types/experiments.types';
+import type {AccountId} from '@shared/types/ids.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {AccountExperimentsStateFromStorage} from '@shared/schemas/experiments.schema';

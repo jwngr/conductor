@@ -3,7 +3,7 @@ import {z} from 'zod/v4';
 import {Environment} from '@shared/types/environment.types';
 import {EventType} from '@shared/types/eventLog.types';
 import {FeedItemActionType} from '@shared/types/feedItems.types';
-import {FeedType} from '@shared/types/feedTypes.types';
+import {FeedType} from '@shared/types/feeds.types';
 
 import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 import {ActorSchema} from '@shared/schemas/actors.schema';

@@ -10,10 +10,10 @@ import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
 
-import type {AccountId} from '@shared/types/accounts.types';
 import type {ServerEnvironment} from '@shared/types/environment.types';
 import type {EventId, EventLogItem, EventLogItemData} from '@shared/types/eventLog.types';
 import type {FeedItemId} from '@shared/types/feedItems.types';
+import type {AccountId} from '@shared/types/ids.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {EventLogItemFromStorage} from '@shared/schemas/eventLog.schema';

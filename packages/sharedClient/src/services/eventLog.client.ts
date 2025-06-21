@@ -20,13 +20,12 @@ import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
 
-import type {AccountId} from '@shared/types/accounts.types';
 import type {Environment} from '@shared/types/environment.types';
 import type {EventId, EventLogItem, EventLogItemData} from '@shared/types/eventLog.types';
 import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
-import type {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
-import type {FeedType} from '@shared/types/feedTypes.types';
+import type {FeedType} from '@shared/types/feeds.types';
+import type {AccountId, FeedSubscriptionId} from '@shared/types/ids.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {ThemePreference} from '@shared/types/theme.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';

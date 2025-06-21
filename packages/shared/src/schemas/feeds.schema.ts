@@ -1,6 +1,6 @@
 import {z} from 'zod/v4';
 
-import {FeedType} from '@shared/types/feedTypes.types';
+import {FeedType} from '@shared/types/feeds.types';
 
 import {FeedSubscriptionIdSchema} from '@shared/schemas/feedSubscriptions.schema';
 

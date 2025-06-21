@@ -11,7 +11,6 @@ import {assertNever} from '@shared/lib/utils.shared';
 
 import {parseFeedItem, parseFeedItemId} from '@shared/parsers/feedItems.parser';
 
-import type {AccountId} from '@shared/types/accounts.types';
 import type {
   ArticleFeedItemContent,
   FeedItemContent,
@@ -31,6 +30,7 @@ import type {
 } from '@shared/types/feedItems.types';
 import type {Feed} from '@shared/types/feeds.types';
 import type {IntervalFeedSubscription} from '@shared/types/feedSubscriptions.types';
+import type {AccountId} from '@shared/types/ids.types';
 import type {AsyncResult, Result} from '@shared/types/results.types';
 
 import {toStorageFeedItem} from '@shared/storage/feedItems.storage';

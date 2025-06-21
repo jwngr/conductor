@@ -1,6 +1,5 @@
 import {makeUuid} from '@shared/lib/utils.shared';
 
-import type {AccountId} from '@shared/types/accounts.types';
 import type {Actor} from '@shared/types/actors.types';
 import type {Environment} from '@shared/types/environment.types';
 import type {
@@ -19,8 +18,8 @@ import type {
 import {EventType} from '@shared/types/eventLog.types';
 import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
-import type {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
-import type {FeedType} from '@shared/types/feedTypes.types';
+import type {FeedType} from '@shared/types/feeds.types';
+import type {AccountId, FeedSubscriptionId} from '@shared/types/ids.types';
 import type {ThemePreference} from '@shared/types/theme.types';
 
 /**

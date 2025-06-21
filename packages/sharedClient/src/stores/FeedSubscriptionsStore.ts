@@ -14,9 +14,9 @@ import {prefixError} from '@shared/lib/errorUtils.shared';
 import {objectSize} from '@shared/lib/objectUtils.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
-import type {AccountId} from '@shared/types/accounts.types';
 import {AsyncStatus, type AsyncState} from '@shared/types/asyncState.types';
-import type {FeedSubscription, FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
+import type {FeedSubscription} from '@shared/types/feedSubscriptions.types';
+import type {AccountId, FeedSubscriptionId} from '@shared/types/ids.types';
 import type {Consumer, Func} from '@shared/types/utils.types';
 
 import type {ClientEventLogService} from '@sharedClient/services/eventLog.client';

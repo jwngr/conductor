@@ -5,8 +5,8 @@ import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseEmailAddress} from '@shared/parsers/emails.parser';
 
-import type {AccountId} from '@shared/types/accounts.types';
 import type {EmailAddress} from '@shared/types/emails.types';
+import type {AccountId} from '@shared/types/ids.types';
 import type {Result} from '@shared/types/results.types';
 
 /**

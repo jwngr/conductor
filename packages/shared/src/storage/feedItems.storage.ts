@@ -7,7 +7,6 @@ import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
 import {parseFeed} from '@shared/parsers/feeds.parser';
 
-import type {AccountId} from '@shared/types/accounts.types';
 import {FeedItemContentType} from '@shared/types/feedItemContent.types';
 import type {
   ArticleFeedItem,
@@ -24,6 +23,7 @@ import type {
 } from '@shared/types/feedItems.types';
 import {FeedItemImportStatus} from '@shared/types/feedItems.types';
 import type {Feed} from '@shared/types/feeds.types';
+import type {AccountId} from '@shared/types/ids.types';
 import type {Result} from '@shared/types/results.types';
 
 import type {

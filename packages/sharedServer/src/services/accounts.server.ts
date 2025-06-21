@@ -4,8 +4,9 @@ import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import {parseAccount, parseAccountId} from '@shared/parsers/accounts.parser';
 
-import type {Account, AccountId} from '@shared/types/accounts.types';
+import type {Account} from '@shared/types/accounts.types';
 import type {EmailAddress} from '@shared/types/emails.types';
+import type {AccountId} from '@shared/types/ids.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {AccountFromStorage} from '@shared/schemas/accounts.schema';

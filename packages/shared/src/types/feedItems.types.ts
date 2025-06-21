@@ -1,4 +1,3 @@
-import type {AccountId} from '@shared/types/accounts.types';
 import type {
   ArticleFeedItemContent,
   FeedItemContent,
@@ -12,6 +11,7 @@ import type {
 } from '@shared/types/feedItemContent.types';
 import type {Feed} from '@shared/types/feeds.types';
 import type {IconName} from '@shared/types/icons.types';
+import type {AccountId} from '@shared/types/ids.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import type {TagId} from '@shared/types/tags.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
