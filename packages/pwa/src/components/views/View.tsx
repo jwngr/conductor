@@ -11,7 +11,7 @@ import {assertNever} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
-import {FeedItemContentType} from '@shared/types/feedItems.types';
+import {FeedItemContentType} from '@shared/types/feedItemContent.types';
 import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
 import type {FeedType} from '@shared/types/feedSourceTypes.types';
 import type {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';

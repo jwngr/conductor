@@ -9,7 +9,8 @@ import {
   FEED_ITEMS_STORAGE_COLLECTION,
 } from '@shared/lib/constants.shared';
 import {asyncTry, prefixErrorResult, prefixResultIfError} from '@shared/lib/errorUtils.shared';
-import {makeFeedItem, makeFeedItemContentFromUrl} from '@shared/lib/feedItems.shared';
+import {makeFeedItemContentFromUrl} from '@shared/lib/feedItemContent.shared';
+import {makeFeedItem} from '@shared/lib/feedItems.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {Views} from '@shared/lib/views.shared';
 

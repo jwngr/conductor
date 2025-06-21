@@ -3,7 +3,8 @@ import type {DocumentData} from 'firebase-admin/firestore';
 
 import {FEED_ITEMS_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {asyncTry, prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {makeFeedItem, makeFeedItemContentFromUrl} from '@shared/lib/feedItems.shared';
+import {makeFeedItemContentFromUrl} from '@shared/lib/feedItemContent.shared';
+import {makeFeedItem} from '@shared/lib/feedItems.shared';
 import {makeIntervalFeed} from '@shared/lib/feeds.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {assertNever} from '@shared/lib/utils.shared';
@@ -11,20 +12,22 @@ import {assertNever} from '@shared/lib/utils.shared';
 import {parseFeedItem, parseFeedItemId} from '@shared/parsers/feedItems.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
-import {FeedItemContentType} from '@shared/types/feedItems.types';
 import type {
   ArticleFeedItemContent,
-  FeedItem,
   FeedItemContent,
-  FeedItemId,
-  FeedItemImportState,
-  IntervalFeedItem,
   IntervalFeedItemContent,
   TweetFeedItemContent,
   VideoFeedItemContent,
   WebsiteFeedItemContent,
   XkcdFeedItemContent,
   YouTubeFeedItemContent,
+} from '@shared/types/feedItemContent.types';
+import {FeedItemContentType} from '@shared/types/feedItemContent.types';
+import type {
+  FeedItem,
+  FeedItemId,
+  FeedItemImportState,
+  IntervalFeedItem,
 } from '@shared/types/feedItems.types';
 import type {Feed} from '@shared/types/feeds.types';
 import type {IntervalFeedSubscription} from '@shared/types/feedSubscriptions.types';

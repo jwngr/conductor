@@ -10,6 +10,28 @@ import type {YouTubeChannelId} from '@shared/types/youtube.types';
  */
 export type FeedSubscriptionId = string & {readonly __brand: 'FeedSubscriptionIdBrand'};
 
+export enum FeedSubscriptionActivityStatus {
+  Active = 'ACTIVE',
+  Inactive = 'INACTIVE',
+}
+
+interface BaseFeedSubscriptionLifecycleState {
+  readonly status: FeedSubscriptionActivityStatus;
+}
+
+export interface ActiveFeedSubscriptionLifecycleState extends BaseFeedSubscriptionLifecycleState {
+  readonly status: FeedSubscriptionActivityStatus.Active;
+}
+
+export interface InactiveFeedSubscriptionLifecycleState extends BaseFeedSubscriptionLifecycleState {
+  readonly status: FeedSubscriptionActivityStatus.Inactive;
+  readonly unsubscribedTime: Date;
+}
+
+export type FeedSubscriptionLifecycleState =
+  | ActiveFeedSubscriptionLifecycleState
+  | InactiveFeedSubscriptionLifecycleState;
+
 /**
  * An individual account's subscription to a feed source.
  *
@@ -26,12 +48,10 @@ interface BaseFeedSubscription extends BaseStoreItem {
   readonly feedType: FeedTypeWithSubscription;
   /** The account that owns this subscription. */
   readonly accountId: AccountId;
-  /** Whether this subscription is active. Inactive subscriptions do not generate new feed items. */
-  readonly isActive: boolean;
+  /** State about this subscription's lifecycle. Inactive subscriptions do not generate new feed items. */
+  readonly lifecycleState: FeedSubscriptionLifecycleState;
   /** The delivery schedule for this subscription. */
   readonly deliverySchedule: DeliverySchedule;
-  /** The time this subscription was unsubscribed from the feed source. */
-  readonly unsubscribedTime?: Date | undefined;
 }
 
 export interface RssFeedSubscription extends BaseFeedSubscription {

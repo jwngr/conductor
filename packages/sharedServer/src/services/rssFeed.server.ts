@@ -3,6 +3,7 @@ import {logger} from '@shared/services/logger.shared';
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
+import {FeedSubscriptionActivityStatus} from '@shared/types/feedSubscriptions.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {RssFeedProvider} from '@shared/types/rss.types';
 
@@ -47,7 +48,9 @@ export class ServerRssFeedService {
     }
 
     // If other active subscriptions exist, don't actually unsubscribe from the feed provider.
-    const activeSubscriptions = fetchSubsResult.value.filter((sub) => sub.isActive);
+    const activeSubscriptions = fetchSubsResult.value.filter(
+      (sub) => sub.lifecycleState.status === FeedSubscriptionActivityStatus.Active
+    );
     if (activeSubscriptions.length > 0) return makeSuccessResult(undefined);
 
     logger.log('[UNSUBSCRIBE] No active subscriptions found, unsubscribing from feed', {

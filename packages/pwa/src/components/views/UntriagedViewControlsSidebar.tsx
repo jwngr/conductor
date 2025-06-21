@@ -1,10 +1,8 @@
 import type React from 'react';
 
 import {arrayReduce} from '@shared/lib/arrayUtils.shared';
-import {
-  getFeedItemContentTypeText,
-  getFeedSubscriptionIdForItem,
-} from '@shared/lib/feedItems.shared';
+import {getFeedItemContentTypeText} from '@shared/lib/feedItemContent.shared';
+import {getFeedSubscriptionIdForItem} from '@shared/lib/feedItems.shared';
 import {getNameForFeedType} from '@shared/lib/feeds.shared';
 import {
   objectForEachEntry,
@@ -19,7 +17,8 @@ import {
   SORT_BY_CREATED_TIME_DESC_OPTION,
 } from '@shared/lib/views.shared';
 
-import type {FeedItem, FeedItemContentType} from '@shared/types/feedItems.types';
+import type {FeedItemContentType} from '@shared/types/feedItemContent.types';
+import type {FeedItem} from '@shared/types/feedItems.types';
 import {FeedType} from '@shared/types/feedSourceTypes.types';
 import type {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
 import {IconName} from '@shared/types/icons.types';

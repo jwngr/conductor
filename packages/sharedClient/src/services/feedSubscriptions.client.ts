@@ -245,7 +245,7 @@ export class ClientFeedSubscriptionsService {
    */
   public async updateSubscription(
     feedSubscriptionId: FeedSubscriptionId,
-    update: Partial<Pick<FeedSubscription, 'isActive' | 'unsubscribedTime' | 'deliverySchedule'>>
+    update: Partial<Pick<FeedSubscription, 'lifecycleState' | 'deliverySchedule'>>
   ): AsyncResult<void, Error> {
     const updateResult = await this.collectionService.updateDoc(feedSubscriptionId, update);
     return prefixResultIfError(updateResult, 'Error updating feed subscription');

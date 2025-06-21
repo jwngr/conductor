@@ -8,48 +8,51 @@ import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
 import {parseFeed} from '@shared/parsers/feeds.parser';
 
 import type {AccountId} from '@shared/types/accounts.types';
+import {FeedItemContentType} from '@shared/types/feedItemContent.types';
 import type {
   ArticleFeedItem,
-  ArticleFeedItemContent,
   FeedItem,
   FeedItemId,
   FeedItemImportState,
   IntervalFeedItem,
-  IntervalFeedItemContent,
   TriageStatus,
   TweetFeedItem,
-  TweetFeedItemContent,
   VideoFeedItem,
-  VideoFeedItemContent,
   WebsiteFeedItem,
-  WebsiteFeedItemContent,
   XkcdFeedItem,
-  XkcdFeedItemContent,
   YouTubeFeedItem,
-  YouTubeFeedItemContent,
 } from '@shared/types/feedItems.types';
-import {FeedItemContentType, FeedItemImportStatus} from '@shared/types/feedItems.types';
+import {FeedItemImportStatus} from '@shared/types/feedItems.types';
 import type {Feed} from '@shared/types/feeds.types';
 import type {Result} from '@shared/types/results.types';
 
 import type {
-  ArticleFeedItemContentFromStorage,
   ArticleFeedItemFromStorage,
   FeedItemFromStorage,
   FeedItemImportStateFromStorage,
-  IntervalFeedItemContentFromStorage,
   IntervalFeedItemFromStorage,
-  TweetFeedItemContentFromStorage,
   TweetFeedItemFromStorage,
-  VideoFeedItemContentFromStorage,
   VideoFeedItemFromStorage,
-  WebsiteFeedItemContentFromStorage,
   WebsiteFeedItemFromStorage,
-  XkcdFeedItemContentFromStorage,
   XkcdFeedItemFromStorage,
-  YouTubeFeedItemContentFromStorage,
   YouTubeFeedItemFromStorage,
 } from '@shared/schemas/feedItems.schema';
+import {
+  fromStorageArticleFeedItemContent,
+  fromStorageIntervalFeedItemContent,
+  fromStorageTweetFeedItemContent,
+  fromStorageVideoFeedItemContent,
+  fromStorageWebsiteFeedItemContent,
+  fromStorageXkcdFeedItemContent,
+  fromStorageYouTubeFeedItemContent,
+  toStorageArticleFeedItemContent,
+  toStorageIntervalFeedItemContent,
+  toStorageTweetFeedItemContent,
+  toStorageVideoFeedItemContent,
+  toStorageWebsiteFeedItemContent,
+  toStorageXkcdFeedItemContent,
+  toStorageYouTubeFeedItemContent,
+} from '@shared/storage/feedItemContent.storage';
 import {toStorageFeed} from '@shared/storage/feeds.storage';
 
 /////////////////
@@ -408,187 +411,6 @@ function fromStorageIntervalFeedItem(
     tagIds: feedItemFromStorage.tagIds,
     createdTime: parseStorageTimestamp(feedItemFromStorage.createdTime),
     lastUpdatedTime: parseStorageTimestamp(feedItemFromStorage.lastUpdatedTime),
-  });
-}
-
-/////////////////////////
-//  FEED ITEM CONTENT  //
-/////////////////////////
-function toStorageArticleFeedItemContent(
-  feedItemContent: ArticleFeedItemContent
-): ArticleFeedItemContentFromStorage {
-  return {
-    feedItemContentType: FeedItemContentType.Article,
-    title: feedItemContent.title,
-    url: feedItemContent.url,
-    description: feedItemContent.description,
-    summary: feedItemContent.summary,
-    outgoingLinks: feedItemContent.outgoingLinks,
-  };
-}
-
-function toStorageVideoFeedItemContent(
-  feedItemContent: VideoFeedItemContent
-): VideoFeedItemContentFromStorage {
-  return {
-    feedItemContentType: FeedItemContentType.Video,
-    title: feedItemContent.title,
-    url: feedItemContent.url,
-    description: feedItemContent.description,
-    summary: feedItemContent.summary,
-    outgoingLinks: feedItemContent.outgoingLinks,
-  };
-}
-
-function toStorageWebsiteFeedItemContent(
-  feedItemContent: WebsiteFeedItemContent
-): WebsiteFeedItemContentFromStorage {
-  return {
-    feedItemContentType: FeedItemContentType.Website,
-    title: feedItemContent.title,
-    url: feedItemContent.url,
-    description: feedItemContent.description,
-    summary: feedItemContent.summary,
-    outgoingLinks: feedItemContent.outgoingLinks,
-  };
-}
-
-function toStorageTweetFeedItemContent(
-  feedItemContent: TweetFeedItemContent
-): TweetFeedItemContentFromStorage {
-  return {
-    feedItemContentType: FeedItemContentType.Tweet,
-    title: feedItemContent.title,
-    url: feedItemContent.url,
-    description: feedItemContent.description,
-    summary: feedItemContent.summary,
-    outgoingLinks: feedItemContent.outgoingLinks,
-  };
-}
-
-function toStorageYouTubeFeedItemContent(
-  feedItemContent: YouTubeFeedItemContent
-): YouTubeFeedItemContentFromStorage {
-  return {
-    feedItemContentType: FeedItemContentType.YouTube,
-    title: feedItemContent.title,
-    url: feedItemContent.url,
-    description: feedItemContent.description,
-    summary: feedItemContent.summary,
-    outgoingLinks: feedItemContent.outgoingLinks,
-  };
-}
-
-function toStorageXkcdFeedItemContent(
-  feedItemContent: XkcdFeedItemContent
-): XkcdFeedItemContentFromStorage {
-  return {
-    feedItemContentType: FeedItemContentType.Xkcd,
-    title: feedItemContent.title,
-    url: feedItemContent.url,
-    summary: feedItemContent.summary,
-    altText: feedItemContent.altText,
-    imageUrlSmall: feedItemContent.imageUrlSmall,
-    imageUrlLarge: feedItemContent.imageUrlLarge,
-  };
-}
-
-function toStorageIntervalFeedItemContent(
-  feedItemContent: IntervalFeedItemContent
-): IntervalFeedItemContentFromStorage {
-  return {
-    feedItemContentType: FeedItemContentType.Interval,
-    title: feedItemContent.title,
-    intervalSeconds: feedItemContent.intervalSeconds,
-  };
-}
-
-function fromStorageArticleFeedItemContent(
-  feedItemContentFromStorage: ArticleFeedItemContentFromStorage
-): Result<ArticleFeedItemContent, Error> {
-  return makeSuccessResult({
-    feedItemContentType: FeedItemContentType.Article,
-    title: feedItemContentFromStorage.title,
-    url: feedItemContentFromStorage.url,
-    description: feedItemContentFromStorage.description,
-    summary: feedItemContentFromStorage.summary,
-    outgoingLinks: feedItemContentFromStorage.outgoingLinks,
-  });
-}
-
-function fromStorageVideoFeedItemContent(
-  feedItemContentFromStorage: VideoFeedItemContentFromStorage
-): Result<VideoFeedItemContent, Error> {
-  return makeSuccessResult({
-    feedItemContentType: FeedItemContentType.Video,
-    title: feedItemContentFromStorage.title,
-    url: feedItemContentFromStorage.url,
-    description: feedItemContentFromStorage.description,
-    summary: feedItemContentFromStorage.summary,
-    outgoingLinks: feedItemContentFromStorage.outgoingLinks,
-  });
-}
-
-function fromStorageWebsiteFeedItemContent(
-  feedItemContentFromStorage: WebsiteFeedItemContentFromStorage
-): Result<WebsiteFeedItemContent, Error> {
-  return makeSuccessResult({
-    feedItemContentType: FeedItemContentType.Website,
-    title: feedItemContentFromStorage.title,
-    url: feedItemContentFromStorage.url,
-    description: feedItemContentFromStorage.description,
-    summary: feedItemContentFromStorage.summary,
-    outgoingLinks: feedItemContentFromStorage.outgoingLinks,
-  });
-}
-
-function fromStorageTweetFeedItemContent(
-  feedItemContentFromStorage: TweetFeedItemContentFromStorage
-): Result<TweetFeedItemContent, Error> {
-  return makeSuccessResult({
-    feedItemContentType: FeedItemContentType.Tweet,
-    title: feedItemContentFromStorage.title,
-    url: feedItemContentFromStorage.url,
-    description: feedItemContentFromStorage.description,
-    summary: feedItemContentFromStorage.summary,
-    outgoingLinks: feedItemContentFromStorage.outgoingLinks,
-  });
-}
-
-function fromStorageYouTubeFeedItemContent(
-  feedItemContentFromStorage: YouTubeFeedItemContentFromStorage
-): Result<YouTubeFeedItemContent, Error> {
-  return makeSuccessResult({
-    feedItemContentType: FeedItemContentType.YouTube,
-    title: feedItemContentFromStorage.title,
-    url: feedItemContentFromStorage.url,
-    description: feedItemContentFromStorage.description,
-    summary: feedItemContentFromStorage.summary,
-    outgoingLinks: feedItemContentFromStorage.outgoingLinks,
-  });
-}
-
-function fromStorageXkcdFeedItemContent(
-  feedItemContentFromStorage: XkcdFeedItemContentFromStorage
-): Result<XkcdFeedItemContent, Error> {
-  return makeSuccessResult({
-    feedItemContentType: FeedItemContentType.Xkcd,
-    title: feedItemContentFromStorage.title,
-    url: feedItemContentFromStorage.url,
-    summary: feedItemContentFromStorage.summary,
-    altText: feedItemContentFromStorage.altText,
-    imageUrlSmall: feedItemContentFromStorage.imageUrlSmall,
-    imageUrlLarge: feedItemContentFromStorage.imageUrlLarge,
-  });
-}
-
-function fromStorageIntervalFeedItemContent(
-  feedItemContentFromStorage: IntervalFeedItemContentFromStorage
-): Result<IntervalFeedItemContent, Error> {
-  return makeSuccessResult({
-    feedItemContentType: FeedItemContentType.Interval,
-    title: feedItemContentFromStorage.title,
-    intervalSeconds: feedItemContentFromStorage.intervalSeconds,
   });
 }
 

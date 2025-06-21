@@ -4,6 +4,7 @@ import {assertNever} from '@shared/lib/utils.shared';
 import {parseFeedSubscription} from '@shared/parsers/feedSubscriptions.parser';
 
 import {FeedType} from '@shared/types/feedSourceTypes.types';
+import {FeedSubscriptionActivityStatus} from '@shared/types/feedSubscriptions.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
@@ -33,7 +34,9 @@ export async function handleFeedUnsubscribe(args: {
   const after = afterResult.value;
 
   // Only do anything if the subscription was just marked as inactive.
-  const becameInactive = before.isActive && !after.isActive;
+  const becameInactive =
+    before.lifecycleState.status === FeedSubscriptionActivityStatus.Active &&
+    after.lifecycleState.status === FeedSubscriptionActivityStatus.Inactive;
   if (!becameInactive) return makeSuccessResult(undefined);
 
   // Run unsubscribing behavior for the feed source.
