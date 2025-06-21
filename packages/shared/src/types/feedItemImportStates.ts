@@ -22,14 +22,14 @@ export interface NewFeedItemImportState extends BaseFeedItemImportState {
   readonly lastSuccessfulImportTime: null;
 }
 
-interface ProcessingFeedItemImportState extends BaseFeedItemImportState {
+export interface ProcessingFeedItemImportState extends BaseFeedItemImportState {
   readonly status: FeedItemImportStatus.Processing;
   readonly shouldFetch: false;
   readonly importStartedTime: Date;
   readonly lastSuccessfulImportTime: Date | null;
 }
 
-interface FailedFeedItemImportState extends BaseFeedItemImportState {
+export interface FailedFeedItemImportState extends BaseFeedItemImportState {
   readonly status: FeedItemImportStatus.Failed;
   readonly shouldFetch: boolean;
   readonly errorMessage: string;
@@ -37,7 +37,7 @@ interface FailedFeedItemImportState extends BaseFeedItemImportState {
   readonly lastSuccessfulImportTime: Date | null;
 }
 
-interface CompletedFeedItemImportState extends BaseFeedItemImportState {
+export interface CompletedFeedItemImportState extends BaseFeedItemImportState {
   readonly status: FeedItemImportStatus.Completed;
   readonly shouldFetch: boolean;
   readonly lastSuccessfulImportTime: Date;

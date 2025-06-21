@@ -6,7 +6,8 @@ import {isXkcdComicUrl} from '@shared/lib/xkcd.shared';
 import {isYouTubeVideoUrl} from '@shared/lib/youtube.shared';
 
 import {FeedItemContentType} from '@shared/types/feedItemContent.types';
-import type {FeedItemContent} from '@shared/types/feedItemContent.types';
+import type {FeedItemContent, IntervalFeedItemContent} from '@shared/types/feedItemContent.types';
+import type {FeedItem} from '@shared/types/feedItems.types';
 
 export const DEFAULT_FEED_ITEM_CONTENT_TYPE = FeedItemContentType.Article;
 
@@ -76,6 +77,35 @@ export function makeFeedItemContentFromUrl(args: {
       };
     default:
       assertNever(feedItemContentType);
+  }
+}
+
+export function makeIntervalFeedItemContent(args: {
+  readonly intervalSeconds: number;
+  readonly title: string;
+}): IntervalFeedItemContent {
+  const {intervalSeconds, title} = args;
+
+  return {
+    feedItemContentType: FeedItemContentType.Interval,
+    intervalSeconds,
+    title,
+  };
+}
+
+export function getFeedItemSubtitle(feedItem: FeedItem): string {
+  switch (feedItem.feedItemContentType) {
+    case FeedItemContentType.Article:
+    case FeedItemContentType.Video:
+    case FeedItemContentType.Website:
+    case FeedItemContentType.Tweet:
+    case FeedItemContentType.YouTube:
+    case FeedItemContentType.Xkcd:
+      return feedItem.content.url;
+    case FeedItemContentType.Interval:
+      return 'Interval';
+    default:
+      assertNever(feedItem);
   }
 }
 

@@ -1,4 +1,5 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
+import {makeProcessingFeedItemImportState} from '@shared/lib/feedItemImportStates.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import {FeedItemImportStatus} from '@shared/types/feedItemImportStates';
@@ -34,16 +35,18 @@ export async function handleFeedItemImport(args: {
     return betterErrorResult;
   };
 
-  // Claim the item so that no other function picks it up.
-  // TODO: Consider using a lock to prevent multiple functions from processing the same item.
-  const claimItemResult = await feedItemsService.updateFeedItemImportState(feedItemId, {
-    status: FeedItemImportStatus.Processing,
+  const feedItemImportState = makeProcessingFeedItemImportState({
     importStartedTime: new Date(),
     lastImportRequestedTime: feedItem.importState.lastImportRequestedTime,
     lastSuccessfulImportTime: feedItem.importState.lastSuccessfulImportTime,
-    // Claiming the item means we don't need to fetch it again.
-    shouldFetch: false,
   });
+
+  // Claim the item so that no other function picks it up.
+  // TODO: Consider using a lock to prevent multiple functions from processing the same item.
+  const claimItemResult = await feedItemsService.updateFeedItemImportState(
+    feedItemId,
+    feedItemImportState
+  );
   if (!claimItemResult.success) {
     return handleError(claimItemResult, 'Failed to claim feed item to import');
   }

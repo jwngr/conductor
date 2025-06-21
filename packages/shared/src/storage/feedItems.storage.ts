@@ -1,4 +1,9 @@
-import {makeNewFeedItemImportState} from '@shared/lib/feedItems.shared';
+import {
+  makeCompletedFeedItemImportState,
+  makeFailedFeedItemImportState,
+  makeNewFeedItemImportState,
+  makeProcessingFeedItemImportState,
+} from '@shared/lib/feedItemImportStates.shared';
 import {parseStorageTimestamp} from '@shared/lib/parser.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {assertNever} from '@shared/lib/utils.shared';
@@ -425,37 +430,49 @@ function fromStorageFeedItemImportState(
   const status = feedItemImportState.status;
   switch (status) {
     case FeedItemImportStatus.New:
-      return makeSuccessResult(makeNewFeedItemImportState());
+      return makeSuccessResult(
+        makeNewFeedItemImportState({
+          lastImportRequestedTime: parseStorageTimestamp(
+            feedItemImportState.lastImportRequestedTime
+          ),
+        })
+      );
     case FeedItemImportStatus.Processing:
-      return makeSuccessResult({
-        status: FeedItemImportStatus.Processing,
-        shouldFetch: false,
-        importStartedTime: parseStorageTimestamp(feedItemImportState.importStartedTime),
-        lastImportRequestedTime: parseStorageTimestamp(feedItemImportState.lastImportRequestedTime),
-        lastSuccessfulImportTime: feedItemImportState.lastSuccessfulImportTime
-          ? parseStorageTimestamp(feedItemImportState.lastSuccessfulImportTime)
-          : null,
-      });
+      return makeSuccessResult(
+        makeProcessingFeedItemImportState({
+          importStartedTime: parseStorageTimestamp(feedItemImportState.importStartedTime),
+          lastImportRequestedTime: parseStorageTimestamp(
+            feedItemImportState.lastImportRequestedTime
+          ),
+          lastSuccessfulImportTime: feedItemImportState.lastSuccessfulImportTime
+            ? parseStorageTimestamp(feedItemImportState.lastSuccessfulImportTime)
+            : null,
+        })
+      );
     case FeedItemImportStatus.Failed:
-      return makeSuccessResult({
-        status: FeedItemImportStatus.Failed,
-        shouldFetch: feedItemImportState.shouldFetch,
-        errorMessage: feedItemImportState.errorMessage,
-        importFailedTime: parseStorageTimestamp(feedItemImportState.importFailedTime),
-        lastImportRequestedTime: parseStorageTimestamp(feedItemImportState.lastImportRequestedTime),
-        lastSuccessfulImportTime: feedItemImportState.lastSuccessfulImportTime
-          ? parseStorageTimestamp(feedItemImportState.lastSuccessfulImportTime)
-          : null,
-      });
+      return makeSuccessResult(
+        makeFailedFeedItemImportState({
+          importFailedTime: parseStorageTimestamp(feedItemImportState.importFailedTime),
+          lastImportRequestedTime: parseStorageTimestamp(
+            feedItemImportState.lastImportRequestedTime
+          ),
+          lastSuccessfulImportTime: feedItemImportState.lastSuccessfulImportTime
+            ? parseStorageTimestamp(feedItemImportState.lastSuccessfulImportTime)
+            : null,
+          errorMessage: feedItemImportState.errorMessage,
+        })
+      );
     case FeedItemImportStatus.Completed:
-      return makeSuccessResult({
-        status: FeedItemImportStatus.Completed,
-        shouldFetch: feedItemImportState.shouldFetch,
-        lastImportRequestedTime: parseStorageTimestamp(feedItemImportState.lastImportRequestedTime),
-        lastSuccessfulImportTime: parseStorageTimestamp(
-          feedItemImportState.lastSuccessfulImportTime
-        ),
-      });
+      return makeSuccessResult(
+        makeCompletedFeedItemImportState({
+          lastImportRequestedTime: parseStorageTimestamp(
+            feedItemImportState.lastImportRequestedTime
+          ),
+          lastSuccessfulImportTime: parseStorageTimestamp(
+            feedItemImportState.lastSuccessfulImportTime
+          ),
+        })
+      );
     default:
       assertNever(status);
   }

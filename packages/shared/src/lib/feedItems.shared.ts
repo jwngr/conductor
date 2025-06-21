@@ -1,3 +1,4 @@
+import {makeNewFeedItemImportState} from '@shared/lib/feedItemImportStates.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {parseUrl} from '@shared/lib/urls.shared';
 import {assertNever, makeUuid} from '@shared/lib/utils.shared';
@@ -6,8 +7,6 @@ import type {FeedItemAction} from '@shared/types/feedItemActions.types';
 import {FeedItemActionType} from '@shared/types/feedItemActions.types';
 import {FeedItemContentType} from '@shared/types/feedItemContent.types';
 import type {FeedItemContent} from '@shared/types/feedItemContent.types';
-import {FeedItemImportStatus} from '@shared/types/feedItemImportStates';
-import type {NewFeedItemImportState} from '@shared/types/feedItemImportStates';
 import type {FeedItem} from '@shared/types/feedItems.types';
 import {TriageStatus} from '@shared/types/feedItems.types';
 import type {Feed} from '@shared/types/feeds.types';
@@ -154,7 +153,7 @@ export function makeFeedItem(args: {
     content,
     origin,
     accountId,
-    importState: makeNewFeedItemImportState(),
+    importState: makeNewFeedItemImportState({}),
     triageStatus: TriageStatus.Untriaged,
     tagIds: {[SystemTagId.Unread]: true},
     // TODO(timestamps): Use server timestamps instead.
@@ -162,15 +161,6 @@ export function makeFeedItem(args: {
     lastUpdatedTime: new Date(),
     // TODO(types): Remove this cast.
   } as FeedItem;
-}
-
-export function makeNewFeedItemImportState(): NewFeedItemImportState {
-  return {
-    status: FeedItemImportStatus.New,
-    shouldFetch: true,
-    lastImportRequestedTime: new Date(),
-    lastSuccessfulImportTime: null,
-  };
 }
 
 export function getFeedSubscriptionIdForItem(feedItem: FeedItem): FeedSubscriptionId | null {

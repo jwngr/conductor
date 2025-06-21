@@ -1,7 +1,8 @@
+import {makeIntervalFeedItemContent} from '@shared/lib/feedItemContent.shared';
+import {makeCompletedFeedItemImportState} from '@shared/lib/feedItemImportStates.shared';
 import {makeFeedItemId} from '@shared/lib/feedItems.shared';
 
 import {FeedItemContentType} from '@shared/types/feedItemContent.types';
-import {FeedItemImportStatus} from '@shared/types/feedItemImportStates';
 import type {ArticleFeedItem, FeedItem, IntervalFeedItem} from '@shared/types/feedItems.types';
 import {TriageStatus} from '@shared/types/feedItems.types';
 import {FeedType} from '@shared/types/feeds.types';
@@ -22,17 +23,14 @@ const interval1FeedItem1: Omit<IntervalFeedItem, 'accountId'> = {
     feedType: FeedType.Interval,
     feedSubscriptionId: INTERVAL_1_USER_FEED_SUBSCRIPTION_ID,
   },
-  importState: {
-    status: FeedItemImportStatus.Completed,
-    shouldFetch: false,
+  importState: makeCompletedFeedItemImportState({
     lastImportRequestedTime: new Date('2025-06-20T03:30:40.578Z'),
     lastSuccessfulImportTime: new Date('2025-06-20T03:30:40.607Z'),
-  },
-  content: {
-    feedItemContentType: FeedItemContentType.Interval,
-    title: 'Interval feed item for 2025-06-20T03:30:11.282Z',
+  }),
+  content: makeIntervalFeedItemContent({
     intervalSeconds: 300,
-  },
+    title: 'Interval feed item for 2025-06-20T03:30:11.282Z',
+  }),
   triageStatus: TriageStatus.Untriaged,
   tagIds: {
     [SystemTagId.Unread]: true,
@@ -48,12 +46,10 @@ const personalBlogRssFeedItem1: Omit<ArticleFeedItem, 'accountId'> = {
     feedType: FeedType.RSS,
     feedSubscriptionId: PERSONAL_BLOG_RSS_FEED_SUBSCRIPTION_ID,
   },
-  importState: {
-    status: FeedItemImportStatus.Completed,
-    shouldFetch: false,
+  importState: makeCompletedFeedItemImportState({
     lastImportRequestedTime: new Date('2025-06-20T03:30:40.578Z'),
     lastSuccessfulImportTime: new Date('2025-06-20T03:30:40.607Z'),
-  },
+  }),
   content: {
     feedItemContentType: FeedItemContentType.Article,
     // Duplicated content.
