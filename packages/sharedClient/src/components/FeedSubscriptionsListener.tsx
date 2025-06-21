@@ -1,16 +1,16 @@
 import {useEffect} from 'react';
 
-import {useUserFeedSubscriptionsStore} from '@sharedClient/stores/UserFeedSubscriptionsStore';
+import {useFeedSubscriptionsStore} from '@sharedClient/stores/FeedSubscriptionsStore';
 
 import type {ClientFirebaseService} from '@sharedClient/services/firebase.client';
 
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 import {useEventLogService} from '@sharedClient/hooks/eventLog.hooks';
 
-export const UserFeedSubscriptionsListener: React.FC<{
+export const FeedSubscriptionsListener: React.FC<{
   readonly firebaseService: ClientFirebaseService;
 }> = ({firebaseService}) => {
-  const {registerService} = useUserFeedSubscriptionsStore();
+  const {registerService} = useFeedSubscriptionsStore();
 
   const {accountId} = useLoggedInAccount();
   const eventLogService = useEventLogService({firebaseService});

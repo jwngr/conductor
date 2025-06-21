@@ -1,13 +1,14 @@
 /**
- * Note: This file exists to avoid circular dependencies between `feedSources.types.ts` and
- * `userFeedSubscriptions.types.ts`. Alternatively, we could consider introducing a new
- * `FeedSubscriptionType` that is a mirror of `FeedSourceType` but used on `UserFeedSubscription`.
+ * Note: This file exists to avoid circular dependencies between `feeds.types.ts` and
+ * `feedSubscriptions.types.ts`. `Feed`s store a `FeedSubscriptionId` and `FeedSubscription`s store
+ * a `FeedType`. Alternatively, we could consider moving IDs into a separate file to eliminate the
+ * dependency from `feeds.types.ts`.
  */
 
 /**
  * The origin of the feed item. Where the feed item came from.
  */
-export enum FeedSourceType {
+export enum FeedType {
   /** RSS feeds. */
   RSS = 'RSS',
   /** YouTube channels. */
@@ -23,15 +24,15 @@ export enum FeedSourceType {
 }
 
 /**
- * List of {@link FeedSourceType} that have additional state persisted along with the type.
+ * List of {@link FeedType} that have a {@link FeedSubscription} associated with them.
  */
-export const PERSISTED_FEED_SOURCE_TYPES = [
-  FeedSourceType.RSS,
-  FeedSourceType.YouTubeChannel,
-  FeedSourceType.Interval,
+export const FEED_TYPES_WITH_SUBSCRIPTIONS = [
+  FeedType.RSS,
+  FeedType.YouTubeChannel,
+  FeedType.Interval,
 ] as const;
 
 /**
- * Subset of {@link FeedSourceType} that have additional state persisted along with the type.
+ * Subset of {@link FeedType} that have a {@link FeedSubscription} associated with them.
  */
-export type PersistedFeedSourceType = (typeof PERSISTED_FEED_SOURCE_TYPES)[number];
+export type FeedTypeWithSubscription = (typeof FEED_TYPES_WITH_SUBSCRIPTIONS)[number];

@@ -5,18 +5,17 @@ import {logger} from '@shared/services/logger.shared';
 import {arrayFilter} from '@shared/lib/arrayUtils.shared';
 import {isDate} from '@shared/lib/datetime.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
-import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
-import {getFeedSubscriptionIdForFeedSource} from '@shared/lib/feedSources.shared';
+import {getFeedSubscriptionIdForItem, SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {objectKeys, objectMapEntries} from '@shared/lib/objectUtils.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
-import {FeedItemContentType} from '@shared/types/feedItems.types';
+import {FeedItemContentType} from '@shared/types/feedItemContent.types';
 import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
-import type {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import type {FeedType} from '@shared/types/feedSourceTypes.types';
+import type {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
 import type {TagId} from '@shared/types/tags.types';
-import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {Supplier} from '@shared/types/utils.types';
 import type {ViewGroupByOption, ViewSortByOption, ViewType} from '@shared/types/views.types';
 import {ViewGroupByField, ViewSortByField} from '@shared/types/views.types';
@@ -98,24 +97,24 @@ function compareFeedItems(args: {
 function useFilteredFeedItems(
   feedItems: FeedItem[],
   filterByOptions: {
-    readonly sourceTypesToFilterBy: Set<FeedSourceType>;
+    readonly feedTypesToFilterBy: Set<FeedType>;
     readonly contentTypesToFilterBy: Set<FeedItemContentType>;
     readonly tagIdsToFilterBy: Set<TagId>;
-    readonly subscriptionIdsToFilterBy: Set<UserFeedSubscriptionId>;
+    readonly subscriptionIdsToFilterBy: Set<FeedSubscriptionId>;
   }
 ): FeedItem[] {
   return useMemo(() => {
     return arrayFilter(feedItems, (item) => {
       const passesSourceTypeFilter =
-        filterByOptions.sourceTypesToFilterBy.size === 0 ||
-        filterByOptions.sourceTypesToFilterBy.has(item.feedSource.feedSourceType);
+        filterByOptions.feedTypesToFilterBy.size === 0 ||
+        filterByOptions.feedTypesToFilterBy.has(item.origin.feedType);
 
       const passesContentTypeFilter =
         filterByOptions.contentTypesToFilterBy.size === 0 ||
         filterByOptions.contentTypesToFilterBy.has(item.feedItemContentType);
 
       // Feed subscription filter.
-      const feedSubscriptionId = getFeedSubscriptionIdForFeedSource(item.feedSource);
+      const feedSubscriptionId = getFeedSubscriptionIdForItem(item);
       const passesSubscriptionFilter =
         filterByOptions.subscriptionIdsToFilterBy.size === 0 ||
         (feedSubscriptionId
@@ -212,9 +211,9 @@ function useGroupedFeedItems(
         }
         return groupedItems;
 
-      case ViewGroupByField.FeedSourceType:
+      case ViewGroupByField.FeedType:
         for (const item of feedItems) {
-          const groupKey = item.feedSource.feedSourceType;
+          const groupKey = item.origin.feedType;
           if (!groupedItems[groupKey]) {
             groupedItems[groupKey] = [];
           }
@@ -326,10 +325,10 @@ const ViewListItem: React.FC<{
 interface LoadedViewListState {
   readonly sortBy: ViewSortByOption[];
   readonly groupBy: ViewGroupByOption[];
-  readonly sourceTypesToFilterBy: Set<FeedSourceType>;
+  readonly feedTypesToFilterBy: Set<FeedType>;
   readonly contentTypesToFilterBy: Set<FeedItemContentType>;
   readonly tagIdsToFilterBy: Set<TagId>;
-  readonly subscriptionIdsToFilterBy: Set<UserFeedSubscriptionId>;
+  readonly subscriptionIdsToFilterBy: Set<FeedSubscriptionId>;
 }
 
 const LoadedViewList: React.FC<{
@@ -345,10 +344,10 @@ const LoadedViewList: React.FC<{
     return {
       sortBy: [...defaultViewConfig.sortBy],
       groupBy: [...defaultViewConfig.groupBy],
-      sourceTypesToFilterBy: new Set<FeedSourceType>(),
+      feedTypesToFilterBy: new Set<FeedType>(),
       contentTypesToFilterBy: new Set<FeedItemContentType>(),
       tagIdsToFilterBy: new Set<TagId>(),
-      subscriptionIdsToFilterBy: new Set<UserFeedSubscriptionId>(),
+      subscriptionIdsToFilterBy: new Set<FeedSubscriptionId>(),
     };
   });
 
@@ -357,15 +356,15 @@ const LoadedViewList: React.FC<{
   const groupByField = viewOptions.groupBy.length === 0 ? null : viewOptions.groupBy[0].field;
   const groupedItems = useGroupedFeedItems(sortedItems, groupByField);
 
-  const handleFilterBySourceTypeChange = (criteria: FeedSourceType): void => {
+  const handleFilterBySourceTypeChange = (criteria: FeedType): void => {
     setViewOptions((prev: LoadedViewListState) => {
-      const newSet = new Set(prev.sourceTypesToFilterBy);
+      const newSet = new Set(prev.feedTypesToFilterBy);
       if (newSet.has(criteria)) {
         newSet.delete(criteria);
       } else {
         newSet.add(criteria);
       }
-      return {...prev, sourceTypesToFilterBy: newSet};
+      return {...prev, feedTypesToFilterBy: newSet};
     });
   };
 
@@ -393,7 +392,7 @@ const LoadedViewList: React.FC<{
     });
   };
 
-  const handleFilterBySubscriptionChange = (criteria: UserFeedSubscriptionId): void => {
+  const handleFilterBySubscriptionChange = (criteria: FeedSubscriptionId): void => {
     setViewOptions((prev: LoadedViewListState) => {
       const newSet = new Set(prev.subscriptionIdsToFilterBy);
       if (newSet.has(criteria)) {
@@ -453,7 +452,7 @@ const LoadedViewList: React.FC<{
       feedItems={feedItems}
       sortBy={viewOptions.sortBy}
       groupBy={viewOptions.groupBy}
-      sourceTypesToFilterBy={viewOptions.sourceTypesToFilterBy}
+      feedTypesToFilterBy={viewOptions.feedTypesToFilterBy}
       contentTypesToFilterBy={viewOptions.contentTypesToFilterBy}
       tagIdsToFilterBy={viewOptions.tagIdsToFilterBy}
       subscriptionIdsToFilterBy={viewOptions.subscriptionIdsToFilterBy}

@@ -3,14 +3,14 @@ import {z} from 'zod/v4';
 import {Environment} from '@shared/types/environment.types';
 import {EventType} from '@shared/types/eventLog.types';
 import {FeedItemActionType} from '@shared/types/feedItems.types';
-import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import {FeedType} from '@shared/types/feedSourceTypes.types';
 
 import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 import {ActorSchema} from '@shared/schemas/actors.schema';
 import {ExperimentIdSchema, ExperimentTypeSchema} from '@shared/schemas/experiments.schema';
 import {FeedItemIdSchema} from '@shared/schemas/feedItems.schema';
+import {FeedSubscriptionIdSchema} from '@shared/schemas/feedSubscriptions.schema';
 import {ThemePreferenceSchema} from '@shared/schemas/theme.schema';
-import {UserFeedSubscriptionIdSchema} from '@shared/schemas/userFeedSubscriptions.schema';
 import {BaseStoreItemSchema} from '@shared/schemas/utils.schema';
 
 // TODO: Consider adding `brand()` and defining `EventId` based on this schema.
@@ -59,26 +59,26 @@ const StringExperimentValueChangedEventLogItemDataSchema = BaseEventLogItemDataS
   value: z.string(),
 });
 
-export type SubscribedToFeedSourceEventLogItemDataFromStorage = z.infer<
-  typeof SubscribedToFeedSourceEventLogItemDataSchema
->;
-
-const SubscribedToFeedSourceEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
-  eventType: z.literal(EventType.SubscribedToFeedSource),
-  feedSourceType: z.enum(FeedSourceType),
-  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
+const SubscribedToFeedEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
+  eventType: z.literal(EventType.SubscribedToFeed),
+  feedType: z.enum(FeedType),
+  feedSubscriptionId: FeedSubscriptionIdSchema,
   isNewSubscription: z.boolean(),
 });
 
-export type UnsubscribedFromFeedSourceEventLogItemDataFromStorage = z.infer<
-  typeof UnsubscribedFromFeedSourceEventLogItemDataSchema
+export type SubscribedToFeedEventLogItemDataFromStorage = z.infer<
+  typeof SubscribedToFeedEventLogItemDataSchema
 >;
 
-export const UnsubscribedFromFeedSourceEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
-  eventType: z.literal(EventType.UnsubscribedFromFeedSource),
-  feedSourceType: z.enum(FeedSourceType),
-  userFeedSubscriptionId: UserFeedSubscriptionIdSchema,
+export const UnsubscribedFromFeedEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
+  eventType: z.literal(EventType.UnsubscribedFromFeed),
+  feedType: z.enum(FeedType),
+  feedSubscriptionId: FeedSubscriptionIdSchema,
 });
+
+export type UnsubscribedFromFeedEventLogItemDataFromStorage = z.infer<
+  typeof UnsubscribedFromFeedEventLogItemDataSchema
+>;
 
 const ThemePreferenceChangedEventLogItemDataSchema = BaseEventLogItemDataSchema.extend({
   eventType: z.literal(EventType.ThemePreferenceChanged),
@@ -91,8 +91,8 @@ const EventLogItemDataSchema = z.discriminatedUnion('eventType', [
   ExperimentEnabledEventLogItemDataSchema,
   ExperimentDisabledEventLogItemDataSchema,
   StringExperimentValueChangedEventLogItemDataSchema,
-  SubscribedToFeedSourceEventLogItemDataSchema,
-  UnsubscribedFromFeedSourceEventLogItemDataSchema,
+  SubscribedToFeedEventLogItemDataSchema,
+  UnsubscribedFromFeedEventLogItemDataSchema,
   ThemePreferenceChangedEventLogItemDataSchema,
 ]);
 

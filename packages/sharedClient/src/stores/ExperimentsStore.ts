@@ -64,7 +64,7 @@ export const useExperimentsStore = create<ExperimentsStoreState>((set, get) => (
     const experiment = experiments.find((state) => state.definition.experimentId === experimentId);
 
     if (!experiment) {
-      // If the experiment is not actually visible to this user on this environment, fall back to
+      // If the experiment is not actually visible to this account on this environment, fall back to
       // it being disabled.
       return makeBooleanAccountExperiment({
         definition: experimentDefinition,
@@ -106,7 +106,7 @@ export const useExperimentsStore = create<ExperimentsStoreState>((set, get) => (
     const experiment = experiments.find((state) => state.definition.experimentId === experimentId);
 
     if (!experiment) {
-      // If the experiment is not actually visible to this user on this environment, fall back to
+      // If the experiment is not actually visible to this account on this environment, fall back to
       // it being disabled with an empty value.
       return makeStringAccountExperiment({
         definition: experimentDefinition,

@@ -1,17 +1,17 @@
 import {logger} from '@shared/services/logger.shared';
 
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {makeRssFeedSource} from '@shared/lib/feedSources.shared';
+import {makeRssFeed} from '@shared/lib/feeds.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {AccountId} from '@shared/types/accounts.types';
 import type {FeedItem} from '@shared/types/feedItems.types';
-import type {AsyncResult} from '@shared/types/results.types';
 import type {
-  IntervalUserFeedSubscription,
-  RssUserFeedSubscription,
-  YouTubeChannelUserFeedSubscription,
-} from '@shared/types/userFeedSubscriptions.types';
+  IntervalFeedSubscription,
+  RssFeedSubscription,
+  YouTubeChannelFeedSubscription,
+} from '@shared/types/feedSubscriptions.types';
+import type {AsyncResult} from '@shared/types/results.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
 
@@ -22,9 +22,9 @@ interface CreateSampleFeedItemsResult {
 
 export async function createSampleFeedItems(args: {
   readonly accountId: AccountId;
-  readonly rssSubscriptions: readonly RssUserFeedSubscription[];
-  readonly youtubeSubscriptions: readonly YouTubeChannelUserFeedSubscription[];
-  readonly intervalSubscriptions: readonly IntervalUserFeedSubscription[];
+  readonly rssSubscriptions: readonly RssFeedSubscription[];
+  readonly youtubeSubscriptions: readonly YouTubeChannelFeedSubscription[];
+  readonly intervalSubscriptions: readonly IntervalFeedSubscription[];
   readonly feedItemsService: ServerFeedItemsService;
 }): AsyncResult<CreateSampleFeedItemsResult, Error> {
   const {accountId, rssSubscriptions, intervalSubscriptions, feedItemsService} = args;
@@ -61,7 +61,7 @@ export async function createSampleFeedItems(args: {
 
   for (const item of rssFeedItems) {
     const saveResult = await feedItemsService.createFeedItemFromUrl({
-      feedSource: makeRssFeedSource({userFeedSubscription: rssSubscriptions[0]}),
+      origin: makeRssFeed({subscription: rssSubscriptions[0]}),
       accountId,
       url: item.url,
       title: item.title,
@@ -80,7 +80,7 @@ export async function createSampleFeedItems(args: {
   for (const intervalSubscription of intervalSubscriptions) {
     const intervalFeedItemResult = await feedItemsService.createIntervalFeedItem({
       accountId,
-      userFeedSubscription: intervalSubscription,
+      subscription: intervalSubscription,
     });
 
     if (!intervalFeedItemResult.success) {

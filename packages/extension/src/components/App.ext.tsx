@@ -1,6 +1,6 @@
 import {DEFAULT_FEED_TITLE} from '@shared/lib/constants.shared';
 import {asyncTry, prefixError} from '@shared/lib/errorUtils.shared';
-import {EXTENSION_FEED_SOURCE} from '@shared/lib/feedSources.shared';
+import {EXTENSION_FEED} from '@shared/lib/feeds.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
@@ -38,7 +38,7 @@ const SaveCurrentUrlButton: React.FC = () => {
     }
 
     const addFeedItemResult = await feedItemsService.createFeedItemFromUrl({
-      feedSource: EXTENSION_FEED_SOURCE,
+      origin: EXTENSION_FEED,
       url: tabUrl,
       title: tab.title ?? DEFAULT_FEED_TITLE,
       // TODO: Set better initial values for these fields.

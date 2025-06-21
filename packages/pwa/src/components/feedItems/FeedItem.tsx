@@ -3,7 +3,7 @@ import type React from 'react';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
-import {FeedItemContentType} from '@shared/types/feedItems.types';
+import {FeedItemContentType} from '@shared/types/feedItemContent.types';
 import type {FeedItem} from '@shared/types/feedItems.types';
 
 import type {WithChildren} from '@sharedClient/types/utils.client.types';

@@ -12,9 +12,9 @@ import {
   makeExperimentEnabledEventLogItemData,
   makeFeedItemActionEventLogItemData,
   makeStringExperimentValueChangedEventLogItemData,
-  makeSubscribedToFeedSourceEventLogItemData,
+  makeSubscribedToFeedEventLogItemData,
   makeThemePreferenceChangedEventLogItemData,
-  makeUnsubscribedFromFeedSourceEventLogItemData,
+  makeUnsubscribedFromFeedEventLogItemData,
 } from '@shared/lib/eventLog.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
@@ -25,10 +25,10 @@ import type {Environment} from '@shared/types/environment.types';
 import type {EventId, EventLogItem, EventLogItemData} from '@shared/types/eventLog.types';
 import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
-import type {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import type {FeedType} from '@shared/types/feedSourceTypes.types';
+import type {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {ThemePreference} from '@shared/types/theme.types';
-import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 
 import type {EventLogItemFromStorage} from '@shared/schemas/eventLog.schema';
@@ -188,29 +188,29 @@ export class ClientEventLogService {
     return this.logEvent(eventLogItem);
   }
 
-  public async logSubscribedToFeedSourceEvent(args: {
-    readonly feedSourceType: FeedSourceType;
-    readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+  public async logSubscribedToFeedEvent(args: {
+    readonly feedType: FeedType;
+    readonly feedSubscriptionId: FeedSubscriptionId;
     readonly isNewSubscription: boolean;
   }): AsyncResult<EventLogItem, Error> {
-    const {feedSourceType, userFeedSubscriptionId, isNewSubscription} = args;
-    const eventLogItemData = makeSubscribedToFeedSourceEventLogItemData({
-      feedSourceType,
-      userFeedSubscriptionId,
+    const {feedType, feedSubscriptionId, isNewSubscription} = args;
+    const eventLogItemData = makeSubscribedToFeedEventLogItemData({
+      feedType,
+      feedSubscriptionId,
       isNewSubscription,
     });
     const eventLogItem = this.makeEventLogItem(eventLogItemData);
     return this.logEvent(eventLogItem);
   }
 
-  public async logUnsubscribedFromFeedSourceEvent(args: {
-    readonly feedSourceType: FeedSourceType;
-    readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+  public async logUnsubscribedFromFeedEvent(args: {
+    readonly feedType: FeedType;
+    readonly feedSubscriptionId: FeedSubscriptionId;
   }): AsyncResult<EventLogItem, Error> {
-    const {feedSourceType, userFeedSubscriptionId} = args;
-    const eventLogItemData = makeUnsubscribedFromFeedSourceEventLogItemData({
-      feedSourceType,
-      userFeedSubscriptionId,
+    const {feedType, feedSubscriptionId} = args;
+    const eventLogItemData = makeUnsubscribedFromFeedEventLogItemData({
+      feedType,
+      feedSubscriptionId,
     });
     const eventLogItem = this.makeEventLogItem(eventLogItemData);
     return this.logEvent(eventLogItem);

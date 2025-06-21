@@ -4,7 +4,7 @@ import {logger} from '@shared/services/logger.shared';
 
 import {arrayPartition} from '@shared/lib/arrayUtils.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
-import {makeRssFeedSource} from '@shared/lib/feedSources.shared';
+import {makeRssFeed} from '@shared/lib/feeds.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {assertNever, batchAsyncResults} from '@shared/lib/utils.shared';
 
@@ -17,8 +17,8 @@ import {RssFeedProviderType} from '@shared/types/rss.types';
 import type {Supplier} from '@shared/types/utils.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
+import type {ServerFeedSubscriptionsService} from '@sharedServer/services/feedSubscriptions.server';
 import {validateSuperfeedrWebhookSignature} from '@sharedServer/services/superfeedr.server';
-import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
 
 /**
  * Implementation of the Superfeedr webhook handler.
@@ -26,10 +26,10 @@ import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/us
 export async function handleSuperfeedrWebhookHelper(args: {
   readonly request: Request;
   readonly rssFeedProvider: RssFeedProvider;
-  readonly userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
+  readonly feedSubscriptionsService: ServerFeedSubscriptionsService;
   readonly feedItemsService: ServerFeedItemsService;
 }): AsyncResult<void, Error> {
-  const {request, userFeedSubscriptionsService, feedItemsService, rssFeedProvider} = args;
+  const {request, feedSubscriptionsService, feedItemsService, rssFeedProvider} = args;
 
   // TODO: Validate the request is from Superfeedr by checking some auth header.
 
@@ -71,32 +71,32 @@ export async function handleSuperfeedrWebhookHelper(args: {
     return makeErrorResult(prefixError(validateResult.error, message));
   }
 
-  // Fetch all users subscribed to this RSS feed URL.
+  // Fetch all subscriptions to this RSS feed URL.
   const feedUrl = body.status.feed;
-  const fetchSubsResult = await userFeedSubscriptionsService.fetchForRssFeedSourceByUrl(feedUrl);
+  const fetchSubsResult = await feedSubscriptionsService.fetchForRssFeedByUrl(feedUrl);
   if (!fetchSubsResult.success) {
     const message = 'Error fetching subscribed accounts for RSS feed source';
     return makeErrorResult(prefixError(fetchSubsResult.error, message));
   }
 
-  const userFeedSubscriptions = fetchSubsResult.value;
+  const feedSubscriptions = fetchSubsResult.value;
 
   // Make a list of supplier methods that create feed items.
   const createFeedItemResults: Array<Supplier<AsyncResult<FeedItem, Error>>> = [];
   body.items.forEach((item) => {
     logger.log(`[SUPERFEEDR] Processing item ${item.id}`, {item});
 
-    userFeedSubscriptions.forEach((userFeedSubscription) => {
+    feedSubscriptions.forEach((subscription) => {
       const newFeedItemResult = async (): AsyncResult<FeedItem, Error> => {
         return await feedItemsService.createFeedItemFromUrl({
-          feedSource: makeRssFeedSource({userFeedSubscription}),
+          origin: makeRssFeed({subscription}),
           url: item.permalinkUrl,
           title: item.title,
           description: item.summary,
           // TODO: Set better initial values for these fields.
           outgoingLinks: [],
           summary: null,
-          accountId: userFeedSubscription.accountId,
+          accountId: subscription.accountId,
         });
       };
       createFeedItemResults.push(newFeedItemResult);

@@ -3,9 +3,9 @@ import type {Actor} from '@shared/types/actors.types';
 import type {Environment} from '@shared/types/environment.types';
 import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
 import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
-import type {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import type {FeedType} from '@shared/types/feedSourceTypes.types';
+import type {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
 import type {ThemePreference} from '@shared/types/theme.types';
-import type {UserFeedSubscriptionId} from '@shared/types/userFeedSubscriptions.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 
 /**
@@ -19,8 +19,8 @@ export enum EventType {
   ExperimentEnabled = 'EXPERIMENT_ENABLED',
   ExperimentDisabled = 'EXPERIMENT_DISABLED',
   StringExperimentValueChanged = 'STRING_EXPERIMENT_VALUE_CHANGED',
-  SubscribedToFeedSource = 'SUBSCRIBED_TO_FEED_SOURCE',
-  UnsubscribedFromFeedSource = 'UNSUBSCRIBED_FROM_FEED_SOURCE',
+  SubscribedToFeed = 'SUBSCRIBED_TO_FEED',
+  UnsubscribedFromFeed = 'UNSUBSCRIBED_FROM_FEED',
   ThemePreferenceChanged = 'THEME_PREFERENCE_CHANGED',
 }
 
@@ -61,18 +61,18 @@ export interface StringExperimentValueChangedEventLogItemData extends BaseEventL
   readonly value: string;
 }
 
-export interface SubscribedToFeedSourceEventLogItemData extends BaseEventLogItemData {
-  readonly eventType: EventType.SubscribedToFeedSource;
-  readonly feedSourceType: FeedSourceType;
-  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+export interface SubscribedToFeedEventLogItemData extends BaseEventLogItemData {
+  readonly eventType: EventType.SubscribedToFeed;
+  readonly feedType: FeedType;
+  readonly feedSubscriptionId: FeedSubscriptionId;
   /** Whether this is a new subscription or resubscribing to an inactive one. */
   readonly isNewSubscription: boolean;
 }
 
-export interface UnsubscribedFromFeedSourceEventLogItemData extends BaseEventLogItemData {
-  readonly eventType: EventType.UnsubscribedFromFeedSource;
-  readonly feedSourceType: FeedSourceType;
-  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
+export interface UnsubscribedFromFeedEventLogItemData extends BaseEventLogItemData {
+  readonly eventType: EventType.UnsubscribedFromFeed;
+  readonly feedType: FeedType;
+  readonly feedSubscriptionId: FeedSubscriptionId;
 }
 
 export interface ThemePreferenceChangedEventLogItemData extends BaseEventLogItemData {
@@ -116,12 +116,12 @@ interface StringExperimentValueChangedEventLogItem extends BaseEventLogItem {
   readonly data: StringExperimentValueChangedEventLogItemData;
 }
 
-interface SubscribedToFeedSourceEventLogItem extends BaseEventLogItem {
-  readonly data: SubscribedToFeedSourceEventLogItemData;
+interface SubscribedToFeedEventLogItem extends BaseEventLogItem {
+  readonly data: SubscribedToFeedEventLogItemData;
 }
 
-interface UnsubscribedFromFeedSourceEventLogItem extends BaseEventLogItem {
-  readonly data: UnsubscribedFromFeedSourceEventLogItemData;
+interface UnsubscribedFromFeedEventLogItem extends BaseEventLogItem {
+  readonly data: UnsubscribedFromFeedEventLogItemData;
 }
 
 interface ThemePreferenceChangedEventLogItem extends BaseEventLogItem {
@@ -134,8 +134,8 @@ export type EventLogItemData =
   | ExperimentEnabledEventLogItemData
   | ExperimentDisabledEventLogItemData
   | StringExperimentValueChangedEventLogItemData
-  | SubscribedToFeedSourceEventLogItemData
-  | UnsubscribedFromFeedSourceEventLogItemData
+  | SubscribedToFeedEventLogItemData
+  | UnsubscribedFromFeedEventLogItemData
   | ThemePreferenceChangedEventLogItemData;
 
 export type EventLogItem =
@@ -144,6 +144,6 @@ export type EventLogItem =
   | ExperimentEnabledEventLogItem
   | ExperimentDisabledEventLogItem
   | StringExperimentValueChangedEventLogItem
-  | SubscribedToFeedSourceEventLogItem
-  | UnsubscribedFromFeedSourceEventLogItem
+  | SubscribedToFeedEventLogItem
+  | UnsubscribedFromFeedEventLogItem
   | ThemePreferenceChangedEventLogItem;

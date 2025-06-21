@@ -14,9 +14,9 @@ import {ServerAccountSettingsService} from '@sharedServer/services/accountSettin
 import {ServerEventLogService} from '@sharedServer/services/eventLog.server';
 import {ServerExperimentsService} from '@sharedServer/services/experiments.server';
 import {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
+import {ServerFeedSubscriptionsService} from '@sharedServer/services/feedSubscriptions.server';
 import {ServerFirecrawlService} from '@sharedServer/services/firecrawl.server';
 import {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
-import {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
 import {WipeoutService} from '@sharedServer/services/wipeout.server';
 
 import {getInternalAccountEmailAddress} from '@src/lib/environment.func';
@@ -27,7 +27,7 @@ const FIRECRAWL_API_KEY = defineString('FIRECRAWL_API_KEY');
 const ENVIRONMENT = Environment.FirebaseFunctions;
 
 interface InitializedServices {
-  readonly userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
+  readonly feedSubscriptionsService: ServerFeedSubscriptionsService;
   readonly accountsService: ServerAccountsService;
   readonly wipeoutService: WipeoutService;
   readonly rssFeedService: ServerRssFeedService;
@@ -36,8 +36,8 @@ interface InitializedServices {
 }
 
 export function initServices(): Result<InitializedServices, Error> {
-  // User feed subscriptions.
-  const userFeedSubscriptionsService = new ServerUserFeedSubscriptionsService({
+  // Feed subscriptions.
+  const feedSubscriptionsService = new ServerFeedSubscriptionsService({
     firebaseService,
   });
 
@@ -80,7 +80,7 @@ export function initServices(): Result<InitializedServices, Error> {
   // Wipeout service.
   const wipeoutService = new WipeoutService({
     accountsService,
-    userFeedSubscriptionsService,
+    feedSubscriptionsService,
     feedItemsService,
   });
 
@@ -91,10 +91,10 @@ export function initServices(): Result<InitializedServices, Error> {
   }
   const rssFeedProvider = rssFeedProviderResult.value;
 
-  const rssFeedService = new ServerRssFeedService({rssFeedProvider, userFeedSubscriptionsService});
+  const rssFeedService = new ServerRssFeedService({rssFeedProvider, feedSubscriptionsService});
 
   return makeSuccessResult({
-    userFeedSubscriptionsService,
+    feedSubscriptionsService,
     accountsService,
     wipeoutService,
     rssFeedService,

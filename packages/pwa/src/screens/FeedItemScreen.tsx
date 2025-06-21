@@ -9,8 +9,8 @@ import {PARSING_FAILURE_SENTINEL} from '@shared/lib/parser.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
+import {FeedItemContentType} from '@shared/types/feedItemContent.types';
 import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
-import {FeedItemContentType} from '@shared/types/feedItems.types';
 import {SystemTagId} from '@shared/types/tags.types';
 
 import {
