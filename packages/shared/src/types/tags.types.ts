@@ -1,16 +1,12 @@
+import type {UserTagId} from '@shared/types/ids.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 
 export enum TagType {
-  /** A tag whose lifecycle is managed by the user. */
+  /** A tag whose lifecycle is managed by the end user. */
   User = 'USER',
   /** A tag whose lifecycle is managed by the system. */
   System = 'SYSTEM',
 }
-
-/**
- * Strongly-typed type for a {@link UserTag}'s unique identifier. Prefer this over plain strings.
- */
-export type UserTagId = string & {readonly __brand: 'UserTagIdBrand'};
 
 /**
  * Unique IDs for {@link SystemTag}s, which are tags whose lifecycle is managed by the system.
@@ -40,7 +36,7 @@ interface BaseTag {
 }
 
 /**
- * A tag whose lifecycle is managed by the user.
+ * A tag whose lifecycle is managed by the end user.
  */
 export interface UserTag extends BaseTag, BaseStoreItem {
   readonly tagType: TagType.User;

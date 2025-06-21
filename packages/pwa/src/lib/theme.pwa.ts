@@ -6,7 +6,7 @@ import {ThemePreference} from '@shared/types/theme.types';
 
 import type {BrowserPrefersColorScheme} from '@src/types/theme.pwa.types';
 
-/** Key used to store the user's theme preference in local storage. */
+/** Key used to store the account's theme preference in local storage. */
 export const THEME_PREFERENCE_STORAGE_KEY = 'theme-preference';
 
 /**

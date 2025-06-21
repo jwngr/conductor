@@ -1,7 +1,7 @@
 import {logger} from '@shared/services/logger.shared';
 
 import {asyncTry, prefixError, upgradeUnknownError} from '@shared/lib/errorUtils.shared';
-import {objectKeys} from '@shared/lib/objectUtils.shared';
+import {objectSize} from '@shared/lib/objectUtils.shared';
 
 import type {AsyncResponseResult, RequestBody, RequestOptions} from '@shared/types/requests.types';
 import {
@@ -23,8 +23,7 @@ async function request<T>(
 ): AsyncResponseResult<T, Error> {
   const {headers = {}, body, params = {}} = options;
 
-  const queryString =
-    objectKeys(params).length > 0 ? `?${new URLSearchParams(params).toString()}` : ``;
+  const queryString = objectSize(params) > 0 ? `?${new URLSearchParams(params).toString()}` : ``;
 
   const rawResponseResult = await asyncTry(async () =>
     // Allow `fetch` here. We cannot use `request*` since we are inside its implementation.

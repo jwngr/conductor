@@ -15,19 +15,21 @@ import {AsyncStatus} from '@shared/types/asyncState.types';
 import {DayOfWeek} from '@shared/types/datetime.types';
 import {DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
-import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import {FeedType} from '@shared/types/feeds.types';
+import {
+  FeedSubscriptionActivityStatus,
+  type FeedSubscription,
+  type IntervalFeedSubscription,
+} from '@shared/types/feedSubscriptions.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/results.types';
-import type {
-  IntervalUserFeedSubscription,
-  UserFeedSubscription,
-} from '@shared/types/userFeedSubscriptions.types';
+
+import {useFeedSubscriptionsStore} from '@sharedClient/stores/FeedSubscriptionsStore';
 
 import {toast} from '@sharedClient/lib/toasts.client';
 
 import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {useEventLogService} from '@sharedClient/hooks/eventLog.hooks';
-import {useUserFeedSubscriptionsService} from '@sharedClient/hooks/userFeedSubscriptions.hooks';
 
 import {Button} from '@src/components/atoms/Button';
 import {ButtonIcon} from '@src/components/atoms/ButtonIcon';
@@ -39,14 +41,19 @@ import {P} from '@src/components/atoms/Text';
 import {firebaseService} from '@src/lib/firebase.pwa';
 
 const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
-  readonly userFeedSubscription: UserFeedSubscription;
-}> = ({userFeedSubscription}) => {
-  const feedSubscriptionsService = useUserFeedSubscriptionsService({firebaseService});
+  readonly feedSubscription: FeedSubscription;
+}> = ({feedSubscription}) => {
+  const {feedSubscriptionsService} = useFeedSubscriptionsStore();
   const {asyncState, setPending, setError, setSuccess} = useAsyncState<undefined>();
 
   const handleDeliveryScheduleChange = async (
     event: React.ChangeEvent<HTMLSelectElement>
   ): Promise<void> => {
+    if (!feedSubscriptionsService) {
+      setError(new Error('Feed subscriptions service not found'));
+      return;
+    }
+
     setPending();
 
     const deliveryScheduleTypeResult = parseDeliveryScheduleType(event.target.value);
@@ -64,7 +71,7 @@ const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
         makeDeliveryScheduleResult = makeSuccessResult(NEVER_DELIVERY_SCHEDULE);
         break;
       case DeliveryScheduleType.DaysAndTimesOfWeek:
-        // TODO: Allow user to specify days and times.
+        // TODO: Allow specifying days and times.
         makeDeliveryScheduleResult = makeDaysAndTimesOfWeekDeliverySchedule({
           days: [DayOfWeek.Monday, DayOfWeek.Tuesday],
           times: [
@@ -75,7 +82,7 @@ const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
         });
         break;
       case DeliveryScheduleType.EveryNHours:
-        // TODO: Allow user to specify hours.
+        // TODO: Allow specifying hours.
         makeDeliveryScheduleResult = makeEveryNHoursDeliverySchedule({
           hours: 12,
         });
@@ -90,7 +97,7 @@ const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
     }
 
     const updateDeliveryScheduleResult = await feedSubscriptionsService.updateSubscription(
-      userFeedSubscription.userFeedSubscriptionId,
+      feedSubscription.feedSubscriptionId,
       {deliverySchedule: makeDeliveryScheduleResult.value}
     );
 
@@ -121,7 +128,7 @@ const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
       <Label htmlFor="deliverySchedule">Delivery schedule</Label>
       <select
         id="deliverySchedule"
-        value={userFeedSubscription.deliverySchedule.scheduleType}
+        value={feedSubscription.deliverySchedule.scheduleType}
         onChange={handleDeliveryScheduleChange}
         className="border-neutral-3 rounded border p-1 text-sm"
       >
@@ -136,27 +143,41 @@ const FeedSubscriptionDeliveryScheduleSetting: React.FC<{
 };
 
 const FeedSubscriptionUnsubscribeButton: React.FC<{
-  readonly userFeedSubscription: UserFeedSubscription;
-}> = ({userFeedSubscription}) => {
+  readonly feedSubscription: FeedSubscription;
+}> = ({feedSubscription}) => {
   const eventLogService = useEventLogService({firebaseService});
-  const userFeedSubscriptionsService = useUserFeedSubscriptionsService({firebaseService});
+  const {feedSubscriptionsService} = useFeedSubscriptionsStore();
 
-  const {userFeedSubscriptionId} = userFeedSubscription;
+  const {feedSubscriptionId} = feedSubscription;
   const {asyncState, setPending, setError, setSuccess} = useAsyncState<undefined>();
 
   const handleToggleSubscription = useCallback(async (): Promise<void> => {
+    if (!feedSubscriptionsService) {
+      setError(new Error('Feed subscriptions service not found'));
+      return;
+    }
+
     setPending();
 
     let result: Result<void, Error>;
-    if (userFeedSubscription.isActive) {
-      result = await userFeedSubscriptionsService.updateSubscription(userFeedSubscriptionId, {
-        isActive: false,
-        unsubscribedTime: new Date(),
-      });
-    } else {
-      result = await userFeedSubscriptionsService.updateSubscription(userFeedSubscriptionId, {
-        isActive: true,
-      });
+    switch (feedSubscription.lifecycleState.status) {
+      case FeedSubscriptionActivityStatus.Active:
+        result = await feedSubscriptionsService.updateSubscription(feedSubscriptionId, {
+          lifecycleState: {
+            status: FeedSubscriptionActivityStatus.Inactive,
+            unsubscribedTime: new Date(),
+          },
+        });
+        break;
+      case FeedSubscriptionActivityStatus.Inactive:
+        result = await feedSubscriptionsService.updateSubscription(feedSubscriptionId, {
+          lifecycleState: {
+            status: FeedSubscriptionActivityStatus.Active,
+          },
+        });
+        break;
+      default:
+        assertNever(feedSubscription.lifecycleState);
     }
 
     if (!result.success) {
@@ -164,36 +185,41 @@ const FeedSubscriptionUnsubscribeButton: React.FC<{
       return;
     }
 
-    if (userFeedSubscription.isActive) {
-      // Toast.
-      toast('Unsubscribed from feed');
+    switch (feedSubscription.lifecycleState.status) {
+      case FeedSubscriptionActivityStatus.Active:
+        // Toast.
+        toast('Unsubscribed from feed');
 
-      // Log.
-      void eventLogService.logUnsubscribedFromFeedSourceEvent({
-        feedSourceType: userFeedSubscription.feedSourceType,
-        userFeedSubscriptionId: userFeedSubscriptionId,
-      });
-    } else {
-      // Toast.
-      toast('Re-subscribed to feed');
+        // Log.
+        void eventLogService.logUnsubscribedFromFeedEvent({
+          feedType: feedSubscription.feedType,
+          feedSubscriptionId,
+        });
+        break;
+      case FeedSubscriptionActivityStatus.Inactive:
+        // Toast.
+        toast('Re-subscribed to feed');
 
-      // Log.
-      void eventLogService.logSubscribedToFeedSourceEvent({
-        feedSourceType: userFeedSubscription.feedSourceType,
-        userFeedSubscriptionId: userFeedSubscriptionId,
-        isNewSubscription: false,
-      });
+        // Log.
+        void eventLogService.logSubscribedToFeedEvent({
+          feedType: feedSubscription.feedType,
+          feedSubscriptionId,
+          isNewSubscription: false,
+        });
+        break;
+      default:
+        assertNever(feedSubscription.lifecycleState);
     }
 
     setSuccess(undefined);
   }, [
+    feedSubscriptionsService,
     setPending,
-    userFeedSubscription.isActive,
-    userFeedSubscription.feedSourceType,
+    feedSubscription.lifecycleState,
+    feedSubscription.feedType,
     setSuccess,
-    userFeedSubscriptionsService,
-    userFeedSubscriptionId,
     setError,
+    feedSubscriptionId,
     eventLogService,
   ]);
 
@@ -211,14 +237,34 @@ const FeedSubscriptionUnsubscribeButton: React.FC<{
       assertNever(asyncState);
   }
 
+  const titleText = (() => {
+    switch (feedSubscription.lifecycleState.status) {
+      case FeedSubscriptionActivityStatus.Active:
+        return 'Subscription active';
+      case FeedSubscriptionActivityStatus.Inactive:
+        return 'Subscription inactive';
+      default:
+        assertNever(feedSubscription.lifecycleState);
+    }
+  })();
+
+  const buttonText = (() => {
+    switch (feedSubscription.lifecycleState.status) {
+      case FeedSubscriptionActivityStatus.Active:
+        return 'Unsubscribe';
+      case FeedSubscriptionActivityStatus.Inactive:
+        return 'Subscribe';
+      default:
+        assertNever(feedSubscription.lifecycleState);
+    }
+  })();
+
   return (
     <FlexRow gap={2} justify="between">
-      <Label htmlFor="deliverySchedule">
-        Subscription {userFeedSubscription.isActive ? 'active' : 'inactive'}
-      </Label>
+      <Label htmlFor="deliverySchedule">{titleText}</Label>
 
       <Button variant="outline" onClick={handleToggleSubscription}>
-        {userFeedSubscription.isActive ? 'Unsubscribe' : 'Subscribe'}
+        {buttonText}
       </Button>
 
       {footer}
@@ -227,22 +273,22 @@ const FeedSubscriptionUnsubscribeButton: React.FC<{
 };
 
 const FeedSubscriptionIntervalSetting: React.FC<{
-  readonly userFeedSubscription: IntervalUserFeedSubscription;
-}> = ({userFeedSubscription}) => {
+  readonly feedSubscription: IntervalFeedSubscription;
+}> = ({feedSubscription}) => {
   // TODO: Make this configurable.
-  return <div>Interval setting: {userFeedSubscription.intervalSeconds} seconds</div>;
+  return <div>Interval setting: {feedSubscription.intervalSeconds} seconds</div>;
 };
 
 const FeedSubscriptionSettingsPopoverContent: React.FC<{
-  readonly userFeedSubscription: UserFeedSubscription;
-}> = ({userFeedSubscription}) => {
+  readonly feedSubscription: FeedSubscription;
+}> = ({feedSubscription}) => {
   return (
     <PopoverContent className="w-auto" align="end" side="bottom">
       <FlexColumn gap={4} padding={4}>
-        <FeedSubscriptionDeliveryScheduleSetting userFeedSubscription={userFeedSubscription} />
-        <FeedSubscriptionUnsubscribeButton userFeedSubscription={userFeedSubscription} />
-        {userFeedSubscription.feedSourceType === FeedSourceType.Interval ? (
-          <FeedSubscriptionIntervalSetting userFeedSubscription={userFeedSubscription} />
+        <FeedSubscriptionDeliveryScheduleSetting feedSubscription={feedSubscription} />
+        <FeedSubscriptionUnsubscribeButton feedSubscription={feedSubscription} />
+        {feedSubscription.feedType === FeedType.Interval ? (
+          <FeedSubscriptionIntervalSetting feedSubscription={feedSubscription} />
         ) : null}
       </FlexColumn>
     </PopoverContent>
@@ -250,8 +296,8 @@ const FeedSubscriptionSettingsPopoverContent: React.FC<{
 };
 
 export const FeedSubscriptionSettingsButton: React.FC<{
-  readonly userFeedSubscription: UserFeedSubscription;
-}> = ({userFeedSubscription}) => {
+  readonly feedSubscription: FeedSubscription;
+}> = ({feedSubscription}) => {
   return (
     <Popover modal>
       <PopoverTrigger asChild>
@@ -263,7 +309,7 @@ export const FeedSubscriptionSettingsButton: React.FC<{
         />
       </PopoverTrigger>
 
-      <FeedSubscriptionSettingsPopoverContent userFeedSubscription={userFeedSubscription} />
+      <FeedSubscriptionSettingsPopoverContent feedSubscription={feedSubscription} />
     </Popover>
   );
 };

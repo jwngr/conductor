@@ -3,23 +3,24 @@ import {logger} from '@shared/services/logger.shared';
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
+import {FeedSubscriptionActivityStatus} from '@shared/types/feedSubscriptions.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {RssFeedProvider} from '@shared/types/rss.types';
 
-import type {ServerUserFeedSubscriptionsService} from '@sharedServer/services/userFeedSubscriptions.server';
+import type {ServerFeedSubscriptionsService} from '@sharedServer/services/feedSubscriptions.server';
 
 import {parseRssFeed} from '@sharedServer/lib/rss.server';
 
 export class ServerRssFeedService {
   private readonly rssFeedProvider: RssFeedProvider;
-  private readonly userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
+  private readonly feedSubscriptionsService: ServerFeedSubscriptionsService;
 
   constructor(args: {
     readonly rssFeedProvider: RssFeedProvider;
-    readonly userFeedSubscriptionsService: ServerUserFeedSubscriptionsService;
+    readonly feedSubscriptionsService: ServerFeedSubscriptionsService;
   }) {
     this.rssFeedProvider = args.rssFeedProvider;
-    this.userFeedSubscriptionsService = args.userFeedSubscriptionsService;
+    this.feedSubscriptionsService = args.feedSubscriptionsService;
   }
 
   async subscribeToUrl(url: string): AsyncResult<void, Error> {
@@ -39,7 +40,7 @@ export class ServerRssFeedService {
    */
   async unsubscribeFromUrl(url: string): AsyncResult<void, Error> {
     // Fetch all active subscriptions for the feed source.
-    const fetchSubsResult = await this.userFeedSubscriptionsService.fetchForRssFeedSourceByUrl(url);
+    const fetchSubsResult = await this.feedSubscriptionsService.fetchForRssFeedByUrl(url);
     if (!fetchSubsResult.success) {
       const message =
         '[UNSUBSCRIBE] Error fetching other subscriptions while unsubscribing from feed';
@@ -47,7 +48,9 @@ export class ServerRssFeedService {
     }
 
     // If other active subscriptions exist, don't actually unsubscribe from the feed provider.
-    const activeSubscriptions = fetchSubsResult.value.filter((sub) => sub.isActive);
+    const activeSubscriptions = fetchSubsResult.value.filter(
+      (sub) => sub.lifecycleState.status === FeedSubscriptionActivityStatus.Active
+    );
     if (activeSubscriptions.length > 0) return makeSuccessResult(undefined);
 
     logger.log('[UNSUBSCRIBE] No active subscriptions found, unsubscribing from feed', {

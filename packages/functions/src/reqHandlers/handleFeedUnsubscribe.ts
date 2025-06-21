@@ -1,9 +1,10 @@
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
-import {parseUserFeedSubscription} from '@shared/parsers/userFeedSubscriptions.parser';
+import {parseFeedSubscription} from '@shared/parsers/feedSubscriptions.parser';
 
-import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import {FeedType} from '@shared/types/feeds.types';
+import {FeedSubscriptionActivityStatus} from '@shared/types/feedSubscriptions.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {ServerRssFeedService} from '@sharedServer/services/rssFeed.server';
@@ -22,26 +23,28 @@ export async function handleFeedUnsubscribe(args: {
     return makeErrorResult(new Error('Missing after data'));
   }
 
-  const beforeResult = parseUserFeedSubscription(beforeData);
-  const afterResult = parseUserFeedSubscription(afterData);
+  const beforeResult = parseFeedSubscription(beforeData);
+  const afterResult = parseFeedSubscription(afterData);
 
   if (!beforeResult.success || !afterResult.success) {
-    return makeErrorResult(new Error('Failed to parse user feed subscription data'));
+    return makeErrorResult(new Error('Failed to parse feed subscription data'));
   }
 
   const before = beforeResult.value;
   const after = afterResult.value;
 
   // Only do anything if the subscription was just marked as inactive.
-  const becameInactive = before.isActive && !after.isActive;
+  const becameInactive =
+    before.lifecycleState.status === FeedSubscriptionActivityStatus.Active &&
+    after.lifecycleState.status === FeedSubscriptionActivityStatus.Inactive;
   if (!becameInactive) return makeSuccessResult(undefined);
 
   // Run unsubscribing behavior for the feed source.
-  switch (after.feedSourceType) {
-    case FeedSourceType.RSS:
+  switch (after.feedType) {
+    case FeedType.RSS:
       return await rssFeedService.unsubscribeFromUrl(after.url);
-    case FeedSourceType.YouTubeChannel:
-    case FeedSourceType.Interval:
+    case FeedType.YouTubeChannel:
+    case FeedType.Interval:
       // Feed sources with no unsubscribing required.
       return makeSuccessResult(undefined);
     default:

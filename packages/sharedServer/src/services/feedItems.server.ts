@@ -3,32 +3,31 @@ import type {DocumentData} from 'firebase-admin/firestore';
 
 import {FEED_ITEMS_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {asyncTry, prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {makeFeedItem, makeFeedItemContentFromUrl} from '@shared/lib/feedItems.shared';
-import {makeIntervalFeedSource} from '@shared/lib/feedSources.shared';
+import {makeFeedItemContentFromUrl} from '@shared/lib/feedItemContent.shared';
+import {makeFeedItem} from '@shared/lib/feedItems.shared';
+import {makeIntervalFeed} from '@shared/lib/feeds.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {parseFeedItem, parseFeedItemId} from '@shared/parsers/feedItems.parser';
 
-import type {AccountId} from '@shared/types/accounts.types';
-import {FeedItemContentType} from '@shared/types/feedItems.types';
 import type {
   ArticleFeedItemContent,
-  FeedItem,
   FeedItemContent,
-  FeedItemId,
-  FeedItemImportState,
-  IntervalFeedItem,
   IntervalFeedItemContent,
   TweetFeedItemContent,
   VideoFeedItemContent,
   WebsiteFeedItemContent,
   XkcdFeedItemContent,
   YouTubeFeedItemContent,
-} from '@shared/types/feedItems.types';
-import type {FeedSource} from '@shared/types/feedSources.types';
+} from '@shared/types/feedItemContent.types';
+import {FeedItemContentType} from '@shared/types/feedItemContent.types';
+import type {FeedItemImportState} from '@shared/types/feedItemImportStates';
+import type {FeedItem, IntervalFeedItem} from '@shared/types/feedItems.types';
+import type {Feed} from '@shared/types/feeds.types';
+import type {IntervalFeedSubscription} from '@shared/types/feedSubscriptions.types';
+import type {AccountId, FeedItemId} from '@shared/types/ids.types';
 import type {AsyncResult, Result} from '@shared/types/results.types';
-import type {IntervalUserFeedSubscription} from '@shared/types/userFeedSubscriptions.types';
 
 import {toStorageFeedItem} from '@shared/storage/feedItems.storage';
 
@@ -90,7 +89,7 @@ export class ServerFeedItemsService {
   }
 
   public async createFeedItemFromUrl(args: {
-    readonly feedSource: FeedSource;
+    readonly origin: Feed;
     readonly accountId: AccountId;
     readonly url: string;
     readonly title: string;
@@ -98,10 +97,10 @@ export class ServerFeedItemsService {
     readonly outgoingLinks: string[];
     readonly summary: string | null;
   }): AsyncResult<FeedItem, Error> {
-    const {feedSource, accountId, url, title, description, outgoingLinks, summary} = args;
+    const {origin, accountId, url, title, description, outgoingLinks, summary} = args;
 
     const content = makeFeedItemContentFromUrl({url, title, description, outgoingLinks, summary});
-    const feedItem = makeFeedItem({feedSource, content, accountId});
+    const feedItem = makeFeedItem({origin, content, accountId});
 
     const saveResult = await this.collectionService.setDoc(feedItem.feedItemId, feedItem);
     if (!saveResult.success) return saveResult;
@@ -113,17 +112,17 @@ export class ServerFeedItemsService {
     /** The account that the feed item belongs to. */
     readonly accountId: AccountId;
     /** The subscription that is creating the feed item. */
-    readonly userFeedSubscription: IntervalUserFeedSubscription;
+    readonly subscription: IntervalFeedSubscription;
   }): AsyncResult<IntervalFeedItem, Error> {
-    const {userFeedSubscription, accountId} = args;
+    const {subscription, accountId} = args;
 
     const feedItem = makeFeedItem({
-      feedSource: makeIntervalFeedSource({userFeedSubscription}),
+      origin: makeIntervalFeed({subscription}),
       accountId,
       content: {
         feedItemContentType: FeedItemContentType.Interval,
         title: `Interval feed item for ${new Date().toISOString()}`,
-        intervalSeconds: userFeedSubscription.intervalSeconds,
+        intervalSeconds: subscription.intervalSeconds,
       },
     });
 

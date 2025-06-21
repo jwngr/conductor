@@ -1,36 +1,22 @@
-import {logger} from '@shared/services/logger.shared';
-
-import {prefixErrorResult, syncTry} from '@shared/lib/errorUtils.shared';
 import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {parseUrl} from '@shared/lib/urls.shared';
 import {assertNever, makeUuid} from '@shared/lib/utils.shared';
-import {isXkcdComicUrl} from '@shared/lib/xkcd.shared';
-import {isYouTubeVideoUrl} from '@shared/lib/youtube.shared';
 
-import type {AccountId} from '@shared/types/accounts.types';
-import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
-import {
-  FeedItemActionType,
-  FeedItemContentType,
-  FeedItemImportStatus,
-  TriageStatus,
-} from '@shared/types/feedItems.types';
-import type {
-  FeedItem,
-  FeedItemAction,
-  FeedItemContent,
-  FeedItemId,
-  NewFeedItemImportState,
-} from '@shared/types/feedItems.types';
-import type {FeedSource} from '@shared/types/feedSources.types';
+import type {FeedItemAction} from '@shared/types/feedItemActions.types';
+import {FeedItemActionType} from '@shared/types/feedItemActions.types';
+import {FeedItemContentType} from '@shared/types/feedItemContent.types';
+import type {FeedItemContent} from '@shared/types/feedItemContent.types';
+import {FeedItemImportStatus} from '@shared/types/feedItemImportStates';
+import type {NewFeedItemImportState} from '@shared/types/feedItemImportStates';
+import type {FeedItem} from '@shared/types/feedItems.types';
+import {TriageStatus} from '@shared/types/feedItems.types';
+import type {Feed} from '@shared/types/feeds.types';
+import {FeedType} from '@shared/types/feeds.types';
 import {IconName} from '@shared/types/icons.types';
+import type {AccountId, FeedItemId, FeedSubscriptionId} from '@shared/types/ids.types';
 import type {Result} from '@shared/types/results.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';
-import type {
-  UserFeedSubscription,
-  UserFeedSubscriptionId,
-} from '@shared/types/userFeedSubscriptions.types';
 
 export const DEFAULT_FEED_ITEM_CONTENT_TYPE = FeedItemContentType.Article;
 
@@ -155,27 +141,18 @@ export class SharedFeedItemHelpers {
   }
 }
 
-export function findDeliveryScheduleForFeedSubscription(args: {
-  readonly userFeedSubscriptionId: UserFeedSubscriptionId;
-  readonly userFeedSubscriptions: Record<UserFeedSubscriptionId, UserFeedSubscription>;
-}): DeliverySchedule | null {
-  const {userFeedSubscriptionId, userFeedSubscriptions} = args;
-  const matchingUserFeedSubscription = userFeedSubscriptions[userFeedSubscriptionId];
-  return matchingUserFeedSubscription?.deliverySchedule ?? null;
-}
-
 export function makeFeedItem(args: {
-  feedSource: FeedSource;
+  origin: Feed;
   accountId: AccountId;
   content: FeedItemContent;
 }): FeedItem {
-  const {feedSource, accountId, content} = args;
+  const {origin, accountId, content} = args;
 
   return {
     feedItemContentType: content.feedItemContentType,
     feedItemId: makeFeedItemId(),
     content,
-    feedSource,
+    origin,
     accountId,
     importState: makeNewFeedItemImportState(),
     triageStatus: TriageStatus.Untriaged,
@@ -187,75 +164,6 @@ export function makeFeedItem(args: {
   } as FeedItem;
 }
 
-/**
- * Returns the best guess {@link FeedItemContentType} for a given URL based on a set of rules and
- * heuristics.
- */
-function getFeedItemContentTypeFromUrl(
-  url: string
-): Exclude<FeedItemContentType, FeedItemContentType.Interval> {
-  const parsedUrlResult = syncTry(() => new URL(url));
-  if (!parsedUrlResult.success) {
-    // Parsing the URL may throw. If it does, log the error and use a default value.
-    const betterError = prefixErrorResult(parsedUrlResult, 'Error parsing feed item type from URL');
-    logger.error(betterError.error, {url});
-    return DEFAULT_FEED_ITEM_CONTENT_TYPE;
-  }
-
-  const parsedUrl = parsedUrlResult.value;
-
-  // Check for exact matches against allowed hostnames.
-  const hostname = parsedUrl.hostname.toLowerCase();
-  const twitterHosts = ['twitter.com', 'www.twitter.com', 'x.com', 'www.x.com'];
-  if (isYouTubeVideoUrl(parsedUrl.href)) {
-    return FeedItemContentType.YouTube;
-  } else if (isXkcdComicUrl(parsedUrl.href)) {
-    return FeedItemContentType.Xkcd;
-  } else if (twitterHosts.includes(hostname)) {
-    return FeedItemContentType.Tweet;
-  }
-
-  // Fallback.
-  return DEFAULT_FEED_ITEM_CONTENT_TYPE;
-}
-
-/**
- * Creates a new local {@link FeedItemContent} object given a URL and other metadata.
- */
-export function makeFeedItemContentFromUrl(args: {
-  readonly url: string;
-  readonly title: string;
-  readonly description: string | null;
-  readonly outgoingLinks: string[];
-  readonly summary: string | null;
-}): Exclude<FeedItemContent, FeedItemContentType.Interval> {
-  const {url, title, description, outgoingLinks, summary} = args;
-
-  const feedItemContentType = getFeedItemContentTypeFromUrl(url);
-
-  switch (feedItemContentType) {
-    case FeedItemContentType.Article:
-    case FeedItemContentType.Video:
-    case FeedItemContentType.Website:
-    case FeedItemContentType.Tweet:
-    case FeedItemContentType.YouTube:
-      return {feedItemContentType, url, title, description, outgoingLinks, summary};
-    case FeedItemContentType.Xkcd:
-      return {
-        feedItemContentType,
-        url,
-        title,
-        summary,
-        // Remaining fields will be filled in by import.
-        altText: '',
-        imageUrlSmall: '',
-        imageUrlLarge: '',
-      };
-    default:
-      assertNever(feedItemContentType);
-  }
-}
-
 export function makeNewFeedItemImportState(): NewFeedItemImportState {
   return {
     status: FeedItemImportStatus.New,
@@ -265,23 +173,17 @@ export function makeNewFeedItemImportState(): NewFeedItemImportState {
   };
 }
 
-export function getFeedItemContentTypeText(feedItemContentType: FeedItemContentType): string {
-  switch (feedItemContentType) {
-    case FeedItemContentType.Article:
-      return 'Article';
-    case FeedItemContentType.Video:
-      return 'Video';
-    case FeedItemContentType.Website:
-      return 'Website';
-    case FeedItemContentType.Tweet:
-      return 'Tweet';
-    case FeedItemContentType.YouTube:
-      return 'YouTube';
-    case FeedItemContentType.Xkcd:
-      return 'XKCD';
-    case FeedItemContentType.Interval:
-      return 'Interval';
+export function getFeedSubscriptionIdForItem(feedItem: FeedItem): FeedSubscriptionId | null {
+  switch (feedItem.origin.feedType) {
+    case FeedType.RSS:
+    case FeedType.YouTubeChannel:
+    case FeedType.Interval:
+      return feedItem.origin.feedSubscriptionId;
+    case FeedType.PWA:
+    case FeedType.Extension:
+    case FeedType.PocketExport:
+      return null;
     default:
-      assertNever(feedItemContentType);
+      assertNever(feedItem.origin);
   }
 }

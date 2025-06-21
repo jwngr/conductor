@@ -1,5 +1,5 @@
-import type {AccountId} from '@shared/types/accounts.types';
 import type {Environment} from '@shared/types/environment.types';
+import type {AccountId} from '@shared/types/ids.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 
 export enum ExperimentId {
@@ -32,7 +32,7 @@ interface BaseExperimentDefinition {
   readonly title: string;
   /** User-visible description of the experiment. */
   readonly description: string;
-  /** Which set of users can see the experiment. */
+  /** Which accounts can see the experiment. */
   readonly visibility: ExperimentVisibility;
   /** Whether or not the experiment is enabled by default. */
   readonly defaultIsEnabled: boolean;

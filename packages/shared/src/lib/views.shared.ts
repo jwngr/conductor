@@ -164,7 +164,7 @@ export function getViewGroupByFieldText(viewGroupByField: ViewGroupByField): str
   switch (viewGroupByField) {
     case ViewGroupByField.FeedItemContentType:
       return 'Type';
-    case ViewGroupByField.FeedSourceType:
+    case ViewGroupByField.FeedType:
       return 'Source';
     case ViewGroupByField.ImportState:
       return 'Import state';

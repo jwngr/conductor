@@ -8,12 +8,11 @@ import {prefixError, prefixResultIfError} from '@shared/lib/errorUtils.shared';
 import {makeEventLogItem, makeFeedItemImportedEventLogItemData} from '@shared/lib/eventLog.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
-import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
+import {parseEventLogItem, parseEventLogItemId} from '@shared/parsers/eventLog.parser';
 
-import type {AccountId} from '@shared/types/accounts.types';
 import type {ServerEnvironment} from '@shared/types/environment.types';
-import type {EventId, EventLogItem, EventLogItemData} from '@shared/types/eventLog.types';
-import type {FeedItemId} from '@shared/types/feedItems.types';
+import type {EventLogItem, EventLogItemData} from '@shared/types/eventLog.types';
+import type {AccountId, EventLogItemId, FeedItemId} from '@shared/types/ids.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {EventLogItemFromStorage} from '@shared/schemas/eventLog.schema';
@@ -24,7 +23,7 @@ import type {ServerFirestoreCollectionService} from '@sharedServer/services/fire
 import {makeServerFirestoreCollectionService} from '@sharedServer/services/firestore.server';
 
 type ServerEventLogCollectionService = ServerFirestoreCollectionService<
-  EventId,
+  EventLogItemId,
   EventLogItem,
   EventLogItemFromStorage
 >;
@@ -43,18 +42,18 @@ export class ServerEventLogService {
       collectionPath: EVENT_LOG_DB_COLLECTION,
       toStorage: toStorageEventLogItem,
       fromStorage: parseEventLogItem,
-      parseId: parseEventId,
+      parseId: parseEventLogItemId,
     });
   }
 
-  public async fetchById(eventId: EventId): AsyncResult<EventLogItem | null, Error> {
-    return this.collectionService.fetchById(eventId);
+  public async fetchById(eventLogItemId: EventLogItemId): AsyncResult<EventLogItem | null, Error> {
+    return this.collectionService.fetchById(eventLogItemId);
   }
 
   private async logEvent(eventLogItem: EventLogItem): AsyncResult<EventLogItem, Error> {
-    const {eventId} = eventLogItem;
+    const {eventLogItemId} = eventLogItem;
 
-    const createResult = await this.collectionService.setDoc(eventId, eventLogItem);
+    const createResult = await this.collectionService.setDoc(eventLogItemId, eventLogItem);
 
     if (!createResult.success) {
       logger.error(prefixError(createResult.error, 'Failed to log event'), {eventLogItem});
@@ -78,15 +77,15 @@ export class ServerEventLogService {
   }
 
   public async updateEventLogItem(
-    eventId: EventId,
+    eventLogItemId: EventLogItemId,
     item: Partial<WithFieldValue<Pick<EventLogItem, 'data'>>>
   ): AsyncResult<void, Error> {
-    const updateResult = await this.collectionService.updateDoc(eventId, item);
+    const updateResult = await this.collectionService.updateDoc(eventLogItemId, item);
     return prefixResultIfError(updateResult, 'Error updating event log item');
   }
 
-  public async deleteEventLogItem(eventId: EventId): AsyncResult<void, Error> {
-    const deleteResult = await this.collectionService.deleteDoc(eventId);
+  public async deleteEventLogItem(eventLogItemId: EventLogItemId): AsyncResult<void, Error> {
+    const deleteResult = await this.collectionService.deleteDoc(eventLogItemId);
     return prefixResultIfError(deleteResult, 'Error deleting event log item');
   }
 

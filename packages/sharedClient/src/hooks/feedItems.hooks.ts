@@ -2,7 +2,7 @@ import {useEffect, useMemo} from 'react';
 
 import {logger} from '@shared/services/logger.shared';
 
-import {makeSuccessAsyncState} from '@shared/lib/asyncState.shared';
+import {makeSuccessAsyncState, PENDING_ASYNC_STATE} from '@shared/lib/asyncState.shared';
 import {
   FEED_ITEM_FILE_HTML,
   FEED_ITEM_FILE_HTML_MARKDOWN,
@@ -11,21 +11,19 @@ import {
   FEED_ITEM_FILE_XKCD_EXPLAIN,
 } from '@shared/lib/constants.shared';
 import {isDeliveredAccordingToSchedule} from '@shared/lib/deliverySchedules.shared';
-import {
-  findDeliveryScheduleForFeedSubscription,
-  SharedFeedItemHelpers,
-} from '@shared/lib/feedItems.shared';
+import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {AsyncState} from '@shared/types/asyncState.types';
-import type {FeedItem, FeedItemId, XkcdFeedItem} from '@shared/types/feedItems.types';
-import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
-import type {
-  UserFeedSubscription,
-  UserFeedSubscriptionId,
-} from '@shared/types/userFeedSubscriptions.types';
+import type {FeedItem, XkcdFeedItem} from '@shared/types/feedItems.types';
+import {FeedType} from '@shared/types/feeds.types';
+import type {FeedSubscription} from '@shared/types/feedSubscriptions.types';
+import type {FeedItemId, FeedSubscriptionId} from '@shared/types/ids.types';
+import type {Func} from '@shared/types/utils.types';
 import type {ViewType} from '@shared/types/views.types';
+
+import {useFeedSubscriptionsStore} from '@sharedClient/stores/FeedSubscriptionsStore';
 
 import {ClientFeedItemsService} from '@sharedClient/services/feedItems.client';
 import type {ClientFirebaseService} from '@sharedClient/services/firebase.client';
@@ -34,7 +32,6 @@ import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
 import {useLoggedInAccount} from '@sharedClient/hooks/auth.hooks';
 import {useEventLogService} from '@sharedClient/hooks/eventLog.hooks';
 import {useIsMounted} from '@sharedClient/hooks/lifecycle.hooks';
-import {useUserFeedSubscriptions} from '@sharedClient/hooks/userFeedSubscriptions.hooks';
 
 export function useFeedItemsService(args: {
   readonly firebaseService: ClientFirebaseService;
@@ -82,33 +79,30 @@ export function useFeedItem(args: {
  */
 function filterFeedItemsByDeliverySchedules(args: {
   readonly feedItems: FeedItem[];
-  readonly userFeedSubscriptions: Record<UserFeedSubscriptionId, UserFeedSubscription>;
+  readonly getFeedSubscription: Func<FeedSubscriptionId, FeedSubscription | null>;
 }): FeedItem[] {
-  const {feedItems, userFeedSubscriptions} = args;
+  const {feedItems, getFeedSubscription} = args;
 
   return feedItems.filter((feedItem) => {
-    switch (feedItem.feedSource.feedSourceType) {
-      case FeedSourceType.PWA:
-      case FeedSourceType.Extension:
-      case FeedSourceType.PocketExport:
+    switch (feedItem.origin.feedType) {
+      case FeedType.PWA:
+      case FeedType.Extension:
+      case FeedType.PocketExport:
         // These sources are always shown.
         return true;
-      case FeedSourceType.YouTubeChannel:
-      case FeedSourceType.Interval:
-      case FeedSourceType.RSS: {
+      case FeedType.YouTubeChannel:
+      case FeedType.Interval:
+      case FeedType.RSS: {
         // Some sources have delivery schedules which determine when they are shown.
-        const matchingDeliverySchedule = findDeliveryScheduleForFeedSubscription({
-          userFeedSubscriptionId: feedItem.feedSource.userFeedSubscriptionId,
-          userFeedSubscriptions,
-        });
+        const feedSubscription = getFeedSubscription(feedItem.origin.feedSubscriptionId);
 
         return isDeliveredAccordingToSchedule({
           createdTime: feedItem.createdTime,
-          deliverySchedule: matchingDeliverySchedule,
+          deliverySchedule: feedSubscription?.deliverySchedule ?? null,
         });
       }
       default:
-        assertNever(feedItem.feedSource);
+        assertNever(feedItem.origin);
     }
   });
 }
@@ -167,27 +161,27 @@ export function useFeedItemsRespectingDelivery(args: {
   const {viewType, firebaseService} = args;
 
   const feedItemsState = useFeedItemsInternal({viewType, firebaseService});
-  const userFeedSubscriptionsState = useUserFeedSubscriptions({firebaseService});
+  const {isCacheReady, getFeedSubscription} = useFeedSubscriptionsStore();
 
   const filteredFeedItemsState: AsyncState<FeedItem[]> = useMemo(() => {
-    // Do not consider loaded until both the feed items and the user feed subscriptions are loaded. filtering.
-    // Favor the feed items state over the user feed subscriptions state.
+    // Do not consider loaded until both the feed items and the feed subscriptions are loaded. Favor
+    // the feed items state over the feed subscriptions state.
     if (feedItemsState.status !== AsyncStatus.Success) {
       return feedItemsState;
     }
 
-    if (userFeedSubscriptionsState.status !== AsyncStatus.Success) {
-      return userFeedSubscriptionsState;
+    if (!isCacheReady) {
+      return PENDING_ASYNC_STATE;
     }
 
     // Filter the feed items based on delivery schedules.
     const filteredFeedItems = filterFeedItemsByDeliverySchedules({
       feedItems: feedItemsState.value,
-      userFeedSubscriptions: userFeedSubscriptionsState.value,
+      getFeedSubscription,
     });
 
     return makeSuccessAsyncState(filteredFeedItems);
-  }, [feedItemsState, userFeedSubscriptionsState]);
+  }, [feedItemsState, isCacheReady, getFeedSubscription]);
 
   return filteredFeedItemsState;
 }

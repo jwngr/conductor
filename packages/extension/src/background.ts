@@ -2,7 +2,7 @@ import {logger} from '@shared/services/logger.shared';
 
 import {DEFAULT_FEED_TITLE} from '@shared/lib/constants.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
-import {EXTENSION_FEED_SOURCE} from '@shared/lib/feedSources.shared';
+import {EXTENSION_FEED} from '@shared/lib/feeds.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 
@@ -26,7 +26,7 @@ chrome.action.onClicked.addListener(async (tab) => {
   const {feedItemsService} = initServices({accountId});
 
   const addFeedItemResult = await feedItemsService.createFeedItemFromUrl({
-    feedSource: EXTENSION_FEED_SOURCE,
+    origin: EXTENSION_FEED,
     url: tabUrl,
     title: tab.title ?? DEFAULT_FEED_TITLE,
     // TODO: Set better initial values for these fields.

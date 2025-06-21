@@ -2,9 +2,9 @@ import {z} from 'zod/v4';
 
 import {ExperimentId, ExperimentType, ExperimentVisibility} from '@shared/types/experiments.types';
 
-import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 import {EnvironmentSchema} from '@shared/schemas/environments.schema';
 import {FirestoreTimestampSchema} from '@shared/schemas/firebase.schema';
+import {AccountIdSchema} from '@shared/schemas/ids.schema';
 
 export const ExperimentIdSchema = z.enum(ExperimentId);
 export const ExperimentTypeSchema = z.enum(ExperimentType);

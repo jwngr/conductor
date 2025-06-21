@@ -3,7 +3,7 @@ import type {YouTubeChannelId} from '@shared/types/youtube.types';
 // Firestore collections.
 export const EVENT_LOG_DB_COLLECTION = 'eventLog';
 export const FEED_ITEMS_DB_COLLECTION = 'feedItems';
-export const USER_FEED_SUBSCRIPTIONS_DB_COLLECTION = 'userFeedSubscriptions';
+export const FEED_SUBSCRIPTIONS_DB_COLLECTION = 'feedSubscriptions';
 export const ACCOUNTS_DB_COLLECTION = 'accounts';
 export const ACCOUNT_EXPERIMENTS_DB_COLLECTION = 'accountExperiments';
 export const ACCOUNT_SETTINGS_DB_COLLECTION = 'accountSettings';
@@ -27,7 +27,7 @@ export const EMPTY_ARRAY = [] as const;
 export const EMPTY_OBJECT = Object.freeze({});
 
 // Local cache limits.
-export const USER_FEED_SUBSCRIPTIONS_CACHE_LIMIT = 100;
+export const FEED_SUBSCRIPTIONS_CACHE_LIMIT = 100;
 
 // Miscellaneous.
 export const DEFAULT_FEED_TITLE = '(no title)';

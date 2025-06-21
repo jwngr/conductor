@@ -2,7 +2,7 @@ import {getNavItemIdFromViewType} from '@shared/lib/navItems.shared';
 import {PARSING_FAILURE_SENTINEL} from '@shared/lib/parser.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
-import type {FeedItemId} from '@shared/types/feedItems.types';
+import type {FeedItemId} from '@shared/types/ids.types';
 import {ViewType} from '@shared/types/views.types';
 
 import {ViewListIgnoringDelivery, ViewListRespectingDelivery} from '@src/components/views/View';

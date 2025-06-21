@@ -4,7 +4,6 @@ import {
 } from '@shared/lib/experimentDefinitions.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
-import type {AccountId} from '@shared/types/accounts.types';
 import type {Environment} from '@shared/types/environment.types';
 import type {
   AccountExperiment,
@@ -20,6 +19,7 @@ import type {
   StringExperimentOverride,
 } from '@shared/types/experiments.types';
 import {ExperimentType, ExperimentVisibility} from '@shared/types/experiments.types';
+import type {AccountId} from '@shared/types/ids.types';
 
 //////////////////////////////
 //  EXPERIMENT DEFINITIONS  //
@@ -211,7 +211,7 @@ export function getExperimentsForAccount(args: {
     environment,
   });
 
-  // Merge user overrides into default values.
+  // Merge account overrides into default values.
   return filteredExperimentIds.map((experimentId) => {
     const definition = ALL_EXPERIMENT_DEFINITIONS[experimentId];
     const override = experimentOverrides[definition.experimentId];

@@ -5,7 +5,7 @@ import {parseUrl} from '@shared/lib/urls.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 
-import type {AccountId} from '@shared/types/accounts.types';
+import type {AccountId} from '@shared/types/ids.types';
 
 export function verifyAuth(request: CallableRequest): AccountId {
   if (!request.auth) {

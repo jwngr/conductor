@@ -1,4 +1,4 @@
-import {useCallback, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 
 import {arraySort} from '@shared/lib/arrayUtils.shared';
 import {PERSONAL_YOUTUBE_CHANNEL_ID} from '@shared/lib/constants.shared';
@@ -9,12 +9,13 @@ import {assertNever} from '@shared/lib/utils.shared';
 import {makeYouTubeChannelUrl} from '@shared/lib/youtube.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
-import {FeedSourceType} from '@shared/types/feedSourceTypes.types';
+import {FeedType} from '@shared/types/feeds.types';
+import {FeedSubscriptionActivityStatus} from '@shared/types/feedSubscriptions.types';
+import type {FeedSubscription} from '@shared/types/feedSubscriptions.types';
+import type {FeedSubscriptionId} from '@shared/types/ids.types';
 import {NavItemId} from '@shared/types/urls.types';
-import type {
-  UserFeedSubscription,
-  UserFeedSubscriptionId,
-} from '@shared/types/userFeedSubscriptions.types';
+
+import {useFeedSubscriptionsStore} from '@sharedClient/stores/FeedSubscriptionsStore';
 
 import {
   DEFAULT_ROUTE_HERO_PAGE_ACTION,
@@ -23,10 +24,6 @@ import {
 import {toast} from '@sharedClient/lib/toasts.client';
 
 import {useAsyncState} from '@sharedClient/hooks/asyncState.hooks';
-import {
-  useUserFeedSubscriptions,
-  useUserFeedSubscriptionsService,
-} from '@sharedClient/hooks/userFeedSubscriptions.hooks';
 
 import {Button} from '@src/components/atoms/Button';
 import {FlexColumn, FlexRow} from '@src/components/atoms/Flex';
@@ -36,12 +33,10 @@ import {ErrorArea} from '@src/components/errors/ErrorArea';
 import {FeedSubscriptionSettingsButton} from '@src/components/feedSubscriptions/FeedSubscriptionSettings';
 import {LoadingArea} from '@src/components/loading/LoadingArea';
 
-import {firebaseService} from '@src/lib/firebase.pwa';
-
 import {Screen} from '@src/screens/Screen';
 
 const FeedAdder: React.FC = () => {
-  const userFeedSubscriptionsService = useUserFeedSubscriptionsService({firebaseService});
+  const {feedSubscriptionsService} = useFeedSubscriptionsStore();
 
   const [urlInputValue, setUrlInputValue] = useState('');
   const {asyncState, setPending, setError, setSuccess} = useAsyncState<undefined>();
@@ -58,6 +53,11 @@ const FeedAdder: React.FC = () => {
 
   const handleSubscribeToRssFeedByUrl = useCallback(
     async (rssFeedUrl: string): Promise<void> => {
+      if (!feedSubscriptionsService) {
+        setError(new Error('Feed subscriptions service not found'));
+        return;
+      }
+
       const parsedUrl = parseUrl(rssFeedUrl.trim());
       if (!parsedUrl) {
         setError(new Error('URL is not valid'));
@@ -66,7 +66,7 @@ const FeedAdder: React.FC = () => {
 
       setPending();
 
-      const subscribeResult = await userFeedSubscriptionsService.subscribeToRssFeed(parsedUrl);
+      const subscribeResult = await feedSubscriptionsService.subscribeToRssFeed(parsedUrl);
       if (!subscribeResult.success) {
         handleError({
           error: subscribeResult.error,
@@ -78,15 +78,20 @@ const FeedAdder: React.FC = () => {
       setSuccess(undefined);
       setUrlInputValue('');
     },
-    [handleError, setError, setPending, setSuccess, userFeedSubscriptionsService]
+    [handleError, setError, setPending, setSuccess, feedSubscriptionsService]
   );
 
   const handleSubscribeToYouTubeChannel = useCallback(
     async (youtubeChannelUrl: string): Promise<void> => {
+      if (!feedSubscriptionsService) {
+        setError(new Error('Feed subscriptions service not found'));
+        return;
+      }
+
       setPending();
 
       const subscribeResult =
-        await userFeedSubscriptionsService.subscribeToYouTubeChannel(youtubeChannelUrl);
+        await feedSubscriptionsService.subscribeToYouTubeChannel(youtubeChannelUrl);
       if (!subscribeResult.success) {
         handleError({
           error: subscribeResult.error,
@@ -98,13 +103,18 @@ const FeedAdder: React.FC = () => {
       setSuccess(undefined);
       setUrlInputValue('');
     },
-    [handleError, setPending, setSuccess, userFeedSubscriptionsService]
+    [handleError, setError, setPending, setSuccess, feedSubscriptionsService]
   );
 
   const handleSubscribeToIntervalFeed = useCallback(async (): Promise<void> => {
+    if (!feedSubscriptionsService) {
+      setError(new Error('Feed subscriptions service not found'));
+      return;
+    }
+
     setPending();
 
-    const subscribeResult = await userFeedSubscriptionsService.subscribeToIntervalFeed({
+    const subscribeResult = await feedSubscriptionsService.subscribeToIntervalFeed({
       intervalSeconds: 60,
     });
     if (!subscribeResult.success) {
@@ -117,7 +127,7 @@ const FeedAdder: React.FC = () => {
 
     setSuccess(undefined);
     setUrlInputValue('');
-  }, [handleError, setPending, setSuccess, userFeedSubscriptionsService]);
+  }, [handleError, setError, setPending, setSuccess, feedSubscriptionsService]);
 
   return (
     <FlexColumn flex gap={3}>
@@ -183,21 +193,21 @@ const FeedAdder: React.FC = () => {
 };
 
 const FeedSubscriptionItem: React.FC<{
-  subscription: UserFeedSubscription;
+  subscription: FeedSubscription;
 }> = ({subscription}) => {
   let primaryRowText: string;
   let secondaryRowText: string | null;
 
-  switch (subscription.feedSourceType) {
-    case FeedSourceType.RSS:
+  switch (subscription.feedType) {
+    case FeedType.RSS:
       primaryRowText = `RSS (${subscription.title ?? subscription.url})`;
       secondaryRowText = subscription.title ?? null;
       break;
-    case FeedSourceType.YouTubeChannel:
+    case FeedType.YouTubeChannel:
       primaryRowText = 'YouTube';
       secondaryRowText = subscription.channelId;
       break;
-    case FeedSourceType.Interval:
+    case FeedType.Interval:
       primaryRowText = 'Interval';
       secondaryRowText = null;
       break;
@@ -208,18 +218,21 @@ const FeedSubscriptionItem: React.FC<{
   return (
     <FlexRow gap={3} padding={3} className="border-neutral-2 rounded-lg border">
       <FlexColumn flex gap={1}>
-        <P bold error={!subscription.isActive}>
+        <P
+          bold
+          error={subscription.lifecycleState.status === FeedSubscriptionActivityStatus.Inactive}
+        >
           {primaryRowText}
         </P>
         {secondaryRowText ? <P light>{secondaryRowText}</P> : null}
       </FlexColumn>
-      <FeedSubscriptionSettingsButton userFeedSubscription={subscription} />
+      <FeedSubscriptionSettingsButton feedSubscription={subscription} />
     </FlexRow>
   );
 };
 
 const LoadedFeedSubscriptionsListMainContent: React.FC<{
-  subscriptions: Record<UserFeedSubscriptionId, UserFeedSubscription>;
+  subscriptions: Record<FeedSubscriptionId, FeedSubscription>;
 }> = ({subscriptions}) => {
   const orderedSubscriptions = arraySort(
     objectValues(subscriptions),
@@ -234,27 +247,49 @@ const LoadedFeedSubscriptionsListMainContent: React.FC<{
   return (
     <FlexColumn flex>
       {orderedSubscriptions.map((subscription) => (
-        <FeedSubscriptionItem
-          key={subscription.userFeedSubscriptionId}
-          subscription={subscription}
-        />
+        <FeedSubscriptionItem key={subscription.feedSubscriptionId} subscription={subscription} />
       ))}
     </FlexColumn>
   );
 };
 
 const FeedSubscriptionsList: React.FC = () => {
-  const userFeedSubscriptionsState = useUserFeedSubscriptions({firebaseService});
+  const {feedSubscriptionsService} = useFeedSubscriptionsStore();
 
-  const renderMainContent = (): React.ReactNode => {
-    switch (userFeedSubscriptionsState.status) {
+  const {
+    asyncState: feedSubscriptionsState,
+    setPending,
+    setError,
+    setSuccess,
+  } = useAsyncState<Record<FeedSubscriptionId, FeedSubscription>>();
+
+  useEffect(() => {
+    if (!feedSubscriptionsService) {
+      setError(new Error('Feed subscriptions service not found'));
+      return;
+    }
+
+    setPending();
+
+    // Load all feed subscriptions, with no limit, instead of using the capped cached values stored
+    // in `FeedSubscriptionsStore`.
+    const unsubscribe = feedSubscriptionsService.watchSubscriptions({
+      onData: setSuccess,
+      onError: setError,
+    });
+
+    return () => unsubscribe();
+  }, [feedSubscriptionsService, setPending, setError, setSuccess]);
+
+  const renderMainContent = useCallback((): React.ReactNode => {
+    switch (feedSubscriptionsState.status) {
       case AsyncStatus.Idle:
       case AsyncStatus.Pending:
         return <LoadingArea text="Loading feed subscriptions..." />;
       case AsyncStatus.Error:
         return (
           <ErrorArea
-            error={userFeedSubscriptionsState.error}
+            error={feedSubscriptionsState.error}
             title="Error loading feed subscriptions"
             subtitle="Refreshing may resolve the issue. If the problem persists, please contact support."
             actions={[DEFAULT_ROUTE_HERO_PAGE_ACTION, REFRESH_HERO_PAGE_ACTION]}
@@ -262,14 +297,12 @@ const FeedSubscriptionsList: React.FC = () => {
         );
       case AsyncStatus.Success:
         return (
-          <LoadedFeedSubscriptionsListMainContent
-            subscriptions={userFeedSubscriptionsState.value}
-          />
+          <LoadedFeedSubscriptionsListMainContent subscriptions={feedSubscriptionsState.value} />
         );
       default:
-        assertNever(userFeedSubscriptionsState);
+        assertNever(feedSubscriptionsState);
     }
-  };
+  }, [feedSubscriptionsState]);
 
   return (
     <FlexColumn gap={3} style={{width: 360}}>

@@ -16,6 +16,3 @@ export interface StyleAttributes {
   readonly style?: React.CSSProperties;
   readonly className?: string;
 }
-
-/** Strongly-typed type for a UUID. Prefer this over plain strings. */
-export type UUID = string & {readonly __brand: 'UUIDBrand'};

@@ -24,8 +24,8 @@ service cloud.firestore {
     ///////////////////////
     //  ENUM VALIDATORS  //
     ///////////////////////
-    function isValidFeedSourceType(maybeFeedSourceType) {
-      return maybeFeedSourceType in ['RSS', 'YOUTUBE_CHANNEL', 'INTERVAL', 'PWA', 'EXTENSION', 'POCKET_EXPORT'];
+    function isValidFeedType(feedType) {
+      return feedType in ['RSS', 'YOUTUBE_CHANNEL', 'INTERVAL', 'PWA', 'EXTENSION', 'POCKET_EXPORT'];
     }
 
     function isValidDeliveryScheduleType(maybeDeliveryScheduleType) {
@@ -47,9 +47,9 @@ service cloud.firestore {
     ///////////////////////
     //  TYPE VALIDATORS  //
     ///////////////////////
-    function isValidFeedSource(maybeFeedSource) {
-      return maybeFeedSource.keys().hasAll(['feedSourceType']) &&
-        isValidFeedSourceType(maybeFeedSource.feedSourceType);
+    function isValidFeed(maybeFeed) {
+      return maybeFeed.keys().hasAll(['feedType']) &&
+        isValidFeedType(maybeFeed.feedType);
     }
 
     function isValidDeliverySchedule(maybeDeliverySchedule) {
@@ -73,6 +73,15 @@ service cloud.firestore {
 
     function isValidEventLogItemData(maybeEventLogItemData) {
       return maybeEventLogItemData.keys().hasAll(['eventType']);
+    }
+
+    function isValidFeedSubscriptionLifecycleState(maybeFeedSubscriptionLifecycleState) {
+      return maybeFeedSubscriptionLifecycleState.keys().hasAll(['status']) &&
+        isValidFeedSubscriptionActivityStatus(maybeFeedSubscriptionLifecycleState.status);
+    }
+
+    function isValidFeedSubscriptionActivityStatus(maybeFeedSubscriptionActivityStatus) {
+      return maybeFeedSubscriptionActivityStatus in ['ACTIVE', 'INACTIVE'];
     }
 
     //////////////////////
@@ -147,7 +156,7 @@ service cloud.firestore {
         'feedItemId',
         'feedItemContentType',
         'content',
-        'feedSource',
+        'origin',
         'importState',
         'triageStatus',
         'tagIds',
@@ -166,43 +175,43 @@ service cloud.firestore {
         isCreate || (
           request.resource.data.feedItemId == resource.data.feedItemId &&
           request.resource.data.feedItemContentType == resource.data.feedItemContentType &&
-          request.resource.data.feedSource.feedSourceType == resource.data.feedSource.feedSourceType &&
+          request.resource.data.origin.feedType == resource.data.origin.feedType &&
           request.resource.data.createdTime == resource.data.createdTime
         )
       );
     }
 
-    function isValidUserFeedSubscriptionDoc(userFeedSubscriptionId, isCreate) {
+    function isValidFeedSubscriptionDoc(feedSubscriptionId, isCreate) {
       return request.resource.data.keys().hasAll([
-        'userFeedSubscriptionId',
-        'feedSourceType',
+        'feedSubscriptionId',
+        'feedType',
         'accountId',
-        'isActive',
+        'lifecycleState',
         'deliverySchedule',
         'createdTime',
         'lastUpdatedTime'
       ]) &&
-      request.resource.data.userFeedSubscriptionId == userFeedSubscriptionId &&
-      isValidFeedSourceType(request.resource.data.feedSourceType) &&
+      request.resource.data.feedSubscriptionId == feedSubscriptionId &&
+      isValidFeedType(request.resource.data.feedType) &&
       request.resource.data.accountId is string &&
-      request.resource.data.isActive is bool &&
+      isValidFeedSubscriptionLifecycleState(request.resource.data.lifecycleState) &&
       isValidDeliverySchedule(request.resource.data.deliverySchedule) &&
       request.resource.data.createdTime is timestamp &&
       request.resource.data.lastUpdatedTime is timestamp &&
       // Validate readonly fields on update.
       ( 
         isCreate || (
-          request.resource.data.userFeedSubscriptionId == resource.data.userFeedSubscriptionId &&
-          request.resource.data.feedSourceType == resource.data.feedSourceType &&
+          request.resource.data.feedSubscriptionId == resource.data.feedSubscriptionId &&
+          request.resource.data.feedType == resource.data.feedType &&
           request.resource.data.accountId == resource.data.accountId &&
           request.resource.data.createdTime == resource.data.createdTime
         )
       );
     }
 
-    function isValidEventLogItemDoc(eventId, isCreate) {
+    function isValidEventLogItemDoc(eventLogItemId, isCreate) {
       return request.resource.data.keys().hasAll([
-        'eventId',
+        'eventLogItemId',
         'accountId',
         'actor',
         'environment',
@@ -210,7 +219,7 @@ service cloud.firestore {
         'createdTime',
         'lastUpdatedTime'
       ]) &&
-      request.resource.data.eventId == eventId &&
+      request.resource.data.eventLogItemId == eventLogItemId &&
       isValidActor(request.resource.data.actor) &&
       isValidEnvironment(request.resource.data.environment) &&
       isValidEventLogItemData(request.resource.data.data) &&
@@ -263,21 +272,21 @@ service cloud.firestore {
       allow delete: if isResourceOwner();
     }
 
-    match /userFeedSubscriptions/{userFeedSubscriptionId} {
+    match /feedSubscriptions/{feedSubscriptionId} {
       // Allow accounts to manage their own feed subscriptions.
       allow read: if isResourceOwner();
       // Allow accounts to manage their own feed subscriptions.
-      allow create: if isNewResourceOwner() && isValidUserFeedSubscriptionDoc(userFeedSubscriptionId, true);
-      allow update: if isResourceOwner() && isNewResourceOwner() && isValidUserFeedSubscriptionDoc(userFeedSubscriptionId, false);
+      allow create: if isNewResourceOwner() && isValidFeedSubscriptionDoc(feedSubscriptionId, true);
+      allow update: if isResourceOwner() && isNewResourceOwner() && isValidFeedSubscriptionDoc(feedSubscriptionId, false);
       // Allow accounts to delete their own feed subscriptions.
       allow delete: if isResourceOwner();
     }
 
-    match /eventLog/{eventId} {
+    match /eventLog/{eventLogItemId} {
       // Allow accounts to read their own events.
       allow read: if isResourceOwner();
       // Allow accounts to create event log items.
-      allow create: if isNewResourceOwner() && isValidEventLogItemDoc(eventId, true);
+      allow create: if isNewResourceOwner() && isValidEventLogItemDoc(eventLogItemId, true);
       // Event log items are only ever written once.
       allow update: if false;
       // Only allow deletes via the admin SDK.

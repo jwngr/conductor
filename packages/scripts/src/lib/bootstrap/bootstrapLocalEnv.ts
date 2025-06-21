@@ -8,12 +8,12 @@ import {makeSuccessResult} from '@shared/lib/results.shared';
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseEmailAddress} from '@shared/parsers/emails.parser';
 
-import type {AccountId} from '@shared/types/accounts.types';
 import type {EmailAddress} from '@shared/types/emails.types';
+import type {AccountId} from '@shared/types/ids.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import {createSampleFeedItems} from '@src/lib/bootstrap/feedItems';
-import {createSampleUserFeedSubscriptions} from '@src/lib/bootstrap/userFeedSubscriptions';
+import {createSampleFeedSubscriptions} from '@src/lib/bootstrap/feedSubscriptions';
 import {env} from '@src/lib/environment.scripts';
 import {firebaseService} from '@src/lib/firebase.scripts';
 import {initServices} from '@src/lib/initServices.scripts';
@@ -21,7 +21,7 @@ import {initServices} from '@src/lib/initServices.scripts';
 interface BootstrapResult {
   readonly accountId: AccountId;
   readonly firebaseUid: string;
-  readonly userFeedSubscriptionsCreated: number;
+  readonly feedSubscriptionsCreated: number;
   readonly feedItemsCreated: number;
 }
 
@@ -64,21 +64,26 @@ async function bootstrapLocalEnv(args: {
   // Initialize services.
   const {feedItemsService} = initServices({firecrawlApiKey: env.firecrawlApiKey});
 
-  // Create user feed subscriptions.
-  logger.log('[BOOTSTRAP] Creating user feed subscriptions...', {accountId});
-  const subscriptionsResult = await createSampleUserFeedSubscriptions({
+  // Create feed subscriptions.
+  logger.log('[BOOTSTRAP] Creating feed subscriptions...', {accountId});
+  const subscriptionsResult = await createSampleFeedSubscriptions({
     accountId,
     firebaseService,
   });
   if (!subscriptionsResult.success) {
-    return prefixErrorResult(subscriptionsResult, 'Failed to create user feed subscriptions');
+    return prefixErrorResult(subscriptionsResult, 'Failed to create feed subscriptions');
   }
-  logger.log('[BOOTSTRAP] Created user feed subscriptions', {accountId});
+  logger.log('[BOOTSTRAP] Created feed subscriptions', {accountId});
+
+  const {rssSubscriptions, intervalSubscriptions, youtubeSubscriptions} = subscriptionsResult.value;
 
   // Create feed items.
   logger.log('[BOOTSTRAP] Creating feed items...', {accountId});
   const feedItemsResult = await createSampleFeedItems({
     accountId,
+    rssSubscriptions,
+    intervalSubscriptions,
+    youtubeSubscriptions,
     feedItemsService,
   });
   if (!feedItemsResult.success) {
@@ -89,7 +94,7 @@ async function bootstrapLocalEnv(args: {
   const result: BootstrapResult = {
     accountId,
     firebaseUid,
-    userFeedSubscriptionsCreated: subscriptionsResult.value.count,
+    feedSubscriptionsCreated: subscriptionsResult.value.count,
     feedItemsCreated: feedItemsResult.value.count,
   };
 
@@ -148,15 +153,14 @@ if (!bootstrapResult.success) {
 }
 
 // Log the bootstrap result and exit successfully.
-const {accountId, firebaseUid, userFeedSubscriptionsCreated, feedItemsCreated} =
-  bootstrapResult.value;
+const {accountId, firebaseUid, feedSubscriptionsCreated, feedItemsCreated} = bootstrapResult.value;
 logger.log('✅ Bootstrap completed successfully!');
 logger.log(`📊 Summary:`);
 logger.log(`   Email: ${email}`);
 logger.log(`   Firebase UID: ${firebaseUid}`);
 logger.log(`   Account ID: ${accountId}`);
-logger.log(`   User Feed Subscriptions: ${userFeedSubscriptionsCreated}`);
-logger.log(`   Feed Items: ${feedItemsCreated}`);
+logger.log(`   Feed subscriptions: ${feedSubscriptionsCreated}`);
+logger.log(`   Feed items: ${feedItemsCreated}`);
 logger.log('');
 logger.log('🎉 Your development environment is now ready!');
 

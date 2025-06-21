@@ -2,21 +2,23 @@ import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseZodResult} from '@shared/lib/parser.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
-import type {EventId, EventLogItem} from '@shared/types/eventLog.types';
+import type {EventLogItem} from '@shared/types/eventLog.types';
+import type {EventLogItemId} from '@shared/types/ids.types';
 import type {Result} from '@shared/types/results.types';
 
-import {EventIdSchema, EventLogItemSchema} from '@shared/schemas/eventLog.schema';
+import {EventLogItemSchema} from '@shared/schemas/eventLog.schema';
+import {EventLogItemIdSchema} from '@shared/schemas/ids.schema';
 import {fromStorageEventLogItem} from '@shared/storage/eventLog.storage';
 
 /**
- * Attempts to parse a plain string into an {@link EventId}.
+ * Attempts to parse a plain string into an {@link EventLogItemId}.
  */
-export function parseEventId(maybeEventId: string): Result<EventId, Error> {
-  const parsedResult = parseZodResult(EventIdSchema, maybeEventId);
+export function parseEventLogItemId(maybeEventId: string): Result<EventLogItemId, Error> {
+  const parsedResult = parseZodResult(EventLogItemIdSchema, maybeEventId);
   if (!parsedResult.success) {
     return prefixErrorResult(parsedResult, 'Invalid event ID');
   }
-  return makeSuccessResult(parsedResult.value as EventId);
+  return makeSuccessResult(parsedResult.value as EventLogItemId);
 }
 
 /**

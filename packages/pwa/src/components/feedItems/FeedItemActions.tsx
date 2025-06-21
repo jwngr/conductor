@@ -4,8 +4,8 @@ import {useCallback} from 'react';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
+import {FeedItemImportStatus} from '@shared/types/feedItemImportStates';
 import type {FeedItem} from '@shared/types/feedItems.types';
-import {FeedItemImportStatus} from '@shared/types/feedItems.types';
 import type {IconName} from '@shared/types/icons.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';

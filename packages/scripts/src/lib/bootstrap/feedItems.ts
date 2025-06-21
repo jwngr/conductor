@@ -1,15 +1,16 @@
 import {logger} from '@shared/services/logger.shared';
 
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {makeRssFeedSource} from '@shared/lib/feedSources.shared';
+import {makeRssFeed} from '@shared/lib/feeds.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
-import {
-  makeIntervalUserFeedSubscription,
-  makeRssUserFeedSubscription,
-} from '@shared/lib/userFeedSubscriptions.shared';
 
-import type {AccountId} from '@shared/types/accounts.types';
 import type {FeedItem} from '@shared/types/feedItems.types';
+import type {
+  IntervalFeedSubscription,
+  RssFeedSubscription,
+  YouTubeChannelFeedSubscription,
+} from '@shared/types/feedSubscriptions.types';
+import type {AccountId} from '@shared/types/ids.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';
@@ -21,9 +22,12 @@ interface CreateSampleFeedItemsResult {
 
 export async function createSampleFeedItems(args: {
   readonly accountId: AccountId;
+  readonly rssSubscriptions: readonly RssFeedSubscription[];
+  readonly youtubeSubscriptions: readonly YouTubeChannelFeedSubscription[];
+  readonly intervalSubscriptions: readonly IntervalFeedSubscription[];
   readonly feedItemsService: ServerFeedItemsService;
 }): AsyncResult<CreateSampleFeedItemsResult, Error> {
-  const {accountId, feedItemsService} = args;
+  const {accountId, rssSubscriptions, intervalSubscriptions, feedItemsService} = args;
 
   const feedItems: FeedItem[] = [];
 
@@ -55,16 +59,9 @@ export async function createSampleFeedItems(args: {
     },
   ];
 
-  // Create RSS feed items using a sample RSS subscription as the source.
-  const rssSubscription = makeRssUserFeedSubscription({
-    accountId,
-    url: 'https://feeds.feedburner.com/TechCrunch',
-    title: 'TechCrunch',
-  });
-
   for (const item of rssFeedItems) {
     const saveResult = await feedItemsService.createFeedItemFromUrl({
-      feedSource: makeRssFeedSource({userFeedSubscription: rssSubscription}),
+      origin: makeRssFeed({subscription: rssSubscriptions[0]}),
       accountId,
       url: item.url,
       title: item.title,
@@ -80,22 +77,18 @@ export async function createSampleFeedItems(args: {
     feedItems.push(saveResult.value);
   }
 
-  // Create sample interval feed item.
-  const intervalSubscription = makeIntervalUserFeedSubscription({
-    accountId,
-    intervalSeconds: 300,
-  });
+  for (const intervalSubscription of intervalSubscriptions) {
+    const intervalFeedItemResult = await feedItemsService.createIntervalFeedItem({
+      accountId,
+      subscription: intervalSubscription,
+    });
 
-  const intervalFeedItemResult = await feedItemsService.createIntervalFeedItem({
-    accountId,
-    userFeedSubscription: intervalSubscription,
-  });
+    if (!intervalFeedItemResult.success) {
+      return prefixErrorResult(intervalFeedItemResult, 'Failed to create interval feed item');
+    }
 
-  if (!intervalFeedItemResult.success) {
-    return prefixErrorResult(intervalFeedItemResult, 'Failed to create interval feed item');
+    feedItems.push(intervalFeedItemResult.value);
   }
-
-  feedItems.push(intervalFeedItemResult.value);
 
   logger.log('[BOOTSTRAP] Successfully created feed items', {
     accountId,
