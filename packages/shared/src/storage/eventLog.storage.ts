@@ -3,7 +3,7 @@ import {makeSuccessResult} from '@shared/lib/results.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
-import {parseEventId} from '@shared/parsers/eventLog.parser';
+import {parseEventLogItemId} from '@shared/parsers/eventLog.parser';
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
 import {parseFeedSubscriptionId} from '@shared/parsers/feedSubscriptions.parser';
 
@@ -33,7 +33,7 @@ import {fromStorageActor, toStorageActor} from '@shared/storage/actor.storage';
  */
 export function toStorageEventLogItem(eventLogItem: EventLogItem): EventLogItemFromStorage {
   return {
-    eventId: eventLogItem.eventId,
+    eventLogItemId: eventLogItem.eventLogItemId,
     accountId: eventLogItem.accountId,
     actor: toStorageActor(eventLogItem.actor),
     environment: eventLogItem.environment,
@@ -55,14 +55,14 @@ export function fromStorageEventLogItem(
   const parsedActorResult = fromStorageActor(eventLogItemFromStorage.actor);
   if (!parsedActorResult.success) return parsedActorResult;
 
-  const parsedEventIdResult = parseEventId(eventLogItemFromStorage.eventId);
+  const parsedEventIdResult = parseEventLogItemId(eventLogItemFromStorage.eventLogItemId);
   if (!parsedEventIdResult.success) return parsedEventIdResult;
 
   const parsedDataResult = fromStorageEventLogItemData(eventLogItemFromStorage.data);
   if (!parsedDataResult.success) return parsedDataResult;
 
   return makeSuccessResult({
-    eventId: parsedEventIdResult.value,
+    eventLogItemId: parsedEventIdResult.value,
     accountId: parsedAccountIdResult.value,
     actor: parsedActorResult.value,
     environment: eventLogItemFromStorage.environment,

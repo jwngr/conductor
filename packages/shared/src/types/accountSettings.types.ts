@@ -1,4 +1,4 @@
-import type {AccountId} from '@shared/types/accounts.types';
+import type {AccountId} from '@shared/types/ids.types';
 import type {ThemePreference} from '@shared/types/theme.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 

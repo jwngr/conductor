@@ -9,8 +9,8 @@ import {pluralizeWithCount} from '@shared/lib/utils.shared';
 
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 
-import type {AccountId} from '@shared/types/accounts.types';
 import type {EmailAddress} from '@shared/types/emails.types';
+import type {AccountId} from '@shared/types/ids.types';
 import type {PocketImportItem} from '@shared/types/pocket.types';
 import type {AsyncResult} from '@shared/types/results.types';
 

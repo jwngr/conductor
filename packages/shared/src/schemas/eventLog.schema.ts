@@ -3,7 +3,7 @@ import {z} from 'zod/v4';
 import {Environment} from '@shared/types/environment.types';
 import {EventType} from '@shared/types/eventLog.types';
 import {FeedItemActionType} from '@shared/types/feedItems.types';
-import {FeedType} from '@shared/types/feedTypes.types';
+import {FeedType} from '@shared/types/feeds.types';
 
 import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 import {ActorSchema} from '@shared/schemas/actors.schema';
@@ -13,8 +13,7 @@ import {FeedSubscriptionIdSchema} from '@shared/schemas/feedSubscriptions.schema
 import {ThemePreferenceSchema} from '@shared/schemas/theme.schema';
 import {BaseStoreItemSchema} from '@shared/schemas/utils.schema';
 
-// TODO: Consider adding `brand()` and defining `EventId` based on this schema.
-export const EventIdSchema = z.uuid();
+export const EventLogItemIdSchema = z.uuid();
 
 const BaseEventLogItemDataSchema = z.object({
   eventType: z.enum(EventType),
@@ -100,7 +99,7 @@ const EventLogItemDataSchema = z.discriminatedUnion('eventType', [
 export type EventLogItemDataFromStorage = z.infer<typeof EventLogItemDataSchema>;
 
 export const EventLogItemSchema = BaseStoreItemSchema.extend({
-  eventId: EventIdSchema,
+  eventLogItemId: EventLogItemIdSchema,
   accountId: AccountIdSchema,
   actor: ActorSchema,
   environment: z.enum(Environment),

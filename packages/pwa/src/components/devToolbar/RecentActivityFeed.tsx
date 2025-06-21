@@ -19,10 +19,10 @@ import {firebaseService} from '@src/lib/firebase.pwa';
 const RecentActivityFeedItem: React.FC<{
   readonly eventLogItem: EventLogItem;
 }> = ({eventLogItem}) => {
-  const {eventId, createdTime, data} = eventLogItem;
+  const {eventLogItemId, createdTime, data} = eventLogItem;
 
   return (
-    <li key={eventId} className="border-border bg-background rounded border p-1">
+    <li key={eventLogItemId} className="border-border bg-background rounded border p-1">
       <div className="flex justify-between">
         <P bold>{data.eventType}</P>
         <P light title={createdTime.toISOString()}>
@@ -59,7 +59,7 @@ const LoadedRecentActivityFeed: React.FC<{
           <H4 bold>Recent activity</H4>
           <ul className="flex max-h-[400px] flex-col gap-1 overflow-y-auto">
             {eventLogItems.map((item) => (
-              <RecentActivityFeedItem key={item.eventId} eventLogItem={item} />
+              <RecentActivityFeedItem key={item.eventLogItemId} eventLogItem={item} />
             ))}
           </ul>
         </FlexColumn>

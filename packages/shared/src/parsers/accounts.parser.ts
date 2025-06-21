@@ -2,7 +2,8 @@ import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseZodResult} from '@shared/lib/parser.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
-import type {Account, AccountId} from '@shared/types/accounts.types';
+import type {Account} from '@shared/types/accounts.types';
+import type {AccountId} from '@shared/types/ids.types';
 import type {Result} from '@shared/types/results.types';
 
 import {AccountIdSchema, AccountSchema} from '@shared/schemas/accounts.schema';

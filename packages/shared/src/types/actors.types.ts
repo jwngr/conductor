@@ -1,4 +1,4 @@
-import type {AccountId} from '@shared/types/accounts.types';
+import type {AccountId} from '@shared/types/ids.types';
 
 export enum ActorType {
   Account = 'ACCOUNT',

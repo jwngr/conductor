@@ -1,5 +1,5 @@
-import type {AccountId} from '@shared/types/accounts.types';
 import {Environment} from '@shared/types/environment.types';
+import type {AccountId} from '@shared/types/ids.types';
 
 import {ClientEventLogService} from '@sharedClient/services/eventLog.client';
 import {ClientFeedItemsService} from '@sharedClient/services/feedItems.client';

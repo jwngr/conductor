@@ -12,13 +12,13 @@ import {
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseAccountExperimentsState} from '@shared/parsers/experiments.parser';
 
-import type {AccountId} from '@shared/types/accounts.types';
 import type {ClientEnvironment} from '@shared/types/environment.types';
 import type {
   AccountExperiment,
   AccountExperimentsState,
   ExperimentId,
 } from '@shared/types/experiments.types';
+import type {AccountId} from '@shared/types/ids.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 

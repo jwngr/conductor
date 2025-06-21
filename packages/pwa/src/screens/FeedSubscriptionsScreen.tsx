@@ -9,12 +9,10 @@ import {assertNever} from '@shared/lib/utils.shared';
 import {makeYouTubeChannelUrl} from '@shared/lib/youtube.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
-import {
-  FeedSubscriptionActivityStatus,
-  type FeedSubscription,
-  type FeedSubscriptionId,
-} from '@shared/types/feedSubscriptions.types';
-import {FeedType} from '@shared/types/feedTypes.types';
+import {FeedType} from '@shared/types/feeds.types';
+import {FeedSubscriptionActivityStatus} from '@shared/types/feedSubscriptions.types';
+import type {FeedSubscription} from '@shared/types/feedSubscriptions.types';
+import type {FeedSubscriptionId} from '@shared/types/ids.types';
 import {NavItemId} from '@shared/types/urls.types';
 
 import {useFeedSubscriptionsStore} from '@sharedClient/stores/FeedSubscriptionsStore';

@@ -2,7 +2,6 @@ import {makeErrorResult, makeSuccessResult} from '@shared/lib/results.shared';
 import {parseUrl} from '@shared/lib/urls.shared';
 import {assertNever, makeUuid} from '@shared/lib/utils.shared';
 
-import type {AccountId} from '@shared/types/accounts.types';
 import {FeedItemContentType} from '@shared/types/feedItemContent.types';
 import type {FeedItemContent} from '@shared/types/feedItemContent.types';
 import {
@@ -10,16 +9,11 @@ import {
   FeedItemImportStatus,
   TriageStatus,
 } from '@shared/types/feedItems.types';
-import type {
-  FeedItem,
-  FeedItemAction,
-  FeedItemId,
-  NewFeedItemImportState,
-} from '@shared/types/feedItems.types';
+import type {FeedItem, FeedItemAction, NewFeedItemImportState} from '@shared/types/feedItems.types';
 import type {Feed} from '@shared/types/feeds.types';
-import type {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
-import {FeedType} from '@shared/types/feedTypes.types';
+import {FeedType} from '@shared/types/feeds.types';
 import {IconName} from '@shared/types/icons.types';
+import type {AccountId, FeedItemId, FeedSubscriptionId} from '@shared/types/ids.types';
 import type {Result} from '@shared/types/results.types';
 import {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import {SystemTagId} from '@shared/types/tags.types';

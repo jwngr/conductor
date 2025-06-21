@@ -209,9 +209,9 @@ service cloud.firestore {
       );
     }
 
-    function isValidEventLogItemDoc(eventId, isCreate) {
+    function isValidEventLogItemDoc(eventLogItemId, isCreate) {
       return request.resource.data.keys().hasAll([
-        'eventId',
+        'eventLogItemId',
         'accountId',
         'actor',
         'environment',
@@ -219,7 +219,7 @@ service cloud.firestore {
         'createdTime',
         'lastUpdatedTime'
       ]) &&
-      request.resource.data.eventId == eventId &&
+      request.resource.data.eventLogItemId == eventLogItemId &&
       isValidActor(request.resource.data.actor) &&
       isValidEnvironment(request.resource.data.environment) &&
       isValidEventLogItemData(request.resource.data.data) &&
@@ -282,11 +282,11 @@ service cloud.firestore {
       allow delete: if isResourceOwner();
     }
 
-    match /eventLog/{eventId} {
+    match /eventLog/{eventLogItemId} {
       // Allow accounts to read their own events.
       allow read: if isResourceOwner();
       // Allow accounts to create event log items.
-      allow create: if isNewResourceOwner() && isValidEventLogItemDoc(eventId, true);
+      allow create: if isNewResourceOwner() && isValidEventLogItemDoc(eventLogItemId, true);
       // Event log items are only ever written once.
       allow update: if false;
       // Only allow deletes via the admin SDK.

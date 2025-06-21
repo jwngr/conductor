@@ -9,15 +9,14 @@ import {
   parseFeedSubscriptionId,
 } from '@shared/parsers/feedSubscriptions.parser';
 
-import type {AccountId} from '@shared/types/accounts.types';
+import {FeedType} from '@shared/types/feeds.types';
 import type {
   FeedSubscription,
-  FeedSubscriptionId,
   IntervalFeedSubscription,
   RssFeedSubscription,
 } from '@shared/types/feedSubscriptions.types';
 import {FeedSubscriptionActivityStatus} from '@shared/types/feedSubscriptions.types';
-import {FeedType} from '@shared/types/feedTypes.types';
+import type {AccountId, FeedSubscriptionId} from '@shared/types/ids.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {FeedSubscriptionFromStorage} from '@shared/schemas/feedSubscriptions.schema';

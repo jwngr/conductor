@@ -10,18 +10,17 @@ import {
 } from '@shared/parsers/feedSubscriptions.parser';
 import {parseYouTubeChannelId} from '@shared/parsers/youtube.parser';
 
-import type {AccountId} from '@shared/types/accounts.types';
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
+import {FeedType} from '@shared/types/feeds.types';
 import {FeedSubscriptionActivityStatus} from '@shared/types/feedSubscriptions.types';
 import type {
   FeedSubscription,
-  FeedSubscriptionId,
   FeedSubscriptionLifecycleState,
   IntervalFeedSubscription,
   RssFeedSubscription,
   YouTubeChannelFeedSubscription,
 } from '@shared/types/feedSubscriptions.types';
-import {FeedType} from '@shared/types/feedTypes.types';
+import type {AccountId, FeedSubscriptionId} from '@shared/types/ids.types';
 import type {Result} from '@shared/types/results.types';
 
 import type {

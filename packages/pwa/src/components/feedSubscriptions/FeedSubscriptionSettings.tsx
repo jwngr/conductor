@@ -15,12 +15,12 @@ import {AsyncStatus} from '@shared/types/asyncState.types';
 import {DayOfWeek} from '@shared/types/datetime.types';
 import {DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
+import {FeedType} from '@shared/types/feeds.types';
 import {
   FeedSubscriptionActivityStatus,
   type FeedSubscription,
   type IntervalFeedSubscription,
 } from '@shared/types/feedSubscriptions.types';
-import {FeedType} from '@shared/types/feedTypes.types';
 import {IconName} from '@shared/types/icons.types';
 import type {Result} from '@shared/types/results.types';
 

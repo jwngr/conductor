@@ -16,10 +16,10 @@ import {Views} from '@shared/lib/views.shared';
 
 import {parseFeedItem, parseFeedItemId} from '@shared/parsers/feedItems.parser';
 
-import type {AccountId} from '@shared/types/accounts.types';
-import type {FeedItem, FeedItemId} from '@shared/types/feedItems.types';
+import type {FeedItem} from '@shared/types/feedItems.types';
 import {FeedItemActionType, TriageStatus} from '@shared/types/feedItems.types';
 import type {Feed} from '@shared/types/feeds.types';
+import type {AccountId, FeedItemId} from '@shared/types/ids.types';
 import {fromQueryFilterOp} from '@shared/types/query.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import {SystemTagId} from '@shared/types/tags.types';

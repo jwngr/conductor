@@ -1,5 +1,5 @@
-import type {AccountId} from '@shared/types/accounts.types';
 import type {Environment} from '@shared/types/environment.types';
+import type {AccountId} from '@shared/types/ids.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 
 export enum ExperimentId {

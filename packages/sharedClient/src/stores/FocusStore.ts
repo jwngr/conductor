@@ -1,6 +1,6 @@
 import {create, type StateCreator} from 'zustand';
 
-import type {FeedItemId} from '@shared/types/feedItems.types';
+import type {FeedItemId} from '@shared/types/ids.types';
 import type {Func} from '@shared/types/utils.types';
 
 /**
