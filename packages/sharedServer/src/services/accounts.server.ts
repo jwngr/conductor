@@ -1,4 +1,5 @@
 import type {UserRecord} from 'firebase-admin/auth';
+import type {WithFieldValue} from 'firebase-admin/firestore';
 
 import {ACCOUNTS_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {asyncTry, asyncTryAll} from '@shared/lib/errorUtils.shared';
@@ -16,7 +17,10 @@ import {toStorageAccount} from '@shared/storage/accounts.storage';
 
 import type {ServerAccountSettingsService} from '@sharedServer/services/accountSettings.server';
 import type {ServerExperimentsService} from '@sharedServer/services/experiments.server';
-import type {ServerFirebaseService} from '@sharedServer/services/firebase.server';
+import {
+  serverTimestampSupplier,
+  type ServerFirebaseService,
+} from '@sharedServer/services/firebase.server';
 import {
   makeServerFirestoreCollectionService,
   type ServerFirestoreCollectionService,
@@ -94,14 +98,10 @@ export class ServerAccountsService {
       this.experimentsService.initializeForAccount({accountId, email}),
     ]);
 
-    if (!createAccountResult.success) {
-      return createAccountResult;
-    }
+    if (!createAccountResult.success) return createAccountResult;
 
     const firstErrorResult = createAccountResult.value.results.find((result) => !result.success);
-    if (firstErrorResult) {
-      return firstErrorResult;
-    }
+    if (firstErrorResult) return firstErrorResult;
 
     return makeSuccessResult(undefined);
   }
@@ -116,14 +116,10 @@ export class ServerAccountsService {
       this.experimentsService.deleteForAccount(accountId),
     ]);
 
-    if (!deleteResult.success) {
-      return deleteResult;
-    }
+    if (!deleteResult.success) return deleteResult;
 
     const firstErrorResult = deleteResult.value.results.find((result) => !result.success);
-    if (firstErrorResult) {
-      return firstErrorResult;
-    }
+    if (firstErrorResult) return firstErrorResult;
 
     return makeSuccessResult(undefined);
   }
@@ -134,11 +130,11 @@ export class ServerAccountsService {
   }): AsyncResult<void, Error> {
     const {accountId, email} = args;
 
-    const account = {
+    const account: WithFieldValue<Account> = {
       accountId,
       email,
-      createdTime: new Date(),
-      lastUpdatedTime: new Date(),
+      createdTime: serverTimestampSupplier(),
+      lastUpdatedTime: serverTimestampSupplier(),
     };
 
     return this.collectionService.setDoc(accountId, account);
