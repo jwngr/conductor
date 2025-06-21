@@ -21,7 +21,7 @@ import type {AsyncResult} from '@shared/types/results.types';
 import {ServerFeedSubscriptionsService} from '@sharedServer/services/feedSubscriptions.server';
 import type {ServerFirebaseService} from '@sharedServer/services/firebase.server';
 
-import {getMockUserFeedSubscriptions} from '@src/bootstrap/userFeedSubscriptions.bootstrap';
+import {getMockUserFeedSubscriptions} from '@src/bootstrap/feedSubscriptions.bootstrap';
 
 interface CreateSampleFeedSubscriptionsResult {
   readonly count: number;
@@ -44,8 +44,8 @@ export async function createSampleFeedSubscriptions(args: {
     if (!saveResult.success) {
       const betterError = prefixErrorResult(saveResult, 'Failed to save user feed subscription');
       logger.error(betterError.error, {
-        subscriptionId: subscription.userFeedSubscriptionId,
-        feedSourceType: subscription.feedSourceType,
+        subscriptionId: subscription.feedSubscriptionId,
+        feedType: subscription.feedType,
       });
     }
     return saveResult;
