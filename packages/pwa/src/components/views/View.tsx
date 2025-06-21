@@ -5,13 +5,14 @@ import {logger} from '@shared/services/logger.shared';
 import {arrayFilter} from '@shared/lib/arrayUtils.shared';
 import {isDate} from '@shared/lib/datetime.shared';
 import {prefixError} from '@shared/lib/errorUtils.shared';
+import {getFeedItemSubtitle} from '@shared/lib/feedItemContent.shared';
 import {getFeedSubscriptionIdForItem, SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {objectKeys, objectMapEntries} from '@shared/lib/objectUtils.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 import {Views} from '@shared/lib/views.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
-import {FeedItemContentType} from '@shared/types/feedItemContent.types';
+import type {FeedItemContentType} from '@shared/types/feedItemContent.types';
 import type {FeedItem} from '@shared/types/feedItems.types';
 import type {FeedType} from '@shared/types/feeds.types';
 import type {FeedItemId, FeedSubscriptionId} from '@shared/types/ids.types';
@@ -303,14 +304,10 @@ const ViewListItem: React.FC<{
       >
         <div>
           <FlexRow gap={3}>
-            <P bold={isUnread}>{feedItem.content.title || 'No title'}</P>
+            <P bold={isUnread}>{feedItem.content.title}</P>
             <FeedItemImportStatusBadge importState={feedItem.importState} />
           </FlexRow>
-          <P light>
-            {feedItem.feedItemContentType === FeedItemContentType.Interval
-              ? 'Interval'
-              : feedItem.content.url}
-          </P>
+          <P light>{getFeedItemSubtitle(feedItem)}</P>
         </div>
         {shouldShowActions ? (
           <div className={styles.viewListItemActions()}>

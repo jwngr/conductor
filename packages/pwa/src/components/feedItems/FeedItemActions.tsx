@@ -1,10 +1,10 @@
 import type React from 'react';
 import {useCallback} from 'react';
 
+import {isFeedItemImportStateRetryable} from '@shared/lib/feedItemImportStates.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
-import {FeedItemImportStatus} from '@shared/types/feedItemImportStates';
 import type {FeedItem} from '@shared/types/feedItems.types';
 import type {IconName} from '@shared/types/icons.types';
 import type {AsyncResult} from '@shared/types/results.types';
@@ -155,7 +155,7 @@ const RetryImportActionIcon: React.FC<{
       tooltip={actionInfo.text}
       shortcutId={actionInfo.shortcutId}
       performAction={async () => await feedItemsService.retryImport(feedItem)}
-      disabled={feedItem.importState.status === FeedItemImportStatus.Processing}
+      disabled={!isFeedItemImportStateRetryable(feedItem.importState)}
     />
   );
 };

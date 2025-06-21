@@ -3,7 +3,10 @@ import type {DocumentData} from 'firebase-admin/firestore';
 
 import {FEED_ITEMS_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {asyncTry, prefixErrorResult} from '@shared/lib/errorUtils.shared';
-import {makeFeedItemContentFromUrl} from '@shared/lib/feedItemContent.shared';
+import {
+  makeFeedItemContentFromUrl,
+  makeIntervalFeedItemContent,
+} from '@shared/lib/feedItemContent.shared';
 import {makeFeedItem} from '@shared/lib/feedItems.shared';
 import {makeIntervalFeed} from '@shared/lib/feeds.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
@@ -119,11 +122,10 @@ export class ServerFeedItemsService {
     const feedItem = makeFeedItem({
       origin: makeIntervalFeed({subscription}),
       accountId,
-      content: {
-        feedItemContentType: FeedItemContentType.Interval,
-        title: `Interval feed item for ${new Date().toISOString()}`,
+      content: makeIntervalFeedItemContent({
         intervalSeconds: subscription.intervalSeconds,
-      },
+        title: `Interval feed item for ${new Date().toISOString()}`,
+      }),
     });
 
     const addFeedItemResult = await this.collectionService.setDoc(feedItem.feedItemId, feedItem);
