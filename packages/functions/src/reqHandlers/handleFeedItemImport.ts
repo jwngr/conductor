@@ -1,7 +1,7 @@
 import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
-import {FeedItemImportStatus} from '@shared/types/feedItems.types';
+import {FeedItemImportStatus} from '@shared/types/feedItemImportStates';
 import type {FeedItem} from '@shared/types/feedItems.types';
 import type {AsyncResult, ErrorResult} from '@shared/types/results.types';
 

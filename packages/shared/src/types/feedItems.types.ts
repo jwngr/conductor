@@ -9,10 +9,9 @@ import type {
   XkcdFeedItemContent,
   YouTubeFeedItemContent,
 } from '@shared/types/feedItemContent.types';
+import type {FeedItemImportState} from '@shared/types/feedItemImportStates';
 import type {Feed} from '@shared/types/feeds.types';
-import type {IconName} from '@shared/types/icons.types';
 import type {AccountId, FeedItemId} from '@shared/types/ids.types';
-import type {KeyboardShortcutId} from '@shared/types/shortcuts.types';
 import type {TagId} from '@shared/types/tags.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 
@@ -100,77 +99,4 @@ export enum TriageStatus {
   Saved = 'SAVED',
   Done = 'DONE',
   Trashed = 'TRASHED',
-}
-
-export enum FeedItemImportStatus {
-  /** Created but not yet processed. */
-  New = 'NEW',
-  /** Currently being processed. */
-  Processing = 'PROCESSING',
-  /** Errored while processing. May have partially imported data. */
-  Failed = 'FAILED',
-  /** Successfully imported all data. */
-  Completed = 'COMPLETED',
-}
-
-interface BaseFeedItemImportState {
-  readonly status: FeedItemImportStatus;
-  readonly shouldFetch: boolean;
-  readonly lastImportRequestedTime: Date;
-  readonly lastSuccessfulImportTime: Date | null;
-}
-
-export interface NewFeedItemImportState extends BaseFeedItemImportState {
-  readonly status: FeedItemImportStatus.New;
-  readonly shouldFetch: true;
-  readonly lastSuccessfulImportTime: null;
-}
-
-interface ProcessingFeedItemImportState extends BaseFeedItemImportState {
-  readonly status: FeedItemImportStatus.Processing;
-  readonly shouldFetch: false;
-  readonly importStartedTime: Date;
-  readonly lastSuccessfulImportTime: Date | null;
-}
-
-interface FailedFeedItemImportState extends BaseFeedItemImportState {
-  readonly status: FeedItemImportStatus.Failed;
-  readonly shouldFetch: boolean;
-  readonly errorMessage: string;
-  readonly importFailedTime: Date;
-  readonly lastSuccessfulImportTime: Date | null;
-}
-
-interface CompletedFeedItemImportState extends BaseFeedItemImportState {
-  readonly status: FeedItemImportStatus.Completed;
-  readonly shouldFetch: boolean;
-  readonly lastSuccessfulImportTime: Date;
-}
-
-export type FeedItemImportState =
-  | NewFeedItemImportState
-  | ProcessingFeedItemImportState
-  | FailedFeedItemImportState
-  | CompletedFeedItemImportState;
-
-export enum FeedItemActionType {
-  Cancel = 'CANCEL',
-  MarkDone = 'MARK_DONE',
-  MarkUndone = 'MARK_UNDONE',
-  MarkRead = 'MARK_READ',
-  MarkUnread = 'MARK_UNREAD',
-  Save = 'SAVE',
-  Unsave = 'UNSAVE',
-  Star = 'STAR',
-  Unstar = 'UNSTAR',
-  RetryImport = 'RETRY_IMPORT',
-  Undo = 'UNDO',
-}
-
-export interface FeedItemAction {
-  readonly actionType: FeedItemActionType;
-  // TODO: Should this have `feedId` on it? Should it be optional?
-  readonly text: string;
-  readonly icon: IconName;
-  readonly shortcutId?: KeyboardShortcutId;
 }

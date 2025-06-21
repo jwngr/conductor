@@ -1,6 +1,6 @@
 import type {z} from 'zod/v4';
 
-import {AccountIdSchema} from '@shared/schemas/accounts.schema';
+import {AccountIdSchema} from '@shared/schemas/ids.schema';
 import {ThemePreferenceSchema} from '@shared/schemas/theme.schema';
 import {BaseStoreItemSchema} from '@shared/schemas/utils.schema';
 

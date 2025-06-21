@@ -1,7 +1,7 @@
 import type {Actor} from '@shared/types/actors.types';
 import type {Environment} from '@shared/types/environment.types';
 import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
-import type {FeedItemActionType} from '@shared/types/feedItems.types';
+import type {FeedItemActionType} from '@shared/types/feedItemActions.types';
 import type {FeedType} from '@shared/types/feeds.types';
 import type {
   AccountId,

@@ -2,7 +2,7 @@ import {z} from 'zod/v4';
 
 import {FeedType} from '@shared/types/feeds.types';
 
-import {FeedSubscriptionIdSchema} from '@shared/schemas/feedSubscriptions.schema';
+import {FeedSubscriptionIdSchema} from '@shared/schemas/ids.schema';
 
 const BaseFeedSchema = z.object({
   feedType: z.enum(FeedType),

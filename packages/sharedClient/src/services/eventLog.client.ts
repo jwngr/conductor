@@ -23,7 +23,7 @@ import {parseEventLogItem, parseEventLogItemId} from '@shared/parsers/eventLog.p
 import type {Environment} from '@shared/types/environment.types';
 import type {EventLogItem, EventLogItemData} from '@shared/types/eventLog.types';
 import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
-import type {FeedItemActionType} from '@shared/types/feedItems.types';
+import type {FeedItemActionType} from '@shared/types/feedItemActions.types';
 import type {FeedType} from '@shared/types/feeds.types';
 import type {
   AccountId,

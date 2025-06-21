@@ -6,7 +6,8 @@ import type {EventLogItem} from '@shared/types/eventLog.types';
 import type {EventLogItemId} from '@shared/types/ids.types';
 import type {Result} from '@shared/types/results.types';
 
-import {EventLogItemIdSchema, EventLogItemSchema} from '@shared/schemas/eventLog.schema';
+import {EventLogItemSchema} from '@shared/schemas/eventLog.schema';
+import {EventLogItemIdSchema} from '@shared/schemas/ids.schema';
 import {fromStorageEventLogItem} from '@shared/storage/eventLog.storage';
 
 /**

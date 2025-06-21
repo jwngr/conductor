@@ -16,8 +16,9 @@ import {Views} from '@shared/lib/views.shared';
 
 import {parseFeedItem, parseFeedItemId} from '@shared/parsers/feedItems.parser';
 
+import {FeedItemActionType} from '@shared/types/feedItemActions.types';
 import type {FeedItem} from '@shared/types/feedItems.types';
-import {FeedItemActionType, TriageStatus} from '@shared/types/feedItems.types';
+import {TriageStatus} from '@shared/types/feedItems.types';
 import type {Feed} from '@shared/types/feeds.types';
 import type {AccountId, FeedItemId} from '@shared/types/ids.types';
 import {fromQueryFilterOp} from '@shared/types/query.types';
