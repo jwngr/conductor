@@ -5,7 +5,6 @@ import type {Environment} from '@shared/types/environment.types';
 import type {
   EventLogItem,
   EventLogItemData,
-  EventLogItemId,
   ExperimentDisabledEventLogItemData,
   ExperimentEnabledEventLogItemData,
   FeedItemActionEventLogItemData,
@@ -19,13 +18,18 @@ import {EventType} from '@shared/types/eventLog.types';
 import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
 import type {FeedItemActionType} from '@shared/types/feedItems.types';
 import type {FeedType} from '@shared/types/feeds.types';
-import type {AccountId, FeedItemId, FeedSubscriptionId} from '@shared/types/ids.types';
+import type {
+  AccountId,
+  EventLogItemId,
+  FeedItemId,
+  FeedSubscriptionId,
+} from '@shared/types/ids.types';
 import type {ThemePreference} from '@shared/types/theme.types';
 
 /**
  * Creates a new random {@link EventLogItemId}.
  */
-export function makeEventId(): EventLogItemId {
+export function makeEventLogItemId(): EventLogItemId {
   return makeUuid<EventLogItemId>();
 }
 
@@ -37,7 +41,7 @@ export function makeEventLogItem(args: {
 }): EventLogItem {
   const {accountId, actor, environment, data} = args;
   return {
-    eventId: makeEventId(),
+    eventLogItemId: makeEventLogItemId(),
     accountId,
     actor,
     environment,

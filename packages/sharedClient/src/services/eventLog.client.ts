@@ -18,14 +18,19 @@ import {
 } from '@shared/lib/eventLog.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
-import {parseEventId, parseEventLogItem} from '@shared/parsers/eventLog.parser';
+import {parseEventLogItem, parseEventLogItemId} from '@shared/parsers/eventLog.parser';
 
 import type {Environment} from '@shared/types/environment.types';
-import type {EventLogItem, EventLogItemData, EventLogItemId} from '@shared/types/eventLog.types';
+import type {EventLogItem, EventLogItemData} from '@shared/types/eventLog.types';
 import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
 import type {FeedItemActionType} from '@shared/types/feedItems.types';
 import type {FeedType} from '@shared/types/feeds.types';
-import type {AccountId, FeedItemId, FeedSubscriptionId} from '@shared/types/ids.types';
+import type {
+  AccountId,
+  EventLogItemId,
+  FeedItemId,
+  FeedSubscriptionId,
+} from '@shared/types/ids.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {ThemePreference} from '@shared/types/theme.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
@@ -61,20 +66,24 @@ export class ClientEventLogService {
       collectionPath: EVENT_LOG_DB_COLLECTION,
       toStorage: toStorageEventLogItem,
       fromStorage: parseEventLogItem,
-      parseId: parseEventId,
+      parseId: parseEventLogItemId,
     });
   }
 
-  public async fetchById(eventId: EventLogItemId): AsyncResult<EventLogItem | null, Error> {
-    return this.collectionService.fetchById(eventId);
+  public async fetchById(eventLogItemId: EventLogItemId): AsyncResult<EventLogItem | null, Error> {
+    return this.collectionService.fetchById(eventLogItemId);
   }
 
   public watchById(
-    eventId: EventLogItemId,
+    eventLogItemId: EventLogItemId,
     successCallback: Consumer<EventLogItem | null>, // null means event log item does not exist.
     errorCallback: Consumer<Error>
   ): Unsubscribe {
-    const unsubscribe = this.collectionService.watchDoc(eventId, successCallback, errorCallback);
+    const unsubscribe = this.collectionService.watchDoc(
+      eventLogItemId,
+      successCallback,
+      errorCallback
+    );
     return () => unsubscribe();
   }
 
@@ -102,9 +111,9 @@ export class ClientEventLogService {
   }
 
   private async logEvent(eventLogItem: EventLogItem): AsyncResult<EventLogItem, Error> {
-    const {eventId} = eventLogItem;
+    const {eventLogItemId} = eventLogItem;
 
-    const createResult = await this.collectionService.setDoc(eventId, eventLogItem);
+    const createResult = await this.collectionService.setDoc(eventLogItemId, eventLogItem);
 
     if (!createResult.success) {
       logger.error(prefixError(createResult.error, 'Failed to log event'), {eventLogItem});
@@ -124,15 +133,15 @@ export class ClientEventLogService {
   }
 
   public async updateEventLogItem(
-    eventId: EventLogItemId,
+    eventLogItemId: EventLogItemId,
     item: Partial<Pick<EventLogItem, 'data'>>
   ): AsyncResult<void, Error> {
-    const updateResult = await this.collectionService.updateDoc(eventId, item);
+    const updateResult = await this.collectionService.updateDoc(eventLogItemId, item);
     return prefixResultIfError(updateResult, 'Error updating event log item');
   }
 
-  public async deleteEventLogItem(eventId: EventLogItemId): AsyncResult<void, Error> {
-    const deleteResult = await this.collectionService.deleteDoc(eventId);
+  public async deleteEventLogItem(eventLogItemId: EventLogItemId): AsyncResult<void, Error> {
+    const deleteResult = await this.collectionService.deleteDoc(eventLogItemId);
     return prefixResultIfError(deleteResult, 'Error deleting event log item');
   }
 

@@ -3,7 +3,12 @@ import type {Environment} from '@shared/types/environment.types';
 import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
 import type {FeedItemActionType} from '@shared/types/feedItems.types';
 import type {FeedType} from '@shared/types/feeds.types';
-import type {AccountId, FeedItemId, FeedSubscriptionId} from '@shared/types/ids.types';
+import type {
+  AccountId,
+  EventLogItemId,
+  FeedItemId,
+  FeedSubscriptionId,
+} from '@shared/types/ids.types';
 import type {ThemePreference} from '@shared/types/theme.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 
@@ -18,7 +23,7 @@ export enum EventType {
   ThemePreferenceChanged = 'THEME_PREFERENCE_CHANGED',
 }
 
-interface BaseEventLogItemData extends BaseStoreItem {
+interface BaseEventLogItemData extends Record<string, unknown> {
   /** The type of event being logged. */
   readonly eventType: EventType;
 }

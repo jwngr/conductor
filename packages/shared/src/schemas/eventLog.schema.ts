@@ -13,7 +13,6 @@ import {FeedSubscriptionIdSchema} from '@shared/schemas/feedSubscriptions.schema
 import {ThemePreferenceSchema} from '@shared/schemas/theme.schema';
 import {BaseStoreItemSchema} from '@shared/schemas/utils.schema';
 
-// TODO: Consider adding `brand()` and defining `EventLogItemId` based on this schema.
 export const EventLogItemIdSchema = z.uuid();
 
 const BaseEventLogItemDataSchema = z.object({
