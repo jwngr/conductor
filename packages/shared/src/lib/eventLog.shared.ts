@@ -1,10 +1,8 @@
 import {makeUuid} from '@shared/lib/utils.shared';
 
-import type {AccountId} from '@shared/types/accounts.types';
 import type {Actor} from '@shared/types/actors.types';
 import type {Environment} from '@shared/types/environment.types';
 import type {
-  EventId,
   EventLogItem,
   EventLogItemData,
   ExperimentDisabledEventLogItemData,
@@ -18,16 +16,21 @@ import type {
 } from '@shared/types/eventLog.types';
 import {EventType} from '@shared/types/eventLog.types';
 import type {ExperimentId, ExperimentType} from '@shared/types/experiments.types';
-import type {FeedItemActionType, FeedItemId} from '@shared/types/feedItems.types';
-import type {FeedType} from '@shared/types/feedSourceTypes.types';
-import type {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
+import type {FeedItemActionType} from '@shared/types/feedItemActions.types';
+import type {FeedType} from '@shared/types/feeds.types';
+import type {
+  AccountId,
+  EventLogItemId,
+  FeedItemId,
+  FeedSubscriptionId,
+} from '@shared/types/ids.types';
 import type {ThemePreference} from '@shared/types/theme.types';
 
 /**
- * Creates a new random {@link EventId}.
+ * Creates a new random {@link EventLogItemId}.
  */
-export function makeEventId(): EventId {
-  return makeUuid<EventId>();
+export function makeEventLogItemId(): EventLogItemId {
+  return makeUuid<EventLogItemId>();
 }
 
 export function makeEventLogItem(args: {
@@ -38,7 +41,7 @@ export function makeEventLogItem(args: {
 }): EventLogItem {
   const {accountId, actor, environment, data} = args;
   return {
-    eventId: makeEventId(),
+    eventLogItemId: makeEventLogItemId(),
     accountId,
     actor,
     environment,

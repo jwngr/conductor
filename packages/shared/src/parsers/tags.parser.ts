@@ -2,16 +2,13 @@ import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {parseStorageTimestamp, parseZodResult} from '@shared/lib/parser.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
+import type {UserTagId} from '@shared/types/ids.types';
 import type {Result} from '@shared/types/results.types';
-import type {SystemTag, SystemTagId, UserTag, UserTagId} from '@shared/types/tags.types';
+import type {SystemTag, SystemTagId, UserTag} from '@shared/types/tags.types';
 import {TagType} from '@shared/types/tags.types';
 
-import {
-  SystemTagIdSchema,
-  SystemTagSchema,
-  UserTagIdSchema,
-  UserTagSchema,
-} from '@shared/schemas/tags.schema';
+import {UserTagIdSchema} from '@shared/schemas/ids.schema';
+import {SystemTagIdSchema, SystemTagSchema, UserTagSchema} from '@shared/schemas/tags.schema';
 
 /**
  * Parses a {@link UserTagId} from a plain string. Returns an `ErrorResult` if the string is not

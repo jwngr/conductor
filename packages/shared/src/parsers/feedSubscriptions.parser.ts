@@ -4,16 +4,16 @@ import {makeSuccessResult} from '@shared/lib/results.shared';
 
 import type {
   FeedSubscription,
-  FeedSubscriptionId,
   FeedSubscriptionLifecycleState,
 } from '@shared/types/feedSubscriptions.types';
+import type {FeedSubscriptionId} from '@shared/types/ids.types';
 import type {Result} from '@shared/types/results.types';
 
 import {
-  FeedSubscriptionIdSchema,
   FeedSubscriptionLifecycleSchema,
   FeedSubscriptionSchema,
 } from '@shared/schemas/feedSubscriptions.schema';
+import {FeedSubscriptionIdSchema} from '@shared/schemas/ids.schema';
 import {fromStorageFeedSubscription} from '@shared/storage/feedSubscriptions.storage';
 
 /**

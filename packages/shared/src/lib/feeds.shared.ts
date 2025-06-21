@@ -8,7 +8,7 @@ import type {
   RssFeed,
   YouTubeChannelFeed,
 } from '@shared/types/feeds.types';
-import {FeedType} from '@shared/types/feedSourceTypes.types';
+import {FeedType} from '@shared/types/feeds.types';
 import type {
   IntervalFeedSubscription,
   RssFeedSubscription,

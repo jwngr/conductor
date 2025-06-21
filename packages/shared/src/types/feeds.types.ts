@@ -1,5 +1,4 @@
-import type {FeedType} from '@shared/types/feedSourceTypes.types';
-import type {FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
+import type {FeedSubscriptionId} from '@shared/types/ids.types';
 
 interface BaseFeed {
   readonly feedType: FeedType;
@@ -39,3 +38,35 @@ export type Feed =
   | ExtensionFeed
   | PocketExportFeed
   | IntervalFeed;
+
+/**
+ * The type of feed from which a {@link FeedItem} originates. The source of the feed item.
+ */
+export enum FeedType {
+  /** RSS feeds. */
+  RSS = 'RSS',
+  /** YouTube channels. */
+  YouTubeChannel = 'YOUTUBE_CHANNEL',
+  /** Dummy feeds that automatically generate items at a fixed interval. */
+  Interval = 'INTERVAL',
+  /** Feeds that are added from the PWA. */
+  PWA = 'PWA',
+  /** Feeds that are added from the web extension. */
+  Extension = 'EXTENSION',
+  /** Feeds that are added from a Pocket export. */
+  PocketExport = 'POCKET_EXPORT',
+}
+
+/**
+ * List of {@link FeedType} that have a {@link FeedSubscription} associated with them.
+ */
+export const FEED_TYPES_WITH_SUBSCRIPTIONS = [
+  FeedType.RSS,
+  FeedType.YouTubeChannel,
+  FeedType.Interval,
+] as const;
+
+/**
+ * Subset of {@link FeedType} that have a {@link FeedSubscription} associated with them.
+ */
+export type FeedTypeWithSubscription = (typeof FEED_TYPES_WITH_SUBSCRIPTIONS)[number];

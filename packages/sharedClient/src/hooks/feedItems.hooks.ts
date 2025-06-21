@@ -16,9 +16,10 @@ import {assertNever} from '@shared/lib/utils.shared';
 
 import {AsyncStatus} from '@shared/types/asyncState.types';
 import type {AsyncState} from '@shared/types/asyncState.types';
-import type {FeedItem, FeedItemId, XkcdFeedItem} from '@shared/types/feedItems.types';
-import {FeedType} from '@shared/types/feedSourceTypes.types';
-import type {FeedSubscription, FeedSubscriptionId} from '@shared/types/feedSubscriptions.types';
+import type {FeedItem, XkcdFeedItem} from '@shared/types/feedItems.types';
+import {FeedType} from '@shared/types/feeds.types';
+import type {FeedSubscription} from '@shared/types/feedSubscriptions.types';
+import type {FeedItemId, FeedSubscriptionId} from '@shared/types/ids.types';
 import type {Func} from '@shared/types/utils.types';
 import type {ViewType} from '@shared/types/views.types';
 

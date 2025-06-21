@@ -4,8 +4,8 @@ import {ACCOUNT_SETTINGS_DB_COLLECTION} from '@shared/lib/constants.shared';
 import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseAccountSettings} from '@shared/parsers/accountSettings.parser';
 
-import type {AccountId} from '@shared/types/accounts.types';
 import type {AccountSettings} from '@shared/types/accountSettings.types';
+import type {AccountId} from '@shared/types/ids.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {ThemePreference} from '@shared/types/theme.types';
 

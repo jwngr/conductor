@@ -1,10 +1,6 @@
 import type {EmailAddress} from '@shared/types/emails.types';
+import type {AccountId} from '@shared/types/ids.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
-
-/**
- * Strongly-typed type for an {@link Account}'s unique identifier. Prefer this over plain strings.
- */
-export type AccountId = string & {readonly __brand: 'AccountIdBrand'};
 
 /**
  * A generic type representing an account.

@@ -5,7 +5,7 @@ import {assertNever} from '@shared/lib/utils.shared';
 import {parseFeedSubscriptionId} from '@shared/parsers/feedSubscriptions.parser';
 
 import type {Feed, IntervalFeed, RssFeed, YouTubeChannelFeed} from '@shared/types/feeds.types';
-import {FeedType} from '@shared/types/feedSourceTypes.types';
+import {FeedType} from '@shared/types/feeds.types';
 import type {Result} from '@shared/types/results.types';
 
 import type {

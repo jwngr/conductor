@@ -15,7 +15,7 @@ import {AsyncStatus} from '@shared/types/asyncState.types';
 import {DayOfWeek} from '@shared/types/datetime.types';
 import {DeliveryScheduleType} from '@shared/types/deliverySchedules.types';
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
-import {FeedType} from '@shared/types/feedSourceTypes.types';
+import {FeedType} from '@shared/types/feeds.types';
 import {
   FeedSubscriptionActivityStatus,
   type FeedSubscription,

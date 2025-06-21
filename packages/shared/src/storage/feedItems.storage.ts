@@ -7,13 +7,12 @@ import {parseAccountId} from '@shared/parsers/accounts.parser';
 import {parseFeedItemId} from '@shared/parsers/feedItems.parser';
 import {parseFeed} from '@shared/parsers/feeds.parser';
 
-import type {AccountId} from '@shared/types/accounts.types';
 import {FeedItemContentType} from '@shared/types/feedItemContent.types';
+import type {FeedItemImportState} from '@shared/types/feedItemImportStates';
+import {FeedItemImportStatus} from '@shared/types/feedItemImportStates';
 import type {
   ArticleFeedItem,
   FeedItem,
-  FeedItemId,
-  FeedItemImportState,
   IntervalFeedItem,
   TriageStatus,
   TweetFeedItem,
@@ -22,14 +21,14 @@ import type {
   XkcdFeedItem,
   YouTubeFeedItem,
 } from '@shared/types/feedItems.types';
-import {FeedItemImportStatus} from '@shared/types/feedItems.types';
 import type {Feed} from '@shared/types/feeds.types';
+import type {AccountId, FeedItemId} from '@shared/types/ids.types';
 import type {Result} from '@shared/types/results.types';
 
+import type {FeedItemImportStateFromStorage} from '@shared/schemas/feedItemImportStates.schema';
 import type {
   ArticleFeedItemFromStorage,
   FeedItemFromStorage,
-  FeedItemImportStateFromStorage,
   IntervalFeedItemFromStorage,
   TweetFeedItemFromStorage,
   VideoFeedItemFromStorage,

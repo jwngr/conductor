@@ -4,13 +4,13 @@ import {prefixErrorResult} from '@shared/lib/errorUtils.shared';
 import {makeRssFeed} from '@shared/lib/feeds.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
-import type {AccountId} from '@shared/types/accounts.types';
 import type {FeedItem} from '@shared/types/feedItems.types';
 import type {
   IntervalFeedSubscription,
   RssFeedSubscription,
   YouTubeChannelFeedSubscription,
 } from '@shared/types/feedSubscriptions.types';
+import type {AccountId} from '@shared/types/ids.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import type {ServerFeedItemsService} from '@sharedServer/services/feedItems.server';

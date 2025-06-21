@@ -25,15 +25,14 @@ import {
   parseFeedSubscriptionId,
 } from '@shared/parsers/feedSubscriptions.parser';
 
-import type {AccountId} from '@shared/types/accounts.types';
-import {FeedType} from '@shared/types/feedSourceTypes.types';
+import {FeedType} from '@shared/types/feeds.types';
 import type {
   FeedSubscription,
-  FeedSubscriptionId,
   IntervalFeedSubscription,
   RssFeedSubscription,
   YouTubeChannelFeedSubscription,
 } from '@shared/types/feedSubscriptions.types';
+import type {AccountId, FeedSubscriptionId} from '@shared/types/ids.types';
 import type {AsyncResult} from '@shared/types/results.types';
 import type {Consumer, Unsubscribe} from '@shared/types/utils.types';
 import type {YouTubeChannelId} from '@shared/types/youtube.types';

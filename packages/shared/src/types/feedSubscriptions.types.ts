@@ -1,14 +1,8 @@
-import type {AccountId} from '@shared/types/accounts.types';
 import type {DeliverySchedule} from '@shared/types/deliverySchedules.types';
-import type {FeedType, FeedTypeWithSubscription} from '@shared/types/feedSourceTypes.types';
+import type {FeedType, FeedTypeWithSubscription} from '@shared/types/feeds.types';
+import type {AccountId, FeedSubscriptionId} from '@shared/types/ids.types';
 import type {BaseStoreItem} from '@shared/types/utils.types';
 import type {YouTubeChannelId} from '@shared/types/youtube.types';
-
-/**
- * Strongly-typed type for a {@link FeedSubscription}'s unique identifier. Prefer this over
- * plain strings.
- */
-export type FeedSubscriptionId = string & {readonly __brand: 'FeedSubscriptionIdBrand'};
 
 export enum FeedSubscriptionActivityStatus {
   Active = 'ACTIVE',

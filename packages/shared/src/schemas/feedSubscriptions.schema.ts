@@ -1,14 +1,12 @@
 import {z} from 'zod/v4';
 
-import {FEED_TYPES_WITH_SUBSCRIPTIONS, FeedType} from '@shared/types/feedSourceTypes.types';
+import {FEED_TYPES_WITH_SUBSCRIPTIONS, FeedType} from '@shared/types/feeds.types';
 import {FeedSubscriptionActivityStatus} from '@shared/types/feedSubscriptions.types';
 
-import {AccountIdSchema} from '@shared/schemas/accounts.schema';
 import {DeliveryScheduleSchema} from '@shared/schemas/deliverySchedules.schema';
 import {FirestoreTimestampSchema} from '@shared/schemas/firebase.schema';
+import {AccountIdSchema, FeedSubscriptionIdSchema} from '@shared/schemas/ids.schema';
 import {YouTubeChannelIdSchema} from '@shared/schemas/youtube.schema';
-
-export const FeedSubscriptionIdSchema = z.uuid();
 
 const FeedSubscriptionActivityStatusSchema = z.enum(FeedSubscriptionActivityStatus);
 

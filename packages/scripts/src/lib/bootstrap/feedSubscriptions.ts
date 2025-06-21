@@ -10,12 +10,12 @@ import {
 } from '@shared/lib/feedSubscriptions.shared';
 import {makeSuccessResult} from '@shared/lib/results.shared';
 
-import type {AccountId} from '@shared/types/accounts.types';
 import type {
   IntervalFeedSubscription,
   RssFeedSubscription,
   YouTubeChannelFeedSubscription,
 } from '@shared/types/feedSubscriptions.types';
+import type {AccountId} from '@shared/types/ids.types';
 import type {AsyncResult} from '@shared/types/results.types';
 
 import {ServerFeedSubscriptionsService} from '@sharedServer/services/feedSubscriptions.server';

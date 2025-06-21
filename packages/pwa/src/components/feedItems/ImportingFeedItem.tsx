@@ -5,8 +5,8 @@ import {logger} from '@shared/services/logger.shared';
 import {SharedFeedItemHelpers} from '@shared/lib/feedItems.shared';
 import {assertNever} from '@shared/lib/utils.shared';
 
+import {FeedItemImportStatus} from '@shared/types/feedItemImportStates';
 import type {FeedItem} from '@shared/types/feedItems.types';
-import {FeedItemImportStatus} from '@shared/types/feedItems.types';
 
 import {P} from '@src/components/atoms/Text';
 
